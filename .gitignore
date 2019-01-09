@@ -1,0 +1,14 @@
+.DS_Store
+.ipynb_checkpoints
+# IDE related
+.project
+.cproject
+.settings
+.vscode/
+.swp
+
+# Build generated
+node_modules
+*.pyc
+__pycache__
+/bazel-*
