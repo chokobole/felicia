@@ -58,4 +58,6 @@ def fel_additional_lib_deps():
     ]
 
 def fel_additional_test_deps():
-    return []
+    return [
+        "@com_google_absl//absl/hash:hash_testing",
+    ]

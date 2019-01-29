@@ -1,0 +1,28 @@
+FROM ubuntu:16.04
+LABEL maintainer="Wonyong Kim <chokoble33@gmail.com>"
+
+RUN apt-get update -y && \
+    apt-get install -y \
+    build-essential \
+    curl \
+    wget \
+    unzip \
+    vim \
+    python3 \
+    automake \
+    libtool && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+ARG USER=felicia
+ARG HOME=/home/${USER}
+
+RUN groupadd -r ${USER} && useradd --no-log-init -m -r -g ${USER} ${USER}
+USER ${USER}
+ENV HOME ${HOME}
+
+COPY installers /tmp/installers
+RUN cd /tmp/ && bash ./installers/install_bazel.sh
+
+COPY --chown=felicia:felicia . /felicia
+
+WORKDIR /felicia

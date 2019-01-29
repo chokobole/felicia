@@ -1,19 +1,26 @@
 # Felicia
+[![Build Status](https://travis-ci.com/chokobole/felicia.svg?token=uWEvhLXsK9nuPxhDRPic&branch=master)](https://travis-ci.com/chokobole/felicia)
+
 **Cross platform**, **Secure**, **Productive** robot framework.
 
 ## How to build
-In macos, you may have to add option `--cpu=darwin_x86_64 --apple_platform_type=macos`.
-```
-bazel build //felicia/core:core
-bazel build //felicia/core:lib
-bazel build //felicia/core:lib_internal
+```bash
+python3 scripts/felicia.py --build_all
 ```
 
 ## How to test
-Currently only support some library tests
+```bash
+python3 scripts/felicia.py --test_all
 ```
-bazel test //felicia/core:lib_tests
-bazel test //felicia/core:platform_tests
+
+## How to set up on Docker
+```bash
+docker build . -t felicia -f docker/Dockerfile.ubuntu
+```
+
+You can validate your work on docker with below.
+```bash
+python3 scripts/felicia.py --build_all --test_all --with_docker
 ```
 
 ### For Users

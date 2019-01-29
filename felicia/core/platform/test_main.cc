@@ -29,12 +29,9 @@ limitations under the License.
 
 #include <iostream>
 
-#include "felicia/core/platform/stacktrace_handler.h"
-
 GTEST_API_ int main(int argc, char** argv) {
   std::cout << "Running main() from test_main.cc\n";
 
-  felicia::testing::InstallStacktraceHandler();
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

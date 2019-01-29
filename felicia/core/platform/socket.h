@@ -1,6 +1,8 @@
 #ifndef FELICIA_CORE_PLATFORM_SOCKET_H_
 #define FELICIA_CORE_PLATFORM_SOCKET_H_
 
+#include "absl/memory/memory.h"
+
 #include "felicia/core/lib/base/callback.h"
 #include "felicia/core/lib/base/compiler_specific.h"
 #include "felicia/core/lib/base/export.h"

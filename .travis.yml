@@ -1,0 +1,37 @@
+branches:
+  only:
+  - master
+
+language: cpp
+matrix:
+  include:
+    - os: linux
+      dist: xenial
+      sudo: required
+      services: docker
+      install:
+        - sudo apt-get install -y python3
+      script:
+        - docker build . -t felicia -f docker/Dockerfile.ubuntu
+        - python3 scripts/felicia.py --build_all --test_all --with_docker
+    - os: osx
+      osx_image: xcode10
+      sudo: required
+      compiler: clang
+      env:
+        - BAZEL_VERSION 0.17.2
+      before_install:
+        - sudo xcodebuild -license accept
+        # TODO(chokobole): When doing just "softwareupdate --install" with label,
+        # Command Line Tools (macOS High Sierra version 10.13) for Xcode,
+        # says Command Line Tools (macOS High Sierra version 10.13) for Xcode: No such update
+        # so did workaround with -r option.
+        - softwareupdate --install -r
+      install:
+        - ./installers/install_bazel.sh
+      script:
+        - python3 scripts/felicia.py --build_all --test_all
+notifications:
+    email:
+        on_success: always
+        on_failure: always
