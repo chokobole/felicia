@@ -5,7 +5,10 @@
 .cproject
 .settings
 .vscode/
-.swp
+*.swp
+*.sln
+*.vcxproj*
+.vs/
 
 # Build generated
 node_modules

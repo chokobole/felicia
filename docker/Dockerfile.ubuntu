@@ -22,6 +22,8 @@ ENV HOME ${HOME}
 
 COPY installers /tmp/installers
 RUN cd /tmp/ && bash ./installers/install_bazel.sh
+# bazel is installed at ${HOME}/bin
+ENV PATH="${HOME}/bin:${PATH}"
 
 COPY --chown=felicia:felicia . /felicia
 

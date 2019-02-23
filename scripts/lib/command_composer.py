@@ -3,49 +3,54 @@ import subprocess
 import sys
 
 from lib.print_util import PrintUtil
+from lib.util import is_windows
+
 
 class CommandComposer(object):
     def __init__(self, prefix):
         self.prefix = prefix
 
-    def compose(self, action, options=None, what=None, remainder=None):
+    def compose(self, action, options=None, target=None, remainder=None):
         """
         Available command
         - self.prefix action [options]
-        - self.prefix action [options] what
-        - self.prefix action [options] what [remainder]
+        - self.prefix action [options] target
+        - self.prefix action [options] target [remainder]
         """
         cmd = [self.prefix]
-        if type(action) is list:
+        if isinstance(action, list):
             cmd.extend(action)
         else:
-            assert type(action) is str
+            assert isinstance(action, str)
             cmd.append(action)
         if options is not None:
-            assert type(options) is str
+            assert isinstance(options, str)
             cmd.extend(options.split())
-        if what is not None:
-            assert type(what) is str
-            cmd.append(what)
+        if target is not None:
+            assert isinstance(target, str)
+            cmd.append(target)
             if remainder is not None:
                 cmd.extend(remainder)
 
         return cmd
 
-    def run_and_check_returncode(self, cmd, env={}):
-        PrintUtil.print_yellow('[RUN] {}'.format(' '.join(cmd)))
-        env_ = os.environ
-        env_.update(env)
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, universal_newlines=True, env=env_)
+    def run_and_check_returncode(self, cmd):
+        PrintUtil.print_yellow('[RUN] {}'.format(" ".join(cmd)))
+        result = subprocess.run(cmd, stdout=subprocess.PIPE, universal_newlines=True)
         try:
             result.check_returncode()
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
+            if is_windows() and 'bazel' in cmd[0]:
+                # Bazel on Windows error printed in stdout not stderr
+                print(result.stdout)
             self.print_fail(' '.join(cmd))
             sys.exit(1)
         return result.stdout
 
-    def print_success(self, content):
+    @staticmethod
+    def print_success(content):
         PrintUtil.print_green('[SUCCESS] {}'.format(content))
 
-    def print_fail(self, content):
+    @staticmethod
+    def print_fail(content):
         PrintUtil.print_red('[FAIL] {}'.format(content))

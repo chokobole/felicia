@@ -21,8 +21,6 @@ limitations under the License.
 
 #include "gtest/gtest.h"
 
-#include "felicia/core/lib/base/platform.h"
-
 #if defined(__ANDROID__)
 // main() is supplied by gunit_main
 #else

@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+import "felicia/core/master/master_data.proto";
+
+package felicia;
+
+message RegisterNodeRequest {
+  NodeInfo node_info = 1;
+}
+
+message RegisterNodeResponse {
+  NodeInfo node_info = 1;
+}
+
+message UnregisterNodeRequest {
+  NodeInfo node_info = 1;
+}
+
+message UnregisterNodeResponse {
+}
+
+message GetNodesRequest {
+  NodeFilter node_filter = 1;
+}
+
+message GetNodesResponse {
+  repeated NodeInfo node_infos = 1;
+}
+
+message PublishTopicRequest {
+  TopicSource topic_source = 1;
+}
+
+message PublishTopicResponse {
+};
+
+message UnpublishTopicRequest {
+  NodeInfo node_info = 1;
+  string topic = 2;
+}
+
+message UnpublishTopicResponse {
+};
+
+message SubscribeTopicRequest {
+  NodeInfo node_info = 1;
+  string topic = 2;
+}
+
+message SubscribeTopicResponse {
+};
+
+message UnsubscribeTopicRequest {
+  NodeInfo node_info = 1;
+  string topic = 2;
+}
+
+message UnsubscribeTopicResponse {
+};

@@ -7,23 +7,6 @@ http_archive(
     urls = ["https://github.com/google/protobuf/archive/v3.5.0.zip"],
 )
 
-git_repository(
-    name   = "com_github_gflags_gflags",
-    #tag    = "v2.2.0",
-    commit = "30dbc81fb5ffdc98ea9b14b1918bfe4e8779b26e", # v2.2.0 + fix of include path
-    remote = "https://github.com/gflags/gflags.git"
-)
-
-bind(
-    name   = "gflags",
-    actual = "@com_github_gflags_gflags//:gflags",
-)
-
-bind(
-    name   = "gflags_nothreads",
-    actual = "@com_github_gflags_gflags//:gflags_nothreads",
-)
-
 http_archive(
     name = "com_google_googletest",
     sha256 = "353ab86e35cea1cd386115279cf4b16695bbf21b897bfbf2721cf4cb5f64ade8",
@@ -34,22 +17,19 @@ http_archive(
     ],
 )
 
-http_archive(
-    name = "com_google_absl",
-    sha256 = "6bf4a2fb5a153b25c9aea83fa272dc959b0db3be8425f1748a3215605a06d76e",
-    strip_prefix = "abseil-cpp-2019e17a520575ab365b2b5134d71068182c70b8",
-    urls = [
-        "https://mirror.bazel.build/github.com/abseil/abseil-cpp/archive/2019e17a520575ab365b2b5134d71068182c70b8.tar.gz",
-        "https://github.com/abseil/abseil-cpp/archive/2019e17a520575ab365b2b5134d71068182c70b8.tar.gz",
-    ],
+git_repository(
+    name = "com_github_grpc_grpc",
+    tag = "v1.15.0",
+    remote = "https://github.com/grpc/grpc.git",
 )
 
-new_http_archive(
-      name = "com_github_libevent_libevent",
-      urls = [
-          "https://github.com/libevent/libevent/archive/release-2.1.8-stable.zip"
-      ],
-      sha256 = "70158101eab7ed44fd9cc34e7f247b3cae91a8e4490745d9d6eb7edc184e4d96",
-      strip_prefix = "libevent-release-2.1.8-stable",
-      build_file = "third_party/libevent.BUILD"
-  )
+http_archive(
+    name = "com_github_google_benchmark",
+    urls = ["https://github.com/google/benchmark/archive/16703ff83c1ae6d53e5155df3bb3ab0bc96083be.zip"],
+    strip_prefix = "benchmark-16703ff83c1ae6d53e5155df3bb3ab0bc96083be",
+    sha256 = "59f918c8ccd4d74b6ac43484467b500f1d64b40cc1010daa055375b322a43ba3",
+)
+
+load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
+
+grpc_deps()

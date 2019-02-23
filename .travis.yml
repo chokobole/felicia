@@ -13,7 +13,8 @@ matrix:
         - sudo apt-get install -y python3
       script:
         - docker build . -t felicia -f docker/Dockerfile.ubuntu
-        - python3 scripts/felicia.py --build_all --test_all --with_docker
+        - python3 scripts/felicia.py --build_all --test_all --options "-c dbg" --with_docker
+        - python3 scripts/felicia.py --build_all --test_all --options "-c opt" --with_docker
     - os: osx
       osx_image: xcode10
       sudo: required
@@ -30,7 +31,8 @@ matrix:
       install:
         - ./installers/install_bazel.sh
       script:
-        - python3 scripts/felicia.py --build_all --test_all
+        - python3 scripts/felicia.py --build_all --test_all --options "-c dbg"
+        - python3 scripts/felicia.py --build_all --test_all --options "-c opt"
 notifications:
     email:
         on_success: always

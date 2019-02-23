@@ -1,3 +1,20 @@
+# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# ==============================================================================
+# Modifications copyright (C) 2019 felicia
+
 package(default_visibility = [
     "//felicia:internal",
 ])
@@ -5,16 +22,14 @@ package(default_visibility = [
 load(
     "//felicia:felicia.bzl",
     "fel_copts",
-    "if_darwin",
 )
 
-# For platform specific build config
 load(
     "//felicia/core:platform/build_config.bzl",
+    "fel_proto_library",
     "fel_additional_lib_deps",
     "fel_additional_lib_hdrs",
     "fel_additional_lib_srcs",
-    "fel_additional_test_deps",
     "fel_platform_files",
     "if_static",
 )
@@ -23,38 +38,106 @@ load(
 ########################################## Libs ##########################################
 ##########################################################################################
 
+fel_proto_library(
+    name = "error_codes_proto",
+    srcs = ["lib/error/error_codes.proto"]
+)
+
 cc_library(
-    name = "core",
-    srcs = [
-        "communication/connection.cc",
-        "communication/master_proxy.cc",
-        "communication/message_queue.cc",
-        "communication/message.cc",
-        "communication/tcp_connection.cc",
-        "node/master.cc",
-        "node/node.cc",
-    ],
+    name = "platform_net",
+    srcs = fel_platform_files([
+        "net_util.cc",
+    ]),
     hdrs = [
-        "communication/connection.h",
-        "communication/master_proxy.h",
-        "communication/message_queue.h",
-        "communication/message.h",
-        "communication/tcp_connection.h",
-        "node/master.h",
-        "node/node.h",
+        "platform/net_util.h"
     ],
     copts = fel_copts(),
     deps = [
         ":lib",
-        ":lib_internal",
-    ],
+        "//third_party/chromium/net:net"
+    ]
 )
 
-LIB_INTERNAL_PRIVATE_HEADERS = glob([
-    "lib/**/*.h",
-    "platform/*.h",
-])
-LIB_INTERNAL_PUBLIC_HEADERS = fel_additional_lib_hdrs()
+fel_proto_library(
+    name = "channel_proto",
+    srcs = ["channel/channel.proto"],
+    visibility = ["//felicia:internal"]
+)
+
+cc_library(
+    name = "channel",
+    srcs = [
+        "channel/channel_base.cc",
+        "channel/channel_base.h",
+        "channel/tcp_channel_base.h",
+        "channel/tcp_channel.h",
+        "channel/tcp_client_channel.cc",
+        "channel/tcp_client_channel.h",
+        "channel/tcp_server_channel.cc",
+        "channel/tcp_server_channel.h",
+        "channel/udp_channel_base.cc",
+        "channel/udp_channel_base.h",
+        "channel/udp_channel.h",
+        "channel/udp_client_channel.cc",
+        "channel/udp_client_channel.h",
+        "channel/udp_server_channel.cc",
+        "channel/udp_server_channel.h",
+    ],
+    hdrs = [
+        "channel/channel.h",
+        "channel/channel_factory.h",
+    ],
+    copts = fel_copts(),
+    deps = [
+        ":channel_proto_cc",
+        ":lib",
+        ":message",
+        ":platform_net",
+        "//felicia/core/master:master_proto_cc",
+    ]
+)
+
+cc_library(
+    name = "node",
+    hdrs = [
+        "node/node_lifecycle.h",
+    ],
+    copts = fel_copts(),
+    deps = [
+        ":lib",
+        "//felicia/core/master:master_proto_cc",
+    ]
+)
+
+cc_library(
+    name = "message",
+    hdrs = [
+        "message/header.h",
+        "message/message.h",
+    ],
+    srcs = [
+        "message/header.cc"
+    ],
+    copts = fel_copts(),
+    deps = [
+        ":lib"
+    ]
+)
+
+LIB_INTERNAL_PRIVATE_HEADERS = glob(
+    [
+        "lib/**/*.h",
+        "platform/*.h",
+    ],
+    exclude = [
+        "platform/net_util.h",
+    ],
+)
+LIB_INTERNAL_PUBLIC_HEADERS = fel_additional_lib_hdrs(
+    exclude = [
+        "platform/**/net_util.h",
+    ]
+)
 
 cc_library(
     name = "lib_internal",
@@ -68,8 +151,8 @@ cc_library(
             "-lpthread",
         ]
     }),
-    deps =  fel_additional_lib_deps() +
-    if_static([":lib_internal_impl"])
+    deps = fel_additional_lib_deps() +
+        if_static([":lib_internal_impl"])
 )
 
 cc_library(
@@ -81,30 +164,20 @@ cc_library(
         ],
         exclude = [
             "**/*test*",
-        ]
+            "**/*benchmark*",
+            "platform/**/net_util.cc",
+        ],
     ) + fel_additional_lib_srcs(
         exclude = [
             "**/*test*",
-        ]
-    ),
-    hdrs = LIB_INTERNAL_PUBLIC_HEADERS,
-    copts = fel_copts(),
-    deps = fel_additional_lib_deps() + if_darwin([":lib_internal_impl_objc"]),
-)
-
-objc_library(
-    name = "lib_internal_impl_objc",
-    srcs = LIB_INTERNAL_PRIVATE_HEADERS + glob(
-        [
-            "platform/mac/*.mm"
+            "**/*benchmark*",
+            "platform/**/net_util.cc",
         ],
-        exclude = [
-            "**/*test*",
-        ]
     ),
     hdrs = LIB_INTERNAL_PUBLIC_HEADERS,
     copts = fel_copts(),
-    deps = fel_additional_lib_deps(),
+    deps = [":error_codes_proto_cc"] +
+        fel_additional_lib_deps()
 )
 
 # This build rule (along with :lib_internal) purposefully omits the definitions
@@ -126,39 +199,33 @@ cc_library(
     name = "test_main",
     testonly = 1,
     srcs = ["platform/test_main.cc"],
-    copts = fel_copts(),
-    visibility = ["//felicia:internal"],
-    deps = [
-        ":lib"
-    ],
+    visibility = ["//visibility:public"],
+    deps = ["@com_google_googletest//:gtest"]
 )
 
 cc_test(
     name = "lib_tests",
     size = "small",
     srcs = [
-        "lib/base/no_destructor_test.cc",
-        "lib/base/location_test.cc",
-        "lib/base/scoped_generic_test.cc",
-        "lib/containers/fast_pool_test.cc",
-        "lib/debug/alias_test.cc",
-        "lib/net/ip_address_test.cc",
-        "lib/net/ip_endpoint_test.cc",
+        "lib/base/choices_test.cc",
+        "lib/base/range_test.cc",
+        "lib/containers/pool_test.cc",
     ],
-    deps = fel_additional_test_deps() + [
+    linkstatic = 1,
+    copts = fel_copts(),
+    deps = [
         ":lib",
         ":test_main",
     ]
 )
 
 cc_test(
-    name = "platform_tests",
-    size = "small",
-    srcs = [
-        "platform/lock_test.cc",
-    ],
-    deps = fel_additional_test_deps() + [
+    name = "pool_benchmark",
+    tags = ["benchmark"],
+    srcs = ["lib/containers/pool_benchmark.cc"],
+    copts = fel_copts(),
+    deps = [
         ":lib",
-        ":test_main",
-    ]
+        "@com_github_google_benchmark//:benchmark_main",
+    ],
 )

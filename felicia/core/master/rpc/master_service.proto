@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package felicia;
+
+import "felicia/core/master/master.proto";
+
+service MasterService {
+  // Register node with a given RegisterNodeRequest.
+  rpc RegisterNode(RegisterNodeRequest) returns (RegisterNodeResponse) {}
+
+  // Unregister node with a given RegisterNodeRequest.
+  // rpc UnregisterNode(UnregisterNodeRequest) returns (UnregisterNodeResponse) {}
+
+  // Get nodes whose properties are correspondent to the GetNodesRequest.
+  rpc GetNodes(GetNodesRequest) returns (GetNodesResponse) {}
+
+  // Publish topic. Failed when there have already a same topic.
+  rpc PublishTopic(PublishTopicRequest) returns (PublishTopicResponse) {}
+
+  // Unpublish topic. Failed when there's no right to unpublish the requsted topic.
+  // rpc UnpublishTopic(UnpublishTopicRequest) returns (UnpublishTopicResponse) {}
+
+  // Subscribe topic.
+  rpc SubscribeTopic(SubscribeTopicRequest) returns (SubscribeTopicResponse) {}
+
+  // Unsubscribe topic. Failed when there's no right to unscribe the requsted topic.
+  // rpc UnsubscribeTopic(UnsubscribeTopicRequest) returns (UnsubscribeTopicResponse) {}
+}

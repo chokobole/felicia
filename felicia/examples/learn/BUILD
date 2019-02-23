@@ -1,40 +1,44 @@
 package(default_visibility = ["//visibility:public"])
-
 licenses(["notice"]) # Apache 2.0
 
 exports_files(["LICENSE"])
 
-PROTO_SRCS = [
-    "protobuf/message_spec.proto",
-]
-
-proto_library(
-    name = "proto",
-    srcs = PROTO_SRCS,
+load(
+    "//felicia:felicia.bzl",
+    "fel_copts",
 )
 
-cc_proto_library(
-    name = "proto_cc",
-    deps = [":proto"],
-    visibility = ["//visibility:public"],
+load(
+    "//felicia/core:platform/build_config.bzl",
+    "fel_proto_library_cc",
+)
+
+fel_proto_library_cc(
+    name = "message_spec_proto",
+    srcs = ["message_communication/protobuf/message_spec.proto"],
+    visibility = ["//visibility:public"]
 )
 
 cc_binary(
     name = "simple_message_publisher",
-    srcs = ["simple_message_publisher.cc"],
+    srcs = ["message_communication/simple_message_publisher.cc"],
+    copts = fel_copts(),
     deps=[
-        "//felicia/core:lib",
-        "//felicia/core:core",
-        ":proto_cc",
-    ],
+        ":message_spec_proto_cc",
+        "//felicia/cc:communication",
+        "//felicia/core/master:master_proto_cc",
+        "//felicia/core/master/tool:node_create_flag_parser_delegate",
+    ]
 )
 
 cc_binary(
     name = "simple_message_subscriber",
-    srcs = ["simple_message_subscriber.cc"],
+    srcs = ["message_communication/simple_message_subscriber.cc"],
+    copts = fel_copts(),
     deps=[
-        "//felicia/core:lib",
-        "//felicia/core:core",
-        ":proto_cc",
-    ],
+        ":message_spec_proto_cc",
+        "//felicia/cc:communication",
+        "//felicia/core/master:master_proto_cc",
+        "//felicia/core/master/tool:node_create_flag_parser_delegate",
+    ]
 )

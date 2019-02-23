@@ -1,0 +1,429 @@
+#ifndef FELICIA_CORE_UTIL_COMMAND_LINE_INTERFACE_FLAG_H_
+#define FELICIA_CORE_UTIL_COMMAND_LINE_INTERFACE_FLAG_H_
+
+#include <stddef.h>
+
+#include <string>
+
+#include "gtest/gtest_prod.h"
+#include "third_party/chromium/base/logging.h"
+#include "third_party/chromium/base/strings/string_number_conversions.h"
+#include "third_party/chromium/base/strings/string_util.h"
+
+#include "felicia/core/lib/base/choices.h"
+#include "felicia/core/lib/base/export.h"
+#include "felicia/core/lib/base/range.h"
+#include "felicia/core/lib/strings/str_util.h"
+#include "felicia/core/util/command_line_interface/flag_forward.h"
+#include "felicia/core/util/command_line_interface/flag_parser.h"
+
+namespace felicia {
+
+// ValueStore is the one which remembers the destination, and set to or
+// get from there. It can behave different according to traits or
+// different templated ValueStore.
+// NOTE: Please do not directly construct ValuseStore. Instead
+// use |MakeValueStore| funciton.
+template <typename T, typename Traits = InitValueTraits<T>>
+class ValueStore {
+ public:
+  typedef T value_type;
+
+  ValueStore(Traits traits) : traits_(traits) {}
+  ValueStore(const ValueStore& other) = default;
+  ValueStore& operator=(const ValueStore& other) = default;
+
+  bool set_value(value_type value) {
+    traits_.set_value(value);
+    return true;
+  }
+  value_type value() const { return traits_.value(); }
+  bool is_set() const { return traits_.is_set(); }
+
+  std::string usage() const { return ""; }
+
+ private:
+  Traits traits_;
+};
+
+template <typename T>
+class ValueStore<Range<T>, DefaultValueTraits<T>> {
+ public:
+  typedef T value_type;
+
+  ValueStore(const DefaultValueTraits<T>& traits, const Range<T>& range)
+      : traits_(traits), range_(range) {}
+  ValueStore(const ValueStore& other) = default;
+  ValueStore& operator=(const ValueStore& other) = default;
+
+  bool set_value(value_type value) {
+    if (!range_.In(value)) return false;
+    traits_.set_value(value);
+    return true;
+  }
+  value_type value() const { return traits_.value(); }
+  bool is_set() const { return traits_.is_set(); }
+
+  std::string usage() const {
+    std::stringstream ss;
+    ss << "{" << range_.from() << " ~ " << range_.to() << "}";
+    return ss.str();
+  }
+
+ private:
+  DefaultValueTraits<T> traits_;
+  Range<T> range_;
+};
+
+template <typename T>
+class ValueStore<Choices<T>, DefaultValueTraits<T>> {
+ public:
+  typedef T value_type;
+
+  ValueStore(const DefaultValueTraits<T>& traits, const Choices<T>& choices)
+      : traits_(traits), choices_(choices) {}
+  ValueStore(const ValueStore& other) = default;
+  ValueStore& operator=(const ValueStore& other) = default;
+
+  bool set_value(value_type value) {
+    if (!choices_.In(value)) return false;
+    traits_.set_value(value);
+    return true;
+  }
+  value_type value() const { return traits_.value(); }
+  bool is_set() const { return traits_.is_set(); }
+
+  std::string usage() const {
+    std::stringstream ss;
+    ss << "{";
+    auto& values = choices_.values();
+    for (size_t i = 0; i < values.size(); i++) {
+      ss << values[i];
+      if (i != values.size() - 1) ss << ",";
+    }
+    ss << "}";
+    return ss.str();
+  }
+
+ private:
+  DefaultValueTraits<T> traits_;
+  Choices<T> choices_;
+};
+
+template <typename T>
+EXPORT ValueStore<T> MakeValueStore(T* dst) {
+  return ValueStore<T>(InitValueTraits<T>{dst});
+}
+
+template <typename T>
+EXPORT ValueStore<T, DefaultValueTraits<T>> MakeValueStore(T* dst,
+                                                           T default_value) {
+  return ValueStore<T, DefaultValueTraits<T>>(
+      DefaultValueTraits<T>(dst, default_value));
+}
+
+template <typename T>
+EXPORT ValueStore<Range<T>, DefaultValueTraits<T>> MakeValueStore(
+    T* dst, T default_value, const Range<T>& range) {
+  return ValueStore<Range<T>, DefaultValueTraits<T>>(
+      DefaultValueTraits<T>(dst, default_value), range);
+}
+
+template <typename T>
+EXPORT ValueStore<Choices<T>, DefaultValueTraits<T>> MakeValueStore(
+    T* dst, T default_value, const Choices<T>& choices) {
+  return ValueStore<Choices<T>, DefaultValueTraits<T>>(
+      DefaultValueTraits<T>(dst, default_value), choices);
+}
+
+// It defines a flag. Flag can have |short_name_|, |long_name_| or |name_|.
+// Rule is simple, no matter what it is, it should contain alphaet
+// or digit. But |short_name_| has a prefix "-" and |long_name_| has a prefix
+// "--". But depending on how they are set, parsing order can be different.
+// 1) if |long_name_| is set, |name_| flag will be parsed first and then value
+// will be parsed. If it fails, go 2).
+// 2) if |short_name_| is set, |short_name_| flag will be parsed first and then
+// value will be parsed. If it fails, go 3).
+// 3) if |name_| is set, value will be parsed. If it fails, it fails.
+// 4) Neither of them is set, it fails.
+//
+// |help_| is help message. It is printed out when FlagParser fails to parse.
+template <typename T, typename Traits>
+class EXPORT Flag {
+ public:
+  typedef typename ValueStore<T, Traits>::value_type value_type;
+
+  Flag(const Flag& other) = default;
+  Flag& operator=(const Flag& other) = default;
+
+  class EXPORT Builder {
+   public:
+    Builder(const ValueStore<T, Traits>& value_store)
+        : flag_(Flag{value_store}) {}
+
+    Builder& SetShortName(::base::StringPiece short_name) {
+      flag_.set_short_name(short_name);
+      return *this;
+    }
+    Builder& SetLongName(::base::StringPiece long_name) {
+      flag_.set_long_name(long_name);
+      return *this;
+    }
+    Builder& SetName(::base::StringPiece name) {
+      flag_.set_name(name);
+      return *this;
+    }
+    Builder& SetHelp(::base::StringPiece help) {
+      flag_.set_help(help);
+      return *this;
+    }
+    Flag<T, Traits> Build() const {
+      auto short_name = flag_.short_name();
+      auto long_name = flag_.long_name();
+      auto name = flag_.name();
+      // Check neither of |short_name|, |long_name| or |name| is set.
+      CHECK(!(short_name.empty() && long_name.empty() && name.empty()));
+      // Check |name| is set with either |short_name| or |long_name|
+      CHECK(name.empty() || (long_name.empty() && short_name.empty()));
+      // If Flag is a sort of BoolFlag, |name| is not allowed;
+      CHECK(name.empty() || !flag_.Is<bool>());
+      return flag_;
+    }
+
+   private:
+    Flag<T, Traits> flag_;
+  };
+
+  ::base::StringPiece short_name() const { return short_name_; }
+  ::base::StringPiece long_name() const { return long_name_; }
+  ::base::StringPiece name() const { return name_; }
+  std::string usage() const;
+  std::string help(int help_start = 20) const;
+  bool is_positional() const { return !name_.empty(); }
+  bool is_optional() const { return name_.empty(); }
+  value_type value() const { return value_store_.value(); }
+  bool is_set() const { return value_store_.is_set(); }
+
+  template <typename U>
+  bool Is() const {
+    return std::is_same<value_type, U>::value;
+  }
+
+  bool Parse(FlagParser& parser);
+
+ private:
+  explicit Flag(const ValueStore<T, Traits>& value_store)
+      : value_store_(value_store) {}
+
+  FRIEND_TEST(FlagTest, DefaultValue);
+  FRIEND_TEST(FlagTest, Range);
+  FRIEND_TEST(FlagTest, Choices);
+
+  bool set_short_name(::base::StringPiece short_name);
+  bool set_long_name(::base::StringPiece long_name);
+  bool set_name(::base::StringPiece name);
+  void set_help(::base::StringPiece help) { help_ = std::string(help); }
+  // Return true when succeeds to set value at |value_store_|.
+  bool set_value(value_type value) { return value_store_.set_value(value); }
+
+  bool ConsumeEqualOrProceed(FlagParser& parser,
+                             ::base::StringPiece* arg) const;
+  bool ParseValue(::base::StringPiece arg);
+
+  std::string short_name_;
+  std::string long_name_;
+  std::string name_;
+  std::string help_;
+  ValueStore<T, Traits> value_store_;
+};
+
+namespace {
+
+bool ContainsOnlyAsciiAlphaOrDigitOrUndderscore(::base::StringPiece text) {
+  const char* p = text.data();
+  const char* limit = p + text.size();
+  while (p < limit) {
+    const char c = *p;
+    if (!(::base::IsAsciiAlpha(c) || ::base::IsAsciiDigit(c) || c == '_'))
+      return false;
+    p++;
+  }
+
+  return true;
+}
+
+}  // namespace
+
+template <typename T, typename Traits>
+bool Flag<T, Traits>::set_short_name(::base::StringPiece short_name) {
+  ::base::StringPiece text = short_name;
+  if (!strings::ConsumePrefix(&text, "-")) return false;
+  if (!ContainsOnlyAsciiAlphaOrDigitOrUndderscore(text)) return false;
+
+  short_name_ = std::string(short_name);
+  return true;
+}
+
+template <typename T, typename Traits>
+bool Flag<T, Traits>::set_long_name(::base::StringPiece long_name) {
+  ::base::StringPiece text = long_name;
+  if (!strings::ConsumePrefix(&text, "--")) return false;
+  CHECK(!strings::Equals(text, "help"));
+  if (!ContainsOnlyAsciiAlphaOrDigitOrUndderscore(text)) return false;
+
+  long_name_ = std::string(long_name);
+  return true;
+}
+
+template <typename T, typename Traits>
+bool Flag<T, Traits>::set_name(::base::StringPiece name) {
+  ::base::StringPiece text = name;
+  if (!ContainsOnlyAsciiAlphaOrDigitOrUndderscore(text)) return false;
+
+  name_ = std::string(name);
+  return true;
+}
+
+template <typename T, typename Traits>
+std::string Flag<T, Traits>::usage() const {
+  std::stringstream ss;
+  if (is_positional()) {
+    ss << name_ << value_store_.usage();
+  } else {
+    ss << "[";
+    if (!short_name_.empty()) {
+      ss << short_name_;
+    } else {
+      ss << long_name_;
+    }
+    std::string u = value_store_.usage();
+    if (!u.empty()) {
+      ss << " ";
+      ss << u;
+    }
+    ss << "]";
+  }
+  return ss.str();
+}
+
+#define APPEND_AND_DECREASE_LENGTH(ss, text, len) \
+  ss << text;                                     \
+  len -= ::base::StringPiece(text).length()
+
+#define ALIGN_AT_INDEX_AND_APPEND(ss, text, len, index) \
+  if (len <= 0) {                                       \
+    ss << std::endl;                                    \
+    len = index;                                        \
+  }                                                     \
+  ss << std::string(len, ' ') << text;                  \
+  return ss.str()
+
+template <typename T, typename Traits>
+std::string Flag<T, Traits>::help(int help_start) const {
+  int remain_len = help_start;
+  std::stringstream ss;
+  if (is_positional()) {
+    APPEND_AND_DECREASE_LENGTH(ss, name_, remain_len);
+  } else {
+    if (!short_name_.empty()) {
+      APPEND_AND_DECREASE_LENGTH(ss, short_name_, remain_len);
+    }
+
+    if (!long_name_.empty()) {
+      if (!short_name_.empty()) {
+        APPEND_AND_DECREASE_LENGTH(ss, ", ", remain_len);
+      } else {
+        APPEND_AND_DECREASE_LENGTH(ss, "    ", remain_len);
+      }
+      APPEND_AND_DECREASE_LENGTH(ss, long_name_, remain_len);
+    }
+  }
+
+  ALIGN_AT_INDEX_AND_APPEND(ss, help_, remain_len, help_start);
+}
+
+EXPORT std::string MakeNamedHelpText(::base::StringPiece name,
+                                     ::base::StringPiece help,
+                                     int help_start = 20);
+
+namespace {
+
+template <typename T>
+bool ParseValue(::base::StringPiece arg, T* value) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+template <>
+bool ParseValue(::base::StringPiece arg, bool* value) {
+  *value = true;
+  return true;
+}
+
+template <>
+bool ParseValue(::base::StringPiece arg, std::string* value) {
+  *value = std::string(arg);
+  return true;
+}
+
+template <>
+bool ParseValue(::base::StringPiece arg, int* value) {
+  return ::base::StringToInt(arg, value);
+}
+
+template <>
+bool ParseValue(::base::StringPiece arg, double* value) {
+  return ::base::StringToDouble(std::string(arg), value);
+}
+
+}  // namespace
+
+template <typename T, typename Traits>
+bool Flag<T, Traits>::Parse(FlagParser& parser) {
+  ::base::StringPiece arg = parser.current();
+  if (!long_name_.empty()) {
+    if (strings::ConsumePrefix(&arg, long_name_)) {
+      if (!Is<bool>() && !ConsumeEqualOrProceed(parser, &arg)) return false;
+      if (ParseValue(arg)) {
+        return true;
+      }
+    }
+  }
+  if (!short_name_.empty()) {
+    if (strings::ConsumePrefix(&arg, short_name_)) {
+      if (!Is<bool>() && !ConsumeEqualOrProceed(parser, &arg)) return false;
+      if (ParseValue(arg)) {
+        return true;
+      }
+    }
+  }
+  if (!name_.empty()) {
+    if (ParseValue(arg)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+template <typename T, typename Traits>
+bool Flag<T, Traits>::ConsumeEqualOrProceed(FlagParser& parser,
+                                            ::base::StringPiece* arg) const {
+  if (strings::ConsumePrefix(arg, "=")) return true;
+  if (!arg->empty()) return false;
+  parser.Proceed();
+  *arg = parser.current();
+  return true;
+}
+
+template <typename T, typename Traits>
+bool Flag<T, Traits>::ParseValue(::base::StringPiece arg) {
+  value_type value;
+  if (::felicia::ParseValue(arg, &value)) {
+    return set_value(value);
+  }
+  return false;
+}
+
+}  // namespace felicia
+
+#endif  // FELICIA_CORE_UTIL_COMMAND_LINE_INTERFACE_FLAG_H_

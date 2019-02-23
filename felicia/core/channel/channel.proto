@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package felicia;
+
+message ChannelDef {
+  enum Type {
+    TCP = 0; // Default
+    UDP = 1;
+  }
+
+  Type type = 1;
+}

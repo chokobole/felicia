@@ -1,0 +1,63 @@
+#ifndef FELICIA_CORE_CHANNEL_TCP_SERVER_CHANNEL_H_
+#define FELICIA_CORE_CHANNEL_TCP_SERVER_CHANNEL_H_
+
+#include <memory>
+#include <vector>
+
+#include "third_party/chromium/base/macros.h"
+#include "third_party/chromium/net/base/io_buffer.h"
+#include "third_party/chromium/net/base/ip_endpoint.h"
+#include "third_party/chromium/net/socket/tcp_socket.h"
+
+#include "felicia/core/channel/channel.h"
+#include "felicia/core/channel/tcp_channel_base.h"
+
+namespace felicia {
+
+class TCPServerChannel : public TCPChannelBase {
+ public:
+  TCPServerChannel();
+  ~TCPServerChannel();
+
+  bool IsServer() const override { return true; }
+
+  void set_accept_callback(StatusCallback callback) {
+    accept_callback_ = callback;
+  }
+
+  void Listen(const NodeInfo& node_info, StatusOrIPEndPointCallback callback);
+
+  // Write the |buf| to the |accepted_sockets_|. If it succeeds to write
+  // all the sockets, then callback with Status::OK(), otherwise callback
+  // with the |write_result_|, which is recorded at every time finishing
+  // write.
+  void Write(::net::IOBuffer* buf, size_t buf_len,
+             StatusCallback callback) override;
+  // Read from the first |accepted_sockets_|.
+  void Read(::net::IOBuffer* buf, size_t buf_len,
+            StatusCallback callback) override;
+
+ private:
+  void OnWrite(int result) override;
+
+  void DoAcceptLoop();
+  void HandleAccpetResult(int result);
+  void OnAccept(int result);
+
+  StatusCallback accept_callback_;
+
+  size_t to_write_count_ = 0;
+  size_t written_count_ = 0;
+  int write_result_ = 0;
+
+  std::unique_ptr<::net::TCPSocket> socket_;
+  ::net::IPEndPoint accepted_endpoint_;
+  std::unique_ptr<::net::TCPSocket> accepted_socket_;
+  std::vector<std::unique_ptr<::net::TCPSocket>> accepted_sockets_;
+
+  DISALLOW_COPY_AND_ASSIGN(TCPServerChannel);
+};
+
+}  // namespace felicia
+
+#endif  // FELICIA_CORE_CHANNEL_TCP_SERVER_CHANNEL_H_

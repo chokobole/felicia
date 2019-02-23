@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+import "felicia/core/channel/channel.proto";
+
+package felicia;
+
+message IPEndPoint {
+  string ip = 1;
+  uint32 port = 2;
+}
+
+message NodeInfo {
+  string name = 1;
+  IPEndPoint ip_endpoint = 2;
+}
+
+message NodeFilter {
+  bool all = 1;
+  string publishing_topic = 2;
+  string subscribing_topic = 3;
+}
+
+message TopicSource {
+  string topic = 1;
+  NodeInfo node_info = 2;
+  IPEndPoint topic_ip_endpoint = 3;
+  ChannelDef channel_def = 4;
+}
