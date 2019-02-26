@@ -67,6 +67,10 @@ class FeliciaBazel(Bazel):
         if is_darwin():
             if new_options['apple_platform_type'] is None:
                 new_options['apple_platform_type'] = self.platform_options.apple_platform_type
+        if new_options['cxxopt'] is None:
+            new_options['cxxopt'] = '-D_GLIBCXX_USE_CXX11_ABI=0'
+        elif not '-D_GLIBCXX_USE_CXX11_ABI=0' in new_options['cxxopt']:
+            new_options['cxxopt'] += ' -D_GLIBCXX_USE_CXX11_ABI=0'
 
         return constructor(*tuple(new_options.values()))
 

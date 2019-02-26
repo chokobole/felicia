@@ -52,7 +52,6 @@ def fel_win_copts(is_external = False):
 def fel_copts(is_external = False):
     return if_not_windows([
         "-Ithird_party/chromium",
-        "-D_GLIBCXX_USE_CXX11_ABI=0",
     ]) + select({
         "//felicia:windows": fel_win_copts(is_external),
         "//conditions:default": [

@@ -48,14 +48,17 @@ BASE_HDRS = chromium_hdrs(exclude = [
         "threading/platform_thread_internal_posix.h",
         "win/**/*.h",
     ]) + if_not_windows([
+        ":base_posix_hdrs",
         "message_loop/message_pump_libevent.h",
+    ]) + if_windows([
+        ":base_win_hdrs",
     ])
 
 cc_library(
     name = "base",
     hdrs =  BASE_HDRS + [
         "third_party/nspr/prtime.h"
-    ],
+    ] ,
     srcs = chromium_srcs(exclude = [
         "mac/**/*.cc",
         "message_loop/message_pump_libevent.cc",
@@ -66,13 +69,13 @@ cc_library(
         "test/clang_coverage.cc",
         "third_party/**/*.cc",
         "threading/platform_thread_internal_posix.cc",
-        "time/time_conversion_posix.cc",
-        "time/time_exploded_posix.cc",
         "time/time_now_posix.cc",
         "win/**/*.cc",
     ]) + if_not_windows([
-        "message_loop/message_pump_libevent.cc",
-    ]) + [
+        ":base_posix_srcs",
+    ]) + if_windows([
+        ":base_win_srcs",
+    ]) +[
         "third_party/dmg_fp/dtoa_wrapper.cc",
         "third_party/nspr/prtime.cc",
     ],
@@ -84,10 +87,7 @@ cc_library(
         "//third_party/chromium/testing:testing",
     ] + if_darwin([
         ":base_mac",
-    ]) + if_windows([
-        ":base_win"
     ]) + if_not_windows([
-        ":base_posix",
         "//third_party/chromium/base/third_party/libevent:libevent",
     ])
 
@@ -97,21 +97,27 @@ objc_library(
     name = "base_mac",
     hdrs = BASE_HDRS + chromium_hdrs(base = "mac"),
     srcs = chromium_objc_srcs() +
-    chromium_srcs(base = "mac"),
+        chromium_srcs(base = "mac"),
     copts = chromium_objc_copts(),
     deps = [
-        ":base_posix",
+        ":buildflags",
+        "//third_party/chromium/testing:testing",
     ]
 )
 
-cc_library(
-    name = "base_posix",
-    hdrs = BASE_HDRS + chromium_hdrs(base = "posix", exclude = [
+filegroup(
+    name = "base_posix_hdrs",
+    srcs = chromium_hdrs(base = "posix", exclude = [
         "posix/can_lower_nice_to.h",
     ]) + if_not_darwin([
         "posix/can_lower_nice_to.h",
         "threading/platform_thread_internal_posix.h",
     ]),
+    visibility = ["//visibility:private"]
+)
+
+filegroup(
+    name = "base_posix_srcs",
     srcs = chromium_srcs(base = "posix", exclude = [
         "posix/can_lower_nice_to.cc",
     ]) + if_not_darwin([
@@ -119,32 +125,26 @@ cc_library(
         "strings/sys_string_conversions_posix.cc",
         "synchronization/waitable_event_posix.cc",
         "threading/platform_thread_internal_posix.cc",
-        "time/time_conversion_posix.cc",
-        "time/time_exploded_posix.cc",
         "time/time_now_posix.cc",
     ]) + [
         "strings/string16.cc",
+        "message_loop/message_pump_libevent.cc",
     ],
-    copts = chromium_copts(),
-    deps = [
-        ":buildflags",
-        "//third_party/chromium/testing:testing",
-    ]
+    visibility = ["//visibility:private"]
 )
 
-cc_library(
-    name = "base_win",
-    hdrs = BASE_HDRS + chromium_hdrs(base = "win", exclude = [
+filegroup(
+    name = "base_win_hdrs",
+    srcs = chromium_hdrs(base = "win", exclude = [
         "win/base_win_buildflags.h",
-    ]) + [
-        "posix/eintr_wrapper.h"
-    ],
+    ]),
+    visibility = ["//visibility:private"]
+)
+
+filegroup(
+    name = "base_win_srcs",
     srcs = chromium_srcs(base = "win"),
-    copts = chromium_copts(),
-    deps = [
-        ":buildflags",
-        "//third_party/chromium/testing:testing",
-    ]
+    visibility = ["//visibility:private"]
 )
 
 cc_library(
@@ -219,6 +219,7 @@ cc_test(
         "task/sequence_manager/sequence_manager_impl_unittest.cc", # missing headers
         "task/sequence_manager/task_queue_selector_unittest.cc", # missing impl, related to trace_event
         "task/sequence_manager/time_domain_unittest.cc", # Maybe Failed at SetNextWakeUpForQueueInThePast
+        "task/sequence_manager/thread_controller_with_message_pump_impl_unittest.cc", #
         "test/scoped_mock_clock_override_unittest.cc", # missing headers(base/build_time.h)
         "threading/post_task_and_reply_impl_unittest.cc",
         "threading/platform_thread_unittest.cc", # missing headers(test/scoped_feature_list.h)
