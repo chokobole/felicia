@@ -18,6 +18,24 @@ def if_linux(a):
         "//conditions:default": [],
     })
 
+def if_not_linux(a):
+    return select({
+        "//felicia:linux_x86_64": [],
+        "//felicia:linux_ppc64le": [],
+        "//felicia:linux_s390x": [],
+        "//conditions:default": a,
+    })
+
+# This is temporary to support build third_party/chromium/net/base
+def if_not_windows_and_not_linux(a):
+    return select({
+        "//felicia:linux_x86_64": [],
+        "//felicia:linux_ppc64le": [],
+        "//felicia:linux_s390x": [],
+        "//felicia:windows": [],
+        "//conditions:default": a,
+    })
+
 def if_darwin(a):
     return select({
         "//felicia:darwin": a,

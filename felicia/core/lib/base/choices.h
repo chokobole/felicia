@@ -1,8 +1,8 @@
 #ifndef FELICIA_CORE_LIB_BASE_CHOICES_H_
 #define FELICIA_CORE_LIB_BASE_CHOICES_H_
 
-#include <vector>
 #include <type_traits>
+#include <vector>
 
 #include "felicia/core/lib/base/template_util.h"
 

@@ -72,11 +72,9 @@ void CommandDispatcher::Dispatch(
         auto node_infos = response->node_infos();
 
         TableWriterBuilder builder;
-        auto writer =
-            builder.AddColumn(TableWriter::Column{"NAME", 20})
-                .AddColumn(
-                    TableWriter::Column{"IP ENDPOINT", 32})
-                .Build();
+        auto writer = builder.AddColumn(TableWriter::Column{"NAME", 20})
+                          .AddColumn(TableWriter::Column{"IP ENDPOINT", 32})
+                          .Build();
         size_t row = 0;
         for (auto& node_info : node_infos) {
           writer.SetElement(row, 0, node_info.name());

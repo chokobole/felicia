@@ -1,96 +1,35 @@
 #include "felicia/core/platform/net_util.h"
 
-#include <ifaddrs.h>
-#include <net/if.h>
-#include <unistd.h>
-
-#include <unordered_set>
-
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/rand_util.h"
-#include "third_party/chromium/base/strings/string_util.h"
 #include "third_party/chromium/net/base/ip_endpoint.h"
 #include "third_party/chromium/net/base/net_errors.h"
+#include "third_party/chromium/net/base/network_interfaces.h"
 #include "third_party/chromium/net/socket/tcp_socket.h"
 #include "third_party/chromium/net/socket/udp_socket.h"
 
 namespace felicia {
 namespace net {
 
-std::string Hostname() {
-  char hostname[1024];
-  gethostname(hostname, sizeof hostname);
-  hostname[sizeof hostname - 1] = 0;
-  return std::string(hostname);
-}
-
-std::string HostIPAddress(int option) {
-  struct ifaddrs* addrs;
-  int rv = getifaddrs(&addrs);
-  if (rv < 0) {
-    LOG(WARNING) << "getifaddrs failed " << rv;
-    return "";
-  }
-
-  ::net::IPEndPoint src;
-  for (struct ifaddrs* ifa = addrs; ifa != NULL; ifa = ifa->ifa_next) {
-    if (ifa->ifa_addr->sa_family == AF_INET) {
-      if (!src.FromSockAddr(ifa->ifa_addr, sizeof(struct sockaddr_in)))
-        continue;
-    } else if (ifa->ifa_addr->sa_family == AF_INET6) {
-      if (!src.FromSockAddr(ifa->ifa_addr, sizeof(struct sockaddr_in6)))
-        continue;
-    }
-
-    if (!(IFF_UP & ifa->ifa_flags)) continue;
-
-    if (IFF_LOOPBACK & ifa->ifa_flags) {
-      if (HOST_IP_ALLOW_LOOPBACK & option) break;
-    }
-
-    if (::base::StartsWith(ifa->ifa_name, "en",
-                           ::base::CompareCase::SENSITIVE)) {
+// Returns the host ip address of the machine on which this process is running
+EXPORT std::string HostIPAddress(int option) {
+  ::net::NetworkInterfaceList list;
+  ::net::GetNetworkList(&list, ::net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
+  std::string text;
+  for (auto it = list.begin(); it != list.end(); ++it) {
+    if (it->type == ::net::NetworkChangeNotifier::CONNECTION_ETHERNET) {
       if (HOST_IP_ONLY_ALLOW_IPV4 & option) {
-        if (ifa->ifa_addr->sa_family == AF_INET) break;
+        if (it->address.IsIPv4()) {
+          text = it->address.ToString();
+          break;
+        }
         continue;
       }
+      text = it->address.ToString();
       break;
     }
   }
-
-  freeifaddrs(addrs);
-  return src.address().ToString();
-}
-
-uint32_t MulticastInterfaceIndex(int option) {
-  uint32_t index = 0;
-  struct ifaddrs* addrs;
-  int rv = getifaddrs(&addrs);
-  if (rv < 0) {
-    LOG(WARNING) << "getifaddrs failed " << rv;
-    return index;
-  }
-
-  ::net::IPEndPoint src;
-  for (struct ifaddrs* ifa = addrs; ifa != NULL; ifa = ifa->ifa_next) {
-    if (!(IFF_UP & ifa->ifa_flags)) {
-      index++;
-      continue;
-    }
-
-    if (IFF_MULTICAST & ifa->ifa_flags) {
-      if (HOST_IP_ONLY_ALLOW_IPV4 & option) {
-        if (ifa->ifa_addr->sa_family == AF_INET) {
-          return index;
-        }
-      }
-    }
-
-    index++;
-  }
-
-  freeifaddrs(addrs);
-  return index;
+  return text;
 }
 
 namespace {
@@ -106,7 +45,7 @@ bool IsPortAvailable(uint16_t* port, bool is_tcp) {
     rv = tcp_socket.Bind(endpoint);
     if (rv != ::net::OK) return false;
 
-    rv = tcp_socket.AllowAddressReuse();
+    rv = tcp_socket.SetDefaultOptionsForServer();
     if (rv != ::net::OK) return false;
 
     rv = tcp_socket.GetLocalAddress(&endpoint);

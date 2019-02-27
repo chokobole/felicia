@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <winsock2.h>
 
+#include <set>
 #include <memory>
 
 #include "base/gtest_prod_util.h"
@@ -103,7 +104,7 @@ class NET_EXPORT QwaveApi {
 
   DISALLOW_COPY_AND_ASSIGN(QwaveApi);
 };
-
+/*
 //-----------------------------------------------------------------------------
 
 // Helper for maintaining the state that (unlike a blanket socket option), DSCP
@@ -149,7 +150,7 @@ class NET_EXPORT DscpManager {
 
   DISALLOW_COPY_AND_ASSIGN(DscpManager);
 };
-
+*/
 //-----------------------------------------------------------------------------
 
 class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
@@ -331,7 +332,7 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   // anything on some platforms.  A return value of ERR_INVALID_HANDLE indicates
   // the value was not set but could succeed on a future call, because
   // initialization is in progress.
-  int SetDiffServCodePoint(DiffServCodePoint dscp);
+  // int SetDiffServCodePoint(DiffServCodePoint dscp);
 
   // Resets the thread to be used for thread-safety checks.
   void DetachFromThread();
@@ -483,7 +484,7 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   // NetLogWithSource net_log_;
 
   // Maintains remote addresses for QWAVE qos management.
-  std::unique_ptr<DscpManager> dscp_manager_;
+  // std::unique_ptr<DscpManager> dscp_manager_;
 
   THREAD_CHECKER(thread_checker_);
 

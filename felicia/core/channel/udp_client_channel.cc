@@ -57,15 +57,6 @@ void UDPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
     return;
   }
 
-  // rv = client_socket->SetMulticastInterface(
-  //     net::MulticastInterfaceIndex(net::HOST_IP_ONLY_ALLOW_IPV4));
-  // if (rv != ::net::OK) {
-  //   callback(errors::NetworkError(::net::ErrorToString(rv)));
-  //   return;
-  // }
-
-  // rv = client_socket->Connect(ip_endpoint);
-
   socket_ = std::move(client_socket);
   multicast_ip_endpoint_ = ip_endpoint;
   callback(Status::OK());

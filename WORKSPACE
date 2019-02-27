@@ -1,10 +1,12 @@
 workspace(name = "org_felicia")
 
-http_archive(
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+
+git_repository(
     name = "com_google_protobuf",
-    sha256 = "cef7f1b5a7c5fba672bec2a319246e8feba471f04dcebfe362d55930ee7c1c30",
-    strip_prefix = "protobuf-3.5.0",
-    urls = ["https://github.com/google/protobuf/archive/v3.5.0.zip"],
+    tag = "v3.6.0",
+    remote = "https://github.com/protocolbuffers/protobuf.git"
 )
 
 http_archive(
@@ -18,8 +20,14 @@ http_archive(
 )
 
 git_repository(
+    name = "boringssl",
+    commit = "90bd81032325ba659e538556e64977c29df32a3c",
+    remote = "https://github.com/google/boringssl.git"
+)
+
+git_repository(
     name = "com_github_grpc_grpc",
-    tag = "v1.15.0",
+    tag = "v1.18.0",
     remote = "https://github.com/grpc/grpc.git",
 )
 

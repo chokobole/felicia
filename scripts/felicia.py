@@ -56,8 +56,13 @@ class FeliciaBazel(Bazel):
             self.platform_options = BuildOptions(cpu='k8')
         elif is_windows():
             if '64' in platform.architecture()[0]:
-                self.platform_options = BuildOptions(cpu='x64_windows')
+                self.platform_options = BuildOptions(cpu='x64_windows', )
 
+    def _update_options(self, options, key, value):
+        if options[key] is None:
+            options[key] = value
+        elif not value in options[key]:
+            options[key] += ' {}'.format(value)
 
     def update_options(self, options, constructor):
         """Update options like platform options, such as cpu."""
@@ -67,10 +72,15 @@ class FeliciaBazel(Bazel):
         if is_darwin():
             if new_options['apple_platform_type'] is None:
                 new_options['apple_platform_type'] = self.platform_options.apple_platform_type
-        if new_options['cxxopt'] is None:
-            new_options['cxxopt'] = '-D_GLIBCXX_USE_CXX11_ABI=0'
-        elif not '-D_GLIBCXX_USE_CXX11_ABI=0' in new_options['cxxopt']:
-            new_options['cxxopt'] += ' -D_GLIBCXX_USE_CXX11_ABI=0'
+        self._update_options(new_options, 'cxxopt', '-D_GLIBCXX_USE_CXX11_ABI=0')
+        if is_windows():
+            self._update_options(new_options, 'copt', '/D_UNICODE')
+            self._update_options(new_options, 'copt', '/DUNICODE')
+            self._update_options(new_options, 'copt', '/D_WIN32_WINNT=0x0A00')
+            self._update_options(new_options, 'copt', '/DWINVER=0x0A00')
+            self._update_options(new_options, 'copt', '/DWIN32_LEAN_AND_MEAN')
+            self._update_options(new_options, 'copt', '/D_WINDOWS')
+            self._update_options(new_options, 'copt', '/DWIN32')
 
         return constructor(*tuple(new_options.values()))
 

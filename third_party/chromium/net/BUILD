@@ -4,6 +4,9 @@ licenses(["notice"])
 load(
     "//felicia:felicia.bzl",
     "if_windows",
+    "if_not_windows",
+    "if_not_linux",
+    "if_not_windows_and_not_linux",
 )
 
 load(
@@ -15,42 +18,74 @@ load(
     "chromium_test_copts"
 )
 
-NET_HDRS = chromium_hdrs(exclude = [
+cc_library(
+    name = "net",
+    hdrs = chromium_hdrs(exclude = [
+        "base/network_interfaces_getifaddrs.h",
         "base/winsock_init.h",
         "base/winsock_util.h",
         "third_party/**/*.h",
-    ])
-
-cc_library(
-    name = "net",
-    hdrs = NET_HDRS,
+    ]) + if_windows([
+        ":net_win_hdrs",
+    ]) + if_not_windows_and_not_linux([
+        ":net_posix_hdrs",
+    ]),
     srcs = chromium_srcs(exclude = [
+        "base/network_interfaces_getifaddrs.cc",
         "base/winsock_init.cc",
         "base/winsock_util.cc",
         "third_party/**/*.cc",
+    ]) + if_windows([
+        ":net_win_srcs",
+    ]) + if_not_windows_and_not_linux([
+        ":net_posix_srcs",
     ]),
     copts = chromium_copts(),
+    linkopts = select({
+        "//felicia:windows": [
+            "Iphlpapi.lib",
+        ],
+        "//conditions:default": []
+    }),
     deps = [
         ":third_party",
         "//third_party/chromium/base:base",
         "//third_party/chromium/url:url",
-    ] + if_windows([":net_win"])
+    ]
 )
 
-cc_library(
-    name = "net_win",
-    hdrs = NET_HDRS + [
+filegroup(
+    name = "net_win_hdrs",
+    srcs = [
         "base/winsock_init.h",
         "base/winsock_util.h"
     ],
+    visibility = ["//visibility:private"]
+)
+
+filegroup(
+    name = "net_win_srcs",
     srcs = [
         "base/winsock_init.cc",
         "base/winsock_util.cc"
     ],
-    copts = chromium_copts(),
-    deps = [
-        "//third_party/chromium/base:base",
-    ]
+    visibility = ["//visibility:private"]
+)
+
+filegroup(
+    name = "net_posix_hdrs",
+    srcs = if_not_linux([
+        "base/network_interfaces_getifaddrs.h",
+    ]),
+    visibility = ["//visibility:private"]
+)
+
+filegroup(
+    name = "net_posix_srcs",
+    srcs = if_not_linux([
+        "base/network_interfaces_getifaddrs.cc",
+    ]),
+    visibility = ["//visibility:private"]
 )
 
 cc_library(
@@ -72,10 +107,40 @@ cc_test(
     size = "small",
     tags = ["third_party", "chromium"],
     srcs = chromium_test_srcs(exclude = [
+        "base/address_tracker_linux_unittest.cc",
+        "base/network_interfaces_getifaddrs_unittest.cc",
         "socket/socket_tag_unittest.cc", # missing headers
         "socket/udp_socket_posix_unittest.cc", # missing headers
         "socket/udp_socket_unittest.cc", # missing headers
         "socket/tcp_socket_unittest.cc", # missing headers
+    ]),
+    copts = chromium_test_copts(),
+    deps = [
+        ":net",
+        "//felicia/core:test_main"
+    ]
+)
+
+cc_test(
+    name = "test_linux",
+    size = "small",
+    tags = ["third_party", "chromium"],
+    srcs = [
+        "base/address_tracker_linux_unittest.cc",
+    ],
+    copts = chromium_test_copts(),
+    deps = [
+        ":net",
+        "//felicia/core:test_main"
+    ]
+)
+
+cc_test(
+    name = "test_posix",
+    size = "small",
+    tags = ["third_party", "chromium"],
+    srcs = if_not_linux([
+        "base/network_interfaces_getifaddrs_unittest.cc",
     ]),
     copts = chromium_test_copts(),
     deps = [

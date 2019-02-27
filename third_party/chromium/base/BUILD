@@ -34,7 +34,7 @@ BASE_HDRS = chromium_hdrs(exclude = [
         # ":buildflags_hdrs",
         # Bazel on windows raised error like below.
         # java.nio.file.InvalidPathException: Illegal char <:>
-        # Once the bug is fixed, uncomment the above, and remove 3 belows.
+        # Once the bug is fixed, uncomment the above, and remove 4 belows.
         "clang_coverage_buildflags.h",
         "debug/debugging_buildflags.h",
         "synchronization/synchronization_buildflags.h",
@@ -80,6 +80,14 @@ cc_library(
         "third_party/nspr/prtime.cc",
     ],
     copts = chromium_copts(),
+    linkopts = select({
+        "//felicia:windows": [
+            "Ole32.lib",
+            "User32.lib",
+            "Winmm.lib",
+        ],
+        "//conditions:default": []
+    }),
     linkstatic = 1,
     deps = [
         ":third_party",
@@ -137,7 +145,9 @@ filegroup(
     name = "base_win_hdrs",
     srcs = chromium_hdrs(base = "win", exclude = [
         "win/base_win_buildflags.h",
-    ]),
+    ]) + [
+        "posix/eintr_wrapper.h"
+    ],
     visibility = ["//visibility:private"]
 )
 

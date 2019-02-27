@@ -111,7 +111,8 @@ void UDPChannel<MessageTy>::ReceiveMessage(MessageTy* message,
   DCHECK(!this->is_receiving_);
   DCHECK(callback);
   scoped_refptr<::net::IOBufferWithSize> buffer =
-      ::base::MakeRefCounted<::net::IOBufferWithSize>(ChannelBase::kMaxReceiverBufferSize);
+      ::base::MakeRefCounted<::net::IOBufferWithSize>(
+          ChannelBase::kMaxReceiverBufferSize);
   this->is_receiving_ = true;
   this->message_ = message;
   this->receive_callback_ = callback;

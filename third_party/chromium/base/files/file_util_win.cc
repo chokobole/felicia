@@ -5,6 +5,7 @@
 #include "base/files/file_util.h"
 
 #include <windows.h>
+#include <winsock2.h>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"

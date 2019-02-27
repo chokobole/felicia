@@ -2,7 +2,7 @@
 
 set -e
 
-BAZEL_VERSION=0.17.2
+BAZEL_VERSION=0.20.0
 PLATFORM=`uname -s | tr '[:upper:]' '[:lower:]'`
 FILE="bazel-${BAZEL_VERSION}-installer-${PLATFORM}-x86_64.sh"
 

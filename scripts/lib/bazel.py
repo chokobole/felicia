@@ -180,7 +180,7 @@ class QueryCommandExpr(object):
         return ' '.join(cmd)
 
 
-COMMON_OPTIONS = ['cpu', 'apple_platform_type', 'compilation_mode', 'cxxopt']
+COMMON_OPTIONS = ['cpu', 'apple_platform_type', 'compilation_mode', 'copt', 'cxxopt', 'conlyopt']
 
 BuildOptions = nametuple_with_defaults_none('BuildOptions', COMMON_OPTIONS)
 TestOptions = nametuple_with_defaults_none('TestOptions', COMMON_OPTIONS + ['test_tag_filters'])
@@ -195,9 +195,15 @@ def _common_options_to_list(options):
         opts.append('--apple_platform_type {}'.format(options.apple_platform_type))
     if options.compilation_mode is not None:
         opts.append('-c {}'.format(options.compilation_mode))
+    if options.copt is not None:
+        for copt in options.copt.split():
+            opts.append('--copt {}'.format(copt))
     if options.cxxopt is not None:
         for cxxopt in options.cxxopt.split():
             opts.append('--cxxopt {}'.format(cxxopt))
+    if options.conlyopt is not None:
+        for conlyopt in options.conlyopt.split():
+            opts.append('--conlyopt {}'.format(conlyopt))
     return opts
 
 def build_options_to_str(options):
@@ -229,11 +235,23 @@ def _dict_from_commmon_options_str(options, opt_dict):
             elif opts[i] == '--apple_platform_type':
                 opt_dict['apple_platform_type'] = opts[i + 1]
                 i += 1
+            elif opts[i] == '--copt':
+                if opt_dict['copt'] is None:
+                    opt_dict['copt'] = opts[i + 1]
+                else:
+                    opt_dict['copt'] += ' {}'.format(opts[i + 1])
+                i += 1
             elif opts[i] == '--cxxopt':
                 if opt_dict['cxxopt'] is None:
                     opt_dict['cxxopt'] = opts[i + 1]
                 else:
                     opt_dict['cxxopt'] += ' {}'.format(opts[i + 1])
+                i += 1
+            elif opts[i] == '--conlyopt':
+                if opt_dict['conlyopt'] is None:
+                    opt_dict['conlyopt'] = opts[i + 1]
+                else:
+                    opt_dict['conlyopt'] += ' {}'.format(opts[i + 1])
                 i += 1
     except IndexError:
         invalud_argument(opts[i])

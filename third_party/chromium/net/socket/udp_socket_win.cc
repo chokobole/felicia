@@ -293,7 +293,7 @@ void UDPSocketWin::Close() {
     return;
 
   // Remove socket_ from the QoS subsystem before we invalidate it.
-  dscp_manager_ = nullptr;
+  // dscp_manager_ = nullptr;
 
   // Zero out any pending read/write callback state.
   read_callback_.Reset();
@@ -411,6 +411,7 @@ int UDPSocketWin::SendTo(IOBuffer* buf,
                          int buf_len,
                          const IPEndPoint& address,
                          CompletionOnceCallback callback) {
+  /*
   if (dscp_manager_) {
     // Alert DscpManager in case this is a new remote address.  Failure to
     // apply Dscp code is never fatal.
@@ -418,6 +419,7 @@ int UDPSocketWin::SendTo(IOBuffer* buf,
     // if (rv != OK)
     //   net_log_.AddEventWithNetErrorCode(NetLogEventType::UDP_SEND_ERROR, rv);
   }
+  */
   return SendToOrWrite(buf, buf_len, &address, std::move(callback));
 }
 
@@ -488,8 +490,8 @@ int UDPSocketWin::InternalConnect(const IPEndPoint& address) {
 
   remote_address_.reset(new IPEndPoint(address));
 
-  if (dscp_manager_)
-    dscp_manager_->PrepareForSend(*remote_address_.get());
+  // if (dscp_manager_)
+  //   dscp_manager_->PrepareForSend(*remote_address_.get());
 
   return rv;
 }
@@ -555,8 +557,8 @@ int UDPSocketWin::SetSendBufferSize(int32_t size) {
     return MapSystemError(WSAGetLastError());
   if (actual_size >= size)
     return OK;
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SocketUnchangeableSendBuffer",
-                              actual_size, 1000, 1000000, 50);
+  // UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SocketUnchangeableSendBuffer",
+  //                             actual_size, 1000, 1000000, 50);
   return ERR_SOCKET_SEND_BUFFER_SIZE_UNCHANGEABLE;
 }
 
@@ -1174,7 +1176,7 @@ QOS_TRAFFIC_TYPE DscpToTrafficType(DiffServCodePoint dscp) {
   }
   return traffic_type;
 }
-
+/*
 int UDPSocketWin::SetDiffServCodePoint(DiffServCodePoint dscp) {
   if (dscp == DSCP_NO_CHANGE)
     return OK;
@@ -1196,7 +1198,7 @@ int UDPSocketWin::SetDiffServCodePoint(DiffServCodePoint dscp) {
 
   return OK;
 }
-
+*/
 void UDPSocketWin::DetachFromThread() {
   DETACH_FROM_THREAD(thread_checker_);
 }
@@ -1243,6 +1245,7 @@ DatagramBuffers UDPSocketWin::GetUnwrittenBuffers() {
   NOTIMPLEMENTED();
   return result;
 }
+/*
 DscpManager::DscpManager(QwaveApi* api, SOCKET socket)
     : api_(api), socket_(socket), weak_ptr_factory_(this) {
   RequestHandle();
@@ -1373,5 +1376,5 @@ void DscpManager::OnHandleCreated(QwaveApi* api,
   dscp_manager->qos_handle_ = handle;
   dscp_manager->handle_is_initializing_ = false;
 }
-
+*/
 }  // namespace net

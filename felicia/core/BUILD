@@ -147,7 +147,6 @@ cc_library(
     linkopts = select({
         "//felicia:windows": [],
         "//conditions:default": [
-            "-ldl",
             "-lpthread",
         ]
     }),

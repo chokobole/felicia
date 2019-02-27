@@ -46,15 +46,7 @@ def chromium_test_srcs(base = None, exclude = []):
     return chromium_files('_unittest.cc', base = base, exclude = exclude  +['**/*perftest*'])
 
 def chromium_copts():
-    return fel_copts() + select({
-        "//felicia:windows": [
-            "/D_UNICODE",
-            "/DUNICODE",
-            "/D_WIN32_WINNT=0x0A00",
-            "/DWINVER=0x0A00",
-        ],
-        "//conditions:default": []
-    })
+    return fel_copts()
 
 def chromium_objc_copts():
     return chromium_copts() + ["-fno-objc-arc"]
