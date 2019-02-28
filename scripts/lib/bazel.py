@@ -1,5 +1,6 @@
 import os
 
+from lib.bazel_option_parser import option_to_str
 from lib.command_composer import CommandComposer
 from lib.error import invalud_argument, not_reached
 from lib.util import nametuple_with_defaults_none
@@ -180,102 +181,6 @@ class QueryCommandExpr(object):
         return ' '.join(cmd)
 
 
-COMMON_OPTIONS = ['cpu', 'apple_platform_type', 'compilation_mode', 'copt', 'cxxopt', 'conlyopt']
-
-BuildOptions = nametuple_with_defaults_none('BuildOptions', COMMON_OPTIONS)
-TestOptions = nametuple_with_defaults_none('TestOptions', COMMON_OPTIONS + ['test_tag_filters'])
-
-def _common_options_to_list(options):
-    opts = []
-    if options is None:
-          return opts
-    if options.cpu is not None:
-        opts.append('--cpu {}'.format(options.cpu))
-    if options.apple_platform_type is not None:
-        opts.append('--apple_platform_type {}'.format(options.apple_platform_type))
-    if options.compilation_mode is not None:
-        opts.append('-c {}'.format(options.compilation_mode))
-    if options.copt is not None:
-        for copt in options.copt.split():
-            opts.append('--copt {}'.format(copt))
-    if options.cxxopt is not None:
-        for cxxopt in options.cxxopt.split():
-            opts.append('--cxxopt {}'.format(cxxopt))
-    if options.conlyopt is not None:
-        for conlyopt in options.conlyopt.split():
-            opts.append('--conlyopt {}'.format(conlyopt))
-    return opts
-
-def build_options_to_str(options):
-    """Convert BuildOptions to str"""
-    if options is None:
-        return ''
-    opts = _common_options_to_list(options)
-    return ' '.join(opts)
-
-def test_options_to_str(options):
-    """Convert TestOptions to str"""
-    if options is None:
-        return ''
-    opts = _common_options_to_list(options)
-    if options.test_tag_filters is not None:
-        opts.append('--test_tag_filters {}'.format(options.test_tag_filters))
-    return ' '.join(opts)
-
-def _dict_from_commmon_options_str(options, opt_dict):
-    opts = options.split()
-    try:
-        for i in range(len(opts)):
-            if opts[i] == '--cpu':
-                opt_dict['cpu'] = opts[i + 1]
-                i += 1
-            elif opts[i] == '-c' or opts[i] == '--compilation_mode':
-                opt_dict['compilation_mode'] = opts[i + 1]
-                i += 1
-            elif opts[i] == '--apple_platform_type':
-                opt_dict['apple_platform_type'] = opts[i + 1]
-                i += 1
-            elif opts[i] == '--copt':
-                if opt_dict['copt'] is None:
-                    opt_dict['copt'] = opts[i + 1]
-                else:
-                    opt_dict['copt'] += ' {}'.format(opts[i + 1])
-                i += 1
-            elif opts[i] == '--cxxopt':
-                if opt_dict['cxxopt'] is None:
-                    opt_dict['cxxopt'] = opts[i + 1]
-                else:
-                    opt_dict['cxxopt'] += ' {}'.format(opts[i + 1])
-                i += 1
-            elif opts[i] == '--conlyopt':
-                if opt_dict['conlyopt'] is None:
-                    opt_dict['conlyopt'] = opts[i + 1]
-                else:
-                    opt_dict['conlyopt'] += ' {}'.format(opts[i + 1])
-                i += 1
-    except IndexError:
-        invalud_argument(opts[i])
-
-def build_options_from_str(options):
-    build_options = BuildOptions()
-    opt_dict = build_options._asdict()
-    _dict_from_commmon_options_str(options, opt_dict)
-    return BuildOptions(*tuple(opt_dict.values()))
-
-def test_options_from_str(options):
-    test_options = TestOptions()
-    opt_dict = test_options._asdict()
-    _dict_from_commmon_options_str(options, opt_dict)
-    opts = options.split()
-    try:
-        for i in range(len(opts)):
-            if opts[i] == '--test_tag_filters':
-                opt_dict['test_tag_filters'] = opts[i + 1]
-                i += 1
-    except IndexError:
-        invalud_argument(opts[i])
-    return TestOptions(*tuple(opt_dict.values()))
-
 class Bazel(CommandComposer):
     def __init__(self):
         """Constructor."""
@@ -283,7 +188,7 @@ class Bazel(CommandComposer):
 
     def build(self, options, target):
         """Build target with options."""
-        options = build_options_to_str(options)
+        options = option_to_str(options)
         if isinstance(target, Target):
             target = str(target)
         cmd = self.compose('build', options, target)
@@ -291,10 +196,18 @@ class Bazel(CommandComposer):
 
     def test(self, options, target):
         """Test target with options."""
-        options = test_options_to_str(options)
+        options = option_to_str(options)
         if isinstance(target, Target):
             target = str(target)
         cmd = self.compose('test', options, target)
+        return self.run_and_check_returncode(cmd)
+
+    def run(self, options, target):
+        """Run target with options."""
+        options = option_to_str(options)
+        if isinstance(target, Target):
+            target = str(target)
+        cmd = self.compose('run', options, target)
         return self.run_and_check_returncode(cmd)
 
     def query(self, options, stmt):
