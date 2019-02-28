@@ -4,6 +4,7 @@
 
 #include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/strings/strcat.h"
+#include "third_party/chromium/base/threading/thread_task_runner_handle.h"
 #include "third_party/chromium/net/base/net_errors.h"
 
 #include "felicia/core/lib/error/errors.h"
@@ -66,32 +67,57 @@ void TCPServerChannel::Listen(const NodeInfo& node_info,
   DoAcceptLoop();
 }
 
-void TCPServerChannel::Write(::net::IOBuffer* buf, size_t buf_len,
+void TCPServerChannel::Write(::net::IOBufferWithSize* buffer,
                              StatusCallback callback) {
   DCHECK_EQ(0, to_write_count_);
   DCHECK_EQ(0, written_count_);
-  DCHECK(callback);
+  DCHECK(write_callback_.is_null());
+  DCHECK(!callback.is_null());
+  write_callback_ = std::move(callback);
   to_write_count_ = accepted_sockets_.size();
-  write_callback_ = callback;
-  for (auto& socket : accepted_sockets_) {
-    int rv = socket->Write(
-        buf, buf_len,
+  auto it = accepted_sockets_.begin();
+  while (it != accepted_sockets_.end()) {
+    if (!(*it)->IsConnected()) {
+      to_write_count_--;
+      it = accepted_sockets_.erase(it);
+      continue;
+    }
+    int rv = (*it)->Write(
+        buffer, buffer->size(),
         ::base::BindOnce(&TCPServerChannel::OnWrite, ::base::Unretained(this)),
         ::net::DefineNetworkTrafficAnnotation("tcp_server_channel",
                                               "Send Message"));
     if (rv != ::net::ERR_IO_PENDING) {
       OnWrite(rv);
     }
-  };
+
+    it++;
+  }
+
+  timeout_.Reset(::base::BindOnce(&TCPServerChannel::OnWriteTimeout,
+                                  ::base::Unretained(this)));
+  ::base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, timeout_.callback(), ::base::TimeDelta::FromSeconds(5));
 }
 
-void TCPServerChannel::Read(::net::IOBuffer* buf, size_t buf_len,
+void TCPServerChannel::Read(::net::IOBufferWithSize* buffer,
                             StatusCallback callback) {
-  DCHECK(callback);
-  DCHECK_EQ(1, accepted_sockets_.size());
-  read_callback_ = callback;
-  int rv = accepted_sockets_[0]->Read(
-      buf, buf_len,
+  DCHECK(read_callback_.is_null());
+  DCHECK(!callback.is_null());
+  read_callback_ = std::move(callback);
+  auto it = accepted_sockets_.begin();
+
+  if (it != accepted_sockets_.end() && !(*it)->IsConnected()) {
+    it = accepted_sockets_.erase(it);
+  }
+
+  if (it == accepted_sockets_.end()) {
+    OnRead(::net::ERR_SOCKET_NOT_CONNECTED);
+    return;
+  }
+
+  int rv = (*it)->Read(
+      buffer, buffer->size(),
       ::base::BindOnce(&TCPServerChannel::OnRead, ::base::Unretained(this)));
   if (rv != ::net::ERR_IO_PENDING) {
     OnRead(rv);
@@ -118,7 +144,7 @@ void TCPServerChannel::HandleAccpetResult(int result) {
   }
 
   accepted_sockets_.push_back(std::move(accepted_socket_));
-  accept_callback_(Status::OK());
+  accept_callback_.Run(Status::OK());
 }
 
 void TCPServerChannel::OnAccept(int result) {
@@ -135,15 +161,33 @@ void TCPServerChannel::OnWrite(int result) {
     write_result_ = result;
   }
   if (to_write_count_ == written_count_) {
+    timeout_.Cancel();
     to_write_count_ = 0;
     written_count_ = 0;
     if (write_result_ >= 0) {
-      write_callback_(Status::OK());
+      std::move(write_callback_).Run(Status::OK());
     } else {
-      write_callback_(
-          errors::NetworkError(::net::ErrorToString(write_result_)));
+      std::move(write_callback_)
+          .Run(errors::NetworkError(::net::ErrorToString(write_result_)));
     }
   }
+}
+
+void TCPServerChannel::OnWriteTimeout() {
+  auto it = accepted_sockets_.begin();
+  while (it != accepted_sockets_.end()) {
+    if (!(*it)->IsConnected()) {
+      it = accepted_sockets_.erase(it);
+      continue;
+    }
+    it++;
+  }
+
+  to_write_count_ = 0;
+  written_count_ = 0;
+
+  std::move(write_callback_)
+      .Run(errors::NetworkError(::net::ErrorToString(::net::ERR_FAILED)));
 }
 
 }  // namespace felicia

@@ -73,24 +73,24 @@ void UDPServerChannel::Bind(const NodeInfo& node_info,
   std::move(callback).Run(multicast_ip_endpoint_);
 }
 
-void UDPServerChannel::Write(::net::IOBuffer* buf, size_t buf_len,
+void UDPServerChannel::Write(::net::IOBufferWithSize* buffer,
                              StatusCallback callback) {
-  DCHECK(callback);
-  write_callback_ = callback;
+  DCHECK(!callback.is_null());
+  write_callback_ = std::move(callback);
   int rv = socket_->SendTo(
-      buf, buf_len, multicast_ip_endpoint_,
+      buffer, buffer->size(), multicast_ip_endpoint_,
       ::base::BindOnce(&UDPServerChannel::OnWrite, ::base::Unretained(this)));
   if (rv != ::net::ERR_IO_PENDING) {
     OnWrite(rv);
   }
 }
 
-void UDPServerChannel::Read(::net::IOBuffer* buf, size_t buf_len,
+void UDPServerChannel::Read(::net::IOBufferWithSize* buffer,
                             StatusCallback callback) {
-  DCHECK(callback);
-  read_callback_ = callback;
+  DCHECK(!callback.is_null());
+  read_callback_ = std::move(callback);
   int rv = socket_->RecvFrom(
-      buf, buf_len, &recv_from_ip_endpoint_,
+      buffer, buffer->size(), &recv_from_ip_endpoint_,
       ::base::BindOnce(&UDPServerChannel::OnRead, ::base::Unretained(this)));
   if (rv != ::net::ERR_IO_PENDING) {
     OnRead(rv);

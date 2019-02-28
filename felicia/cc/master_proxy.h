@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/containers/flat_map.h"
 #include "third_party/chromium/base/macros.h"
@@ -18,7 +19,6 @@
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/master/client/grpc_master_client.h"
 #include "felicia/core/master/client/topic_source_watcher.h"
-#include "felicia/core/master/rpc/scoped_grpc_request.h"
 
 namespace felicia {
 
@@ -41,9 +41,9 @@ class EXPORT MasterProxy final : public TaskRunnerInterface {
         from_here, std::move(callback), delay);
   }
 
-  template <typename NodeTy, typename... Args>
+  template <typename NodeTy>
   std::enable_if_t<std::is_base_of<ClientNode, NodeTy>::value, void>
-  RequestRegisterNode(const NodeInfo& node_info, Args&&... args);
+  RequestRegisterNode(const NodeInfo& node_info);
 
   void Run();
 
@@ -59,6 +59,10 @@ class EXPORT MasterProxy final : public TaskRunnerInterface {
   friend class ::base::NoDestructor<MasterProxy>;
   MasterProxy();
 
+  template <typename NodeTy>
+  void OnRegisterNodeAsync(RegisterNodeRequest* request,
+                           RegisterNodeResponse* response, const Status& s);
+
   std::unique_ptr<::base::MessageLoop> message_loop_;
   std::unique_ptr<::base::RunLoop> run_loop_;
   std::unique_ptr<GrpcMasterClient> master_client_;
@@ -71,31 +75,36 @@ class EXPORT MasterProxy final : public TaskRunnerInterface {
   DISALLOW_COPY_AND_ASSIGN(MasterProxy);
 };
 
-template <typename NodeTy, typename... Args>
+template <typename NodeTy>
 std::enable_if_t<std::is_base_of<ClientNode, NodeTy>::value, void>
-MasterProxy::RequestRegisterNode(const NodeInfo& node_info, Args&&... args) {
+MasterProxy::RequestRegisterNode(const NodeInfo& node_info) {
   RegisterNodeRequest* request = new RegisterNodeRequest();
   NodeInfo* new_node_info = request->mutable_node_info();
   *new_node_info->mutable_ip_endpoint() = node_info_.ip_endpoint();
   new_node_info->set_name(node_info.name());
   RegisterNodeResponse* response = new RegisterNodeResponse();
   master_client_->RegisterNodeAsync(
-      request, response, [this, request, response, &args...](const Status& s) {
-        ScopedGrpcRequest<RegisterNodeRequest, RegisterNodeResponse>
-            scoped_request({request, response});
-        if (!s.ok()) {
-          LOG(ERROR) << "Failed to create node";
-          return;
-        }
+      request, response,
+      ::base::BindOnce(&MasterProxy::OnRegisterNodeAsync<NodeTy>,
+                       ::base::Unretained(this), ::base::Owned(request),
+                       ::base::Owned(response)));
+}
 
-        const NodeInfo& node_info = response->node_info();
-        std::unique_ptr<ClientNode> node =
-            std::make_unique<NodeTy>(node_info, std::forward<Args>(args)...);
-        nodes_.push_back(std::move(node));
-        ClientNode* n = nodes_.back().get();
-        n->OnInit();
-        n->OnDidCreate();
-      });
+template <typename NodeTy>
+void MasterProxy::OnRegisterNodeAsync(RegisterNodeRequest* request,
+                                      RegisterNodeResponse* response,
+                                      const Status& s) {
+  if (!s.ok()) {
+    LOG(ERROR) << "Failed to create node";
+    return;
+  }
+
+  const NodeInfo& node_info = response->node_info();
+  std::unique_ptr<ClientNode> node = std::make_unique<NodeTy>(node_info);
+  nodes_.push_back(std::move(node));
+  ClientNode* n = nodes_.back().get();
+  n->OnInit();
+  n->OnDidCreate();
 }
 
 }  // namespace felicia

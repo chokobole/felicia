@@ -21,10 +21,8 @@ class TCPClientChannel : public TCPChannelBase {
 
   void Connect(const ::net::IPEndPoint& ip_endpoint, StatusCallback callback);
 
-  void Write(::net::IOBuffer* buf, size_t buf_len,
-             StatusCallback callback) override;
-  void Read(::net::IOBuffer* buf, size_t buf_len,
-            StatusCallback callback) override;
+  void Write(::net::IOBufferWithSize* buffer, StatusCallback callback) override;
+  void Read(::net::IOBufferWithSize* buffer, StatusCallback callback) override;
 
  private:
   void OnConnect(int result);

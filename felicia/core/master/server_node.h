@@ -22,8 +22,7 @@ class EXPORT ServerNode {
   IPEndPoint ip_endpoint() const { return node_info_.ip_endpoint(); }
   ::net::IPEndPoint net_ip_endpoint() const;
 
-  void RegisterPublishingTopic(::base::StringPiece topic,
-                               TopicSource topic_source);
+  void RegisterPublishingTopic(TopicSource topic_source);
   void RegisterSubscribingTopic(::base::StringPiece topic);
 
   void UnregisterPublishingTopic(::base::StringPiece topic);

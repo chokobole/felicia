@@ -1,6 +1,5 @@
 #include "felicia/core/channel/udp_client_channel.h"
 
-#include <limits>
 #include <utility>
 
 #include "third_party/chromium/base/bind.h"
@@ -16,24 +15,24 @@ UDPClientChannel::~UDPClientChannel() = default;
 
 void UDPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
                                StatusCallback callback) {
-  DCHECK(callback);
+  DCHECK(!callback.is_null());
   auto client_socket = std::make_unique<::net::UDPSocket>(
       ::net::DatagramSocket::BindType::DEFAULT_BIND);
   int rv = client_socket->Open(ip_endpoint.GetFamily());
   if (rv != ::net::OK) {
-    callback(errors::NetworkError(::net::ErrorToString(rv)));
+    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
     return;
   }
 
   rv = client_socket->SetMulticastLoopbackMode(true);
   if (rv != ::net::OK) {
-    callback(errors::NetworkError(::net::ErrorToString(rv)));
+    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
     return;
   }
 
   rv = client_socket->AllowAddressSharingForMulticast();
   if (rv != ::net::OK) {
-    callback(errors::NetworkError(::net::ErrorToString(rv)));
+    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
     return;
   }
 
@@ -41,45 +40,45 @@ void UDPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
   ::net::IPEndPoint endpoint(address, ip_endpoint.port());
   rv = client_socket->Bind(endpoint);
   if (rv != ::net::OK) {
-    callback(errors::NetworkError(::net::ErrorToString(rv)));
+    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
     return;
   }
 
   rv = client_socket->SetReceiveBufferSize(kMaxReceiverBufferSize);
   if (rv != ::net::OK) {
-    callback(errors::NetworkError(::net::ErrorToString(rv)));
+    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
     return;
   }
 
   rv = client_socket->JoinGroup(ip_endpoint.address());
   if (rv != ::net::OK) {
-    callback(errors::NetworkError(::net::ErrorToString(rv)));
+    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
     return;
   }
 
   socket_ = std::move(client_socket);
   multicast_ip_endpoint_ = ip_endpoint;
-  callback(Status::OK());
+  std::move(callback).Run(Status::OK());
 }
 
-void UDPClientChannel::Write(::net::IOBuffer* buf, size_t buf_len,
+void UDPClientChannel::Write(::net::IOBufferWithSize* buffer,
                              StatusCallback callback) {
-  DCHECK(callback);
-  write_callback_ = callback;
+  DCHECK(!callback.is_null());
+  write_callback_ = std::move(callback);
   int rv = socket_->SendTo(
-      buf, buf_len, multicast_ip_endpoint_,
+      buffer, buffer->size(), multicast_ip_endpoint_,
       ::base::BindOnce(&UDPClientChannel::OnWrite, ::base::Unretained(this)));
   if (rv != ::net::ERR_IO_PENDING) {
     OnWrite(rv);
   }
 }
 
-void UDPClientChannel::Read(::net::IOBuffer* buf, size_t buf_len,
+void UDPClientChannel::Read(::net::IOBufferWithSize* buffer,
                             StatusCallback callback) {
-  DCHECK(callback);
-  read_callback_ = callback;
+  DCHECK(!callback.is_null());
+  read_callback_ = std::move(callback);
   int rv = socket_->Read(
-      buf, buf_len,
+      buffer, buffer->size(),
       ::base::BindOnce(&UDPClientChannel::OnRead, ::base::Unretained(this)));
   if (rv != ::net::ERR_IO_PENDING) {
     OnRead(rv);

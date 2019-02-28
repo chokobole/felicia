@@ -24,7 +24,7 @@ class GrpcAsyncClientCall : public GrpcClientCQTag {
                       ResponseMessage* response,
                       PrepareAsyncFunction prepare_async_function,
                       ::grpc::CompletionQueue* cq, StatusCallback done)
-      : done_(done) {
+      : done_(std::move(done)) {
     call_ = (stub->*prepare_async_function)(&context_, *request, cq);
     call_->StartCall();
     call_->Finish(response, &status_, this);
@@ -43,7 +43,7 @@ class GrpcAsyncClientCall : public GrpcClientCQTag {
                                  context_.debug_error_string()}));
     }
 
-    done_(s);
+    std::move(done_).Run(s);
     delete this;
   }
 

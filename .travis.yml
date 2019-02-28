@@ -19,8 +19,6 @@ matrix:
       osx_image: xcode10
       sudo: required
       compiler: clang
-      env:
-        - BAZEL_VERSION 0.17.2
       before_install:
         - sudo xcodebuild -license accept
         # TODO(chokobole): When doing just "softwareupdate --install" with label,

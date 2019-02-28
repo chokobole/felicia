@@ -1,6 +1,4 @@
-#include <functional>
 #include <iostream>
-#include <sstream>
 
 #include "felicia/cc/client_node.h"
 #include "felicia/cc/communication/subscriber.h"
@@ -21,8 +19,9 @@ class CustomNode2 : public ClientNode {
   }
 
   void OnDidCreate() override {
-    subscriber_.Subscribe(topic_, std::bind(&CustomNode2::OnMessage, this,
-                                            std::placeholders::_1));
+    subscriber_.Subscribe(topic_,
+                          ::base::BindRepeating(&CustomNode2::OnMessage,
+                                                ::base::Unretained(this)));
     std::cout << "CustomNode2::OnDidCreate()" << std::endl;
   }
 

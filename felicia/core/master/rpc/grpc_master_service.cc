@@ -15,6 +15,8 @@ limitations under the License.
 
 #include "felicia/core/master/rpc/grpc_master_service.h"
 
+#include "third_party/chromium/base/bind.h"
+
 #include "felicia/core/master/rpc/grpc_call.h"
 #include "felicia/core/master/rpc/grpc_util.h"
 
@@ -79,39 +81,55 @@ void GrpcMasterService::HandleRpcsLoop() {
   }
 }
 
+namespace {
+
+template <typename CallTy>
+void OnHandleRequest(CallTy* call, const Status& status) {
+  call->SendResponse(ToGrpcStatus(status));
+}
+
+}  // namespace
+
 void GrpcMasterService::HandleRegisterNode(
     MasterCall<RegisterNodeRequest, RegisterNodeResponse>* call) {
-  master_->RegisterNode(&call->request_, &call->response_,
-                        [call](const Status& status) {
-                          call->SendResponse(ToGrpcStatus(status));
-                        });
+  master_->RegisterNode(
+      &call->request_, &call->response_,
+      ::base::BindOnce(
+          &OnHandleRequest<
+              MasterCall<RegisterNodeRequest, RegisterNodeResponse>>,
+          call));
   ENQUEUE_REQUEST(RegisterNode, true);
 }
 
 void GrpcMasterService::HandleGetNodes(
     MasterCall<GetNodesRequest, GetNodesResponse>* call) {
-  master_->GetNodes(&call->request_, &call->response_,
-                    [call](const Status& status) {
-                      call->SendResponse(ToGrpcStatus(status));
-                    });
+  master_->GetNodes(
+      &call->request_, &call->response_,
+      ::base::BindOnce(
+          &OnHandleRequest<MasterCall<GetNodesRequest, GetNodesResponse>>,
+          call));
   ENQUEUE_REQUEST(GetNodes, false);
 }
 
 void GrpcMasterService::HandlePublishTopic(
     MasterCall<PublishTopicRequest, PublishTopicResponse>* call) {
-  master_->PublishTopic(&call->request_, &call->response_,
-                        [call](const Status& status) {
-                          call->SendResponse(ToGrpcStatus(status));
-                        });
+  master_->PublishTopic(
+      &call->request_, &call->response_,
+      ::base::BindOnce(
+          &OnHandleRequest<
+              MasterCall<PublishTopicRequest, PublishTopicResponse>>,
+          call));
   ENQUEUE_REQUEST(PublishTopic, true);
 }
 
 void GrpcMasterService::HandleSubscribeTopic(
     MasterCall<SubscribeTopicRequest, SubscribeTopicResponse>* call) {
-  master_->SubscribeTopic(&call->request_, &call->response_,
-                          [call](const Status& status) {
-                            call->SendResponse(ToGrpcStatus(status));
-                          });
+  master_->SubscribeTopic(
+      &call->request_, &call->response_,
+      ::base::BindOnce(
+          &OnHandleRequest<
+              MasterCall<SubscribeTopicRequest, SubscribeTopicResponse>>,
+          call));
   ENQUEUE_REQUEST(SubscribeTopic, true);
 }
 

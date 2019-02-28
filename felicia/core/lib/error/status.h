@@ -16,9 +16,9 @@ limitations under the License.
 #ifndef FELICIA_CORE_LIB_ERROR_STATUS_H_
 #define FELICIA_CORE_LIB_ERROR_STATUS_H_
 
-#include <functional>
 #include <string>
 
+#include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/strings/string_piece.h"
 
 #include "felicia/core/lib/base/export.h"
@@ -57,7 +57,7 @@ class Status {
 EXPORT std::ostream& operator<<(std::ostream& os, const Status& x);
 
 // Convenient typedef for a closure passing a Status.
-typedef std::function<void(const Status&)> StatusCallback;
+typedef ::base::OnceCallback<void(const Status&)> StatusCallback;
 
 }  // namespace felicia
 

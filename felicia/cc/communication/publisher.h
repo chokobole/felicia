@@ -1,11 +1,11 @@
 #ifndef FELICIA_CC_COMMUNICATION_PUBLISHER_H_
 #define FELICIA_CC_COMMUNICATION_PUBLISHER_H_
 
-#include <functional>
 #include <memory>
 #include <string>
 
 #include "third_party/chromium/base/bind.h"
+#include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/base/time/time.h"
 
@@ -21,16 +21,31 @@ namespace felicia {
 template <typename MessageTy>
 class EXPORT Publisher {
  public:
-  using OnMessageCallback = std::function<MessageTy(void)>;
+  enum State {
+    READY,
+    STARTED,
+    STOPPED,
+  };
+
+  struct Settings {
+    uint32_t period = 1;
+    uint8_t queue_size = 100;
+  };
+
+  using OnMessageCallback = ::base::RepeatingCallback<MessageTy(void)>;
 
   explicit Publisher(ClientNode* client_node) : client_node_(client_node) {}
 
   void Publish(::base::StringPiece topic, OnMessageCallback on_message_callback,
-               const ChannelDef& channel_def = ChannelDef());
+               const ChannelDef& channel_def = ChannelDef(),
+               const Publisher<MessageTy>::Settings& settings = Settings());
   void RequestPublish(const ChannelDef& channel_def,
                       const StatusOr<::net::IPEndPoint>& status_or);
 
  private:
+  void OnPublishTopicAsync(PublishTopicRequest* request,
+                           PublishTopicResponse* response, const Status& s);
+
   void Listen(const ChannelDef& channel_def);
 
   void StartMessageLoop(const Status& s);
@@ -47,18 +62,21 @@ class EXPORT Publisher {
   std::string topic_;
   OnMessageCallback on_message_callback_;
 
-  bool stopped_ = false;
+  State state_ = READY;
+  Settings settings_;
 
   DISALLOW_COPY_AND_ASSIGN(Publisher);
 };
 
 template <typename MessageTy>
-void Publisher<MessageTy>::Publish(::base::StringPiece topic,
-                                   OnMessageCallback on_message_callback,
-                                   const ChannelDef& channel_def) {
+void Publisher<MessageTy>::Publish(
+    ::base::StringPiece topic, OnMessageCallback on_message_callback,
+    const ChannelDef& channel_def,
+    const Publisher<MessageTy>::Settings& settings) {
   topic_ = std::string(topic);
   on_message_callback_ = on_message_callback;
-  message_queue_.reserve(100);
+  settings_ = settings;
+  message_queue_.reserve(settings_.queue_size);
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.PostTask(
@@ -77,11 +95,12 @@ void Publisher<MessageTy>::Listen(const ChannelDef& channel_def) {
 
   if (channel_->IsTCPChannel()) {
     TCPChannel<MessageTy>* tcp_channel = channel_->ToTCPChannel();
-    tcp_channel->Listen(node_info,
-                        ::base::BindOnce(&Publisher<MessageTy>::RequestPublish,
-                                         ::base::Unretained(this), channel_def),
-                        std::bind(&Publisher<MessageTy>::StartMessageLoop, this,
-                                  std::placeholders::_1));
+    tcp_channel->Listen(
+        node_info,
+        ::base::BindOnce(&Publisher<MessageTy>::RequestPublish,
+                         ::base::Unretained(this), channel_def),
+        ::base::BindRepeating(&Publisher<MessageTy>::StartMessageLoop,
+                              ::base::Unretained(this)));
   } else if (channel_->IsUDPChannel()) {
     UDPChannel<MessageTy>* udp_channel = channel_->ToUDPChannel();
     udp_channel->Bind(node_info,
@@ -112,17 +131,23 @@ void Publisher<MessageTy>::RequestPublish(
 
     MasterProxy& master_proxy = MasterProxy::GetInstance();
     master_proxy.PublishTopicAsync(
-        request, response, [this, request, response](const Status& s) {
-          ScopedGrpcRequest<PublishTopicRequest, PublishTopicResponse>
-              scoped_request({request, response});
-          if (!s.ok()) {
-            client_node_->OnError(s);
-            StopMessageLoop();
-            return;
-          }
-        });
+        request, response,
+        ::base::BindOnce(&Publisher<MessageTy>::OnPublishTopicAsync,
+                         ::base::Unretained(this), ::base::Owned(request),
+                         ::base::Owned(response)));
   } else {
     client_node_->OnError(status_or.status());
+  }
+}
+
+template <typename MessageTy>
+void Publisher<MessageTy>::OnPublishTopicAsync(PublishTopicRequest* request,
+                                               PublishTopicResponse* response,
+                                               const Status& s) {
+  if (!s.ok()) {
+    client_node_->OnError(s);
+    StopMessageLoop();
+    return;
   }
 }
 
@@ -130,7 +155,8 @@ template <typename MessageTy>
 void Publisher<MessageTy>::StartMessageLoop(const Status& s) {
   LOG(INFO) << "Publisher::StartMessageLoop()";
   if (s.ok()) {
-    stopped_ = false;
+    if (state_ == STARTED || state_ == STOPPED) return;
+    state_ = STARTED;
     SendMessageLoop();
     GenerateMessageLoop();
   } else {
@@ -141,23 +167,25 @@ void Publisher<MessageTy>::StartMessageLoop(const Status& s) {
 template <typename MessageTy>
 void Publisher<MessageTy>::StopMessageLoop() {
   channel_.reset();
-  stopped_ = true;
+  state_ = STOPPED;
 }
 
 template <typename MessageTy>
 void Publisher<MessageTy>::SendMessageLoop() {
-  if (stopped_) return;
+  if (state_ == STOPPED) return;
 
   LOG(INFO) << "Publisher::SendMessageLoop()";
-
   if (!message_queue_.empty()) {
     MessageTy message = std::move(message_queue_.front());
     message_queue_.pop();
-    channel_->SendMessage(std::move(message), [this](const Status& s) {
-      if (!s.ok()) {
-        client_node_->OnError(s);
-      }
-    });
+    if (!channel_->IsSendingMessage()) {
+      channel_->SendMessage(
+          std::move(message), ::base::BindOnce([](const Status& s) {
+            if (!s.ok()) {
+              LOG(INFO) << "Failed to send message: " << s.error_message();
+            }
+          }));
+    }
   }
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
@@ -165,16 +193,16 @@ void Publisher<MessageTy>::SendMessageLoop() {
       FROM_HERE,
       ::base::BindOnce(&Publisher<MessageTy>::SendMessageLoop,
                        ::base::Unretained(this)),
-      ::base::TimeDelta::FromSeconds(1));
+      ::base::TimeDelta::FromSeconds(settings_.period));
 }
 
 template <typename MessageTy>
 void Publisher<MessageTy>::GenerateMessageLoop() {
-  if (stopped_) return;
+  if (state_ == STOPPED) return;
 
   LOG(INFO) << "Publisher::GenerateMessageLoop()";
 
-  MessageTy message = on_message_callback_();
+  MessageTy message = on_message_callback_.Run();
   message_queue_.push(std::move(message));
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
@@ -182,7 +210,7 @@ void Publisher<MessageTy>::GenerateMessageLoop() {
       FROM_HERE,
       ::base::BindOnce(&Publisher<MessageTy>::GenerateMessageLoop,
                        ::base::Unretained(this)),
-      ::base::TimeDelta::FromSeconds(1));
+      ::base::TimeDelta::FromSeconds(settings_.period));
 }
 
 }  // namespace felicia

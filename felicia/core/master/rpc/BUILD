@@ -99,13 +99,3 @@ cc_binary(
         ":grpc_server",
     ],
 )
-
-cc_library(
-    name = "scoped_grpc_request",
-    hdrs = ["scoped_grpc_request.h"],
-    copts = fel_copts(),
-    deps = [
-        "//felicia/core:lib",
-        "//felicia/core/master:master_client_interface",
-    ]
-)

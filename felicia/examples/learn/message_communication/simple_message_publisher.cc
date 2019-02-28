@@ -1,7 +1,5 @@
 
-#include <functional>
 #include <iostream>
-#include <sstream>
 
 #include "third_party/chromium/base/time/time.h"
 
@@ -26,9 +24,10 @@ class CustomNode : public ClientNode {
   void OnDidCreate() {
     std::cout << "CustomNode::OnDidCreate()" << std::endl;
     ChannelDef channel_def;
-    channel_def.set_type(ChannelDef_Type_UDP);
+    channel_def.set_type(ChannelDef_Type_TCP);
     publisher_.Publish(topic_name_,
-                       std::bind(&CustomNode::GenerateMessage, this),
+                       ::base::BindRepeating(&CustomNode::GenerateMessage,
+                                             ::base::Unretained(this)),
                        channel_def);
   }
 

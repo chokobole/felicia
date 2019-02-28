@@ -4,6 +4,8 @@
 #include <memory>
 #include <vector>
 
+#include "third_party/chromium/base/callback.h"
+#include "third_party/chromium/base/cancelable_callback.h"
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/net/base/io_buffer.h"
 #include "third_party/chromium/net/base/ip_endpoint.h"
@@ -16,35 +18,38 @@ namespace felicia {
 
 class TCPServerChannel : public TCPChannelBase {
  public:
+  using AcceptCallback = ::base::RepeatingCallback<void(const Status& s)>;
+
   TCPServerChannel();
   ~TCPServerChannel();
 
   bool IsServer() const override { return true; }
 
-  void set_accept_callback(StatusCallback callback) {
+  void set_accept_callback(AcceptCallback callback) {
     accept_callback_ = callback;
   }
 
   void Listen(const NodeInfo& node_info, StatusOrIPEndPointCallback callback);
 
-  // Write the |buf| to the |accepted_sockets_|. If it succeeds to write
+  // Write the |buffer| to the |accepted_sockets_|. If it succeeds to write
   // all the sockets, then callback with Status::OK(), otherwise callback
   // with the |write_result_|, which is recorded at every time finishing
   // write.
-  void Write(::net::IOBuffer* buf, size_t buf_len,
-             StatusCallback callback) override;
-  // Read from the first |accepted_sockets_|.
-  void Read(::net::IOBuffer* buf, size_t buf_len,
-            StatusCallback callback) override;
+  void Write(::net::IOBufferWithSize* buffer, StatusCallback callback) override;
+  // Read from the first |accepted_sockets_|. Currently the read case
+  // is only happend communication between master and master proxy.
+  void Read(::net::IOBufferWithSize* buffer, StatusCallback callback) override;
 
  private:
-  void OnWrite(int result) override;
-
   void DoAcceptLoop();
   void HandleAccpetResult(int result);
   void OnAccept(int result);
 
-  StatusCallback accept_callback_;
+  void OnWrite(int result) override;
+  void OnWriteTimeout();
+
+  AcceptCallback accept_callback_;
+  ::base::CancelableOnceClosure timeout_;
 
   size_t to_write_count_ = 0;
   size_t written_count_ = 0;

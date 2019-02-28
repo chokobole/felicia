@@ -41,7 +41,7 @@ MasterProxy& MasterProxy::GetInstance() {
 void MasterProxy::PublishTopicAsync(PublishTopicRequest* request,
                                     PublishTopicResponse* response,
                                     StatusCallback callback) {
-  master_client_->PublishTopicAsync(request, response, callback);
+  master_client_->PublishTopicAsync(request, response, std::move(callback));
 }
 
 void MasterProxy::SubscribeTopicAsync(
@@ -49,7 +49,7 @@ void MasterProxy::SubscribeTopicAsync(
     StatusCallback callback,
     TopicSourceWatcher::OnNewTopicSourceCallback callback2) {
   topic_source_watcher_.Listen(request->topic(), callback2);
-  master_client_->SubscribeTopicAsync(request, response, callback);
+  master_client_->SubscribeTopicAsync(request, response, std::move(callback));
 }
 
 }  // namespace felicia

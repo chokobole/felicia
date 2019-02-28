@@ -3,11 +3,11 @@
 #include <iostream>
 #include <utility>
 
+#include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/net/base/ip_endpoint.h"
 
 #include "felicia/core/master/master_data.pb.h"
-#include "felicia/core/master/rpc/scoped_grpc_request.h"
 #include "felicia/core/util/command_line_interface/table_writer.h"
 
 namespace felicia {
@@ -62,33 +62,40 @@ void CommandDispatcher::Dispatch(
   *request->mutable_node_filter() = node_filter;
   GetNodesResponse* response = new GetNodesResponse();
   master_client_->GetNodesAsync(
-      request, response, [this, request, response](const Status& s) {
-        ScopedOneTimeGrpcRequest<GetNodesRequest, GetNodesResponse>
-            scoped_request({master_client_.get(), request, response});
-        if (!s.ok()) {
-          std::cerr << s.error_message() << std::endl;
-          return;
-        }
-        auto node_infos = response->node_infos();
-
-        TableWriterBuilder builder;
-        auto writer = builder.AddColumn(TableWriter::Column{"NAME", 20})
-                          .AddColumn(TableWriter::Column{"IP ENDPOINT", 32})
-                          .Build();
-        size_t row = 0;
-        for (auto& node_info : node_infos) {
-          writer.SetElement(row, 0, node_info.name());
-          ::net::IPAddress ip;
-          ip.AssignFromIPLiteral(node_info.ip_endpoint().ip());
-          uint16_t port = node_info.ip_endpoint().port();
-          writer.SetElement(row, 1, ::net::IPEndPoint{ip, port}.ToString());
-          row++;
-        }
-
-        std::cout << writer.ToString() << std::endl;
-      });
+      request, response,
+      ::base::BindOnce(&CommandDispatcher::OnGetNodesAsync,
+                       ::base::Unretained(this), master_client_.get(),
+                       ::base::Owned(request), ::base::Owned(response)));
 
   master_client_->Join();
+}
+
+void CommandDispatcher::OnGetNodesAsync(GrpcMasterClient* client,
+                                        GetNodesRequest* request,
+                                        GetNodesResponse* response,
+                                        const Status& s) const {
+  if (!s.ok()) {
+    std::cerr << s.error_message() << std::endl;
+    client->Shutdown();
+    return;
+  }
+  auto node_infos = response->node_infos();
+  TableWriterBuilder builder;
+  auto writer = builder.AddColumn(TableWriter::Column{"NAME", 20})
+                    .AddColumn(TableWriter::Column{"IP ENDPOINT", 32})
+                    .Build();
+  size_t row = 0;
+  for (auto& node_info : node_infos) {
+    writer.SetElement(row, 0, node_info.name());
+    ::net::IPAddress ip;
+    ip.AssignFromIPLiteral(node_info.ip_endpoint().ip());
+    uint16_t port = node_info.ip_endpoint().port();
+    writer.SetElement(row, 1, ::net::IPEndPoint{ip, port}.ToString());
+    row++;
+  }
+
+  std::cout << writer.ToString() << std::endl;
+  client->Shutdown();
 }
 
 }  // namespace felicia

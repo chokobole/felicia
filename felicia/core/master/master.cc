@@ -25,7 +25,7 @@ void Master::Stop() { thread_->Stop(); }
   ServerNode* self_node = FindNode(node_info);                            \
   do {                                                                    \
     if (!self_node) {                                                     \
-      callback(errors::NotFound(::base::StringPrintf(                     \
+      std::move(callback).Run(errors::NotFound(::base::StringPrintf(      \
           "Node '%s' isn't registered yet.", node_info.name().c_str()))); \
       return;                                                             \
     }                                                                     \
@@ -49,7 +49,7 @@ void Master::RegisterNode(const RegisterNodeRequest* arg,
   *result->mutable_node_info() = node_info;
   LOG(INFO) << "[RegisterNode]: "
             << ::base::StringPrintf("node(%s)", node_info.name().c_str());
-  callback(Status::OK());
+  std::move(callback).Run(Status::OK());
 }
 
 void Master::UnregisterNode(const UnregisterNodeRequest* arg,
@@ -60,7 +60,7 @@ void Master::UnregisterNode(const UnregisterNodeRequest* arg,
   RemoveNode(node_info);
   LOG(INFO) << "[UnregisterNode]: "
             << ::base::StringPrintf("node(%s)", node_info.name().c_str());
-  callback(Status::OK());
+  std::move(callback).Run(Status::OK());
 }
 
 void Master::GetNodes(const GetNodesRequest* arg, GetNodesResponse* result,
@@ -71,7 +71,7 @@ void Master::GetNodes(const GetNodesRequest* arg, GetNodesResponse* result,
     *result->add_node_infos() = node->node_info();
   }
   LOG(INFO) << "[GetNodes]";
-  callback(Status::OK());
+  std::move(callback).Run(Status::OK());
 }
 
 void Master::PublishTopic(const PublishTopicRequest* arg,
@@ -80,28 +80,29 @@ void Master::PublishTopic(const PublishTopicRequest* arg,
   const TopicSource& topic_source = arg->topic_source();
   ServerNode* self_node = FindNode(topic_source.node_info());
   if (!self_node) {
-    callback(errors::NotFound(::base::StringPrintf(
+    std::move(callback).Run(errors::NotFound(::base::StringPrintf(
         "Node '%s' isn't registered yet.", self_node->name().data())));
     return;
   }
 
-  ::base::StringPiece topic = topic_source.topic();
+  const std::string& topic = topic_source.topic();
   NodeFilter node_filter;
   node_filter.set_publishing_topic(std::string(topic));
   std::vector<ServerNode*> publishing_nodes = FindNode(node_filter);
   if (publishing_nodes.size() > 0) {
-    callback(errors::AlreadyExists(::base::StringPrintf(
-        "Topic '%s' is already being publishied.", topic.data())));
+    std::move(callback).Run(errors::AlreadyExists(::base::StringPrintf(
+        "Topic '%s' is already being publishied.", topic.c_str())));
     return;
   }
   LOG(INFO) << "[PublishTopic]: "
-            << ::base::StringPrintf("topic(%s) from node(%s)", topic.data(),
+            << ::base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                     self_node->name().data());
-  self_node->RegisterPublishingTopic(topic, topic_source);
-  callback(Status::OK());
+  self_node->RegisterPublishingTopic(topic_source);
+  std::move(callback).Run(Status::OK());
 
-  node_filter.Clear();
-  node_filter.set_subscribing_topic(std::string(topic));
+  thread_->task_runner()->PostTask(
+      FROM_HERE, ::base::Bind(&Master::NotifyAllSubscribers,
+                              ::base::Unretained(this), topic_source));
 }
 
 void Master::UnpublishTopic(const UnpublishTopicRequest* arg,
@@ -109,18 +110,18 @@ void Master::UnpublishTopic(const UnpublishTopicRequest* arg,
                             StatusCallback callback) {
   IF_NO_NODE_RETURN();
 
-  ::base::StringPiece topic = arg->topic();
+  const std::string& topic = arg->topic();
   if (!self_node->IsPublishingTopic(topic)) {
-    callback(errors::NotFound(
+    std::move(callback).Run(errors::NotFound(
         ::base::StringPrintf("Node '%s' isn't publishing topic '%s'.",
-                             self_node->name().data(), topic.data())));
+                             self_node->name().data(), topic.c_str())));
     return;
   }
   LOG(INFO) << "[UnpublishTopic]: "
-            << ::base::StringPrintf("topic(%s) from node(%s)", topic.data(),
+            << ::base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                     self_node->name().data());
   self_node->UnregisterPublishingTopic(topic);
-  callback(Status::OK());
+  std::move(callback).Run(Status::OK());
 }
 
 void Master::SubscribeTopic(const SubscribeTopicRequest* arg,
@@ -128,23 +129,22 @@ void Master::SubscribeTopic(const SubscribeTopicRequest* arg,
                             StatusCallback callback) {
   IF_NO_NODE_RETURN();
 
-  ::base::StringPiece topic = arg->topic();
+  const std::string& topic = arg->topic();
   if (self_node->IsSubsribingTopic(topic)) {
-    callback(errors::AlreadyExists(
+    std::move(callback).Run(errors::AlreadyExists(
         ::base::StringPrintf("Node '%s' is already subscribing topic '%s'.",
-                             self_node->name().data(), topic.data())));
+                             self_node->name().data(), topic.c_str())));
     return;
   }
   LOG(INFO) << "[SubscribeTopic]: "
-            << ::base::StringPrintf("topic(%s) from node(%s)", topic.data(),
+            << ::base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                     self_node->name().data());
   self_node->RegisterSubscribingTopic(topic);
-  callback(Status::OK());
+  std::move(callback).Run(Status::OK());
 
   thread_->task_runner()->PostTask(
-      FROM_HERE,
-      ::base::Bind(&Master::NotifyTopicSource, ::base::Unretained(this),
-                   std::string(topic), node_info));
+      FROM_HERE, ::base::Bind(&Master::NotifySubscriber,
+                              ::base::Unretained(this), topic, node_info));
 }
 
 void Master::UnsubscribeTopic(const UnsubscribeTopicRequest* arg,
@@ -152,18 +152,18 @@ void Master::UnsubscribeTopic(const UnsubscribeTopicRequest* arg,
                               StatusCallback callback) {
   IF_NO_NODE_RETURN();
 
-  ::base::StringPiece topic = arg->topic();
+  const std::string& topic = arg->topic();
   if (!self_node->IsSubsribingTopic(topic)) {
-    callback(errors::AlreadyExists(
+    std::move(callback).Run(errors::AlreadyExists(
         ::base::StringPrintf("Node '%s' isn't subscribing topic '%s'.",
-                             self_node->name().data(), topic.data())));
+                             self_node->name().data(), topic.c_str())));
     return;
   }
   LOG(INFO) << "[UnsubscribeTopic]: "
-            << ::base::StringPrintf("topic(%s) from node(%s)", topic.data(),
+            << ::base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                     self_node->name().data());
   self_node->UnregisterSubscribingTopic(topic);
-  callback(Status::OK());
+  std::move(callback).Run(Status::OK());
 }
 
 void Master::Gc() { LOG(ERROR) << "Not implemented"; }
@@ -217,37 +217,55 @@ void Master::RemoveNode(const NodeInfo& node_info) {
       nodes_.end());
 }
 
-void Master::NotifyTopicSource(std::string topic,
-                               const NodeInfo& subscribing_node_info) {
+void Master::DoNotifySubscriber(const NodeInfo& subscribing_node_info,
+                                const TopicSource& source) {
+  ChannelDef channel_def;
+  channel_def.set_type(ChannelDef_Type_TCP);
+  auto channel = ChannelFactory::NewChannel<TopicSource>(channel_def);
+
+  LOG(INFO) << "Connect To: " << subscribing_node_info.DebugString();
+  channel->Connect(
+      subscribing_node_info,
+      ::base::BindOnce(&Master::OnConnetToClient, ::base::Unretained(this),
+                       ::base::Passed(&channel), source));
+}
+
+void Master::NotifySubscriber(const std::string& topic,
+                              const NodeInfo& subscribing_node_info) {
   NodeFilter node_filter;
-  node_filter.set_publishing_topic(std::string(topic));
+  node_filter.set_publishing_topic(topic);
   std::vector<ServerNode*> publishing_nodes = FindNode(node_filter);
-  if (publishing_nodes.size() > 0) {
+  if (publishing_nodes.size()) {
     ServerNode* publishing_node = publishing_nodes[0];
+    DoNotifySubscriber(subscribing_node_info,
+                       publishing_node->GetTopicSource(topic));
+  }
+}
 
-    auto channel = ChannelFactory::NewChannel<TopicSource>(ChannelDef{});
-    // publishing_node->AddChannel(std::move(channel));
+void Master::NotifyAllSubscribers(const TopicSource& source) {
+  NodeFilter node_filter;
+  node_filter.set_subscribing_topic(source.topic());
+  std::vector<ServerNode*> subscribing_nodes = FindNode(node_filter);
+  for (ServerNode* subscribing_node : subscribing_nodes) {
+    DoNotifySubscriber(subscribing_node->node_info(), source);
+  }
+}
 
-    LOG(INFO) << "Connect To: " << subscribing_node_info.DebugString();
-    Channel<TopicSource>* raw_channel = channel.get();
-    TopicSource source = publishing_node->GetTopicSource(topic);
-    channel->Connect(
-        subscribing_node_info, [raw_channel, source](const Status& s) {
-          if (s.ok()) {
-            LOG(INFO) << "Success to connect topic source channel";
-            raw_channel->SendMessage(source, [](const Status& s) {
-              if (s.ok()) {
-                LOG(INFO) << "Success to send message";
-              } else {
-                LOG(ERROR) << "Failed to send message: " << s.error_message();
-              }
-            });
-          } else {
-            LOG(ERROR) << "Failed to connect topic source channel: "
-                       << s.error_message();
-          }
-        });
-    topic_source_channels_.push_back(std::move(channel));
+void Master::OnConnetToClient(std::unique_ptr<Channel<TopicSource>> channel,
+                              const TopicSource& source, const Status& s) {
+  if (s.ok()) {
+    LOG(INFO) << "Success to connect topic source channel";
+    channel->SendMessage(source, ::base::BindOnce([](const Status& s) {
+                           if (s.ok()) {
+                             LOG(INFO) << "Success to send message";
+                           } else {
+                             LOG(ERROR) << "Failed to send message: "
+                                        << s.error_message();
+                           }
+                         }));
+  } else {
+    LOG(ERROR) << "Failed to connect topic source channel: "
+               << s.error_message();
   }
 }
 

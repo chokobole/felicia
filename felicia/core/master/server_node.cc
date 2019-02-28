@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "felicia/core/lib/strings/str_util.h"
+#include "third_party/chromium/base/logging.h"
 
 namespace felicia {
 
@@ -11,14 +12,14 @@ ServerNode::ServerNode(const NodeInfo& node_info) : node_info_(node_info) {}
 ::net::IPEndPoint ServerNode::net_ip_endpoint() const {
   ::net::IPAddress ip;
 
-  ip.AssignFromIPLiteral(node_info_.ip_endpoint().ip());
+  bool ret = ip.AssignFromIPLiteral(node_info_.ip_endpoint().ip());
+  ANALYZER_ALLOW_UNUSED(ret);
   uint16_t port = node_info_.ip_endpoint().port();
   return {ip, port};
 }
 
-void ServerNode::RegisterPublishingTopic(::base::StringPiece topic,
-                                         TopicSource topic_source) {
-  topic_source_map_[std::string(topic)] = topic_source;
+void ServerNode::RegisterPublishingTopic(TopicSource topic_source) {
+  topic_source_map_[topic_source.topic()] = topic_source;
 }
 
 void ServerNode::RegisterSubscribingTopic(::base::StringPiece topic) {

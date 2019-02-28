@@ -1,11 +1,11 @@
 #ifndef FELICIA_CC_COMMUNICATION_SUBSCRIBER_H_
 #define FELICIA_CC_COMMUNICATION_SUBSCRIBER_H_
 
-#include <functional>
 #include <memory>
 #include <string>
 
 #include "third_party/chromium/base/bind.h"
+#include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/base/time/time.h"
 
@@ -21,15 +21,31 @@ namespace felicia {
 template <typename MessageTy>
 class EXPORT Subscriber {
  public:
-  using OnMessageCallback = std::function<void(MessageTy)>;
+  enum State {
+    READY,
+    STARTED,
+    STOPPED,
+  };
+
+  struct Settings {
+    uint32_t period = 1;
+    uint8_t queue_size = 100;
+  };
+
+  using OnMessageCallback = ::base::RepeatingCallback<void(MessageTy)>;
 
   explicit Subscriber(ClientNode* client_node) : client_node_(client_node) {}
 
   void Subscribe(::base::StringPiece topic,
-                 OnMessageCallback on_message_callback);
+                 OnMessageCallback on_message_callback,
+                 const Subscriber<MessageTy>::Settings& settings = Settings());
 
  private:
+  void OnSubscribeTopicAsync(SubscribeTopicRequest* request,
+                             SubscribeTopicResponse* response, const Status& s);
+
   void OnFindPublisher(const TopicSource& source);
+  void OnConnectToPublisher(const Status& s);
 
   void StopMessageLoop();
 
@@ -45,17 +61,20 @@ class EXPORT Subscriber {
   std::string topic_;
   OnMessageCallback on_message_callback_;
 
-  bool stopped_ = false;
+  State state_;
+  Settings settings_;
 
   DISALLOW_COPY_AND_ASSIGN(Subscriber);
 };
 
 template <typename MessageTy>
-void Subscriber<MessageTy>::Subscribe(::base::StringPiece topic,
-                                      OnMessageCallback on_message_callback) {
+void Subscriber<MessageTy>::Subscribe(
+    ::base::StringPiece topic, OnMessageCallback on_message_callback,
+    const Subscriber<MessageTy>::Settings& settings) {
   topic_ = std::string(topic);
   on_message_callback_ = on_message_callback;
-  message_queue_.reserve(100);
+  settings_ = settings;
+  message_queue_.reserve(settings_.queue_size);
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   SubscribeTopicRequest* request = new SubscribeTopicRequest();
@@ -65,52 +84,64 @@ void Subscriber<MessageTy>::Subscribe(::base::StringPiece topic,
 
   master_proxy.SubscribeTopicAsync(
       request, response,
-      [this, request, response](const Status& s) {
-        ScopedGrpcRequest<SubscribeTopicRequest, SubscribeTopicResponse>
-            scoped_request({request, response});
-        if (!s.ok()) {
-          client_node_->OnError(s);
-          StopMessageLoop();
-          return;
-        }
-        NotifyMessageLoop();
-      },
+      ::base::BindOnce(&Subscriber<MessageTy>::OnSubscribeTopicAsync,
+                       ::base::Unretained(this), ::base::Owned(request),
+                       ::base::Owned(response)),
       ::base::BindRepeating(&Subscriber<MessageTy>::OnFindPublisher,
                             ::base::Unretained(this)));
+}
+
+template <typename MessageTy>
+void Subscriber<MessageTy>::OnSubscribeTopicAsync(
+    SubscribeTopicRequest* request, SubscribeTopicResponse* response,
+    const Status& s) {
+  if (!s.ok()) {
+    client_node_->OnError(s);
+    StopMessageLoop();
+    return;
+  }
+  NotifyMessageLoop();
 }
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnFindPublisher(const TopicSource& source) {
   channel_ = ChannelFactory::NewChannel<MessageTy>(source.channel_def());
 
-  channel_->Connect(source, [this](const Status& s) {
-    if (s.ok()) {
-      ReceiveMessageLoop();
-    } else {
-      client_node_->OnError(s);
-    }
-  });
+  channel_->Connect(
+      source, ::base::BindOnce(&Subscriber<MessageTy>::OnConnectToPublisher,
+                               ::base::Unretained(this)));
+}
+
+template <typename MessageTy>
+void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
+  if (s.ok()) {
+    if (state_ == STARTED || state_ == STOPPED) return;
+    state_ = STARTED;
+    ReceiveMessageLoop();
+  } else {
+    client_node_->OnError(s);
+  }
 }
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::StopMessageLoop() {
   channel_.reset();
-  stopped_ = true;
+  state_ = STOPPED;
 }
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::ReceiveMessageLoop() {
-  if (stopped_) return;
+  if (state_ == STOPPED) return;
 
   LOG(INFO) << "Subscriber::ReceiveMessageLoop()";
   channel_->ReceiveMessage(
-      &message_, std::bind(&Subscriber<MessageTy>::OnReceiveMessage, this,
-                           std::placeholders::_1));
+      &message_, ::base::BindOnce(&Subscriber<MessageTy>::OnReceiveMessage,
+                                  ::base::Unretained(this)));
 }
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
-  if (stopped_) return;
+  if (state_ == STOPPED) return;
 
   if (s.ok()) {
     message_queue_.push(std::move(message_));
@@ -122,12 +153,12 @@ void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::NotifyMessageLoop() {
-  if (stopped_) return;
+  if (state_ == STOPPED) return;
 
   if (!message_queue_.empty()) {
     MessageTy message = std::move(message_queue_.front());
     message_queue_.pop();
-    on_message_callback_(std::move(message));
+    on_message_callback_.Run(message);
   }
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
@@ -135,7 +166,7 @@ void Subscriber<MessageTy>::NotifyMessageLoop() {
       FROM_HERE,
       ::base::BindOnce(&Subscriber<MessageTy>::NotifyMessageLoop,
                        ::base::Unretained(this)),
-      ::base::TimeDelta::FromSeconds(1));
+      ::base::TimeDelta::FromSeconds(settings_.period));
 }
 
 }  // namespace felicia

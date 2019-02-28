@@ -28,6 +28,9 @@ class EXPORT Channel {
   virtual bool IsTCPChannel() const { return false; }
   virtual bool IsUDPChannel() const { return false; }
 
+  bool IsSendingMessage() const { return !send_callback_.is_null(); }
+  bool IsReceivingMessage() const { return !receive_callback_.is_null(); }
+
   TCPChannel<MessageTy>* ToTCPChannel() {
     DCHECK(IsTCPChannel());
     return reinterpret_cast<TCPChannel<MessageTy>*>(this);
@@ -52,10 +55,9 @@ class EXPORT Channel {
   Channel() {}
 
   MessageTy* message_ = nullptr;
-  StatusCallback receive_callback_;
 
-  bool is_sending_ = false;
-  bool is_receiving_ = false;
+  StatusCallback send_callback_;
+  StatusCallback receive_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Channel);
 };

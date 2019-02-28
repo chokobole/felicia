@@ -1,6 +1,6 @@
 from lib.command_composer import CommandComposer
 from lib.print_util import PrintUtil
-from lib.util import nametuple_with_defaults_none
+from lib.util import nametuple_with_defaults_none, is_linux
 
 ExecContainerOptions = nametuple_with_defaults_none('ExecContainerOptions', ['user'])
 ListContainerOptions = nametuple_with_defaults_none('ListContainerOptions', ['format', 'all'])
@@ -12,6 +12,13 @@ class Docker(CommandComposer):
     def __init__(self):
         """Constructor."""
         super().__init__('docker')
+
+    def run_and_check_returncode(self, cmd):
+        """Override |run_and_check_returncode| attaching sudo privilege,
+           if needed."""
+        if is_linux():
+            cmd.insert(0, 'sudo')
+        return super().run_and_check_returncode(cmd)
 
     def exec_container(self, options, container, remainder):
         """Execute container."""

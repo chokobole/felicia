@@ -1,10 +1,6 @@
 #ifndef FELICIA_CORE_LIB_STRINGS_STR_UTIL_H_
 #define FELICIA_CORE_LIB_STRINGS_STR_UTIL_H_
 
-#include <functional>
-#include <string>
-#include <vector>
-
 #include "third_party/chromium/base/strings/string_piece.h"
 
 #include "felicia/core/lib/base/export.h"

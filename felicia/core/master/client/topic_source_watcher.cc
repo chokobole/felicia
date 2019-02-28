@@ -34,7 +34,8 @@ void TopicSourceWatcher::DoListen() {
   tcp_channel->Listen(
       node_info_,
       ::base::BindOnce(&TopicSourceWatcher::OnListen, ::base::Unretained(this)),
-      std::bind(&TopicSourceWatcher::OnAccept, this, std::placeholders::_1));
+      ::base::BindRepeating(&TopicSourceWatcher::OnAccept,
+                            ::base::Unretained(this)));
 }
 
 void TopicSourceWatcher::OnListen(
@@ -55,8 +56,8 @@ void TopicSourceWatcher::WatchNewTopicSource() {
   LOG(INFO) << "TopicSourceWatcher::WatchNewTopicSource()";
   DCHECK(channel_);
   channel_->ReceiveMessage(
-      &topic_source_, std::bind(&TopicSourceWatcher::OnNewTopicSource, this,
-                                std::placeholders::_1));
+      &topic_source_, ::base::BindOnce(&TopicSourceWatcher::OnNewTopicSource,
+                                       ::base::Unretained(this)));
 }
 
 void TopicSourceWatcher::OnNewTopicSource(const Status& s) {
@@ -68,9 +69,6 @@ void TopicSourceWatcher::OnNewTopicSource(const Status& s) {
       it->second.Run(topic_source_);
     }
   }
-  WatchNewTopicSource();
-  // task_runner_interface_->PostTask(FROM_HERE, ::base::BindOnce(
-  //     &TopicSourceWatcher::WatchNewTopicSource, ::base::Unretained(this)));
 }
 
 }  // namespace felicia

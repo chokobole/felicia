@@ -24,6 +24,9 @@ class CommandDispatcher {
   void Dispatch(const NodeCreateFlagParserDelegate& delegate) const;
   void Dispatch(const NodeGetFlagParserDelegate& delegate) const;
 
+  void OnGetNodesAsync(GrpcMasterClient* client, GetNodesRequest* request,
+                       GetNodesResponse* response, const Status& s) const;
+
   std::unique_ptr<GrpcMasterClient> master_client_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandDispatcher);

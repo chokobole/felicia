@@ -16,9 +16,9 @@ class ChannelBase {
   virtual bool IsClient() const { return false; }
   virtual bool IsServer() const { return false; }
 
-  virtual void Write(::net::IOBuffer* buf, size_t buf_len,
+  virtual void Write(::net::IOBufferWithSize* buffer,
                      StatusCallback callback) = 0;
-  virtual void Read(::net::IOBuffer* buf, size_t buf_len,
+  virtual void Read(::net::IOBufferWithSize* buffer,
                     StatusCallback callback) = 0;
 
   static const int32_t kMaxReceiverBufferSize;

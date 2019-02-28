@@ -43,7 +43,6 @@ cc_library(
         "//felicia/core/master/client:grpc_master_client",
         "//felicia/core/master/client:topic_source_watcher",
         "//felicia/core/master/rpc:grpc_util",
-        "//felicia/core/master/rpc:scoped_grpc_request",
         "//felicia/core/master/rpc:master_service_proto_cc",
     ]
 )

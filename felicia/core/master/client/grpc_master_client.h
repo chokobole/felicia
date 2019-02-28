@@ -1,6 +1,8 @@
 #ifndef FELICIA_CORE_MASTER_CLIENT_GRPC_MASTER_CLIENT_H_
 #define FELICIA_CORE_MASTER_CLIENT_GRPC_MASTER_CLIENT_H_
 
+#include <utility>
+
 #include "grpcpp/grpcpp.h"
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/base/threading/platform_thread.h"
@@ -30,7 +32,8 @@ class GrpcMasterClient : public MasterClientInterface {
     new GrpcAsyncClientCall<grpc::MasterService::Stub, method##Request, \
                             method##Response>(                          \
         stub_.get(), request, response,                                 \
-        &grpc::MasterService::Stub::PrepareAsync##method, &cq_, done);  \
+        &grpc::MasterService::Stub::PrepareAsync##method, &cq_,         \
+        std::move(done));                                               \
   }
 
   CLIENT_METHOD(RegisterNode);

@@ -64,8 +64,16 @@ class EXPORT Master {
   void AddNode(const NodeInfo& node_info);
   void RemoveNode(const NodeInfo& node_info);
 
-  void NotifyTopicSource(std::string topic,
-                         const NodeInfo& subscribing_node_info);
+  void DoNotifySubscriber(const NodeInfo& subscribing_node_info,
+                          const TopicSource& source);
+
+  void NotifySubscriber(const std::string& topic,
+                        const NodeInfo& subscribing_node_info);
+
+  void NotifyAllSubscribers(const TopicSource& source);
+
+  void OnConnetToClient(std::unique_ptr<Channel<TopicSource>> channel,
+                        const TopicSource& source, const Status& s);
 
   Master();
 
@@ -74,7 +82,6 @@ class EXPORT Master {
   NodeInfo master_node_info_;
 
   std::vector<ServerNode> nodes_;
-  std::vector<std::unique_ptr<Channel<TopicSource>>> topic_source_channels_;
 
   DISALLOW_COPY_AND_ASSIGN(Master);
 };

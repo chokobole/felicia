@@ -14,12 +14,12 @@ TCPClientChannel::~TCPClientChannel() = default;
 
 void TCPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
                                StatusCallback callback) {
-  DCHECK(!connect_callback_);
-  DCHECK(callback);
+  DCHECK(connect_callback_.is_null());
+  DCHECK(!callback.is_null());
   auto client_socket = std::make_unique<::net::TCPSocket>(nullptr);
   int rv = client_socket->Open(ip_endpoint.GetFamily());
   if (rv != ::net::OK) {
-    callback(errors::NetworkError(::net::ErrorToString(rv)));
+    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
     return;
   }
 
@@ -29,33 +29,34 @@ void TCPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
       ip_endpoint,
       ::base::BindOnce(&TCPClientChannel::OnConnect, ::base::Unretained(this)));
   if (rv != ::net::OK && rv != ::net::ERR_IO_PENDING) {
-    callback(errors::NetworkError(::net::ErrorToString(rv)));
+    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
     return;
   }
 
-  connect_callback_ = callback;
+  connect_callback_ = std::move(callback);
   socket_ = std::move(client_socket);
 
   if (rv == ::net::OK) {
-    callback(Status::OK());
+    std::move(connect_callback_).Run(Status::OK());
   }
 }
 
 void TCPClientChannel::OnConnect(int result) {
   LOG(INFO) << "TCPClientChannel::OnConnect()";
   if (result == ::net::OK) {
-    connect_callback_(Status::OK());
+    std::move(connect_callback_).Run(Status::OK());
   } else {
-    connect_callback_(errors::NetworkError(::net::ErrorToString(result)));
+    std::move(connect_callback_)
+        .Run(errors::NetworkError(::net::ErrorToString(result)));
   }
 }
 
-void TCPClientChannel::Write(::net::IOBuffer* buf, size_t buf_len,
+void TCPClientChannel::Write(::net::IOBufferWithSize* buffer,
                              StatusCallback callback) {
-  DCHECK(callback);
-  write_callback_ = callback;
+  DCHECK(!callback.is_null());
+  write_callback_ = std::move(callback);
   int rv = socket_->Write(
-      buf, buf_len,
+      buffer, buffer->size(),
       ::base::BindOnce(&TCPClientChannel::OnWrite, ::base::Unretained(this)),
       ::net::DefineNetworkTrafficAnnotation("tcp_client_channel",
                                             "Send Message"));
@@ -64,12 +65,12 @@ void TCPClientChannel::Write(::net::IOBuffer* buf, size_t buf_len,
   }
 }
 
-void TCPClientChannel::Read(::net::IOBuffer* buf, size_t buf_len,
+void TCPClientChannel::Read(::net::IOBufferWithSize* buffer,
                             StatusCallback callback) {
-  DCHECK(callback);
-  read_callback_ = callback;
+  DCHECK(!callback.is_null());
+  read_callback_ = std::move(callback);
   int rv = socket_->Read(
-      buf, buf_len,
+      buffer, buffer->size(),
       ::base::BindOnce(&TCPClientChannel::OnRead, ::base::Unretained(this)));
   if (rv != ::net::ERR_IO_PENDING) {
     OnRead(rv);

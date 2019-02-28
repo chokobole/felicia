@@ -167,14 +167,14 @@ class Call : UntypedCall<Service> {
     if (ctx_.IsCancelled()) {
       ::base::AutoLock l(lock_);
       if (cancel_callback_) {
-        cancel_callback_();
+        std::move(cancel_callback_).Run();
       }
     }
   }
 
   // Registers `callback` as the function that should be called if and when this
   // call is canceled by the client.
-  void SetCancelCallback(std::function<void()> callback) {
+  void SetCancelCallback(::base::OnceCallback<void()> callback) {
     ::base::AutoLock l(lock_);
     cancel_callback_ = std::move(callback);
   }
@@ -261,7 +261,7 @@ class Call : UntypedCall<Service> {
   Tag cancelled_tag_{this, Tag::kCancelled};
 
   ::base::Lock lock_;
-  std::function<void()> cancel_callback_ GUARDED_BY(lock_);
+  ::base::OnceCallback<void()> cancel_callback_ GUARDED_BY(lock_);
 };
 
 }  // namespace felicia

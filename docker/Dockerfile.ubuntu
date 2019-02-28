@@ -3,14 +3,15 @@ LABEL maintainer="Wonyong Kim <chokoble33@gmail.com>"
 
 RUN apt-get update -y && \
     apt-get install -y \
+    automake \
     build-essential \
     curl \
-    wget \
+    git \
+    libtool \
+    python3 \
     unzip \
     vim \
-    python3 \
-    automake \
-    libtool && \
+    wget && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ARG USER=felicia
