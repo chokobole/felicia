@@ -48,7 +48,8 @@ class Message<
 
   static bool ParseFromBuffer(scoped_refptr<::net::IOBufferWithSize> buffer,
                               T* proto) {
-    Header header = Header::FromBytes(buffer->data());
+    Header header;
+    if (!Header::FromBytes(buffer->data(), &header)) return false;
 
     std::string text(buffer->data() + sizeof(Header), header.size());
     if (!proto->ParseFromString(text)) return false;

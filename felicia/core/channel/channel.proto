@@ -10,3 +10,13 @@ message ChannelDef {
 
   Type type = 1;
 }
+
+message IPEndPoint {
+  string ip = 1;
+  uint32 port = 2;
+}
+
+message ChannelSource {
+  ChannelDef channel_def = 1;
+  IPEndPoint ip_endpoint = 2;
+}

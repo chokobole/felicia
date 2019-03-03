@@ -5,6 +5,9 @@ package felicia;
 import "felicia/core/master/master.proto";
 
 service MasterService {
+  // Register client with a given RegisterClientRequest.
+  rpc RegisterClient(RegisterClientRequest) returns (RegisterClientResponse) {}
+
   // Register node with a given RegisterNodeRequest.
   rpc RegisterNode(RegisterNodeRequest) returns (RegisterNodeResponse) {}
 

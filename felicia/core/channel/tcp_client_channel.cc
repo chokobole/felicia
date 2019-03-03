@@ -42,7 +42,6 @@ void TCPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
 }
 
 void TCPClientChannel::OnConnect(int result) {
-  LOG(INFO) << "TCPClientChannel::OnConnect()";
   if (result == ::net::OK) {
     std::move(connect_callback_).Run(Status::OK());
   } else {
@@ -55,6 +54,10 @@ void TCPClientChannel::Write(::net::IOBufferWithSize* buffer,
                              StatusCallback callback) {
   DCHECK(!callback.is_null());
   write_callback_ = std::move(callback);
+  if (!socket_->IsConnected()) {
+    OnWrite(::net::ERR_SOCKET_NOT_CONNECTED);
+    return;
+  }
   int rv = socket_->Write(
       buffer, buffer->size(),
       ::base::BindOnce(&TCPClientChannel::OnWrite, ::base::Unretained(this)),
@@ -69,6 +72,10 @@ void TCPClientChannel::Read(::net::IOBufferWithSize* buffer,
                             StatusCallback callback) {
   DCHECK(!callback.is_null());
   read_callback_ = std::move(callback);
+  if (!socket_->IsConnected()) {
+    OnRead(::net::ERR_SOCKET_NOT_CONNECTED);
+    return;
+  }
   int rv = socket_->Read(
       buffer, buffer->size(),
       ::base::BindOnce(&TCPClientChannel::OnRead, ::base::Unretained(this)));

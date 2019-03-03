@@ -69,6 +69,7 @@ cc_library(
     srcs = [
         "channel/channel_base.cc",
         "channel/channel_base.h",
+        "channel/channel.cc",
         "channel/tcp_channel_base.h",
         "channel/tcp_channel.h",
         "channel/tcp_client_channel.cc",
@@ -93,14 +94,17 @@ cc_library(
         ":lib",
         ":message",
         ":platform_net",
-        "//felicia/core/master:master_proto_cc",
     ]
 )
 
 cc_library(
     name = "node",
     hdrs = [
+        "node/node.h",
         "node/node_lifecycle.h",
+    ],
+    srcs = [
+        "node/node.cc",
     ],
     copts = fel_copts(),
     deps = [

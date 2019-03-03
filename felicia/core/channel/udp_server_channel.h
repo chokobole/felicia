@@ -18,7 +18,7 @@ class UDPServerChannel : public UDPChannelBase {
 
   bool IsServer() const override { return true; }
 
-  void Bind(const NodeInfo& node_info, StatusOrIPEndPointCallback callback);
+  void Bind(StatusOrChannelSourceCallback callback);
 
   void Write(::net::IOBufferWithSize* buffer, StatusCallback callback) override;
   void Read(::net::IOBufferWithSize* buffer, StatusCallback callback) override;

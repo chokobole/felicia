@@ -27,6 +27,7 @@ class EXPORT MasterClientInterface {
                              method##Response* response,     \
                              StatusCallback done) = 0;
 
+  CLIENT_METHOD(RegisterClient);
   CLIENT_METHOD(RegisterNode);
   CLIENT_METHOD(GetNodes);
   CLIENT_METHOD(PublishTopic);

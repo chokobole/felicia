@@ -10,13 +10,15 @@ namespace felicia {
 
 static const uint16_t g_default_master_port = 8881;
 
-std::string ResolveGRPCServiceIp() {
+::net::IPAddress ResolveGRPCServiceIp() {
   const char* ip_env = getenv("FEL_GRPC_SERVICE_IP");
   if (ip_env) {
-    return ip_env;
+    ::net::IPAddress address;
+    address.AssignFromIPLiteral(ip_env);
+    return address;
   }
 
-  return felicia::net::HostIPAddress(net::HOST_IP_ONLY_ALLOW_IPV4);
+  return net::HostIPAddress(net::HOST_IP_ONLY_ALLOW_IPV4);
 }
 
 uint16_t ResolveGRPCServicePort() {
@@ -34,7 +36,7 @@ uint16_t ResolveGRPCServicePort() {
 }
 
 std::shared_ptr<::grpc::Channel> ConnectGRPCService() {
-  std::string ip = ResolveGRPCServiceIp();
+  std::string ip = ResolveGRPCServiceIp().ToString();
   uint16_t port = ResolveGRPCServicePort();
   auto channel =
       ::grpc::CreateChannel(::base::StringPrintf("%s:%d", ip.c_str(), port),

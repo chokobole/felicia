@@ -8,7 +8,6 @@
 #include "third_party/chromium/base/cancelable_callback.h"
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/net/base/io_buffer.h"
-#include "third_party/chromium/net/base/ip_endpoint.h"
 #include "third_party/chromium/net/socket/tcp_socket.h"
 
 #include "felicia/core/channel/channel.h"
@@ -29,7 +28,7 @@ class TCPServerChannel : public TCPChannelBase {
     accept_callback_ = callback;
   }
 
-  void Listen(const NodeInfo& node_info, StatusOrIPEndPointCallback callback);
+  void Listen(StatusOrChannelSourceCallback callback);
 
   // Write the |buffer| to the |accepted_sockets_|. If it succeeds to write
   // all the sockets, then callback with Status::OK(), otherwise callback

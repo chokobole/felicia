@@ -64,6 +64,7 @@ void GrpcMasterService::Shutdown() {
 void GrpcMasterService::HandleRpcsLoop() {
   void* tag;
   bool ok;
+  ENQUEUE_REQUEST(RegisterClient, true);
   ENQUEUE_REQUEST(RegisterNode, true);
   ENQUEUE_REQUEST(GetNodes, false);
   ENQUEUE_REQUEST(PublishTopic, true);
@@ -89,6 +90,17 @@ void OnHandleRequest(CallTy* call, const Status& status) {
 }
 
 }  // namespace
+
+void GrpcMasterService::HandleRegisterClient(
+    MasterCall<RegisterClientRequest, RegisterClientResponse>* call) {
+  master_->RegisterClient(
+      &call->request_, &call->response_,
+      ::base::BindOnce(
+          &OnHandleRequest<
+              MasterCall<RegisterClientRequest, RegisterClientResponse>>,
+          call));
+  ENQUEUE_REQUEST(RegisterClient, true);
+}
 
 void GrpcMasterService::HandleRegisterNode(
     MasterCall<RegisterNodeRequest, RegisterNodeResponse>* call) {

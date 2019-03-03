@@ -36,6 +36,7 @@ class GrpcMasterClient : public MasterClientInterface {
         std::move(done));                                               \
   }
 
+  CLIENT_METHOD(RegisterClient);
   CLIENT_METHOD(RegisterNode);
   CLIENT_METHOD(GetNodes);
   CLIENT_METHOD(PublishTopic);

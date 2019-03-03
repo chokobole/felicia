@@ -9,12 +9,12 @@
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/base/time/time.h"
 
-#include "felicia/cc/client_node.h"
 #include "felicia/cc/master_proxy.h"
 #include "felicia/core/channel/channel_factory.h"
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/error/status.h"
+#include "felicia/core/node/node_lifecycle.h"
 
 namespace felicia {
 
@@ -34,7 +34,8 @@ class EXPORT Subscriber {
 
   using OnMessageCallback = ::base::RepeatingCallback<void(MessageTy)>;
 
-  explicit Subscriber(ClientNode* client_node) : client_node_(client_node) {}
+  explicit Subscriber(NodeLifecycle* node_lifecycle, const NodeInfo& node_info)
+      : node_lifecycle_(node_lifecycle), node_info_(node_info) {}
 
   void Subscribe(::base::StringPiece topic,
                  OnMessageCallback on_message_callback,
@@ -44,7 +45,7 @@ class EXPORT Subscriber {
   void OnSubscribeTopicAsync(SubscribeTopicRequest* request,
                              SubscribeTopicResponse* response, const Status& s);
 
-  void OnFindPublisher(const TopicSource& source);
+  void OnFindPublisher(const TopicInfo& topic_info);
   void OnConnectToPublisher(const Status& s);
 
   void StopMessageLoop();
@@ -54,7 +55,8 @@ class EXPORT Subscriber {
 
   void NotifyMessageLoop();
 
-  ClientNode* client_node_;
+  NodeLifecycle* node_lifecycle_;
+  NodeInfo node_info_;
   MessageTy message_;
   Pool<MessageTy, uint8_t> message_queue_;
   std::unique_ptr<Channel<MessageTy>> channel_;
@@ -78,7 +80,7 @@ void Subscriber<MessageTy>::Subscribe(
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   SubscribeTopicRequest* request = new SubscribeTopicRequest();
-  *request->mutable_node_info() = client_node_->node_info();
+  *request->mutable_node_info() = node_info_;
   request->set_topic(topic_);
   SubscribeTopicResponse* response = new SubscribeTopicResponse();
 
@@ -96,7 +98,7 @@ void Subscriber<MessageTy>::OnSubscribeTopicAsync(
     SubscribeTopicRequest* request, SubscribeTopicResponse* response,
     const Status& s) {
   if (!s.ok()) {
-    client_node_->OnError(s);
+    node_lifecycle_->OnError(s);
     StopMessageLoop();
     return;
   }
@@ -104,12 +106,14 @@ void Subscriber<MessageTy>::OnSubscribeTopicAsync(
 }
 
 template <typename MessageTy>
-void Subscriber<MessageTy>::OnFindPublisher(const TopicSource& source) {
-  channel_ = ChannelFactory::NewChannel<MessageTy>(source.channel_def());
+void Subscriber<MessageTy>::OnFindPublisher(const TopicInfo& topic_info) {
+  channel_ = ChannelFactory::NewChannel<MessageTy>(
+      topic_info.topic_source().channel_def());
 
   channel_->Connect(
-      source, ::base::BindOnce(&Subscriber<MessageTy>::OnConnectToPublisher,
-                               ::base::Unretained(this)));
+      topic_info.topic_source(),
+      ::base::BindOnce(&Subscriber<MessageTy>::OnConnectToPublisher,
+                       ::base::Unretained(this)));
 }
 
 template <typename MessageTy>
@@ -119,7 +123,7 @@ void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
     state_ = STARTED;
     ReceiveMessageLoop();
   } else {
-    client_node_->OnError(s);
+    node_lifecycle_->OnError(s);
   }
 }
 
@@ -133,7 +137,6 @@ template <typename MessageTy>
 void Subscriber<MessageTy>::ReceiveMessageLoop() {
   if (state_ == STOPPED) return;
 
-  LOG(INFO) << "Subscriber::ReceiveMessageLoop()";
   channel_->ReceiveMessage(
       &message_, ::base::BindOnce(&Subscriber<MessageTy>::OnReceiveMessage,
                                   ::base::Unretained(this)));
@@ -146,7 +149,7 @@ void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
   if (s.ok()) {
     message_queue_.push(std::move(message_));
   } else {
-    client_node_->OnError(s);
+    node_lifecycle_->OnError(s);
   }
   ReceiveMessageLoop();
 }

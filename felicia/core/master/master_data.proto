@@ -4,14 +4,15 @@ import "felicia/core/channel/channel.proto";
 
 package felicia;
 
-message IPEndPoint {
-  string ip = 1;
-  uint32 port = 2;
-}
-
 message NodeInfo {
   string name = 1;
-  IPEndPoint ip_endpoint = 2;
+  uint32 client_id = 2;
+}
+
+message ClientInfo {
+  uint32 id = 1;
+  ChannelSource heart_beat_signaller_source = 2;
+  ChannelSource topic_watcher_source = 3;
 }
 
 message NodeFilter {
@@ -20,9 +21,11 @@ message NodeFilter {
   string subscribing_topic = 3;
 }
 
-message TopicSource {
+message TopicInfo {
   string topic = 1;
-  NodeInfo node_info = 2;
-  IPEndPoint topic_ip_endpoint = 3;
-  ChannelDef channel_def = 4;
+  ChannelSource topic_source = 2;
+}
+
+message HeartBeat {
+  bool ok = 1;
 }

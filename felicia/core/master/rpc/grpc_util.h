@@ -6,6 +6,7 @@
 #include <string>
 
 #include "grpcpp/grpcpp.h"
+#include "third_party/chromium/net/base/ip_address.h"
 
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"
@@ -37,7 +38,7 @@ inline ::grpc::Status ToGrpcStatus(const Status& s) {
   }
 }
 
-EXPORT std::string ResolveGRPCServiceIp();
+EXPORT ::net::IPAddress ResolveGRPCServiceIp();
 
 EXPORT uint16_t ResolveGRPCServicePort();
 

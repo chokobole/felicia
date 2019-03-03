@@ -1,8 +1,17 @@
 syntax = "proto3";
 
+import "felicia/core/channel/channel.proto";
 import "felicia/core/master/master_data.proto";
 
 package felicia;
+
+message RegisterClientRequest {
+  ClientInfo client_info = 1;
+};
+
+message RegisterClientResponse {
+  uint32 id = 1;
+};
 
 message RegisterNodeRequest {
   NodeInfo node_info = 1;
@@ -28,7 +37,8 @@ message GetNodesResponse {
 }
 
 message PublishTopicRequest {
-  TopicSource topic_source = 1;
+  NodeInfo node_info = 1;
+  TopicInfo topic_info = 2;
 }
 
 message PublishTopicResponse {

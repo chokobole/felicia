@@ -14,7 +14,6 @@
 #include "felicia/core/channel/udp_server_channel.h"
 #include "felicia/core/lib/error/errors.h"
 #include "felicia/core/lib/error/status.h"
-#include "felicia/core/master/master_data.pb.h"
 #include "felicia/core/message/message.h"
 
 namespace felicia {
@@ -27,10 +26,9 @@ class UDPChannel : public Channel<MessageTy> {
 
   bool IsUDPChannel() const override { return true; }
 
-  void Bind(const NodeInfo& node_info, StatusOrIPEndPointCallback callback);
+  void Bind(StatusOrChannelSourceCallback callback);
 
-  void Connect(const NodeInfo& node_info, StatusCallback callback) override;
-  void Connect(const TopicSource& topic_source,
+  void Connect(const ChannelSource& channel_source,
                StatusCallback callback) override;
 
   void SendMessage(const MessageTy& message, StatusCallback callback) override;
@@ -38,8 +36,6 @@ class UDPChannel : public Channel<MessageTy> {
   void ReceiveMessage(MessageTy* message, StatusCallback callback) override;
 
  private:
-  void DoConnect(const IPEndPoint& ip_endpoint, StatusCallback callback);
-
   void OnSendMessage(scoped_refptr<::net::IOBufferWithSize> buffer,
                      const Status& s);
   void OnReceiveMessage(scoped_refptr<::net::IOBufferWithSize> buffer,
@@ -57,52 +53,35 @@ template <typename MessageTy>
 UDPChannel<MessageTy>::~UDPChannel() {}
 
 template <typename MessageTy>
-void UDPChannel<MessageTy>::Bind(const NodeInfo& node_info,
-                                 StatusOrIPEndPointCallback callback) {
+void UDPChannel<MessageTy>::Bind(StatusOrChannelSourceCallback callback) {
   DCHECK(!udp_channel_);
   DCHECK(!callback.is_null());
   udp_channel_ = std::make_unique<UDPServerChannel>();
-  udp_channel_->ToUDPServerChannel()->Bind(node_info, std::move(callback));
+  udp_channel_->ToUDPServerChannel()->Bind(std::move(callback));
 }
 
 template <typename MessageTy>
-void UDPChannel<MessageTy>::Connect(const NodeInfo& node_info,
+void UDPChannel<MessageTy>::Connect(const ChannelSource& channel_source,
                                     StatusCallback callback) {
-  DCHECK(!callback.is_null());
-  DoConnect(node_info.ip_endpoint(), std::move(callback));
-}
-
-template <typename MessageTy>
-void UDPChannel<MessageTy>::Connect(const TopicSource& topic_source,
-                                    StatusCallback callback) {
-  DCHECK(!callback.is_null());
-  DoConnect(topic_source.topic_ip_endpoint(), std::move(callback));
-}
-
-template <typename MessageTy>
-void UDPChannel<MessageTy>::DoConnect(const IPEndPoint& ip_endpoint,
-                                      StatusCallback callback) {
   DCHECK(!udp_channel_);
   DCHECK(!callback.is_null());
-  udp_channel_ = std::make_unique<UDPClientChannel>();
-  ::net::IPAddress address;
-  bool ret = address.AssignFromIPLiteral(ip_endpoint.ip());
+  ::net::IPEndPoint ip_endpoint;
+  bool ret = ToNetIPEndPoint(channel_source, &ip_endpoint);
   DCHECK(ret);
-  ::net::IPEndPoint net_ip_endpoint(address,
-                                    static_cast<uint16_t>(ip_endpoint.port()));
-  udp_channel_->ToUDPClientChannel()->Connect(net_ip_endpoint,
-                                              std::move(callback));
+  udp_channel_ = std::make_unique<UDPClientChannel>();
+  udp_channel_->ToUDPClientChannel()->Connect(ip_endpoint, std::move(callback));
 }
 
 template <typename MessageTy>
 void UDPChannel<MessageTy>::SendMessage(const MessageTy& message,
                                         StatusCallback callback) {
+  DCHECK(udp_channel_);
   DCHECK(this->send_callback_.is_null());
   DCHECK(!callback.is_null());
   scoped_refptr<::net::IOBufferWithSize> buffer;
   if (Message<MessageTy>::SerializeToBuffer(&message, &buffer)) {
     this->send_callback_ = std::move(callback);
-    LOG(INFO) << "SendMessage() write bytes: " << buffer->size();
+    DLOG(INFO) << "SendMessage() write bytes: " << buffer->size();
     udp_channel_->Write(buffer.get(),
                         ::base::BindOnce(&UDPChannel<MessageTy>::OnSendMessage,
                                          ::base::Unretained(this), buffer));
@@ -122,6 +101,7 @@ void UDPChannel<MessageTy>::OnSendMessage(
 template <typename MessageTy>
 void UDPChannel<MessageTy>::ReceiveMessage(MessageTy* message,
                                            StatusCallback callback) {
+  DCHECK(udp_channel_);
   DCHECK(this->receive_callback_.is_null());
   DCHECK(!callback.is_null());
   scoped_refptr<::net::IOBufferWithSize> buffer =

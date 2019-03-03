@@ -6,14 +6,14 @@
 #include "third_party/chromium/net/base/io_buffer.h"
 #include "third_party/chromium/net/base/ip_endpoint.h"
 
+#include "felicia/core/channel/channel.pb.h"
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/statusor.h"
-#include "felicia/core/master/master_data.pb.h"
 
 namespace felicia {
 
-using StatusOrIPEndPointCallback =
-    ::base::OnceCallback<void(const StatusOr<::net::IPEndPoint>&)>;
+using StatusOrChannelSourceCallback =
+    ::base::OnceCallback<void(const StatusOr<ChannelSource>&)>;
 
 template <typename MessageTy>
 class TCPChannel;
@@ -41,8 +41,7 @@ class EXPORT Channel {
     return reinterpret_cast<UDPChannel<MessageTy>*>(this);
   }
 
-  virtual void Connect(const NodeInfo& node_info, StatusCallback callback) = 0;
-  virtual void Connect(const TopicSource& topic_source,
+  virtual void Connect(const ChannelSource& channel_source,
                        StatusCallback callback) = 0;
 
   virtual void SendMessage(const MessageTy& message,
@@ -61,6 +60,15 @@ class EXPORT Channel {
 
   DISALLOW_COPY_AND_ASSIGN(Channel);
 };
+
+bool ToNetIPEndPoint(const ChannelSource& channel_source,
+                     ::net::IPEndPoint* ip_endpoint);
+
+ChannelSource ToChannelSource(const ::net::IPEndPoint& ip_endpoint,
+                              const ChannelDef channel_def = ChannelDef());
+
+ChannelSource PickRandomChannelSource(
+    const ChannelDef& channel_def = ChannelDef());
 
 }  // namespace felicia
 

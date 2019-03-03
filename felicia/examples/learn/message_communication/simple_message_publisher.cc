@@ -3,18 +3,18 @@
 
 #include "third_party/chromium/base/time/time.h"
 
-#include "felicia/cc/client_node.h"
 #include "felicia/cc/communication/publisher.h"
 #include "felicia/cc/master_proxy.h"
 #include "felicia/core/master/tool/node_create_flag_parser_delegate.h"
+#include "felicia/core/node/node_lifecycle.h"
 #include "felicia/examples/learn/message_communication/protobuf/message_spec.pb.h"
 
 namespace felicia {
 
-class CustomNode : public ClientNode {
+class CustomNode : public NodeLifecycle {
  public:
   explicit CustomNode(const NodeInfo& node_info)
-      : ClientNode(node_info), publisher_(this) {}
+      : publisher_(this, node_info) {}
 
   void OnInit() {
     topic_name_ = "custom_message";

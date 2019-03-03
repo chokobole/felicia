@@ -15,37 +15,21 @@ namespace felicia {
 UDPServerChannel::UDPServerChannel() = default;
 UDPServerChannel::~UDPServerChannel() = default;
 
-void UDPServerChannel::Bind(const NodeInfo& node_info,
-                            StatusOrIPEndPointCallback callback) {
+void UDPServerChannel::Bind(StatusOrChannelSourceCallback callback) {
   DCHECK(callback);
   auto server_socket = std::make_unique<::net::UDPSocket>(
       ::net::DatagramSocket::BindType::DEFAULT_BIND);
 
-  ::net::IPAddress ip;
-  if (!ip.AssignFromIPLiteral(node_info.ip_endpoint().ip())) {
-    std::move(callback).Run(errors::InvalidArgument(::base::StrCat(
-        {"IP Address is not valid ", node_info.ip_endpoint().ip()})));
-    return;
-  }
-
-  int rv;
-  if (ip.IsIPv4()) {
-    rv = server_socket->Open(::net::AddressFamily::ADDRESS_FAMILY_IPV4);
-  } else {
-    rv = server_socket->Open(::net::AddressFamily::ADDRESS_FAMILY_IPV6);
-  }
+  int rv = server_socket->Open(::net::ADDRESS_FAMILY_IPV4);
   if (rv != ::net::OK) {
     std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
     return;
   }
 
-  uint16_t port = node_info.ip_endpoint().port();
-  if (port == 0) {
-    port = net::PickRandomPort(false);
-  }
+  uint16_t port = net::PickRandomPort(false);
   ::net::IPAddress address(0, 0, 0, 0);
-  ::net::IPEndPoint endpoint(address, port);
-  rv = server_socket->Bind(endpoint);
+  ::net::IPEndPoint server_endpoint(address, port);
+  rv = server_socket->Bind(server_endpoint);
   if (rv != ::net::OK) {
     std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
     return;
@@ -70,7 +54,12 @@ void UDPServerChannel::Bind(const NodeInfo& node_info,
   socket_ = std::move(server_socket);
   multicast_ip_endpoint_ =
       ::net::IPEndPoint(multicast_address, net::PickRandomPort(false));
-  std::move(callback).Run(multicast_ip_endpoint_);
+
+  ChannelDef channel_def;
+  channel_def.set_type(ChannelDef_Type_UDP);
+  ChannelSource channel_source =
+      ToChannelSource(multicast_ip_endpoint_, channel_def);
+  std::move(callback).Run(channel_source);
 }
 
 void UDPServerChannel::Write(::net::IOBufferWithSize* buffer,

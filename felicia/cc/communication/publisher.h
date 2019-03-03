@@ -9,12 +9,12 @@
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/base/time/time.h"
 
-#include "felicia/cc/client_node.h"
 #include "felicia/cc/master_proxy.h"
 #include "felicia/core/channel/channel_factory.h"
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/error/status.h"
+#include "felicia/core/node/node_lifecycle.h"
 
 namespace felicia {
 
@@ -34,13 +34,14 @@ class EXPORT Publisher {
 
   using OnMessageCallback = ::base::RepeatingCallback<MessageTy(void)>;
 
-  explicit Publisher(ClientNode* client_node) : client_node_(client_node) {}
+  explicit Publisher(NodeLifecycle* node_lifecycle, const NodeInfo& node_info)
+      : node_lifecycle_(node_lifecycle), node_info_(node_info) {}
 
   void Publish(::base::StringPiece topic, OnMessageCallback on_message_callback,
                const ChannelDef& channel_def = ChannelDef(),
                const Publisher<MessageTy>::Settings& settings = Settings());
   void RequestPublish(const ChannelDef& channel_def,
-                      const StatusOr<::net::IPEndPoint>& status_or);
+                      const StatusOr<ChannelSource>& status_or);
 
  private:
   void OnPublishTopicAsync(PublishTopicRequest* request,
@@ -56,7 +57,8 @@ class EXPORT Publisher {
 
   void GenerateMessageLoop();
 
-  ClientNode* client_node_;
+  NodeLifecycle* node_lifecycle_;
+  NodeInfo node_info_;
   Pool<MessageTy, uint8_t> message_queue_;
   std::unique_ptr<Channel<MessageTy>> channel_;
   std::string topic_;
@@ -88,45 +90,33 @@ template <typename MessageTy>
 void Publisher<MessageTy>::Listen(const ChannelDef& channel_def) {
   channel_ = ChannelFactory::NewChannel<MessageTy>(channel_def);
 
-  NodeInfo node_info;
-  node_info.CopyFrom(client_node_->node_info());
-  // Forcely set port 0
-  node_info.mutable_ip_endpoint()->set_port(0);
-
   if (channel_->IsTCPChannel()) {
     TCPChannel<MessageTy>* tcp_channel = channel_->ToTCPChannel();
     tcp_channel->Listen(
-        node_info,
         ::base::BindOnce(&Publisher<MessageTy>::RequestPublish,
                          ::base::Unretained(this), channel_def),
         ::base::BindRepeating(&Publisher<MessageTy>::StartMessageLoop,
                               ::base::Unretained(this)));
   } else if (channel_->IsUDPChannel()) {
     UDPChannel<MessageTy>* udp_channel = channel_->ToUDPChannel();
-    udp_channel->Bind(node_info,
-                      ::base::BindOnce(&Publisher<MessageTy>::RequestPublish,
+    udp_channel->Bind(::base::BindOnce(&Publisher<MessageTy>::RequestPublish,
                                        ::base::Unretained(this), channel_def));
   }
 }
 
 template <typename MessageTy>
 void Publisher<MessageTy>::RequestPublish(
-    const ChannelDef& channel_def,
-    const StatusOr<::net::IPEndPoint>& status_or) {
+    const ChannelDef& channel_def, const StatusOr<ChannelSource>& status_or) {
   if (status_or.ok()) {
     if (channel_->IsUDPChannel()) {
       StartMessageLoop(Status::OK());
     }
 
-    ::net::IPEndPoint ip_endpoint = status_or.ValueOrDie();
     PublishTopicRequest* request = new PublishTopicRequest();
-    TopicSource* topic_source = request->mutable_topic_source();
-    topic_source->set_topic(topic_);
-    *topic_source->mutable_node_info() = client_node_->node_info();
-    IPEndPoint* endpoint = topic_source->mutable_topic_ip_endpoint();
-    endpoint->set_ip(ip_endpoint.address().ToString());
-    endpoint->set_port(ip_endpoint.port());
-    *topic_source->mutable_channel_def() = channel_def;
+    *request->mutable_node_info() = node_info_;
+    TopicInfo* topic_info = request->mutable_topic_info();
+    topic_info->set_topic(topic_);
+    *topic_info->mutable_topic_source() = status_or.ValueOrDie();
     PublishTopicResponse* response = new PublishTopicResponse();
 
     MasterProxy& master_proxy = MasterProxy::GetInstance();
@@ -136,7 +126,7 @@ void Publisher<MessageTy>::RequestPublish(
                          ::base::Unretained(this), ::base::Owned(request),
                          ::base::Owned(response)));
   } else {
-    client_node_->OnError(status_or.status());
+    node_lifecycle_->OnError(status_or.status());
   }
 }
 
@@ -145,7 +135,7 @@ void Publisher<MessageTy>::OnPublishTopicAsync(PublishTopicRequest* request,
                                                PublishTopicResponse* response,
                                                const Status& s) {
   if (!s.ok()) {
-    client_node_->OnError(s);
+    node_lifecycle_->OnError(s);
     StopMessageLoop();
     return;
   }
@@ -153,14 +143,13 @@ void Publisher<MessageTy>::OnPublishTopicAsync(PublishTopicRequest* request,
 
 template <typename MessageTy>
 void Publisher<MessageTy>::StartMessageLoop(const Status& s) {
-  LOG(INFO) << "Publisher::StartMessageLoop()";
   if (s.ok()) {
     if (state_ == STARTED || state_ == STOPPED) return;
     state_ = STARTED;
     SendMessageLoop();
     GenerateMessageLoop();
   } else {
-    client_node_->OnError(s);
+    node_lifecycle_->OnError(s);
   }
 }
 
@@ -174,17 +163,16 @@ template <typename MessageTy>
 void Publisher<MessageTy>::SendMessageLoop() {
   if (state_ == STOPPED) return;
 
-  LOG(INFO) << "Publisher::SendMessageLoop()";
   if (!message_queue_.empty()) {
     MessageTy message = std::move(message_queue_.front());
     message_queue_.pop();
     if (!channel_->IsSendingMessage()) {
-      channel_->SendMessage(
-          std::move(message), ::base::BindOnce([](const Status& s) {
-            if (!s.ok()) {
-              LOG(INFO) << "Failed to send message: " << s.error_message();
-            }
-          }));
+      channel_->SendMessage(message, ::base::BindOnce([](const Status& s) {
+                              if (!s.ok()) {
+                                LOG(ERROR) << "Failed to send message: "
+                                           << s.error_message();
+                              }
+                            }));
     }
   }
 
@@ -199,8 +187,6 @@ void Publisher<MessageTy>::SendMessageLoop() {
 template <typename MessageTy>
 void Publisher<MessageTy>::GenerateMessageLoop() {
   if (state_ == STOPPED) return;
-
-  LOG(INFO) << "Publisher::GenerateMessageLoop()";
 
   MessageTy message = on_message_callback_.Run();
   message_queue_.push(std::move(message));

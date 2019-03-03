@@ -23,7 +23,10 @@ fel_proto_library_cc(
     name = "master_proto",
     srcs = ["master.proto"],
     visibility = ["//felicia:internal"],
-    protodeps = [":master_data_proto"]
+    protodeps = [
+        ":master_data_proto",
+        "//felicia/core:channel_proto",
+    ]
 )
 
 cc_library(
@@ -43,20 +46,56 @@ cc_library(
     copts = fel_copts(),
     deps = [
         ":master_proto_cc",
-        ":server_node",
+        ":heart_beat_listener",
         "//felicia/core:channel",
         "//felicia/core:lib",
         "//felicia/core:node",
+        "//felicia/core/master/client:client"
+    ]
+)
+
+
+cc_library(
+    name = "task_runner_interface",
+    hdrs = ["task_runner_interface.h"],
+    copts = fel_copts(),
+    deps = [
+        "//felicia/core:lib"
     ]
 )
 
 cc_library(
-    name = "server_node",
-    srcs = ["server_node.cc"],
-    hdrs = ["server_node.h"],
+    name = "topic_info_watcher",
+    srcs = ["topic_info_watcher.cc"],
+    hdrs = ["topic_info_watcher.h"],
     copts = fel_copts(),
     deps = [
         ":master_data_proto_cc",
+        ":task_runner_interface",
         "//felicia/core:lib",
+        "//felicia/core:channel",
+    ]
+)
+
+cc_library(
+    name = "heart_beat_listener",
+    srcs = ["heart_beat_listener.cc"],
+    hdrs = ["heart_beat_listener.h"],
+    copts = fel_copts(),
+    deps = [
+        ":master_data_proto_cc",
+        ":task_runner_interface",
+        "//felicia/core:lib",
+        "//felicia/core:channel",
+    ]
+)
+
+cc_library(
+    name = "heart_beat_signaller",
+    srcs = ["heart_beat_signaller.cc"],
+    hdrs = ["heart_beat_signaller.h"],
+    copts = fel_copts(),
+    deps = [
+        ":heart_beat_listener",
     ]
 )

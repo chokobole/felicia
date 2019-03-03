@@ -15,36 +15,20 @@ namespace felicia {
 TCPServerChannel::TCPServerChannel() = default;
 TCPServerChannel::~TCPServerChannel() = default;
 
-void TCPServerChannel::Listen(const NodeInfo& node_info,
-                              StatusOrIPEndPointCallback callback) {
+void TCPServerChannel::Listen(StatusOrChannelSourceCallback callback) {
   DCHECK(callback);
   auto server_socket = std::make_unique<::net::TCPSocket>(nullptr);
 
-  ::net::IPAddress ip;
-  if (!ip.AssignFromIPLiteral(node_info.ip_endpoint().ip())) {
-    std::move(callback).Run(errors::InvalidArgument(::base::StrCat(
-        {"IP Address is not valid ", node_info.ip_endpoint().ip()})));
-    return;
-  }
-
-  int rv;
-  if (ip.IsIPv4()) {
-    rv = server_socket->Open(::net::AddressFamily::ADDRESS_FAMILY_IPV4);
-  } else {
-    rv = server_socket->Open(::net::AddressFamily::ADDRESS_FAMILY_IPV6);
-  }
+  int rv = server_socket->Open(::net::ADDRESS_FAMILY_IPV4);
   if (rv != ::net::OK) {
     std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
     return;
   }
 
-  uint16_t port = node_info.ip_endpoint().port();
-  if (port == 0) {
-    port = net::PickRandomPort(true);
-  }
+  uint16_t port = net::PickRandomPort(true);
   ::net::IPAddress address(0, 0, 0, 0);
-  ::net::IPEndPoint endpoint(address, port);
-  rv = server_socket->Bind(endpoint);
+  ::net::IPEndPoint server_endpoint(address, port);
+  rv = server_socket->Bind(server_endpoint);
   if (rv != ::net::OK) {
     std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
     return;
@@ -63,7 +47,14 @@ void TCPServerChannel::Listen(const NodeInfo& node_info,
   }
 
   socket_ = std::move(server_socket);
-  std::move(callback).Run(::net::IPEndPoint(ip, port));
+
+  ChannelDef channel_def;
+  channel_def.set_type(ChannelDef_Type_TCP);
+  ChannelSource channel_source = ToChannelSource(
+      ::net::IPEndPoint(net::HostIPAddress(net::HOST_IP_ONLY_ALLOW_IPV4), port),
+      channel_def);
+
+  std::move(callback).Run(channel_source);
   DoAcceptLoop();
 }
 

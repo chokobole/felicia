@@ -11,15 +11,18 @@ namespace felicia {
 
 class EXPORT Header {
  public:
-  Header() = default;
+  constexpr Header() : magic_value_(kMessageMagicValue) {}
 
-  static Header FromBytes(const char* bytes);
+  static bool FromBytes(const char* bytes, Header* header);
 
   uint32_t size() const { return size_; }
   void set_size(uint32_t size) { size_ = size; }
 
  private:
-  uint32_t size_;
+  uint32_t magic_value_ = 0;
+  uint32_t size_ = 0;
+
+  static constexpr uint32_t kMessageMagicValue = 0x12452903u;
 };
 
 static_assert(std::is_trivially_copyable<Header>::value, "");

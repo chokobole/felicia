@@ -12,24 +12,22 @@ namespace felicia {
 namespace net {
 
 // Returns the host ip address of the machine on which this process is running
-EXPORT std::string HostIPAddress(int option) {
+::net::IPAddress HostIPAddress(int option) {
   ::net::NetworkInterfaceList list;
   ::net::GetNetworkList(&list, ::net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
-  std::string text;
   for (auto it = list.begin(); it != list.end(); ++it) {
     if (it->type == ::net::NetworkChangeNotifier::CONNECTION_ETHERNET) {
       if (HOST_IP_ONLY_ALLOW_IPV4 & option) {
         if (it->address.IsIPv4()) {
-          text = it->address.ToString();
-          break;
+          return it->address;
         }
         continue;
       }
-      text = it->address.ToString();
-      break;
+      return it->address;
     }
   }
-  return text;
+
+  return ::net::IPAddress();
 }
 
 namespace {

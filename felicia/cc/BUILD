@@ -15,20 +15,9 @@ cc_library(
     ],
     copts = fel_copts(),
     deps = [
-        ":client_node",
         ":master_proxy",
         "//felicia/core:channel",
-    ]
-)
-
-cc_library(
-    name = "client_node",
-    hdrs = ["client_node.h"],
-    copts = fel_copts(),
-    deps = [
-        "//felicia/core:lib",
         "//felicia/core:node",
-        "//felicia/core/master:master_data_proto_cc",
     ]
 )
 
@@ -38,10 +27,11 @@ cc_library(
     hdrs = ["master_proxy.h"],
     copts = fel_copts(),
     deps = [
-        ":client_node",
         "//felicia/core:channel",
+        "//felicia/core:node",
+        "//felicia/core/master:heart_beat_signaller",
+        "//felicia/core/master:topic_info_watcher",
         "//felicia/core/master/client:grpc_master_client",
-        "//felicia/core/master/client:topic_source_watcher",
         "//felicia/core/master/rpc:grpc_util",
         "//felicia/core/master/rpc:master_service_proto_cc",
     ]

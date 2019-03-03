@@ -5,7 +5,7 @@
 
 #include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/logging.h"
-#include "third_party/chromium/net/base/ip_endpoint.h"
+#include "third_party/chromium/base/strings/string_number_conversions.h"
 
 #include "felicia/core/master/master_data.pb.h"
 #include "felicia/core/util/command_line_interface/table_writer.h"
@@ -82,15 +82,12 @@ void CommandDispatcher::OnGetNodesAsync(GrpcMasterClient* client,
   auto node_infos = response->node_infos();
   TableWriterBuilder builder;
   auto writer = builder.AddColumn(TableWriter::Column{"NAME", 20})
-                    .AddColumn(TableWriter::Column{"IP ENDPOINT", 32})
+                    .AddColumn(TableWriter::Column{"Client ID", 10})
                     .Build();
   size_t row = 0;
   for (auto& node_info : node_infos) {
     writer.SetElement(row, 0, node_info.name());
-    ::net::IPAddress ip;
-    ip.AssignFromIPLiteral(node_info.ip_endpoint().ip());
-    uint16_t port = node_info.ip_endpoint().port();
-    writer.SetElement(row, 1, ::net::IPEndPoint{ip, port}.ToString());
+    writer.SetElement(row, 1, ::base::NumberToString(node_info.client_id()));
     row++;
   }
 

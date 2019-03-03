@@ -39,6 +39,8 @@ class GrpcMasterService {
   using MasterCall = Call<GrpcMasterService, grpc::MasterService::AsyncService,
                           RequestMessage, ResponseMessage>;
 
+  void HandleRegisterClient(
+      MasterCall<RegisterClientRequest, RegisterClientResponse>* call);
   void HandleRegisterNode(
       MasterCall<RegisterNodeRequest, RegisterNodeResponse>* call);
   void HandleGetNodes(MasterCall<GetNodesRequest, GetNodesResponse>* call);
