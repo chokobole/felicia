@@ -30,7 +30,11 @@ bool TopicListFlagParserDelegate::Parse(FlagParser& parser) {
 }
 
 bool TopicListFlagParserDelegate::Validate() const {
-  return all_flag_->is_set() || topic_flag_->is_set();
+  int is_set_cnt = 0;
+  if (all_flag_->is_set()) is_set_cnt++;
+  if (topic_flag_->is_set()) is_set_cnt++;
+
+  return is_set_cnt == 1;
 }
 
 std::vector<std::string> TopicListFlagParserDelegate::CollectUsages() const {

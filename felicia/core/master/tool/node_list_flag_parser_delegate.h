@@ -17,6 +17,7 @@ class NodeListFlagParserDelegate : public FlagParser::Delegate {
   bool all() const { return all_; }
   const std::string& publishing_topic() const { return publishing_topic_; }
   const std::string& subscribing_topic() const { return subscribing_topic_; }
+  const std::string& name() const { return name_; }
 
   bool Parse(FlagParser& parser) override;
 
@@ -30,9 +31,11 @@ class NodeListFlagParserDelegate : public FlagParser::Delegate {
   bool all_;
   std::string publishing_topic_;
   std::string subscribing_topic_;
+  std::string name_;
   std::unique_ptr<BoolFlag> all_flag_;
   std::unique_ptr<StringFlag> publishing_topic_flag_;
   std::unique_ptr<StringFlag> subscribing_topic_flag_;
+  std::unique_ptr<StringFlag> name_flag_;
 
   DISALLOW_COPY_AND_ASSIGN(NodeListFlagParserDelegate);
 };

@@ -155,7 +155,25 @@ void Master::ListNodes(const ListNodesRequest* arg, ListNodesResponse* result,
                        StatusCallback callback) {
   const NodeFilter& node_filter = arg->node_filter();
   std::vector<::base::WeakPtr<Node>> nodes = FindNodes(node_filter);
-  {
+  if (!node_filter.name().empty()) {
+    auto pub_sub_topics = result->mutable_pub_sub_topics();
+    ::base::AutoLock l(lock_);
+    if (nodes.size() > 0) {
+      auto node = nodes[0];
+      if (node) {
+        auto publishing_topic_infos = node->AllPublishingTopicInfos();
+        for (auto& publishing_topic_info : publishing_topic_infos) {
+          *pub_sub_topics->add_publishing_topics() =
+              publishing_topic_info.topic();
+        }
+
+        auto subscribing_topics = node->AllSubscribingTopics();
+        for (auto& subscribing_topic : subscribing_topics) {
+          *pub_sub_topics->add_subscribing_topics() = subscribing_topic;
+        }
+      }
+    }
+  } else {
     ::base::AutoLock l(lock_);
     for (auto node : nodes) {
       if (node) *result->add_node_infos() = node->node_info();

@@ -22,11 +22,12 @@ bazel-bin/felicia/core/master/tool/grpc_master_client_cli node ls -a
 
 * Node command
 
-| COMMAND  | OPTION                  | DESCRIPTION                          |
-| -------: | ----------------------: | -----------------------------------: |
-| ls       | -a, -all                | List all the nodes                   |
-|          | -p, --publishing_topic  | List nodes publishing a given topic  |
-|          | -s, --subscribing_topic | List nodes subscribing a given topic |
+| COMMAND  | OPTION                  | DESCRIPTION                                     |
+| -------: | ----------------------: | ----------------------------------------------: |
+| ls       | -a, -all                | List all the nodes                              |
+|          | -p, --publishing_topic  | List nodes publishing a given topic             |
+|          | -s, --subscribing_topic | List nodes subscribing a given topic            |
+|          | -n, --name              | List a node whose name is equal to a given name |
 
 
 * Topic command

@@ -50,9 +50,11 @@ void CommandDispatcher::Dispatch(
     node_filter.set_all(true);
   } else if (!delegate.publishing_topic().empty()) {
     node_filter.set_publishing_topic(delegate.publishing_topic());
-  } else {
-    DCHECK(!delegate.subscribing_topic().empty());
+  } else if (!delegate.subscribing_topic().empty()) {
     node_filter.set_subscribing_topic(delegate.subscribing_topic());
+  } else {
+    DCHECK(!delegate.name().empty());
+    node_filter.set_name(delegate.name());
   }
   ListNodesRequest* request = new ListNodesRequest();
   *request->mutable_node_filter() = node_filter;
@@ -75,19 +77,42 @@ void CommandDispatcher::OnListNodesAsync(GrpcMasterClient* client,
     client->Shutdown();
     return;
   }
-  auto node_infos = response->node_infos();
-  TableWriterBuilder builder;
-  auto writer = builder.AddColumn(TableWriter::Column{"NAME", 20})
-                    .AddColumn(TableWriter::Column{"CLIENT ID", 10})
-                    .Build();
-  size_t row = 0;
-  for (auto& node_info : node_infos) {
-    writer.SetElement(row, 0, node_info.name());
-    writer.SetElement(row, 1, ::base::NumberToString(node_info.client_id()));
-    row++;
-  }
 
-  std::cout << writer.ToString() << std::endl;
+  TableWriterBuilder builder;
+  if (response->has_pub_sub_topics()) {
+    auto writer = builder.AddColumn(TableWriter::Column{"TOPIC", 20})
+                      .AddColumn(TableWriter::Column{"TYPE", 10})
+                      .Build();
+
+    auto& pub_sub_topics = response->pub_sub_topics();
+    size_t row = 0;
+    for (auto& publishing_topic : pub_sub_topics.publishing_topics()) {
+      writer.SetElement(row, 0, publishing_topic);
+      writer.SetElement(row, 1, "Publishing");
+      row++;
+    }
+
+    for (auto& subscribing_topic : pub_sub_topics.subscribing_topics()) {
+      writer.SetElement(row, 0, subscribing_topic);
+      writer.SetElement(row, 1, "Subscribing");
+      row++;
+    }
+
+    std::cout << writer.ToString() << std::endl << std::endl;
+  } else {
+    auto& node_infos = response->node_infos();
+    auto writer = builder.AddColumn(TableWriter::Column{"NAME", 20})
+                      .AddColumn(TableWriter::Column{"CLIENT ID", 10})
+                      .Build();
+    size_t row = 0;
+    for (auto& node_info : node_infos) {
+      writer.SetElement(row, 0, node_info.name());
+      writer.SetElement(row, 1, ::base::NumberToString(node_info.client_id()));
+      row++;
+    }
+
+    std::cout << writer.ToString() << std::endl;
+  }
   client->Shutdown();
 }
 

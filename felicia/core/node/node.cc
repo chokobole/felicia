@@ -106,6 +106,16 @@ std::vector<TopicInfo> Node::AllPublishingTopicInfos() const {
   return topic_infos;
 }
 
+std::vector<std::string> Node::AllSubscribingTopics() const {
+  std::vector<std::string> topics;
+  auto it = subscribing_topics_.begin();
+  while (it != subscribing_topics_.end()) {
+    topics.push_back(*it);
+    it++;
+  }
+  return topics;
+}
+
 bool NodeNameChecker::operator()(const std::unique_ptr<Node>& node) {
   return strings::Equals(node->name(), node_info_.name());
 }

@@ -30,18 +30,31 @@ NodeListFlagParserDelegate::NodeListFlagParserDelegate() {
                     .Build();
     subscribing_topic_flag_ = std::make_unique<StringFlag>(flag);
   }
+  {
+    StringFlag::Builder builder(MakeValueStore<std::string>(&name_));
+    auto flag = builder.SetShortName("-n")
+                    .SetLongName("--name")
+                    .SetHelp("List a node whose name is equal to a given name")
+                    .Build();
+    name_flag_ = std::make_unique<StringFlag>(flag);
+  }
 }
 
 NodeListFlagParserDelegate::~NodeListFlagParserDelegate() = default;
 
 bool NodeListFlagParserDelegate::Parse(FlagParser& parser) {
   return PARSE_OPTIONAL_FLAG(parser, all_flag_, publishing_topic_flag_,
-                             subscribing_topic_flag_);
+                             subscribing_topic_flag_, name_flag_);
 }
 
 bool NodeListFlagParserDelegate::Validate() const {
-  return all_flag_->is_set() || publishing_topic_flag_->is_set() ||
-         subscribing_topic_flag_->is_set();
+  int is_set_cnt = 0;
+  if (all_flag_->is_set()) is_set_cnt++;
+  if (publishing_topic_flag_->is_set()) is_set_cnt++;
+  if (subscribing_topic_flag_->is_set()) is_set_cnt++;
+  if (name_flag_->is_set()) is_set_cnt++;
+
+  return is_set_cnt == 1;
 }
 
 std::vector<std::string> NodeListFlagParserDelegate::CollectUsages() const {
@@ -60,6 +73,7 @@ std::vector<NamedHelpType> NodeListFlagParserDelegate::CollectNamedHelps()
                          all_flag_->help(),
                          publishing_topic_flag_->help(),
                          subscribing_topic_flag_->help(),
+                         name_flag_->help(),
                      }),
   };
 }

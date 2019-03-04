@@ -34,6 +34,7 @@ message ListNodesRequest {
 
 message ListNodesResponse {
   repeated NodeInfo node_infos = 1;
+  PubSubTopics pub_sub_topics = 2;
 }
 
 message PublishTopicRequest {

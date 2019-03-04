@@ -9,6 +9,11 @@ message NodeInfo {
   uint32 client_id = 2;
 }
 
+message PubSubTopics {
+  repeated string publishing_topics = 2;
+  repeated string subscribing_topics = 3;
+}
+
 message ClientInfo {
   uint32 id = 1;
   ChannelSource heart_beat_signaller_source = 2;
@@ -20,16 +25,17 @@ message TopicInfo {
   ChannelSource topic_source = 2;
 }
 
-// |all|, |publishing_topic| and |subscribing_topic| are mutually exclusive.
-// If either of above is set at the same time, only one is effective.
+// Element inside NodeFilter are mutually exclusive.
+// If either of one is set at the same time, only one element is effective.
 message NodeFilter {
   bool all = 1;
   string publishing_topic = 2;
   string subscribing_topic = 3;
+  string name = 4;
 }
 
-// |all| and |topic| are mutually exclusive.
-// If either of above is set at the same time, only one is effective.
+// Element inside TopicFilter are mutually exclusive.
+// If either of one is set at the same time, only one element is effective.
 message TopicFilter {
   bool all = 1;
   string topic = 2;

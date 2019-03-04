@@ -7,6 +7,7 @@
 #include "third_party/chromium/base/no_destructor.h"
 #include "third_party/chromium/base/rand_util.h"
 
+#include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/util/uuid/generator.h"
 
 namespace felicia {
@@ -78,16 +79,18 @@ std::vector<::base::WeakPtr<Node>> Client::FindNodes(
     for (auto& node : nodes_) {
       if (node->IsPublishingTopic(node_filter.publishing_topic())) {
         nodes.push_back(node->AsWeakPtr());
-#if !DCHECK_IS_ON()
         break;
-#endif
       }
     }
-    // Publishing node should be only one.
-    DCHECK(nodes.size() == 0 || nodes.size() == 1);
   } else if (!node_filter.subscribing_topic().empty()) {
     for (auto& node : nodes_) {
       if (node->IsSubsribingTopic(node_filter.subscribing_topic())) {
+        nodes.push_back(node->AsWeakPtr());
+      }
+    }
+  } else if (!node_filter.name().empty()) {
+    for (auto& node : nodes_) {
+      if (strings::Equals(node->name(), node_filter.name())) {
         nodes.push_back(node->AsWeakPtr());
       }
     }
@@ -109,13 +112,9 @@ std::vector<TopicInfo> Client::FindTopicInfos(const TopicFilter& topic_filter) {
     for (auto& node : nodes_) {
       if (node->IsPublishingTopic(topic_filter.topic())) {
         topic_infos.push_back(node->GetTopicInfo(topic_filter.topic()));
-#if !DCHECK_IS_ON()
         break;
-#endif
       }
     }
-    // Publishing topic should be only one.
-    DCHECK(topic_infos.size() == 0 || topic_infos.size() == 1);
   }
 
   return topic_infos;

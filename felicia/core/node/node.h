@@ -36,6 +36,7 @@ class EXPORT Node : public ::base::SupportsWeakPtr<Node> {
 
   const TopicInfo& GetTopicInfo(const std::string& topic) const;
   std::vector<TopicInfo> AllPublishingTopicInfos() const;
+  std::vector<std::string> AllSubscribingTopics() const;
 
  private:
   explicit Node(const NodeInfo& node_info);
