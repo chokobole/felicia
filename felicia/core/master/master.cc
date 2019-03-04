@@ -8,70 +8,6 @@
 
 namespace felicia {
 
-namespace errors {
-
-inline ::felicia::Status ClientNotRegistered() {
-  return NotFound(::base::StringPrintf("Client isn't registered yet."));
-}
-
-inline ::felicia::Status NodeNotRegistered(const NodeInfo& node_info) {
-  return NotFound(::base::StringPrintf("Node '%s' isn't registered yet.",
-                                       node_info.name().c_str()));
-}
-
-inline ::felicia::Status NodeAlreadyRegistered(const NodeInfo& node_info) {
-  return AlreadyExists(::base::StringPrintf("Node '%s' is already registered.",
-                                            node_info.name().c_str()));
-}
-
-inline ::felicia::Status TopicAlreadyPublishing(const TopicInfo& topic_info) {
-  return AlreadyExists(::base::StringPrintf(
-      "Topic '%s' is already being publishied.", topic_info.topic().c_str()));
-}
-
-inline ::felicia::Status FailedToPublish(const TopicInfo& topic_info) {
-  return Unknown(::base::StringPrintf("Failed to publish topic '%s'.",
-                                      topic_info.topic().c_str()));
-}
-
-inline ::felicia::Status TopicNotPublishingOnNode(const NodeInfo& node_info,
-                                                  const std::string& topic) {
-  return NotFound(::base::StringPrintf("Node '%s' isn't publishing topic '%s'.",
-                                       node_info.name().c_str(),
-                                       topic.c_str()));
-}
-
-inline ::felicia::Status FailedToUnpublish(const std::string& topic) {
-  return Unknown(
-      ::base::StringPrintf("Failed to unpublish topic '%s'.", topic.c_str()));
-}
-
-inline ::felicia::Status TopicAlreadySubscribingOnNode(
-    const NodeInfo& node_info, const std::string& topic) {
-  return AlreadyExists(
-      ::base::StringPrintf("Node '%s' is already subscribing topic '%s'.",
-                           node_info.name().c_str(), topic.c_str()));
-}
-
-inline ::felicia::Status FailedToSubscribe(const std::string& topic) {
-  return Unknown(
-      ::base::StringPrintf("Failed to subscribe topic '%s'.", topic.c_str()));
-}
-
-inline ::felicia::Status TopicNotSubscribingOnNode(const NodeInfo& node_info,
-                                                   const std::string& topic) {
-  return NotFound(
-      ::base::StringPrintf("Node '%s' isn't subscribing topic '%s'.",
-                           node_info.name().c_str(), topic.c_str()));
-}
-
-inline ::felicia::Status FailedToUnsubscribe(const std::string& topic) {
-  return Unknown(
-      ::base::StringPrintf("Failed to unsubscribe topic '%s'.", topic.c_str()));
-}
-
-}  // namespace errors
-
 #define CHECK_CLIENT_EXISTS(node_info)                        \
   do {                                                        \
     if (!CheckIfClientExists(node_info.client_id())) {        \
@@ -105,6 +41,10 @@ void Master::RegisterClient(const RegisterClientRequest* arg,
                             StatusCallback callback) {
   ClientInfo client_info = arg->client_info();
   std::unique_ptr<Client> client = Client::NewClient(client_info);
+  if (!client) {
+    std::move(callback).Run(errors::FailedToRegisterClient());
+  }
+
   uint32_t id = client->client_info().id();
   result->set_id(id);
   AddClient(id, std::move(client));
@@ -193,32 +133,32 @@ void Master::PublishTopic(const PublishTopicRequest* arg,
   NodeFilter node_filter;
   node_filter.set_publishing_topic(topic_info.topic());
   std::vector<::base::WeakPtr<Node>> publishing_nodes = FindNodes(node_filter);
-  internal::Reason reason;
+  Reason reason;
   if (publishing_nodes.size() > 0) {
-    reason = internal::Reason::TopicAlreadyPublishing;
+    reason = Reason::TopicAlreadyPublishing;
   } else {
     ::base::WeakPtr<Node> node = FindNode(node_info);
     ::base::AutoLock l(lock_);
     {
       if (node) {
         node->RegisterPublishingTopic(topic_info);
-        reason = internal::Reason::None;
+        reason = Reason::None;
       } else {
-        reason = internal::Reason::UnknownFailed;
+        reason = Reason::UnknownFailed;
       }
     }
   }
 
-  if (reason == internal::Reason::None) {
+  if (reason == Reason::None) {
     std::move(callback).Run(Status::OK());
     DLOG(INFO) << "[PublishTopic]: "
                << ::base::StringPrintf("topic(%s) from node(%s)",
                                        topic_info.topic().c_str(),
                                        node_info.name().c_str());
-  } else if (reason == internal::Reason::TopicAlreadyPublishing) {
+  } else if (reason == Reason::TopicAlreadyPublishing) {
     std::move(callback).Run(errors::TopicAlreadyPublishing(topic_info));
     return;
-  } else if (reason == internal::Reason::UnknownFailed) {
+  } else if (reason == Reason::UnknownFailed) {
     std::move(callback).Run(errors::FailedToPublish(topic_info));
     return;
   }
@@ -236,29 +176,29 @@ void Master::UnpublishTopic(const UnpublishTopicRequest* arg,
 
   const std::string& topic = arg->topic();
   ::base::WeakPtr<Node> node = FindNode(node_info);
-  internal::Reason reason;
+  Reason reason;
   {
     ::base::AutoLock l(lock_);
     if (node) {
       if (!node->IsPublishingTopic(topic)) {
-        reason = internal::Reason::TopicNotPublishingOnNode;
+        reason = Reason::TopicNotPublishingOnNode;
       } else {
         node->UnregisterPublishingTopic(topic);
-        reason = internal::Reason::None;
+        reason = Reason::None;
       }
     } else {
-      reason = internal::Reason::UnknownFailed;
+      reason = Reason::UnknownFailed;
     }
   }
 
-  if (reason == internal::Reason::None) {
+  if (reason == Reason::None) {
     std::move(callback).Run(Status::OK());
     DLOG(INFO) << "[UnpublishTopic]: "
                << ::base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                        node_info.name().c_str());
-  } else if (reason == internal::TopicNotPublishingOnNode) {
+  } else if (reason == Reason::TopicNotPublishingOnNode) {
     std::move(callback).Run(errors::TopicNotPublishingOnNode(node_info, topic));
-  } else if (reason == internal::Reason::UnknownFailed) {
+  } else if (reason == Reason::UnknownFailed) {
     std::move(callback).Run(errors::FailedToUnpublish(topic));
   }
 }
@@ -271,31 +211,31 @@ void Master::SubscribeTopic(const SubscribeTopicRequest* arg,
 
   const std::string& topic = arg->topic();
   ::base::WeakPtr<Node> node = FindNode(node_info);
-  internal::Reason reason;
+  Reason reason;
   {
     ::base::AutoLock l(lock_);
     if (node) {
       if (node->IsSubsribingTopic(topic)) {
-        reason = internal::Reason::TopicAlreadySubscribingOnNode;
+        reason = Reason::TopicAlreadySubscribingOnNode;
       } else {
         node->RegisterSubscribingTopic(topic);
-        reason = internal::Reason::None;
+        reason = Reason::None;
       }
     } else {
-      reason = internal::Reason::UnknownFailed;
+      reason = Reason::UnknownFailed;
     }
   }
 
-  if (reason == internal::Reason::None) {
+  if (reason == Reason::None) {
     std::move(callback).Run(Status::OK());
     DLOG(INFO) << "[SubscribeTopic]: "
                << ::base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                        node_info.name().c_str());
-  } else if (reason == internal::TopicNotPublishingOnNode) {
+  } else if (reason == Reason::TopicNotPublishingOnNode) {
     std::move(callback).Run(
         errors::TopicAlreadySubscribingOnNode(node_info, topic));
     return;
-  } else if (reason == internal::Reason::UnknownFailed) {
+  } else if (reason == Reason::UnknownFailed) {
     std::move(callback).Run(errors::FailedToSubscribe(topic));
     return;
   }
@@ -313,30 +253,30 @@ void Master::UnsubscribeTopic(const UnsubscribeTopicRequest* arg,
 
   const std::string& topic = arg->topic();
   ::base::WeakPtr<Node> node = FindNode(node_info);
-  internal::Reason reason;
+  Reason reason;
   {
     ::base::AutoLock l(lock_);
     if (node) {
       if (node->IsSubsribingTopic(topic)) {
         node->UnregisterSubscribingTopic(topic);
-        reason = internal::Reason::None;
+        reason = Reason::None;
       } else {
-        reason = internal::Reason::TopicNotSubscribingOnNode;
+        reason = Reason::TopicNotSubscribingOnNode;
       }
     } else {
-      reason = internal::Reason::UnknownFailed;
+      reason = Reason::UnknownFailed;
     }
   }
 
-  if (reason == internal::Reason::None) {
+  if (reason == Reason::None) {
     std::move(callback).Run(Status::OK());
     DLOG(INFO) << "[UnsubscribeTopic]: "
                << ::base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                        node_info.name().c_str());
-  } else if (reason == internal::TopicNotSubscribingOnNode) {
+  } else if (reason == Reason::TopicNotSubscribingOnNode) {
     std::move(callback).Run(
         errors::TopicNotSubscribingOnNode(node_info, topic));
-  } else if (reason == internal::Reason::UnknownFailed) {
+  } else if (reason == Reason::UnknownFailed) {
     std::move(callback).Run(errors::FailedToUnsubscribe(topic));
   }
 }
@@ -516,5 +456,8 @@ void Master::DoCheckHeart(const ClientInfo& client_info) {
       ::base::BindOnce(&Master::RemoveClient, ::base::Unretained(this)));
   listener->StartCheckHeart();
 }
+
+#undef CHECK_CLIENT_EXISTS
+#undef CHECK_NODE_EXISTS
 
 }  // namespace felicia

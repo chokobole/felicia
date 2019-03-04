@@ -10,23 +10,36 @@ namespace felicia {
 template <typename T, typename Traits>
 class EXPORT Generator {
  public:
+  static constexpr int kMaximumTrial = 1000;
+
   constexpr Generator() = default;
 
   T Generate() {
-    T value = Traits::Generate();
-    this->Add(value);
+    int trial = 0;
+    T value;
+    do {
+      value = Traits::Generate();
+      trial++;
+    } while (In(value) && trial < kMaximumTrial);
+
+    if (trial == kMaximumTrial) return Traits::InvalidValue();
+
+    Add(value);
     return value;
   }
 
-  void Return(const T& value) { this->Remove(value); }
+  void Return(const T& value) { Remove(value); }
 
   bool In(const T& value) { return pool_.find(value) != pool_.end(); }
 
- protected:
   void Add(const T& t) { pool_.insert_or_assign(t, true); }
 
-  void Remove(const T& t) { pool_.erase(pool_.find(t)); }
+  void Remove(const T& t) {
+    DCHECK(In(t));
+    pool_.erase(pool_.find(t));
+  }
 
+ private:
   ::base::flat_map<T, bool> pool_;
 };
 

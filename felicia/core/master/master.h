@@ -13,22 +13,11 @@
 
 #include "felicia/core/channel/channel.h"
 #include "felicia/core/lib/base/export.h"
-#include "felicia/core/lib/error/errors.h"
 #include "felicia/core/master/client/client.h"
+#include "felicia/core/master/errors.h"
 #include "felicia/core/master/master.pb.h"
 
 namespace felicia {
-
-namespace internal {
-enum Reason {
-  None,
-  TopicAlreadyPublishing,
-  TopicNotPublishingOnNode,
-  TopicAlreadySubscribingOnNode,
-  TopicNotSubscribingOnNode,
-  UnknownFailed,
-};
-}
 
 class EXPORT Master {
  public:
@@ -67,6 +56,15 @@ class EXPORT Master {
 
  private:
   friend class GrpcServer;
+
+  enum Reason {
+    None,
+    TopicAlreadyPublishing,
+    TopicNotPublishingOnNode,
+    TopicAlreadySubscribingOnNode,
+    TopicNotSubscribingOnNode,
+    UnknownFailed,
+  };
 
   // Find the node whose |node_info| is same with a given |node_info|. This is
   // thread-safe.

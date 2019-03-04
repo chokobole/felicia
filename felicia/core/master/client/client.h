@@ -15,6 +15,8 @@ namespace felicia {
 
 class EXPORT Client {
  public:
+  // Return client unless there is a nuique id for client. If so,
+  // return nullptr.
   static std::unique_ptr<Client> NewClient(const ClientInfo& client_info);
 
   ~Client();

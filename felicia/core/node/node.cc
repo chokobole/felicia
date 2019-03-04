@@ -5,6 +5,7 @@
 #include "third_party/chromium/base/memory/ptr_util.h"
 #include "third_party/chromium/base/no_destructor.h"
 #include "third_party/chromium/base/rand_util.h"
+#include "third_party/chromium/base/strings/string_util.h"
 
 #include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/util/uuid/generator.h"
@@ -31,6 +32,8 @@ struct RandNameTraits {
 
     return text;
   };
+
+  static std::string InvalidValue() { return ::base::EmptyString(); }
 };
 
 Generator<std::string, RandNameTraits>& GetNameGenerator() {
@@ -46,13 +49,20 @@ std::unique_ptr<Node> Node::NewNode(const NodeInfo& node_info) {
     if (GetNameGenerator().In(node_info.name())) {
       return nullptr;
     } else {
+      GetNameGenerator().Add(node_info.name());
       return ::base::WrapUnique(new Node(node_info));
     }
   }
 
+  std::string name = GetNameGenerator().Generate();
+  if (name.length() == 0) {
+    LOG(ERROR) << "Failed to generate name for node";
+    return nullptr;
+  }
+
   NodeInfo new_node_info;
   new_node_info.CopyFrom(node_info);
-  new_node_info.set_name(GetNameGenerator().Generate());
+  new_node_info.set_name(name);
   return ::base::WrapUnique(new Node(new_node_info));
 }
 

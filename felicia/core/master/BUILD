@@ -41,7 +41,10 @@ cc_library(
 
 cc_library(
     name = "master",
-    srcs = ["master.cc"],
+    srcs = [
+        "errors.h",
+        "master.cc",
+    ],
     hdrs = ["master.h"],
     copts = fel_copts(),
     deps = [

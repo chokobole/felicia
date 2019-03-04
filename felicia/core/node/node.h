@@ -16,8 +16,8 @@ namespace felicia {
 
 class EXPORT Node : public ::base::SupportsWeakPtr<Node> {
  public:
-  // Return a new node unless when if a |node_info| contains name and there is
-  // already registered with a given name.
+  // Return a new node unless a |node_info| contains name and there is
+  // already registered with a given name. If so, return nullptr.
   static std::unique_ptr<Node> NewNode(const NodeInfo& node_info);
 
   ~Node();

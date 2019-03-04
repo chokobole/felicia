@@ -18,6 +18,10 @@ struct RandUint32Traits {
   static uint32_t Generate() {
     return ::base::RandGenerator(std::numeric_limits<uint32_t>::max());
   };
+
+  static constexpr uint32_t InvalidValue() {
+    return std::numeric_limits<uint32_t>::max();
+  }
 };
 
 Generator<uint32_t, RandUint32Traits>& GetIDGenerator() {
@@ -30,9 +34,15 @@ Generator<uint32_t, RandUint32Traits>& GetIDGenerator() {
 
 // static
 std::unique_ptr<Client> Client::NewClient(const ClientInfo& client_info) {
+  uint32_t id = GetIDGenerator().Generate();
+  if (id == RandUint32Traits::InvalidValue()) {
+    LOG(ERROR) << "Failed to generate id for client";
+    return nullptr;
+  }
+
   ClientInfo new_client_info;
   new_client_info.CopyFrom(client_info);
-  new_client_info.set_id(GetIDGenerator().Generate());
+  new_client_info.set_id(id);
   return ::base::WrapUnique(new Client(new_client_info));
 }
 
