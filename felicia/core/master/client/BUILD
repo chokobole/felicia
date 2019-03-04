@@ -15,6 +15,7 @@ cc_library(
     deps = [
         "//felicia/core:lib",
         "//felicia/core:node",
+        "//felicia/core/util:uuid",
     ]
 )
 

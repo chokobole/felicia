@@ -66,20 +66,19 @@ class EXPORT Master {
   friend class GrpcServer;
 
   // Find the node whose |node_info| is same with a given |node_info|. This is
-  // not thread-safe.
-  Node* FindNode(const NodeInfo& node_info);
-  // Find the nodes which meets the given condition |node_filter|. This is not
   // thread-safe.
-  std::vector<Node*> FindNodes(const NodeFilter& node_filter);
+  ::base::WeakPtr<Node> FindNode(const NodeInfo& node_info);
+  // Find the nodes which meets the given condition |node_filter|. This is
+  // thread-safe.
+  std::vector<::base::WeakPtr<Node>> FindNodes(const NodeFilter& node_filter);
 
-  // Add the Client constructed from |client_info|. This is thread-safe.
-  void AddClient(const ClientInfo& client_info);
+  // Add the Client |client|. This is thread-safe.
+  void AddClient(uint32_t id, std::unique_ptr<Client> client);
   // Remove the Client whose client_info is same with |client_info|. This is
   // thread-safe.
   void RemoveClient(const ClientInfo& client_info);
-  // Add the Node to the appropriate Client, which is recored at |node_info|.
-  // This is thread-safe.
-  void AddNode(const NodeInfo& node_info);
+  // Add the Node to the appropriate Client. This is thread-safe.
+  void AddNode(std::unique_ptr<Node> node);
   // Remove the Node from the appropriate Client, which is recored at
   // |node_info|. This is thread-safe.
   void RemoveNode(const NodeInfo& node_info);

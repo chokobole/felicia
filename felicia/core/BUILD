@@ -110,6 +110,7 @@ cc_library(
     deps = [
         ":lib",
         "//felicia/core/master:master_proto_cc",
+        "//felicia/core/util:uuid",
     ]
 )
 

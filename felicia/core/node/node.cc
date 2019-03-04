@@ -2,12 +2,63 @@
 
 #include <algorithm>
 
+#include "third_party/chromium/base/memory/ptr_util.h"
+#include "third_party/chromium/base/no_destructor.h"
+#include "third_party/chromium/base/rand_util.h"
+
 #include "felicia/core/lib/strings/str_util.h"
+#include "felicia/core/util/uuid/generator.h"
 #include "third_party/chromium/base/logging.h"
 
 namespace felicia {
 
+namespace {
+
+constexpr size_t kNameLength = 12;
+
+struct RandNameTraits {
+  static std::string Generate() {
+    const char* alphadigit =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    size_t len = strlen(alphadigit);
+
+    std::string text;
+    text.resize(kNameLength);
+
+    for (size_t i = 0; i < kNameLength; ++i) {
+      text[i] = alphadigit[::base::RandGenerator(len)];
+    }
+
+    return text;
+  };
+};
+
+Generator<std::string, RandNameTraits>& GetNameGenerator() {
+  static ::base::NoDestructor<Generator<std::string, RandNameTraits>>
+      name_generator;
+  return *name_generator;
+}
+
+}  // namespace
+
+std::unique_ptr<Node> Node::NewNode(const NodeInfo& node_info) {
+  if (!node_info.name().empty()) {
+    if (GetNameGenerator().In(node_info.name())) {
+      return nullptr;
+    } else {
+      return ::base::WrapUnique(new Node(node_info));
+    }
+  }
+
+  NodeInfo new_node_info;
+  new_node_info.CopyFrom(node_info);
+  new_node_info.set_name(GetNameGenerator().Generate());
+  return ::base::WrapUnique(new Node(new_node_info));
+}
+
 Node::Node(const NodeInfo& node_info) : node_info_(node_info) {}
+
+Node::~Node() { GetNameGenerator().Return(node_info_.name()); }
 
 void Node::RegisterPublishingTopic(const TopicInfo& topic_info) {
   topic_info_map_[topic_info.topic()] = topic_info;
@@ -45,8 +96,8 @@ const TopicInfo& Node::GetTopicInfo(const std::string& topic) const {
   return topic_info_map_.find(topic)->second;
 }
 
-bool NodeNameChecker::operator()(const Node& node) {
-  return strings::Equals(node.name(), node_info_.name());
+bool NodeNameChecker::operator()(const std::unique_ptr<Node>& node) {
+  return strings::Equals(node->name(), node_info_.name());
 }
 
 }  // namespace felicia

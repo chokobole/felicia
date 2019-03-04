@@ -27,11 +27,14 @@ cc_library(
 )
 
 cc_library(
-    name = "util",
-    deps = [
-        ":command_line_interface",
-    ]
+    name = "uuid",
+    hdrs = [
+        "uuid/generator.h",
+    ],
+    copts = fel_copts(),
+    deps = ["//felicia/core:lib"]
 )
+
 
 cc_test(
     name = "util_tests",
@@ -42,7 +45,8 @@ cc_test(
     ],
     copts = fel_copts(),
     deps = [
-        ":util",
+        ":command_line_interface",
+        ":uuid",
         "//felicia/core:test_main",
     ]
 )
