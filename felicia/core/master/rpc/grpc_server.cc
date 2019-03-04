@@ -1,7 +1,9 @@
 #include "felicia/core/master/rpc/grpc_server.h"
 
 #include "grpcpp/grpcpp.h"
+#include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
+#include "third_party/chromium/base/threading/thread.h"
 
 #include "felicia/core/master/rpc/grpc_util.h"
 
@@ -28,7 +30,21 @@ Status GrpcServer::Init() {
 
 Status GrpcServer::Start() {
   master_->Run();
-  master_service_->HandleRpcsLoop();
+
+  std::vector<std::unique_ptr<::base::Thread>> threads;
+  threads.push_back(std::make_unique<::base::Thread>("RPC Loop1"));
+  threads.push_back(std::make_unique<::base::Thread>("RPC Loop2"));
+
+  std::for_each(
+      threads.begin(), threads.end(),
+      [this](const std::unique_ptr<::base::Thread>& thread) {
+        thread->Start();
+        thread->task_runner()->PostTask(
+            FROM_HERE,
+            ::base::BindOnce(&GrpcMasterService::HandleRpcsLoop,
+                             ::base::Unretained(master_service_.get())));
+      });
+
   return Status::OK();
 }
 
