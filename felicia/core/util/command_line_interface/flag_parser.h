@@ -60,8 +60,8 @@ class EXPORT FlagParser {
   //  private:
   //   int foo_;
   //   std::string bar_
-  //   IntFlag* foo_flag_;
-  //   StringDefaultFlag* bar_flag_;
+  //   std::unique_ptr<IntFlag> foo_flag_;
+  //   std::unique_ptr<StringDefaultFlag> bar_flag_;
   // }
   class EXPORT Delegate {
    public:

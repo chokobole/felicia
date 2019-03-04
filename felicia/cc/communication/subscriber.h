@@ -34,8 +34,10 @@ class EXPORT Subscriber {
 
   using OnMessageCallback = ::base::RepeatingCallback<void(MessageTy)>;
 
-  explicit Subscriber(NodeLifecycle* node_lifecycle, const NodeInfo& node_info)
-      : node_lifecycle_(node_lifecycle), node_info_(node_info) {}
+  explicit Subscriber(NodeLifecycle* node_lifecycle)
+      : node_lifecycle_(node_lifecycle) {}
+
+  void set_node_info(const NodeInfo& node_info) { node_info_ = node_info; }
 
   void Subscribe(::base::StringPiece topic,
                  OnMessageCallback on_message_callback,

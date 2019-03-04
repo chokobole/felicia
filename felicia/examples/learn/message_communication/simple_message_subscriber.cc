@@ -2,23 +2,21 @@
 
 #include "felicia/cc/communication/subscriber.h"
 #include "felicia/cc/master_proxy.h"
-#include "felicia/core/master/tool/node_create_flag_parser_delegate.h"
 #include "felicia/core/node/node_lifecycle.h"
+#include "felicia/examples/learn/message_communication/node_create_flag_parser_delegate.h"
 #include "felicia/examples/learn/message_communication/protobuf/message_spec.pb.h"
 
 namespace felicia {
 
 class CustomNode2 : public NodeLifecycle {
  public:
-  explicit CustomNode2(const NodeInfo& node_info)
-      : subscriber_(this, node_info) {}
+  explicit CustomNode2(const NodeInfo& node_info, const std::string& topic)
+      : subscriber_(this), topic_(topic) {}
 
-  void OnInit() override {
-    topic_ = "custom_message";
-    std::cout << "CustomNode2::OnInit()" << std::endl;
-  }
+  void OnInit() override { std::cout << "CustomNode2::OnInit()" << std::endl; }
 
-  void OnDidCreate() override {
+  void OnDidCreate(const NodeInfo& node_info) override {
+    subscriber_.set_node_info(node_info);
     subscriber_.Subscribe(topic_,
                           ::base::BindRepeating(&CustomNode2::OnMessage,
                                                 ::base::Unretained(this)));
@@ -49,11 +47,13 @@ int RealMain(int argc, char* argv[]) {
   }
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
+  master_proxy.Init();
 
   felicia::NodeInfo node_info;
-  node_info.set_name(std::string(delegate.name()));
+  node_info.set_name(delegate.name());
 
-  master_proxy.RequestRegisterNode<felicia::CustomNode2>(node_info);
+  master_proxy.RequestRegisterNode<felicia::CustomNode2>(node_info,
+                                                         delegate.topic());
 
   master_proxy.Run();
 

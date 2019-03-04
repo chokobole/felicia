@@ -19,15 +19,25 @@ fel_proto_library_cc(
     visibility = ["//visibility:public"]
 )
 
+cc_library(
+    name = "node_create_flag_parser_delegate",
+    srcs = ["message_communication/node_create_flag_parser_delegate.cc"],
+    hdrs = ["message_communication/node_create_flag_parser_delegate.h"],
+    copts = fel_copts(),
+    deps = [
+        "//felicia/core/util:command_line_interface",
+    ]
+)
+
 cc_binary(
     name = "simple_message_publisher",
     srcs = ["message_communication/simple_message_publisher.cc"],
     copts = fel_copts(),
     deps=[
         ":message_spec_proto_cc",
+        ":node_create_flag_parser_delegate",
         "//felicia/cc:communication",
-        "//felicia/core/master:master_proto_cc",
-        "//felicia/core/master/tool:node_create_flag_parser_delegate",
+        "//felicia/cc:master_proxy",
     ]
 )
 
@@ -37,8 +47,8 @@ cc_binary(
     copts = fel_copts(),
     deps=[
         ":message_spec_proto_cc",
+        ":node_create_flag_parser_delegate",
         "//felicia/cc:communication",
-        "//felicia/core/master:master_proto_cc",
-        "//felicia/core/master/tool:node_create_flag_parser_delegate",
+        "//felicia/cc:master_proxy",
     ]
 )

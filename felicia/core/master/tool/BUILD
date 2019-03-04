@@ -12,16 +12,6 @@ load(
 ##########################################################################################
 
 cc_library(
-    name = "node_create_flag_parser_delegate",
-    srcs = ["node_create_flag_parser_delegate.cc"],
-    hdrs = ["node_create_flag_parser_delegate.h"],
-    copts = fel_copts(),
-    deps = [
-        "//felicia/core/util:command_line_interface",
-    ],
-)
-
-cc_library(
     name = "node_list_flag_parser_delegate",
     srcs = ["node_list_flag_parser_delegate.cc"],
     hdrs = ["node_list_flag_parser_delegate.h"],
@@ -37,7 +27,6 @@ cc_library(
     hdrs = ["node_flag_parser_delegate.h"],
     copts = fel_copts(),
     deps = [
-        ":node_create_flag_parser_delegate",
         ":node_list_flag_parser_delegate",
     ],
 )

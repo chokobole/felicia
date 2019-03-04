@@ -34,8 +34,10 @@ class EXPORT Publisher {
 
   using OnMessageCallback = ::base::RepeatingCallback<MessageTy(void)>;
 
-  explicit Publisher(NodeLifecycle* node_lifecycle, const NodeInfo& node_info)
-      : node_lifecycle_(node_lifecycle), node_info_(node_info) {}
+  explicit Publisher(NodeLifecycle* node_lifecycle)
+      : node_lifecycle_(node_lifecycle) {}
+
+  void set_node_info(const NodeInfo& node_info) { node_info_ = node_info; }
 
   void Publish(::base::StringPiece topic, OnMessageCallback on_message_callback,
                const ChannelDef& channel_def = ChannelDef(),

@@ -5,7 +5,6 @@
 
 #include "third_party/chromium/base/macros.h"
 
-#include "felicia/core/lib/base/export.h"
 #include "felicia/core/util/command_line_interface/flag.h"
 
 namespace felicia {

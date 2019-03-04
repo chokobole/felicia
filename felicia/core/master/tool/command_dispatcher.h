@@ -20,7 +20,6 @@ class CommandDispatcher {
  private:
   // Node Commands
   void Dispatch(const NodeFlagParserDelegate& delegate) const;
-  void Dispatch(const NodeCreateFlagParserDelegate& delegate) const;
   void Dispatch(const NodeListFlagParserDelegate& delegate) const;
 
   void OnListNodesAsync(GrpcMasterClient* client, ListNodesRequest* request,

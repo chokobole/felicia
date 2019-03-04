@@ -35,17 +35,11 @@ void CommandDispatcher::Dispatch(const NodeFlagParserDelegate& delegate) const {
     case NodeFlagParserDelegate::Command::COMMAND_SELF:
       NOTREACHED();
       break;
-    case NodeFlagParserDelegate::Command::COMMAND_CREATE:
-      Dispatch(delegate.create_delegate());
-      break;
     case NodeFlagParserDelegate::Command::COMMAND_LIST:
       Dispatch(delegate.list_delegate());
       break;
   }
 }
-
-void CommandDispatcher::Dispatch(
-    const NodeCreateFlagParserDelegate& delegate) const {}
 
 void CommandDispatcher::Dispatch(
     const NodeListFlagParserDelegate& delegate) const {

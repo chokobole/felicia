@@ -16,7 +16,7 @@ class EXPORT NodeLifecycle {
   // It is called before created, each node has to initialize.
   virtual void OnInit() {}
   // It is called when succeeded to be created.
-  virtual void OnDidCreate() {}
+  virtual void OnDidCreate(const NodeInfo& node_info) {}
   // It is called when error happens
   virtual void OnError(const Status& status) {}
 

@@ -16,7 +16,9 @@ MasterProxy::MasterProxy()
           std::make_unique<::base::MessageLoop>(::base::MessageLoop::TYPE_IO)),
       run_loop_(std::make_unique<::base::RunLoop>()),
       topic_info_watcher_(this),
-      heart_beat_signaller_(this) {
+      heart_beat_signaller_(this) {}
+
+void MasterProxy::Init() {
   auto channel = ConnectGRPCService();
   master_client_interface_ = std::make_unique<GrpcMasterClient>(channel);
   master_client_interface_->Start();
@@ -62,6 +64,20 @@ void MasterProxy::OnRegisterClient(::base::WaitableEvent* event,
                                    const Status& s) {
   client_info_.set_id(response->id());
   event->Signal();
+}
+
+void MasterProxy::OnRegisterNodeAsync(std::unique_ptr<NodeLifecycle> node,
+                                      RegisterNodeRequest* request,
+                                      RegisterNodeResponse* response,
+                                      const Status& s) {
+  if (!s.ok()) {
+    LOG(ERROR) << "Failed to create node";
+    return;
+  }
+
+  const NodeInfo& node_info = response->node_info();
+  node->OnDidCreate(node_info);
+  nodes_.push_back(std::move(node));
 }
 
 void MasterProxy::PublishTopicAsync(PublishTopicRequest* request,

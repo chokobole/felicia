@@ -45,9 +45,9 @@ class EXPORT MasterProxy final : public TaskRunnerInterface {
         from_here, std::move(callback), delay);
   }
 
-  template <typename NodeTy>
+  template <typename NodeTy, typename... Args>
   std::enable_if_t<std::is_base_of<NodeLifecycle, NodeTy>::value, void>
-  RequestRegisterNode(const NodeInfo& node_info);
+  RequestRegisterNode(const NodeInfo& node_info, Args&&... args);
 
   void PublishTopicAsync(PublishTopicRequest* request,
                          PublishTopicResponse* response,
@@ -67,8 +67,8 @@ class EXPORT MasterProxy final : public TaskRunnerInterface {
                         RegisterClientRequest* request,
                         RegisterClientResponse* response, const Status& s);
 
-  template <typename NodeTy>
-  void OnRegisterNodeAsync(RegisterNodeRequest* request,
+  void OnRegisterNodeAsync(std::unique_ptr<NodeLifecycle> node,
+                           RegisterNodeRequest* request,
                            RegisterNodeResponse* response, const Status& s);
 
   std::unique_ptr<::base::MessageLoop> message_loop_;
@@ -85,37 +85,23 @@ class EXPORT MasterProxy final : public TaskRunnerInterface {
   DISALLOW_COPY_AND_ASSIGN(MasterProxy);
 };
 
-template <typename NodeTy>
+template <typename NodeTy, typename... Args>
 std::enable_if_t<std::is_base_of<NodeLifecycle, NodeTy>::value, void>
-MasterProxy::RequestRegisterNode(const NodeInfo& node_info) {
+MasterProxy::RequestRegisterNode(const NodeInfo& node_info, Args&&... args) {
   RegisterNodeRequest* request = new RegisterNodeRequest();
   NodeInfo* new_node_info = request->mutable_node_info();
   new_node_info->set_client_id(client_info_.id());
   new_node_info->set_name(node_info.name());
   RegisterNodeResponse* response = new RegisterNodeResponse();
 
+  std::unique_ptr<NodeLifecycle> node =
+      std::make_unique<NodeTy>(node_info, args...);
+  node->OnInit();
   master_client_interface_->RegisterNodeAsync(
       request, response,
-      ::base::BindOnce(&MasterProxy::OnRegisterNodeAsync<NodeTy>,
-                       ::base::Unretained(this), ::base::Owned(request),
-                       ::base::Owned(response)));
-}
-
-template <typename NodeTy>
-void MasterProxy::OnRegisterNodeAsync(RegisterNodeRequest* request,
-                                      RegisterNodeResponse* response,
-                                      const Status& s) {
-  if (!s.ok()) {
-    LOG(ERROR) << "Failed to create node";
-    return;
-  }
-
-  const NodeInfo& node_info = response->node_info();
-  std::unique_ptr<NodeLifecycle> node = std::make_unique<NodeTy>(node_info);
-  nodes_.push_back(std::move(node));
-  NodeLifecycle* n = nodes_.back().get();
-  n->OnInit();
-  n->OnDidCreate();
+      ::base::BindOnce(&MasterProxy::OnRegisterNodeAsync,
+                       ::base::Unretained(this), ::base::Passed(&node),
+                       ::base::Owned(request), ::base::Owned(response)));
 }
 
 }  // namespace felicia
