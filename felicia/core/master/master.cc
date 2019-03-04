@@ -151,8 +151,8 @@ void Master::UnregisterNode(const UnregisterNodeRequest* arg,
   std::move(callback).Run(Status::OK());
 }
 
-void Master::GetNodes(const GetNodesRequest* arg, GetNodesResponse* result,
-                      StatusCallback callback) {
+void Master::ListNodes(const ListNodesRequest* arg, ListNodesResponse* result,
+                       StatusCallback callback) {
   const NodeFilter& node_filter = arg->node_filter();
   std::vector<::base::WeakPtr<Node>> nodes = FindNodes(node_filter);
   {
@@ -161,7 +161,7 @@ void Master::GetNodes(const GetNodesRequest* arg, GetNodesResponse* result,
       if (node) *result->add_node_infos() = node->node_info();
     }
   }
-  DLOG(INFO) << "[GetNodes]";
+  DLOG(INFO) << "[ListNodes]";
   std::move(callback).Run(Status::OK());
 }
 
@@ -323,6 +323,17 @@ void Master::UnsubscribeTopic(const UnsubscribeTopicRequest* arg,
   }
 }
 
+void Master::ListTopics(const ListTopicsRequest* arg,
+                        ListTopicsResponse* result, StatusCallback callback) {
+  const TopicFilter& topic_filter = arg->topic_filter();
+  std::vector<TopicInfo> topic_infos = FindTopicInfos(topic_filter);
+  for (auto& topic_info : topic_infos) {
+    *result->add_topic_infos() = topic_info;
+  }
+  DLOG(INFO) << "[ListTopics]";
+  std::move(callback).Run(Status::OK());
+}
+
 void Master::Gc() { LOG(ERROR) << "Not implemented"; }
 
 ::base::WeakPtr<Node> Master::FindNode(const NodeInfo& node_info) {
@@ -342,6 +353,7 @@ std::vector<::base::WeakPtr<Node>> Master::FindNodes(
       std::vector<::base::WeakPtr<Node>> tmp_nodes =
           it->second->FindNodes(node_filter);
       nodes.insert(nodes.end(), tmp_nodes.begin(), tmp_nodes.end());
+      // Because there can be only one publishing node.
       if (nodes.size() > 0) return nodes;
       it++;
     }
@@ -354,6 +366,31 @@ std::vector<::base::WeakPtr<Node>> Master::FindNodes(
     }
   }
   return nodes;
+}
+
+std::vector<TopicInfo> Master::FindTopicInfos(const TopicFilter& topic_filter) {
+  ::base::AutoLock l(lock_);
+  std::vector<TopicInfo> topic_infos;
+  auto it = client_map_.begin();
+  if (!topic_filter.topic().empty()) {
+    while (it != client_map_.end()) {
+      std::vector<TopicInfo> tmp_topic_infos =
+          it->second->FindTopicInfos(topic_filter);
+      topic_infos.insert(topic_infos.begin(), tmp_topic_infos.begin(),
+                         tmp_topic_infos.end());
+      if (topic_infos.size() > 0) return topic_infos;
+      it++;
+    }
+  } else {
+    while (it != client_map_.end()) {
+      std::vector<TopicInfo> tmp_topic_infos =
+          it->second->FindTopicInfos(topic_filter);
+      topic_infos.insert(topic_infos.begin(), tmp_topic_infos.begin(),
+                         tmp_topic_infos.end());
+      it++;
+    }
+  }
+  return topic_infos;
 }
 
 void Master::AddClient(uint32_t id, std::unique_ptr<Client> client) {

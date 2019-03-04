@@ -67,6 +67,8 @@ bool ToNetIPEndPoint(const ChannelSource& channel_source,
 ChannelSource ToChannelSource(const ::net::IPEndPoint& ip_endpoint,
                               const ChannelDef channel_def = ChannelDef());
 
+std::string ToString(const ChannelDef& channel_def);
+
 ChannelSource PickRandomChannelSource(
     const ChannelDef& channel_def = ChannelDef());
 

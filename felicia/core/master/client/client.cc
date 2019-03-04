@@ -96,4 +96,29 @@ std::vector<::base::WeakPtr<Node>> Client::FindNodes(
   return nodes;
 }
 
+std::vector<TopicInfo> Client::FindTopicInfos(const TopicFilter& topic_filter) {
+  DFAKE_SCOPED_LOCK(add_remove_);
+  std::vector<TopicInfo> topic_infos;
+  if (topic_filter.all()) {
+    for (auto& node : nodes_) {
+      std::vector<TopicInfo> tmp_topic_infos = node->AllPublishingTopicInfos();
+      topic_infos.insert(topic_infos.end(), tmp_topic_infos.begin(),
+                         tmp_topic_infos.end());
+    }
+  } else if (!topic_filter.topic().empty()) {
+    for (auto& node : nodes_) {
+      if (node->IsPublishingTopic(topic_filter.topic())) {
+        topic_infos.push_back(node->GetTopicInfo(topic_filter.topic()));
+#if !DCHECK_IS_ON()
+        break;
+#endif
+      }
+    }
+    // Publishing topic should be only one.
+    DCHECK(topic_infos.size() == 0 || topic_infos.size() == 1);
+  }
+
+  return topic_infos;
+}
+
 }  // namespace felicia

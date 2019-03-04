@@ -15,15 +15,24 @@ message ClientInfo {
   ChannelSource topic_watcher_source = 3;
 }
 
+message TopicInfo {
+  string topic = 1;
+  ChannelSource topic_source = 2;
+}
+
+// |all|, |publishing_topic| and |subscribing_topic| are mutually exclusive.
+// If either of above is set at the same time, only one is effective.
 message NodeFilter {
   bool all = 1;
   string publishing_topic = 2;
   string subscribing_topic = 3;
 }
 
-message TopicInfo {
-  string topic = 1;
-  ChannelSource topic_source = 2;
+// |all| and |topic| are mutually exclusive.
+// If either of above is set at the same time, only one is effective.
+message TopicFilter {
+  bool all = 1;
+  string topic = 2;
 }
 
 message HeartBeat {

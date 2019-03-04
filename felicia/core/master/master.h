@@ -44,8 +44,8 @@ class EXPORT Master {
   void UnregisterNode(const UnregisterNodeRequest* arg,
                       UnregisterNodeResponse* result, StatusCallback callback);
 
-  void GetNodes(const GetNodesRequest* arg, GetNodesResponse* result,
-                StatusCallback callback);
+  void ListNodes(const ListNodesRequest* arg, ListNodesResponse* result,
+                 StatusCallback callback);
 
   void PublishTopic(const PublishTopicRequest* arg,
                     PublishTopicResponse* result, StatusCallback callback);
@@ -60,6 +60,9 @@ class EXPORT Master {
                         UnsubscribeTopicResponse* result,
                         StatusCallback callback);
 
+  void ListTopics(const ListTopicsRequest* arg, ListTopicsResponse* result,
+                  StatusCallback callback);
+
   void Gc();
 
  private:
@@ -68,9 +71,12 @@ class EXPORT Master {
   // Find the node whose |node_info| is same with a given |node_info|. This is
   // thread-safe.
   ::base::WeakPtr<Node> FindNode(const NodeInfo& node_info);
-  // Find the nodes which meets the given condition |node_filter|. This is
+  // Find the nodes which meet the given condition |node_filter|. This is
   // thread-safe.
   std::vector<::base::WeakPtr<Node>> FindNodes(const NodeFilter& node_filter);
+  // Find the topics infos which meet the give condition |topic_filter|. This
+  // is thread-safe.
+  std::vector<TopicInfo> FindTopicInfos(const TopicFilter& topic_filter);
 
   // Add the Client |client|. This is thread-safe.
   void AddClient(uint32_t id, std::unique_ptr<Client> client);

@@ -20,7 +20,7 @@ class NodeCreateFlagParserDelegate : public FlagParser::Delegate {
 
   bool Parse(FlagParser& parser) override;
 
-  bool Validate() override;
+  bool Validate() const override;
 
   std::vector<std::string> CollectUsages() const override;
   std::string Description() const override;

@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_MASTER_TOOL_NODE_GET_PARSER_DELEGATE_H_
-#define FELICIA_CORE_MASTER_TOOL_NODE_GET_PARSER_DELEGATE_H_
+#ifndef FELICIA_CORE_MASTER_TOOL_NODE_LIST_PARSER_DELEGATE_H_
+#define FELICIA_CORE_MASTER_TOOL_NODE_LIST_PARSER_DELEGATE_H_
 
 #include <memory>
 
@@ -10,18 +10,18 @@
 
 namespace felicia {
 
-class EXPORT NodeGetFlagParserDelegate : public FlagParser::Delegate {
+class NodeListFlagParserDelegate : public FlagParser::Delegate {
  public:
-  NodeGetFlagParserDelegate();
-  ~NodeGetFlagParserDelegate();
+  NodeListFlagParserDelegate();
+  ~NodeListFlagParserDelegate();
 
   bool all() const { return all_; }
-  ::base::StringPiece publishing_topic() const { return publishing_topic_; }
-  ::base::StringPiece subscribing_topic() const { return subscribing_topic_; }
+  const std::string& publishing_topic() const { return publishing_topic_; }
+  const std::string& subscribing_topic() const { return subscribing_topic_; }
 
   bool Parse(FlagParser& parser) override;
 
-  bool Validate() override;
+  bool Validate() const override;
 
   std::vector<std::string> CollectUsages() const override;
   std::string Description() const override;
@@ -35,9 +35,9 @@ class EXPORT NodeGetFlagParserDelegate : public FlagParser::Delegate {
   std::unique_ptr<StringFlag> publishing_topic_flag_;
   std::unique_ptr<StringFlag> subscribing_topic_flag_;
 
-  DISALLOW_COPY_AND_ASSIGN(NodeGetFlagParserDelegate);
+  DISALLOW_COPY_AND_ASSIGN(NodeListFlagParserDelegate);
 };
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MASTER_TOOL_NODE_GET_PARSER_DELEGATE_H_
+#endif  // FELICIA_CORE_MASTER_TOOL_NODE_LIST_PARSER_DELEGATE_H_

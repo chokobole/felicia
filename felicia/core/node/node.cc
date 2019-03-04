@@ -96,6 +96,16 @@ const TopicInfo& Node::GetTopicInfo(const std::string& topic) const {
   return topic_info_map_.find(topic)->second;
 }
 
+std::vector<TopicInfo> Node::AllPublishingTopicInfos() const {
+  std::vector<TopicInfo> topic_infos;
+  auto it = topic_info_map_.begin();
+  while (it != topic_info_map_.end()) {
+    topic_infos.push_back(it->second);
+    it++;
+  }
+  return topic_infos;
+}
+
 bool NodeNameChecker::operator()(const std::unique_ptr<Node>& node) {
   return strings::Equals(node->name(), node_info_.name());
 }

@@ -49,7 +49,7 @@ class EXPORT FlagParser {
   //     return PARSE_OPTIONAL_FLAG(parser, bar_flag_);
   //   }
   //
-  //   bool Validate() override {
+  //   bool Validate() const override {
   //     return foo_flag_->is_set();
   //   }
   //
@@ -74,7 +74,7 @@ class EXPORT FlagParser {
     virtual std::string Description() const { return ""; }
     virtual std::vector<NamedHelpType> CollectNamedHelps() const { return {}; }
 
-    virtual bool Validate() { return true; }
+    virtual bool Validate() const { return true; }
 
    protected:
     void PreParse() { parser_index_++; }
@@ -175,24 +175,24 @@ void AddHelpIfOptional(std::vector<std::string>& helps, T&& flag,
   AddHelpIfOptional(helps, std::forward<Rest>(rest)...);
 }
 
-#define AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(...)                      \
-  std::vector<std::string> CollectUsages() const override {               \
-    std::vector<std::string> usages;                                      \
-    usages.push_back("[-h]");                                             \
-    AddUsage(usages, __VA_ARGS__);                                        \
-    return usages;                                                        \
-  }                                                                       \
-  std::vector<NamedHelpType> CollectNamedHelps() const override {         \
-    std::vector<std::string> positional_helps;                            \
-    AddHelpIfPositional(positional_helps, __VA_ARGS__);                   \
-    std::vector<std::string> optional_helps;                              \
-    AddHelpIfOptional(optional_helps, __VA_ARGS__);                       \
-    std::vector<NamedHelpType> helps;                                     \
-    helps.push_back(std::make_pair(BLUE_COLORED("Positional arguments:"), \
-                                   std::move(positional_helps)));         \
-    helps.push_back(std::make_pair(YELLOW_COLORED("Optional arguments:"), \
-                                   std::move(optional_helps)));           \
-    return helps;                                                         \
+#define AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(...)                         \
+  std::vector<std::string> CollectUsages() const override {                  \
+    std::vector<std::string> usages;                                         \
+    usages.push_back("[-h]");                                                \
+    AddUsage(usages, __VA_ARGS__);                                           \
+    return usages;                                                           \
+  }                                                                          \
+  std::vector<NamedHelpType> CollectNamedHelps() const override {            \
+    std::vector<std::string> positional_helps;                               \
+    AddHelpIfPositional(positional_helps, __VA_ARGS__);                      \
+    std::vector<std::string> optional_helps;                                 \
+    AddHelpIfOptional(optional_helps, __VA_ARGS__);                          \
+    std::vector<NamedHelpType> helps;                                        \
+    helps.push_back(std::make_pair(TextStyle::Blue("Positional arguments:"), \
+                                   std::move(positional_helps)));            \
+    helps.push_back(std::make_pair(TextStyle::Yellow("Optional arguments:"), \
+                                   std::move(optional_helps)));              \
+    return helps;                                                            \
   }
 
 #define PARSE_POSITIONAL_FLAG(paresr, N, ...)        \

@@ -38,9 +38,10 @@ class GrpcMasterClient : public MasterClientInterface {
 
   CLIENT_METHOD(RegisterClient);
   CLIENT_METHOD(RegisterNode);
-  CLIENT_METHOD(GetNodes);
+  CLIENT_METHOD(ListNodes);
   CLIENT_METHOD(PublishTopic);
   CLIENT_METHOD(SubscribeTopic);
+  CLIENT_METHOD(ListTopics);
 
 #undef CLIENT_METHOD
 

@@ -2,20 +2,40 @@
 #define FELICIA_CORE_UTIL_COMMAND_LINE_INTERFACE_TEXT_STYLE_H_
 
 #include "third_party/chromium/base/strings/strcat.h"
+#include "third_party/chromium/base/strings/string_piece.h"
 
-#define RED_STYLE "\033[91m"
-#define GREEN_STYLE "\033[32m"
-#define BLUE_STYLE "\033[34m"
-#define YELLOW_STYLE "\033[93m"
-#define BOLD_STYLE "\033[1m"
-#define NONE_STYLE "\033[0m"
+#include "felicia/core/lib/base/export.h"
 
-#define APPLY_STYLE(style, text) ::base::StrCat({style, text, NONE_STYLE})
+namespace felicia {
 
-#define RED_COLORED(text) APPLY_STYLE(RED_STYLE, text)
-#define GREEN_COLORED(text) APPLY_STYLE(GREEN_STYLE, text)
-#define BLUE_COLORED(text) APPLY_STYLE(BLUE_STYLE, text)
-#define YELLOW_COLORED(text) APPLY_STYLE(YELLOW_STYLE, text)
-#define BOLD(text) APPLY_STYLE(BOLD_STYLE, text)
+class EXPORT TextStyle {
+ public:
+#define STYLE_METHOD(Style)                            \
+  static std::string Style(::base::StringPiece text) { \
+    return ApplyStyle(k##Style, text);                 \
+  }
+
+  STYLE_METHOD(Red);
+  STYLE_METHOD(Green);
+  STYLE_METHOD(Blue);
+  STYLE_METHOD(Yellow);
+  STYLE_METHOD(Bold);
+
+#undef STYLE_METHOD
+
+ private:
+  static std::string ApplyStyle(const char* style, ::base::StringPiece text) {
+    return ::base::StrCat({style, text.data(), kNone});
+  }
+
+  static constexpr const char* kRed = "\033[91m";
+  static constexpr const char* kGreen = "\033[32m";
+  static constexpr const char* kBlue = "\033[34m";
+  static constexpr const char* kYellow = "\033[93m";
+  static constexpr const char* kBold = "\033[1m";
+  static constexpr const char* kNone = "\033[0m";
+};
+
+}  // namespace felicia
 
 #endif  // FELICIA_CORE_UTIL_COMMAND_LINE_INTERFACE_TEXT_STYLE_H_

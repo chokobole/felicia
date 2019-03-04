@@ -43,11 +43,13 @@ class GrpcMasterService {
       MasterCall<RegisterClientRequest, RegisterClientResponse>* call);
   void HandleRegisterNode(
       MasterCall<RegisterNodeRequest, RegisterNodeResponse>* call);
-  void HandleGetNodes(MasterCall<GetNodesRequest, GetNodesResponse>* call);
+  void HandleListNodes(MasterCall<ListNodesRequest, ListNodesResponse>* call);
   void HandlePublishTopic(
       MasterCall<PublishTopicRequest, PublishTopicResponse>* call);
   void HandleSubscribeTopic(
       MasterCall<SubscribeTopicRequest, SubscribeTopicResponse>* call);
+  void HandleListTopics(
+      MasterCall<ListTopicsRequest, ListTopicsResponse>* call);
 
   Master* master_;
   std::unique_ptr<::grpc::ServerCompletionQueue> cq_;

@@ -25,6 +25,14 @@ ChannelSource ToChannelSource(const ::net::IPEndPoint& ip_endpoint,
   return channel_source;
 }
 
+std::string ToString(const ChannelDef& channel_def) {
+  if (channel_def.type() == ChannelDef_Type_TCP)
+    return "TCP";
+  else if (channel_def.type() == ChannelDef_Type_UDP)
+    return "UDP";
+  NOTREACHED();
+}
+
 ChannelSource PickRandomChannelSource(const ChannelDef channel_def) {
   ChannelSource channel_source;
   IPEndPoint* ip_endpoint = channel_source.mutable_ip_endpoint();

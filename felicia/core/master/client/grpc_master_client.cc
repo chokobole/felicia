@@ -22,41 +22,4 @@ Status GrpcMasterClient::Shutdown() {
   return Status::OK();
 }
 
-// void GrpcMasterClient::RegisterNodeAsync(const RegisterNodeRequest* request,
-//                                          RegisterNodeResponse* response,
-//                                          StatusCallback done) {
-//   new GrpcAsyncClientCall<grpc::MasterService::Stub, RegisterNodeRequest,
-//                           RegisterNodeResponse>(
-//       stub_.get(), request, response,
-//       &grpc::MasterService::Stub::PrepareAsyncRegisterNode, &cq_, done);
-// }
-
-// void GrpcMasterClient::GetNodesAsync(const GetNodesRequest* request,
-//                                     GetNodesResponse* response,
-//                                     StatusCallback done) {
-//   new GrpcAsyncClientCall<grpc::MasterService::Stub, GetNodesRequest,
-//                     GetNodesResponse>(
-//       stub_.get(), request, response,
-//       &grpc::MasterService::Stub::PrepareAsyncGetNodes, &cq_, done);
-// }
-
-// void GrpcMasterClient::PublishTopicAsync(const PublishTopicRequest* request,
-//                                          PublishTopicResponse* response,
-//                                          StatusCallback done) {
-//   new GrpcAsyncClientCall<grpc::MasterService::Stub, PublishTopicRequest,
-//                     PublishTopicResponse>(
-//       stub_.get(), request, response,
-//       &grpc::MasterService::Stub::PrepareAsyncPublishTopic, &cq_, done);
-// }
-
-// void GrpcMasterClient::SubscribeTopicAsync(const SubscribeTopicRequest*
-// request,
-//                                            SubscribeTopicResponse* response,
-//                                            StatusCallback done) {
-//   new GrpcAsyncClientCall<grpc::MasterService::Stub, SubscribeTopicRequest,
-//                     SubscribeTopicResponse>(
-//       stub_.get(), request, response,
-//       &grpc::MasterService::Stub::PrepareAsyncSubscribeTopic, &cq_, done);
-// }
-
 }  // namespace felicia

@@ -21,7 +21,7 @@ bool FlagParser::Parse(int argc, char** argv, Delegate* delegate) {
       return false;
     }
     if (!delegate->Parse(*this)) {
-      std::cerr << RED_COLORED("Error: ") << current() << " is not valid"
+      std::cerr << TextStyle::Red("Error: ") << current() << " is not valid"
                 << std::endl;
       if (!suppress_help_) PrintHelp(delegate);
       return false;
@@ -44,7 +44,7 @@ void FlagParser::Proceed() {
 void FlagParser::PrintUsage(Delegate* delegate) {
   auto usages = delegate->CollectUsages();
 
-  std::cerr << GREEN_COLORED("Usage: ") << std::endl;
+  std::cerr << TextStyle::Green("Usage: ") << std::endl;
   std::cerr << program_name_;
   const int line_width = 50;
   size_t flag_start = program_name_.length();

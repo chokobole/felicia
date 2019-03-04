@@ -34,7 +34,7 @@ class BoolFlagParserDelegate : public FlagParser::Delegate {
     return PARSE_OPTIONAL_FLAG(parser, flag_);
   }
 
-  bool Validate() override { return flag_->is_set(); }
+  bool Validate() const override { return flag_->is_set(); }
 
   AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(flag_)
 
@@ -84,7 +84,7 @@ class IntFlagParserDelegate : public FlagParser::Delegate {
     return PARSE_OPTIONAL_FLAG(parser, flag2_);
   }
 
-  bool Validate() override { return flag_->is_set(); };
+  bool Validate() const override { return flag_->is_set(); };
 
   AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(flag_, flag2_)
 

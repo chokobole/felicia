@@ -10,14 +10,14 @@
 
 namespace felicia {
 
-static const char* CREATE = "create";
-static const char* GET = "get";
+static constexpr const char* kCreate = "create";
+static constexpr const char* kLs = "ls";
 
 NodeFlagParserDelegate::NodeFlagParserDelegate()
     : current_command_(COMMAND_SELF) {
   {
     StringChoicesFlag::Builder builder(MakeValueStore<std::string>(
-        &command_, "", Choices<std::string>{CREATE, GET}));
+        &command_, "", Choices<std::string>{kCreate, kLs}));
     auto flag = builder.SetName("COMMAND").Build();
     command_flag_ = std::make_unique<StringChoicesFlag>(flag);
   }
@@ -29,22 +29,33 @@ bool NodeFlagParserDelegate::Parse(FlagParser& parser) {
   switch (current_command_) {
     case COMMAND_SELF:
       if (command_flag_->Parse(parser)) {
-        if (strings::Equals(command_, CREATE)) {
+        if (strings::Equals(command_, kCreate)) {
           current_command_ = COMMAND_CREATE;
           parser.set_program_name(::base::StringPrintf(
-              "%s %s", parser.program_name().c_str(), CREATE));
-        } else if (strings::Equals(command_, GET)) {
-          current_command_ = COMMAND_GET;
+              "%s %s", parser.program_name().c_str(), kCreate));
+        } else if (strings::Equals(command_, kLs)) {
+          current_command_ = COMMAND_LIST;
           parser.set_program_name(::base::StringPrintf(
-              "%s %s", parser.program_name().c_str(), GET));
+              "%s %s", parser.program_name().c_str(), kLs));
         }
         return true;
       }
       return false;
     case COMMAND_CREATE:
       return create_delegate_.Parse(parser);
-    case COMMAND_GET:
-      return get_delegate_.Parse(parser);
+    case COMMAND_LIST:
+      return list_delegate_.Parse(parser);
+  }
+}
+
+bool NodeFlagParserDelegate::Validate() const {
+  switch (current_command_) {
+    case COMMAND_SELF:
+      return false;
+    case COMMAND_CREATE:
+      return create_delegate_.Validate();
+    case COMMAND_LIST:
+      return list_delegate_.Validate();
   }
 }
 
@@ -54,8 +65,8 @@ std::vector<std::string> NodeFlagParserDelegate::CollectUsages() const {
       return {"COMMAND"};
     case COMMAND_CREATE:
       return create_delegate_.CollectUsages();
-    case COMMAND_GET:
-      return get_delegate_.CollectUsages();
+    case COMMAND_LIST:
+      return list_delegate_.CollectUsages();
   }
 }
 
@@ -65,8 +76,8 @@ std::string NodeFlagParserDelegate::Description() const {
       return "Manage nodes";
     case COMMAND_CREATE:
       return create_delegate_.Description();
-    case COMMAND_GET:
-      return get_delegate_.Description();
+    case COMMAND_LIST:
+      return list_delegate_.Description();
   }
 }
 
@@ -74,17 +85,17 @@ std::vector<NamedHelpType> NodeFlagParserDelegate::CollectNamedHelps() const {
   switch (current_command_) {
     case COMMAND_SELF: {
       return {
-          std::make_pair(YELLOW_COLORED("Commands:"),
+          std::make_pair(TextStyle::Yellow("Commands:"),
                          std::vector<std::string>{
-                             MakeNamedHelpText(CREATE, "Create nodes"),
-                             MakeNamedHelpText(GET, "Get nodes with filters"),
+                             MakeNamedHelpText(kCreate, "Create nodes"),
+                             MakeNamedHelpText(kLs, "List nodes"),
                          }),
       };
     }
     case COMMAND_CREATE:
       return create_delegate_.CollectNamedHelps();
-    case COMMAND_GET:
-      return get_delegate_.CollectNamedHelps();
+    case COMMAND_LIST:
+      return list_delegate_.CollectNamedHelps();
   }
 }
 

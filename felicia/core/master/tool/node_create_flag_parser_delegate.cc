@@ -2,8 +2,6 @@
 
 #include <iostream>
 
-#include "third_party/chromium/net/base/ip_address.h"
-
 #include "felicia/core/util/command_line_interface/text_style.h"
 
 namespace felicia {
@@ -28,9 +26,9 @@ bool NodeCreateFlagParserDelegate::Parse(FlagParser& parser) {
   return PARSE_OPTIONAL_FLAG(parser, name_flag_, port_flag_);
 }
 
-bool NodeCreateFlagParserDelegate::Validate() {
+bool NodeCreateFlagParserDelegate::Validate() const {
   if (port_flag_->is_set() && !(1024 <= port_ && port_ <= 65535)) {
-    std::cerr << RED_COLORED("Error: ") << "port is not in 1024 ~ 65535"
+    std::cerr << TextStyle::Red("Error: ") << "port is not in 1024 ~ 65535"
               << std::endl;
     return false;
   }
@@ -49,7 +47,7 @@ std::string NodeCreateFlagParserDelegate::Description() const {
 std::vector<NamedHelpType> NodeCreateFlagParserDelegate::CollectNamedHelps()
     const {
   return {
-      std::make_pair(YELLOW_COLORED("Options:"),
+      std::make_pair(TextStyle::Yellow("Options:"),
                      std::vector<std::string>{
                          name_flag_->help(),
                          port_flag_->help(),

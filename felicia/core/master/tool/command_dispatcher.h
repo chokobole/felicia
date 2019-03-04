@@ -7,9 +7,7 @@
 
 #include "felicia/core/master/client/grpc_master_client.h"
 #include "felicia/core/master/tool/flag_parser_delegate.h"
-#include "felicia/core/master/tool/node_create_flag_parser_delegate.h"
-#include "felicia/core/master/tool/node_flag_parser_delegate.h"
-#include "felicia/core/master/tool/node_get_flag_parser_delegate.h"
+#include "felicia/core/master/tool/topic_flag_parser_delegate.h"
 
 namespace felicia {
 
@@ -20,12 +18,20 @@ class CommandDispatcher {
   void Dispatch(const FlagParserDelegate& delegate) const;
 
  private:
+  // Node Commands
   void Dispatch(const NodeFlagParserDelegate& delegate) const;
   void Dispatch(const NodeCreateFlagParserDelegate& delegate) const;
-  void Dispatch(const NodeGetFlagParserDelegate& delegate) const;
+  void Dispatch(const NodeListFlagParserDelegate& delegate) const;
 
-  void OnGetNodesAsync(GrpcMasterClient* client, GetNodesRequest* request,
-                       GetNodesResponse* response, const Status& s) const;
+  void OnListNodesAsync(GrpcMasterClient* client, ListNodesRequest* request,
+                        ListNodesResponse* response, const Status& s) const;
+
+  // Topic Commands
+  void Dispatch(const TopicFlagParserDelegate& delegate) const;
+  void Dispatch(const TopicListFlagParserDelegate& delegate) const;
+
+  void OnListTopicsAsync(GrpcMasterClient* client, ListTopicsRequest* request,
+                         ListTopicsResponse* response, const Status& s) const;
 
   std::unique_ptr<GrpcMasterClient> master_client_;
 

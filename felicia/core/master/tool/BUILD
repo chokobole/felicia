@@ -18,18 +18,16 @@ cc_library(
     copts = fel_copts(),
     deps = [
         "//felicia/core/util:command_line_interface",
-        "//felicia/core/master:master_proto_cc"
     ],
 )
 
 cc_library(
-    name = "node_get_flag_parser_delegate",
-    srcs = ["node_get_flag_parser_delegate.cc"],
-    hdrs = ["node_get_flag_parser_delegate.h"],
+    name = "node_list_flag_parser_delegate",
+    srcs = ["node_list_flag_parser_delegate.cc"],
+    hdrs = ["node_list_flag_parser_delegate.h"],
     copts = fel_copts(),
     deps = [
         "//felicia/core/util:command_line_interface",
-        "//felicia/core/master:master_proto_cc"
     ],
 )
 
@@ -40,7 +38,31 @@ cc_library(
     copts = fel_copts(),
     deps = [
         ":node_create_flag_parser_delegate",
-        ":node_get_flag_parser_delegate",
+        ":node_list_flag_parser_delegate",
+    ],
+)
+
+##########################################################################################
+###################################### topic command #####################################
+##########################################################################################
+
+cc_library(
+    name = "topic_list_flag_parser_delegate",
+    srcs = ["topic_list_flag_parser_delegate.cc"],
+    hdrs = ["topic_list_flag_parser_delegate.h"],
+    copts = fel_copts(),
+    deps = [
+        "//felicia/core/util:command_line_interface",
+    ],
+)
+
+cc_library(
+    name = "topic_flag_parser_delegate",
+    srcs = ["topic_flag_parser_delegate.cc"],
+    hdrs = ["topic_flag_parser_delegate.h"],
+    copts = fel_copts(),
+    deps = [
+        ":topic_list_flag_parser_delegate",
     ],
 )
 
@@ -53,6 +75,7 @@ cc_library(
     copts = fel_copts(),
     deps = [
         ":node_flag_parser_delegate",
+        ":topic_flag_parser_delegate",
     ],
 )
 
@@ -63,6 +86,7 @@ cc_library(
     copts = fel_copts(),
     deps = [
         ":flag_parser_delegate",
+        "//felicia/core:channel",
         "//felicia/core/master/client:grpc_master_client",
     ]
 )

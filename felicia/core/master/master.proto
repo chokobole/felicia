@@ -7,11 +7,11 @@ package felicia;
 
 message RegisterClientRequest {
   ClientInfo client_info = 1;
-};
+}
 
 message RegisterClientResponse {
   uint32 id = 1;
-};
+}
 
 message RegisterNodeRequest {
   NodeInfo node_info = 1;
@@ -28,11 +28,11 @@ message UnregisterNodeRequest {
 message UnregisterNodeResponse {
 }
 
-message GetNodesRequest {
+message ListNodesRequest {
   NodeFilter node_filter = 1;
 }
 
-message GetNodesResponse {
+message ListNodesResponse {
   repeated NodeInfo node_infos = 1;
 }
 
@@ -42,7 +42,7 @@ message PublishTopicRequest {
 }
 
 message PublishTopicResponse {
-};
+}
 
 message UnpublishTopicRequest {
   NodeInfo node_info = 1;
@@ -50,7 +50,7 @@ message UnpublishTopicRequest {
 }
 
 message UnpublishTopicResponse {
-};
+}
 
 message SubscribeTopicRequest {
   NodeInfo node_info = 1;
@@ -58,7 +58,7 @@ message SubscribeTopicRequest {
 }
 
 message SubscribeTopicResponse {
-};
+}
 
 message UnsubscribeTopicRequest {
   NodeInfo node_info = 1;
@@ -66,4 +66,12 @@ message UnsubscribeTopicRequest {
 }
 
 message UnsubscribeTopicResponse {
-};
+}
+
+message ListTopicsRequest {
+  TopicFilter topic_filter = 1;
+}
+
+message ListTopicsResponse {
+  repeated TopicInfo topic_infos = 1;
+}

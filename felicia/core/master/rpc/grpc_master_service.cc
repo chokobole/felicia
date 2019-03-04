@@ -66,9 +66,10 @@ void GrpcMasterService::HandleRpcsLoop() {
   bool ok;
   ENQUEUE_REQUEST(RegisterClient, true);
   ENQUEUE_REQUEST(RegisterNode, true);
-  ENQUEUE_REQUEST(GetNodes, false);
+  ENQUEUE_REQUEST(ListNodes, false);
   ENQUEUE_REQUEST(PublishTopic, true);
   ENQUEUE_REQUEST(SubscribeTopic, true);
+  ENQUEUE_REQUEST(ListTopics, false);
   while (cq_->Next(&tag, &ok)) {
     UntypedCall<GrpcMasterService>::Tag* callback_tag =
         static_cast<UntypedCall<GrpcMasterService>::Tag*>(tag);
@@ -113,14 +114,14 @@ void GrpcMasterService::HandleRegisterNode(
   ENQUEUE_REQUEST(RegisterNode, true);
 }
 
-void GrpcMasterService::HandleGetNodes(
-    MasterCall<GetNodesRequest, GetNodesResponse>* call) {
-  master_->GetNodes(
+void GrpcMasterService::HandleListNodes(
+    MasterCall<ListNodesRequest, ListNodesResponse>* call) {
+  master_->ListNodes(
       &call->request_, &call->response_,
       ::base::BindOnce(
-          &OnHandleRequest<MasterCall<GetNodesRequest, GetNodesResponse>>,
+          &OnHandleRequest<MasterCall<ListNodesRequest, ListNodesResponse>>,
           call));
-  ENQUEUE_REQUEST(GetNodes, false);
+  ENQUEUE_REQUEST(ListNodes, false);
 }
 
 void GrpcMasterService::HandlePublishTopic(
@@ -143,6 +144,16 @@ void GrpcMasterService::HandleSubscribeTopic(
               MasterCall<SubscribeTopicRequest, SubscribeTopicResponse>>,
           call));
   ENQUEUE_REQUEST(SubscribeTopic, true);
+}
+
+void GrpcMasterService::HandleListTopics(
+    MasterCall<ListTopicsRequest, ListTopicsResponse>* call) {
+  master_->ListTopics(
+      &call->request_, &call->response_,
+      ::base::BindOnce(
+          &OnHandleRequest<MasterCall<ListTopicsRequest, ListTopicsResponse>>,
+          call));
+  ENQUEUE_REQUEST(ListTopics, false);
 }
 
 #undef ENQUEUE_REQUEST

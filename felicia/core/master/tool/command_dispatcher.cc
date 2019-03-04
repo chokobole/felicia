@@ -7,7 +7,7 @@
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/strings/string_number_conversions.h"
 
-#include "felicia/core/master/master_data.pb.h"
+#include "felicia/core/channel/channel.h"
 #include "felicia/core/util/command_line_interface/table_writer.h"
 
 namespace felicia {
@@ -23,6 +23,9 @@ void CommandDispatcher::Dispatch(const FlagParserDelegate& delegate) const {
     case FlagParserDelegate::Command::COMMAND_NODE:
       Dispatch(delegate.node_delegate());
       break;
+    case FlagParserDelegate::Command::COMMAND_TOPIC:
+      Dispatch(delegate.topic_delegate());
+      break;
   }
 }
 
@@ -35,8 +38,8 @@ void CommandDispatcher::Dispatch(const NodeFlagParserDelegate& delegate) const {
     case NodeFlagParserDelegate::Command::COMMAND_CREATE:
       Dispatch(delegate.create_delegate());
       break;
-    case NodeFlagParserDelegate::Command::COMMAND_GET:
-      Dispatch(delegate.get_delegate());
+    case NodeFlagParserDelegate::Command::COMMAND_LIST:
+      Dispatch(delegate.list_delegate());
       break;
   }
 }
@@ -45,35 +48,34 @@ void CommandDispatcher::Dispatch(
     const NodeCreateFlagParserDelegate& delegate) const {}
 
 void CommandDispatcher::Dispatch(
-    const NodeGetFlagParserDelegate& delegate) const {
+    const NodeListFlagParserDelegate& delegate) const {
   master_client_->Start();
 
   NodeFilter node_filter;
   if (delegate.all()) {
     node_filter.set_all(true);
   } else if (!delegate.publishing_topic().empty()) {
-    node_filter.set_publishing_topic(std::string(delegate.publishing_topic()));
+    node_filter.set_publishing_topic(delegate.publishing_topic());
   } else {
     DCHECK(!delegate.subscribing_topic().empty());
-    node_filter.set_subscribing_topic(
-        std::string(delegate.subscribing_topic()));
+    node_filter.set_subscribing_topic(delegate.subscribing_topic());
   }
-  GetNodesRequest* request = new GetNodesRequest();
+  ListNodesRequest* request = new ListNodesRequest();
   *request->mutable_node_filter() = node_filter;
-  GetNodesResponse* response = new GetNodesResponse();
-  master_client_->GetNodesAsync(
+  ListNodesResponse* response = new ListNodesResponse();
+  master_client_->ListNodesAsync(
       request, response,
-      ::base::BindOnce(&CommandDispatcher::OnGetNodesAsync,
+      ::base::BindOnce(&CommandDispatcher::OnListNodesAsync,
                        ::base::Unretained(this), master_client_.get(),
                        ::base::Owned(request), ::base::Owned(response)));
 
   master_client_->Join();
 }
 
-void CommandDispatcher::OnGetNodesAsync(GrpcMasterClient* client,
-                                        GetNodesRequest* request,
-                                        GetNodesResponse* response,
-                                        const Status& s) const {
+void CommandDispatcher::OnListNodesAsync(GrpcMasterClient* client,
+                                         ListNodesRequest* request,
+                                         ListNodesResponse* response,
+                                         const Status& s) const {
   if (!s.ok()) {
     std::cerr << s.error_message() << std::endl;
     client->Shutdown();
@@ -82,12 +84,81 @@ void CommandDispatcher::OnGetNodesAsync(GrpcMasterClient* client,
   auto node_infos = response->node_infos();
   TableWriterBuilder builder;
   auto writer = builder.AddColumn(TableWriter::Column{"NAME", 20})
-                    .AddColumn(TableWriter::Column{"Client ID", 10})
+                    .AddColumn(TableWriter::Column{"CLIENT ID", 10})
                     .Build();
   size_t row = 0;
   for (auto& node_info : node_infos) {
     writer.SetElement(row, 0, node_info.name());
     writer.SetElement(row, 1, ::base::NumberToString(node_info.client_id()));
+    row++;
+  }
+
+  std::cout << writer.ToString() << std::endl;
+  client->Shutdown();
+}
+
+void CommandDispatcher::Dispatch(
+    const TopicFlagParserDelegate& delegate) const {
+  auto command = delegate.command();
+  switch (command) {
+    case TopicFlagParserDelegate::Command::COMMAND_SELF:
+      NOTREACHED();
+      break;
+    case TopicFlagParserDelegate::Command::COMMAND_LIST:
+      Dispatch(delegate.list_delegate());
+      break;
+  }
+}
+
+void CommandDispatcher::Dispatch(
+    const TopicListFlagParserDelegate& delegate) const {
+  master_client_->Start();
+
+  TopicFilter topic_filter;
+  if (delegate.all()) {
+    topic_filter.set_all(true);
+  } else {
+    DCHECK(!delegate.topic().empty());
+    topic_filter.set_topic(delegate.topic());
+  }
+  ListTopicsRequest* request = new ListTopicsRequest();
+  *request->mutable_topic_filter() = topic_filter;
+  ListTopicsResponse* response = new ListTopicsResponse();
+  master_client_->ListTopicsAsync(
+      request, response,
+      ::base::BindOnce(&CommandDispatcher::OnListTopicsAsync,
+                       ::base::Unretained(this), master_client_.get(),
+                       ::base::Owned(request), ::base::Owned(response)));
+
+  master_client_->Join();
+}
+
+void CommandDispatcher::OnListTopicsAsync(GrpcMasterClient* client,
+                                          ListTopicsRequest* request,
+                                          ListTopicsResponse* response,
+                                          const Status& s) const {
+  if (!s.ok()) {
+    std::cerr << s.error_message() << std::endl;
+    client->Shutdown();
+    return;
+  }
+  auto topic_infos = response->topic_infos();
+  TableWriterBuilder builder;
+  auto writer = builder.AddColumn(TableWriter::Column{"NAME", 20})
+                    .AddColumn(TableWriter::Column{"TYPE", 8})
+                    .AddColumn(TableWriter::Column{"END POINT", 10})
+                    .Build();
+  size_t row = 0;
+  for (auto& topic_info : topic_infos) {
+    writer.SetElement(row, 0, topic_info.topic());
+    const ChannelSource& channel_source = topic_info.topic_source();
+    writer.SetElement(row, 1, ToString(channel_source.channel_def()));
+    if (channel_source.has_ip_endpoint()) {
+      ::net::IPEndPoint ip_endpoint;
+      if (ToNetIPEndPoint(channel_source, &ip_endpoint)) {
+        writer.SetElement(row, 2, ip_endpoint.ToString());
+      }
+    }
     row++;
   }
 
