@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "third_party/chromium/base/logging.h"
+#include "third_party/chromium/base/strings/string_util.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 #include "felicia/core/lib/strings/str_util.h"
@@ -15,8 +16,8 @@ static constexpr const char* kLs = "ls";
 NodeFlagParserDelegate::NodeFlagParserDelegate()
     : current_command_(COMMAND_SELF) {
   {
-    StringChoicesFlag::Builder builder(
-        MakeValueStore<std::string>(&command_, "", Choices<std::string>{kLs}));
+    StringChoicesFlag::Builder builder(MakeValueStore<std::string>(
+        &command_, ::base::EmptyString(), Choices<std::string>{kLs}));
     auto flag = builder.SetName("COMMAND").Build();
     command_flag_ = std::make_unique<StringChoicesFlag>(flag);
   }

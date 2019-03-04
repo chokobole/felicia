@@ -17,7 +17,7 @@ static constexpr const char* kTopic = "topic";
 FlagParserDelegate::FlagParserDelegate() : current_command_(COMMAND_SELF) {
   {
     StringChoicesFlag::Builder builder(MakeValueStore<std::string>(
-        &command_, "", Choices<std::string>{kNode, kTopic}));
+        &command_, ::base::EmptyString(), Choices<std::string>{kNode, kTopic}));
     auto flag = builder.SetName("COMMAND").Build();
     command_flag_ = std::make_unique<StringChoicesFlag>(flag);
   }

@@ -40,7 +40,7 @@ class ValueStore {
   value_type value() const { return traits_.value(); }
   bool is_set() const { return traits_.is_set(); }
 
-  std::string usage() const { return ""; }
+  std::string usage() const { return ::base::EmptyString(); }
 
  private:
   Traits traits_;

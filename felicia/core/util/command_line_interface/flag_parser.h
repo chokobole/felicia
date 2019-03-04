@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "third_party/chromium/base/macros.h"
+#include "third_party/chromium/base/strings/string_util.h"
 
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/util/command_line_interface/text_style.h"
@@ -71,7 +72,7 @@ class EXPORT FlagParser {
     virtual bool Parse(FlagParser& parser) = 0;
 
     virtual std::vector<std::string> CollectUsages() const { return {}; }
-    virtual std::string Description() const { return ""; }
+    virtual std::string Description() const { return ::base::EmptyString(); }
     virtual std::vector<NamedHelpType> CollectNamedHelps() const { return {}; }
 
     virtual bool Validate() const { return true; }
