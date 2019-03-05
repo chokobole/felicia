@@ -46,6 +46,7 @@ void Master::RegisterClient(const RegisterClientRequest* arg,
   }
 
   uint32_t id = client->client_info().id();
+  client_info.set_id(id);
   result->set_id(id);
   AddClient(id, std::move(client));
   DLOG(INFO) << "[RegisterClient]: " << ::base::StringPrintf("client(%d)", id);
@@ -352,13 +353,13 @@ std::vector<TopicInfo> Master::FindTopicInfos(const TopicFilter& topic_filter) {
 }
 
 void Master::AddClient(uint32_t id, std::unique_ptr<Client> client) {
-  DLOG(INFO) << "Master::AddClient() " << client->client_info().DebugString();
+  DLOG(INFO) << "Master::AddClient() " << client->client_info().id();
   ::base::AutoLock l(lock_);
   client_map_.insert_or_assign(id, std::move(client));
 }
 
 void Master::RemoveClient(const ClientInfo& client_info) {
-  DLOG(INFO) << "Master::RemoveClient() " << client_info.DebugString();
+  DLOG(INFO) << "Master::RemoveClient() " << client_info.id();
   ::base::AutoLock l(lock_);
   client_map_.erase(client_map_.find(client_info.id()));
 }
