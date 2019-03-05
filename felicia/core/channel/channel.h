@@ -72,6 +72,8 @@ std::string ToString(const ChannelDef& channel_def);
 ChannelSource PickRandomChannelSource(
     const ChannelDef& channel_def = ChannelDef());
 
+bool IsValidChannelSource(const ChannelSource& channel_source);
+
 }  // namespace felicia
 
 #endif  // FELICIA_CORE_CHANNEL_CHANNEL_H_

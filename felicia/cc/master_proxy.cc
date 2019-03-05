@@ -28,7 +28,7 @@ void MasterProxy::Init() {
 
   *client_info_.mutable_heart_beat_signaller_source() =
       heart_beat_signaller_.channel_source();
-  *client_info_.mutable_topic_watcher_source() =
+  *client_info_.mutable_topic_info_watcher_source() =
       topic_info_watcher_.channel_source();
 
   RegisterClient();

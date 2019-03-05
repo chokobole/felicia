@@ -40,6 +40,18 @@ void Master::RegisterClient(const RegisterClientRequest* arg,
                             RegisterClientResponse* result,
                             StatusCallback callback) {
   ClientInfo client_info = arg->client_info();
+  if (!IsValidChannelSource(client_info.heart_beat_signaller_source())) {
+    std::move(callback).Run(errors::ChannelSourceNotValid(
+        "heart beat signaller", client_info.heart_beat_signaller_source()));
+    return;
+  }
+
+  if (!IsValidChannelSource(client_info.topic_info_watcher_source())) {
+    std::move(callback).Run(errors::ChannelSourceNotValid(
+        "topic_info_watcher", client_info.topic_info_watcher_source()));
+    return;
+  }
+
   std::unique_ptr<Client> client = Client::NewClient(client_info);
   if (!client) {
     std::move(callback).Run(errors::FailedToRegisterClient());
@@ -131,6 +143,12 @@ void Master::PublishTopic(const PublishTopicRequest* arg,
   CHECK_NODE_EXISTS(node_info);
 
   const TopicInfo& topic_info = arg->topic_info();
+  if (!IsValidChannelSource(topic_info.topic_source())) {
+    std::move(callback).Run(errors::ChannelSourceNotValid(
+        "topic source", topic_info.topic_source()));
+    return;
+  }
+
   NodeFilter node_filter;
   node_filter.set_publishing_topic(topic_info.topic());
   std::vector<::base::WeakPtr<Node>> publishing_nodes = FindNodes(node_filter);
@@ -398,7 +416,7 @@ void Master::DoNotifySubscriber(const NodeInfo& subscribing_node_info,
   const ChannelSource& channel_source =
       client_map_[subscribing_node_info.client_id()]
           ->client_info()
-          .topic_watcher_source();
+          .topic_info_watcher_source();
 
   channel->Connect(channel_source,
                    ::base::BindOnce(&Master::OnConnetToTopicInfoWatcher,

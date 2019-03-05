@@ -44,4 +44,9 @@ ChannelSource PickRandomChannelSource(const ChannelDef channel_def) {
   return channel_source;
 }
 
+bool IsValidChannelSource(const ChannelSource& channel_source) {
+  ::net::IPEndPoint ip_endpoint;
+  return ToNetIPEndPoint(channel_source, &ip_endpoint);
+}
+
 }  // namespace felicia

@@ -9,12 +9,19 @@ namespace felicia {
 
 namespace errors {
 
+inline ::felicia::Status ChannelSourceNotValid(
+    const std::string& name, const ChannelSource& channel_source) {
+  return InvalidArgument(
+      ::base::StringPrintf("Invalid channel source %s: %s", name.c_str(),
+                           channel_source.DebugString().c_str()));
+}
+
 inline ::felicia::Status FailedToRegisterClient() {
-  return OutOfRange(::base::StringPrintf("Failed to register client"));
+  return OutOfRange("Failed to register client");
 }
 
 inline ::felicia::Status ClientNotRegistered() {
-  return NotFound(::base::StringPrintf("Client isn't registered yet."));
+  return NotFound("Client isn't registered yet.");
 }
 
 inline ::felicia::Status NodeNotRegistered(const NodeInfo& node_info) {
