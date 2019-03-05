@@ -61,18 +61,25 @@ class EXPORT Channel {
   DISALLOW_COPY_AND_ASSIGN(Channel);
 };
 
+// Convert ChannelSource to ::net::IPEndPoint, Retures true if succeeded.
 bool ToNetIPEndPoint(const ChannelSource& channel_source,
                      ::net::IPEndPoint* ip_endpoint);
 
+// Convert ::net::IPEndPoint to ChannelSource
 ChannelSource ToChannelSource(const ::net::IPEndPoint& ip_endpoint,
-                              const ChannelDef channel_def = ChannelDef());
+                              ChannelDef_Type type);
 
 std::string ToString(const ChannelDef& channel_def);
 
-ChannelSource PickRandomChannelSource(
-    const ChannelDef& channel_def = ChannelDef());
+// Randomly pick channel source.
+ChannelSource PickRandomChannelSource(ChannelDef_Type type);
 
+// Check if |channel_source| is a valid. Returns true if so.
 bool IsValidChannelSource(const ChannelSource& channel_source);
+
+// Check if |c| and |c2| are same. Returns true if so. Return false if
+// either |c| or |c2| is invalid or they are not same.
+bool IsSameChannelSource(const ChannelSource& c, const ChannelSource& c2);
 
 }  // namespace felicia
 

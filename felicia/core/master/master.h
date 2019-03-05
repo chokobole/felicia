@@ -56,6 +56,8 @@ class EXPORT Master {
 
  private:
   friend class GrpcServer;
+  friend class MasterTest;
+  friend std::unique_ptr<Master> NewMasterForTesting();
 
   enum Reason {
     None,

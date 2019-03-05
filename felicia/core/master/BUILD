@@ -57,7 +57,6 @@ cc_library(
     ]
 )
 
-
 cc_library(
     name = "task_runner_interface",
     hdrs = ["task_runner_interface.h"],
@@ -100,5 +99,19 @@ cc_library(
     copts = fel_copts(),
     deps = [
         ":heart_beat_listener",
+    ]
+)
+
+cc_test(
+    name = "master_test",
+    size = "small",
+    srcs = [
+        "master_test.cc"
+    ],
+    copts = fel_copts(),
+    linkstatic = 1, # Failed at macos when built with opt
+    deps = [
+        ":master",
+        "//felicia/core:test_main",
     ]
 )

@@ -12,7 +12,7 @@ namespace felicia {
 namespace strings {
 
 bool ConsumePrefix(::base::StringPiece* s, ::base::StringPiece expected) {
-  if (::base::StartsWith(*s, expected, ::base::CompareCase::SENSITIVE)) {
+  if (StartsWith(*s, expected)) {
     s->remove_prefix(expected.size());
     return true;
   }
@@ -20,11 +20,19 @@ bool ConsumePrefix(::base::StringPiece* s, ::base::StringPiece expected) {
 }
 
 bool ConsumeSuffix(::base::StringPiece* s, ::base::StringPiece expected) {
-  if (::base::EndsWith(*s, expected, ::base::CompareCase::SENSITIVE)) {
+  if (EndsWith(*s, expected)) {
     s->remove_suffix(expected.size());
     return true;
   }
   return false;
+}
+
+bool StartsWith(::base::StringPiece s, ::base::StringPiece expected) {
+  return ::base::StartsWith(s, expected, ::base::CompareCase::SENSITIVE);
+}
+
+bool EndsWith(::base::StringPiece s, ::base::StringPiece expected) {
+  return ::base::EndsWith(s, expected, ::base::CompareCase::SENSITIVE);
 }
 
 bool Equals(::base::StringPiece s, ::base::StringPiece expected) {

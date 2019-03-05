@@ -16,7 +16,13 @@ EXPORT bool ConsumePrefix(::base::StringPiece* s, ::base::StringPiece expected);
 // Otherwise, return false.
 EXPORT bool ConsumeSuffix(::base::StringPiece* s, ::base::StringPiece expected);
 
-// If |s| equayl to |expected, return true. Otherwise, return false.
+// If |s| starts with |expected|, return true. Otherwise, return false.
+EXPORT bool StartsWith(::base::StringPiece s, ::base::StringPiece expected);
+
+// If |s| ends with |expected|, return true. Otherwise, return false.
+EXPORT bool EndsWith(::base::StringPiece s, ::base::StringPiece expected);
+
+// If |s| equals to |expected|, return true. Otherwise, return false.
 EXPORT bool Equals(::base::StringPiece s, ::base::StringPiece expected);
 
 class StringComparator {

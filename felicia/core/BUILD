@@ -215,7 +215,7 @@ cc_test(
         "lib/base/range_test.cc",
         "lib/containers/pool_test.cc",
     ],
-    linkstatic = 1,
+    linkstatic = 1, # Failed at macos when built with opt
     copts = fel_copts(),
     deps = [
         ":lib",

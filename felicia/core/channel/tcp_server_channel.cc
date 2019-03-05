@@ -60,11 +60,9 @@ void TCPServerChannel::Listen(StatusOrChannelSourceCallback callback) {
 
   socket_ = std::move(server_socket);
 
-  ChannelDef channel_def;
-  channel_def.set_type(ChannelDef_Type_TCP);
   ChannelSource channel_source = ToChannelSource(
       ::net::IPEndPoint(net::HostIPAddress(net::HOST_IP_ONLY_ALLOW_IPV4), port),
-      channel_def);
+      ChannelDef_Type_TCP);
 
   std::move(callback).Run(channel_source);
   DoAcceptLoop();

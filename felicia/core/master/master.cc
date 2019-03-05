@@ -250,7 +250,7 @@ void Master::SubscribeTopic(const SubscribeTopicRequest* arg,
     DLOG(INFO) << "[SubscribeTopic]: "
                << ::base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                        node_info.name().c_str());
-  } else if (reason == Reason::TopicNotPublishingOnNode) {
+  } else if (reason == Reason::TopicAlreadySubscribingOnNode) {
     std::move(callback).Run(
         errors::TopicAlreadySubscribingOnNode(node_info, topic));
     return;

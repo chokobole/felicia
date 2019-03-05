@@ -12,12 +12,12 @@ namespace errors {
 inline ::felicia::Status ChannelSourceNotValid(
     const std::string& name, const ChannelSource& channel_source) {
   return InvalidArgument(
-      ::base::StringPrintf("Invalid channel source %s: %s", name.c_str(),
+      ::base::StringPrintf("Invalid channel source %s: %s.", name.c_str(),
                            channel_source.DebugString().c_str()));
 }
 
 inline ::felicia::Status FailedToRegisterClient() {
-  return OutOfRange("Failed to register client");
+  return OutOfRange("Failed to register client.");
 }
 
 inline ::felicia::Status ClientNotRegistered() {

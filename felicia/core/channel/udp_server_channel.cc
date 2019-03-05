@@ -55,10 +55,8 @@ void UDPServerChannel::Bind(StatusOrChannelSourceCallback callback) {
   multicast_ip_endpoint_ =
       ::net::IPEndPoint(multicast_address, net::PickRandomPort(false));
 
-  ChannelDef channel_def;
-  channel_def.set_type(ChannelDef_Type_UDP);
   ChannelSource channel_source =
-      ToChannelSource(multicast_ip_endpoint_, channel_def);
+      ToChannelSource(multicast_ip_endpoint_, ChannelDef_Type_UDP);
   std::move(callback).Run(channel_source);
 }
 

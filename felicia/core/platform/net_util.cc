@@ -16,7 +16,7 @@ namespace net {
   ::net::NetworkInterfaceList list;
   ::net::GetNetworkList(&list, ::net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
   for (auto it = list.begin(); it != list.end(); ++it) {
-    if (it->type == ::net::NetworkChangeNotifier::CONNECTION_ETHERNET) {
+    if (it->type != ::net::NetworkChangeNotifier::CONNECTION_NONE) {
       if (HOST_IP_ONLY_ALLOW_IPV4 & option) {
         if (it->address.IsIPv4()) {
           return it->address;
