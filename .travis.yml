@@ -13,8 +13,8 @@ matrix:
         - sudo apt-get install -y python3
       script:
         - docker build . -t felicia -f docker/Dockerfile.ubuntu
-        - python3 scripts/felicia.py --options "-c dbg" --with_docker build all --with_test
-        - python3 scripts/felicia.py --options "-c opt" --with_docker build all --with_test
+        - python3 scripts/felicia.py --with_docker build all --with_test --options "--test_tag_filters -benchmark"
+        - python3 scripts/felicia.py --with_docker build all --with_test --options "--test_tag_filters -benchmark -c opt"
     - os: osx
       osx_image: xcode10
       sudo: required
@@ -29,9 +29,9 @@ matrix:
       install:
         - ./installers/install_bazel.sh
       script:
-        - python3 scripts/felicia.py --options "-c dbg" build all --with_test
+        - python3 scripts/felicia.py build all --with_test --options "--test_tag_filters -benchmark"
         - bazel clean
-        - python3 scripts/felicia.py --options "-c opt" build all --with_test
+        - python3 scripts/felicia.py build all --with_test --options "--test_tag_filters -benchmark -c opt"
 notifications:
     email:
         on_success: always

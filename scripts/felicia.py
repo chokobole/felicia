@@ -6,7 +6,6 @@ import sys
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 from lib.bazel import Bazel, QueryCommandOperand, QueryCommandExpr, Package, Target
-from lib.bazel_option_parser import BuildOptionParser, TestOptionParser
 from lib.docker import Docker, ExecContainerOptions, ListContainerOptions, RunContainerOptions
 from lib.util import is_darwin, is_linux, is_windows
 
@@ -43,87 +42,42 @@ class FeliciaBazel(Bazel):
         super().__init__()
         self.package = Package('felicia')
         self.all_package = Package('felicia', True)
-        if is_darwin():
-            # TODO(chokobole): For my laptop, which is Macbook Pro (Retina, 15-inch, Mid 2015)
-            # platform.processor() returned i386 but bazel's cpu configuraiton only allows darwin
-            # or darwin_x86_64.
-            # cpu = 'darwin_{}'.format(platform.mac_ver()[-1])
-            # But if |platfrom| is set to "darwin_x86_64" using above expression,
-            # an error happens like below.
-            # external/com_github_cares_cares/ares_process.c:198:10:
-            # error: use of undeclared identifier 'MSG_NOSIGNAL'
-            # So forcely I set |platform| to "darwin".
-            self.platform_options = argparse.Namespace(cpu='darwin', apple_platform_type='macos')
-        elif is_linux():
-            self.platform_options = argparse.Namespace(cpu='k8')
-        elif is_windows():
-            if '64' in platform.architecture()[0]:
-                self.platform_options = argparse.Namespace(cpu='x64_windows')
-
-    def define(self, key, value = None):
-        """Define CFLAGS or CXXFLAGS depending on platform."""
-        if value is None:
-            flag = key
-        else:
-            flag = '{}={}'.format(key, value)
-
-        if is_windows():
-            return '/D{}'.format(flag)
-        else:
-            return '-D{}'.format(flag)
-
-    def _update_options(self, options, key, value):
-        if getattr(options, key) is None:
-            setattr(options, key, value)
-        else:
-            setattr(options, key, ' {}'.format(value))
 
     def update_options(self, options):
-        """Update options like platform options, such as cpu."""
-        new_options = copy.copy(options)
-        if new_options.cpu is None:
-            new_options.cpu = self.platform_options.cpu
+        """Update options to load from .bazelrc."""
         if is_darwin():
-            if new_options.apple_platform_type is None:
-                new_options.apple_platform_type = self.platform_options.apple_platform_type
-        # TODO(chokobole): Detect CC and apply below only when using g++
-        cxxopt = [self.define('_GLIBCXX_USE_CXX11_ABI', '0')]
-        self._update_options(new_options, 'cxxopt', ' '.join(cxxopt))
-        if is_windows():
-            copt = [
-                self.define('_UNICODE'),
-                self.define('UNICODE'),
-                self.define('_WIN32_WINNT', '0x0A00'),
-                self.define('WINVER', '0x0A00'),
-                self.define('WIN32_LEAN_AND_MEAN'),
-                self.define('_WINDOWS'),
-                self.define('WIN32'),
-            ]
-            self._update_options(new_options, 'copt', ' '.join(copt))
-        return new_options
+            options += " --config darwin"
+        elif is_linux():
+            options += " --config linux"
+        elif is_windows():
+            options += " --config windows"
+        return options
 
     def build_cc(self, target, options):
         """Build c++ target."""
-        build_options = self.update_options(options)
         if target == 'all':
             query_cmd = QueryCommandOperand.kind(label='cc_*(library|binary)',
                                                  target = self.all_package)
             targets = self.query(None, query_cmd)
             for target in targets.split():
                 target = Target.from_str(target)
-                self.build(build_options, target)
+                self.build(options, target)
         else:
             target = Target.from_str(target)
-            self.build(build_options, target)
+            self.build(options, target)
         self.print_success('build_cc')
 
     def test_cc(self, target, options):
         """Test c++ target."""
-        test_options = self.update_options(options)
         if target == 'all':
             query_cmd = QueryCommandOperand.kind(label='cc_*test', target=self.all_package)
-            if options.test_tag_filters is not None:
-                tag_filters = options.test_tag_filters.split(',')
+            if '--test_tag_filters' in options:
+                options = options.split()
+                idx = options.index('--test_tag_filters')
+                tag_filters = options[idx + 1]
+                options = options[:idx] + options[idx + 2:] # Remove test_tag_filters options
+                options = ' '.join(options)
+                tag_filters = tag_filters.split(',')
                 query_cmd = QueryCommandExpr(query_cmd)
                 for tag_filter in tag_filters:
                     if tag_filter.startswith('-'):
@@ -138,17 +92,16 @@ class FeliciaBazel(Bazel):
             targets = self.query(None, query_cmd)
             for target in targets.split():
                 target = Target.from_str(target)
-                self.test(test_options, target)
+                self.test(options, target)
         else:
             target = Target.from_str(target)
-            self.test(test_options, target)
+            self.test(options, target)
         self.print_success('test_cc')
 
     def run_cc(self, target, options):
         """Run c++ target."""
-        build_options = self.update_options(options)
         target = Target.from_str(target)
-        self.run(build_options, target)
+        self.run(options, target)
         self.print_success('run_cc')
 
 
@@ -159,12 +112,14 @@ def main():
     parser_build = subparsers.add_parser('build', help='Run build')
     parser_build.add_argument('target', type=str, help='Build specific target, if you type all, then it is same with //felicia/...')
     parser_build.add_argument('--with_test', action="store_true", help='Test on target, too.')
+    parser_build.add_argument('--options', type=str, default="", help="Options to pass to bazel")
     parser_test = subparsers.add_parser('test', help='Run build')
     parser_test.add_argument('target', type=str, help='Test specific target, if you type all, then it is same with //felicia/...')
-    parser_build = subparsers.add_parser('run', help='Run run')
-    parser_build.add_argument('target', type=str, help='Run specific target')
+    parser_test.add_argument('--options', type=str, default="", help="Options to pass to bazel")
+    parser_run = subparsers.add_parser('run', help='Run run')
+    parser_run.add_argument('target', type=str, help='Test specific target')
+    parser_run.add_argument('--options', type=str, default="", help="Options to pass to bazel")
     parser.add_argument("--with_docker", action="store_true", help="Flag to run with docker")
-    parser.add_argument("--options", type=str, default="", help="Options to pass to bazel")
 
     args = parser.parse_args()
     if args.with_docker:
@@ -178,25 +133,18 @@ def main():
         return
     else:
         bazel = FeliciaBazel()
+        options = bazel.update_options(args.options)
         if args.action == 'build':
-            parser = BuildOptionParser()
-            options = parser.parse_args(args.options.split())
             bazel.build_cc(args.target, options)
             if args.with_test:
                 if args.target != 'all':
                     print("Do you mean all?")
                     sys.exit(1)
                 else:
-                    parser = TestOptionParser()
-                    options = parser.parse_args(args.options.split())
                     bazel.test_cc(args.target, options)
         elif args.action == 'test':
-            parser = TestOptionParser()
-            options = parser.parse_args(args.options.split())
             bazel.test_cc(args.target, options)
         elif args.action == 'run':
-            parser = BuildOptionParser()
-            options = parser.parse_args(args.options.split())
             bazel.run_cc(args.target, options)
 
 if __name__ == "__main__":

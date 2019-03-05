@@ -1,9 +1,7 @@
 import os
 
-from lib.bazel_option_parser import option_to_str
 from lib.command_composer import CommandComposer
 from lib.error import invalud_argument, not_reached
-from lib.util import nametuple_with_defaults_none
 
 
 class Package(object):
@@ -188,7 +186,6 @@ class Bazel(CommandComposer):
 
     def build(self, options, target):
         """Build target with options."""
-        options = option_to_str(options)
         if isinstance(target, Target):
             target = str(target)
         cmd = self.compose('build', options, target)
@@ -196,7 +193,6 @@ class Bazel(CommandComposer):
 
     def test(self, options, target):
         """Test target with options."""
-        options = option_to_str(options)
         if isinstance(target, Target):
             target = str(target)
         cmd = self.compose('test', options, target)
@@ -204,7 +200,6 @@ class Bazel(CommandComposer):
 
     def run(self, options, target):
         """Run target with options."""
-        options = option_to_str(options)
         if isinstance(target, Target):
             target = str(target)
         cmd = self.compose('run', options, target)

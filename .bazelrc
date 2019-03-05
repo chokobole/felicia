@@ -1,0 +1,13 @@
+build:darwin --apple_platform_type=macos
+
+build:linux --cxxopt "-D_GLIBCXX_USE_CXX11_ABI=0"
+
+build -c dbg
+
+build:windows --copt "/D_UNICODE" --copt "/DUNICODE"
+build:windows --copt "/D_WIN32_WINNT=0x0A00" --copt "/DWINVER=0x0A00"
+build:windows --copt "/DWIN32_LEAN_AND_MEAN"
+build:windows --copt "/D_WINDOWS" --copt "/DWIN32"
+
+# Put user-specific options in .bazelrc.user
+try-import %workspace%/.bazelrc.user
