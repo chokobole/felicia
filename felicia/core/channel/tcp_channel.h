@@ -26,6 +26,11 @@ class TCPChannel : public Channel<MessageTy> {
 
   bool IsTCPChannel() const override { return true; }
 
+  bool IsConnected() const {
+    DCHECK(tcp_channel_);
+    return tcp_channel_->IsConnected();
+  }
+
   void Listen(StatusOrChannelSourceCallback listen_callback,
               TCPServerChannel::AcceptCallback accept_callback);
 

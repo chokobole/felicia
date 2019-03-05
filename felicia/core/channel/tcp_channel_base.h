@@ -26,6 +26,8 @@ class TCPChannelBase : public ChannelBase {
     return reinterpret_cast<TCPServerChannel*>(this);
   }
 
+  virtual bool IsConnected() const = 0;
+
   DISALLOW_COPY_AND_ASSIGN(TCPChannelBase);
 };
 

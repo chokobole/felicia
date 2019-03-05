@@ -7,6 +7,7 @@
 #include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/macros.h"
+#include "third_party/chromium/base/strings/stringprintf.h"
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/cc/master_proxy.h"
@@ -39,6 +40,9 @@ class EXPORT Publisher {
 
   void set_node_info(const NodeInfo& node_info) { node_info_ = node_info; }
 
+  bool IsRunning() const { return state_ == STARTED; }
+  bool IsStopped() const { return state_ == STOPPED; }
+
   void Publish(::base::StringPiece topic, OnMessageCallback on_message_callback,
                const ChannelDef& channel_def = ChannelDef(),
                const Publisher<MessageTy>::Settings& settings = Settings());
@@ -56,6 +60,7 @@ class EXPORT Publisher {
   void StopMessageLoop();
 
   void SendMessageLoop();
+  void OnSendMessageLoop(const Status& s);
 
   void GenerateMessageLoop();
 
@@ -110,10 +115,6 @@ template <typename MessageTy>
 void Publisher<MessageTy>::RequestPublish(
     const ChannelDef& channel_def, const StatusOr<ChannelSource>& status_or) {
   if (status_or.ok()) {
-    if (channel_->IsUDPChannel()) {
-      StartMessageLoop(Status::OK());
-    }
-
     PublishTopicRequest* request = new PublishTopicRequest();
     *request->mutable_node_info() = node_info_;
     TopicInfo* topic_info = request->mutable_topic_info();
@@ -138,26 +139,31 @@ void Publisher<MessageTy>::OnPublishTopicAsync(PublishTopicRequest* request,
                                                const Status& s) {
   if (!s.ok()) {
     node_lifecycle_->OnError(s);
-    StopMessageLoop();
     return;
+  }
+  if (channel_->IsUDPChannel()) {
+    StartMessageLoop(Status::OK());
   }
 }
 
 template <typename MessageTy>
 void Publisher<MessageTy>::StartMessageLoop(const Status& s) {
   if (s.ok()) {
-    if (state_ == STARTED || state_ == STOPPED) return;
+    if (state_ == STARTED) return;
     state_ = STARTED;
     SendMessageLoop();
     GenerateMessageLoop();
   } else {
-    node_lifecycle_->OnError(s);
+    Status new_status(s.error_code(),
+                      ::base::StringPrintf("Failed to start message loop: %s",
+                                           s.error_message().c_str()));
+    node_lifecycle_->OnError(new_status);
   }
 }
 
 template <typename MessageTy>
 void Publisher<MessageTy>::StopMessageLoop() {
-  channel_.reset();
+  if (state_ == STOPPED) return;
   state_ = STOPPED;
 }
 
@@ -169,12 +175,9 @@ void Publisher<MessageTy>::SendMessageLoop() {
     MessageTy message = std::move(message_queue_.front());
     message_queue_.pop();
     if (!channel_->IsSendingMessage()) {
-      channel_->SendMessage(message, ::base::BindOnce([](const Status& s) {
-                              if (!s.ok()) {
-                                LOG(ERROR) << "Failed to send message: "
-                                           << s.error_message();
-                              }
-                            }));
+      channel_->SendMessage(
+          message, ::base::BindOnce(&Publisher<MessageTy>::OnSendMessageLoop,
+                                    ::base::Unretained(this)));
     }
   }
 
@@ -187,8 +190,25 @@ void Publisher<MessageTy>::SendMessageLoop() {
 }
 
 template <typename MessageTy>
+void Publisher<MessageTy>::OnSendMessageLoop(const Status& s) {
+  if (!s.ok()) {
+    Status new_status(s.error_code(),
+                      ::base::StringPrintf("Failed to send a message: %s",
+                                           s.error_message().c_str()));
+    node_lifecycle_->OnError(s);
+    if (channel_->IsTCPChannel() && !channel_->ToTCPChannel()->IsConnected()) {
+      StopMessageLoop();
+      return;
+    }
+  }
+}
+
+template <typename MessageTy>
 void Publisher<MessageTy>::GenerateMessageLoop() {
-  if (state_ == STOPPED) return;
+  if (state_ == STOPPED) {
+    while (!message_queue_.empty()) message_queue_.pop();
+    return;
+  }
 
   MessageTy message = on_message_callback_.Run();
   message_queue_.push(std::move(message));

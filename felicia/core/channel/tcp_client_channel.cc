@@ -12,6 +12,8 @@ namespace felicia {
 TCPClientChannel::TCPClientChannel() = default;
 TCPClientChannel::~TCPClientChannel() = default;
 
+bool TCPClientChannel::IsConnected() const { return socket_->IsConnected(); }
+
 void TCPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
                                StatusCallback callback) {
   DCHECK(connect_callback_.is_null());

@@ -24,6 +24,8 @@ class TCPServerChannel : public TCPChannelBase {
 
   bool IsServer() const override { return true; }
 
+  bool IsConnected() const override;
+
   void set_accept_callback(AcceptCallback callback) {
     accept_callback_ = callback;
   }

@@ -15,6 +15,18 @@ namespace felicia {
 TCPServerChannel::TCPServerChannel() = default;
 TCPServerChannel::~TCPServerChannel() = default;
 
+bool TCPServerChannel::IsConnected() const {
+  auto it = accepted_sockets_.begin();
+  while (it != accepted_sockets_.end()) {
+    if ((*it)->IsConnected()) {
+      return true;
+    }
+    it++;
+  }
+
+  return false;
+}
+
 void TCPServerChannel::Listen(StatusOrChannelSourceCallback callback) {
   DCHECK(callback);
   auto server_socket = std::make_unique<::net::TCPSocket>(nullptr);
@@ -65,14 +77,23 @@ void TCPServerChannel::Write(::net::IOBufferWithSize* buffer,
   DCHECK(write_callback_.is_null());
   DCHECK(!callback.is_null());
   write_callback_ = std::move(callback);
-  to_write_count_ = accepted_sockets_.size();
   auto it = accepted_sockets_.begin();
+
+  while (it != accepted_sockets_.end() && !(*it)->IsConnected()) {
+    it = accepted_sockets_.erase(it);
+  }
+
+  if (it == accepted_sockets_.end()) {
+    // Overrided OnWrite doesn't call |write_callback_| because
+    // |to_write_count_| and |writte_count_| not matched.
+    ChannelBase::OnWrite(::net::ERR_SOCKET_NOT_CONNECTED);
+    return;
+  }
+
+  to_write_count_ = accepted_sockets_.size();
+  it = accepted_sockets_.begin();
+
   while (it != accepted_sockets_.end()) {
-    if (!(*it)->IsConnected()) {
-      to_write_count_--;
-      it = accepted_sockets_.erase(it);
-      continue;
-    }
     int rv = (*it)->Write(
         buffer, buffer->size(),
         ::base::BindOnce(&TCPServerChannel::OnWrite, ::base::Unretained(this)),
@@ -85,10 +106,12 @@ void TCPServerChannel::Write(::net::IOBufferWithSize* buffer,
     it++;
   }
 
-  timeout_.Reset(::base::BindOnce(&TCPServerChannel::OnWriteTimeout,
-                                  ::base::Unretained(this)));
-  ::base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, timeout_.callback(), ::base::TimeDelta::FromSeconds(5));
+  if (!write_callback_.is_null()) {
+    timeout_.Reset(::base::BindOnce(&TCPServerChannel::OnWriteTimeout,
+                                    ::base::Unretained(this)));
+    ::base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, timeout_.callback(), ::base::TimeDelta::FromSeconds(5));
+  }
 }
 
 void TCPServerChannel::Read(::net::IOBufferWithSize* buffer,
@@ -98,7 +121,7 @@ void TCPServerChannel::Read(::net::IOBufferWithSize* buffer,
   read_callback_ = std::move(callback);
   auto it = accepted_sockets_.begin();
 
-  if (it != accepted_sockets_.end() && !(*it)->IsConnected()) {
+  while (it != accepted_sockets_.end() && !(*it)->IsConnected()) {
     it = accepted_sockets_.erase(it);
   }
 

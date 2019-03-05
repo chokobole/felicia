@@ -7,6 +7,7 @@
 #include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/macros.h"
+#include "third_party/chromium/base/strings/stringprintf.h"
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/cc/master_proxy.h"
@@ -39,6 +40,9 @@ class EXPORT Subscriber {
 
   void set_node_info(const NodeInfo& node_info) { node_info_ = node_info; }
 
+  bool IsRunning() const { return state_ == STARTED; }
+  bool IsStopped() const { return state_ == STOPPED; }
+
   void Subscribe(::base::StringPiece topic,
                  OnMessageCallback on_message_callback,
                  const Subscriber<MessageTy>::Settings& settings = Settings());
@@ -50,6 +54,7 @@ class EXPORT Subscriber {
   void OnFindPublisher(const TopicInfo& topic_info);
   void OnConnectToPublisher(const Status& s);
 
+  void StartMessageLoop();
   void StopMessageLoop();
 
   void ReceiveMessageLoop();
@@ -101,10 +106,8 @@ void Subscriber<MessageTy>::OnSubscribeTopicAsync(
     const Status& s) {
   if (!s.ok()) {
     node_lifecycle_->OnError(s);
-    StopMessageLoop();
     return;
   }
-  NotifyMessageLoop();
 }
 
 template <typename MessageTy>
@@ -121,17 +124,26 @@ void Subscriber<MessageTy>::OnFindPublisher(const TopicInfo& topic_info) {
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
   if (s.ok()) {
-    if (state_ == STARTED || state_ == STOPPED) return;
-    state_ = STARTED;
-    ReceiveMessageLoop();
+    StartMessageLoop();
   } else {
-    node_lifecycle_->OnError(s);
+    Status new_status(s.error_code(),
+                      ::base::StringPrintf("Failed to connect to publisher: %s",
+                                           s.error_message().c_str()));
+    node_lifecycle_->OnError(new_status);
   }
 }
 
 template <typename MessageTy>
+void Subscriber<MessageTy>::StartMessageLoop() {
+  if (state_ == STARTED) return;
+  state_ = STARTED;
+  ReceiveMessageLoop();
+  NotifyMessageLoop();
+}
+
+template <typename MessageTy>
 void Subscriber<MessageTy>::StopMessageLoop() {
-  channel_.reset();
+  if (state_ == STOPPED) return;
   state_ = STOPPED;
 }
 
@@ -151,14 +163,21 @@ void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
   if (s.ok()) {
     message_queue_.push(std::move(message_));
   } else {
-    node_lifecycle_->OnError(s);
+    Status new_status(s.error_code(),
+                      ::base::StringPrintf("Failed to receive a message: %s",
+                                           s.error_message().c_str()));
+    node_lifecycle_->OnError(new_status);
+    if (channel_->IsTCPChannel() && !channel_->ToTCPChannel()->IsConnected()) {
+      StopMessageLoop();
+      return;
+    }
   }
   ReceiveMessageLoop();
 }
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::NotifyMessageLoop() {
-  if (state_ == STOPPED) return;
+  if (state_ == STOPPED && message_queue_.empty()) return;
 
   if (!message_queue_.empty()) {
     MessageTy message = std::move(message_queue_.front());

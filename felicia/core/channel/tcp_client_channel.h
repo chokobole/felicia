@@ -19,6 +19,8 @@ class TCPClientChannel : public TCPChannelBase {
 
   bool IsClient() const override { return true; }
 
+  bool IsConnected() const override;
+
   void Connect(const ::net::IPEndPoint& ip_endpoint, StatusCallback callback);
 
   void Write(::net::IOBufferWithSize* buffer, StatusCallback callback) override;
