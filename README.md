@@ -41,6 +41,6 @@ You can validate your work on docker with below.
 python3 scripts/felicia.py --with_docker build all --with_test
 ```
 
-### For Users
+## For Users
 Follow this link to check [examples](felicia/examples)
 
