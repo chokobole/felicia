@@ -30,6 +30,8 @@ class EXPORT MasterProxy final : public TaskRunnerInterface {
 
   void Init();
   void Run();
+  void Stop();
+  void Shutdown();
 
   // TaskRunnerInterface methods
   bool PostTask(const ::base::Location& from_here,

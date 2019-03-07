@@ -31,7 +31,7 @@ cc_library(
         "//felicia/core:node",
         "//felicia/core/master:heart_beat_signaller",
         "//felicia/core/master:topic_info_watcher",
-        "//felicia/core/master/client:grpc_master_client",
+        "//felicia/core/master/rpc:grpc_master_client",
         "//felicia/core/master/rpc:grpc_util",
         "//felicia/core/master/rpc:master_service_proto_cc",
     ]

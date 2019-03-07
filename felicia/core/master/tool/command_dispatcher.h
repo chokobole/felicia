@@ -5,7 +5,7 @@
 
 #include "third_party/chromium/base/macros.h"
 
-#include "felicia/core/master/client/grpc_master_client.h"
+#include "felicia/core/master/rpc/grpc_master_client.h"
 #include "felicia/core/master/tool/flag_parser_delegate.h"
 #include "felicia/core/master/tool/topic_flag_parser_delegate.h"
 

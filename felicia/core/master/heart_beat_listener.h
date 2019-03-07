@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_MASTER_HEART_LISTENER_H_
-#define FELICIA_CORE_MASTER_HEART_LISTENER_H_
+#ifndef FELICIA_CORE_MASTER_HEART_BEAT_LISTENER_H_
+#define FELICIA_CORE_MASTER_HEART_BEAT_LISTENER_H_
 
 #include <memory>
 
@@ -21,12 +21,12 @@ class HeartBeatListener {
                              OnDisconnectCallback callback);
 
   // Connect to client and read the |HeartBeat| periodically.
-  void StartCheckHeart();
+  void StartCheckHeartBeat();
 
  private:
   ~HeartBeatListener();
 
-  void DoCheckHeart(const Status& s);
+  void DoCheckHeartBeat(const Status& s);
 
   void TryReceiveHeartBeat();
 
@@ -50,4 +50,4 @@ class HeartBeatListener {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MASTER_HEART_LISTENER_H_
+#endif  // FELICIA_CORE_MASTER_HEART_BEAT_LISTENER_H_

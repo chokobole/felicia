@@ -15,11 +15,11 @@ class EXPORT TextStyle {
     return ApplyStyle(k##Style, text);                 \
   }
 
-  STYLE_METHOD(Red);
-  STYLE_METHOD(Green);
-  STYLE_METHOD(Blue);
-  STYLE_METHOD(Yellow);
-  STYLE_METHOD(Bold);
+  STYLE_METHOD(Red)
+  STYLE_METHOD(Green)
+  STYLE_METHOD(Blue)
+  STYLE_METHOD(Yellow)
+  STYLE_METHOD(Bold)
 
 #undef STYLE_METHOD
 

@@ -13,15 +13,6 @@ load(
 )
 
 cc_library(
-    name = "grpc_client_cq_tag",
-    hdrs = ["grpc_client_cq_tag.h"],
-    copts = fel_copts(),
-    deps = [
-        "//felicia/core:lib",
-    ]
-)
-
-cc_library(
     name = "grpc_async_client_call",
     hdrs = ["grpc_async_client_call.h"],
     copts = fel_copts(),
@@ -44,14 +35,25 @@ cc_library(
 )
 
 cc_library(
-    name = "grpc_util",
-    srcs = ["grpc_util.cc"],
-    hdrs = ["grpc_util.h"],
+    name = "grpc_client_cq_tag",
+    hdrs = ["grpc_client_cq_tag.h"],
     copts = fel_copts(),
     deps = [
+        "//felicia/core:lib",
+    ]
+)
+
+cc_library(
+    name = "grpc_master_client",
+    srcs = ["grpc_master_client.cc"],
+    hdrs = ["grpc_master_client.h"],
+    copts = fel_copts(),
+    deps = [
+        ":grpc_async_client_call",
+        ":master_service_proto_cc",
         "//felicia:grpc++",
         "//felicia/core:lib",
-        "//felicia/core:platform_net",
+        "//felicia/core/master:master_client_interface",
     ],
 )
 
@@ -97,5 +99,17 @@ cc_binary(
     copts = fel_copts(),
     deps = [
         ":grpc_server",
+    ],
+)
+
+cc_library(
+    name = "grpc_util",
+    srcs = ["grpc_util.cc"],
+    hdrs = ["grpc_util.h"],
+    copts = fel_copts(),
+    deps = [
+        "//felicia:grpc++",
+        "//felicia/core:lib",
+        "//felicia/core:platform_net",
     ],
 )

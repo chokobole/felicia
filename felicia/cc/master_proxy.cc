@@ -5,7 +5,7 @@
 
 #include "felicia/core/channel/channel_factory.h"
 #include "felicia/core/lib/strings/str_util.h"
-#include "felicia/core/master/client/grpc_master_client.h"
+#include "felicia/core/master/rpc/grpc_master_client.h"
 #include "felicia/core/master/rpc/grpc_util.h"
 #include "felicia/core/platform/net_util.h"
 
@@ -34,9 +34,13 @@ void MasterProxy::Init() {
   RegisterClient();
 }
 
-void MasterProxy::Run() {
-  run_loop_->Run();
-  master_client_interface_->Join();
+void MasterProxy::Run() { run_loop_->Run(); }
+
+void MasterProxy::Stop() { master_client_interface_->Stop(); }
+
+void MasterProxy::Shutdown() {
+  run_loop_->Quit();
+  master_client_interface_->Shutdown();
 }
 
 MasterProxy& MasterProxy::GetInstance() {

@@ -64,8 +64,6 @@ void CommandDispatcher::Dispatch(
       ::base::BindOnce(&CommandDispatcher::OnListNodesAsync,
                        ::base::Unretained(this), master_client_.get(),
                        ::base::Owned(request), ::base::Owned(response)));
-
-  master_client_->Join();
 }
 
 void CommandDispatcher::OnListNodesAsync(GrpcMasterClient* client,
@@ -148,8 +146,6 @@ void CommandDispatcher::Dispatch(
       ::base::BindOnce(&CommandDispatcher::OnListTopicsAsync,
                        ::base::Unretained(this), master_client_.get(),
                        ::base::Owned(request), ::base::Owned(response)));
-
-  master_client_->Join();
 }
 
 void CommandDispatcher::OnListTopicsAsync(GrpcMasterClient* client,

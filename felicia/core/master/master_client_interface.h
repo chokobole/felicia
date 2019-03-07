@@ -19,7 +19,7 @@ class EXPORT MasterClientInterface {
   virtual ~MasterClientInterface() = default;
 
   virtual Status Start() = 0;
-  virtual Status Join() = 0;
+  virtual Status Stop() = 0;
   virtual Status Shutdown() = 0;
 
 #define CLIENT_METHOD(method)                                \

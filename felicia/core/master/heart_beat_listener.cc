@@ -39,7 +39,7 @@ HeartBeatListener::~HeartBeatListener() {
   std::move(callback_).Run(client_info_);
 }
 
-void HeartBeatListener::StartCheckHeart() {
+void HeartBeatListener::StartCheckHeartBeat() {
   if (g_heart_beat_duration == ::base::TimeDelta()) {
     g_heart_beat_duration = GetHeartBeatDuration();
   }
@@ -48,11 +48,11 @@ void HeartBeatListener::StartCheckHeart() {
       client_info_.heart_beat_signaller_source().channel_def());
 
   channel_->Connect(client_info_.heart_beat_signaller_source(),
-                    ::base::BindOnce(&HeartBeatListener::DoCheckHeart,
+                    ::base::BindOnce(&HeartBeatListener::DoCheckHeartBeat,
                                      ::base::Unretained(this)));
 }
 
-void HeartBeatListener::DoCheckHeart(const Status& s) {
+void HeartBeatListener::DoCheckHeartBeat(const Status& s) {
   if (!s.ok()) {
     LOG(ERROR) << "Failed to Connect "
                << client_info_.heart_beat_signaller_source().DebugString();
@@ -73,7 +73,7 @@ void HeartBeatListener::TryReceiveHeartBeat() {
 
 void HeartBeatListener::OnAlive(const Status& s) {
   if (s.ok()) {
-    DoCheckHeart(Status::OK());
+    DoCheckHeartBeat(Status::OK());
   } else {
     if (trial_ == kMaximumTrial) {
       delete this;

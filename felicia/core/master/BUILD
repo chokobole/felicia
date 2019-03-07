@@ -12,6 +12,40 @@ load(
     "fel_proto_library_cc",
 )
 
+cc_library(
+    name = "client",
+    srcs = ["client.cc"],
+    hdrs = ["client.h"],
+    copts = fel_copts(),
+    deps = [
+        "//felicia/core:lib",
+        "//felicia/core:node",
+        "//felicia/core/util:uuid",
+    ]
+)
+
+cc_library(
+    name = "heart_beat_listener",
+    srcs = ["heart_beat_listener.cc"],
+    hdrs = ["heart_beat_listener.h"],
+    copts = fel_copts(),
+    deps = [
+        ":master_data_proto_cc",
+        "//felicia/core:lib",
+        "//felicia/core:channel",
+    ]
+)
+
+cc_library(
+    name = "heart_beat_signaller",
+    srcs = ["heart_beat_signaller.cc"],
+    hdrs = ["heart_beat_signaller.h"],
+    copts = fel_copts(),
+    deps = [
+        ":heart_beat_listener",
+    ]
+)
+
 fel_proto_library_cc(
     name = "master_data_proto",
     srcs = ["master_data.proto"],
@@ -48,21 +82,12 @@ cc_library(
     hdrs = ["master.h"],
     copts = fel_copts(),
     deps = [
+        ":client",
         ":master_proto_cc",
         ":heart_beat_listener",
         "//felicia/core:channel",
         "//felicia/core:lib",
         "//felicia/core:node",
-        "//felicia/core/master/client:client"
-    ]
-)
-
-cc_library(
-    name = "task_runner_interface",
-    hdrs = ["task_runner_interface.h"],
-    copts = fel_copts(),
-    deps = [
-        "//felicia/core:lib"
     ]
 )
 
@@ -73,32 +98,8 @@ cc_library(
     copts = fel_copts(),
     deps = [
         ":master_data_proto_cc",
-        ":task_runner_interface",
         "//felicia/core:lib",
         "//felicia/core:channel",
-    ]
-)
-
-cc_library(
-    name = "heart_beat_listener",
-    srcs = ["heart_beat_listener.cc"],
-    hdrs = ["heart_beat_listener.h"],
-    copts = fel_copts(),
-    deps = [
-        ":master_data_proto_cc",
-        ":task_runner_interface",
-        "//felicia/core:lib",
-        "//felicia/core:channel",
-    ]
-)
-
-cc_library(
-    name = "heart_beat_signaller",
-    srcs = ["heart_beat_signaller.cc"],
-    hdrs = ["heart_beat_signaller.h"],
-    copts = fel_copts(),
-    deps = [
-        ":heart_beat_listener",
     ]
 )
 

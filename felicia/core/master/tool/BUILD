@@ -76,7 +76,7 @@ cc_library(
     deps = [
         ":flag_parser_delegate",
         "//felicia/core:channel",
-        "//felicia/core/master/client:grpc_master_client",
+        "//felicia/core/master/rpc:grpc_master_client",
     ]
 )
 

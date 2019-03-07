@@ -1,13 +1,12 @@
-#ifndef FELICIA_CORE_MASTER_CLIENT_GRPC_MASTER_CLIENT_H_
-#define FELICIA_CORE_MASTER_CLIENT_GRPC_MASTER_CLIENT_H_
+#ifndef FELICIA_CORE_MASTER_RPC_GRPC_MASTER_CLIENT_H_
+#define FELICIA_CORE_MASTER_RPC_GRPC_MASTER_CLIENT_H_
 
 #include <utility>
 
 #include "grpcpp/grpcpp.h"
 #include "third_party/chromium/base/macros.h"
-#include "third_party/chromium/base/threading/platform_thread.h"
+#include "third_party/chromium/base/threading/thread.h"
 
-#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/master_client_interface.h"
 #include "felicia/core/master/rpc/grpc_async_client_call.h"
@@ -22,7 +21,7 @@ class GrpcMasterClient : public MasterClientInterface {
   ~GrpcMasterClient();
 
   Status Start() override;
-  Status Join() override;
+  Status Stop() override;
   Status Shutdown() override;
 
 #define CLIENT_METHOD(method)                                           \
@@ -36,36 +35,28 @@ class GrpcMasterClient : public MasterClientInterface {
         std::move(done));                                               \
   }
 
-  CLIENT_METHOD(RegisterClient);
-  CLIENT_METHOD(RegisterNode);
-  CLIENT_METHOD(ListNodes);
-  CLIENT_METHOD(PublishTopic);
-  CLIENT_METHOD(SubscribeTopic);
-  CLIENT_METHOD(ListTopics);
+  CLIENT_METHOD(RegisterClient)
+  CLIENT_METHOD(RegisterNode)
+  CLIENT_METHOD(ListNodes)
+  CLIENT_METHOD(PublishTopic)
+  CLIENT_METHOD(SubscribeTopic)
+  CLIENT_METHOD(ListTopics)
 
 #undef CLIENT_METHOD
 
-  class GrpcMasterClientThread : public ::base::PlatformThread::Delegate {
-   public:
-    explicit GrpcMasterClientThread(::grpc::CompletionQueue* cq) : cq_(cq) {}
-
-    void ThreadMain() override {
-      void* tag;
-      bool ok;
-      while (cq_->Next(&tag, &ok)) {
-        GrpcClientCQTag* callback_tag = static_cast<GrpcClientCQTag*>(tag);
-        callback_tag->OnCompleted(ok);
-      }
+  void HandleRpcsLoop() {
+    void* tag;
+    bool ok;
+    while (cq_.Next(&tag, &ok)) {
+      GrpcClientCQTag* callback_tag = static_cast<GrpcClientCQTag*>(tag);
+      callback_tag->OnCompleted(ok);
     }
-
-   private:
-    ::grpc::CompletionQueue* cq_;
-  };
+  }
 
  private:
   std::unique_ptr<grpc::MasterService::Stub> stub_;
   ::grpc::CompletionQueue cq_;
-  GrpcMasterClient::GrpcMasterClientThread thread_;
+  std::vector<std::unique_ptr<::base::Thread>> threads_;
   ::base::PlatformThreadHandle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(GrpcMasterClient);
@@ -73,4 +64,4 @@ class GrpcMasterClient : public MasterClientInterface {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MASTER_CLIENT_GRPC_MASTER_CLIENT_H_
+#endif  // FELICIA_CORE_MASTER_RPC_GRPC_MASTER_CLIENT_H_

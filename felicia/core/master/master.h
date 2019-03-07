@@ -13,7 +13,7 @@
 
 #include "felicia/core/channel/channel.h"
 #include "felicia/core/lib/base/export.h"
-#include "felicia/core/master/client/client.h"
+#include "felicia/core/master/client.h"
 #include "felicia/core/master/errors.h"
 #include "felicia/core/master/master.pb.h"
 
@@ -88,7 +88,7 @@ class EXPORT Master {
   // Remove the Node from the appropriate Client, which is recored at
   // |node_info|. This is thread-safe.
   void RemoveNode(const NodeInfo& node_info);
-  // Returns true when client exists with a given |id|. This is thread-safe.
+  // Returns true when a client exists with a given |id|. This is thread-safe.
   bool CheckIfClientExists(uint32_t id);
   // Returns true when node whose |node_info| is same with a given |node_info|.
   // This is thread-safe.
@@ -108,7 +108,7 @@ class EXPORT Master {
 
   // Every time a new client is registered, invoke an appropriate
   // heart beat listener for this client.
-  void DoCheckHeart(const ClientInfo& client_info);
+  void DoCheckHeartBeat(const ClientInfo& client_info);
 
   Master();
 

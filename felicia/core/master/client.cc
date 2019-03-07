@@ -1,4 +1,4 @@
-#include "felicia/core/master/client/client.h"
+#include "felicia/core/master/client.h"
 
 #include <algorithm>
 #include <limits>

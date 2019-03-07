@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_MASTER_CLIENT_CLIENT_H_
-#define FELICIA_CORE_MASTER_CLIENT_CLIENT_H_
+#ifndef FELICIA_CORE_MASTER_CLIENT_H_
+#define FELICIA_CORE_MASTER_CLIENT_H_
 
 #include <memory>
 #include <vector>
@@ -48,4 +48,4 @@ class EXPORT Client {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MASTER_CLIENT_CLIENT_H_
+#endif  // FELICIA_CORE_MASTER_CLIENT_H_

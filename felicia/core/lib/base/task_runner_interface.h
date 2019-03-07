@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_MASTER_TASK_RUNNER_INTERFACE_H_
-#define FELICIA_CORE_MASTER_TASK_RUNNER_INTERFACE_H_
+#ifndef FELICIA_CORE_LIB_BASE_TASK_RUNNER_INTERFACE_H_
+#define FELICIA_CORE_LIB_BASE_TASK_RUNNER_INTERFACE_H_
 
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/location.h"
@@ -20,4 +20,4 @@ class TaskRunnerInterface {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MASTER_TASK_RUNNER_INTERFACE_H_
+#endif  // FELICIA_CORE_LIB_BASE_TASK_RUNNER_INTERFACE_H_

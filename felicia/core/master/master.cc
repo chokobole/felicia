@@ -65,7 +65,7 @@ void Master::RegisterClient(const RegisterClientRequest* arg,
   std::move(callback).Run(Status::OK());
 
   thread_->task_runner()->PostTask(
-      FROM_HERE, ::base::BindOnce(&Master::DoCheckHeart,
+      FROM_HERE, ::base::BindOnce(&Master::DoCheckHeartBeat,
                                   ::base::Unretained(this), client_info));
 }
 
@@ -383,16 +383,19 @@ void Master::RemoveClient(const ClientInfo& client_info) {
 }
 
 void Master::AddNode(std::unique_ptr<Node> node) {
-  DLOG(INFO) << "Master::AddNode() " << node->node_info().DebugString();
+  DLOG(INFO) << "Master::AddNode() " << node->node_info().name();
   uint32_t id = node->node_info().client_id();
   ::base::AutoLock l(lock_);
-  client_map_[id]->AddNode(std::move(node));
+  auto it = client_map_.find(id);
+  if (it != client_map_.end()) it->second->AddNode(std::move(node));
 }
 
 void Master::RemoveNode(const NodeInfo& node_info) {
-  DLOG(INFO) << "Master::RemoveNode() " << node_info.DebugString();
+  DLOG(INFO) << "Master::RemoveNode() " << node_info.name();
+  uint32_t id = node_info.client_id();
   ::base::AutoLock l(lock_);
-  client_map_[node_info.client_id()]->RemoveNode(node_info);
+  auto it = client_map_.find(id);
+  if (it != client_map_.end()) it->second->RemoveNode(node_info);
 }
 
 bool Master::CheckIfClientExists(uint32_t id) {
@@ -413,10 +416,10 @@ void Master::DoNotifySubscriber(const NodeInfo& subscribing_node_info,
   channel_def.set_type(ChannelDef_Type_TCP);
   auto channel = ChannelFactory::NewChannel<TopicInfo>(channel_def);
 
+  auto it = client_map_.find(subscribing_node_info.client_id());
+  if (it == client_map_.end()) return;
   const ChannelSource& channel_source =
-      client_map_[subscribing_node_info.client_id()]
-          ->client_info()
-          .topic_info_watcher_source();
+      it->second->client_info().topic_info_watcher_source();
 
   channel->Connect(channel_source,
                    ::base::BindOnce(&Master::OnConnetToTopicInfoWatcher,
@@ -468,12 +471,12 @@ void Master::OnConnetToTopicInfoWatcher(
   }
 }
 
-void Master::DoCheckHeart(const ClientInfo& client_info) {
+void Master::DoCheckHeartBeat(const ClientInfo& client_info) {
   // |listner| is released inside.
   HeartBeatListener* listener = new HeartBeatListener(
       client_info,
       ::base::BindOnce(&Master::RemoveClient, ::base::Unretained(this)));
-  listener->StartCheckHeart();
+  listener->StartCheckHeartBeat();
 }
 
 #undef CHECK_CLIENT_EXISTS

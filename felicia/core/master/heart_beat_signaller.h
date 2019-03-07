@@ -5,8 +5,8 @@
 #include "third_party/chromium/base/macros.h"
 
 #include "felicia/core/channel/channel.h"
+#include "felicia/core/lib/base/task_runner_interface.h"
 #include "felicia/core/master/master_data.pb.h"
-#include "felicia/core/master/task_runner_interface.h"
 
 namespace felicia {
 
