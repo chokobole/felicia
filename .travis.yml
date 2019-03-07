@@ -25,7 +25,7 @@ matrix:
         # Command Line Tools (macOS High Sierra version 10.13) for Xcode,
         # says Command Line Tools (macOS High Sierra version 10.13) for Xcode: No such update
         # so did workaround with -r option.
-        - softwareupdate --install -r
+        - travis_wait 50 softwareupdate --install -r
       install:
         - ./installers/install_bazel.sh
       script:
