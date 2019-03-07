@@ -152,7 +152,7 @@ void Pool<T, Size>::clear() {
     pop();
   }
 
-  delete[] buffer_;
+  delete[] reinterpret_cast<char*>(buffer_);
   buffer_ = nullptr;
 }
 
