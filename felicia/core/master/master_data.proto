@@ -27,6 +27,13 @@ message TopicInfo {
 
 // Element inside NodeFilter are mutually exclusive.
 // If either of one is set at the same time, only one element is effective.
+message ClientFilter {
+  bool all = 1;
+  uint32 id = 2;
+}
+
+// Element inside NodeFilter are mutually exclusive.
+// If either of one is set at the same time, only one element is effective.
 message NodeFilter {
   bool all = 1;
   string publishing_topic = 2;

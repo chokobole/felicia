@@ -20,6 +20,13 @@ And then you can use cli tool! Here belows are commands supported. You can type 
 bazel-bin/felicia/core/master/tool/grpc_master_client_cli node ls -a
 ```
 
+* Client command
+
+| COMMAND  | OPTION                  | DESCRIPTION                  |
+| -------: | ----------------------: | ---------------------------: |
+| ls       | -a, -all                | List all the clients         |
+|          | --id                    | List clients with a given id |
+
 * Node command
 
 | COMMAND  | OPTION                  | DESCRIPTION                                     |

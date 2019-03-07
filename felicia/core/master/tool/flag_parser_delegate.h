@@ -3,6 +3,7 @@
 
 #include "third_party/chromium/base/macros.h"
 
+#include "felicia/core/master/tool/client_flag_parser_delegate.h"
 #include "felicia/core/master/tool/node_flag_parser_delegate.h"
 #include "felicia/core/master/tool/topic_flag_parser_delegate.h"
 #include "felicia/core/util/command_line_interface/flag.h"
@@ -13,6 +14,7 @@ class FlagParserDelegate : public FlagParser::Delegate {
  public:
   enum Command {
     COMMAND_SELF,
+    COMMAND_CLIENT,
     COMMAND_NODE,
     COMMAND_TOPIC,
   };
@@ -20,6 +22,9 @@ class FlagParserDelegate : public FlagParser::Delegate {
   FlagParserDelegate();
   ~FlagParserDelegate();
 
+  const ClientFlagParserDelegate& client_delegate() const {
+    return client_delegate_;
+  }
   const NodeFlagParserDelegate& node_delegate() const { return node_delegate_; }
   const TopicFlagParserDelegate& topic_delegate() const {
     return topic_delegate_;
@@ -37,6 +42,7 @@ class FlagParserDelegate : public FlagParser::Delegate {
  private:
   std::string command_;
   std::unique_ptr<StringChoicesFlag> command_flag_;
+  ClientFlagParserDelegate client_delegate_;
   NodeFlagParserDelegate node_delegate_;
   TopicFlagParserDelegate topic_delegate_;
   Command current_command_;

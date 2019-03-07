@@ -39,7 +39,7 @@ void Master::Stop() { thread_->Stop(); }
 void Master::RegisterClient(const RegisterClientRequest* arg,
                             RegisterClientResponse* result,
                             StatusCallback callback) {
-  ClientInfo client_info = arg->client_info();
+  ClientInfo client_info = arg->client_info();  // intend to copy
   if (!IsValidChannelSource(client_info.heart_beat_signaller_source())) {
     std::move(callback).Run(errors::ChannelSourceNotValid(
         "heart beat signaller", client_info.heart_beat_signaller_source()));
@@ -69,10 +69,21 @@ void Master::RegisterClient(const RegisterClientRequest* arg,
                                   ::base::Unretained(this), client_info));
 }
 
+void Master::ListClients(const ListClientsRequest* arg,
+                         ListClientsResponse* result, StatusCallback callback) {
+  const ClientFilter& client_filter = arg->client_filter();
+  ::base::AutoLock l(lock_);
+  for (auto& it : client_map_) {
+    *result->add_client_infos() = it.second->client_info();
+  }
+  DLOG(INFO) << "[ListClients]";
+  std::move(callback).Run(Status::OK());
+}
+
 void Master::RegisterNode(const RegisterNodeRequest* arg,
                           RegisterNodeResponse* result,
                           StatusCallback callback) {
-  NodeInfo node_info = arg->node_info();
+  const NodeInfo& node_info = arg->node_info();
   if (!CheckIfClientExists(node_info.client_id())) {
     std::move(callback).Run(errors::ClientNotRegistered());
     return;
@@ -95,7 +106,7 @@ void Master::RegisterNode(const RegisterNodeRequest* arg,
 void Master::UnregisterNode(const UnregisterNodeRequest* arg,
                             UnregisterNodeResponse* result,
                             StatusCallback callback) {
-  NodeInfo node_info = arg->node_info();
+  const NodeInfo& node_info = arg->node_info();
   CHECK_NODE_EXISTS(node_info);
 
   RemoveNode(node_info);

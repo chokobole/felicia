@@ -8,6 +8,9 @@ service MasterService {
   // Register client with a given RegisterClientRequest.
   rpc RegisterClient(RegisterClientRequest) returns (RegisterClientResponse) {}
 
+  // List clients whose properties are correspondent to the ListClientsRequest.
+  rpc ListClients(ListClientsRequest) returns (ListClientsResponse) {}
+
   // Register node with a given RegisterNodeRequest.
   rpc RegisterNode(RegisterNodeRequest) returns (RegisterNodeResponse) {}
 

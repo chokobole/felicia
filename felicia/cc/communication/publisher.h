@@ -43,8 +43,7 @@ class EXPORT Publisher {
   bool IsRunning() const { return state_ == STARTED; }
   bool IsStopped() const { return state_ == STOPPED; }
 
-  void Publish(const std::string& topic,
-               OnMessageCallback on_message_callback,
+  void Publish(const std::string& topic, OnMessageCallback on_message_callback,
                const ChannelDef& channel_def,
                const Publisher<MessageTy>::Settings& settings = Settings());
 

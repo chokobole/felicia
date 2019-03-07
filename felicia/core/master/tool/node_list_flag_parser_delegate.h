@@ -14,10 +14,14 @@ class NodeListFlagParserDelegate : public FlagParser::Delegate {
   NodeListFlagParserDelegate();
   ~NodeListFlagParserDelegate();
 
-  bool all() const { return all_; }
-  const std::string& publishing_topic() const { return publishing_topic_; }
-  const std::string& subscribing_topic() const { return subscribing_topic_; }
-  const std::string& name() const { return name_; }
+  const BoolFlag* all_flag() const { return all_flag_.get(); }
+  const StringFlag* publishing_topic_flag() const {
+    return publishing_topic_flag_.get();
+  }
+  const StringFlag* subscribing_topic_flag() const {
+    return subscribing_topic_flag_.get();
+  }
+  const StringFlag* name_flag() const { return name_flag_.get(); }
 
   bool Parse(FlagParser& parser) override;
 

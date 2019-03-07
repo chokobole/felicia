@@ -7,7 +7,6 @@
 
 #include "felicia/core/master/rpc/grpc_master_client.h"
 #include "felicia/core/master/tool/flag_parser_delegate.h"
-#include "felicia/core/master/tool/topic_flag_parser_delegate.h"
 
 namespace felicia {
 
@@ -18,6 +17,13 @@ class CommandDispatcher {
   void Dispatch(const FlagParserDelegate& delegate) const;
 
  private:
+  // Client Commands
+  void Dispatch(const ClientFlagParserDelegate& delegate) const;
+  void Dispatch(const ClientListFlagParserDelegate& delegate) const;
+
+  void OnListClientsAsync(GrpcMasterClient* client, ListClientsRequest* request,
+                          ListClientsResponse* response, const Status& s) const;
+
   // Node Commands
   void Dispatch(const NodeFlagParserDelegate& delegate) const;
   void Dispatch(const NodeListFlagParserDelegate& delegate) const;

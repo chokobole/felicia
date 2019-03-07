@@ -1,7 +1,5 @@
 #include "felicia/core/master/tool/topic_flag_parser_delegate.h"
 
-#include <iostream>
-
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/strings/string_util.h"
 #include "third_party/chromium/base/strings/stringprintf.h"

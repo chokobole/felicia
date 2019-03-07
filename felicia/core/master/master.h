@@ -24,33 +24,22 @@ class EXPORT Master {
   void Run();
   void Stop();
 
-  void RegisterClient(const RegisterClientRequest* arg,
-                      RegisterClientResponse* result, StatusCallback callback);
+#define MASTER_METHOD(method)                                       \
+  void method(const method##Request* arg, method##Response* result, \
+              StatusCallback callback)
 
-  void RegisterNode(const RegisterNodeRequest* arg,
-                    RegisterNodeResponse* result, StatusCallback callback);
+  MASTER_METHOD(RegisterClient);
+  MASTER_METHOD(ListClients);
+  MASTER_METHOD(RegisterNode);
+  MASTER_METHOD(UnregisterNode);
+  MASTER_METHOD(ListNodes);
+  MASTER_METHOD(PublishTopic);
+  MASTER_METHOD(UnpublishTopic);
+  MASTER_METHOD(SubscribeTopic);
+  MASTER_METHOD(UnsubscribeTopic);
+  MASTER_METHOD(ListTopics);
 
-  void UnregisterNode(const UnregisterNodeRequest* arg,
-                      UnregisterNodeResponse* result, StatusCallback callback);
-
-  void ListNodes(const ListNodesRequest* arg, ListNodesResponse* result,
-                 StatusCallback callback);
-
-  void PublishTopic(const PublishTopicRequest* arg,
-                    PublishTopicResponse* result, StatusCallback callback);
-
-  void UnpublishTopic(const UnpublishTopicRequest* arg,
-                      UnpublishTopicResponse* result, StatusCallback callback);
-
-  void SubscribeTopic(const SubscribeTopicRequest* arg,
-                      SubscribeTopicResponse* result, StatusCallback callback);
-
-  void UnsubscribeTopic(const UnsubscribeTopicRequest* arg,
-                        UnsubscribeTopicResponse* result,
-                        StatusCallback callback);
-
-  void ListTopics(const ListTopicsRequest* arg, ListTopicsResponse* result,
-                  StatusCallback callback);
+#undef MASTER_METHOD
 
   void Gc();
 

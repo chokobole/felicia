@@ -12,6 +12,14 @@
 
 namespace felicia {
 
+namespace {
+
+constexpr size_t kIdLength = 13;
+constexpr size_t kNameLength = 20;
+constexpr size_t kChannelSourceLength = 22;
+
+}  // namespace
+
 CommandDispatcher::CommandDispatcher(std::unique_ptr<GrpcMasterClient> client)
     : master_client_(std::move(client)) {}
 
@@ -20,6 +28,9 @@ void CommandDispatcher::Dispatch(const FlagParserDelegate& delegate) const {
   switch (command) {
     case FlagParserDelegate::Command::COMMAND_SELF:
       break;
+    case FlagParserDelegate::Command::COMMAND_CLIENT:
+      Dispatch(delegate.client_delegate());
+      break;
     case FlagParserDelegate::Command::COMMAND_NODE:
       Dispatch(delegate.node_delegate());
       break;
@@ -27,6 +38,73 @@ void CommandDispatcher::Dispatch(const FlagParserDelegate& delegate) const {
       Dispatch(delegate.topic_delegate());
       break;
   }
+}
+
+void CommandDispatcher::Dispatch(
+    const ClientFlagParserDelegate& delegate) const {
+  auto command = delegate.command();
+  switch (command) {
+    case ClientFlagParserDelegate::Command::COMMAND_SELF:
+      NOTREACHED();
+      break;
+    case ClientFlagParserDelegate::Command::COMMAND_LIST:
+      Dispatch(delegate.list_delegate());
+      break;
+  }
+}
+
+void CommandDispatcher::Dispatch(
+    const ClientListFlagParserDelegate& delegate) const {
+  master_client_->Start();
+
+  ClientFilter client_filter;
+  if (delegate.all_flag()->is_set()) {
+    client_filter.set_all(delegate.all_flag()->value());
+  } else {
+    DCHECK(!delegate.id_flag()->is_set());
+    client_filter.set_id(delegate.id_flag()->value());
+  }
+  ListClientsRequest* request = new ListClientsRequest();
+  *request->mutable_client_filter() = client_filter;
+  ListClientsResponse* response = new ListClientsResponse();
+  master_client_->ListClientsAsync(
+      request, response,
+      ::base::BindOnce(&CommandDispatcher::OnListClientsAsync,
+                       ::base::Unretained(this), master_client_.get(),
+                       ::base::Owned(request), ::base::Owned(response)));
+}
+
+void CommandDispatcher::OnListClientsAsync(GrpcMasterClient* client,
+                                           ListClientsRequest* request,
+                                           ListClientsResponse* response,
+                                           const Status& s) const {
+  if (!s.ok()) {
+    std::cerr << s.error_message() << std::endl;
+    client->Shutdown();
+    return;
+  }
+  auto client_infos = response->client_infos();
+  TableWriterBuilder builder;
+  auto writer = builder.AddColumn(TableWriter::Column{"ID", kIdLength})
+                    .AddColumn(TableWriter::Column{"HEART_BEAT_SIGNALLER",
+                                                   kChannelSourceLength})
+                    .AddColumn(TableWriter::Column{"TOPIC_INFO_WATCHER",
+                                                   kChannelSourceLength})
+                    .Build();
+  size_t row = 0;
+  for (auto& client_info : client_infos) {
+    writer.SetElement(row, 0, ::base::NumberToString(client_info.id()));
+    const ChannelSource& hbs_channel_source =
+        client_info.heart_beat_signaller_source();
+    writer.SetElement(row, 1, ToString(hbs_channel_source));
+    const ChannelSource& tiw_channel_source =
+        client_info.topic_info_watcher_source();
+    writer.SetElement(row, 2, ToString(tiw_channel_source));
+    row++;
+  }
+
+  std::cout << writer.ToString() << std::endl;
+  client->Shutdown();
 }
 
 void CommandDispatcher::Dispatch(const NodeFlagParserDelegate& delegate) const {
@@ -46,15 +124,16 @@ void CommandDispatcher::Dispatch(
   master_client_->Start();
 
   NodeFilter node_filter;
-  if (delegate.all()) {
-    node_filter.set_all(true);
-  } else if (!delegate.publishing_topic().empty()) {
-    node_filter.set_publishing_topic(delegate.publishing_topic());
-  } else if (!delegate.subscribing_topic().empty()) {
-    node_filter.set_subscribing_topic(delegate.subscribing_topic());
+  if (delegate.all_flag()->is_set()) {
+    node_filter.set_all(delegate.all_flag()->value());
+  } else if (delegate.publishing_topic_flag()->is_set()) {
+    node_filter.set_publishing_topic(delegate.publishing_topic_flag()->value());
+  } else if (delegate.subscribing_topic_flag()->is_set()) {
+    node_filter.set_subscribing_topic(
+        delegate.subscribing_topic_flag()->value());
   } else {
-    DCHECK(!delegate.name().empty());
-    node_filter.set_name(delegate.name());
+    DCHECK(delegate.name_flag()->is_set());
+    node_filter.set_name(delegate.name_flag()->value());
   }
   ListNodesRequest* request = new ListNodesRequest();
   *request->mutable_node_filter() = node_filter;
@@ -99,8 +178,8 @@ void CommandDispatcher::OnListNodesAsync(GrpcMasterClient* client,
     std::cout << writer.ToString() << std::endl << std::endl;
   } else {
     auto& node_infos = response->node_infos();
-    auto writer = builder.AddColumn(TableWriter::Column{"NAME", 20})
-                      .AddColumn(TableWriter::Column{"CLIENT ID", 10})
+    auto writer = builder.AddColumn(TableWriter::Column{"NAME", kNameLength})
+                      .AddColumn(TableWriter::Column{"CLIENT ID", kIdLength})
                       .Build();
     size_t row = 0;
     for (auto& node_info : node_infos) {
@@ -132,11 +211,11 @@ void CommandDispatcher::Dispatch(
   master_client_->Start();
 
   TopicFilter topic_filter;
-  if (delegate.all()) {
-    topic_filter.set_all(true);
+  if (delegate.all_flag()->is_set()) {
+    topic_filter.set_all(delegate.all_flag()->value());
   } else {
-    DCHECK(!delegate.topic().empty());
-    topic_filter.set_topic(delegate.topic());
+    DCHECK(delegate.topic_flag()->is_set());
+    topic_filter.set_topic(delegate.topic_flag()->value());
   }
   ListTopicsRequest* request = new ListTopicsRequest();
   *request->mutable_topic_filter() = topic_filter;
@@ -159,21 +238,17 @@ void CommandDispatcher::OnListTopicsAsync(GrpcMasterClient* client,
   }
   auto topic_infos = response->topic_infos();
   TableWriterBuilder builder;
-  auto writer = builder.AddColumn(TableWriter::Column{"NAME", 20})
-                    .AddColumn(TableWriter::Column{"TYPE", 8})
-                    .AddColumn(TableWriter::Column{"END POINT", 10})
-                    .Build();
+  auto writer =
+      builder.AddColumn(TableWriter::Column{"NAME", kNameLength})
+          .AddColumn(TableWriter::Column{"TYPE", 8})
+          .AddColumn(TableWriter::Column{"END POINT", kChannelSourceLength})
+          .Build();
   size_t row = 0;
   for (auto& topic_info : topic_infos) {
     writer.SetElement(row, 0, topic_info.topic());
     const ChannelSource& channel_source = topic_info.topic_source();
     writer.SetElement(row, 1, ToString(channel_source.channel_def()));
-    if (channel_source.has_ip_endpoint()) {
-      ::net::IPEndPoint ip_endpoint;
-      if (ToNetIPEndPoint(channel_source, &ip_endpoint)) {
-        writer.SetElement(row, 2, ip_endpoint.ToString());
-      }
-    }
+    writer.SetElement(row, 2, ToString(channel_source));
     row++;
   }
 

@@ -1,5 +1,7 @@
 #include "felicia/core/channel/channel.h"
 
+#include "third_party/chromium/base/strings/string_util.h"
+
 #include "felicia/core/platform/net_util.h"
 
 namespace felicia {
@@ -33,6 +35,16 @@ std::string ToString(const ChannelDef& channel_def) {
   else if (channel_def.type() == ChannelDef_Type_UDP)
     return "UDP";
   NOTREACHED();
+}
+
+std::string ToString(const ChannelSource& channel_source) {
+  if (channel_source.has_ip_endpoint()) {
+    ::net::IPEndPoint ip_endpoint;
+    if (ToNetIPEndPoint(channel_source, &ip_endpoint)) {
+      return ip_endpoint.ToString();
+    }
+  }
+  return ::base::EmptyString();
 }
 
 ChannelSource PickRandomChannelSource(ChannelDef_Type type) {

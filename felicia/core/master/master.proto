@@ -13,6 +13,14 @@ message RegisterClientResponse {
   uint32 id = 1;
 }
 
+message ListClientsRequest {
+  ClientFilter client_filter = 1;
+}
+
+message ListClientsResponse {
+  repeated ClientInfo client_infos = 1;
+}
+
 message RegisterNodeRequest {
   NodeInfo node_info = 1;
 }

@@ -113,6 +113,13 @@ class MasterTest : public ::testing::Test {
     master_->RemoveClient(client_info);
   }
 
+  void RegisterClientForTesting(uint32_t* id) {
+    ClientInfo client_info;
+    std::unique_ptr<Client> client = Client::NewClient(client_info);
+    *id = client->client_info().id();
+    master_->AddClient(client_id_, std::move(client));
+  }
+
   void PublishTopicForTesting(const TopicInfo& topic_info) {
     NodeInfo node_info;
     node_info.set_client_id(client_id_);
@@ -122,6 +129,9 @@ class MasterTest : public ::testing::Test {
   }
 
  protected:
+  friend void OnListAllClients(MasterTest*, ListClientsResponse*,
+                               const Status&);
+  friend void OnListClient(ListClientsResponse*, uint32_t id, const Status&);
   friend void OnListAllNodes(MasterTest*, ListNodesResponse*, const Status&);
   friend void OnListPublishingNodes(MasterTest*, ListNodesResponse*,
                                     const Status&);
@@ -153,6 +163,41 @@ TEST_F(MasterTest, RegisterClient) {
       request.get(), response.get(),
       ::base::BindOnce(&ExpectChannelSourceNotValid, "heart beat signaller",
                        client_info->heart_beat_signaller_source()));
+}
+
+void OnListAllClients(MasterTest* test, ListClientsResponse* response,
+                      const Status& s) {
+  EXPECT_TRUE(s.ok());
+  auto& client_infos = response->client_infos();
+  EXPECT_EQ(1, client_infos.size());
+  EXPECT_EQ(test->client_id_, client_infos[0].id());
+}
+
+void OnListClient(ListClientsResponse* response, uint32_t id, const Status& s) {
+  EXPECT_TRUE(s.ok());
+  auto& client_infos = response->client_infos();
+  EXPECT_EQ(1, client_infos.size());
+  EXPECT_EQ(id, client_infos[0].id());
+}
+
+TEST_F(MasterTest, ListClients) {
+  DECLARE_REQUEST_AND_RESPONSE(ListClients);
+
+  ClientFilter* client_filter = request->mutable_client_filter();
+  client_filter->set_all(true);
+
+  master_->ListClients(
+      request.get(), response.get(),
+      ::base::BindOnce(&OnListAllClients, this, response.get()));
+
+  response->clear_client_infos();
+  uint32_t id;
+  RegisterClientForTesting(&id);
+  client_filter->Clear();
+  client_filter->set_id(id);
+
+  master_->ListClients(request.get(), response.get(),
+                       ::base::BindOnce(&OnListClient, response.get(), id));
 }
 
 TEST_F(MasterTest, RegisterNode) {

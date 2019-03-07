@@ -8,6 +8,30 @@ load(
 )
 
 ##########################################################################################
+##################################### client command #####################################
+##########################################################################################
+
+cc_library(
+    name = "client_list_flag_parser_delegate",
+    srcs = ["client_list_flag_parser_delegate.cc"],
+    hdrs = ["client_list_flag_parser_delegate.h"],
+    copts = fel_copts(),
+    deps = [
+        "//felicia/core/util:command_line_interface",
+    ],
+)
+
+cc_library(
+    name = "client_flag_parser_delegate",
+    srcs = ["client_flag_parser_delegate.cc"],
+    hdrs = ["client_flag_parser_delegate.h"],
+    copts = fel_copts(),
+    deps = [
+        ":client_list_flag_parser_delegate",
+    ],
+)
+
+##########################################################################################
 ###################################### node command ######################################
 ##########################################################################################
 
@@ -63,6 +87,7 @@ cc_library(
     hdrs = ["flag_parser_delegate.h"],
     copts = fel_copts(),
     deps = [
+        ":client_flag_parser_delegate",
         ":node_flag_parser_delegate",
         ":topic_flag_parser_delegate",
     ],

@@ -58,15 +58,20 @@ class EXPORT Channel {
   DISALLOW_COPY_AND_ASSIGN(Channel);
 };
 
-// Convert ChannelSource to ::net::IPEndPoint, Retures true if succeeded.
+// Convert ChannelSource |channel_source| to ::net::IPEndPoint,
+// Retures true if succeeded.
 bool ToNetIPEndPoint(const ChannelSource& channel_source,
                      ::net::IPEndPoint* ip_endpoint);
 
-// Convert ::net::IPEndPoint to ChannelSource
+// Convert ::net::IPEndPoint |ip_endpoint| to ChannelSource
 ChannelSource ToChannelSource(const ::net::IPEndPoint& ip_endpoint,
                               ChannelDef_Type type);
 
+// Convert ChannelDef |channel_def| to std::string
 std::string ToString(const ChannelDef& channel_def);
+
+// Convert ChannelDef |channel_source| to std::string
+std::string ToString(const ChannelSource& channel_source);
 
 // Randomly pick channel source.
 ChannelSource PickRandomChannelSource(ChannelDef_Type type);

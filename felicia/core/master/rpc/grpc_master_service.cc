@@ -65,6 +65,7 @@ void GrpcMasterService::HandleRpcsLoop() {
   void* tag;
   bool ok;
   ENQUEUE_REQUEST(RegisterClient, true);
+  ENQUEUE_REQUEST(ListClients, false);
   ENQUEUE_REQUEST(RegisterNode, true);
   ENQUEUE_REQUEST(ListNodes, false);
   ENQUEUE_REQUEST(PublishTopic, true);
@@ -92,70 +93,26 @@ void OnHandleRequest(CallTy* call, const Status& status) {
 
 }  // namespace
 
-void GrpcMasterService::HandleRegisterClient(
-    MasterCall<RegisterClientRequest, RegisterClientResponse>* call) {
-  master_->RegisterClient(
-      &call->request_, &call->response_,
-      ::base::BindOnce(
-          &OnHandleRequest<
-              MasterCall<RegisterClientRequest, RegisterClientResponse>>,
-          call));
-  ENQUEUE_REQUEST(RegisterClient, true);
-}
+#define SERVICE_METHOD(method, supports_cancel)                              \
+  void GrpcMasterService::Handle##method(                                    \
+      MasterCall<method##Request, method##Response>* call) {                 \
+    master_->method(                                                         \
+        &call->request_, &call->response_,                                   \
+        ::base::BindOnce(                                                    \
+            &OnHandleRequest<MasterCall<method##Request, method##Response>>, \
+            call));                                                          \
+    ENQUEUE_REQUEST(method, supports_cancel);                                \
+  }
 
-void GrpcMasterService::HandleRegisterNode(
-    MasterCall<RegisterNodeRequest, RegisterNodeResponse>* call) {
-  master_->RegisterNode(
-      &call->request_, &call->response_,
-      ::base::BindOnce(
-          &OnHandleRequest<
-              MasterCall<RegisterNodeRequest, RegisterNodeResponse>>,
-          call));
-  ENQUEUE_REQUEST(RegisterNode, true);
-}
+SERVICE_METHOD(RegisterClient, true)
+SERVICE_METHOD(ListClients, false)
+SERVICE_METHOD(RegisterNode, true)
+SERVICE_METHOD(ListNodes, false)
+SERVICE_METHOD(PublishTopic, true)
+SERVICE_METHOD(SubscribeTopic, true)
+SERVICE_METHOD(ListTopics, false)
 
-void GrpcMasterService::HandleListNodes(
-    MasterCall<ListNodesRequest, ListNodesResponse>* call) {
-  master_->ListNodes(
-      &call->request_, &call->response_,
-      ::base::BindOnce(
-          &OnHandleRequest<MasterCall<ListNodesRequest, ListNodesResponse>>,
-          call));
-  ENQUEUE_REQUEST(ListNodes, false);
-}
-
-void GrpcMasterService::HandlePublishTopic(
-    MasterCall<PublishTopicRequest, PublishTopicResponse>* call) {
-  master_->PublishTopic(
-      &call->request_, &call->response_,
-      ::base::BindOnce(
-          &OnHandleRequest<
-              MasterCall<PublishTopicRequest, PublishTopicResponse>>,
-          call));
-  ENQUEUE_REQUEST(PublishTopic, true);
-}
-
-void GrpcMasterService::HandleSubscribeTopic(
-    MasterCall<SubscribeTopicRequest, SubscribeTopicResponse>* call) {
-  master_->SubscribeTopic(
-      &call->request_, &call->response_,
-      ::base::BindOnce(
-          &OnHandleRequest<
-              MasterCall<SubscribeTopicRequest, SubscribeTopicResponse>>,
-          call));
-  ENQUEUE_REQUEST(SubscribeTopic, true);
-}
-
-void GrpcMasterService::HandleListTopics(
-    MasterCall<ListTopicsRequest, ListTopicsResponse>* call) {
-  master_->ListTopics(
-      &call->request_, &call->response_,
-      ::base::BindOnce(
-          &OnHandleRequest<MasterCall<ListTopicsRequest, ListTopicsResponse>>,
-          call));
-  ENQUEUE_REQUEST(ListTopics, false);
-}
-
+#undef SERVICE_METHOD
 #undef ENQUEUE_REQUEST
 
 }  // namespace felicia

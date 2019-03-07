@@ -1,8 +1,5 @@
 #include "felicia/core/master/tool/flag_parser_delegate.h"
 
-#include <iostream>
-#include <sstream>
-
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/strings/string_util.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
@@ -11,13 +8,15 @@
 
 namespace felicia {
 
+static constexpr const char* kClient = "client";
 static constexpr const char* kNode = "node";
 static constexpr const char* kTopic = "topic";
 
 FlagParserDelegate::FlagParserDelegate() : current_command_(COMMAND_SELF) {
   {
     StringChoicesFlag::Builder builder(MakeValueStore<std::string>(
-        &command_, ::base::EmptyString(), Choices<std::string>{kNode, kTopic}));
+        &command_, ::base::EmptyString(),
+        Choices<std::string>{kClient, kNode, kTopic}));
     auto flag = builder.SetName("COMMAND").Build();
     command_flag_ = std::make_unique<StringChoicesFlag>(flag);
   }
@@ -29,7 +28,9 @@ bool FlagParserDelegate::Parse(FlagParser& parser) {
   switch (current_command_) {
     case COMMAND_SELF:
       if (command_flag_->Parse(parser)) {
-        if (strings::Equals(command_, kNode)) {
+        if (strings::Equals(command_, kClient)) {
+          current_command_ = COMMAND_CLIENT;
+        } else if (strings::Equals(command_, kNode)) {
           current_command_ = COMMAND_NODE;
         } else if (strings::Equals(command_, kTopic)) {
           current_command_ = COMMAND_TOPIC;
@@ -39,6 +40,8 @@ bool FlagParserDelegate::Parse(FlagParser& parser) {
         return true;
       }
       return false;
+    case COMMAND_CLIENT:
+      return client_delegate_.Parse(parser);
     case COMMAND_NODE:
       return node_delegate_.Parse(parser);
     case COMMAND_TOPIC:
@@ -50,6 +53,8 @@ bool FlagParserDelegate::Validate() const {
   switch (current_command_) {
     case COMMAND_SELF:
       return false;
+    case COMMAND_CLIENT:
+      return client_delegate_.Validate();
     case COMMAND_NODE:
       return node_delegate_.Validate();
     case COMMAND_TOPIC:
@@ -61,6 +66,8 @@ std::vector<std::string> FlagParserDelegate::CollectUsages() const {
   switch (current_command_) {
     case COMMAND_SELF:
       return {"[OPTIONS]", "COMMAND"};
+    case COMMAND_CLIENT:
+      return client_delegate_.CollectUsages();
     case COMMAND_NODE:
       return node_delegate_.CollectUsages();
     case COMMAND_TOPIC:
@@ -72,6 +79,8 @@ std::string FlagParserDelegate::Description() const {
   switch (current_command_) {
     case COMMAND_SELF:
       return "A proxy command to manage felicia";
+    case COMMAND_CLIENT:
+      return client_delegate_.Description();
     case COMMAND_NODE:
       return node_delegate_.Description();
     case COMMAND_TOPIC:
@@ -85,11 +94,14 @@ std::vector<NamedHelpType> FlagParserDelegate::CollectNamedHelps() const {
       return {
           std::make_pair(TextStyle::Yellow("Management commands:"),
                          std::vector<std::string>{
+                             MakeNamedHelpText(kClient, "Manage clients"),
                              MakeNamedHelpText(kNode, "Manage nodes"),
                              MakeNamedHelpText(kTopic, "Manage topics"),
                          }),
       };
     }
+    case COMMAND_CLIENT:
+      return client_delegate_.CollectNamedHelps();
     case COMMAND_NODE:
       return node_delegate_.CollectNamedHelps();
     case COMMAND_TOPIC:
