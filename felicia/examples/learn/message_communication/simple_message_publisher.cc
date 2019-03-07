@@ -15,7 +15,7 @@ class CustomNode : public NodeLifecycle {
  public:
   explicit CustomNode(const NodeInfo& node_info, const std::string& topic,
                       const std::string& channel_type)
-      : publisher_(this), topic_(topic) {
+      : topic_(topic), publisher_(this) {
     if (channel_type.compare("TCP") == 0) {
       channel_def_.set_type(ChannelDef_Type_TCP);
     } else if (channel_type.compare("UDO") == 0) {

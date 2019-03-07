@@ -11,7 +11,7 @@ namespace felicia {
 class CustomNode2 : public NodeLifecycle {
  public:
   explicit CustomNode2(const NodeInfo& node_info, const std::string& topic)
-      : subscriber_(this), topic_(topic) {}
+      : topic_(topic), subscriber_(this) {}
 
   void OnInit() override { std::cout << "CustomNode2::OnInit()" << std::endl; }
 
