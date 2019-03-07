@@ -33,7 +33,7 @@ class EXPORT Subscriber {
     uint8_t queue_size = 100;
   };
 
-  using OnMessageCallback = ::base::RepeatingCallback<void(MessageTy)>;
+  using OnMessageCallback = ::base::RepeatingCallback<void(const MessageTy&)>;
 
   explicit Subscriber(NodeLifecycle* node_lifecycle)
       : node_lifecycle_(node_lifecycle) {}

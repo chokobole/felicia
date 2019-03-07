@@ -29,26 +29,37 @@ cc_library(
     ]
 )
 
-cc_binary(
-    name = "simple_message_publisher",
-    srcs = ["message_communication/simple_message_publisher.cc"],
+cc_library(
+    name = "simple_publishing_node",
+    srcs = ["message_communication/simple_publishing_node.h"],
     copts = fel_copts(),
-    deps=[
+    deps = [
         ":message_spec_proto_cc",
-        ":node_create_flag_parser_delegate",
         "//felicia/cc:communication",
-        "//felicia/cc:master_proxy",
+        "//felicia/core:node",
+    ]
+)
+
+cc_library(
+    name = "simple_subscribing_node",
+    srcs = ["message_communication/simple_subscribing_node.h"],
+    copts = fel_copts(),
+    deps = [
+        ":message_spec_proto_cc",
+        "//felicia/cc:communication",
+        "//felicia/core:node",
     ]
 )
 
 cc_binary(
-    name = "simple_message_subscriber",
-    srcs = ["message_communication/simple_message_subscriber.cc"],
+    name = "node_creator",
+    srcs = ["message_communication/node_creator.cc"],
     copts = fel_copts(),
-    deps=[
+    deps = [
         ":message_spec_proto_cc",
         ":node_create_flag_parser_delegate",
-        "//felicia/cc:communication",
+        ":simple_publishing_node",
+        ":simple_subscribing_node",
         "//felicia/cc:master_proxy",
     ]
 )

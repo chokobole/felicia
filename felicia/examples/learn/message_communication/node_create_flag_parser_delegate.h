@@ -14,6 +14,7 @@ class NodeCreateFlagParserDelegate : public FlagParser::Delegate {
   NodeCreateFlagParserDelegate();
   ~NodeCreateFlagParserDelegate();
 
+  bool is_publishing_node() const { return is_publishing_node_; }
   const std::string& name() const { return name_; }
   const std::string& topic() const { return topic_; }
   const std::string& channel_type() const { return channel_type_; }
@@ -26,9 +27,11 @@ class NodeCreateFlagParserDelegate : public FlagParser::Delegate {
                                           channel_type_flag_)
 
  private:
+  bool is_publishing_node_;
   std::string name_;
   std::string topic_;
   std::string channel_type_;
+  std::unique_ptr<BoolFlag> is_publishing_node_flag_;
   std::unique_ptr<StringFlag> name_flag_;
   std::unique_ptr<StringFlag> topic_flag_;
   std::unique_ptr<StringChoicesFlag> channel_type_flag_;
