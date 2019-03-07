@@ -26,7 +26,7 @@ class UDPChannel : public Channel<MessageTy> {
 
   bool IsUDPChannel() const override { return true; }
 
-  void Bind(StatusOrChannelSourceCallback callback);
+  StatusOr<ChannelSource> Bind();
 
   void Connect(const ChannelSource& channel_source,
                StatusCallback callback) override;
@@ -53,11 +53,10 @@ template <typename MessageTy>
 UDPChannel<MessageTy>::~UDPChannel() {}
 
 template <typename MessageTy>
-void UDPChannel<MessageTy>::Bind(StatusOrChannelSourceCallback callback) {
+StatusOr<ChannelSource> UDPChannel<MessageTy>::Bind() {
   DCHECK(!udp_channel_);
-  DCHECK(!callback.is_null());
   udp_channel_ = std::make_unique<UDPServerChannel>();
-  udp_channel_->ToUDPServerChannel()->Bind(std::move(callback));
+  return udp_channel_->ToUDPServerChannel()->Bind();
 }
 
 template <typename MessageTy>

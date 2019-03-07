@@ -12,9 +12,6 @@
 
 namespace felicia {
 
-using StatusOrChannelSourceCallback =
-    ::base::OnceCallback<void(const StatusOr<ChannelSource>&)>;
-
 template <typename MessageTy>
 class TCPChannel;
 template <typename MessageTy>

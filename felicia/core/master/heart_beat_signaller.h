@@ -3,7 +3,6 @@
 
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/macros.h"
-#include "third_party/chromium/base/synchronization/waitable_event.h"
 
 #include "felicia/core/channel/channel.h"
 #include "felicia/core/master/master_data.pb.h"
@@ -20,9 +19,6 @@ class HeartBeatSignaller {
   void Start();
 
  private:
-  void OnListen(::base::WaitableEvent* event,
-                const StatusOr<ChannelSource>& status_or);
-
   void OnAccept(const Status& s);
   void Signal();
   void OnSignal(const Status& s);

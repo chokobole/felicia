@@ -15,15 +15,13 @@ namespace felicia {
 UDPServerChannel::UDPServerChannel() = default;
 UDPServerChannel::~UDPServerChannel() = default;
 
-void UDPServerChannel::Bind(StatusOrChannelSourceCallback callback) {
-  DCHECK(callback);
+StatusOr<ChannelSource> UDPServerChannel::Bind() {
   auto server_socket = std::make_unique<::net::UDPSocket>(
       ::net::DatagramSocket::BindType::DEFAULT_BIND);
 
   int rv = server_socket->Open(::net::ADDRESS_FAMILY_IPV4);
   if (rv != ::net::OK) {
-    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
-    return;
+    return errors::NetworkError(::net::ErrorToString(rv));
   }
 
   uint16_t port = net::PickRandomPort(false);
@@ -31,8 +29,7 @@ void UDPServerChannel::Bind(StatusOrChannelSourceCallback callback) {
   ::net::IPEndPoint server_endpoint(address, port);
   rv = server_socket->Bind(server_endpoint);
   if (rv != ::net::OK) {
-    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
-    return;
+    return errors::NetworkError(::net::ErrorToString(rv));
   }
 
   ::net::IPAddress multicast_address;
@@ -47,17 +44,14 @@ void UDPServerChannel::Bind(StatusOrChannelSourceCallback callback) {
     }
   }
   if (rv != ::net::OK) {
-    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
-    return;
+    return errors::NetworkError(::net::ErrorToString(rv));
   }
 
   socket_ = std::move(server_socket);
   multicast_ip_endpoint_ =
       ::net::IPEndPoint(multicast_address, net::PickRandomPort(false));
 
-  ChannelSource channel_source =
-      ToChannelSource(multicast_ip_endpoint_, ChannelDef_Type_UDP);
-  std::move(callback).Run(channel_source);
+  return ToChannelSource(multicast_ip_endpoint_, ChannelDef_Type_UDP);
 }
 
 void UDPServerChannel::Write(::net::IOBufferWithSize* buffer,

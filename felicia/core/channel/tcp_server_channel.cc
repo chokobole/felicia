@@ -27,14 +27,12 @@ bool TCPServerChannel::IsConnected() const {
   return false;
 }
 
-void TCPServerChannel::Listen(StatusOrChannelSourceCallback callback) {
-  DCHECK(callback);
+StatusOr<ChannelSource> TCPServerChannel::Listen() {
   auto server_socket = std::make_unique<::net::TCPSocket>(nullptr);
 
   int rv = server_socket->Open(::net::ADDRESS_FAMILY_IPV4);
   if (rv != ::net::OK) {
-    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
-    return;
+    return errors::NetworkError(::net::ErrorToString(rv));
   }
 
   uint16_t port = net::PickRandomPort(true);
@@ -42,29 +40,28 @@ void TCPServerChannel::Listen(StatusOrChannelSourceCallback callback) {
   ::net::IPEndPoint server_endpoint(address, port);
   rv = server_socket->Bind(server_endpoint);
   if (rv != ::net::OK) {
-    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
-    return;
+    return errors::NetworkError(::net::ErrorToString(rv));
   }
 
   rv = server_socket->SetDefaultOptionsForServer();
   if (rv != ::net::OK) {
-    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
-    return;
+    return errors::NetworkError(::net::ErrorToString(rv));
   }
 
   rv = server_socket->Listen(5);
   if (rv != ::net::OK) {
-    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
-    return;
+    return errors::NetworkError(::net::ErrorToString(rv));
   }
 
   socket_ = std::move(server_socket);
 
-  ChannelSource channel_source = ToChannelSource(
+  return ToChannelSource(
       ::net::IPEndPoint(net::HostIPAddress(net::HOST_IP_ONLY_ALLOW_IPV4), port),
       ChannelDef_Type_TCP);
+}
 
-  std::move(callback).Run(channel_source);
+void TCPServerChannel::DoAcceptLoop(AcceptCallback callback) {
+  accept_callback_ = callback;
   DoAcceptLoop();
 }
 

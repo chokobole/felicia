@@ -18,21 +18,11 @@ void TopicInfoWatcher::Start() {
   channel_def.set_type(ChannelDef_Type_TCP);
   channel_ = ChannelFactory::NewChannel<TopicInfo>(channel_def);
 
-  ::base::WaitableEvent* event = new ::base::WaitableEvent;
   TCPChannel<TopicInfo>* tcp_channel = channel_->ToTCPChannel();
-  tcp_channel->Listen(::base::BindOnce(&TopicInfoWatcher::OnListen,
-                                       ::base::Unretained(this), event),
-                      ::base::BindRepeating(&TopicInfoWatcher::OnAccept,
-                                            ::base::Unretained(this)));
-
-  event->Wait();
-  delete event;
-}
-
-void TopicInfoWatcher::OnListen(::base::WaitableEvent* event,
-                                const StatusOr<ChannelSource>& status_or) {
+  auto status_or = tcp_channel->Listen();
   channel_source_ = status_or.ValueOrDie();
-  event->Signal();
+  tcp_channel->DoAcceptLoop(::base::BindRepeating(&TopicInfoWatcher::OnAccept,
+                                                  ::base::Unretained(this)));
 }
 
 void TopicInfoWatcher::OnAccept(const Status& s) {

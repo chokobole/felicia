@@ -31,8 +31,9 @@ class TCPChannel : public Channel<MessageTy> {
     return tcp_channel_->IsConnected();
   }
 
-  void Listen(StatusOrChannelSourceCallback listen_callback,
-              TCPServerChannel::AcceptCallback accept_callback);
+  StatusOr<ChannelSource> Listen();
+
+  void DoAcceptLoop(TCPServerChannel::AcceptCallback accept_callback);
 
   void Connect(const ChannelSource& channel_source,
                StatusCallback callback) override;
@@ -59,16 +60,19 @@ template <typename MessageTy>
 TCPChannel<MessageTy>::~TCPChannel() = default;
 
 template <typename MessageTy>
-void TCPChannel<MessageTy>::Listen(
-    StatusOrChannelSourceCallback listen_callback,
-    TCPServerChannel::AcceptCallback accept_callback) {
+StatusOr<ChannelSource> TCPChannel<MessageTy>::Listen() {
   DCHECK(!tcp_channel_);
-  DCHECK(!listen_callback.is_null());
-  DCHECK(!accept_callback.is_null());
   tcp_channel_ = std::make_unique<TCPServerChannel>();
   TCPServerChannel* server_channel = tcp_channel_->ToTCPServerChannel();
-  server_channel->set_accept_callback(accept_callback);
-  server_channel->Listen(std::move(listen_callback));
+  return server_channel->Listen();
+}
+
+template <typename MessageTy>
+void TCPChannel<MessageTy>::DoAcceptLoop(
+    TCPServerChannel::AcceptCallback accept_callback) {
+  DCHECK(tcp_channel_);
+  DCHECK(!accept_callback.is_null());
+  tcp_channel_->ToTCPServerChannel()->DoAcceptLoop(accept_callback);
 }
 
 template <typename MessageTy>

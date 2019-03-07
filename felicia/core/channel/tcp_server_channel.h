@@ -26,11 +26,9 @@ class TCPServerChannel : public TCPChannelBase {
 
   bool IsConnected() const override;
 
-  void set_accept_callback(AcceptCallback callback) {
-    accept_callback_ = callback;
-  }
+  StatusOr<ChannelSource> Listen();
 
-  void Listen(StatusOrChannelSourceCallback callback);
+  void DoAcceptLoop(AcceptCallback callback);
 
   // Write the |buffer| to the |accepted_sockets_|. If it succeeds to write
   // all the sockets, then callback with Status::OK(), otherwise callback

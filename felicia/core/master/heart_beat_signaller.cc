@@ -25,26 +25,15 @@ void HeartBeatSignaller::Start() {
     g_heart_beat_duration = GetHeartBeatDuration();
   }
 
-  ::base::WaitableEvent* event = new ::base::WaitableEvent;
-
   ChannelDef channel_def;
   channel_def.set_type(ChannelDef_Type_TCP);
   channel_ = ChannelFactory::NewChannel<HeartBeat>(channel_def);
 
   TCPChannel<HeartBeat>* tcp_channel = channel_->ToTCPChannel();
-  tcp_channel->Listen(::base::BindOnce(&HeartBeatSignaller::OnListen,
-                                       ::base::Unretained(this), event),
-                      ::base::BindRepeating(&HeartBeatSignaller::OnAccept,
-                                            ::base::Unretained(this)));
-
-  event->Wait();
-  delete event;
-}
-
-void HeartBeatSignaller::OnListen(::base::WaitableEvent* event,
-                                  const StatusOr<ChannelSource>& status_or) {
+  auto status_or = tcp_channel->Listen();
   channel_source_ = status_or.ValueOrDie();
-  event->Signal();
+  tcp_channel->DoAcceptLoop(::base::BindRepeating(&HeartBeatSignaller::OnAccept,
+                                                  ::base::Unretained(this)));
 }
 
 void HeartBeatSignaller::OnAccept(const Status& s) {
