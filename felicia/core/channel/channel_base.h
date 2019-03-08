@@ -24,8 +24,7 @@ class ChannelBase {
   static const int32_t kMaxReceiverBufferSize;
 
  protected:
-  virtual void OnWrite(int result);
-  virtual void OnRead(int result);
+  static void CallbackWithStatus(StatusCallback callback, int result);
 
   StatusCallback write_callback_;
   StatusCallback read_callback_;

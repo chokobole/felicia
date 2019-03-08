@@ -16,14 +16,9 @@ TCPServerChannel::TCPServerChannel() = default;
 TCPServerChannel::~TCPServerChannel() = default;
 
 bool TCPServerChannel::IsConnected() const {
-  auto it = accepted_sockets_.begin();
-  while (it != accepted_sockets_.end()) {
-    if ((*it)->IsConnected()) {
-      return true;
-    }
-    it++;
+  for (auto& accepted_socket : accepted_sockets_) {
+    if (accepted_socket->IsConnected()) return true;
   }
-
   return false;
 }
 
@@ -71,41 +66,30 @@ void TCPServerChannel::Write(::net::IOBufferWithSize* buffer,
   DCHECK_EQ(0, written_count_);
   DCHECK(write_callback_.is_null());
   DCHECK(!callback.is_null());
-  write_callback_ = std::move(callback);
-  auto it = accepted_sockets_.begin();
 
-  while (it != accepted_sockets_.end() && !(*it)->IsConnected()) {
-    it = accepted_sockets_.erase(it);
-  }
+  EraseClosedSockets();
 
-  if (it == accepted_sockets_.end()) {
-    // Overrided OnWrite doesn't call |write_callback_| because
-    // |to_write_count_| and |writte_count_| not matched.
-    ChannelBase::OnWrite(::net::ERR_SOCKET_NOT_CONNECTED);
+  if (accepted_sockets_.size() == 0) {
+    std::move(callback).Run(errors::NetworkError(
+        ::net::ErrorToString(::net::ERR_SOCKET_NOT_CONNECTED)));
     return;
   }
 
   to_write_count_ = accepted_sockets_.size();
-  it = accepted_sockets_.begin();
-
+  write_callback_ = std::move(callback);
+  auto it = accepted_sockets_.begin();
   while (it != accepted_sockets_.end()) {
-    int rv = (*it)->Write(
-        buffer, buffer->size(),
-        ::base::BindOnce(&TCPServerChannel::OnWrite, ::base::Unretained(this)),
-        ::net::DefineNetworkTrafficAnnotation("tcp_server_channel",
-                                              "Send Message"));
+    int rv =
+        (*it)->Write(buffer, buffer->size(),
+                     ::base::BindOnce(&TCPServerChannel::OnWrite,
+                                      ::base::Unretained(this), (*it).get()),
+                     ::net::DefineNetworkTrafficAnnotation("tcp_server_channel",
+                                                           "Send Message"));
     if (rv != ::net::ERR_IO_PENDING) {
-      OnWrite(rv);
+      OnWrite((*it).get(), rv);
     }
 
     it++;
-  }
-
-  if (!write_callback_.is_null()) {
-    timeout_.Reset(::base::BindOnce(&TCPServerChannel::OnWriteTimeout,
-                                    ::base::Unretained(this)));
-    ::base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, timeout_.callback(), ::base::TimeDelta::FromSeconds(5));
   }
 }
 
@@ -113,23 +97,22 @@ void TCPServerChannel::Read(::net::IOBufferWithSize* buffer,
                             StatusCallback callback) {
   DCHECK(read_callback_.is_null());
   DCHECK(!callback.is_null());
-  read_callback_ = std::move(callback);
-  auto it = accepted_sockets_.begin();
 
-  while (it != accepted_sockets_.end() && !(*it)->IsConnected()) {
-    it = accepted_sockets_.erase(it);
-  }
+  EraseClosedSockets();
 
-  if (it == accepted_sockets_.end()) {
-    OnRead(::net::ERR_SOCKET_NOT_CONNECTED);
+  if (accepted_sockets_.size() == 0) {
+    std::move(callback).Run(errors::NetworkError(
+        ::net::ErrorToString(::net::ERR_SOCKET_NOT_CONNECTED)));
     return;
   }
 
-  int rv = (*it)->Read(
-      buffer, buffer->size(),
-      ::base::BindOnce(&TCPServerChannel::OnRead, ::base::Unretained(this)));
+  read_callback_ = std::move(callback);
+  auto it = accepted_sockets_.rbegin();
+  int rv = (*it)->Read(buffer, buffer->size(),
+                       ::base::BindOnce(&TCPServerChannel::OnRead,
+                                        ::base::Unretained(this), (*it).get()));
   if (rv != ::net::ERR_IO_PENDING) {
-    OnRead(rv);
+    OnRead((*it).get(), rv);
   }
 }
 
@@ -163,40 +146,47 @@ void TCPServerChannel::OnAccept(int result) {
   }
 }
 
-void TCPServerChannel::OnWrite(int result) {
+void TCPServerChannel::OnRead(::net::TCPSocket* socket, int result) {
+  if (result == 0) {
+    result = ::net::ERR_CONNECTION_CLOSED;
+    socket->Close();
+    has_closed_sockets_ = true;
+  }
+  CallbackWithStatus(std::move(read_callback_), result);
+}
+
+void TCPServerChannel::OnWrite(::net::TCPSocket* socket, int result) {
+  if (result == ::net::ERR_CONNECTION_RESET) {
+    socket->Close();
+    has_closed_sockets_ = true;
+  }
+
   written_count_++;
   if (result < 0) {
     LOG(ERROR) << "TCPServerChannel::OnWrite: " << ::net::ErrorToString(result);
     write_result_ = result;
   }
   if (to_write_count_ == written_count_) {
-    timeout_.Cancel();
     to_write_count_ = 0;
     written_count_ = 0;
-    if (write_result_ >= 0) {
-      std::move(write_callback_).Run(Status::OK());
-    } else {
-      std::move(write_callback_)
-          .Run(errors::NetworkError(::net::ErrorToString(write_result_)));
-    }
+    int write_result = write_result_;
+    write_result_ = 0;
+    CallbackWithStatus(std::move(write_callback_), write_result);
   }
 }
 
-void TCPServerChannel::OnWriteTimeout() {
-  auto it = accepted_sockets_.begin();
-  while (it != accepted_sockets_.end()) {
-    if (!(*it)->IsConnected()) {
-      it = accepted_sockets_.erase(it);
-      continue;
+void TCPServerChannel::EraseClosedSockets() {
+  if (has_closed_sockets_) {
+    auto it = accepted_sockets_.begin();
+    while (it != accepted_sockets_.end()) {
+      if (!(*it)->IsConnected()) {
+        it = accepted_sockets_.erase(it);
+        continue;
+      }
+      it++;
     }
-    it++;
+    has_closed_sockets_ = false;
   }
-
-  to_write_count_ = 0;
-  written_count_ = 0;
-
-  std::move(write_callback_)
-      .Run(errors::NetworkError(::net::ErrorToString(::net::ERR_FAILED)));
 }
 
 }  // namespace felicia

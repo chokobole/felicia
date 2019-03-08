@@ -12,10 +12,13 @@ namespace felicia {
 TCPClientChannel::TCPClientChannel() = default;
 TCPClientChannel::~TCPClientChannel() = default;
 
-bool TCPClientChannel::IsConnected() const { return socket_->IsConnected(); }
+bool TCPClientChannel::IsConnected() const {
+  return socket_ && socket_->IsConnected();
+}
 
 void TCPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
                                StatusCallback callback) {
+  DCHECK(!socket_);
   DCHECK(connect_callback_.is_null());
   DCHECK(!callback.is_null());
   auto client_socket = std::make_unique<::net::TCPSocket>(nullptr);
@@ -43,23 +46,10 @@ void TCPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
   }
 }
 
-void TCPClientChannel::OnConnect(int result) {
-  if (result == ::net::OK) {
-    std::move(connect_callback_).Run(Status::OK());
-  } else {
-    std::move(connect_callback_)
-        .Run(errors::NetworkError(::net::ErrorToString(result)));
-  }
-}
-
 void TCPClientChannel::Write(::net::IOBufferWithSize* buffer,
                              StatusCallback callback) {
   DCHECK(!callback.is_null());
   write_callback_ = std::move(callback);
-  if (!socket_->IsConnected()) {
-    OnWrite(::net::ERR_SOCKET_NOT_CONNECTED);
-    return;
-  }
   int rv = socket_->Write(
       buffer, buffer->size(),
       ::base::BindOnce(&TCPClientChannel::OnWrite, ::base::Unretained(this)),
@@ -74,16 +64,31 @@ void TCPClientChannel::Read(::net::IOBufferWithSize* buffer,
                             StatusCallback callback) {
   DCHECK(!callback.is_null());
   read_callback_ = std::move(callback);
-  if (!socket_->IsConnected()) {
-    OnRead(::net::ERR_SOCKET_NOT_CONNECTED);
-    return;
-  }
   int rv = socket_->Read(
       buffer, buffer->size(),
       ::base::BindOnce(&TCPClientChannel::OnRead, ::base::Unretained(this)));
   if (rv != ::net::ERR_IO_PENDING) {
     OnRead(rv);
   }
+}
+
+void TCPClientChannel::OnConnect(int result) {
+  CallbackWithStatus(std::move(connect_callback_), result);
+}
+
+void TCPClientChannel::OnWrite(int result) {
+  if (result == ::net::ERR_CONNECTION_RESET) {
+    socket_.reset();
+  }
+  CallbackWithStatus(std::move(write_callback_), result);
+}
+
+void TCPClientChannel::OnRead(int result) {
+  if (result == 0) {
+    result = ::net::ERR_CONNECTION_CLOSED;
+    socket_.reset();
+  }
+  CallbackWithStatus(std::move(read_callback_), result);
 }
 
 }  // namespace felicia

@@ -29,6 +29,9 @@ class TCPClientChannel : public TCPChannelBase {
  private:
   void OnConnect(int result);
 
+  void OnWrite(int result);
+  void OnRead(int result);
+
   StatusCallback connect_callback_;
 
   std::unique_ptr<::net::TCPSocket> socket_;

@@ -35,8 +35,10 @@ class TCPServerChannel : public TCPChannelBase {
   // with the |write_result_|, which is recorded at every time finishing
   // write.
   void Write(::net::IOBufferWithSize* buffer, StatusCallback callback) override;
-  // Read from the first |accepted_sockets_|. Currently the read case
+  // Read from the last |accepted_sockets_|. Currently the read case
   // is only happend communication between master and master proxy.
+  // TODO(chokobole): Divide TCPServerChannel to for broadcast use and
+  // unicast use. For broadcast use, remove the method below.
   void Read(::net::IOBufferWithSize* buffer, StatusCallback callback) override;
 
  private:
@@ -44,15 +46,18 @@ class TCPServerChannel : public TCPChannelBase {
   void HandleAccpetResult(int result);
   void OnAccept(int result);
 
-  void OnWrite(int result) override;
-  void OnWriteTimeout();
+  void OnRead(::net::TCPSocket* socket, int result);
+  void OnWrite(::net::TCPSocket* socket, int result);
+
+  void EraseClosedSockets();
 
   AcceptCallback accept_callback_;
-  ::base::CancelableOnceClosure timeout_;
 
   size_t to_write_count_ = 0;
   size_t written_count_ = 0;
   int write_result_ = 0;
+
+  bool has_closed_sockets_ = false;
 
   std::unique_ptr<::net::TCPSocket> socket_;
   ::net::IPEndPoint accepted_endpoint_;

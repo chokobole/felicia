@@ -5,6 +5,7 @@
 #include "third_party/chromium/base/macros.h"
 
 #include "felicia/core/channel/channel_base.h"
+
 namespace felicia {
 
 class UDPClientChannel;
@@ -25,7 +26,8 @@ class UDPChannelBase : public ChannelBase {
     return reinterpret_cast<UDPServerChannel*>(this);
   }
 
-  void OnRead(int result) override;
+  void OnRead(int result);
+  void OnWrite(int result);
 
   DISALLOW_COPY_AND_ASSIGN(UDPChannelBase);
 };

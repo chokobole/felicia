@@ -8,21 +8,12 @@
 
 namespace felicia {
 
-void ChannelBase::OnRead(int result) {
+// static
+void ChannelBase::CallbackWithStatus(StatusCallback callback, int result) {
   if (result >= 0) {
-    std::move(read_callback_).Run(Status::OK());
+    std::move(callback).Run(Status::OK());
   } else {
-    std::move(read_callback_)
-        .Run(errors::NetworkError(::net::ErrorToString(result)));
-  }
-}
-
-void ChannelBase::OnWrite(int result) {
-  if (result >= 0) {
-    std::move(write_callback_).Run(Status::OK());
-  } else {
-    std::move(write_callback_)
-        .Run(errors::NetworkError(::net::ErrorToString(result)));
+    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(result)));
   }
 }
 
