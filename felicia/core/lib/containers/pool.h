@@ -34,33 +34,6 @@ class EXPORT Pool {
   }
   ~Pool() { clear(); }
 
-  Pool(Pool&& other)
-      : buffer_(other.buffer_),
-        capacity_(other.capacity_),
-        push_index_(other.push_index_),
-        pop_index_(other.pop_index_),
-        is_ailve_after_push_index_(other.is_ailve_after_push_index_) {
-    other.buffer_ = nullptr;
-    other.capacity_ = 0;
-    other.push_index_ = 0;
-    other.pop_index_ = 0;
-    other.is_ailve_after_push_index_ = false;
-  }
-  void operator=(Pool&& other) {
-    clear();
-    buffer_ = other.buffer_;
-    capacity_ = other.capacity_;
-    push_index_ = other.push_index_;
-    pop_index_ = other.pop_index_;
-    is_ailve_after_push_index_ = other.is_ailve_after_push_index_;
-
-    other.buffer_ = nullptr;
-    other.capacity_ = 0;
-    other.push_index_ = 0;
-    other.pop_index_ = 0;
-    other.is_ailve_after_push_index_ = false;
-  }
-
   // Returns the queue capacity
   ALWAYS_INLINE size_type capacity() const { return capacity_; }
   // Returns the number of elements marked alive
@@ -154,6 +127,10 @@ void Pool<T, Size>::clear() {
 
   delete[] reinterpret_cast<char*>(buffer_);
   buffer_ = nullptr;
+  capacity_ = 0;
+  push_index_ = 0;
+  pop_index_ = 0;
+  is_ailve_after_push_index_ = false;
 }
 
 template <typename T, typename Size>
@@ -185,7 +162,20 @@ void Pool<T, Size>::reserve(size_type capacity) {
     new_pool.push(std::move(front()));
     pop();
   }
-  *this = std::move(new_pool);
+
+  delete[] reinterpret_cast<char*>(buffer_);
+
+  buffer_ = new_pool.buffer_;
+  capacity_ = new_pool.capacity_;
+  push_index_ = new_pool.push_index_;
+  pop_index_ = new_pool.pop_index_;
+  is_ailve_after_push_index_ = new_pool.is_ailve_after_push_index_;
+
+  new_pool.buffer_ = nullptr;
+  new_pool.capacity_ = 0;
+  new_pool.push_index_ = 0;
+  new_pool.pop_index_ = 0;
+  new_pool.is_ailve_after_push_index_ = false;
 }
 
 template <typename T, typename Size>
