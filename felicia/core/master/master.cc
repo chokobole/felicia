@@ -72,9 +72,20 @@ void Master::RegisterClient(const RegisterClientRequest* arg,
 void Master::ListClients(const ListClientsRequest* arg,
                          ListClientsResponse* result, StatusCallback callback) {
   const ClientFilter& client_filter = arg->client_filter();
-  ::base::AutoLock l(lock_);
-  for (auto& it : client_map_) {
-    *result->add_client_infos() = it.second->client_info();
+  {
+    ::base::AutoLock l(lock_);
+    if (client_filter.all()) {
+      for (auto& it : client_map_) {
+        *result->add_client_infos() = it.second->client_info();
+      }
+    } else {
+      for (auto& it : client_map_) {
+        if (it.second->client_info().id() == client_filter.id()) {
+          *result->add_client_infos() = it.second->client_info();
+          break;
+        }
+      }
+    }
   }
   DLOG(INFO) << "[ListClients]";
   std::move(callback).Run(Status::OK());
@@ -382,31 +393,44 @@ std::vector<TopicInfo> Master::FindTopicInfos(const TopicFilter& topic_filter) {
 }
 
 void Master::AddClient(uint32_t id, std::unique_ptr<Client> client) {
-  DLOG(INFO) << "Master::AddClient() " << client->client_info().id();
-  ::base::AutoLock l(lock_);
-  client_map_.insert_or_assign(id, std::move(client));
+  {
+    ::base::AutoLock l(lock_);
+    client_map_.insert_or_assign(id, std::move(client));
+    DLOG(INFO) << "Master::AddClient() " << id;
+  }
 }
 
 void Master::RemoveClient(const ClientInfo& client_info) {
-  DLOG(INFO) << "Master::RemoveClient() " << client_info.id();
-  ::base::AutoLock l(lock_);
-  client_map_.erase(client_map_.find(client_info.id()));
+  uint32_t id = client_info.id();
+  {
+    ::base::AutoLock l(lock_);
+    client_map_.erase(client_map_.find(id));
+    DLOG(INFO) << "Master::RemoveClient() " << id;
+  }
 }
 
 void Master::AddNode(std::unique_ptr<Node> node) {
-  DLOG(INFO) << "Master::AddNode() " << node->node_info().name();
   uint32_t id = node->node_info().client_id();
-  ::base::AutoLock l(lock_);
-  auto it = client_map_.find(id);
-  if (it != client_map_.end()) it->second->AddNode(std::move(node));
+  {
+    ::base::AutoLock l(lock_);
+    auto it = client_map_.find(id);
+    if (it != client_map_.end()) {
+      DLOG(INFO) << "Master::AddNode() " << node->node_info().name();
+      it->second->AddNode(std::move(node));
+    }
+  }
 }
 
 void Master::RemoveNode(const NodeInfo& node_info) {
-  DLOG(INFO) << "Master::RemoveNode() " << node_info.name();
   uint32_t id = node_info.client_id();
-  ::base::AutoLock l(lock_);
-  auto it = client_map_.find(id);
-  if (it != client_map_.end()) it->second->RemoveNode(node_info);
+  {
+    ::base::AutoLock l(lock_);
+    auto it = client_map_.find(id);
+    if (it != client_map_.end()) {
+      it->second->RemoveNode(node_info);
+      DLOG(INFO) << "Master::RemoveNode() " << node_info.name();
+    }
+  }
 }
 
 bool Master::CheckIfClientExists(uint32_t id) {
