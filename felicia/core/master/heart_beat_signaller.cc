@@ -54,17 +54,13 @@ void HeartBeatSignaller::Signal() {
 }
 
 void HeartBeatSignaller::OnSignal(const Status& s) {
-  if (s.ok()) {
+  if (s.ok() || trial_ <= kMaximumTrial) {
     task_runner_interface_->PostDelayedTask(
         FROM_HERE,
         ::base::BindOnce(&HeartBeatSignaller::Signal, ::base::Unretained(this)),
         g_heart_beat_duration);
   } else {
-    if (trial_ <= kMaximumTrial) {
-      Signal();
-    } else {
-      LOG(ERROR) << "Failed to send heart...";
-    }
+    LOG(ERROR) << "Failed to send heart...";
   }
 }
 
