@@ -30,9 +30,12 @@ class EXPORT MasterClientInterface {
   CLIENT_METHOD(RegisterClient);
   CLIENT_METHOD(ListClients);
   CLIENT_METHOD(RegisterNode);
+  CLIENT_METHOD(UnregisterNode);
   CLIENT_METHOD(ListNodes);
   CLIENT_METHOD(PublishTopic);
+  CLIENT_METHOD(UnpublishTopic);
   CLIENT_METHOD(SubscribeTopic);
+  CLIENT_METHOD(UnsubscribeTopic);
   CLIENT_METHOD(ListTopics);
 
 #undef CLIENT_METHOD

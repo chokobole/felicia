@@ -45,9 +45,12 @@ class GrpcMasterService {
   SERVICE_METHOD(RegisterClient);
   SERVICE_METHOD(ListClients);
   SERVICE_METHOD(RegisterNode);
+  SERVICE_METHOD(UnregisterNode);
   SERVICE_METHOD(ListNodes);
   SERVICE_METHOD(PublishTopic);
+  SERVICE_METHOD(UnpublishTopic);
   SERVICE_METHOD(SubscribeTopic);
+  SERVICE_METHOD(UnsubscribeTopic);
   SERVICE_METHOD(ListTopics);
 
 #undef SERVICE_METHOD

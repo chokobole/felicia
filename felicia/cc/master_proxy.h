@@ -24,14 +24,14 @@
 
 namespace felicia {
 
-class EXPORT MasterProxy final : public TaskRunnerInterface {
+class EXPORT MasterProxy final : public TaskRunnerInterface,
+                                 public MasterClientInterface {
  public:
   static MasterProxy& GetInstance();
 
-  void Init();
-  void Run();
-  void Stop();
-  void Shutdown();
+  bool IsBoundToCurrentThread() const override {
+    return message_loop_->IsBoundToCurrentThread();
+  }
 
   // TaskRunnerInterface methods
   bool PostTask(const ::base::Location& from_here,
@@ -47,17 +47,48 @@ class EXPORT MasterProxy final : public TaskRunnerInterface {
         from_here, std::move(callback), delay);
   }
 
+  // MasterClientInterface methods
+  Status Start() override;
+  Status Stop() override;
+  Status Shutdown() override;
+
+#define CLIENT_METHOD(method)                                         \
+  void method##Async(const method##Request* request,                  \
+                     method##Response* response, StatusCallback done) \
+      override {                                                      \
+    master_client_interface_->method##Async(request, response,        \
+                                            std::move(done));         \
+  }
+
+  CLIENT_METHOD(RegisterClient)
+  CLIENT_METHOD(ListClients)
+  CLIENT_METHOD(RegisterNode)
+  CLIENT_METHOD(UnregisterNode)
+  CLIENT_METHOD(ListNodes)
+  CLIENT_METHOD(PublishTopic)
+  CLIENT_METHOD(UnpublishTopic)
+  CLIENT_METHOD(SubscribeTopic)
+  // UnsubscribeTopic needs additional remove callback from
+  // |topic_info_watcher_|
+  // CLIENT_METHOD(UnsubscribeTopic)
+  CLIENT_METHOD(ListTopics)
+
+#undef CLIENT_METHOD
+
+  void Run();
+
   template <typename NodeTy, typename... Args>
   std::enable_if_t<std::is_base_of<NodeLifecycle, NodeTy>::value, void>
   RequestRegisterNode(const NodeInfo& node_info, Args&&... args);
 
-  void PublishTopicAsync(PublishTopicRequest* request,
-                         PublishTopicResponse* response,
-                         StatusCallback callback);
-  void SubscribeTopicAsync(SubscribeTopicRequest* request,
+  void SubscribeTopicAsync(const SubscribeTopicRequest* request,
                            SubscribeTopicResponse* response,
                            StatusCallback callback,
                            TopicInfoWatcher::NewTopicInfoCallback callback2);
+
+  void UnsubscribeTopicAsync(const UnsubscribeTopicRequest* request,
+                             UnsubscribeTopicResponse* response,
+                             StatusCallback callback) override;
 
  private:
   friend class ::base::NoDestructor<MasterProxy>;

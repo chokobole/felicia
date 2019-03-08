@@ -67,9 +67,12 @@ void GrpcMasterService::HandleRpcsLoop() {
   ENQUEUE_REQUEST(RegisterClient, true);
   ENQUEUE_REQUEST(ListClients, false);
   ENQUEUE_REQUEST(RegisterNode, true);
+  ENQUEUE_REQUEST(UnregisterNode, true);
   ENQUEUE_REQUEST(ListNodes, false);
   ENQUEUE_REQUEST(PublishTopic, true);
+  ENQUEUE_REQUEST(UnpublishTopic, true);
   ENQUEUE_REQUEST(SubscribeTopic, true);
+  ENQUEUE_REQUEST(UnsubscribeTopic, true);
   ENQUEUE_REQUEST(ListTopics, false);
   while (cq_->Next(&tag, &ok)) {
     UntypedCall<GrpcMasterService>::Tag* callback_tag =
@@ -107,9 +110,12 @@ void OnHandleRequest(CallTy* call, const Status& status) {
 SERVICE_METHOD(RegisterClient, true)
 SERVICE_METHOD(ListClients, false)
 SERVICE_METHOD(RegisterNode, true)
+SERVICE_METHOD(UnregisterNode, true)
 SERVICE_METHOD(ListNodes, false)
 SERVICE_METHOD(PublishTopic, true)
+SERVICE_METHOD(UnpublishTopic, true)
 SERVICE_METHOD(SubscribeTopic, true)
+SERVICE_METHOD(UnsubscribeTopic, true)
 SERVICE_METHOD(ListTopics, false)
 
 #undef SERVICE_METHOD

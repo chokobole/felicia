@@ -14,7 +14,8 @@ int RealMain(int argc, char* argv[]) {
   }
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
-  master_proxy.Init();
+  Status s = master_proxy.Start();
+  CHECK(s.ok());
 
   NodeInfo node_info;
   node_info.set_name(delegate.name());

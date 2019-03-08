@@ -31,14 +31,14 @@ bazel-bin/felicia/examples/learn/node_creator -t message
 
 And Now look into the [node_creator.cc](node_creator.cc).
 
-At the very first time, you have to initialize `MasterProxy`.
+At the very first time, you have to start `MasterProxy`.
 
 ```c++
 MasterProxy& master_proxy = MasterProxy::GetInstance();
-master_proxy.Init();
+master_proxy.Start();
 ```
 
-Inside `Init()`, Do 4 things.
+Inside `Start()`, Do 4 things.
 * Connect to grpc server.
 * Start `HeartBeatSignaller`, which is responsible to make it alive by signalling heart beat to the server.
 * Start `TopicInfoWatcher`, which is responsible to watch any topic source, if a node wants to subscribe.
@@ -63,7 +63,7 @@ if (delegate.is_publishing_node()) {
 }
 ```
 
-Lastly Run MasterProxy.
+Lastly Run MasterProxy. This will blocks until `Stop()` is called.
 
 ```c++
 master_proxy.Run();
@@ -113,13 +113,11 @@ Then how is possibly publishing topics? If you want to publish topic, you have t
 
 ```c++
   publisher_.set_node_info(node_info);
-  ChannelDef channel_def;
-  channel_def.set_type(ChannelDef_Type_TCP);
   publisher_.Publish(
       topic_,
       ::base::BindRepeating(&SimplePublishingNode::GenerateMessage,
                             ::base::Unretained(this)),
-      channel_def);
+      channel_def_);
 ```
 
 `base` namespace is from [chromium](/third_party/chromium). Inside the `felicia`, it depends on `base` which comes from [chromium/base](https://github.com/chromium/chromium/tree/master/base). We try to less expose api from chromium, though. To use `Publish` method, you have to pass `base::OnceCallback` as a 2nd argument for repeatedly generating message as a means of callback. And its' done!

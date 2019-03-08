@@ -18,10 +18,11 @@ MasterProxy::MasterProxy()
       topic_info_watcher_(this),
       heart_beat_signaller_(this) {}
 
-void MasterProxy::Init() {
+Status MasterProxy::Start() {
   auto channel = ConnectGRPCService();
   master_client_interface_ = std::make_unique<GrpcMasterClient>(channel);
-  master_client_interface_->Start();
+  Status s = master_client_interface_->Start();
+  if (!s.ok()) return s;
 
   heart_beat_signaller_.Start();
   topic_info_watcher_.Start();
@@ -32,15 +33,17 @@ void MasterProxy::Init() {
       topic_info_watcher_.channel_source();
 
   RegisterClient();
+
+  return Status::OK();
 }
 
 void MasterProxy::Run() { run_loop_->Run(); }
 
-void MasterProxy::Stop() { master_client_interface_->Stop(); }
+Status MasterProxy::Stop() { return master_client_interface_->Stop(); }
 
-void MasterProxy::Shutdown() {
+Status MasterProxy::Shutdown() {
   run_loop_->Quit();
-  master_client_interface_->Shutdown();
+  return master_client_interface_->Shutdown();
 }
 
 MasterProxy& MasterProxy::GetInstance() {
@@ -84,19 +87,20 @@ void MasterProxy::OnRegisterNodeAsync(std::unique_ptr<NodeLifecycle> node,
   nodes_.push_back(std::move(node));
 }
 
-void MasterProxy::PublishTopicAsync(PublishTopicRequest* request,
-                                    PublishTopicResponse* response,
-                                    StatusCallback callback) {
-  master_client_interface_->PublishTopicAsync(request, response,
-                                              std::move(callback));
-}
-
 void MasterProxy::SubscribeTopicAsync(
-    SubscribeTopicRequest* request, SubscribeTopicResponse* response,
+    const SubscribeTopicRequest* request, SubscribeTopicResponse* response,
     StatusCallback callback, TopicInfoWatcher::NewTopicInfoCallback callback2) {
   topic_info_watcher_.RegisterCallback(request->topic(), callback2);
   master_client_interface_->SubscribeTopicAsync(request, response,
                                                 std::move(callback));
+}
+
+void MasterProxy::UnsubscribeTopicAsync(const UnsubscribeTopicRequest* request,
+                                        UnsubscribeTopicResponse* response,
+                                        StatusCallback callback) {
+  topic_info_watcher_.UnregisterCallback(request->topic());
+  master_client_interface_->UnsubscribeTopicAsync(request, response,
+                                                  std::move(callback));
 }
 
 }  // namespace felicia

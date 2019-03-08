@@ -12,6 +12,10 @@ void TopicInfoWatcher::RegisterCallback(const std::string& topic,
   callback_map_[topic] = callback;
 }
 
+void TopicInfoWatcher::UnregisterCallback(const std::string& topic) {
+  callback_map_.erase(callback_map_.find(topic));
+}
+
 void TopicInfoWatcher::Start() {
   DCHECK(!channel_);
   ChannelDef channel_def;

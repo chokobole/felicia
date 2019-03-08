@@ -10,6 +10,8 @@ class TaskRunnerInterface {
  public:
   virtual ~TaskRunnerInterface() = default;
 
+  virtual bool IsBoundToCurrentThread() const = 0;
+
   virtual bool PostTask(const ::base::Location& from_here,
                         ::base::OnceClosure callback) = 0;
 
