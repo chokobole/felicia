@@ -56,16 +56,20 @@ void HeartBeatListener::DoCheckHeartBeat(const Status& s) {
   if (!s.ok()) {
     LOG(ERROR) << "Failed to Connect "
                << client_info_.heart_beat_signaller_source().DebugString();
-    delete this;
+    KillSelf();
     return;
   }
 
-  trial_ = 0;
   TryReceiveHeartBeat();
 }
 
 void HeartBeatListener::TryReceiveHeartBeat() {
-  trial_++;
+  if (timeout_.IsCancelled()) {
+    timeout_.Reset(::base::BindOnce(&HeartBeatListener::KillSelf,
+                                    ::base::Unretained(this)));
+    ::base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, timeout_.callback(), kMultiplier * g_heart_beat_duration);
+  }
   channel_->ReceiveMessage(
       &heart_beat_,
       ::base::BindOnce(&HeartBeatListener::OnAlive, ::base::Unretained(this)));
@@ -73,18 +77,24 @@ void HeartBeatListener::TryReceiveHeartBeat() {
 
 void HeartBeatListener::OnAlive(const Status& s) {
   if (s.ok()) {
-    DoCheckHeartBeat(Status::OK());
-  } else {
-    if (trial_ == kMaximumTrial) {
-      delete this;
-      return;
-    }
-    ::base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        ::base::BindOnce(&HeartBeatListener::TryReceiveHeartBeat,
-                         ::base::Unretained(this)),
-        g_heart_beat_duration);
+    timeout_.Cancel();
+  } else if (channel_->IsTCPChannel() &&
+             !channel_->ToTCPChannel()->IsConnected()) {
+    KillSelf();
+    return;
   }
+
+  ::base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      ::base::BindOnce(&HeartBeatListener::TryReceiveHeartBeat,
+                       ::base::Unretained(this)),
+      g_heart_beat_duration);
+}
+
+void HeartBeatListener::KillSelf() {
+  timeout_.Cancel();
+  channel_.reset();
+  delete this;
 }
 
 }  // namespace felicia

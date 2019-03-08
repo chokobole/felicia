@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "third_party/chromium/base/callback.h"
+#include "third_party/chromium/base/cancelable_callback.h"
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/base/time/time.h"
 
@@ -35,13 +35,15 @@ class HeartBeatListener {
   // beat message can't be reached, then listener regard it as a dead one.
   void OnAlive(const Status& s);
 
+  void KillSelf();
+
   ClientInfo client_info_;
   OnDisconnectCallback callback_;
   HeartBeat heart_beat_;
   std::unique_ptr<Channel<HeartBeat>> channel_;
 
-  uint8_t trial_ = 0;
-  static constexpr uint8_t kMaximumTrial = 5;
+  ::base::CancelableOnceClosure timeout_;
+  static constexpr uint8_t kMultiplier = 5;
 
   DISALLOW_COPY_AND_ASSIGN(HeartBeatListener);
 };
