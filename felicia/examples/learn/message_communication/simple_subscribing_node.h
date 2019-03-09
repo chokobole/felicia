@@ -9,8 +9,7 @@ namespace felicia {
 
 class SimpleSubscribingNode : public NodeLifecycle {
  public:
-  explicit SimpleSubscribingNode(const NodeInfo& node_info,
-                                 const std::string& topic)
+  explicit SimpleSubscribingNode(const std::string& topic)
       : topic_(topic), subscriber_(this) {}
 
   void OnInit() override {
@@ -18,11 +17,33 @@ class SimpleSubscribingNode : public NodeLifecycle {
   }
 
   void OnDidCreate(const NodeInfo& node_info) override {
-    subscriber_.set_node_info(node_info);
-    subscriber_.Subscribe(
-        topic_, ::base::BindRepeating(&SimpleSubscribingNode::OnMessage,
-                                      ::base::Unretained(this)));
     std::cout << "SimpleSubscribingNode::OnDidCreate()" << std::endl;
+    node_info_ = node_info;
+    RequestSubscribe();
+
+    // MasterProxy& master_proxy = MasterProxy::GetInstance();
+    // master_proxy.PostDelayedTask(
+    //     FROM_HERE,
+    //     ::base::BindOnce(&SimpleSubscribingNode::RequestUnsubscribe,
+    //                      ::base::Unretained(this)),
+    //     ::base::TimeDelta::FromSeconds(10));
+  }
+
+  void RequestSubscribe() {
+    communication::Settings settings;
+
+    subscriber_.RequestSubscribe(
+        node_info_, topic_,
+        ::base::BindRepeating(&SimpleSubscribingNode::OnMessage,
+                              ::base::Unretained(this)),
+        settings,
+        ::base::BindOnce(&SimpleSubscribingNode::OnRequestSubscribe,
+                         ::base::Unretained(this)));
+  }
+
+  void OnRequestSubscribe(const Status& s) {
+    std::cout << "SimpleSubscribingNode::OnRequestSubscribe()" << std::endl;
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
   void OnMessage(const MessageSpec& message) {
@@ -30,12 +51,25 @@ class SimpleSubscribingNode : public NodeLifecycle {
     std::cout << "message : " << message.DebugString() << std::endl;
   }
 
-  void OnError(const Status& status) override {
+  void RequestUnsubscribe() {
+    subscriber_.RequestUnsubscribe(
+        node_info_, topic_,
+        ::base::BindOnce(&SimpleSubscribingNode::OnRequestUnsubscribe,
+                         ::base::Unretained(this)));
+  }
+
+  void OnRequestUnsubscribe(const Status& s) {
+    std::cout << "SimpleSubscribingNode::OnRequestUnsubscribe()" << std::endl;
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
+  }
+
+  void OnError(const Status& s) override {
     std::cout << "SimpleSubscribingNode::OnError()" << std::endl;
-    std::cout << status.error_message() << std::endl;
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
  private:
+  NodeInfo node_info_;
   std::string topic_;
   Subscriber<MessageSpec> subscriber_;
 };

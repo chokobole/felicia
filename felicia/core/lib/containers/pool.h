@@ -46,8 +46,8 @@ class EXPORT Pool {
   }
 
   bool empty() const { return size() == 0; }
-  // Reserve amount of capacity.
-  void reserve(size_type capacity);
+  // Set the amount of capacity reserving elements inside at most.
+  void set_capacity(size_type capacity);
   // Clear buffer.
   void clear();
 
@@ -156,7 +156,7 @@ typename Pool<T, Size>::const_reference Pool<T, Size>::back() const {
 }
 
 template <typename T, typename Size>
-void Pool<T, Size>::reserve(size_type capacity) {
+void Pool<T, Size>::set_capacity(size_type capacity) {
   Pool<T, Size> new_pool(capacity);
   while (!empty()) {
     new_pool.push(std::move(front()));

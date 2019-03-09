@@ -69,18 +69,21 @@ Lastly Run MasterProxy. This will blocks until `Stop()` is called.
 master_proxy.Run();
 ```
 
-Now look into the [simple_publishing_node.h](simple_publishing_node.h). Because big structure is mostly same with [simple_subscribing_node.h](simple_subscribing_node.h), it is enough to see publisher part. Because `felicia` is designed with life cycle model, while registering 3 callbacks would be called. Maybe 2, if an error doens't happen.
+Now look into the [simple_publishing_node.h](simple_publishing_node.h). Because `felicia` is designed with life cycle model, while registering 3 callbacks would be called. Maybe 2, if an error doens't happen.
 
 ```c++
 namespace felicia {
 
 class SimplePublishingNode: public NodeLifecycle {
  public:
-    explicit SimplePublishingNode(const NodeInfo& node_info,
-                                const std::string& topic,
+  explicit SimplePublishingNode(const std::string& topic,
                                 const std::string& channel_type)
-      : topic_(topic), publisher_(this) {
-    ...
+      : topic_(topic) {
+    if (channel_type.compare("TCP") == 0) {
+      channel_def_.set_type(ChannelDef_Type_TCP);
+    } else if (channel_type.compare("UDP") == 0) {
+      channel_def_.set_type(ChannelDef_Type_UDP);
+    }
   }
 
   void OnInit() override {
@@ -88,6 +91,8 @@ class SimplePublishingNode: public NodeLifecycle {
   }
 
   void OnDidCreate(const NodeInfo& node_info) override {
+    ...
+    node_info_ = node_info;
     ...
   }
 
@@ -109,39 +114,111 @@ Inside `MasterProxy::RequestRegisterNode`, it tries to request grpc to register 
 Before requiest, `CustomNode::OnInit()` will be called. If the given `node_info` doesn't have a name, then Server register node with a random unique name. If it succeeds to register the node, then `CustomNode::OnDidCreate(const NodeInfo&)` is called. While this process, if it happens an error, `CustomNode::OnError(const Status&)` will be called.
 
 
-Then how is possibly publishing topics? If you want to publish topic, you have to use `Publisher<T>` and it is very simple to use.
+Then how is possibly publishing topics? If you want to publish topic, you have to use `Publisher<T>` and it is very simple to use. Very first, you have to request server that we hope to publish topic.
 
 ```c++
-  publisher_.set_node_info(node_info);
-  publisher_.Publish(
-      topic_,
-      ::base::BindRepeating(&SimplePublishingNode::GenerateMessage,
-                            ::base::Unretained(this)),
-      channel_def_);
+publisher_.RequestPublish(
+      node_info_, topic_, channel_def_,
+      ::base::BindOnce(&SimplePublishingNode::OnRequestPublish,
+                        ::base::Unretained(this)));
 ```
 
-`base` namespace is from [chromium](/third_party/chromium). Inside the `felicia`, it depends on `base` which comes from [chromium/base](https://github.com/chromium/chromium/tree/master/base). We try to less expose api from chromium, though. To use `Publish` method, you have to pass `base::OnceCallback` as a 2nd argument for repeatedly generating message as a means of callback. And its' done!
+`base` namespace is from [chromium](/third_party/chromium). Inside the `felicia`, it depends on `base` which comes from [chromium/base](https://github.com/chromium/chromium/tree/master/base). We try to less expose api from chromium, though.
 
-Actually the last argument for `Publish` accepts `Publisher<T>::Settings`, which looks like below. So if you want to control queue size or message period, you can control yourself.
-
-```c++
-struct Settings {
-  uint32_t period = 1;  // in seconds
-  uint8_t queue_size = 100;
-};
-```
-
-If you means to set settings, then the code looks like below.
+If request is successfully delivered to the server, then callback `OnRequestPublish` will be called. Here simply we call `Publish` api every 1 second. But you can publish a topic whenever you want to.
 
 ```c++
-// Same with above
-Settings settings;
-settings.period = 5;
-settings.queue_size = 10;
-publisher_.Publish(
-    topic_,
-    ::base::BindRepeating(&SimplePublishingNode::GenerateMessage,
+void OnRequestPublish(const Status& s) {
+  std::cout << "SimplePublishingNode::OnRequestPublish()" << std::endl;
+  LOG_IF(ERROR, !s.ok()) << s.error_message();
+  RepeatingPublish();
+}
+
+void RepeatingPublish() {
+  publisher_.Publish(GenerateMessage(), ::base::BindOnce(::base::BindOnce(
+                                            &SimplePublishingNode::OnPublish,
+                                            ::base::Unretained(this))));
+
+  if (!publisher_.IsUnregistered()) {
+    MasterProxy& master_proxy = MasterProxy::GetInstance();
+    master_proxy.PostDelayedTask(
+        FROM_HERE,
+        ::base::BindOnce(&SimplePublishingNode::RepeatingPublish,
                           ::base::Unretained(this)),
-    channel_def,
-    settings);
+        ::base::TimeDelta::FromSeconds(1));
+  }
+}
+
+void OnPublish(const Status& s) {
+  std::cout << "SimplePublishingNode::OnPublish()" << std::endl;
+  LOG_IF(ERROR, !s.ok()) << s.error_message();
+}
 ```
+
+To use `Unpublish` method, you have to do like below.
+
+```c++
+publisher_.RequestUnpublish(
+        node_info_, topic_,
+        ::base::BindOnce(&SimplePublishingNode::OnRequestUnpublish,
+                         ::base::Unretained(this)));
+```
+
+Same with above, if request is successfully delivered to the server, then callback
+will be called, too.
+
+```c++
+void OnRequestUnpublish(const Status& s) {
+  std::cout << "SimplePublishingNode::OnRequestUnpublish()" << std::endl;
+  LOG_IF(ERROR, !s.ok()) << s.error_message();
+}
+```
+
+[simple_subscribing_node.h](simple_subscribing_node.h) is very similar to above. When just seeing the key different part, you have to request subscribe. Unlike `publisher` you have to pass one more callback, and settings. Callback is called every `period` milliseconds inside the settings.
+
+```c++
+void RequestSubscribe() {
+  communication::Settings settings;
+
+  subscriber_.RequestSubscribe(
+      node_info_, topic_,
+      ::base::BindRepeating(&SimpleSubscribingNode::OnMessage,
+                            ::base::Unretained(this)),
+      settings,
+      ::base::BindOnce(&SimpleSubscribingNode::OnRequestSubscribe,
+                        ::base::Unretained(this)));
+}
+```
+
+`Settings` looks like below.
+
+```c++
+namespace communication {
+
+struct Settings {
+  Settings(uint32_t period = 1000, uint8_t queue_size = 100)
+      : period(period), queue_size(queue_size) {}
+
+  uint32_t period;  // in milliseconds
+  uint8_t queue_size;
+};
+
+}  // namespace communication
+```
+
+To `Unsubscribe`, it's also very similar.
+
+```c++
+void RequestUnsubscribe() {
+  subscriber_.RequestUnsubscribe(
+      node_info_, topic_,
+      ::base::BindOnce(&SimpleSubscribingNode::OnRequestUnsubscribe,
+                        ::base::Unretained(this)));
+}
+
+void OnRequestUnsubscribe(const Status& s) {
+  std::cout << "SimpleSubscribingNode::OnRequestUnsubscribe()" << std::endl;
+  LOG_IF(ERROR, !s.ok()) << s.error_message();
+}
+```
+

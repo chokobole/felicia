@@ -12,6 +12,7 @@ cc_library(
     hdrs = [
         "communication/publisher.h",
         "communication/subscriber.h",
+        "communication/state.h",
     ],
     copts = fel_copts(),
     deps = [

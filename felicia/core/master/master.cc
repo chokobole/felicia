@@ -496,10 +496,8 @@ void Master::OnConnetToTopicInfoWatcher(
     const Status& s) {
   if (s.ok()) {
     channel->SendMessage(topic_info, ::base::BindOnce([](const Status& s) {
-                           if (!s.ok()) {
-                             LOG(ERROR) << "Failed to send message: "
-                                        << s.error_message();
-                           }
+                           LOG_IF(ERROR, !s.ok()) << "Failed to send message: "
+                                                  << s.error_message();
                          }));
   } else {
     LOG(ERROR) << "Failed to connect topic info channel: " << s.error_message();

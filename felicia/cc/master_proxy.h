@@ -127,8 +127,7 @@ MasterProxy::RequestRegisterNode(const NodeInfo& node_info, Args&&... args) {
   new_node_info->set_name(node_info.name());
   RegisterNodeResponse* response = new RegisterNodeResponse();
 
-  std::unique_ptr<NodeLifecycle> node =
-      std::make_unique<NodeTy>(node_info, args...);
+  std::unique_ptr<NodeLifecycle> node = std::make_unique<NodeTy>(args...);
   node->OnInit();
   master_client_interface_->RegisterNodeAsync(
       request, response,

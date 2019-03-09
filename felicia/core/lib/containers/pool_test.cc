@@ -100,7 +100,7 @@ TEST(PoolTest, Shrink) {
   pool.push(1);  // 0 1
   pool.push(2);  // 0 1 2
   pool.push(3);  // 0 1 2 3
-  pool.reserve(2);
+  pool.set_capacity(2);
   ASSERT_EQ(2, pool.front());
   pool.pop();
   ASSERT_EQ(3, pool.front());
@@ -110,7 +110,7 @@ TEST(PoolTest, Grow) {
   Pool<int, uint8_t> pool(2);
   pool.push(0);  // 0
   pool.push(1);  // 0 1
-  pool.reserve(4);
+  pool.set_capacity(4);
   pool.push(2);  // 0 1 2
   ASSERT_EQ(0, pool.front());
   pool.pop();

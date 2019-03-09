@@ -4,6 +4,7 @@
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/cc/communication/publisher.h"
+#include "felicia/cc/master_proxy.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/examples/learn/message_communication/protobuf/message_spec.pb.h"
 
@@ -11,13 +12,12 @@ namespace felicia {
 
 class SimplePublishingNode : public NodeLifecycle {
  public:
-  explicit SimplePublishingNode(const NodeInfo& node_info,
-                                const std::string& topic,
+  explicit SimplePublishingNode(const std::string& topic,
                                 const std::string& channel_type)
-      : topic_(topic), publisher_(this) {
+      : topic_(topic) {
     if (channel_type.compare("TCP") == 0) {
       channel_def_.set_type(ChannelDef_Type_TCP);
-    } else if (channel_type.compare("UDO") == 0) {
+    } else if (channel_type.compare("UDP") == 0) {
       channel_def_.set_type(ChannelDef_Type_UDP);
     }
   }
@@ -28,14 +28,44 @@ class SimplePublishingNode : public NodeLifecycle {
 
   void OnDidCreate(const NodeInfo& node_info) override {
     std::cout << "SimplePublishingNode::OnDidCreate()" << std::endl;
-    publisher_.set_node_info(node_info);
-    ChannelDef channel_def;
-    channel_def.set_type(ChannelDef_Type_TCP);
-    publisher_.Publish(
-        topic_,
-        ::base::BindRepeating(&SimplePublishingNode::GenerateMessage,
-                              ::base::Unretained(this)),
-        channel_def);
+    node_info_ = node_info;
+    publisher_.RequestPublish(
+        node_info_, topic_, channel_def_,
+        ::base::BindOnce(&SimplePublishingNode::OnRequestPublish,
+                         ::base::Unretained(this)));
+
+    // MasterProxy& master_proxy = MasterProxy::GetInstance();
+    // master_proxy.PostDelayedTask(
+    //     FROM_HERE,
+    //     ::base::BindOnce(&SimplePublishingNode::RequestUnpublish,
+    //                      ::base::Unretained(this)),
+    //     ::base::TimeDelta::FromSeconds(10));
+  }
+
+  void OnRequestPublish(const Status& s) {
+    std::cout << "SimplePublishingNode::OnRequestPublish()" << std::endl;
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    RepeatingPublish();
+  }
+
+  void RepeatingPublish() {
+    publisher_.Publish(GenerateMessage(), ::base::BindOnce(::base::BindOnce(
+                                              &SimplePublishingNode::OnPublish,
+                                              ::base::Unretained(this))));
+
+    if (!publisher_.IsUnregistered()) {
+      MasterProxy& master_proxy = MasterProxy::GetInstance();
+      master_proxy.PostDelayedTask(
+          FROM_HERE,
+          ::base::BindOnce(&SimplePublishingNode::RepeatingPublish,
+                           ::base::Unretained(this)),
+          ::base::TimeDelta::FromSeconds(1));
+    }
+  }
+
+  void OnPublish(const Status& s) {
+    std::cout << "SimplePublishingNode::OnPublish()" << std::endl;
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
   MessageSpec GenerateMessage() {
@@ -47,12 +77,26 @@ class SimplePublishingNode : public NodeLifecycle {
     return message_spec;
   }
 
-  void OnError(const Status& status) override {
+  void RequestUnpublish() {
+    std::cout << "SimplePublishingNode::RequestUnpublish()" << std::endl;
+    publisher_.RequestUnpublish(
+        node_info_, topic_,
+        ::base::BindOnce(&SimplePublishingNode::OnRequestUnpublish,
+                         ::base::Unretained(this)));
+  }
+
+  void OnRequestUnpublish(const Status& s) {
+    std::cout << "SimplePublishingNode::OnRequestUnpublish()" << std::endl;
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
+  }
+
+  void OnError(const Status& s) override {
     std::cout << "SimplePublishingNode::OnError()" << std::endl;
-    std::cout << status.error_message() << std::endl;
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
  private:
+  NodeInfo node_info_;
   std::string topic_;
   ChannelDef channel_def_;
   Publisher<MessageSpec> publisher_;
