@@ -197,6 +197,21 @@ void Subscriber<MessageTy>::OnFindPublisher(const TopicInfo& topic_info) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   DCHECK(master_proxy.IsBoundToCurrentThread());
 #endif
+  if (IsStarted()) {
+    // UDP Channel can't detect closed connection. So it might be called
+    // at |IsStarted()| state. In this case, we have to forcely stop the
+    // mesasge loop and try it again.
+    DCHECK(channel_->IsUDPChannel());
+    StopMessageLoop();
+#if !DCHECK_IS_ON()
+    MasterProxy& master_proxy = MasterProxy::GetInstance();
+#endif
+    master_proxy.PostTask(
+        FROM_HERE, ::base::BindOnce(&Subscriber<MessageTy>::OnFindPublisher,
+                                    ::base::Unretained(this), topic_info));
+    return;
+  }
+
   channel_ = ChannelFactory::NewChannel<MessageTy>(
       topic_info.topic_source().channel_def());
 
