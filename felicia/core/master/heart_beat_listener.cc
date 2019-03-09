@@ -7,20 +7,26 @@
 
 namespace felicia {
 
+namespace {
+
+static constexpr int64_t kDefeaultHeartBeatDuration = 1000;
+
+}  // namespace
+
 ::base::TimeDelta GetHeartBeatDuration() {
-  int64_t duration = 1;
+  int64_t duration = kDefeaultHeartBeatDuration;
   const char* duration_str = getenv("FEL_HEART_BEAT_DURATION");
   if (duration_str) {
     if (::base::StringToInt64(duration_str, &duration)) {
       if (duration < 0) {
         LOG(WARNING) << "Duration cannot be negative " << duration
-                     << ", set to default value 1";
-        duration = 1;
+                     << ", set to default value " << kDefeaultHeartBeatDuration;
+        duration = kDefeaultHeartBeatDuration;
       }
     }
   }
 
-  return ::base::TimeDelta::FromSeconds(duration);
+  return ::base::TimeDelta::FromMilliseconds(duration);
 }
 
 namespace {
