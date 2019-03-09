@@ -61,7 +61,7 @@ void Master::RegisterClient(const RegisterClientRequest* arg,
   client_info.set_id(id);
   result->set_id(id);
   AddClient(id, std::move(client));
-  DLOG(INFO) << "[RegisterClient]: " << ::base::StringPrintf("client(%d)", id);
+  DLOG(INFO) << "[RegisterClient]: " << ::base::StringPrintf("client(%u)", id);
   std::move(callback).Run(Status::OK());
 
   thread_->task_runner()->PostTask(
