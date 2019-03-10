@@ -23,38 +23,36 @@ constexpr size_t kChannelSourceLength = 22;
 CommandDispatcher::CommandDispatcher(std::unique_ptr<GrpcMasterClient> client)
     : master_client_(std::move(client)) {}
 
-void CommandDispatcher::Dispatch(const FlagParserDelegate& delegate) const {
+void CommandDispatcher::Dispatch(const CliFlag& delegate) const {
   auto command = delegate.command();
   switch (command) {
-    case FlagParserDelegate::Command::COMMAND_SELF:
+    case CliFlag::Command::COMMAND_SELF:
       break;
-    case FlagParserDelegate::Command::COMMAND_CLIENT:
+    case CliFlag::Command::COMMAND_CLIENT:
       Dispatch(delegate.client_delegate());
       break;
-    case FlagParserDelegate::Command::COMMAND_NODE:
+    case CliFlag::Command::COMMAND_NODE:
       Dispatch(delegate.node_delegate());
       break;
-    case FlagParserDelegate::Command::COMMAND_TOPIC:
+    case CliFlag::Command::COMMAND_TOPIC:
       Dispatch(delegate.topic_delegate());
       break;
   }
 }
 
-void CommandDispatcher::Dispatch(
-    const ClientFlagParserDelegate& delegate) const {
+void CommandDispatcher::Dispatch(const ClientFlag& delegate) const {
   auto command = delegate.command();
   switch (command) {
-    case ClientFlagParserDelegate::Command::COMMAND_SELF:
+    case ClientFlag::Command::COMMAND_SELF:
       NOTREACHED();
       break;
-    case ClientFlagParserDelegate::Command::COMMAND_LIST:
+    case ClientFlag::Command::COMMAND_LIST:
       Dispatch(delegate.list_delegate());
       break;
   }
 }
 
-void CommandDispatcher::Dispatch(
-    const ClientListFlagParserDelegate& delegate) const {
+void CommandDispatcher::Dispatch(const ClientListFlag& delegate) const {
   master_client_->Start();
 
   ClientFilter client_filter;
@@ -107,20 +105,19 @@ void CommandDispatcher::OnListClientsAsync(GrpcMasterClient* client,
   client->Shutdown();
 }
 
-void CommandDispatcher::Dispatch(const NodeFlagParserDelegate& delegate) const {
+void CommandDispatcher::Dispatch(const NodeFlag& delegate) const {
   auto command = delegate.command();
   switch (command) {
-    case NodeFlagParserDelegate::Command::COMMAND_SELF:
+    case NodeFlag::Command::COMMAND_SELF:
       NOTREACHED();
       break;
-    case NodeFlagParserDelegate::Command::COMMAND_LIST:
+    case NodeFlag::Command::COMMAND_LIST:
       Dispatch(delegate.list_delegate());
       break;
   }
 }
 
-void CommandDispatcher::Dispatch(
-    const NodeListFlagParserDelegate& delegate) const {
+void CommandDispatcher::Dispatch(const NodeListFlag& delegate) const {
   master_client_->Start();
 
   NodeFilter node_filter;
@@ -193,21 +190,19 @@ void CommandDispatcher::OnListNodesAsync(GrpcMasterClient* client,
   client->Shutdown();
 }
 
-void CommandDispatcher::Dispatch(
-    const TopicFlagParserDelegate& delegate) const {
+void CommandDispatcher::Dispatch(const TopicFlag& delegate) const {
   auto command = delegate.command();
   switch (command) {
-    case TopicFlagParserDelegate::Command::COMMAND_SELF:
+    case TopicFlag::Command::COMMAND_SELF:
       NOTREACHED();
       break;
-    case TopicFlagParserDelegate::Command::COMMAND_LIST:
+    case TopicFlag::Command::COMMAND_LIST:
       Dispatch(delegate.list_delegate());
       break;
   }
 }
 
-void CommandDispatcher::Dispatch(
-    const TopicListFlagParserDelegate& delegate) const {
+void CommandDispatcher::Dispatch(const TopicListFlag& delegate) const {
   master_client_->Start();
 
   TopicFilter topic_filter;

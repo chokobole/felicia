@@ -1,4 +1,4 @@
-#include "felicia/core/master/tool/node_flag_parser_delegate.h"
+#include "felicia/core/master/tool/client_flag.h"
 
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/strings/string_util.h"
@@ -11,8 +11,7 @@ namespace felicia {
 
 static constexpr const char* kLs = "ls";
 
-NodeFlagParserDelegate::NodeFlagParserDelegate()
-    : current_command_(COMMAND_SELF) {
+ClientFlag::ClientFlag() : current_command_(COMMAND_SELF) {
   {
     StringChoicesFlag::Builder builder(MakeValueStore<std::string>(
         &command_, ::base::EmptyString(), Choices<std::string>{kLs}));
@@ -21,9 +20,9 @@ NodeFlagParserDelegate::NodeFlagParserDelegate()
   }
 }
 
-NodeFlagParserDelegate::~NodeFlagParserDelegate() = default;
+ClientFlag::~ClientFlag() = default;
 
-bool NodeFlagParserDelegate::Parse(FlagParser& parser) {
+bool ClientFlag::Parse(FlagParser& parser) {
   switch (current_command_) {
     case COMMAND_SELF:
       if (command_flag_->Parse(parser)) {
@@ -40,7 +39,7 @@ bool NodeFlagParserDelegate::Parse(FlagParser& parser) {
   }
 }
 
-bool NodeFlagParserDelegate::Validate() const {
+bool ClientFlag::Validate() const {
   switch (current_command_) {
     case COMMAND_SELF:
       return false;
@@ -49,7 +48,7 @@ bool NodeFlagParserDelegate::Validate() const {
   }
 }
 
-std::vector<std::string> NodeFlagParserDelegate::CollectUsages() const {
+std::vector<std::string> ClientFlag::CollectUsages() const {
   switch (current_command_) {
     case COMMAND_SELF:
       return {"COMMAND"};
@@ -58,22 +57,22 @@ std::vector<std::string> NodeFlagParserDelegate::CollectUsages() const {
   }
 }
 
-std::string NodeFlagParserDelegate::Description() const {
+std::string ClientFlag::Description() const {
   switch (current_command_) {
     case COMMAND_SELF:
-      return "Manage nodes";
+      return "Manage clients";
     case COMMAND_LIST:
       return list_delegate_.Description();
   }
 }
 
-std::vector<NamedHelpType> NodeFlagParserDelegate::CollectNamedHelps() const {
+std::vector<NamedHelpType> ClientFlag::CollectNamedHelps() const {
   switch (current_command_) {
     case COMMAND_SELF: {
       return {
           std::make_pair(TextStyle::Yellow("Commands:"),
                          std::vector<std::string>{
-                             MakeNamedHelpText(kLs, "List nodes"),
+                             MakeNamedHelpText(kLs, "List clients"),
                          }),
       };
     }

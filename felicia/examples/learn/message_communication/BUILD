@@ -1,7 +1,5 @@
-package(default_visibility = ["//visibility:public"])
-licenses(["notice"]) # Apache 2.0
-
-exports_files(["LICENSE"])
+package(default_visibility = ["//visibility:private"])
+licenses(["notice"])
 
 load(
     "//felicia:felicia.bzl",
@@ -15,14 +13,13 @@ load(
 
 fel_proto_library_cc(
     name = "message_spec_proto",
-    srcs = ["message_communication/protobuf/message_spec.proto"],
-    visibility = ["//visibility:public"]
+    srcs = ["protobuf/message_spec.proto"]
 )
 
 cc_library(
-    name = "node_create_flag_parser_delegate",
-    srcs = ["message_communication/node_create_flag_parser_delegate.cc"],
-    hdrs = ["message_communication/node_create_flag_parser_delegate.h"],
+    name = "node_create_flag",
+    srcs = ["node_create_flag.cc"],
+    hdrs = ["node_create_flag.h"],
     copts = fel_copts(),
     deps = [
         "//felicia/core/util:command_line_interface",
@@ -31,7 +28,7 @@ cc_library(
 
 cc_library(
     name = "simple_publishing_node",
-    srcs = ["message_communication/simple_publishing_node.h"],
+    srcs = ["simple_publishing_node.h"],
     copts = fel_copts(),
     deps = [
         ":message_spec_proto_cc",
@@ -42,7 +39,7 @@ cc_library(
 
 cc_library(
     name = "simple_subscribing_node",
-    srcs = ["message_communication/simple_subscribing_node.h"],
+    srcs = ["simple_subscribing_node.h"],
     copts = fel_copts(),
     deps = [
         ":message_spec_proto_cc",
@@ -53,11 +50,11 @@ cc_library(
 
 cc_binary(
     name = "node_creator",
-    srcs = ["message_communication/node_creator.cc"],
+    srcs = ["node_creator.cc"],
     copts = fel_copts(),
     deps = [
         ":message_spec_proto_cc",
-        ":node_create_flag_parser_delegate",
+        ":node_create_flag",
         ":simple_publishing_node",
         ":simple_subscribing_node",
         "//felicia/cc:master_proxy",

@@ -1,5 +1,5 @@
-#ifndef FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_NODE_CREATE_PARSER_DELEGATE_H_
-#define FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_NODE_CREATE_PARSER_DELEGATE_H_
+#ifndef FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_NODE_CREATE_H_
+#define FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_NODE_CREATE_H_
 
 #include <memory>
 
@@ -9,10 +9,10 @@
 
 namespace felicia {
 
-class NodeCreateFlagParserDelegate : public FlagParser::Delegate {
+class NodeCreateFlag : public FlagParser::Delegate {
  public:
-  NodeCreateFlagParserDelegate();
-  ~NodeCreateFlagParserDelegate();
+  NodeCreateFlag();
+  ~NodeCreateFlag();
 
   bool is_publishing_node() const { return is_publishing_node_; }
   const std::string& name() const { return name_; }
@@ -36,9 +36,9 @@ class NodeCreateFlagParserDelegate : public FlagParser::Delegate {
   std::unique_ptr<StringFlag> topic_flag_;
   std::unique_ptr<StringChoicesFlag> channel_type_flag_;
 
-  DISALLOW_COPY_AND_ASSIGN(NodeCreateFlagParserDelegate);
+  DISALLOW_COPY_AND_ASSIGN(NodeCreateFlag);
 };
 
 }  // namespace felicia
 
-#endif  // FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_NODE_CREATE_PARSER_DELEGATE_H_
+#endif  // FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_NODE_CREATE_H_

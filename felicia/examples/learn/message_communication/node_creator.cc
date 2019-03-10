@@ -1,12 +1,12 @@
 #include "felicia/cc/master_proxy.h"
-#include "felicia/examples/learn/message_communication/node_create_flag_parser_delegate.h"
+#include "felicia/examples/learn/message_communication/node_create_flag.h"
 #include "felicia/examples/learn/message_communication/simple_publishing_node.h"
 #include "felicia/examples/learn/message_communication/simple_subscribing_node.h"
 
 namespace felicia {
 
 int RealMain(int argc, char* argv[]) {
-  NodeCreateFlagParserDelegate delegate;
+  NodeCreateFlag delegate;
   FlagParser parser;
   parser.set_program_name(argv[0]);
   if (!parser.Parse(argc, argv, &delegate)) {

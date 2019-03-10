@@ -1,4 +1,4 @@
-#include "felicia/core/master/tool/flag_parser_delegate.h"
+#include "felicia/core/master/tool/cli_flag.h"
 
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/strings/string_util.h"
@@ -12,7 +12,7 @@ static constexpr const char* kClient = "client";
 static constexpr const char* kNode = "node";
 static constexpr const char* kTopic = "topic";
 
-FlagParserDelegate::FlagParserDelegate() : current_command_(COMMAND_SELF) {
+CliFlag::CliFlag() : current_command_(COMMAND_SELF) {
   {
     StringChoicesFlag::Builder builder(MakeValueStore<std::string>(
         &command_, ::base::EmptyString(),
@@ -22,9 +22,9 @@ FlagParserDelegate::FlagParserDelegate() : current_command_(COMMAND_SELF) {
   }
 }
 
-FlagParserDelegate::~FlagParserDelegate() = default;
+CliFlag::~CliFlag() = default;
 
-bool FlagParserDelegate::Parse(FlagParser& parser) {
+bool CliFlag::Parse(FlagParser& parser) {
   switch (current_command_) {
     case COMMAND_SELF:
       if (command_flag_->Parse(parser)) {
@@ -49,7 +49,7 @@ bool FlagParserDelegate::Parse(FlagParser& parser) {
   }
 }
 
-bool FlagParserDelegate::Validate() const {
+bool CliFlag::Validate() const {
   switch (current_command_) {
     case COMMAND_SELF:
       return false;
@@ -62,7 +62,7 @@ bool FlagParserDelegate::Validate() const {
   }
 }
 
-std::vector<std::string> FlagParserDelegate::CollectUsages() const {
+std::vector<std::string> CliFlag::CollectUsages() const {
   switch (current_command_) {
     case COMMAND_SELF:
       return {"[OPTIONS]", "COMMAND"};
@@ -75,7 +75,7 @@ std::vector<std::string> FlagParserDelegate::CollectUsages() const {
   }
 }
 
-std::string FlagParserDelegate::Description() const {
+std::string CliFlag::Description() const {
   switch (current_command_) {
     case COMMAND_SELF:
       return "A proxy command to manage felicia";
@@ -88,7 +88,7 @@ std::string FlagParserDelegate::Description() const {
   }
 }
 
-std::vector<NamedHelpType> FlagParserDelegate::CollectNamedHelps() const {
+std::vector<NamedHelpType> CliFlag::CollectNamedHelps() const {
   switch (current_command_) {
     case COMMAND_SELF: {
       return {

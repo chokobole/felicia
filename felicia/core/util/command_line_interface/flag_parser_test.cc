@@ -20,9 +20,9 @@ namespace {
 #define EXPECT_FALSE_PARSE_DELEGATE(DelegateType, N, ...) \
   PARSE_DELEGATE(FALSE, DelegateType, N + 1, "test", __VA_ARGS__)
 
-class BoolFlagParserDelegate : public FlagParser::Delegate {
+class ABoolFlag : public FlagParser::Delegate {
  public:
-  BoolFlagParserDelegate() {
+  ABoolFlag() {
     BoolFlag::Builder builder(MakeValueStore(&value_));
     auto flag = builder.SetShortName("-b").SetLongName("--bool").Build();
     flag_ = std::make_unique<BoolFlag>(flag);
@@ -44,26 +44,26 @@ class BoolFlagParserDelegate : public FlagParser::Delegate {
 };
 
 TEST(FlagParserTest, ParseBool) {
-  { EXPECT_FALSE_PARSE_DELEGATE(BoolFlagParserDelegate, 0); }
+  { EXPECT_FALSE_PARSE_DELEGATE(ABoolFlag, 0); }
 
   {
-    EXPECT_TRUE_PARSE_DELEGATE(BoolFlagParserDelegate, 1, "-b");
+    EXPECT_TRUE_PARSE_DELEGATE(ABoolFlag, 1, "-b");
     EXPECT_EQ(true, delegate.value());
   }
 
   {
-    EXPECT_TRUE_PARSE_DELEGATE(BoolFlagParserDelegate, 1, "-bool");
+    EXPECT_TRUE_PARSE_DELEGATE(ABoolFlag, 1, "-bool");
     EXPECT_EQ(true, delegate.value());
   }
 
-  { EXPECT_FALSE_PARSE_DELEGATE(BoolFlagParserDelegate, 1, "-a"); }
+  { EXPECT_FALSE_PARSE_DELEGATE(ABoolFlag, 1, "-a"); }
 
-  { EXPECT_FALSE_PARSE_DELEGATE(BoolFlagParserDelegate, 1, "--abc"); }
+  { EXPECT_FALSE_PARSE_DELEGATE(ABoolFlag, 1, "--abc"); }
 }
 
-class IntFlagParserDelegate : public FlagParser::Delegate {
+class AIntFlag : public FlagParser::Delegate {
  public:
-  IntFlagParserDelegate() {
+  AIntFlag() {
     {
       IntFlag::Builder builder(MakeValueStore(&value_));
       auto flag = builder.SetName("int").Build();
@@ -96,43 +96,39 @@ class IntFlagParserDelegate : public FlagParser::Delegate {
 };
 
 TEST(FlagParserTest, ParseInt) {
-  { EXPECT_FALSE_PARSE_DELEGATE(IntFlagParserDelegate, 0); }
+  { EXPECT_FALSE_PARSE_DELEGATE(AIntFlag, 0); }
 
   {
-    EXPECT_TRUE_PARSE_DELEGATE(IntFlagParserDelegate, 1, "123");
+    EXPECT_TRUE_PARSE_DELEGATE(AIntFlag, 1, "123");
     EXPECT_EQ(123, delegate.value());
   }
 
-  { EXPECT_FALSE_PARSE_DELEGATE(IntFlagParserDelegate, 2, "-v", "123"); }
+  { EXPECT_FALSE_PARSE_DELEGATE(AIntFlag, 2, "-v", "123"); }
 
-  { EXPECT_FALSE_PARSE_DELEGATE(IntFlagParserDelegate, 3, "-v", "123", "456"); }
+  { EXPECT_FALSE_PARSE_DELEGATE(AIntFlag, 3, "-v", "123", "456"); }
 
-  {
-    EXPECT_FALSE_PARSE_DELEGATE(IntFlagParserDelegate, 3, "--value", "123",
-                                "456");
-  }
+  { EXPECT_FALSE_PARSE_DELEGATE(AIntFlag, 3, "--value", "123", "456"); }
 
   {
-    EXPECT_TRUE_PARSE_DELEGATE(IntFlagParserDelegate, 3, "456", "-v", "123");
+    EXPECT_TRUE_PARSE_DELEGATE(AIntFlag, 3, "456", "-v", "123");
     EXPECT_EQ(456, delegate.value());
     EXPECT_EQ(123, delegate.value2());
   }
 
   {
-    EXPECT_TRUE_PARSE_DELEGATE(IntFlagParserDelegate, 2, "456", "-v=123");
+    EXPECT_TRUE_PARSE_DELEGATE(AIntFlag, 2, "456", "-v=123");
     EXPECT_EQ(456, delegate.value());
     EXPECT_EQ(123, delegate.value2());
   }
 
   {
-    EXPECT_TRUE_PARSE_DELEGATE(IntFlagParserDelegate, 3, "456", "--value",
-                               "123");
+    EXPECT_TRUE_PARSE_DELEGATE(AIntFlag, 3, "456", "--value", "123");
     EXPECT_EQ(456, delegate.value());
     EXPECT_EQ(123, delegate.value2());
   }
 
   {
-    EXPECT_TRUE_PARSE_DELEGATE(IntFlagParserDelegate, 2, "456", "--value=123");
+    EXPECT_TRUE_PARSE_DELEGATE(AIntFlag, 2, "456", "--value=123");
     EXPECT_EQ(456, delegate.value());
     EXPECT_EQ(123, delegate.value2());
   }

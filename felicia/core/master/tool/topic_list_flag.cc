@@ -1,10 +1,10 @@
-#include "felicia/core/master/tool/topic_list_flag_parser_delegate.h"
+#include "felicia/core/master/tool/topic_list_flag.h"
 
 #include "felicia/core/util/command_line_interface/text_style.h"
 
 namespace felicia {
 
-TopicListFlagParserDelegate::TopicListFlagParserDelegate() {
+TopicListFlag::TopicListFlag() {
   {
     BoolFlag::Builder builder(MakeValueStore(&all_));
     auto flag = builder.SetShortName("-a")
@@ -23,13 +23,13 @@ TopicListFlagParserDelegate::TopicListFlagParserDelegate() {
   }
 }
 
-TopicListFlagParserDelegate::~TopicListFlagParserDelegate() = default;
+TopicListFlag::~TopicListFlag() = default;
 
-bool TopicListFlagParserDelegate::Parse(FlagParser& parser) {
+bool TopicListFlag::Parse(FlagParser& parser) {
   return PARSE_OPTIONAL_FLAG(parser, all_flag_, topic_flag_);
 }
 
-bool TopicListFlagParserDelegate::Validate() const {
+bool TopicListFlag::Validate() const {
   int is_set_cnt = 0;
   if (all_flag_->is_set()) is_set_cnt++;
   if (topic_flag_->is_set()) is_set_cnt++;
@@ -37,16 +37,13 @@ bool TopicListFlagParserDelegate::Validate() const {
   return is_set_cnt == 1;
 }
 
-std::vector<std::string> TopicListFlagParserDelegate::CollectUsages() const {
+std::vector<std::string> TopicListFlag::CollectUsages() const {
   return {"[OPTIONS]"};
 }
 
-std::string TopicListFlagParserDelegate::Description() const {
-  return "List topics";
-}
+std::string TopicListFlag::Description() const { return "List topics"; }
 
-std::vector<NamedHelpType> TopicListFlagParserDelegate::CollectNamedHelps()
-    const {
+std::vector<NamedHelpType> TopicListFlag::CollectNamedHelps() const {
   return {
       std::make_pair(TextStyle::Yellow("Options:"),
                      std::vector<std::string>{

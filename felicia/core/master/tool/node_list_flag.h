@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_MASTER_TOOL_NODE_LIST_PARSER_DELEGATE_H_
-#define FELICIA_CORE_MASTER_TOOL_NODE_LIST_PARSER_DELEGATE_H_
+#ifndef FELICIA_CORE_MASTER_TOOL_NODE_LIST_H_
+#define FELICIA_CORE_MASTER_TOOL_NODE_LIST_H_
 
 #include <memory>
 
@@ -9,10 +9,10 @@
 
 namespace felicia {
 
-class NodeListFlagParserDelegate : public FlagParser::Delegate {
+class NodeListFlag : public FlagParser::Delegate {
  public:
-  NodeListFlagParserDelegate();
-  ~NodeListFlagParserDelegate();
+  NodeListFlag();
+  ~NodeListFlag();
 
   const BoolFlag* all_flag() const { return all_flag_.get(); }
   const StringFlag* publishing_topic_flag() const {
@@ -41,9 +41,9 @@ class NodeListFlagParserDelegate : public FlagParser::Delegate {
   std::unique_ptr<StringFlag> subscribing_topic_flag_;
   std::unique_ptr<StringFlag> name_flag_;
 
-  DISALLOW_COPY_AND_ASSIGN(NodeListFlagParserDelegate);
+  DISALLOW_COPY_AND_ASSIGN(NodeListFlag);
 };
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MASTER_TOOL_NODE_LIST_PARSER_DELEGATE_H_
+#endif  // FELICIA_CORE_MASTER_TOOL_NODE_LIST_H_

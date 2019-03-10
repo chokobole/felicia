@@ -1,4 +1,4 @@
-#include "felicia/core/master/tool/topic_flag_parser_delegate.h"
+#include "felicia/core/master/tool/topic_flag.h"
 
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/strings/string_util.h"
@@ -11,8 +11,7 @@ namespace felicia {
 
 static const char* kLs = "ls";
 
-TopicFlagParserDelegate::TopicFlagParserDelegate()
-    : current_command_(COMMAND_SELF) {
+TopicFlag::TopicFlag() : current_command_(COMMAND_SELF) {
   {
     StringChoicesFlag::Builder builder(MakeValueStore<std::string>(
         &command_, ::base::EmptyString(), Choices<std::string>{kLs}));
@@ -21,9 +20,9 @@ TopicFlagParserDelegate::TopicFlagParserDelegate()
   }
 }
 
-TopicFlagParserDelegate::~TopicFlagParserDelegate() = default;
+TopicFlag::~TopicFlag() = default;
 
-bool TopicFlagParserDelegate::Parse(FlagParser& parser) {
+bool TopicFlag::Parse(FlagParser& parser) {
   switch (current_command_) {
     case COMMAND_SELF:
       if (command_flag_->Parse(parser)) {
@@ -40,7 +39,7 @@ bool TopicFlagParserDelegate::Parse(FlagParser& parser) {
   }
 }
 
-bool TopicFlagParserDelegate::Validate() const {
+bool TopicFlag::Validate() const {
   switch (current_command_) {
     case COMMAND_SELF:
       return false;
@@ -49,7 +48,7 @@ bool TopicFlagParserDelegate::Validate() const {
   }
 }
 
-std::vector<std::string> TopicFlagParserDelegate::CollectUsages() const {
+std::vector<std::string> TopicFlag::CollectUsages() const {
   switch (current_command_) {
     case COMMAND_SELF:
       return {"COMMAND"};
@@ -58,7 +57,7 @@ std::vector<std::string> TopicFlagParserDelegate::CollectUsages() const {
   }
 }
 
-std::string TopicFlagParserDelegate::Description() const {
+std::string TopicFlag::Description() const {
   switch (current_command_) {
     case COMMAND_SELF:
       return "Manage topics";
@@ -67,7 +66,7 @@ std::string TopicFlagParserDelegate::Description() const {
   }
 }
 
-std::vector<NamedHelpType> TopicFlagParserDelegate::CollectNamedHelps() const {
+std::vector<NamedHelpType> TopicFlag::CollectNamedHelps() const {
   switch (current_command_) {
     case COMMAND_SELF: {
       return {

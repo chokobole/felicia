@@ -1,10 +1,10 @@
-#include "felicia/core/master/tool/node_list_flag_parser_delegate.h"
+#include "felicia/core/master/tool/node_list_flag.h"
 
 #include "felicia/core/util/command_line_interface/text_style.h"
 
 namespace felicia {
 
-NodeListFlagParserDelegate::NodeListFlagParserDelegate() {
+NodeListFlag::NodeListFlag() {
   {
     BoolFlag::Builder builder(MakeValueStore(&all_));
     auto flag = builder.SetShortName("-a")
@@ -40,14 +40,14 @@ NodeListFlagParserDelegate::NodeListFlagParserDelegate() {
   }
 }
 
-NodeListFlagParserDelegate::~NodeListFlagParserDelegate() = default;
+NodeListFlag::~NodeListFlag() = default;
 
-bool NodeListFlagParserDelegate::Parse(FlagParser& parser) {
+bool NodeListFlag::Parse(FlagParser& parser) {
   return PARSE_OPTIONAL_FLAG(parser, all_flag_, publishing_topic_flag_,
                              subscribing_topic_flag_, name_flag_);
 }
 
-bool NodeListFlagParserDelegate::Validate() const {
+bool NodeListFlag::Validate() const {
   int is_set_cnt = 0;
   if (all_flag_->is_set()) is_set_cnt++;
   if (publishing_topic_flag_->is_set()) is_set_cnt++;
@@ -57,16 +57,13 @@ bool NodeListFlagParserDelegate::Validate() const {
   return is_set_cnt == 1;
 }
 
-std::vector<std::string> NodeListFlagParserDelegate::CollectUsages() const {
+std::vector<std::string> NodeListFlag::CollectUsages() const {
   return {"[OPTIONS]"};
 }
 
-std::string NodeListFlagParserDelegate::Description() const {
-  return "List nodes";
-}
+std::string NodeListFlag::Description() const { return "List nodes"; }
 
-std::vector<NamedHelpType> NodeListFlagParserDelegate::CollectNamedHelps()
-    const {
+std::vector<NamedHelpType> NodeListFlag::CollectNamedHelps() const {
   return {
       std::make_pair(TextStyle::Yellow("Options:"),
                      std::vector<std::string>{

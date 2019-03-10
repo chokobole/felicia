@@ -12,9 +12,9 @@ load(
 ##########################################################################################
 
 cc_library(
-    name = "client_list_flag_parser_delegate",
-    srcs = ["client_list_flag_parser_delegate.cc"],
-    hdrs = ["client_list_flag_parser_delegate.h"],
+    name = "client_list_flag",
+    srcs = ["client_list_flag.cc"],
+    hdrs = ["client_list_flag.h"],
     copts = fel_copts(),
     deps = [
         "//felicia/core/util:command_line_interface",
@@ -22,12 +22,12 @@ cc_library(
 )
 
 cc_library(
-    name = "client_flag_parser_delegate",
-    srcs = ["client_flag_parser_delegate.cc"],
-    hdrs = ["client_flag_parser_delegate.h"],
+    name = "client_flag",
+    srcs = ["client_flag.cc"],
+    hdrs = ["client_flag.h"],
     copts = fel_copts(),
     deps = [
-        ":client_list_flag_parser_delegate",
+        ":client_list_flag",
     ],
 )
 
@@ -36,9 +36,9 @@ cc_library(
 ##########################################################################################
 
 cc_library(
-    name = "node_list_flag_parser_delegate",
-    srcs = ["node_list_flag_parser_delegate.cc"],
-    hdrs = ["node_list_flag_parser_delegate.h"],
+    name = "node_list_flag",
+    srcs = ["node_list_flag.cc"],
+    hdrs = ["node_list_flag.h"],
     copts = fel_copts(),
     deps = [
         "//felicia/core/util:command_line_interface",
@@ -46,12 +46,12 @@ cc_library(
 )
 
 cc_library(
-    name = "node_flag_parser_delegate",
-    srcs = ["node_flag_parser_delegate.cc"],
-    hdrs = ["node_flag_parser_delegate.h"],
+    name = "node_flag",
+    srcs = ["node_flag.cc"],
+    hdrs = ["node_flag.h"],
     copts = fel_copts(),
     deps = [
-        ":node_list_flag_parser_delegate",
+        ":node_list_flag",
     ],
 )
 
@@ -60,9 +60,9 @@ cc_library(
 ##########################################################################################
 
 cc_library(
-    name = "topic_list_flag_parser_delegate",
-    srcs = ["topic_list_flag_parser_delegate.cc"],
-    hdrs = ["topic_list_flag_parser_delegate.h"],
+    name = "topic_list_flag",
+    srcs = ["topic_list_flag.cc"],
+    hdrs = ["topic_list_flag.h"],
     copts = fel_copts(),
     deps = [
         "//felicia/core/util:command_line_interface",
@@ -70,26 +70,26 @@ cc_library(
 )
 
 cc_library(
-    name = "topic_flag_parser_delegate",
-    srcs = ["topic_flag_parser_delegate.cc"],
-    hdrs = ["topic_flag_parser_delegate.h"],
+    name = "topic_flag",
+    srcs = ["topic_flag.cc"],
+    hdrs = ["topic_flag.h"],
     copts = fel_copts(),
     deps = [
-        ":topic_list_flag_parser_delegate",
+        ":topic_list_flag",
     ],
 )
 
 ##########################################################################################
 
 cc_library(
-    name = "flag_parser_delegate",
-    srcs = ["flag_parser_delegate.cc"],
-    hdrs = ["flag_parser_delegate.h"],
+    name = "cli_flag",
+    srcs = ["cli_flag.cc"],
+    hdrs = ["cli_flag.h"],
     copts = fel_copts(),
     deps = [
-        ":client_flag_parser_delegate",
-        ":node_flag_parser_delegate",
-        ":topic_flag_parser_delegate",
+        ":client_flag",
+        ":node_flag",
+        ":topic_flag",
     ],
 )
 
@@ -99,7 +99,7 @@ cc_library(
     hdrs = ["command_dispatcher.h"],
     copts = fel_copts(),
     deps = [
-        ":flag_parser_delegate",
+        ":cli_flag",
         "//felicia/core:channel",
         "//felicia/core/master/rpc:grpc_master_client",
     ]
@@ -110,7 +110,7 @@ cc_binary(
     srcs = ["grpc_master_client_cli.cc"],
     copts = fel_copts(),
     deps = [
-        ":flag_parser_delegate",
+        ":cli_flag",
         ":command_disptacher",
         "//felicia/core/master/rpc:grpc_util",
     ],

@@ -1,8 +1,8 @@
-#include "felicia/examples/learn/message_communication/node_create_flag_parser_delegate.h"
+#include "felicia/examples/learn/message_communication/node_create_flag.h"
 
 namespace felicia {
 
-NodeCreateFlagParserDelegate::NodeCreateFlagParserDelegate() {
+NodeCreateFlag::NodeCreateFlag() {
   {
     BoolFlag::Builder builder(MakeValueStore(&is_publishing_node_));
     auto flag = builder.SetShortName("-p")
@@ -38,15 +38,13 @@ NodeCreateFlagParserDelegate::NodeCreateFlagParserDelegate() {
   }
 }
 
-NodeCreateFlagParserDelegate::~NodeCreateFlagParserDelegate() = default;
+NodeCreateFlag::~NodeCreateFlag() = default;
 
-bool NodeCreateFlagParserDelegate::Parse(FlagParser& parser) {
+bool NodeCreateFlag::Parse(FlagParser& parser) {
   return PARSE_OPTIONAL_FLAG(parser, is_publishing_node_flag_, name_flag_,
                              topic_flag_, channel_type_flag_);
 }
 
-bool NodeCreateFlagParserDelegate::Validate() const {
-  return topic_flag_->is_set();
-}
+bool NodeCreateFlag::Validate() const { return topic_flag_->is_set(); }
 
 }  // namespace felicia

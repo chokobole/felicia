@@ -25,11 +25,11 @@ class EXPORT FlagParser {
   // and Choices<T>. Therefore every Flag<T> should be passed from outside to
   // Delegate.
   //
-  // Typical FlagParserDelegate looks like below.
+  // Typical Flag looks like below.
   //
-  // class FooBarFlagParserDelegate : public FlagParser::Delegate {
+  // class FooBarFlag : public FlagParser::Delegate {
   //  public:
-  //   FooBarFlagParserDelegate() {
+  //   FooBarFlag() {
   //     {
   //       IntFlag::Builder builder(MakeValueStore(&foo_));
   //       auto flag = builder.SetName("foo")

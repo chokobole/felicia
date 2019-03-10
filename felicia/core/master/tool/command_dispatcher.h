@@ -6,7 +6,7 @@
 #include "third_party/chromium/base/macros.h"
 
 #include "felicia/core/master/rpc/grpc_master_client.h"
-#include "felicia/core/master/tool/flag_parser_delegate.h"
+#include "felicia/core/master/tool/cli_flag.h"
 
 namespace felicia {
 
@@ -14,26 +14,26 @@ class CommandDispatcher {
  public:
   explicit CommandDispatcher(std::unique_ptr<GrpcMasterClient> client);
 
-  void Dispatch(const FlagParserDelegate& delegate) const;
+  void Dispatch(const CliFlag& delegate) const;
 
  private:
   // Client Commands
-  void Dispatch(const ClientFlagParserDelegate& delegate) const;
-  void Dispatch(const ClientListFlagParserDelegate& delegate) const;
+  void Dispatch(const ClientFlag& delegate) const;
+  void Dispatch(const ClientListFlag& delegate) const;
 
   void OnListClientsAsync(GrpcMasterClient* client, ListClientsRequest* request,
                           ListClientsResponse* response, const Status& s) const;
 
   // Node Commands
-  void Dispatch(const NodeFlagParserDelegate& delegate) const;
-  void Dispatch(const NodeListFlagParserDelegate& delegate) const;
+  void Dispatch(const NodeFlag& delegate) const;
+  void Dispatch(const NodeListFlag& delegate) const;
 
   void OnListNodesAsync(GrpcMasterClient* client, ListNodesRequest* request,
                         ListNodesResponse* response, const Status& s) const;
 
   // Topic Commands
-  void Dispatch(const TopicFlagParserDelegate& delegate) const;
-  void Dispatch(const TopicListFlagParserDelegate& delegate) const;
+  void Dispatch(const TopicFlag& delegate) const;
+  void Dispatch(const TopicListFlag& delegate) const;
 
   void OnListTopicsAsync(GrpcMasterClient* client, ListTopicsRequest* request,
                          ListTopicsResponse* response, const Status& s) const;

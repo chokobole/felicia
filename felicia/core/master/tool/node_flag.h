@@ -1,26 +1,24 @@
-#ifndef FELICIA_CORE_MASTER_TOOL_TOPIC_PARSER_DELEGATE_H_
-#define FELICIA_CORE_MASTER_TOOL_TOPIC_PARSER_DELEGATE_H_
+#ifndef FELICIA_CORE_MASTER_TOOL_NODE_H_
+#define FELICIA_CORE_MASTER_TOOL_NODE_H_
 
 #include "third_party/chromium/base/macros.h"
 
-#include "felicia/core/master/tool/topic_list_flag_parser_delegate.h"
+#include "felicia/core/master/tool/node_list_flag.h"
 #include "felicia/core/util/command_line_interface/flag.h"
 
 namespace felicia {
 
-class TopicFlagParserDelegate : public FlagParser::Delegate {
+class NodeFlag : public FlagParser::Delegate {
  public:
   enum Command {
     COMMAND_SELF,
     COMMAND_LIST,
   };
 
-  TopicFlagParserDelegate();
-  ~TopicFlagParserDelegate();
+  NodeFlag();
+  ~NodeFlag();
 
-  const TopicListFlagParserDelegate& list_delegate() const {
-    return list_delegate_;
-  }
+  const NodeListFlag& list_delegate() const { return list_delegate_; }
   Command command() const { return current_command_; }
 
   bool Parse(FlagParser& parser) override;
@@ -34,12 +32,12 @@ class TopicFlagParserDelegate : public FlagParser::Delegate {
  private:
   std::string command_;
   std::unique_ptr<StringChoicesFlag> command_flag_;
-  TopicListFlagParserDelegate list_delegate_;
+  NodeListFlag list_delegate_;
   Command current_command_;
 
-  DISALLOW_COPY_AND_ASSIGN(TopicFlagParserDelegate);
+  DISALLOW_COPY_AND_ASSIGN(NodeFlag);
 };
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MASTER_TOOL_TOPIC_PARSER_DELEGATE_H_
+#endif  // FELICIA_CORE_MASTER_TOOL_NODE_H_

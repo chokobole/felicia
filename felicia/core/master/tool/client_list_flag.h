@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_MASTER_TOOL_TOPIC_LIST_PARSER_DELEGATE_H_
-#define FELICIA_CORE_MASTER_TOOL_TOPIC_LIST_PARSER_DELEGATE_H_
+#ifndef FELICIA_CORE_MASTER_TOOL_CLIENT_LIST_H_
+#define FELICIA_CORE_MASTER_TOOL_CLIENT_LIST_H_
 
 #include <memory>
 
@@ -9,13 +9,13 @@
 
 namespace felicia {
 
-class TopicListFlagParserDelegate : public FlagParser::Delegate {
+class ClientListFlag : public FlagParser::Delegate {
  public:
-  TopicListFlagParserDelegate();
-  ~TopicListFlagParserDelegate();
+  ClientListFlag();
+  ~ClientListFlag();
 
   const BoolFlag* all_flag() const { return all_flag_.get(); }
-  const StringFlag* topic_flag() const { return topic_flag_.get(); }
+  const Flag<uint32_t>* id_flag() const { return id_flag_.get(); }
 
   bool Parse(FlagParser& parser) override;
 
@@ -27,13 +27,13 @@ class TopicListFlagParserDelegate : public FlagParser::Delegate {
 
  private:
   bool all_;
-  std::string topic_;
+  uint32_t id_;
   std::unique_ptr<BoolFlag> all_flag_;
-  std::unique_ptr<StringFlag> topic_flag_;
+  std::unique_ptr<Flag<uint32_t>> id_flag_;
 
-  DISALLOW_COPY_AND_ASSIGN(TopicListFlagParserDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ClientListFlag);
 };
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MASTER_TOOL_TOPIC_LIST_PARSER_DELEGATE_H_
+#endif  // FELICIA_CORE_MASTER_TOOL_CLIENT_LIST_H_
