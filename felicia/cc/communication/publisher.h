@@ -15,7 +15,6 @@
 #include "felicia/core/channel/channel_factory.h"
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/containers/pool.h"
-#include "felicia/core/lib/error/errors.h"
 #include "felicia/core/lib/error/status.h"
 
 namespace felicia {
@@ -23,16 +22,9 @@ namespace felicia {
 template <typename MessageTy>
 class EXPORT Publisher {
  public:
-  explicit Publisher() {
-    SetMessageQueueCapacity(100);
-    state_.ToUneregistered();
-  }
+  Publisher() { state_.ToUneregistered(); }
 
   ~Publisher() { DCHECK(IsUnregistered()); }
-
-  void SetMessageQueueCapacity(uint8_t queue_size) {
-    message_queue_.set_capacity(queue_size);
-  }
 
   ALWAYS_INLINE bool IsRegistering() const { return state_.IsRegistering(); }
   ALWAYS_INLINE bool IsRegistered() const { return state_.IsRegistered(); }
@@ -195,6 +187,8 @@ void Publisher<MessageTy>::OnPublishTopicAsync(PublishTopicRequest* request,
     return;
   }
 
+  message_queue_.set_capacity(10);
+
   state_.ToRegistered();
   std::move(callback).Run(s);
 }
@@ -210,6 +204,9 @@ void Publisher<MessageTy>::OnUnpublishTopicAsync(
     std::move(callback).Run(s);
     return;
   }
+
+  channel_.reset();
+  message_queue_.clear();
 
   state_.ToUneregistered();
   std::move(callback).Run(s);

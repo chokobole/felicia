@@ -57,6 +57,5 @@ cc_binary(
         ":node_create_flag",
         ":simple_publishing_node",
         ":simple_subscribing_node",
-        "//felicia/cc:master_proxy",
     ]
 )

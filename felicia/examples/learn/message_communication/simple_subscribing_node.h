@@ -10,8 +10,7 @@ namespace felicia {
 
 class SimpleSubscribingNode : public NodeLifecycle {
  public:
-  explicit SimpleSubscribingNode(const std::string& topic)
-      : topic_(topic), subscriber_(this) {}
+  explicit SimpleSubscribingNode(const std::string& topic) : topic_(topic) {}
 
   void OnInit() override {
     std::cout << "SimpleSubscribingNode::OnInit()" << std::endl;
@@ -30,12 +29,19 @@ class SimpleSubscribingNode : public NodeLifecycle {
     //     ::base::TimeDelta::FromSeconds(10));
   }
 
+  void OnError(const Status& s) override {
+    std::cout << "SimpleSubscribingNode::OnError()" << std::endl;
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
+  }
+
   void RequestSubscribe() {
     communication::Settings settings;
 
     subscriber_.RequestSubscribe(
         node_info_, topic_,
         ::base::BindRepeating(&SimpleSubscribingNode::OnMessage,
+                              ::base::Unretained(this)),
+        ::base::BindRepeating(&SimpleSubscribingNode::OnSubscriptionError,
                               ::base::Unretained(this)),
         settings,
         ::base::BindOnce(&SimpleSubscribingNode::OnRequestSubscribe,
@@ -64,8 +70,8 @@ class SimpleSubscribingNode : public NodeLifecycle {
     LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
-  void OnError(const Status& s) override {
-    std::cout << "SimpleSubscribingNode::OnError()" << std::endl;
+  void OnSubscriptionError(const Status& s) {
+    std::cout << "SimpleSubscribingNode::OnSubscriptionError()" << std::endl;
     LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 

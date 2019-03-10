@@ -16,7 +16,6 @@
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/error/status.h"
-#include "felicia/core/node/node_lifecycle.h"
 
 namespace felicia {
 
@@ -36,12 +35,9 @@ template <typename MessageTy>
 class EXPORT Subscriber {
  public:
   using OnMessageCallback = ::base::RepeatingCallback<void(const MessageTy&)>;
+  using OnErrorCallback = ::base::RepeatingCallback<void(const Status& s)>;
 
-  explicit Subscriber(NodeLifecycle* node_lifecycle)
-      : node_lifecycle_(node_lifecycle) {
-    state_.ToUneregistered();
-  }
-
+  Subscriber() { state_.ToUneregistered(); }
   ~Subscriber() { DCHECK(IsStopped()); }
 
   ALWAYS_INLINE bool IsRegistering() const { return state_.IsRegistering(); }
@@ -55,6 +51,7 @@ class EXPORT Subscriber {
 
   void RequestSubscribe(const NodeInfo& node_info, const std::string& topic,
                         OnMessageCallback on_message_callback,
+                        OnErrorCallback on_error_callback,
                         const communication::Settings& settings,
                         StatusCallback callback);
 
@@ -83,11 +80,11 @@ class EXPORT Subscriber {
 
   void NotifyMessageLoop();
 
-  NodeLifecycle* node_lifecycle_;  // not owned
   MessageTy message_;
   Pool<MessageTy, uint8_t> message_queue_;
   std::unique_ptr<Channel<MessageTy>> channel_;
   OnMessageCallback on_message_callback_;
+  OnErrorCallback on_error_callback_;
 
   communication::State last_state_;
   communication::State state_;
@@ -99,12 +96,14 @@ class EXPORT Subscriber {
 template <typename MessageTy>
 void Subscriber<MessageTy>::RequestSubscribe(
     const NodeInfo& node_info, const std::string& topic,
-    OnMessageCallback on_message_callback,
+    OnMessageCallback on_message_callback, OnErrorCallback on_error_callback,
     const communication::Settings& settings, StatusCallback callback) {
   if (!(IsUnregistered() || IsStopped())) {
     std::move(callback).Run(state_.InvalidStateError());
     return;
   }
+
+  on_error_callback_ = on_error_callback;
 
   last_state_ = state_;
   state_.ToRegistering();
@@ -229,7 +228,7 @@ void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
     Status new_status(s.error_code(),
                       ::base::StringPrintf("Failed to connect to publisher: %s",
                                            s.error_message().c_str()));
-    node_lifecycle_->OnError(new_status);
+    on_error_callback_.Run(new_status);
   }
 }
 
@@ -247,7 +246,7 @@ void Subscriber<MessageTy>::StartMessageLoop() {
 
   if (!(IsRegistered() || IsStopped())) {
     Status s = state_.InvalidStateError();
-    node_lifecycle_->OnError(Status{
+    on_error_callback_.Run(Status{
         s.error_code(), ::base::StringPrintf("Failed to start mesasge loop: %s",
                                              s.error_message().c_str())});
     return;
@@ -272,14 +271,19 @@ void Subscriber<MessageTy>::StopMessageLoop() {
 
   if (!(IsUnregistered() || IsStarted())) {
     Status s = state_.InvalidStateError();
-    node_lifecycle_->OnError(Status{
+    Status new_status = Status{
         s.error_code(), ::base::StringPrintf("Failed to stop mesasge loop: %s",
-                                             s.error_message().c_str())});
+                                             s.error_message().c_str())};
+    on_error_callback_.Run(new_status);
     return;
   }
 
   state_.ToStopped();
+
   channel_.reset();
+  on_message_callback_.Reset();
+  on_error_callback_.Reset();
+  message_queue_.clear();
 }
 
 template <typename MessageTy>
@@ -301,7 +305,7 @@ void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
     Status new_status(s.error_code(),
                       ::base::StringPrintf("Failed to receive a message: %s",
                                            s.error_message().c_str()));
-    node_lifecycle_->OnError(new_status);
+    on_error_callback_.Run(new_status);
     if (channel_->IsTCPChannel() && !channel_->ToTCPChannel()->IsConnected()) {
       StopMessageLoop();
       return;
@@ -312,7 +316,7 @@ void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::NotifyMessageLoop() {
-  if (IsStopped() && message_queue_.empty()) return;
+  if (IsStopped()) return;
 
   if (!message_queue_.empty()) {
     MessageTy message = std::move(message_queue_.front());

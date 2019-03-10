@@ -29,10 +29,7 @@ class SimplePublishingNode : public NodeLifecycle {
   void OnDidCreate(const NodeInfo& node_info) override {
     std::cout << "SimplePublishingNode::OnDidCreate()" << std::endl;
     node_info_ = node_info;
-    publisher_.RequestPublish(
-        node_info_, topic_, channel_def_,
-        ::base::BindOnce(&SimplePublishingNode::OnRequestPublish,
-                         ::base::Unretained(this)));
+    RequestPublish();
 
     // MasterProxy& master_proxy = MasterProxy::GetInstance();
     // master_proxy.PostDelayedTask(
@@ -40,6 +37,18 @@ class SimplePublishingNode : public NodeLifecycle {
     //     ::base::BindOnce(&SimplePublishingNode::RequestUnpublish,
     //                      ::base::Unretained(this)),
     //     ::base::TimeDelta::FromSeconds(10));
+  }
+
+  void OnError(const Status& s) override {
+    std::cout << "SimplePublishingNode::OnError()" << std::endl;
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
+  }
+
+  void RequestPublish() {
+    publisher_.RequestPublish(
+        node_info_, topic_, channel_def_,
+        ::base::BindOnce(&SimplePublishingNode::OnRequestPublish,
+                         ::base::Unretained(this)));
   }
 
   void OnRequestPublish(const Status& s) {
@@ -87,11 +96,6 @@ class SimplePublishingNode : public NodeLifecycle {
 
   void OnRequestUnpublish(const Status& s) {
     std::cout << "SimplePublishingNode::OnRequestUnpublish()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
-  }
-
-  void OnError(const Status& s) override {
-    std::cout << "SimplePublishingNode::OnError()" << std::endl;
     LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
