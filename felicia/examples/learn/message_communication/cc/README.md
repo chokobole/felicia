@@ -7,8 +7,8 @@ Here you need 3 terminals to try.
 Before beginning, let's build the binary.
 
 ```bash
-python3 scripts/felicia.py build //felicia/core/master/rpc/grpc_server_main
-python3 scripts/felicia.py build //felicia/examples/learn:node_creator
+python3 scripts/felicia.py build //felicia/core/master/rpc:grpc_server_main
+python3 scripts/felicia.py build //felicia/examples/learn/message_communication/cc:node_creator
 ```
 
 Done. now let's begin! On one shell, let's run the server!
@@ -20,13 +20,13 @@ bazel-bin/felicia/core/master/rpc/grpc_server_main
 On 2nd shell, run the publisher. For that, you have to pass `-t`, which means topic name to publish, and `-p` to indicate we want to make publisher. You can also pass `--name` to the command line, then server will try to generate a node with the name unless there is an already registered node with the name.
 
 ```bash
-bazel-bin/felicia/examples/learn/node_creator -p -t message
+bazel-bin/felicia/examples/learn/message_communication/cc/node_creator -p -t message
 ```
 
 Lastly run the subscriber. Mostly same with the above besides you have to remove `-p` flag.
 
 ```bash
-bazel-bin/felicia/examples/learn/node_creator -t message
+bazel-bin/felicia/examples/learn/message_communication/cc/node_creator -t message
 ```
 
 And Now look into the [node_creator.cc](node_creator.cc).

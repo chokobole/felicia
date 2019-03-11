@@ -1,7 +1,7 @@
 #include "felicia/cc/master_proxy.h"
-#include "felicia/examples/learn/message_communication/node_create_flag.h"
-#include "felicia/examples/learn/message_communication/simple_publishing_node.h"
-#include "felicia/examples/learn/message_communication/simple_subscribing_node.h"
+#include "felicia/examples/learn/message_communication/cc/node_create_flag.h"
+#include "felicia/examples/learn/message_communication/cc/simple_publishing_node.h"
+#include "felicia/examples/learn/message_communication/cc/simple_subscribing_node.h"
 
 namespace felicia {
 
