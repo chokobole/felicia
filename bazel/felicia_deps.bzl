@@ -4,9 +4,12 @@ load(
     "new_git_repository",
 )
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("//third_party/py:python_configure.bzl", "python_configure")
 
 def load_deps():
     """Loads dependencies need to compile and test the felicia."""
+    python_configure(name = "local_config_python")
+
     git_repository(
         name = "com_google_protobuf",
         tag = "v3.6.0",
@@ -40,4 +43,18 @@ def load_deps():
         name = "com_github_grpc_grpc",
         remote = "https://github.com/grpc/grpc.git",
         tag = "v1.18.0",
+    )
+
+    new_git_repository(
+        name = "eigen",
+        remote = "https://github.com/eigenteam/eigen-git-mirror.git",
+        tag =  "3.3.5",
+        build_file = "//third_party:eigen.BUILD",
+    )
+
+    new_git_repository(
+        name = "pybind11",
+        remote = "https://github.com/pybind/pybind11.git",
+        tag =  "v2.2.2",
+        build_file = "//third_party:pybind11.BUILD",
     )
