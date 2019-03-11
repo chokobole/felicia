@@ -6,7 +6,6 @@ load(
     "//felicia:felicia.bzl",
     "fel_copts",
 )
-
 load(
     "//felicia/core:platform/build_config.bzl",
     "fel_proto_library_cc",
@@ -21,7 +20,7 @@ cc_library(
         ":grpc_util",
         "//felicia:grpc++",
         "//felicia/core:lib",
-    ]
+    ],
 )
 
 cc_library(
@@ -31,7 +30,7 @@ cc_library(
     deps = [
         "//felicia:grpc++",
         "//felicia/core:lib",
-    ]
+    ],
 )
 
 cc_library(
@@ -40,7 +39,7 @@ cc_library(
     copts = fel_copts(),
     deps = [
         "//felicia/core:lib",
-    ]
+    ],
 )
 
 cc_library(
@@ -76,7 +75,7 @@ cc_library(
         ":grpc_util",
         ":master_service_proto_cc",
         "//felicia/core:lib",
-        "//felicia/core/master:master",
+        "//felicia/core/master",
     ],
 )
 
@@ -89,7 +88,7 @@ cc_library(
         ":grpc_master_service",
         ":grpc_util",
         "//felicia:grpc++",
-        "//felicia/core/master:master",
+        "//felicia/core/master",
     ],
 )
 

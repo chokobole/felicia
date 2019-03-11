@@ -1,4 +1,5 @@
 package(default_visibility = ["//third_party/chromium/build:internal"])
+
 licenses(["notice"])
 
 cc_library(
@@ -8,5 +9,5 @@ cc_library(
         "gtest/include/gtest/gtest.h",
         "gtest/include/gtest/gtest_prod.h",
     ],
-    deps = ["@com_google_googletest//:gtest"]
+    deps = ["@com_google_googletest//:gtest"],
 )

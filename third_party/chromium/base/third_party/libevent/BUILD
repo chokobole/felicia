@@ -14,7 +14,6 @@ load(
     "if_darwin",
     "if_linux",
 )
-
 load(
     "//third_party/chromium/build:chromium.bzl",
     "chromium_copts",
@@ -43,9 +42,9 @@ cc_library(
         "strlcpy-internal.h",
         "strlcpy.c",
     ] + if_darwin([
-        "kqueue.c"
+        "kqueue.c",
     ]) + if_linux([
-        "epoll.c"
+        "epoll.c",
     ]),
     hdrs = [
         "evdns.h",
@@ -54,7 +53,7 @@ cc_library(
         "evhttp.h",
         "evrpc.h",
         "evutil.h",
-        "log.h"
+        "log.h",
     ] + if_darwin([
         "mac/config.h",
         "mac/event-config.h",
@@ -63,11 +62,11 @@ cc_library(
         "linux/event-config.h",
     ]),
     copts = if_darwin([
-        "-Ithird_party/chromium/base/third_party/libevent/mac"
+        "-Ithird_party/chromium/base/third_party/libevent/mac",
     ]) + if_linux([
-        "-Ithird_party/chromium/base/third_party/libevent/linux"
+        "-Ithird_party/chromium/base/third_party/libevent/linux",
     ]) + [
         "-Ithird_party/chromium",
-        "-DHAVE_CONFIG_H"
-    ]
+        "-DHAVE_CONFIG_H",
+    ],
 )

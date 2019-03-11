@@ -41,4 +41,3 @@ def load_deps():
         remote = "https://github.com/grpc/grpc.git",
         tag = "v1.18.0",
     )
-

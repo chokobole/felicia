@@ -6,7 +6,6 @@ load(
     "//felicia:felicia.bzl",
     "fel_copts",
 )
-
 load(
     "//felicia/core:platform/build_config.bzl",
     "fel_proto_library_cc",
@@ -21,7 +20,7 @@ cc_library(
         "//felicia/core:lib",
         "//felicia/core:node",
         "//felicia/core/util:uuid",
-    ]
+    ],
 )
 
 cc_library(
@@ -31,9 +30,9 @@ cc_library(
     copts = fel_copts(),
     deps = [
         ":master_data_proto_cc",
-        "//felicia/core:lib",
         "//felicia/core:channel",
-    ]
+        "//felicia/core:lib",
+    ],
 )
 
 cc_library(
@@ -43,24 +42,24 @@ cc_library(
     copts = fel_copts(),
     deps = [
         ":heart_beat_listener",
-    ]
+    ],
 )
 
 fel_proto_library_cc(
     name = "master_data_proto",
     srcs = ["master_data.proto"],
-    visibility = ["//felicia:internal"],
     protodeps = ["//felicia/core:channel_proto"],
+    visibility = ["//felicia:internal"],
 )
 
 fel_proto_library_cc(
     name = "master_proto",
     srcs = ["master.proto"],
-    visibility = ["//felicia:internal"],
     protodeps = [
         ":master_data_proto",
         "//felicia/core:channel_proto",
-    ]
+    ],
+    visibility = ["//felicia:internal"],
 )
 
 cc_library(
@@ -70,7 +69,7 @@ cc_library(
     deps = [
         ":master_data_proto_cc",
         "//felicia/core:lib",
-    ]
+    ],
 )
 
 cc_library(
@@ -83,12 +82,12 @@ cc_library(
     copts = fel_copts(),
     deps = [
         ":client",
-        ":master_proto_cc",
         ":heart_beat_listener",
+        ":master_proto_cc",
         "//felicia/core:channel",
         "//felicia/core:lib",
         "//felicia/core:node",
-    ]
+    ],
 )
 
 cc_library(
@@ -98,21 +97,21 @@ cc_library(
     copts = fel_copts(),
     deps = [
         ":master_data_proto_cc",
-        "//felicia/core:lib",
         "//felicia/core:channel",
-    ]
+        "//felicia/core:lib",
+    ],
 )
 
 cc_test(
     name = "master_test",
     size = "small",
     srcs = [
-        "master_test.cc"
+        "master_test.cc",
     ],
     copts = fel_copts(),
-    linkstatic = 1, # Failed at macos when built with opt
+    linkstatic = 1,  # Failed at macos when built with opt
     deps = [
         ":master",
         "//felicia/core:test_main",
-    ]
+    ],
 )

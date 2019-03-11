@@ -313,8 +313,8 @@ def fel_proto_library_cc(
         ]),
         default_header = default_header,
         protoc = "@com_google_protobuf//:protoc",
-        use_grpc_plugin = use_grpc_plugin,
         use_grpc_namespace = use_grpc_namespace,
+        use_grpc_plugin = use_grpc_plugin,
         visibility = visibility,
         deps = cc_deps + ["@com_google_protobuf//:cc_wkt_protos"],
     )

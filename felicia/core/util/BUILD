@@ -10,9 +10,9 @@ load(
 cc_library(
     name = "command_line_interface",
     srcs = [
+        "command_line_interface/flag.cc",
         "command_line_interface/flag_forward.h",
         "command_line_interface/flag_parser.cc",
-        "command_line_interface/flag.cc",
         "command_line_interface/flag_value_traits.h",
         "command_line_interface/table_writer.cc",
     ],
@@ -23,7 +23,7 @@ cc_library(
         "command_line_interface/text_style.h",
     ],
     copts = fel_copts(),
-    deps = ["//felicia/core:lib"]
+    deps = ["//felicia/core:lib"],
 )
 
 cc_library(
@@ -32,21 +32,20 @@ cc_library(
         "uuid/generator.h",
     ],
     copts = fel_copts(),
-    deps = ["//felicia/core:lib"]
+    deps = ["//felicia/core:lib"],
 )
-
 
 cc_test(
     name = "util_tests",
     size = "small",
     srcs = [
-        "command_line_interface/flag_test.cc",
         "command_line_interface/flag_parser_test.cc",
+        "command_line_interface/flag_test.cc",
     ],
     copts = fel_copts(),
     deps = [
         ":command_line_interface",
         ":uuid",
         "//felicia/core:test_main",
-    ]
+    ],
 )

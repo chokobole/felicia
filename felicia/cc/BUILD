@@ -11,15 +11,15 @@ cc_library(
     name = "communication",
     hdrs = [
         "communication/publisher.h",
-        "communication/subscriber.h",
         "communication/state.h",
+        "communication/subscriber.h",
     ],
     copts = fel_copts(),
     deps = [
         ":master_proxy",
         "//felicia/core:channel",
         "//felicia/core:node",
-    ]
+    ],
 )
 
 cc_library(
@@ -35,5 +35,5 @@ cc_library(
         "//felicia/core/master/rpc:grpc_master_client",
         "//felicia/core/master/rpc:grpc_util",
         "//felicia/core/master/rpc:master_service_proto_cc",
-    ]
+    ],
 )

@@ -102,7 +102,7 @@ cc_library(
         ":cli_flag",
         "//felicia/core:channel",
         "//felicia/core/master/rpc:grpc_master_client",
-    ]
+    ],
 )
 
 cc_binary(

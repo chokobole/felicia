@@ -1,11 +1,11 @@
 package(default_visibility = ["//visibility:private"])
+
 licenses(["notice"])
 
 load(
     "//felicia:felicia.bzl",
     "fel_copts",
 )
-
 load(
     "//felicia/core:platform/build_config.bzl",
     "fel_proto_library_cc",
@@ -13,7 +13,7 @@ load(
 
 fel_proto_library_cc(
     name = "message_spec_proto",
-    srcs = ["protobuf/message_spec.proto"]
+    srcs = ["protobuf/message_spec.proto"],
 )
 
 cc_library(
@@ -23,7 +23,7 @@ cc_library(
     copts = fel_copts(),
     deps = [
         "//felicia/core/util:command_line_interface",
-    ]
+    ],
 )
 
 cc_library(
@@ -34,7 +34,7 @@ cc_library(
         ":message_spec_proto_cc",
         "//felicia/cc:communication",
         "//felicia/core:node",
-    ]
+    ],
 )
 
 cc_library(
@@ -45,7 +45,7 @@ cc_library(
         ":message_spec_proto_cc",
         "//felicia/cc:communication",
         "//felicia/core:node",
-    ]
+    ],
 )
 
 cc_binary(
@@ -57,5 +57,5 @@ cc_binary(
         ":node_create_flag",
         ":simple_publishing_node",
         ":simple_subscribing_node",
-    ]
+    ],
 )

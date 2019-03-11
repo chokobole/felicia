@@ -66,7 +66,6 @@ def fel_win_copts(is_external = False):
     else:
         return WINDOWS_COPTS + ["/DFEL_COMPILE_LIBRARY"]
 
-
 def fel_copts(is_external = False):
     return if_not_windows([
         "-Ithird_party/chromium",

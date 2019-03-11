@@ -1,10 +1,10 @@
 load(
     "//felicia:felicia.bzl",
-    "if_windows",
-    "if_not_windows",
+    "fel_copts",
     "if_darwin",
     "if_linux",
-    "fel_copts",
+    "if_not_windows",
+    "if_windows",
 )
 
 def chromium_files(suffix, base, exclude):
@@ -19,31 +19,31 @@ def chromium_files(suffix, base, exclude):
     win_files = []
 
     for f in files:
-        if f.endswith('_linux' + suffix):
+        if f.endswith("_linux" + suffix):
             linux_files.append(f)
-        elif f.endswith('_mac' + suffix):
+        elif f.endswith("_mac" + suffix):
             mac_files.append(f)
-        elif f.endswith('_posix' + suffix):
+        elif f.endswith("_posix" + suffix):
             posix_files.append(f)
-        elif f.endswith('_win' + suffix):
+        elif f.endswith("_win" + suffix):
             win_files.append(f)
         else:
             base_files.append(f)
 
     return base_files + if_linux(linux_files) + if_darwin(mac_files) + \
-            if_windows(win_files) + if_not_windows(posix_files)
+           if_windows(win_files) + if_not_windows(posix_files)
 
 def chromium_hdrs(base = None, exclude = []):
-    return chromium_files('.h', base = base, exclude = exclude)
+    return chromium_files(".h", base = base, exclude = exclude)
 
 def chromium_srcs(base = None, exclude = []):
-    return chromium_files('.cc', base = base, exclude = exclude  +['**/*unittest*', '**/*perftest*'])
+    return chromium_files(".cc", base = base, exclude = exclude + ["**/*unittest*", "**/*perftest*"])
 
 def chromium_objc_srcs(base = None, exclude = []):
-    return chromium_files('.mm', base = base, exclude = exclude  +['**/*unittest*', '**/*perftest*'])
+    return chromium_files(".mm", base = base, exclude = exclude + ["**/*unittest*", "**/*perftest*"])
 
 def chromium_test_srcs(base = None, exclude = []):
-    return chromium_files('_unittest.cc', base = base, exclude = exclude  +['**/*perftest*'])
+    return chromium_files("_unittest.cc", base = base, exclude = exclude + ["**/*perftest*"])
 
 def chromium_copts():
     return fel_copts()
@@ -54,5 +54,5 @@ def chromium_objc_copts():
 def chromium_test_copts():
     return chromium_copts() + select({
         "//felicia:windows": ["/DUNIT_TEST"],
-        "//conditions:default": ["-DUNIT_TEST"]
+        "//conditions:default": ["-DUNIT_TEST"],
     })
