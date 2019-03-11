@@ -1,4 +1,4 @@
-export_files(
+exports_files(
     [
       "LICENSE",
     ]
