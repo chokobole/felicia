@@ -57,7 +57,7 @@ def load_deps():
     git_repository(
         name = "com_github_grpc_grpc",
         remote = "https://github.com/grpc/grpc.git",
-        tag = "v1.18.0",
+        tag = "v1.19.1",
     )
 
     # Needed by pybind11
