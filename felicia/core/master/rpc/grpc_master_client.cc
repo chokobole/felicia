@@ -26,10 +26,9 @@ Status GrpcMasterClient::Start() {
 }
 
 Status GrpcMasterClient::Stop() {
-  std::for_each(threads_.begin(), threads_.end(),
-                [this](const std::unique_ptr<::base::Thread>& thread) {
-                  thread->Stop();
-                });
+  std::for_each(
+      threads_.begin(), threads_.end(),
+      [](const std::unique_ptr<::base::Thread>& thread) { thread->Stop(); });
   return Status::OK();
 }
 

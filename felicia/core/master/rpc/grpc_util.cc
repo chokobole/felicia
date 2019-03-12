@@ -14,7 +14,8 @@ static const uint16_t g_default_master_port = 8881;
   const char* ip_env = getenv("FEL_GRPC_SERVICE_IP");
   if (ip_env) {
     ::net::IPAddress address;
-    address.AssignFromIPLiteral(ip_env);
+    bool ret = address.AssignFromIPLiteral(ip_env);
+    CHECK(ret);
     return address;
   }
 
