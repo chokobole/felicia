@@ -1,8 +1,10 @@
 from lib.command_composer import CommandComposer
 from lib.util import nametuple_with_defaults_none, is_linux
 
-ExecContainerOptions = nametuple_with_defaults_none('ExecContainerOptions', ['user'])
-ListContainerOptions = nametuple_with_defaults_none('ListContainerOptions', ['format', 'all'])
+ExecContainerOptions = nametuple_with_defaults_none(
+    'ExecContainerOptions', ['user'])
+ListContainerOptions = nametuple_with_defaults_none(
+    'ListContainerOptions', ['format', 'all'])
 RunContainerOptions = nametuple_with_defaults_none('RunContainerOptions',
                                                    ['user', 'name', 'detach', 'interactive', 'tty'])
 
@@ -26,7 +28,8 @@ class Docker(CommandComposer):
             if options.user is not None:
                 opts.append('--user {}'.format(options.user))
             options = ' '.join(opts)
-        cmd = self.compose(['container', 'exec'], options, container, remainder)
+        cmd = self.compose(['container', 'exec'],
+                           options, container, remainder)
         return self.run_and_check_returncode(cmd)
 
     def list_container(self, options):
@@ -69,5 +72,5 @@ class Docker(CommandComposer):
 
     def stop_container(self, options, container):
         """Stop container."""
-        cmd = self.compose(['container' ,'stop'], options, container)
+        cmd = self.compose(['container', 'stop'], options, container)
         return self.run_and_check_returncode(cmd)

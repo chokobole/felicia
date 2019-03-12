@@ -20,13 +20,15 @@ For only window developers, you have to do more. You have to download llvm from 
 ## How to build
 
 ```bash
-python3 scripts/felicia.py build [target]
+bazel build //felicia/...
 ```
+
+**NOTE:** May be you need to append `--config` option above. Please refer to [.bazelrc](.bazelrc).
 
 ## How to test
 
 ```bash
-python3 scripts/felicia.py build [target]
+bazel test //felicia/...
 ```
 
 ## How to set up on Docker
@@ -38,7 +40,7 @@ docker build . -t felicia -f docker/Dockerfile.ubuntu
 You can validate your work on docker with below.
 
 ```bash
-python3 scripts/felicia.py --with_docker build all --with_test
+python3 scripts/docker_exec.py bazel build //felicia/...
 ```
 
 ## For Users

@@ -7,8 +7,8 @@ Here you need 3 terminals to try.
 Before beginning, let's build the binary.
 
 ```bash
-python3 scripts/felicia.py build //felicia/core/master/rpc:grpc_server_main
-python3 scripts/felicia.py build //felicia/examples/learn/message_communication/cc:node_creator
+bazel build //felicia/core/master/rpc:grpc_server_main
+bazel build //felicia/examples/learn/message_communication/cc:node_creator
 ```
 
 Done. now let's begin! On one shell, let's run the server!

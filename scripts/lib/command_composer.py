@@ -36,7 +36,8 @@ class CommandComposer(object):
 
     def run_and_check_returncode(self, cmd):
         print('{} {}'.format(TextStyle.yellow('[RUN]'), " ".join(cmd)))
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, universal_newlines=True)
+        result = subprocess.run(
+            cmd, stdout=subprocess.PIPE, universal_newlines=True)
         try:
             result.check_returncode()
         except subprocess.CalledProcessError:
