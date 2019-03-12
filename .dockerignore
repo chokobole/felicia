@@ -6,6 +6,9 @@
 .settings
 .vscode/
 .swp
+*.sln
+*.vcxproj*
+.vs/
 
 # Build generated
 node_modules
