@@ -12,7 +12,7 @@ matrix:
       install:
         - sudo apt-get install -y python3
       script:
-        - docker build . -t felicia -f docker/Dockerfile.ubuntu
+        - travis_wait 50 docker build . -t felicia -f docker/Dockerfile.ubuntu
         - python3 scripts/docker_exec.py bazel build --config linux //felicia/...
         - python3 scripts/docker_exec.py bazel test --config linux --test_tag_filters -benchmark //felicia/...
         - python3 scripts/docker_exec.py bazel clean
