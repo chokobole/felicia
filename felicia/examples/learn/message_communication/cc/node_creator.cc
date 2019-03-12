@@ -8,7 +8,7 @@ namespace felicia {
 int RealMain(int argc, char* argv[]) {
   NodeCreateFlag delegate;
   FlagParser parser;
-  parser.set_program_name(argv[0]);
+  parser.set_program_name("node_creator");
   if (!parser.Parse(argc, argv, &delegate)) {
     return 1;
   }

@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 
-from lib.print_util import PrintUtil
+from util.command_line_interface.text_style import TextStyle
 from lib.util import is_windows
 
 
@@ -35,7 +35,7 @@ class CommandComposer(object):
         return cmd
 
     def run_and_check_returncode(self, cmd):
-        PrintUtil.print_yellow('[RUN] {}'.format(" ".join(cmd)))
+        print('{} {}'.format(TextStyle.yellow('[RUN]'), " ".join(cmd)))
         result = subprocess.run(cmd, stdout=subprocess.PIPE, universal_newlines=True)
         try:
             result.check_returncode()
@@ -49,8 +49,8 @@ class CommandComposer(object):
 
     @staticmethod
     def print_success(content):
-        PrintUtil.print_green('[SUCCESS] {}'.format(content))
+        print('{} {}'.format(TextStyle.green('[SUCCESS]'), content))
 
     @staticmethod
     def print_fail(content):
-        PrintUtil.print_red('[FAIL] {}'.format(content))
+        print('{} {}'.format(TextStyle.red('[FAIL]'), content))

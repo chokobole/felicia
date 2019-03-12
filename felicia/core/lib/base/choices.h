@@ -18,6 +18,7 @@ class Choices {
   Choices(Rest... rest) {
     internal::AddValue(values_, (T)rest...);
   }
+  Choices(const std::vector<T>& values) : values_(values) {}
   Choices(const Choices& other) = default;
   Choices& operator=(const Choices& other) = default;
 

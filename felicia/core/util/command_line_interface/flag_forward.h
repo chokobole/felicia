@@ -31,10 +31,6 @@ typedef RangeFlag<int> IntRangeFlag;
 typedef RangeFlag<double> DoubleRangeFlag;
 typedef RangeFlag<std::string> StringRangeFlag;
 
-typedef DefaultFlag<int> IntDefaultFlag;
-typedef DefaultFlag<double> DoubleDefaultFlag;
-typedef DefaultFlag<std::string> StringDefaultFlag;
-
 typedef ChoicesFlag<int> IntChoicesFlag;
 typedef ChoicesFlag<double> DoubleChoicesFlag;
 typedef ChoicesFlag<std::string> StringChoicesFlag;

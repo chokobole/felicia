@@ -1,5 +1,4 @@
 from lib.command_composer import CommandComposer
-from lib.print_util import PrintUtil
 from lib.util import nametuple_with_defaults_none, is_linux
 
 ExecContainerOptions = nametuple_with_defaults_none('ExecContainerOptions', ['user'])

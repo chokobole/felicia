@@ -18,6 +18,9 @@ class DefaultValueTraits {
   T value() const { return *dst_; }
   bool is_set() const { return true; }
 
+  // This is for python binding. Do not call from c++ side.
+  void release() { delete dst_; }
+
  private:
   T* dst_;
 };
@@ -39,6 +42,9 @@ class InitValueTraits {
   }
   T value() const { return *dst_; }
   bool is_set() const { return is_set_; }
+
+  // This is for python binding. Do not call from c++ side.
+  void release() { delete dst_; }
 
  private:
   T* dst_;

@@ -10,6 +10,20 @@ def load_deps():
     """Loads dependencies need to compile and test the felicia."""
     python_configure(name = "local_config_python")
 
+    # Needed by protobuf
+    http_archive(
+        name = "six_archive",
+        build_file = "@com_google_protobuf//:six.BUILD",
+        sha256 = "105f8d68616f8248e24bf0e9372ef04d3cc10104f1980f54d57b2ce73a5ad56a",
+        url = "https://pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz#md5=34eed507548117b2ab523ab14b2f8b55",
+    )
+
+    # Needed by protobuf
+    native.bind(
+        name = "six",
+        actual = "@six_archive//:six",
+    )
+
     git_repository(
         name = "com_google_protobuf",
         tag = "v3.6.0",
@@ -33,6 +47,7 @@ def load_deps():
         urls = ["https://github.com/google/benchmark/archive/16703ff83c1ae6d53e5155df3bb3ab0bc96083be.zip"],
     )
 
+    # Needed by grpc
     git_repository(
         name = "boringssl",
         commit = "90bd81032325ba659e538556e64977c29df32a3c",
@@ -45,16 +60,17 @@ def load_deps():
         tag = "v1.18.0",
     )
 
+    # Needed by pybind11
     new_git_repository(
         name = "eigen",
         remote = "https://github.com/eigenteam/eigen-git-mirror.git",
-        tag =  "3.3.5",
+        tag = "3.3.5",
         build_file = "//third_party:eigen.BUILD",
     )
 
     new_git_repository(
         name = "pybind11",
         remote = "https://github.com/pybind/pybind11.git",
-        tag =  "v2.2.2",
+        tag = "v2.2.2",
         build_file = "//third_party:pybind11.BUILD",
     )

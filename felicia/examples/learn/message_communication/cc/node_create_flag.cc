@@ -1,5 +1,9 @@
 #include "felicia/examples/learn/message_communication/cc/node_create_flag.h"
 
+#include <iostream>
+
+#include "felicia/core/util/command_line_interface/text_style.h"
+
 namespace felicia {
 
 NodeCreateFlag::NodeCreateFlag() {
@@ -45,6 +49,12 @@ bool NodeCreateFlag::Parse(FlagParser& parser) {
                              topic_flag_, channel_type_flag_);
 }
 
-bool NodeCreateFlag::Validate() const { return topic_flag_->is_set(); }
+bool NodeCreateFlag::Validate() const {
+  bool is_set = topic_flag_->is_set();
+  if (!is_set) {
+    std::cerr << TextStyle::Red("Error:") << " topic is not set." << std::endl;
+  }
+  return is_set;
+}
 
 }  // namespace felicia

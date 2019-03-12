@@ -71,11 +71,11 @@ class EXPORT FlagParser {
 
     virtual bool Parse(FlagParser& parser) = 0;
 
+    virtual bool Validate() const { return true; }
+
     virtual std::vector<std::string> CollectUsages() const { return {}; }
     virtual std::string Description() const { return ::base::EmptyString(); }
     virtual std::vector<NamedHelpType> CollectNamedHelps() const { return {}; }
-
-    virtual bool Validate() const { return true; }
 
    protected:
     void PreParse() { parser_index_++; }
@@ -110,11 +110,15 @@ class EXPORT FlagParser {
   FlagParser() : suppress_help_(false) {}
   ~FlagParser() = default;
 
-  void set_program_name(::base::StringPiece program_name) {
-    program_name_ = std::string(program_name);
+  // Set program name to display.
+  // For example, when there are --foo, --bar flags and type --help,
+  // It shows |program_name| [--foo] [--bar]
+  void set_program_name(const std::string& program_name) {
+    program_name_ = program_name;
   }
   std::string& program_name() { return program_name_; }
   void mark_suppress_help() { suppress_help_ = true; }
+  // Parse by passing every each |argv| to |delegate|.
   bool Parse(int argc, char** argv, Delegate* delegate);
 
  private:
@@ -179,7 +183,7 @@ void AddHelpIfOptional(std::vector<std::string>& helps, T&& flag,
 #define AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(...)                         \
   std::vector<std::string> CollectUsages() const override {                  \
     std::vector<std::string> usages;                                         \
-    usages.push_back("[-h]");                                                \
+    usages.push_back("[--help]");                                            \
     AddUsage(usages, __VA_ARGS__);                                           \
     return usages;                                                           \
   }                                                                          \

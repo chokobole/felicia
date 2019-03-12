@@ -42,6 +42,9 @@ class ValueStore {
 
   std::string usage() const { return ::base::EmptyString(); }
 
+  // This is for python binding. Do not call from c++ side.
+  void release() { traits_.release(); }
+
  private:
   Traits traits_;
 };
@@ -69,6 +72,9 @@ class ValueStore<Range<T>, DefaultValueTraits<T>> {
     ss << "{" << range_.from() << " ~ " << range_.to() << "}";
     return ss.str();
   }
+
+  // This is for python binding. Do not call from c++ side.
+  void release() { traits_.release(); }
 
  private:
   DefaultValueTraits<T> traits_;
@@ -104,6 +110,9 @@ class ValueStore<Choices<T>, DefaultValueTraits<T>> {
     ss << "}";
     return ss.str();
   }
+
+  // This is for python binding. Do not call from c++ side.
+  void release() { traits_.release(); }
 
  private:
   DefaultValueTraits<T> traits_;
@@ -151,6 +160,8 @@ EXPORT ValueStore<Choices<T>, DefaultValueTraits<T>> MakeValueStore(
 template <typename T, typename Traits>
 class EXPORT Flag {
  public:
+  typedef T flag_type;
+  typedef Traits traits_type;
   typedef typename ValueStore<T, Traits>::value_type value_type;
 
   Flag(const Flag& other) = default;
@@ -161,19 +172,19 @@ class EXPORT Flag {
     Builder(const ValueStore<T, Traits>& value_store)
         : flag_(Flag{value_store}) {}
 
-    Builder& SetShortName(::base::StringPiece short_name) {
+    Builder& SetShortName(const std::string& short_name) {
       flag_.set_short_name(short_name);
       return *this;
     }
-    Builder& SetLongName(::base::StringPiece long_name) {
+    Builder& SetLongName(const std::string& long_name) {
       flag_.set_long_name(long_name);
       return *this;
     }
-    Builder& SetName(::base::StringPiece name) {
+    Builder& SetName(const std::string& name) {
       flag_.set_name(name);
       return *this;
     }
-    Builder& SetHelp(::base::StringPiece help) {
+    Builder& SetHelp(const std::string& help) {
       flag_.set_help(help);
       return *this;
     }
@@ -194,15 +205,18 @@ class EXPORT Flag {
     Flag<T, Traits> flag_;
   };
 
-  ::base::StringPiece short_name() const { return short_name_; }
-  ::base::StringPiece long_name() const { return long_name_; }
-  ::base::StringPiece name() const { return name_; }
+  const std::string& short_name() const { return short_name_; }
+  const std::string& long_name() const { return long_name_; }
+  const std::string& name() const { return name_; }
   std::string usage() const;
   std::string help(int help_start = 20) const;
   bool is_positional() const { return !name_.empty(); }
   bool is_optional() const { return name_.empty(); }
   value_type value() const { return value_store_.value(); }
   bool is_set() const { return value_store_.is_set(); }
+
+  // This is for python binding. Do not call from c++ side.
+  void release() { value_store_.release(); }
 
   template <typename U>
   bool Is() const {
@@ -219,10 +233,10 @@ class EXPORT Flag {
   FRIEND_TEST(FlagTest, Range);
   FRIEND_TEST(FlagTest, Choices);
 
-  bool set_short_name(::base::StringPiece short_name);
-  bool set_long_name(::base::StringPiece long_name);
-  bool set_name(::base::StringPiece name);
-  void set_help(::base::StringPiece help) { help_ = std::string(help); }
+  bool set_short_name(const std::string& short_name);
+  bool set_long_name(const std::string& long_name);
+  bool set_name(const std::string& name);
+  void set_help(const std::string& help) { help_ = help; }
   // Return true when succeeds to set value at |value_store_|.
   bool set_value(value_type value) { return value_store_.set_value(value); }
 
@@ -255,7 +269,7 @@ bool ContainsOnlyAsciiAlphaOrDigitOrUndderscore(::base::StringPiece text) {
 }  // namespace
 
 template <typename T, typename Traits>
-bool Flag<T, Traits>::set_short_name(::base::StringPiece short_name) {
+bool Flag<T, Traits>::set_short_name(const std::string& short_name) {
   ::base::StringPiece text = short_name;
   if (!strings::ConsumePrefix(&text, "-")) return false;
   if (!ContainsOnlyAsciiAlphaOrDigitOrUndderscore(text)) return false;
@@ -265,7 +279,7 @@ bool Flag<T, Traits>::set_short_name(::base::StringPiece short_name) {
 }
 
 template <typename T, typename Traits>
-bool Flag<T, Traits>::set_long_name(::base::StringPiece long_name) {
+bool Flag<T, Traits>::set_long_name(const std::string& long_name) {
   ::base::StringPiece text = long_name;
   if (!strings::ConsumePrefix(&text, "--")) return false;
   CHECK(!strings::Equals(text, "help"));
@@ -276,7 +290,7 @@ bool Flag<T, Traits>::set_long_name(::base::StringPiece long_name) {
 }
 
 template <typename T, typename Traits>
-bool Flag<T, Traits>::set_name(::base::StringPiece name) {
+bool Flag<T, Traits>::set_name(const std::string& name) {
   ::base::StringPiece text = name;
   if (!ContainsOnlyAsciiAlphaOrDigitOrUndderscore(text)) return false;
 

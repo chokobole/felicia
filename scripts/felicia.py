@@ -4,10 +4,12 @@ import os
 import platform
 import sys
 
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-from lib.bazel import Bazel, QueryCommandOperand, QueryCommandExpr, Package, Target
-from lib.docker import Docker, ExecContainerOptions, ListContainerOptions, RunContainerOptions
+CURRENT_PATH = os.path.dirname(__file__)
+PYTHON_PATH = os.path.join(CURRENT_PATH, '..', 'felicia', 'python')
+sys.path.append(os.path.abspath(PYTHON_PATH))
 from lib.util import is_darwin, is_linux, is_windows
+from lib.docker import Docker, ExecContainerOptions, ListContainerOptions, RunContainerOptions
+from lib.bazel import Bazel, QueryCommandOperand, QueryCommandExpr, Package, Target
 
 
 class FeliciaDocker(Docker):
@@ -36,6 +38,7 @@ class FeliciaDocker(Docker):
         self.exec_container(exec_options, self.name, ['/bin/bash', '-c', cmd])
         self.print_success('{} on docker'.format(cmd))
 
+
 class FeliciaBazel(Bazel):
     def __init__(self):
         """Constructor."""
@@ -57,7 +60,7 @@ class FeliciaBazel(Bazel):
         """Build c++ target."""
         if target == 'all':
             query_cmd = QueryCommandOperand.kind(label='cc_*(library|binary)',
-                                                 target = self.all_package)
+                                                 target=self.all_package)
             targets = self.query(None, query_cmd)
             for target in targets.split():
                 target = Target.from_str(target)
@@ -70,23 +73,25 @@ class FeliciaBazel(Bazel):
     def test_cc(self, target, options):
         """Test c++ target."""
         if target == 'all':
-            query_cmd = QueryCommandOperand.kind(label='cc_*test', target=self.all_package)
+            query_cmd = QueryCommandOperand.kind(
+                label='cc_*test', target=self.all_package)
             if '--test_tag_filters' in options:
                 options = options.split()
                 idx = options.index('--test_tag_filters')
                 tag_filters = options[idx + 1]
-                options = options[:idx] + options[idx + 2:] # Remove test_tag_filters options
+                # Remove test_tag_filters options
+                options = options[:idx] + options[idx + 2:]
                 options = ' '.join(options)
                 tag_filters = tag_filters.split(',')
                 query_cmd = QueryCommandExpr(query_cmd)
                 for tag_filter in tag_filters:
                     if tag_filter.startswith('-'):
                         q = QueryCommandOperand.attr(key='tags', value=tag_filter[1:],
-                                                    target=self.all_package)
+                                                     target=self.all_package)
                         query_cmd.add_except(q)
                     else:
                         q = QueryCommandOperand.attr(key='tags', value=tag_filter,
-                                                    target=self.all_package)
+                                                     target=self.all_package)
                         query_cmd.add_intersect(q)
 
             targets = self.query(None, query_cmd)
@@ -110,16 +115,23 @@ def main():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='action', help='sub-command help')
     parser_build = subparsers.add_parser('build', help='Run build')
-    parser_build.add_argument('target', type=str, help='Build specific target, if you type all, then it is same with //felicia/...')
-    parser_build.add_argument('--with_test', action="store_true", help='Test on target, too.')
-    parser_build.add_argument('--options', type=str, default="", help="Options to pass to bazel")
+    parser_build.add_argument(
+        'target', type=str, help='Build specific target, if you type all, then it is same with //felicia/...')
+    parser_build.add_argument(
+        '--with_test', action="store_true", help='Test on target, too.')
+    parser_build.add_argument('--options', type=str,
+                              default="", help="Options to pass to bazel")
     parser_test = subparsers.add_parser('test', help='Run build')
-    parser_test.add_argument('target', type=str, help='Test specific target, if you type all, then it is same with //felicia/...')
-    parser_test.add_argument('--options', type=str, default="", help="Options to pass to bazel")
+    parser_test.add_argument(
+        'target', type=str, help='Test specific target, if you type all, then it is same with //felicia/...')
+    parser_test.add_argument('--options', type=str,
+                             default="", help="Options to pass to bazel")
     parser_run = subparsers.add_parser('run', help='Run run')
     parser_run.add_argument('target', type=str, help='Test specific target')
-    parser_run.add_argument('--options', type=str, default="", help="Options to pass to bazel")
-    parser.add_argument("--with_docker", action="store_true", help="Flag to run with docker")
+    parser_run.add_argument('--options', type=str,
+                            default="", help="Options to pass to bazel")
+    parser.add_argument("--with_docker", action="store_true",
+                        help="Flag to run with docker")
 
     args = parser.parse_args()
     if args.with_docker:
@@ -146,6 +158,7 @@ def main():
             bazel.test_cc(args.target, options)
         elif args.action == 'run':
             bazel.run_cc(args.target, options)
+
 
 if __name__ == "__main__":
     main()
