@@ -3,12 +3,10 @@
 
 #include "third_party/chromium/base/containers/flat_map.h"
 
-#include "felicia/core/lib/base/export.h"
-
 namespace felicia {
 
 template <typename T, typename Traits>
-class EXPORT Generator {
+class Generator {
  public:
   static constexpr int kMaximumTrial = 1000;
 

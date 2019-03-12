@@ -82,6 +82,7 @@ cc_library(
     copts = chromium_copts(),
     linkopts = select({
         "//felicia:windows": [
+            "Advapi32.lib",
             "Ole32.lib",
             "User32.lib",
             "Winmm.lib",

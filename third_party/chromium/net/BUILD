@@ -44,6 +44,7 @@ cc_library(
     linkopts = select({
         "//felicia:windows": [
             "Iphlpapi.lib",
+            "Ws2_32.lib",
         ],
         "//conditions:default": [],
     }),
