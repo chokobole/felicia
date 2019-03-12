@@ -22,10 +22,17 @@ RUN groupadd -r ${USER} && useradd --no-log-init -m -r -g ${USER} ${USER}
 USER ${USER}
 ENV HOME ${HOME}
 
-COPY installers /tmp/installers
-RUN cd /tmp/ && bash ./installers/install_bazel.sh
 # bazel is installed at ${HOME}/bin
 ENV PATH="${HOME}/bin:${PATH}"
+# pip is installed at ${HOME}/.local/bin
+ENV PATH="${HOME}/.local/bin:${PATH}"
+
+COPY installers /tmp/installers
+RUN cd /tmp/ && bash ./installers/install_bazel.sh
+RUN cd /tmp/ && bash ./installers/install_python_deps.sh
+
+# refer to third_party/py/python_configure_path.bzl
+ENV PYTHON_BIN_PATH=/usr/bin/python3
 
 COPY --chown=felicia:felicia . /felicia
 
