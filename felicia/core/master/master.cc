@@ -448,7 +448,7 @@ bool Master::CheckIfNodeExists(const NodeInfo& node_info) {
 void Master::DoNotifySubscriber(const NodeInfo& subscribing_node_info,
                                 const TopicInfo& topic_info) {
   ChannelDef channel_def;
-  channel_def.set_type(ChannelDef_Type_TCP);
+  channel_def.set_type(ChannelDef::TCP);
   auto channel = ChannelFactory::NewChannel<TopicInfo>(channel_def);
 
   auto it = client_map_.find(subscribing_node_info.client_id());

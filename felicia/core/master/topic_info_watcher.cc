@@ -19,7 +19,7 @@ void TopicInfoWatcher::UnregisterCallback(const std::string& topic) {
 void TopicInfoWatcher::Start() {
   DCHECK(!channel_);
   ChannelDef channel_def;
-  channel_def.set_type(ChannelDef_Type_TCP);
+  channel_def.set_type(ChannelDef::TCP);
   channel_ = ChannelFactory::NewChannel<TopicInfo>(channel_def);
 
   TCPChannel<TopicInfo>* tcp_channel = channel_->ToTCPChannel();

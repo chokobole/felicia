@@ -52,7 +52,7 @@ StatusOr<ChannelSource> TCPServerChannel::Listen() {
 
   return ToChannelSource(
       ::net::IPEndPoint(net::HostIPAddress(net::HOST_IP_ONLY_ALLOW_IPV4), port),
-      ChannelDef_Type_TCP);
+      ChannelDef::TCP);
 }
 
 void TCPServerChannel::DoAcceptLoop(AcceptCallback callback) {

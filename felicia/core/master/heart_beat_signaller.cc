@@ -26,7 +26,7 @@ void HeartBeatSignaller::Start() {
   }
 
   ChannelDef channel_def;
-  channel_def.set_type(ChannelDef_Type_TCP);
+  channel_def.set_type(ChannelDef::TCP);
   channel_ = ChannelFactory::NewChannel<HeartBeat>(channel_def);
 
   TCPChannel<HeartBeat>* tcp_channel = channel_->ToTCPChannel();

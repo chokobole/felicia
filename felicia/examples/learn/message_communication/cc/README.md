@@ -80,9 +80,9 @@ class SimplePublishingNode: public NodeLifecycle {
                                 const std::string& channel_type)
       : topic_(topic) {
     if (channel_type.compare("TCP") == 0) {
-      channel_def_.set_type(ChannelDef_Type_TCP);
+      channel_def_.set_type(ChannelDef::TCP);
     } else if (channel_type.compare("UDP") == 0) {
-      channel_def_.set_type(ChannelDef_Type_UDP);
+      channel_def_.set_type(ChannelDef::UDP);
     }
   }
 

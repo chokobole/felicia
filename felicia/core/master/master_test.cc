@@ -79,7 +79,7 @@ class MasterTest : public ::testing::Test {
         publishing_node_name_("publisher"),
         subscribing_node_name_("subscriber"),
         topic_("topic"),
-        topic_source_(PickRandomChannelSource(ChannelDef_Type_TCP)) {}
+        topic_source_(PickRandomChannelSource(ChannelDef::TCP)) {}
 
   void SetUp() override {
     ClientInfo client_info;
@@ -335,7 +335,7 @@ TEST_F(MasterTest, PublishTopic) {
 
   topic_info->set_topic(topic_);
   *topic_info->mutable_topic_source() =
-      PickRandomChannelSource(ChannelDef_Type_TCP);
+      PickRandomChannelSource(ChannelDef::TCP);
 
   master_->PublishTopic(
       request.get(), response.get(),
@@ -443,8 +443,7 @@ TEST_F(MasterTest, ListTopics) {
   std::string topic = "test2";
   TopicInfo topic_info;
   topic_info.set_topic(topic);
-  *topic_info.mutable_topic_source() =
-      PickRandomChannelSource(ChannelDef_Type_TCP);
+  *topic_info.mutable_topic_source() = PickRandomChannelSource(ChannelDef::TCP);
   PublishTopicForTesting(topic_info);
   topic_filter->Clear();
   topic_filter->set_topic(topic);

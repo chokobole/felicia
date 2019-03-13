@@ -18,9 +18,9 @@ class EXPORT ChannelFactory {
   static std::unique_ptr<Channel<MessageTy>> NewChannel(
       const ChannelDef& channel_def) {
     std::unique_ptr<Channel<MessageTy>> channel;
-    if (channel_def.type() == ChannelDef_Type_TCP) {
+    if (channel_def.type() == ChannelDef::TCP) {
       channel = std::make_unique<TCPChannel<MessageTy>>();
-    } else if (channel_def.type() == ChannelDef_Type_UDP) {
+    } else if (channel_def.type() == ChannelDef::UDP) {
       channel = std::make_unique<UDPChannel<MessageTy>>();
     }
 
