@@ -1,4 +1,4 @@
-#include "felicia/cc/master_proxy.h"
+#include "felicia/core/master/master_proxy.h"
 
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
@@ -39,11 +39,10 @@ Status MasterProxy::Start() {
 
 void MasterProxy::Run() { run_loop_->Run(); }
 
-Status MasterProxy::Stop() { return master_client_interface_->Stop(); }
-
-Status MasterProxy::Shutdown() {
+Status MasterProxy::Stop() {
+  Status s = master_client_interface_->Stop();
   run_loop_->Quit();
-  return master_client_interface_->Shutdown();
+  return s;
 }
 
 MasterProxy& MasterProxy::GetInstance() {
@@ -78,7 +77,10 @@ void MasterProxy::OnRegisterNodeAsync(std::unique_ptr<NodeLifecycle> node,
                                       RegisterNodeResponse* response,
                                       const Status& s) {
   if (!s.ok()) {
-    LOG(ERROR) << "Failed to create node";
+    Status new_status(s.error_code(),
+                      ::base::StringPrintf("Failed to register node : %s",
+                                           s.error_message().c_str()));
+    node->OnError(new_status);
     return;
   }
 

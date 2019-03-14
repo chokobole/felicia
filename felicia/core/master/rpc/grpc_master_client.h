@@ -22,7 +22,6 @@ class GrpcMasterClient : public MasterClientInterface {
 
   Status Start() override;
   Status Stop() override;
-  Status Shutdown() override;
 
 #define CLIENT_METHOD(method)                                           \
   void method##Async(const method##Request* request,                    \

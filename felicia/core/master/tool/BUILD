@@ -101,7 +101,7 @@ cc_library(
     deps = [
         ":cli_flag",
         "//felicia/core:channel",
-        "//felicia/core/master/rpc:grpc_master_client",
+        "//felicia/core/master:master_proxy",
     ],
 )
 

@@ -8,6 +8,7 @@
 #include "third_party/chromium/base/strings/string_number_conversions.h"
 
 #include "felicia/core/channel/channel.h"
+#include "felicia/core/master/master_proxy.h"
 #include "felicia/core/util/command_line_interface/table_writer.h"
 
 namespace felicia {
@@ -17,6 +18,15 @@ namespace {
 constexpr size_t kIdLength = 13;
 constexpr size_t kNameLength = 20;
 constexpr size_t kChannelSourceLength = 22;
+
+class ScopedMasterClientStopper {
+ public:
+  ScopedMasterClientStopper(GrpcMasterClient* client) : client_(client) {}
+  ~ScopedMasterClientStopper() { client_->Stop(); }
+
+ private:
+  GrpcMasterClient* client_;
+};
 
 }  // namespace
 
@@ -76,9 +86,10 @@ void CommandDispatcher::OnListClientsAsync(GrpcMasterClient* client,
                                            ListClientsRequest* request,
                                            ListClientsResponse* response,
                                            const Status& s) const {
+  ScopedMasterClientStopper stopper(master_client_.get());
+
   if (!s.ok()) {
     std::cerr << s.error_message() << std::endl;
-    client->Shutdown();
     return;
   }
   auto client_infos = response->client_infos();
@@ -102,7 +113,6 @@ void CommandDispatcher::OnListClientsAsync(GrpcMasterClient* client,
   }
 
   std::cout << writer.ToString() << std::endl;
-  client->Shutdown();
 }
 
 void CommandDispatcher::Dispatch(const NodeFlag& delegate) const {
@@ -146,9 +156,10 @@ void CommandDispatcher::OnListNodesAsync(GrpcMasterClient* client,
                                          ListNodesRequest* request,
                                          ListNodesResponse* response,
                                          const Status& s) const {
+  ScopedMasterClientStopper stopper(master_client_.get());
+
   if (!s.ok()) {
     std::cerr << s.error_message() << std::endl;
-    client->Shutdown();
     return;
   }
 
@@ -187,7 +198,7 @@ void CommandDispatcher::OnListNodesAsync(GrpcMasterClient* client,
 
     std::cout << writer.ToString() << std::endl;
   }
-  client->Shutdown();
+  client->Stop();
 }
 
 void CommandDispatcher::Dispatch(const TopicFlag& delegate) const {
@@ -226,9 +237,10 @@ void CommandDispatcher::OnListTopicsAsync(GrpcMasterClient* client,
                                           ListTopicsRequest* request,
                                           ListTopicsResponse* response,
                                           const Status& s) const {
+  ScopedMasterClientStopper stopper(master_client_.get());
+
   if (!s.ok()) {
     std::cerr << s.error_message() << std::endl;
-    client->Shutdown();
     return;
   }
   auto topic_infos = response->topic_infos();
@@ -248,7 +260,6 @@ void CommandDispatcher::OnListTopicsAsync(GrpcMasterClient* client,
   }
 
   std::cout << writer.ToString() << std::endl;
-  client->Shutdown();
 }
 
 }  // namespace felicia

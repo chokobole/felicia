@@ -1,5 +1,5 @@
-#ifndef FELICIA_CC_MASTER_PROXY_H_
-#define FELICIA_CC_MASTER_PROXY_H_
+#ifndef FELICIA_CORE_MASTER_MASTER_PROXY_H_
+#define FELICIA_CORE_MASTER_MASTER_PROXY_H_
 
 #include <memory>
 #include <type_traits>
@@ -23,6 +23,8 @@
 #include "felicia/core/node/node_lifecycle.h"
 
 namespace felicia {
+
+class PyMasterProxy;
 
 class EXPORT MasterProxy final : public TaskRunnerInterface,
                                  public MasterClientInterface {
@@ -50,7 +52,6 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
   // MasterClientInterface methods
   Status Start() override;
   Status Stop() override;
-  Status Shutdown() override;
 
 #define CLIENT_METHOD(method)                                         \
   void method##Async(const method##Request* request,                  \
@@ -92,6 +93,7 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
 
  private:
   friend class ::base::NoDestructor<MasterProxy>;
+  friend class PyMasterProxy;
   MasterProxy();
 
   void RegisterClient();
@@ -129,7 +131,7 @@ MasterProxy::RequestRegisterNode(const NodeInfo& node_info, Args&&... args) {
 
   std::unique_ptr<NodeLifecycle> node = std::make_unique<NodeTy>(args...);
   node->OnInit();
-  master_client_interface_->RegisterNodeAsync(
+  RegisterNodeAsync(
       request, response,
       ::base::BindOnce(&MasterProxy::OnRegisterNodeAsync,
                        ::base::Unretained(this), ::base::Passed(&node),
@@ -138,4 +140,4 @@ MasterProxy::RequestRegisterNode(const NodeInfo& node_info, Args&&... args) {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CC_MASTER_PROXY_H_
+#endif  // FELICIA_CORE_MASTER_MASTER_PROXY_H_

@@ -20,7 +20,6 @@ class EXPORT MasterClientInterface {
 
   virtual Status Start() = 0;
   virtual Status Stop() = 0;
-  virtual Status Shutdown() = 0;
 
 #define CLIENT_METHOD(method)                                \
   virtual void method##Async(const method##Request* request, \

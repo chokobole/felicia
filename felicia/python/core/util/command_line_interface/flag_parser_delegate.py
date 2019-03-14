@@ -1,10 +1,9 @@
 from six.moves import filter, map
 
-import felicia.python.util.command_line_interface.flag as flag
-from felicia.python.util.command_line_interface.text_style import TextStyle
+import felicia.python.core.util.command_line_interface.flag as flag
+from felicia.python.core.util.command_line_interface.text_style import TextStyle
 
-
-class SimpleFlagParserDelegate(flag.FlagParserDelegate):
+class FlagParserDelegate(flag._FlagParserDelegate):
     def __init__(self):
         super().__init__()
         self._flags = None

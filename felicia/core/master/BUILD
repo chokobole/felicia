@@ -8,7 +8,7 @@ load(
 )
 load(
     "//felicia/core:platform/build_config.bzl",
-    "fel_proto_library_cc",
+    "fel_proto_library",
 )
 
 cc_library(
@@ -45,14 +45,14 @@ cc_library(
     ],
 )
 
-fel_proto_library_cc(
+fel_proto_library(
     name = "master_data_proto",
     srcs = ["master_data.proto"],
     protodeps = ["//felicia/core:channel_proto"],
     visibility = ["//felicia:internal"],
 )
 
-fel_proto_library_cc(
+fel_proto_library(
     name = "master_proto",
     srcs = ["master.proto"],
     protodeps = [
@@ -69,6 +69,22 @@ cc_library(
     deps = [
         ":master_data_proto_cc",
         "//felicia/core:lib",
+    ],
+)
+
+cc_library(
+    name = "master_proxy",
+    srcs = ["master_proxy.cc"],
+    hdrs = ["master_proxy.h"],
+    copts = fel_copts(),
+    deps = [
+        "//felicia/core:channel",
+        "//felicia/core:node",
+        "//felicia/core/master:heart_beat_signaller",
+        "//felicia/core/master:topic_info_watcher",
+        "//felicia/core/master/rpc:grpc_master_client",
+        "//felicia/core/master/rpc:grpc_util",
+        "//felicia/core/master/rpc:master_service_proto_cc",
     ],
 )
 

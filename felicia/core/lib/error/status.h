@@ -33,7 +33,7 @@ class Status {
   Status();
   Status(felicia::error::Code error_code, ::base::StringPiece error_message);
 
-  // Convenience static method
+  // Convenience static method.
   static Status OK() { return Status(); }
 
   Status(const Status& status);

@@ -1,11 +1,11 @@
+#include <type_traits>
+
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 
-#include <type_traits>
-
 #include "felicia/core/util/command_line_interface/flag.h"
 #include "felicia/core/util/command_line_interface/flag_parser.h"
-#include "felicia/python/util/command_line_interface/py_flag_parser_delegate.h"
+#include "felicia/python/core/util/command_line_interface/py_flag_parser_delegate.h"
 
 namespace py = pybind11;
 
@@ -108,7 +108,7 @@ void AddFlag(py::module& m, const char* name) {
 }
 
 PYBIND11_MODULE(flag, m) {
-  m.doc() = "Bindings for flag.";
+  m.doc() = "Bindings for Flag.";
 
 #define ADD_FLAG(Flag)                      \
   AddFlagBuilder<Flag>(m, #Flag "Builder"); \
@@ -132,7 +132,7 @@ PYBIND11_MODULE(flag, m) {
 #undef ADD_FLAG
 
   py::class_<FlagParser::Delegate, PyFlagParserDelegate>(m,
-                                                         "FlagParserDelegate")
+                                                         "_FlagParserDelegate")
       .def(py::init<>())
       .def("Parse", &FlagParser::Delegate::Parse)
       .def("Validate", &FlagParser::Delegate::Validate)
@@ -156,6 +156,7 @@ PYBIND11_MODULE(flag, m) {
             }
             return self.Parse(argc, tmp_argv, &delegate);
           },
+          py::call_guard<py::gil_scoped_release>(),
           "// Parse by passing every each |argv| to |flag|.");
 }
 

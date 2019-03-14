@@ -6,6 +6,8 @@
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"
 
+#include "felicia/core/master/master.pb.h"
+
 namespace felicia {
 
 class EXPORT NodeLifecycle {

@@ -11,11 +11,11 @@
 #include "third_party/chromium/base/strings/stringprintf.h"
 #include "third_party/chromium/base/time/time.h"
 
-#include "felicia/cc/master/master_proxy.h"
 #include "felicia/core/channel/channel_factory.h"
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/error/status.h"
+#include "felicia/core/master/master_proxy.h"
 
 namespace felicia {
 
