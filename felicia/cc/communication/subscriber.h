@@ -11,7 +11,7 @@
 #include "third_party/chromium/base/strings/stringprintf.h"
 #include "third_party/chromium/base/time/time.h"
 
-#include "felicia/cc/master_proxy.h"
+#include "felicia/cc/master/master_proxy.h"
 #include "felicia/core/channel/channel_factory.h"
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/containers/pool.h"
@@ -88,6 +88,7 @@ class EXPORT Subscriber {
 
   communication::State last_state_;
   communication::State state_;
+  uint8_t queue_size_;
   ::base::TimeDelta period_;
 
   DISALLOW_COPY_AND_ASSIGN(Subscriber);
@@ -165,7 +166,7 @@ void Subscriber<MessageTy>::OnSubscribeTopicAsync(
   }
 
   on_message_callback_ = on_message_callback;
-  message_queue_.set_capacity(settings.queue_size);
+  queue_size_ = settings.queue_size;
   period_ = ::base::TimeDelta::FromMilliseconds(settings.period);
 
   state_.ToRegistered();
@@ -253,6 +254,7 @@ void Subscriber<MessageTy>::StartMessageLoop() {
   }
 
   state_.ToStarted();
+  message_queue_.set_capacity(queue_size_);
   ReceiveMessageLoop();
   NotifyMessageLoop();
 }
@@ -281,8 +283,6 @@ void Subscriber<MessageTy>::StopMessageLoop() {
   state_.ToStopped();
 
   channel_.reset();
-  on_message_callback_.Reset();
-  on_error_callback_.Reset();
   message_queue_.clear();
 }
 

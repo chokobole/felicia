@@ -180,18 +180,21 @@ void Pool<T, Size>::set_capacity(size_type capacity) {
 
 template <typename T, typename Size>
 void Pool<T, Size>::push(const value_type& v) {
+  DCHECK(capacity_ > 0);
   new (&buffer_[push_index_]) T(v);
   inc_push_index();
 }
 
 template <typename T, typename Size>
 void Pool<T, Size>::push(value_type&& v) {
+  DCHECK(capacity_ > 0);
   new (&buffer_[push_index_]) T(std::move(v));
   inc_push_index();
 }
 
 template <typename T, typename Size>
 void Pool<T, Size>::pop() {
+  DCHECK(capacity_ > 0);
   if (!is_ailve_after_push_index_ && pop_index_ == push_index_) return;
   buffer_[pop_index_].~T();
   inc_pop_index();
