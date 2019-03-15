@@ -1,7 +1,5 @@
 build --apple_platform_type=macos
 
-build:linux --cxxopt "-D_GLIBCXX_USE_CXX11_ABI=0"
-
 build -c opt
 
 # Put user-specific options in .bazelrc.user
