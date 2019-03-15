@@ -1,13 +1,7 @@
 # libevent (libevent.org) library.
 # from https://github.com/libevent/libevent
 
-package(
-    default_visibility = ["//visibility:public"],
-)
-
 licenses(["notice"])  # BSD
-
-exports_files(["LICENSE"])
 
 load(
     "//felicia:felicia.bzl",
@@ -18,6 +12,10 @@ load(
     "//third_party/chromium/build:chromium.bzl",
     "chromium_copts",
 )
+
+package(default_visibility = ["//third_party/chromium/build:internal"])
+
+exports_files(["LICENSE"])
 
 cc_library(
     name = "libevent",

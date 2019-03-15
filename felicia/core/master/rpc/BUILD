@@ -1,7 +1,3 @@
-package(default_visibility = [
-    "//felicia:internal",
-])
-
 load(
     "//felicia:felicia.bzl",
     "fel_copts",
@@ -10,6 +6,8 @@ load(
     "//felicia/core:platform/build_config.bzl",
     "fel_proto_library_cc",
 )
+
+package(default_visibility = ["//felicia:internal"])
 
 cc_library(
     name = "grpc_async_client_call",

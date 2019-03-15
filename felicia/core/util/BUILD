@@ -1,11 +1,9 @@
-package(default_visibility = [
-    "//felicia:internal",
-])
-
 load(
     "//felicia:felicia.bzl",
     "fel_copts",
 )
+
+package(default_visibility = ["//felicia:internal"])
 
 cc_library(
     name = "command_line_interface",

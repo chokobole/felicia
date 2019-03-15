@@ -1,6 +1,6 @@
-package(default_visibility = ["//felicia:internal"])
-
 licenses(["notice"])
+
+package(default_visibility = ["//felicia:internal"])
 
 load(
     "//felicia:felicia.bzl",

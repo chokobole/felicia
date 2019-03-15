@@ -1,6 +1,6 @@
-package(default_visibility = ["//third_party/chromium/build:internal"])
-
 licenses(["notice"])
+
+package(default_visibility = ["//third_party/chromium/build:internal"])
 
 load(
     "//third_party/chromium/build:chromium.bzl",

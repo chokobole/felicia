@@ -15,10 +15,6 @@
 # ==============================================================================
 # Modifications copyright (C) 2019 felicia
 
-package(default_visibility = [
-    "//felicia:internal",
-])
-
 load(
     "//felicia:felicia.bzl",
     "fel_copts",
@@ -32,6 +28,8 @@ load(
     "fel_proto_library",
     "if_static",
 )
+
+package(default_visibility = ["//felicia:internal"])
 
 ##########################################################################################
 ########################################## Libs ##########################################

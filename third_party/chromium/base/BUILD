@@ -1,5 +1,3 @@
-package(default_visibility = ["//third_party/chromium/build:internal"])
-
 licenses(["notice"])
 
 load(
@@ -19,6 +17,8 @@ load(
     "chromium_test_copts",
     "chromium_test_srcs",
 )
+
+package(default_visibility = ["//third_party/chromium/build:internal"])
 
 filegroup(
     name = "buildflags_hdrs",

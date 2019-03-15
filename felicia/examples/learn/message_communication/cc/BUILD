@@ -1,11 +1,9 @@
-package(default_visibility = ["//visibility:private"])
-
-licenses(["notice"])
-
 load(
     "//felicia:felicia.bzl",
     "fel_copts",
 )
+
+package(default_visibility = ["//visibility:private"])
 
 cc_library(
     name = "node_create_flag",

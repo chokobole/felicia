@@ -1,10 +1,10 @@
-package(default_visibility = ["//felicia:internal"])
-
 load(
     "//felicia:felicia.bzl",
     "fel_copts",
 )
 load("//felicia/python:pybind.bzl", "fel_pybind_py_library")
+
+package(default_visibility = ["//felicia:internal"])
 
 cc_library(
     name = "py_flag_parser_delegate",
