@@ -1,7 +1,7 @@
 # libevent (libevent.org) library.
 # from https://github.com/libevent/libevent
 
-licenses(["notice"])  # BSD
+licenses(["notice"])  # BSD 3-Clause
 
 load(
     "//felicia:felicia.bzl",

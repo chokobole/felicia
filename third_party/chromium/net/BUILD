@@ -1,4 +1,4 @@
-licenses(["notice"])
+licenses(["notice"])  # BSD 3-Clause
 
 package(default_visibility = ["//felicia:internal"])
 
