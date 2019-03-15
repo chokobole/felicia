@@ -4,7 +4,7 @@ load(
     "//felicia:felicia.bzl",
     "fel_copts",
 )
-load("//felicia/python:pybind.bzl", "py_bind_library")
+load("//felicia/python:pybind.bzl", "fel_pybind_py_library")
 
 cc_library(
     name = "py_flag_parser_delegate",
@@ -18,7 +18,7 @@ cc_library(
     ],
 )
 
-py_bind_library(
+fel_pybind_py_library(
     name = "flag",
     cc_deps = [
         ":py_flag_parser_delegate",

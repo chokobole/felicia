@@ -1,6 +1,6 @@
 load("//felicia:felicia.bzl", "fel_copts")
 
-def py_bind_library(
+def fel_pybind_py_library(
         name,
         cc_name = None,
         copts = fel_copts(),
