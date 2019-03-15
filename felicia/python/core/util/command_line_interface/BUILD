@@ -1,17 +1,16 @@
 load(
-    "//felicia:felicia.bzl",
-    "fel_copts",
+    "//bazel:felicia_cc.bzl",
+    "fel_cc_library",
 )
-load("//felicia/python:pybind.bzl", "fel_pybind_py_library")
+load("//bazel:felicia_pybind.bzl", "fel_pybind_py_library")
 
 package(default_visibility = ["//felicia:internal"])
 
-cc_library(
+fel_cc_library(
     name = "py_flag_parser_delegate",
     hdrs = [
         "py_flag_parser_delegate.h",
     ],
-    copts = fel_copts(),
     deps = [
         "//felicia/core/util:command_line_interface",
         "@pybind11",

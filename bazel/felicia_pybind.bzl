@@ -1,9 +1,9 @@
-load("//felicia:felicia.bzl", "fel_copts")
+load("//bazel:felicia_cc.bzl", "fel_cxxopts")
 
 def fel_pybind_py_library(
         name,
         cc_name = None,
-        copts = fel_copts(),
+        copts = [],
         cc_srcs = [],
         cc_deps = [],
         py_srcs = [],
@@ -20,7 +20,7 @@ def fel_pybind_py_library(
     native.cc_binary(
         name = cc_name,
         srcs = cc_srcs,
-        copts = copts,
+        copts = fel_cxxopts() + copts,
         linkshared = 1,
         linkstatic = 1,
         deps = ["@pybind11"] + cc_deps,

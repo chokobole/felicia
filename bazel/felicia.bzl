@@ -56,22 +56,8 @@ def if_freebsd(a):
         "//conditions:default": [],
     })
 
-def fel_win_copts(is_external = False):
-    WINDOWS_COPTS = [
-        "/std:c++14",
-        "/Ithird_party/chromium",
-    ]
-    if is_external:
-        return WINDOWS_COPTS + ["/UFEL_COMPILE_LIBRARY"]
-    else:
-        return WINDOWS_COPTS + ["/DFEL_COMPILE_LIBRARY"]
-
-def fel_copts(is_external = False):
-    return if_not_windows([
-        "-Ithird_party/chromium",
-    ]) + select({
-        "//felicia:windows": fel_win_copts(is_external),
-        "//conditions:default": [
-            "-std=c++14",
-        ],
+def if_static(extra_deps, otherwise = []):
+    return select({
+        "//felicia:framework_shared_object": otherwise,
+        "//conditions:default": extra_deps,
     })

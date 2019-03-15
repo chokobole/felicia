@@ -1,6 +1,6 @@
 licenses(["notice"])  # BSD 3-Clause
 
-package(default_visibility = ["//third_party/chromium/build:internal"])
+package(default_visibility = ["//third_party/chromium:internal"])
 
 cc_library(
     name = "testing",

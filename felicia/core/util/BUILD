@@ -1,11 +1,12 @@
 load(
-    "//felicia:felicia.bzl",
-    "fel_copts",
+    "//bazel:felicia_cc.bzl",
+    "fel_cc_library",
+    "fel_cc_test",
 )
 
 package(default_visibility = ["//felicia:internal"])
 
-cc_library(
+fel_cc_library(
     name = "command_line_interface",
     srcs = [
         "command_line_interface/flag.cc",
@@ -20,30 +21,27 @@ cc_library(
         "command_line_interface/table_writer.h",
         "command_line_interface/text_style.h",
     ],
-    copts = fel_copts(),
-    deps = ["//felicia/core:lib"],
+    deps = ["//felicia/core/lib"],
 )
 
-cc_library(
+fel_cc_library(
     name = "uuid",
     hdrs = [
         "uuid/generator.h",
     ],
-    copts = fel_copts(),
-    deps = ["//felicia/core:lib"],
+    deps = ["//felicia/core/lib"],
 )
 
-cc_test(
+fel_cc_test(
     name = "util_tests",
     size = "small",
     srcs = [
         "command_line_interface/flag_parser_test.cc",
         "command_line_interface/flag_test.cc",
     ],
-    copts = fel_copts(),
     deps = [
         ":command_line_interface",
         ":uuid",
-        "//felicia/core:test_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )

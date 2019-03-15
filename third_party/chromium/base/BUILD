@@ -1,24 +1,25 @@
-licenses(["notice"])
+licenses(["notice"])  # BSD 3-Clause
 
 load(
-    "//felicia:felicia.bzl",
+    "//bazel:felicia.bzl",
     "if_darwin",
     "if_not_darwin",
     "if_not_windows",
     "if_windows",
 )
 load(
-    "//third_party/chromium/build:chromium.bzl",
-    "chromium_copts",
+    "//third_party/chromium:chromium.bzl",
+    "chromium_c_library",
+    "chromium_cc_library",
+    "chromium_cc_test",
     "chromium_hdrs",
-    "chromium_objc_copts",
+    "chromium_objc_library",
     "chromium_objc_srcs",
     "chromium_srcs",
-    "chromium_test_copts",
     "chromium_test_srcs",
 )
 
-package(default_visibility = ["//third_party/chromium/build:internal"])
+package(default_visibility = ["//third_party/chromium:internal"])
 
 filegroup(
     name = "buildflags_hdrs",
@@ -54,7 +55,7 @@ BASE_HDRS = chromium_hdrs(exclude = [
     ":base_win_hdrs",
 ])
 
-cc_library(
+chromium_cc_library(
     name = "base",
     srcs = chromium_srcs(exclude = [
         "mac/**/*.cc",
@@ -79,7 +80,6 @@ cc_library(
     hdrs = BASE_HDRS + [
         "third_party/nspr/prtime.h",
     ],
-    copts = chromium_copts(),
     linkopts = select({
         "//felicia:windows": [
             "Advapi32.lib",
@@ -101,12 +101,11 @@ cc_library(
     ]),
 )
 
-objc_library(
+chromium_objc_library(
     name = "base_mac",
     srcs = chromium_objc_srcs() +
            chromium_srcs(base = "mac"),
     hdrs = BASE_HDRS + chromium_hdrs(base = "mac"),
-    copts = chromium_objc_copts(),
     deps = [
         ":buildflags",
         "//third_party/chromium/testing",
@@ -166,7 +165,7 @@ filegroup(
     visibility = ["//visibility:private"],
 )
 
-cc_library(
+chromium_cc_library(
     name = "third_party",
     srcs = [
         "third_party/dmg_fp/g_fmt.cc",
@@ -177,11 +176,10 @@ cc_library(
         "third_party/dmg_fp/dtoa.cc",
         "third_party/icu/icu_utf.h",
     ],
-    copts = chromium_copts(),
     deps = [":third_party_c"],
 )
 
-cc_library(
+chromium_c_library(
     name = "third_party_c",
     srcs = [
         "third_party/dynamic_annotations/dynamic_annotations.c",
@@ -191,21 +189,16 @@ cc_library(
         "third_party/dynamic_annotations/dynamic_annotations.h",
         "third_party/valgrind/memcheck.h",
         "third_party/valgrind/valgrind.h",
-    ],
-    copts = if_not_windows([
-        "-Ithird_party/chromium",
-    ]) + if_windows([
-        "/Ithird_party/chromium",
-    ]),
+    ]
 )
 
-cc_library(
+chromium_cc_library(
     name = "buildflags",
     hdrs = [":buildflags_hdrs"],
     deps = ["//third_party/chromium/build"],
 )
 
-cc_test(
+chromium_cc_test(
     name = "test",
     size = "large",
     srcs = chromium_test_srcs(exclude = [
@@ -249,18 +242,17 @@ cc_test(
         "time/time_unittest.cc",  # missing headers(base/build_time.h)
         "timer/timer_unittest.cc",  # missing headers(base/post_task.h)
     ]),
-    copts = chromium_test_copts(),
     tags = [
         "chromium",
         "third_party",
     ],
     deps = [
         ":base",
-        "//felicia/core:test_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
-cc_test(
+chromium_cc_test(
     name = "test_mac",
     size = "small",
     srcs = chromium_test_srcs(
@@ -269,18 +261,17 @@ cc_test(
             "mac/dispatch_source_mach_unittest.cc",  # missing headers(base/test/test_timeouts.h)
         ],
     ),
-    copts = chromium_test_copts(),
     tags = [
         "chromium",
         "third_party",
     ],
     deps = [
         ":base",
-        "//felicia/core:test_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
-cc_test(
+chromium_cc_test(
     name = "test_posix",
     size = "small",
     srcs = chromium_test_srcs(
@@ -292,18 +283,17 @@ cc_test(
         "message_loop/message_loop_io_posix_unittest.cc",  # INSTANTIATE_TEST_SUITE_P
         "message_loop/message_pump_libevent_unittest.cc",  # missing headers(base/synchronication/waitable_event_watcher.h)
     ],
-    copts = chromium_test_copts(),
     tags = [
         "chromium",
         "third_party",
     ],
     deps = [
         ":base",
-        "//felicia/core:test_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
-cc_test(
+chromium_cc_test(
     name = "test_win",
     size = "small",
     srcs = chromium_test_srcs(
@@ -311,13 +301,12 @@ cc_test(
         exclude = [
         ],
     ),
-    copts = chromium_test_copts(),
     tags = [
         "chromium",
         "third_party",
     ],
     deps = [
         ":base",
-        "//felicia/core:test_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )

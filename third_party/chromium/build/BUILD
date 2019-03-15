@@ -1,16 +1,13 @@
 licenses(["notice"])  # BSD 3-Clause
 
-package(default_visibility = [":internal"])
-
-package_group(
-    name = "internal",
-    packages = [
-        "//felicia/...",
-        "//third_party/chromium/...",
-    ],
+load(
+    "//third_party/chromium:chromium.bzl",
+    "chromium_cc_library",
 )
 
-cc_library(
+package(default_visibility = ["//third_party/chromium:internal"])
+
+chromium_cc_library(
     name = "build",
     hdrs = [
         "build_config.h",

@@ -4,7 +4,7 @@
 #include "third_party/chromium/base/strings/string_number_conversions.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
-#include "felicia/core/platform/net_util.h"
+#include "felicia/core/lib/net/net_util.h"
 
 namespace felicia {
 

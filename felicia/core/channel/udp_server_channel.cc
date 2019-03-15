@@ -8,7 +8,7 @@
 #include "third_party/chromium/net/base/net_errors.h"
 
 #include "felicia/core/lib/error/errors.h"
-#include "felicia/core/platform/net_util.h"
+#include "felicia/core/lib/net/net_util.h"
 
 namespace felicia {
 

@@ -1,27 +1,23 @@
-# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+# Followings are taken from https://github.com/tensorflow/tensorflow/blob/36c3fa3a9fd10965e92e464416d5d4688809cac2/tensorflow/core/platform/default/build_config.bzl
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# ==============================================================================
-# Modifications copyright (C) 2019 felicia
+# - fel_deps form tf_deps
+# - fel_proto_library from tf_proto_library
+# - fel_proto_library_cc from tf_proto_library_cc
+# - fel_proto_library_py from tf_proto_library_py
+# - _proto_cc_hdrs
+# - _proto_cc_srcs
+# - _proto_py_outs
+# - cc_proto_library
 
-# Platform-specific build configurations.
-
-load("@com_google_protobuf//:protobuf.bzl", "proto_gen")
 load(
-    "//felicia:felicia.bzl",
-    "if_darwin",
+    "@com_google_protobuf//:protobuf.bzl",
+    "proto_gen",
+    "py_proto_library",
+)
+load(
+    "//bazel:felicia.bzl",
     "if_not_windows",
+    "if_static",
 )
 
 # Appends a suffix to a list of deps.
@@ -168,81 +164,6 @@ def cc_proto_library(
         name = header_only_name,
         deps = ["@com_google_protobuf//:protobuf_headers"] + if_static([impl_name]),
         hdrs = gen_hdrs,
-        **kargs
-    )
-
-# Re-defined protocol buffer rule to bring in the change introduced in commit
-# https://github.com/google/protobuf/commit/294b5758c373cbab4b72f35f4cb62dc1d8332b68
-# which was not part of a stable protobuf release in 04/2018.
-# TODO(jsimsa): Remove this once the protobuf dependency version is updated
-# to include the above commit.
-def py_proto_library(
-        name,
-        srcs = [],
-        deps = [],
-        py_libs = [],
-        py_extra_srcs = [],
-        include = None,
-        default_runtime = "@com_google_protobuf//:protobuf_python",
-        protoc = "@com_google_protobuf//:protoc",
-        use_grpc_plugin = False,
-        **kargs):
-    """Bazel rule to create a Python protobuf library from proto source files
-
-    NOTE: the rule is only an internal workaround to generate protos. The
-    interface may change and the rule may be removed when bazel has introduced
-    the native rule.
-
-    Args:
-      name: the name of the py_proto_library.
-      srcs: the .proto files of the py_proto_library.
-      deps: a list of dependency labels; must be py_proto_library.
-      py_libs: a list of other py_library targets depended by the generated
-          py_library.
-      py_extra_srcs: extra source files that will be added to the output
-          py_library. This attribute is used for internal bootstrapping.
-      include: a string indicating the include path of the .proto files.
-      default_runtime: the implicitly default runtime which will be depended on by
-          the generated py_library target.
-      protoc: the label of the protocol compiler to generate the sources.
-      use_grpc_plugin: a flag to indicate whether to call the Python C++ plugin
-          when processing the proto files.
-      **kargs: other keyword arguments that are passed to cc_library.
-    """
-    outs = _proto_py_outs(srcs, use_grpc_plugin)
-
-    includes = []
-    if include != None:
-        includes = [include]
-
-    grpc_python_plugin = None
-    if use_grpc_plugin:
-        grpc_python_plugin = "//external:grpc_python_plugin"
-        # Note: Generated grpc code depends on Python grpc module. This dependency
-        # is not explicitly listed in py_libs. Instead, host system is assumed to
-        # have grpc installed.
-
-    proto_gen(
-        name = name + "_genproto",
-        srcs = srcs,
-        outs = outs,
-        gen_py = 1,
-        includes = includes,
-        plugin = grpc_python_plugin,
-        plugin_language = "grpc",
-        protoc = protoc,
-        visibility = ["//visibility:public"],
-        deps = [s + "_genproto" for s in deps],
-    )
-
-    if default_runtime and not default_runtime in py_libs + deps:
-        py_libs = py_libs + [default_runtime]
-
-    native.py_library(
-        name = name,
-        srcs = outs + py_extra_srcs,
-        deps = py_libs + deps,
-        imports = includes,
         **kargs
     )
 
@@ -396,57 +317,3 @@ def fel_proto_library(
         use_grpc_plugin = has_services,
         visibility = visibility,
     )
-
-def if_static(extra_deps, otherwise = []):
-    return select({
-        "//felicia:framework_shared_object": otherwise,
-        "//conditions:default": extra_deps,
-    })
-
-def fel_platform_files(files, exclude = []):
-    base_files = native.glob(["platform/" + f for f in files], exclude = exclude)
-    windows_files = native.glob(["platform/win/" + f for f in files], exclude = exclude)
-    posix_files = native.glob(["platform/posix/" + f for f in files], exclude = exclude)
-    darwin_files = native.glob(["platform/mac/" + f for f in files], exclude = exclude)
-    return base_files + if_darwin(darwin_files) + select({
-        "//felicia:windows": windows_files,
-        "//conditions:default": posix_files,
-    })
-
-def fel_additional_lib_hdrs(exclude = []):
-    windows_hdrs = native.glob([
-        "platform/win/*.h",
-    ], exclude = exclude)
-    posix_hdrs = native.glob([
-        "platform/posix/*.h",
-    ], exclude = exclude)
-    darwin_hdrs = native.glob([
-        "platform/mac/*.h",
-    ], exclude = exclude)
-    return if_darwin(darwin_hdrs) + select({
-        "//felicia:windows": windows_hdrs,
-        "//conditions:default": posix_hdrs,
-    })
-
-def fel_additional_lib_srcs(exclude = []):
-    windows_srcs = native.glob([
-        "platform/win/*.cc",
-    ], exclude = exclude)
-    posix_srcs = native.glob([
-        "platform/posix/*.cc",
-    ], exclude = exclude)
-    darwin_srcs = native.glob([
-        "platform/mac/*.cc",
-    ], exclude = exclude)
-    return if_darwin(darwin_srcs) + select({
-        "//felicia:windows": windows_srcs,
-        "//conditions:default": posix_srcs,
-    })
-
-def fel_additional_lib_deps():
-    return [
-        "@com_google_googletest//:gtest",
-        "@com_google_protobuf//:protobuf",
-        "//third_party/chromium/base:base",
-        "//third_party/chromium/net:net",
-    ]

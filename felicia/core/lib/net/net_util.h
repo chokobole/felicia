@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_PLATFORM_NET_UTIL_H_
-#define FELICIA_CORE_PLATFORM_NET_UTIL_H_
+#ifndef FELICIA_LIB_NET_NET_UTIL_H_
+#define FELICIA_LIB_NET_NET_UTIL_H_
 
 #include "third_party/chromium/net/base/ip_address.h"
 
@@ -19,4 +19,4 @@ EXPORT uint16_t PickRandomPort(bool is_tcp);
 }  // namespace net
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_PLATFORM_NET_UTIL_H_
+#endif  // FELICIA_LIB_NET_NET_UTIL_H_

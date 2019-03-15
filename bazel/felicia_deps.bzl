@@ -26,8 +26,8 @@ def load_deps():
 
     git_repository(
         name = "com_google_protobuf",
-        tag = "v3.6.0",
         remote = "https://github.com/protocolbuffers/protobuf.git",
+        tag = "v3.6.0",
     )
 
     http_archive(
@@ -63,14 +63,14 @@ def load_deps():
     # Needed by pybind11
     new_git_repository(
         name = "eigen",
+        build_file = "//third_party:eigen.BUILD",
         remote = "https://github.com/eigenteam/eigen-git-mirror.git",
         tag = "3.3.5",
-        build_file = "//third_party:eigen.BUILD",
     )
 
     new_git_repository(
         name = "pybind11",
+        build_file = "//third_party:pybind11.BUILD",
         remote = "https://github.com/pybind/pybind11.git",
         tag = "v2.2.2",
-        build_file = "//third_party:pybind11.BUILD",
     )

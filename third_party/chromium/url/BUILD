@@ -1,37 +1,35 @@
 licenses(["notice"])  # BSD 3-Clause
 
-package(default_visibility = ["//third_party/chromium/build:internal"])
+package(default_visibility = ["//third_party/chromium:internal"])
 
 load(
-    "//third_party/chromium/build:chromium.bzl",
-    "chromium_copts",
+    "//third_party/chromium:chromium.bzl",
+    "chromium_cc_library",
+    "chromium_cc_test",
     "chromium_hdrs",
     "chromium_srcs",
-    "chromium_test_copts",
     "chromium_test_srcs",
 )
 
-cc_library(
+chromium_cc_library(
     name = "url",
     srcs = chromium_srcs(),
     hdrs = chromium_hdrs(),
-    copts = chromium_copts(),
     deps = [
         "//third_party/chromium/base",
     ],
 )
 
-cc_test(
+chromium_cc_test(
     name = "test",
     size = "small",
     srcs = chromium_test_srcs(),
-    copts = chromium_test_copts(),
     tags = [
         "chromium",
         "third_party",
     ],
     deps = [
         ":url",
-        "//felicia/core:test_main",
+        "@com_google_googletest//:gtest_main",
     ],
 )

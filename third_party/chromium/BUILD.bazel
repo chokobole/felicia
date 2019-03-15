@@ -1,0 +1,13 @@
+# Intentionally named file BUILD.bazel not to conflict with build directory
+
+licenses(["notice"])  # BSD 3-Clause
+
+package(default_visibility = [":internal"])
+
+package_group(
+    name = "internal",
+    packages = [
+        "//felicia/...",
+        "//third_party/chromium/...",
+    ],
+)

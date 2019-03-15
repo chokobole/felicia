@@ -1,4 +1,4 @@
-#include "felicia/core/platform/net_util.h"
+#include "felicia/core/lib/net/net_util.h"
 
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/rand_util.h"

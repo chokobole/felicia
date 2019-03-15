@@ -4,10 +4,10 @@
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 #include "felicia/core/channel/channel_factory.h"
+#include "felicia/core/lib/net/net_util.h"
 #include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/master/rpc/grpc_master_client.h"
 #include "felicia/core/master/rpc/grpc_util.h"
-#include "felicia/core/platform/net_util.h"
 
 namespace felicia {
 

@@ -4,20 +4,20 @@
 licenses(["notice"])  # BSD 3-Clause
 
 load(
-    "//felicia:felicia.bzl",
+    "//bazel:felicia.bzl",
     "if_darwin",
     "if_linux",
 )
 load(
-    "//third_party/chromium/build:chromium.bzl",
-    "chromium_copts",
+    "//third_party/chromium:chromium.bzl",
+    "chromium_c_library",
 )
 
-package(default_visibility = ["//third_party/chromium/build:internal"])
+package(default_visibility = ["//third_party/chromium:internal"])
 
 exports_files(["LICENSE"])
 
-cc_library(
+chromium_c_library(
     name = "libevent",
     srcs = [
         "buffer.c",
@@ -64,7 +64,6 @@ cc_library(
     ]) + if_linux([
         "-Ithird_party/chromium/base/third_party/libevent/linux",
     ]) + [
-        "-Ithird_party/chromium",
         "-DHAVE_CONFIG_H",
     ],
 )

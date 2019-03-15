@@ -1,3 +1,5 @@
+load("//bazel:felicia_cc.bzl", "fel_cc_library")
+
 package(default_visibility = [":internal"])
 
 config_setting(
@@ -73,7 +75,7 @@ package_group(
     ],
 )
 
-cc_library(
+fel_cc_library(
     name = "grpc",
     deps = select({
         ":linux_s390x": ["@com_github_grpc_grpc//:grpc_unsecure"],
@@ -81,7 +83,7 @@ cc_library(
     }),
 )
 
-cc_library(
+fel_cc_library(
     name = "grpc++",
     deps = select({
         ":linux_s390x": ["@com_github_grpc_grpc//:grpc++_unsecure"],

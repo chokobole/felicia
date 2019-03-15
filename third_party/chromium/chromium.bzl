@@ -1,10 +1,15 @@
 load(
-    "//felicia:felicia.bzl",
-    "fel_copts",
+    "//bazel:felicia.bzl",
     "if_darwin",
     "if_linux",
     "if_not_windows",
     "if_windows",
+)
+load(
+    "//bazel:felicia_cc.bzl",
+    "define",
+    "fel_copts",
+    "fel_cxxopts",
 )
 
 def chromium_files(suffix, base, exclude):
@@ -45,14 +50,42 @@ def chromium_objc_srcs(base = None, exclude = []):
 def chromium_test_srcs(base = None, exclude = []):
     return chromium_files("_unittest.cc", base = base, exclude = exclude + ["**/*perftest*"])
 
-def chromium_copts():
-    return fel_copts()
+def chromium_c_library(
+        name,
+        copts = [],
+        **kwargs):
+    native.cc_library(
+        name = name,
+        copts = fel_copts() + copts,
+        **kwargs
+    )
 
-def chromium_objc_copts():
-    return chromium_copts() + ["-fno-objc-arc"]
+def chromium_cc_library(
+        name,
+        copts = [],
+        **kwargs):
+    native.cc_library(
+        name = name,
+        copts = fel_cxxopts() + copts,
+        **kwargs
+    )
 
-def chromium_test_copts():
-    return chromium_copts() + select({
-        "//felicia:windows": ["/DUNIT_TEST"],
-        "//conditions:default": ["-DUNIT_TEST"],
-    })
+def chromium_objc_library(
+        name,
+        copts = [],
+        **kwargs):
+    native.objc_library(
+        name = name,
+        copts = fel_cxxopts() + ["-fno-objc-arc"] + copts,
+        **kwargs
+    )
+
+def chromium_cc_test(
+        name,
+        copts = [],
+        **kwargs):
+    native.cc_test(
+        name = name,
+        copts = fel_cxxopts() + define(["UNIT_TEST"]) + copts,
+        **kwargs
+    )

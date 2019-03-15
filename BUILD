@@ -1,5 +1,5 @@
 exports_files(
     [
-      "LICENSE",
-    ]
+        "LICENSE",
+    ],
 )

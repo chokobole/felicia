@@ -1,7 +1,4 @@
-load(
-    "//felicia/core:platform/build_config.bzl",
-    "fel_proto_library",
-)
+load("//bazel:felicia_proto.bzl", "fel_proto_library")
 
 package_group(
     name = "internal",
@@ -13,5 +10,5 @@ package_group(
 fel_proto_library(
     name = "message_spec_proto",
     srcs = ["message_spec.proto"],
-    visibility = [":internal"]
+    visibility = [":internal"],
 )

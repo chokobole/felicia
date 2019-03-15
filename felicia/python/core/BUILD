@@ -1,13 +1,12 @@
 load(
-    "//felicia:felicia.bzl",
-    "fel_copts",
+    "//bazel:felicia_cc.bzl",
+    "fel_cc_library",
 )
 
 package(default_visibility = ["//felicia:internal"])
 
-cc_library(
+fel_cc_library(
     name = "type_conversion",
     hdrs = ["lib/type_conversion/protobuf.h"],
-    copts = fel_copts(),
     deps = ["@pybind11"],
 )

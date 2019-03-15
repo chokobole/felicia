@@ -2,7 +2,7 @@
 
 #include "third_party/chromium/base/strings/string_util.h"
 
-#include "felicia/core/platform/net_util.h"
+#include "felicia/core/lib/net/net_util.h"
 
 namespace felicia {
 

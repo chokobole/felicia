@@ -10,8 +10,8 @@
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
-#include "felicia/core/communication/state.h"
 #include "felicia/core/channel/channel_factory.h"
+#include "felicia/core/communication/state.h"
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/error/status.h"
