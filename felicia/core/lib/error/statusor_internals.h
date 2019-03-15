@@ -28,7 +28,7 @@ class Helper {
  public:
   // Move type-agnostic error handling to the .cc.
   static void HandleInvalidStatusCtorArg(Status*);
-  WARN_UNUSED_RESULT static void Crash(const Status& status);
+  static void Crash(const Status& status);
 };
 
 // Construct an instance of T in `p` through placement new, passing Args... to
