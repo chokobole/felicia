@@ -97,6 +97,21 @@ cc_library(
 )
 
 cc_library(
+    name = "communication",
+    hdrs = [
+        "communication/publisher.h",
+        "communication/state.h",
+        "communication/subscriber.h",
+    ],
+    copts = fel_copts(),
+    deps = [
+        ":channel",
+        ":node",
+        "//felicia/core/master:master_proxy",
+    ],
+)
+
+cc_library(
     name = "node",
     srcs = [
         "node/node.cc",

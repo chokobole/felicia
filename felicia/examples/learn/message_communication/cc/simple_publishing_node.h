@@ -3,7 +3,7 @@
 
 #include "third_party/chromium/base/time/time.h"
 
-#include "felicia/cc/communication/publisher.h"
+#include "felicia/core/communication/publisher.h"
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/examples/learn/message_communication/protobuf/message_spec.pb.h"

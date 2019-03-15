@@ -23,7 +23,7 @@ cc_library(
     srcs = ["simple_publishing_node.h"],
     copts = fel_copts(),
     deps = [
-        "//felicia/cc:communication",
+        "//felicia/core:communication",
         "//felicia/core:node",
         "//felicia/examples/learn/message_communication/protobuf:message_spec_proto_cc",
     ],
@@ -34,7 +34,7 @@ cc_library(
     srcs = ["simple_subscribing_node.h"],
     copts = fel_copts(),
     deps = [
-        "//felicia/cc:communication",
+        "//felicia/core:communication",
         "//felicia/core:node",
         "//felicia/examples/learn/message_communication/protobuf:message_spec_proto_cc",
     ],

@@ -1,7 +1,7 @@
 #ifndef FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_CC_SIMPLE_SUBSCRIBING_NODE_H_
 #define FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_CC_SIMPLE_SUBSCRIBING_NODE_H_
 
-#include "felicia/cc/communication/subscriber.h"
+#include "felicia/core/communication/subscriber.h"
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/examples/learn/message_communication/protobuf/message_spec.pb.h"
