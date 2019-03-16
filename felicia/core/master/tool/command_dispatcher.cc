@@ -86,7 +86,7 @@ void CommandDispatcher::OnListClientsAsync(GrpcMasterClient* client,
                                            ListClientsRequest* request,
                                            ListClientsResponse* response,
                                            const Status& s) const {
-  ScopedMasterClientStopper stopper(master_client_.get());
+  ScopedMasterClientStopper stopper(client);
 
   if (!s.ok()) {
     std::cerr << s.error_message() << std::endl;
@@ -156,7 +156,7 @@ void CommandDispatcher::OnListNodesAsync(GrpcMasterClient* client,
                                          ListNodesRequest* request,
                                          ListNodesResponse* response,
                                          const Status& s) const {
-  ScopedMasterClientStopper stopper(master_client_.get());
+  ScopedMasterClientStopper stopper(client);
 
   if (!s.ok()) {
     std::cerr << s.error_message() << std::endl;
@@ -198,7 +198,6 @@ void CommandDispatcher::OnListNodesAsync(GrpcMasterClient* client,
 
     std::cout << writer.ToString() << std::endl;
   }
-  client->Stop();
 }
 
 void CommandDispatcher::Dispatch(const TopicFlag& delegate) const {
@@ -237,7 +236,7 @@ void CommandDispatcher::OnListTopicsAsync(GrpcMasterClient* client,
                                           ListTopicsRequest* request,
                                           ListTopicsResponse* response,
                                           const Status& s) const {
-  ScopedMasterClientStopper stopper(master_client_.get());
+  ScopedMasterClientStopper stopper(client);
 
   if (!s.ok()) {
     std::cerr << s.error_message() << std::endl;
