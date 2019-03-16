@@ -57,6 +57,12 @@ config_setting(
 )
 
 config_setting(
+    name = "apple_debug",
+    constraint_values = ["@bazel_tools//platforms:osx"],
+    values = {"compilation_mode": "dbg"},
+)
+
+config_setting(
     name = "optimized",
     values = {
         "compilation_mode": "opt",

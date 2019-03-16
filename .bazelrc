@@ -2,5 +2,20 @@ build --apple_platform_type=macos
 
 build -c opt
 
+# This apple_debug configure is taken from
+# LICENSE: BSD
+# URL: https://github.com/RobotLocomotion/drake/blob/47987499486349ba47ece6f30519aaf8f868bbe9/tools/cc_toolchain/bazel.rc
+#
+### Debug symbols on OS X. ###
+# See https://github.com/bazelbuild/bazel/issues/2537
+build:apple_debug --spawn_strategy=standalone
+build:apple_debug --genrule_strategy=standalone
+build:apple_debug --compilation_mode dbg
+
+# We don't actually use APPLE_DEBUG in code. It's just here to invalidate any
+# sandboxed .o files that might be in cache if a developer tried to build
+# with --compilation_mode=dbg instead of --config=apple_debug.
+build:apple_debug --copt="-DAPPLE_DEBUG"
+
 # Put user-specific options in .bazelrc.user
 try-import %workspace%/.bazelrc.user

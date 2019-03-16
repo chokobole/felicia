@@ -53,6 +53,22 @@ def fel_cxxopts(is_external = False):
         ],
     })
 
+# This function is taken from
+# LICENSE: BSD
+# URL: https://github.com/RobotLocomotion/drake/blob/47987499486349ba47ece6f30519aaf8f868bbe9/tools/skylark/drake_cc.bzl
+# Modificiation:
+# - Modify comment: linux -> elsewhere
+def _dsym_command(name):
+    """Returns the command to produce .dSYM on macOS, or a no-op on elsewhere."""
+    return select({
+        "//felicia:apple_debug": (
+            "dsymutil -f $(location :" + name + ") -o $@ 2> /dev/null"
+        ),
+        "//conditions:default": (
+            "touch $@"
+        ),
+    })
+
 FeliciaHeaders = provider("transitive_headers")
 HEADER_SUFFIX = ".hdrs"
 
@@ -211,6 +227,16 @@ def fel_cc_binary(
         **kwargs
     )
 
+    native.genrule(
+        name = name + "_dsym",
+        srcs = [":" + name],
+        outs = [name + ".dSYM"],
+        output_to_bindir = 1,
+        tags = ["dsym"],
+        visibility = ["//visibility:private"],
+        cmd = _dsym_command(name),
+    )
+
 def fel_cc_test(
         name,
         copts = [],
@@ -219,6 +245,17 @@ def fel_cc_test(
         name = name,
         copts = fel_cxxopts() + copts,
         **kwargs
+    )
+
+    native.genrule(
+        name = name + "_dsym",
+        srcs = [":" + name],
+        outs = [name + ".dSYM"],
+        output_to_bindir = 1,
+        testonly = 1,
+        tags = ["dsym"],
+        visibility = ["//visibility:private"],
+        cmd = _dsym_command(name),
     )
 
 def fel_cc_shared_library(
