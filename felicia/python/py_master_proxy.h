@@ -4,7 +4,7 @@
 #include "pybind11/pybind11.h"
 
 #include "felicia/core/lib/error/status.h"
-#include "felicia/core/master/master_data.pb.h"
+#include "felicia/core/master/master.pb.h"
 #include "felicia/core/node/node_lifecycle.h"
 
 namespace py = pybind11;

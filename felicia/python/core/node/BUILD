@@ -22,7 +22,6 @@ fel_pybind_py_library(
     name = "node",
     cc_deps = [
         ":py_node_lifecycle",
-        "//felicia/core/node",
     ],
     py_srcs = [
         "node_lifecycle.py",

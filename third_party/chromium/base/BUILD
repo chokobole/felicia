@@ -49,11 +49,17 @@ BASE_HDRS = chromium_hdrs(exclude = [
     "threading/platform_thread_internal_posix.h",
     "win/**/*.h",
 ]) + if_not_windows([
-    ":base_posix_hdrs",
     "message_loop/message_pump_libevent.h",
+    ":base_posix_hdrs",
+    "//third_party/chromium/base/third_party/libevent:libevent_hdrs",
 ]) + if_windows([
     ":base_win_hdrs",
-])
+]) + if_darwin([
+    ":base_mac_hdrs",
+]) + [
+    ":buildflags_hdrs",
+    ":third_party_hdrs",
+]
 
 chromium_cc_library(
     name = "base",
@@ -93,19 +99,24 @@ chromium_cc_library(
     deps = [
         ":third_party",
         ":buildflags",
-        "//third_party/chromium/testing:testing",
+        "//third_party/chromium/testing",
     ] + if_darwin([
         ":base_mac",
     ]) + if_not_windows([
-        "//third_party/chromium/base/third_party/libevent:libevent",
+        "//third_party/chromium/base/third_party/libevent",
     ]),
+)
+
+filegroup(
+    name = "base_mac_hdrs",
+    srcs = chromium_hdrs(base = "mac"),
 )
 
 chromium_objc_library(
     name = "base_mac",
     srcs = chromium_objc_srcs() +
            chromium_srcs(base = "mac"),
-    hdrs = BASE_HDRS + chromium_hdrs(base = "mac"),
+    hdrs = BASE_HDRS,
     deps = [
         ":buildflags",
         "//third_party/chromium/testing",
@@ -165,17 +176,23 @@ filegroup(
     visibility = ["//visibility:private"],
 )
 
+filegroup(
+    name = "third_party_hdrs",
+    srcs = [
+        "third_party/dmg_fp/dmg_fp.h",
+        "third_party/dmg_fp/dtoa.cc",
+        "third_party/icu/icu_utf.h",
+    ],
+    visibility = ["//visibility:private"],
+)
+
 chromium_cc_library(
     name = "third_party",
     srcs = [
         "third_party/dmg_fp/g_fmt.cc",
         "third_party/icu/icu_utf.cc",
     ],
-    hdrs = [
-        "third_party/dmg_fp/dmg_fp.h",
-        "third_party/dmg_fp/dtoa.cc",
-        "third_party/icu/icu_utf.h",
-    ],
+    hdrs = [":third_party_hdrs"],
     deps = [":third_party_c"],
 )
 
@@ -189,7 +206,7 @@ chromium_c_library(
         "third_party/dynamic_annotations/dynamic_annotations.h",
         "third_party/valgrind/memcheck.h",
         "third_party/valgrind/valgrind.h",
-    ]
+    ],
 )
 
 chromium_cc_library(

@@ -19,6 +19,10 @@ load(
     "if_not_windows",
     "if_static",
 )
+load(
+    "//bazel:felicia_cc.bzl",
+    "fel_cc_library",
+)
 
 # Appends a suffix to a list of deps.
 def fel_deps(deps, suffix):
@@ -110,7 +114,7 @@ def cc_proto_library(
         )
 
         # An empty cc_library to make rule dependency consistent.
-        native.cc_library(
+        fel_cc_library(
             name = name,
             **kargs
         )
@@ -152,7 +156,7 @@ def cc_proto_library(
         header_only_name = name + "_headers_only"
         impl_name = name
 
-    native.cc_library(
+    fel_cc_library(
         name = impl_name,
         srcs = gen_srcs,
         hdrs = gen_hdrs,
@@ -160,7 +164,7 @@ def cc_proto_library(
         includes = includes,
         **kargs
     )
-    native.cc_library(
+    fel_cc_library(
         name = header_only_name,
         deps = ["@com_google_protobuf//:protobuf_headers"] + if_static([impl_name]),
         hdrs = gen_hdrs,
@@ -206,13 +210,13 @@ def fel_proto_library_cc(
             visibility = ["//visibility:public"],
             deps = [s + "_genproto" for s in cc_deps],
         )
-        native.cc_library(
+        fel_cc_library(
             name = cc_name,
             deps = cc_deps + ["@com_google_protobuf//:protobuf_headers"] + if_static([name + "_cc_impl"]),
             testonly = testonly,
             visibility = visibility,
         )
-        native.cc_library(
+        fel_cc_library(
             name = cc_name + "_impl",
             deps = [s + "_impl" for s in cc_deps] + ["@com_google_protobuf//:cc_wkt_protos"],
         )

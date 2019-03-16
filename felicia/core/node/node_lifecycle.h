@@ -5,8 +5,7 @@
 
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"
-
-#include "felicia/core/master/master.pb.h"
+#include "felicia/core/master/master_data.pb.h"
 
 namespace felicia {
 

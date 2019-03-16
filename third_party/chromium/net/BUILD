@@ -1,6 +1,6 @@
 licenses(["notice"])  # BSD 3-Clause
 
-package(default_visibility = ["//felicia:internal"])
+package(default_visibility = ["//third_party/chromium:internal"])
 
 load(
     "//bazel:felicia.bzl",

@@ -5,7 +5,6 @@ package(default_visibility = ["//felicia:internal"])
 fel_pybind_py_library(
     name = "master_proxy",
     cc_deps = [
-        "//felicia/core/master:master_proxy",
         "//felicia/python/core:type_conversion",
     ],
     cc_srcs = [

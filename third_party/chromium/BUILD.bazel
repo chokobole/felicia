@@ -2,6 +2,8 @@
 
 licenses(["notice"])  # BSD 3-Clause
 
+load("//bazel:felicia_cc.bzl", "fel_cc_shared_library")
+
 package(default_visibility = [":internal"])
 
 package_group(
@@ -9,5 +11,15 @@ package_group(
     packages = [
         "//felicia/...",
         "//third_party/chromium/...",
+    ],
+)
+
+fel_cc_shared_library(
+    name = "chromium",
+    deps = [
+        "//third_party/chromium/base",
+        "//third_party/chromium/build",
+        "//third_party/chromium/net",
+        "//third_party/chromium/testing",
     ],
 )

@@ -10,6 +10,7 @@ package(default_visibility = ["//felicia:internal"])
 fel_proto_library(
     name = "error_codes_proto",
     srcs = ["error/error_codes.proto"],
+    visibility = ["//felicia:internal"],
 )
 
 fel_cc_library(
@@ -42,8 +43,7 @@ fel_cc_library(
     }),
     deps = [
         ":error_codes_proto_cc",
-        "//third_party/chromium/base",
-        "//third_party/chromium/net",
+        "//third_party/chromium",
         "@com_google_googletest//:gtest",
         "@com_google_protobuf//:protobuf",
     ],

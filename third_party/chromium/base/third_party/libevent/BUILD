@@ -17,6 +17,25 @@ package(default_visibility = ["//third_party/chromium:internal"])
 
 exports_files(["LICENSE"])
 
+filegroup(
+    name = "libevent_hdrs",
+    srcs = [
+        "evdns.h",
+        "event-config.h",
+        "event.h",
+        "evhttp.h",
+        "evrpc.h",
+        "evutil.h",
+        "log.h",
+    ] + if_darwin([
+        "mac/config.h",
+        "mac/event-config.h",
+    ]) + if_linux([
+        "linux/config.h",
+        "linux/event-config.h",
+    ]),
+)
+
 chromium_c_library(
     name = "libevent",
     srcs = [
@@ -44,21 +63,7 @@ chromium_c_library(
     ]) + if_linux([
         "epoll.c",
     ]),
-    hdrs = [
-        "evdns.h",
-        "event-config.h",
-        "event.h",
-        "evhttp.h",
-        "evrpc.h",
-        "evutil.h",
-        "log.h",
-    ] + if_darwin([
-        "mac/config.h",
-        "mac/event-config.h",
-    ]) + if_linux([
-        "linux/config.h",
-        "linux/event-config.h",
-    ]),
+    hdrs = [":libevent_hdrs"],
     copts = if_darwin([
         "-Ithird_party/chromium/base/third_party/libevent/mac",
     ]) + if_linux([

@@ -8,8 +8,10 @@ load(
 load(
     "//bazel:felicia_cc.bzl",
     "define",
-    "fel_copts",
-    "fel_cxxopts",
+    "fel_c_library",
+    "fel_cc_library",
+    "fel_cc_test",
+    "fel_objc_library",
 )
 
 def chromium_files(suffix, base, exclude):
@@ -52,40 +54,36 @@ def chromium_test_srcs(base = None, exclude = []):
 
 def chromium_c_library(
         name,
-        copts = [],
         **kwargs):
-    native.cc_library(
+    fel_c_library(
         name = name,
-        copts = fel_copts() + copts,
         **kwargs
     )
 
 def chromium_cc_library(
         name,
-        copts = [],
         **kwargs):
-    native.cc_library(
+    fel_cc_library(
         name = name,
-        copts = fel_cxxopts() + copts,
         **kwargs
     )
 
 def chromium_objc_library(
         name,
-        copts = [],
+        copts = ["-fno-objc-arc"],
         **kwargs):
-    native.objc_library(
+    fel_objc_library(
         name = name,
-        copts = fel_cxxopts() + ["-fno-objc-arc"] + copts,
+        copts = copts,
         **kwargs
     )
 
 def chromium_cc_test(
         name,
-        copts = [],
+        copts = define(["UNIT_TEST"]),
         **kwargs):
-    native.cc_test(
+    fel_cc_test(
         name = name,
-        copts = fel_cxxopts() + define(["UNIT_TEST"]) + copts,
+        copts = copts,
         **kwargs
     )

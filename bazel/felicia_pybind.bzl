@@ -23,7 +23,13 @@ def fel_pybind_py_library(
         copts = fel_cxxopts() + copts,
         linkshared = 1,
         linkstatic = 1,
-        deps = ["@pybind11"] + cc_deps,
+        deps = [
+            "//felicia:felicia",
+            "//third_party/chromium",
+            "@com_google_googletest//:gtest",
+            "@com_google_protobuf//:protobuf",
+            "@pybind11",
+        ] + cc_deps,
     )
 
     native.py_library(

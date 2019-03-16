@@ -32,6 +32,14 @@ fel_cc_library(
     deps = ["//felicia/core/lib"],
 )
 
+fel_cc_library(
+    name = "util",
+    deps = [
+        ":command_line_interface",
+        ":uuid",
+    ],
+)
+
 fel_cc_test(
     name = "util_tests",
     size = "small",

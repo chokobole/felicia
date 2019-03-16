@@ -1,4 +1,8 @@
-load("//bazel:felicia_cc.bzl", "fel_cc_library")
+load(
+    "//bazel:felicia_cc.bzl",
+    "fel_cc_library",
+    "fel_cc_shared_library",
+)
 
 package(default_visibility = [":internal"])
 
@@ -89,4 +93,15 @@ fel_cc_library(
         ":linux_s390x": ["@com_github_grpc_grpc//:grpc++_unsecure"],
         "//conditions:default": ["@com_github_grpc_grpc//:grpc++"],
     }),
+)
+
+fel_cc_shared_library(
+    name = "felicia",
+    deps = [
+        "//felicia/core/communication",
+        "//felicia/core/lib",
+        "//felicia/core/master:master_proxy",
+        "//felicia/core/node",
+        "//felicia/core/util",
+    ]
 )

@@ -20,8 +20,7 @@ fel_cc_library(
 fel_pybind_py_library(
     name = "flag",
     cc_deps = [
-        ":py_flag_parser_delegate",
-        "//felicia/core/util:command_line_interface",
+        ":py_flag_parser_delegate"
     ],
     py_srcs = [
         "flag_parser_delegate.py",

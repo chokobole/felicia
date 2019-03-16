@@ -4,7 +4,4 @@ package(default_visibility = ["//felicia:internal"])
 
 fel_pybind_py_library(
     name = "status",
-    cc_deps = [
-        "//felicia/core/lib",
-    ],
 )
