@@ -51,7 +51,10 @@ void PyMasterProxy::RequestRegisterNode(py::function constructor,
   py::object object = constructor(*args, **kwargs);
   NodeLifecycle* node = object.cast<NodeLifecycle*>();
 
-  node->OnInit();
+  {
+    py::gil_scoped_release release;
+    node->OnInit();
+  }
   master_proxy.RegisterNodeAsync(
       request, response,
       ::base::BindOnce(&PyMasterProxy::OnRegisterNodeAsync, object, request,
@@ -77,7 +80,10 @@ void PyMasterProxy::OnRegisterNodeAsync(py::object object,
                       ::base::StringPrintf("Failed to register node : %s",
                                            s.error_message().c_str()));
     NodeLifecycle* node = object.cast<NodeLifecycle*>();
-    node->OnError(new_status);
+    {
+      py::gil_scoped_release release;
+      node->OnError(new_status);
+    }
     return;
   }
 
@@ -85,12 +91,11 @@ void PyMasterProxy::OnRegisterNodeAsync(py::object object,
 
   const NodeInfo& node_info = response->node_info();
 
-  // py::object object = py::cast(node.get());
   NodeLifecycle* node = object.cast<NodeLifecycle*>();
-  // object.attr("OnDidCreate")(node_info);
-  node->OnDidCreate(node_info);
-  // node->OnDidCreate(node_info);
-  // master_proxy.nodes_.push_back(std::move(node));
+  {
+    py::gil_scoped_release release;
+    node->OnDidCreate(node_info);
+  }
 }
 
 }  // namespace felicia
