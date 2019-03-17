@@ -15,7 +15,7 @@ MasterProxy::MasterProxy()
     : message_loop_(
           std::make_unique<::base::MessageLoop>(::base::MessageLoop::TYPE_IO)),
       run_loop_(std::make_unique<::base::RunLoop>()),
-      topic_info_watcher_(this),
+      topic_info_watcher_(),
       heart_beat_signaller_(this) {}
 
 Status MasterProxy::Start() {
