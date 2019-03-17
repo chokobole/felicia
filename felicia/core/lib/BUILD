@@ -45,7 +45,6 @@ fel_cc_library(
         ":error_codes_proto_cc",
         "//third_party/chromium",
         "@com_google_googletest//:gtest",
-        "@com_google_protobuf//:protobuf",
     ],
 )
 
@@ -57,7 +56,6 @@ fel_cc_test(
         "base/range_test.cc",
         "containers/pool_test.cc",
     ],
-    linkstatic = 1,  # Failed at macos when built with opt
     deps = [
         ":lib",
         "@com_google_googletest//:gtest_main",

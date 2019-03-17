@@ -156,12 +156,14 @@ def deps_with_felicia_headers(deps):
 
 def fel_c_library(
         name,
-        copts = [],
+        srcs = [],
         hdrs = [],
         deps = [],
+        copts = [],
         **kwargs):
     native.cc_library(
         name = name,
+        srcs = srcs,
         hdrs = hdrs,
         deps = deps,
         copts = fel_copts() + copts,
@@ -177,12 +179,14 @@ def fel_c_library(
 
 def fel_cc_library(
         name,
-        copts = [],
+        srcs = [],
         hdrs = [],
         deps = [],
+        copts = [],
         **kwargs):
     native.cc_library(
         name = name,
+        srcs = srcs,
         hdrs = hdrs,
         deps = deps,
         copts = fel_cxxopts() + copts,
@@ -198,12 +202,14 @@ def fel_cc_library(
 
 def fel_objc_library(
         name,
-        copts = [],
+        srcs = [],
         hdrs = [],
         deps = [],
+        copts = [],
         **kwargs):
     native.objc_library(
         name = name,
+        srcs = srcs,
         hdrs = hdrs,
         deps = deps,
         copts = fel_cxxopts() + copts,
@@ -219,10 +225,14 @@ def fel_objc_library(
 
 def fel_cc_binary(
         name,
+        srcs = [],
+        deps = [],
         copts = [],
         **kwargs):
     native.cc_binary(
         name = name,
+        srcs = srcs,
+        deps = deps,
         copts = fel_cxxopts() + copts,
         **kwargs
     )
@@ -239,11 +249,17 @@ def fel_cc_binary(
 
 def fel_cc_test(
         name,
+        srcs = [],
+        deps = [],
         copts = [],
+        linkstatic = 1,
         **kwargs):
     native.cc_test(
         name = name,
+        srcs = srcs,
+        deps = deps,
         copts = fel_cxxopts() + copts,
+        linkstatic = linkstatic,
         **kwargs
     )
 
@@ -264,7 +280,6 @@ def fel_cc_shared_library(
         deps = [],
         data = [],
         linkopts = [],
-        visibility = None,
         **kwargs):
     native.cc_binary(
         name = "lib" + name + ".so",
@@ -274,24 +289,46 @@ def fel_cc_shared_library(
         linkstatic = 1,
         data = data,
         linkopts = linkopts,
-        visibility = visibility,
         **kwargs
     )
 
     collect_transitive_hdrs(
         name = "collect_" + name + "_hdrs",
         deps = [installed_headers_for_dep(x) for x in deps],
-        visibility = visibility,
+        visibility = ["//visibility:private"],
     )
 
     native.filegroup(
         name = name + "_hdrs",
         srcs = [":collect_" + name + "_hdrs"],
+        visibility = ["//visibility:private"],
     )
 
     native.cc_library(
         name = name,
         srcs = [":lib" + name + ".so"],
         hdrs = [":" + name + "_hdrs"],
-        visibility = visibility,
+    )
+
+def fel_cc_third_party_shared_library(
+        name,
+        srcs = [],
+        deps = [],
+        data = [],
+        linkopts = [],
+        **kwargs):
+    native.cc_binary(
+        name = "lib" + name + ".so",
+        srcs = srcs,
+        deps = deps,
+        linkshared = 1,
+        linkstatic = 1,
+        data = data,
+        linkopts = linkopts,
+        **kwargs
+    )
+
+    native.cc_library(
+        name = name,
+        srcs = [":lib" + name + ".so"],
     )

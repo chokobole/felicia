@@ -25,9 +25,10 @@ def fel_pybind_py_library(
         linkstatic = 1,
         deps = [
             "//felicia:felicia",
+            "//felicia:protobuf",
             "//third_party/chromium",
             "@com_google_googletest//:gtest",
-            "@com_google_protobuf//:protobuf",
+            "@com_google_protobuf//:protobuf_headers",
             "@pybind11",
         ] + cc_deps,
     )

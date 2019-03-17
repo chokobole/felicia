@@ -95,7 +95,6 @@ chromium_cc_library(
         ],
         "//conditions:default": [],
     }),
-    linkstatic = 1,
     deps = [
         ":third_party",
         ":buildflags",

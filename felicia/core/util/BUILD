@@ -10,14 +10,14 @@ fel_cc_library(
     name = "command_line_interface",
     srcs = [
         "command_line_interface/flag.cc",
-        "command_line_interface/flag_forward.h",
         "command_line_interface/flag_parser.cc",
-        "command_line_interface/flag_value_traits.h",
         "command_line_interface/table_writer.cc",
     ],
     hdrs = [
         "command_line_interface/flag.h",
+        "command_line_interface/flag_forward.h",
         "command_line_interface/flag_parser.h",
+        "command_line_interface/flag_value_traits.h",
         "command_line_interface/table_writer.h",
         "command_line_interface/text_style.h",
     ],

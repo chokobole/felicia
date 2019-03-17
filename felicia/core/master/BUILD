@@ -113,7 +113,6 @@ fel_cc_test(
     srcs = [
         "master_test.cc",
     ],
-    linkstatic = 1,  # Failed at macos when built with opt
     deps = [
         ":master",
         "@com_google_googletest//:gtest_main",
