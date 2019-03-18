@@ -4,10 +4,12 @@ load(
     "new_git_repository",
 )
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("//third_party/cc:cc_configure.bzl", "cc_configure")
 load("//third_party/py:python_configure.bzl", "python_configure")
 
 def load_deps():
     """Loads dependencies need to compile and test the felicia."""
+    cc_configure(name = "cc")
     python_configure(name = "local_config_python")
 
     # Needed by protobuf
