@@ -150,7 +150,9 @@ def deps_with_felicia_headers(deps):
         for dep in deps
         if (
             not dep.startswith("@") and
-            not dep.startswith("//third_party")
+            not dep.startswith("//third_party") and
+            not dep == "//felicia:felicia" and
+            not dep == "//felicia"
         )
     ]
 
@@ -274,61 +276,86 @@ def fel_cc_test(
         cmd = _dsym_command(name),
     )
 
+SHARED_LIBRARY_NAME_PATTERNS = [
+    "lib%s.so",  # On Linux, shared libraries are usually named as libfoo.so
+    "lib%s.dylib",  # On macos, shared libraries are usually named as libfoo.dylib
+    "%s.dll",  # On Windows, shared libraries are usually named as foo.dll
+]
+
+
+def shared_library(name):
+    return select({
+            "//felicia:windows": [":%s.dll" % name],
+            "//felicia:darwin": [":lib%s.dylib" % name],
+            "//felicia:darwin_x86_64": [":lib%s.dylib" % name],
+            "//conditions:default": [":lib%s.so" % name],
+        })
+
 def fel_cc_shared_library(
         name,
         srcs = [],
         deps = [],
         data = [],
         linkopts = [],
+        collect_hdrs = True,
         **kwargs):
-    native.cc_binary(
-        name = "lib" + name + ".so",
-        srcs = srcs,
-        deps = deps,
-        linkshared = 1,
-        linkstatic = 1,
-        data = data,
-        linkopts = linkopts,
-        **kwargs
-    )
+    for libname in [pattern % name for pattern in SHARED_LIBRARY_NAME_PATTERNS]:
+        native.cc_binary(
+            name = libname,
+            srcs = srcs,
+            deps = deps,
+            copts = fel_copts(is_external = True),
+            linkshared = 1,
+            linkstatic = 1,
+            data = data,
+            linkopts = linkopts,
+            **kwargs
+        )
 
-    collect_transitive_hdrs(
-        name = "collect_" + name + "_hdrs",
-        deps = [installed_headers_for_dep(x) for x in deps],
-        visibility = ["//visibility:private"],
-    )
+    if collect_hdrs:
+        collect_transitive_hdrs(
+            name = "collect_" + name + "_hdrs",
+            deps = [installed_headers_for_dep(x) for x in deps],
+            visibility = ["//visibility:private"],
+        )
+
+        native.cc_library(
+            name = name + "_hdrs",
+            hdrs = [":collect_" + name + "_hdrs"],
+        )
 
     native.filegroup(
-        name = name + "_hdrs",
-        srcs = [":collect_" + name + "_hdrs"],
-        visibility = ["//visibility:private"],
+        name = name + "_import_lib",
+        srcs = select({
+            "//felicia:windows": [":%s.dll" % name],
+            "//felicia:darwin": [":lib%s.dylib" % name],
+            "//felicia:darwin_x86_64": [":lib%s.dylib" % name],
+            "//conditions:default": [":lib%s.so" % name],
+        }),
+        output_group = "interface_library",
     )
 
-    native.cc_library(
-        name = name,
-        srcs = [":lib" + name + ".so"],
-        hdrs = [":" + name + "_hdrs"],
+    native.cc_import(
+        name = name + "_import",
+        interface_library = ":" + name + "_import_lib",
+        shared_library = select({
+            "//felicia:windows": ":%s.dll" % name,
+            "//felicia:darwin": ":lib%s.dylib" % name,
+            "//felicia:darwin_x86_64": ":lib%s.dylib" % name,
+            "//conditions:default": ":lib%s.so" % name,
+        }),
     )
 
-def fel_cc_third_party_shared_library(
-        name,
-        srcs = [],
-        deps = [],
-        data = [],
-        linkopts = [],
-        **kwargs):
-    native.cc_binary(
-        name = "lib" + name + ".so",
-        srcs = srcs,
-        deps = deps,
-        linkshared = 1,
-        linkstatic = 1,
-        data = data,
-        linkopts = linkopts,
-        **kwargs
-    )
-
-    native.cc_library(
-        name = name,
-        srcs = [":lib" + name + ".so"],
-    )
+    if collect_hdrs:
+        native.cc_library(
+            name = name,
+            deps = [
+                ":" + name + "_hdrs",
+                ":" + name + "_import",
+            ],
+        )
+    else:
+        native.cc_library(
+            name = name,
+            deps = [":" + name + "_import"],
+        )

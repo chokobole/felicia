@@ -2,7 +2,6 @@ load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
     "fel_cc_shared_library",
-    "fel_cc_third_party_shared_library",
 )
 
 package(default_visibility = [":internal"])
@@ -104,9 +103,10 @@ fel_cc_library(
 
 # Workaround to solve the issue related to
 # https://github.com/protocolbuffers/protobuf/issues/1941#issuecomment-284582895
-fel_cc_third_party_shared_library(
+fel_cc_shared_library(
     name = "protobuf",
     deps = ["@com_google_protobuf//:protobuf"],
+    collect_hdrs = False,
 )
 
 fel_cc_shared_library(
