@@ -12,6 +12,7 @@
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/channel/channel_factory.h"
+#include "felicia/core/communication/state.h"
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/error/status.h"

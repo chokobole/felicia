@@ -58,9 +58,9 @@ class SimplePublishingNode : public NodeLifecycle {
   }
 
   void RepeatingPublish() {
-    publisher_.Publish(GenerateMessage(), ::base::BindOnce(::base::BindOnce(
-                                              &SimplePublishingNode::OnPublish,
-                                              ::base::Unretained(this))));
+    publisher_.Publish(GenerateMessage(),
+                       ::base::BindOnce(&SimplePublishingNode::OnPublish,
+                                        ::base::Unretained(this)));
 
     if (!publisher_.IsUnregistered()) {
       MasterProxy& master_proxy = MasterProxy::GetInstance();

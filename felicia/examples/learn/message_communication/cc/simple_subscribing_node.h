@@ -48,14 +48,19 @@ class SimpleSubscribingNode : public NodeLifecycle {
                          ::base::Unretained(this)));
   }
 
-  void OnRequestSubscribe(const Status& s) {
-    std::cout << "SimpleSubscribingNode::OnRequestSubscribe()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
-  }
-
   void OnMessage(const MessageSpec& message) {
     std::cout << "SimpleSubscribingNode::OnMessage()" << std::endl;
     std::cout << "message : " << message.DebugString() << std::endl;
+  }
+
+  void OnSubscriptionError(const Status& s) {
+    std::cout << "SimpleSubscribingNode::OnSubscriptionError()" << std::endl;
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
+  }
+
+  void OnRequestSubscribe(const Status& s) {
+    std::cout << "SimpleSubscribingNode::OnRequestSubscribe()" << std::endl;
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
   void RequestUnsubscribe() {
@@ -67,11 +72,6 @@ class SimpleSubscribingNode : public NodeLifecycle {
 
   void OnRequestUnsubscribe(const Status& s) {
     std::cout << "SimpleSubscribingNode::OnRequestUnsubscribe()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
-  }
-
-  void OnSubscriptionError(const Status& s) {
-    std::cout << "SimpleSubscribingNode::OnSubscriptionError()" << std::endl;
     LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 

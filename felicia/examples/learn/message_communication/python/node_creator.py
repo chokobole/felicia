@@ -1,12 +1,12 @@
 import sys
 
+from felicia.core.master.master_data_pb2 import NodeInfo
+from felicia.examples.learn.message_communication.python.node_create_flag import NodeCreateFlag
+from felicia.examples.learn.message_communication.python.simple_publishing_node import SimplePublishigNode
+from felicia.examples.learn.message_communication.python.simple_subscribing_node import SimpleSubscribingNode
 from felicia.python.core.util.command_line_interface import flag
 from felicia.python.core.util.command_line_interface.flag_parser_delegate import FlagParserDelegate
 from felicia.python.core.util.command_line_interface.text_style import TextStyle
-from felicia.examples.learn.message_communication.python.simple_publishing_node import SimplePublishigNode
-from felicia.examples.learn.message_communication.python.simple_subscribing_node import SimpleSubscribingNode
-from felicia.examples.learn.message_communication.python.node_create_flag import NodeCreateFlag
-from felicia.core.master.master_data_pb2 import NodeInfo
 from felicia.python.master_proxy import MasterProxy
 
 
