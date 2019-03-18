@@ -104,8 +104,7 @@ class EXPORT Master {
   std::unique_ptr<::base::Thread> thread_;
 
   ::base::Lock lock_;
-  ::base::flat_map<uint32_t, std::unique_ptr<Client>> client_map_;
-  GUARDED_BY(lock_);
+  ::base::flat_map<uint32_t, std::unique_ptr<Client>> client_map_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(Master);
 };
