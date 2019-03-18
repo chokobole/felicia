@@ -1,7 +1,7 @@
 #### Specification
 
 - Name: chromium
-- URL: [https://github.com/protocolbuffers/protobuf.git](https://github.com/chromium/chromium.git)
+- URL: [https://github.com/chromium/chromium.git](https://github.com/chromium/chromium.git)
 - Commit: 5db095c2653f332334d56ad739ae5fe1053308b1
 - License: BSD 3-Clause
 - License File: LICENSE
