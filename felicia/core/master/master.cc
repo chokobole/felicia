@@ -8,6 +8,8 @@
 
 namespace felicia {
 
+Master::~Master() = default;
+
 #define CHECK_CLIENT_EXISTS(node_info)                        \
   do {                                                        \
     if (!CheckIfClientExists(node_info.client_id())) {        \

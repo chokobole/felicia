@@ -19,12 +19,13 @@ limitations under the License.
 #include "third_party/chromium/base/compiler_specific.h"
 #include "third_party/chromium/base/logging.h"
 
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"
 
 namespace felicia {
 namespace internal_statusor {
 
-class Helper {
+class EXPORT Helper {
  public:
   // Move type-agnostic error handling to the .cc.
   static void HandleInvalidStatusCtorArg(Status*);

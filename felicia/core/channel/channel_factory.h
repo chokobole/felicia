@@ -8,11 +8,10 @@
 #include "felicia/core/channel/channel.pb.h"
 #include "felicia/core/channel/tcp_channel.h"
 #include "felicia/core/channel/udp_channel.h"
-#include "felicia/core/lib/base/export.h"
 
 namespace felicia {
 
-class EXPORT ChannelFactory {
+class ChannelFactory {
  public:
   template <typename MessageTy>
   static std::unique_ptr<Channel<MessageTy>> NewChannel(

@@ -4,12 +4,11 @@
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 
-#include "felicia/core/lib/base/export.h"
 #include "felicia/core/util/command_line_interface/flag_parser.h"
 
 namespace felicia {
 
-class EXPORT PyFlagParserDelegate : public FlagParser::Delegate {
+class PyFlagParserDelegate : public FlagParser::Delegate {
  public:
   using FlagParser::Delegate::Delegate;
 

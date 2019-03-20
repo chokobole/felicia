@@ -9,13 +9,16 @@ namespace felicia {
 
 TableWriter::TableWriter() = default;
 
-TableWriterBuilder::TableWriterBuilder() = default;
+TableWriter::TableWriter(const TableWriter& other) = default;
 
-TableWriterBuilder& TableWriterBuilder::AddColumn(
-    const TableWriter::Column& column) {
-  writer_.heads_.push_back(column);
-  return *this;
-}
+TableWriter::~TableWriter() = default;
+
+TableWriter::Column::Column(std::string title, int width)
+    : title(title), width(width) {}
+
+TableWriter::Column::Column(const Column& other) = default;
+
+TableWriter::Column::~Column() = default;
 
 void TableWriter::SetElement(size_t row, size_t col,
                              ::base::StringPiece element) {
@@ -47,5 +50,17 @@ std::string TableWriter::ToString() const {
 
   return ss.str();
 }
+
+TableWriterBuilder::TableWriterBuilder() = default;
+
+TableWriterBuilder::~TableWriterBuilder() = default;
+
+TableWriterBuilder& TableWriterBuilder::AddColumn(
+    const TableWriter::Column& column) {
+  writer_.heads_.push_back(column);
+  return *this;
+}
+
+TableWriter TableWriterBuilder::Build() const { return writer_; }
 
 }  // namespace felicia

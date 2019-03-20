@@ -32,9 +32,20 @@ Status& Status::operator=(const Status& status) = default;
 
 Status::~Status() = default;
 
+// static
+Status Status::OK() { return Status(); }
+
+error::Code Status::error_code() const { return error_code_; }
+const std::string& Status::error_message() const { return error_message_; }
+bool Status::ok() const { return error_code_ == 0; }
+
 bool Status::operator==(const Status& status) const {
   return error_code_ == status.error_code_ &&
          strings::Equals(error_message_, status.error_message_);
+}
+
+bool Status::operator!=(const Status& status) const {
+  return !operator==(status);
 }
 
 std::ostream& operator<<(std::ostream& os, const Status& status) {

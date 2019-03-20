@@ -13,6 +13,8 @@ namespace felicia {
 UDPClientChannel::UDPClientChannel() = default;
 UDPClientChannel::~UDPClientChannel() = default;
 
+bool UDPClientChannel::IsClient() const { return true; }
+
 void UDPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
                                StatusCallback callback) {
   DCHECK(!callback.is_null());
@@ -44,7 +46,8 @@ void UDPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
     return;
   }
 
-  rv = client_socket->SetReceiveBufferSize(kMaxReceiverBufferSize);
+  rv = client_socket->SetReceiveBufferSize(
+      ChannelBase::GetMaxReceiveBufferSize());
   if (rv != ::net::OK) {
     std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
     return;

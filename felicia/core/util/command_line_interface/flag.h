@@ -11,7 +11,6 @@
 #include "third_party/chromium/base/strings/string_util.h"
 
 #include "felicia/core/lib/base/choices.h"
-#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/base/range.h"
 #include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/util/command_line_interface/flag_forward.h"
@@ -120,26 +119,25 @@ class ValueStore<Choices<T>, DefaultValueTraits<T>> {
 };
 
 template <typename T>
-EXPORT ValueStore<T> MakeValueStore(T* dst) {
+ValueStore<T> MakeValueStore(T* dst) {
   return ValueStore<T>(InitValueTraits<T>{dst});
 }
 
 template <typename T>
-EXPORT ValueStore<T, DefaultValueTraits<T>> MakeValueStore(T* dst,
-                                                           T default_value) {
+ValueStore<T, DefaultValueTraits<T>> MakeValueStore(T* dst, T default_value) {
   return ValueStore<T, DefaultValueTraits<T>>(
       DefaultValueTraits<T>(dst, default_value));
 }
 
 template <typename T>
-EXPORT ValueStore<Range<T>, DefaultValueTraits<T>> MakeValueStore(
+ValueStore<Range<T>, DefaultValueTraits<T>> MakeValueStore(
     T* dst, T default_value, const Range<T>& range) {
   return ValueStore<Range<T>, DefaultValueTraits<T>>(
       DefaultValueTraits<T>(dst, default_value), range);
 }
 
 template <typename T>
-EXPORT ValueStore<Choices<T>, DefaultValueTraits<T>> MakeValueStore(
+ValueStore<Choices<T>, DefaultValueTraits<T>> MakeValueStore(
     T* dst, T default_value, const Choices<T>& choices) {
   return ValueStore<Choices<T>, DefaultValueTraits<T>>(
       DefaultValueTraits<T>(dst, default_value), choices);
@@ -158,7 +156,7 @@ EXPORT ValueStore<Choices<T>, DefaultValueTraits<T>> MakeValueStore(
 //
 // |help_| is help message. It is printed out when FlagParser fails to parse.
 template <typename T, typename Traits>
-class EXPORT Flag {
+class Flag {
  public:
   typedef T flag_type;
   typedef Traits traits_type;
@@ -167,7 +165,7 @@ class EXPORT Flag {
   Flag(const Flag& other) = default;
   Flag& operator=(const Flag& other) = default;
 
-  class EXPORT Builder {
+  class Builder {
    public:
     Builder(const ValueStore<T, Traits>& value_store)
         : flag_(Flag{value_store}) {}

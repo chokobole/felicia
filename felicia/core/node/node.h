@@ -9,12 +9,11 @@
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/base/memory/weak_ptr.h"
 
-#include "felicia/core/lib/base/export.h"
 #include "felicia/core/master/master_data.pb.h"
 
 namespace felicia {
 
-class EXPORT Node : public ::base::SupportsWeakPtr<Node> {
+class Node : public ::base::SupportsWeakPtr<Node> {
  public:
   // Return a new node unless a |node_info| contains name and there is
   // already registered with a given name. If so, return nullptr.

@@ -3,13 +3,12 @@
 
 #include "third_party/chromium/base/macros.h"
 
-#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/master_data.pb.h"
 
 namespace felicia {
 
-class EXPORT NodeLifecycle {
+class NodeLifecycle {
  public:
   NodeLifecycle() = default;
 

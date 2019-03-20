@@ -12,6 +12,8 @@ namespace felicia {
 TCPClientChannel::TCPClientChannel() = default;
 TCPClientChannel::~TCPClientChannel() = default;
 
+bool TCPClientChannel::IsClient() const { return true; }
+
 bool TCPClientChannel::IsConnected() const {
   return socket_ && socket_->IsConnected();
 }

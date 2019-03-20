@@ -27,26 +27,26 @@ limitations under the License.
 namespace felicia {
 
 // Denotes success or failure of a call in Felicia.
-class Status {
+class EXPORT Status {
  public:
   // Create a success status.
   Status();
   Status(felicia::error::Code error_code, ::base::StringPiece error_message);
 
   // Convenience static method.
-  static Status OK() { return Status(); }
+  static Status OK();
 
   Status(const Status& status);
   Status& operator=(const Status& status);
   ~Status();
 
   // Accessor
-  error::Code error_code() const { return error_code_; }
-  const std::string& error_message() const { return error_message_; }
-  bool ok() const { return error_code_ == 0; }
+  error::Code error_code() const;
+  const std::string& error_message() const;
+  bool ok() const;
 
   bool operator==(const Status& status) const;
-  bool operator!=(const Status& status) const { return !operator==(status); }
+  bool operator!=(const Status& status) const;
 
  private:
   felicia::error::Code error_code_;

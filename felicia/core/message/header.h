@@ -11,12 +11,12 @@ namespace felicia {
 
 class EXPORT Header {
  public:
-  constexpr Header() : magic_value_(kMessageMagicValue) {}
+  Header();
 
   static bool FromBytes(const char* bytes, Header* header);
 
-  uint32_t size() const { return size_; }
-  void set_size(uint32_t size) { size_ = size; }
+  uint32_t size() const;
+  void set_size(uint32_t size);
 
  private:
   uint32_t magic_value_ = 0;

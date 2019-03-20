@@ -10,6 +10,36 @@
 
 namespace felicia {
 
+FlagParser::FlagParser() : suppress_help_(false) {}
+
+FlagParser::~FlagParser() = default;
+
+FlagParser::Delegate::Delegate() : parser_index_(0) {}
+
+FlagParser::Delegate::~Delegate() = default;
+
+bool FlagParser::Delegate::Validate() const { return true; }
+
+std::vector<std::string> FlagParser::Delegate::CollectUsages() const {
+  return {};
+}
+std::string FlagParser::Delegate::Description() const {
+  return ::base::EmptyString();
+}
+std::vector<NamedHelpType> FlagParser::Delegate::CollectNamedHelps() const {
+  return {};
+}
+
+void FlagParser::Delegate::PreParse() { parser_index_++; }
+
+void FlagParser::set_program_name(const std::string& program_name) {
+  program_name_ = program_name;
+}
+
+const std::string& FlagParser::program_name() const { return program_name_; }
+
+void FlagParser::mark_suppress_help() { suppress_help_ = true; }
+
 bool FlagParser::Parse(int argc, char** argv, Delegate* delegate) {
   current_idx_ = 1;
   argc_ = argc;
@@ -36,6 +66,8 @@ bool FlagParser::Parse(int argc, char** argv, Delegate* delegate) {
 
   return true;
 }
+
+::base::StringPiece FlagParser::current() { return argv_[current_idx_]; }
 
 void FlagParser::Proceed() {
   if (current_idx_ < argc_) current_idx_++;

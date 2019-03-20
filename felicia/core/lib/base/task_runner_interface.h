@@ -4,11 +4,14 @@
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/location.h"
 
+#include "felicia/core/lib/base/export.h"
+
 namespace felicia {
 
-class TaskRunnerInterface {
+class EXPORT TaskRunnerInterface {
  public:
-  virtual ~TaskRunnerInterface() = default;
+  TaskRunnerInterface();
+  virtual ~TaskRunnerInterface();
 
   virtual bool IsBoundToCurrentThread() const = 0;
 

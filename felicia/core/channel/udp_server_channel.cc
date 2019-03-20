@@ -15,6 +15,8 @@ namespace felicia {
 UDPServerChannel::UDPServerChannel() = default;
 UDPServerChannel::~UDPServerChannel() = default;
 
+bool UDPServerChannel::IsServer() const { return true; }
+
 StatusOr<ChannelSource> UDPServerChannel::Bind() {
   auto server_socket = std::make_unique<::net::UDPSocket>(
       ::net::DatagramSocket::BindType::DEFAULT_BIND);

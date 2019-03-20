@@ -14,6 +14,7 @@ fel_cc_library(
     srcs = [
         "channel.cc",
         "channel_base.cc",
+        "tcp_channel_base.cc",
         "tcp_client_channel.cc",
         "tcp_server_channel.cc",
         "udp_channel_base.cc",

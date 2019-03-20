@@ -12,12 +12,12 @@
 
 namespace felicia {
 
-class UDPClientChannel : public UDPChannelBase {
+class EXPORT UDPClientChannel : public UDPChannelBase {
  public:
   UDPClientChannel();
   ~UDPClientChannel();
 
-  bool IsClient() const override { return true; }
+  bool IsClient() const override;
 
   void Connect(const ::net::IPEndPoint& ip_endpoint, StatusCallback callback);
 

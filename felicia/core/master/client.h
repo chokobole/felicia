@@ -21,7 +21,7 @@ class EXPORT Client {
 
   ~Client();
 
-  const ClientInfo& client_info() const { return client_info_; }
+  const ClientInfo& client_info() const;
 
   // Add the Node.
   void AddNode(std::unique_ptr<Node> node);
@@ -37,7 +37,7 @@ class EXPORT Client {
   std::vector<TopicInfo> FindTopicInfos(const TopicFilter& topic_filter);
 
  private:
-  explicit Client(const ClientInfo& client_info) : client_info_(client_info) {}
+  explicit Client(const ClientInfo& client_info);
 
   ClientInfo client_info_;
   std::vector<std::unique_ptr<Node>> nodes_;

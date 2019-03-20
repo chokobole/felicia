@@ -42,7 +42,7 @@ EXPORT ::net::IPAddress ResolveGRPCServiceIp();
 
 EXPORT uint16_t ResolveGRPCServicePort();
 
-std::shared_ptr<::grpc::Channel> ConnectGRPCService();
+EXPORT std::shared_ptr<::grpc::Channel> ConnectGRPCService();
 
 }  // namespace felicia
 

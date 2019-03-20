@@ -12,7 +12,6 @@
 
 #include "felicia/core/channel/channel_factory.h"
 #include "felicia/core/communication/state.h"
-#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/master_proxy.h"
@@ -20,7 +19,7 @@
 namespace felicia {
 
 template <typename MessageTy>
-class EXPORT Publisher {
+class Publisher {
  public:
   Publisher() { state_.ToUneregistered(); }
 

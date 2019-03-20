@@ -11,20 +11,13 @@ namespace felicia {
 class TCPClientChannel;
 class TCPServerChannel;
 
-class TCPChannelBase : public ChannelBase {
+class EXPORT TCPChannelBase : public ChannelBase {
  public:
-  TCPChannelBase() = default;
-  ~TCPChannelBase() override = default;
+  TCPChannelBase();
+  ~TCPChannelBase() override;
 
-  TCPClientChannel* ToTCPClientChannel() {
-    DCHECK(IsClient());
-    return reinterpret_cast<TCPClientChannel*>(this);
-  }
-
-  TCPServerChannel* ToTCPServerChannel() {
-    DCHECK(IsServer());
-    return reinterpret_cast<TCPServerChannel*>(this);
-  }
+  TCPClientChannel* ToTCPClientChannel();
+  TCPServerChannel* ToTCPServerChannel();
 
   virtual bool IsConnected() const = 0;
 

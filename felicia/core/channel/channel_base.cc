@@ -8,6 +8,12 @@
 
 namespace felicia {
 
+ChannelBase::ChannelBase() = default;
+ChannelBase::~ChannelBase() = default;
+
+bool ChannelBase::IsClient() const { return false; }
+bool ChannelBase::IsServer() const { return false; }
+
 // static
 void ChannelBase::CallbackWithStatus(StatusCallback callback, int result) {
   if (result >= 0) {
@@ -18,6 +24,6 @@ void ChannelBase::CallbackWithStatus(StatusCallback callback, int result) {
 }
 
 // static
-const int32_t ChannelBase::kMaxReceiverBufferSize = 5 * 1000 * 1000;
+size_t ChannelBase::GetMaxReceiveBufferSize() { return 5 * 1000 * 1000; }
 
 }  // namespace felicia

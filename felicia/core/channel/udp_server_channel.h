@@ -11,12 +11,12 @@
 
 namespace felicia {
 
-class UDPServerChannel : public UDPChannelBase {
+class EXPORT UDPServerChannel : public UDPChannelBase {
  public:
   UDPServerChannel();
   ~UDPServerChannel();
 
-  bool IsServer() const override { return true; }
+  bool IsServer() const override;
 
   StatusOr<ChannelSource> Bind();
 

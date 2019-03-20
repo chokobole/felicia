@@ -30,4 +30,37 @@ Status GrpcMasterClient::Stop() {
   return Status::OK();
 }
 
+#define CLIENT_METHOD(method)                                           \
+  void GrpcMasterClient::method##Async(const method##Request* request,  \
+                                       method##Response* response,      \
+                                       StatusCallback done) {           \
+    new GrpcAsyncClientCall<grpc::MasterService::Stub, method##Request, \
+                            method##Response>(                          \
+        stub_.get(), request, response,                                 \
+        &grpc::MasterService::Stub::PrepareAsync##method, &cq_,         \
+        std::move(done));                                               \
+  }
+
+CLIENT_METHOD(RegisterClient)
+CLIENT_METHOD(ListClients)
+CLIENT_METHOD(RegisterNode)
+CLIENT_METHOD(UnregisterNode)
+CLIENT_METHOD(ListNodes)
+CLIENT_METHOD(PublishTopic)
+CLIENT_METHOD(UnpublishTopic)
+CLIENT_METHOD(SubscribeTopic)
+CLIENT_METHOD(UnsubscribeTopic)
+CLIENT_METHOD(ListTopics)
+
+#undef CLIENT_METHOD
+
+void GrpcMasterClient::HandleRpcsLoop() {
+  void* tag;
+  bool ok;
+  while (cq_.Next(&tag, &ok)) {
+    GrpcClientCQTag* callback_tag = static_cast<GrpcClientCQTag*>(tag);
+    callback_tag->OnCompleted(ok);
+  }
+}
+
 }  // namespace felicia

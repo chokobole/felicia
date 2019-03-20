@@ -2,8 +2,8 @@
 
 namespace felicia {
 
-EXPORT std::string MakeNamedHelpText(::base::StringPiece name,
-                                     ::base::StringPiece help, int help_start) {
+std::string MakeNamedHelpText(::base::StringPiece name,
+                              ::base::StringPiece help, int help_start) {
   int remain_len = help_start;
   std::stringstream ss;
   APPEND_AND_DECREASE_LENGTH(ss, name, remain_len);

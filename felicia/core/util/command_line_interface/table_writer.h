@@ -7,12 +7,19 @@
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/base/strings/string_piece.h"
 
+#include "felicia/core/lib/base/export.h"
+
 namespace felicia {
 
-class TableWriter {
+class EXPORT TableWriter {
  public:
-  struct Column {
-    Column(std::string title, int width) : title(title), width(width) {}
+  TableWriter(const TableWriter& other);
+  ~TableWriter();
+
+  struct EXPORT Column {
+    Column(std::string title, int width);
+    Column(const Column& other);
+    ~Column();
 
     std::string title;
     size_t width = 16;
@@ -29,13 +36,14 @@ class TableWriter {
   std::vector<std::vector<std::string>> elements_;
 };
 
-class TableWriterBuilder {
+class EXPORT TableWriterBuilder {
  public:
   TableWriterBuilder();
+  ~TableWriterBuilder();
 
   TableWriterBuilder& AddColumn(const TableWriter::Column& column);
 
-  TableWriter Build() const { return writer_; }
+  TableWriter Build() const;
 
  private:
   TableWriter writer_;

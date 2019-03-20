@@ -105,7 +105,7 @@ void UDPChannel<MessageTy>::ReceiveMessage(MessageTy* message,
   DCHECK(!callback.is_null());
   scoped_refptr<::net::IOBufferWithSize> buffer =
       ::base::MakeRefCounted<::net::IOBufferWithSize>(
-          ChannelBase::kMaxReceiverBufferSize);
+          ChannelBase::GetMaxReceiveBufferSize());
 
   this->message_ = message;
   this->receive_callback_ = std::move(callback);

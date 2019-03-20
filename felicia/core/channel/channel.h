@@ -18,7 +18,7 @@ template <typename MessageTy>
 class UDPChannel;
 
 template <typename MessageTy>
-class EXPORT Channel {
+class Channel {
  public:
   virtual ~Channel() = default;
 
@@ -60,28 +60,29 @@ class EXPORT Channel {
 
 // Convert ChannelSource |channel_source| to ::net::IPEndPoint,
 // Retures true if succeeded.
-bool ToNetIPEndPoint(const ChannelSource& channel_source,
-                     ::net::IPEndPoint* ip_endpoint);
+EXPORT bool ToNetIPEndPoint(const ChannelSource& channel_source,
+                            ::net::IPEndPoint* ip_endpoint);
 
 // Convert ::net::IPEndPoint |ip_endpoint| to ChannelSource
-ChannelSource ToChannelSource(const ::net::IPEndPoint& ip_endpoint,
-                              ChannelDef_Type type);
+EXPORT ChannelSource ToChannelSource(const ::net::IPEndPoint& ip_endpoint,
+                                     ChannelDef_Type type);
 
 // Convert ChannelDef |channel_def| to std::string
-std::string ToString(const ChannelDef& channel_def);
+EXPORT std::string ToString(const ChannelDef& channel_def);
 
 // Convert ChannelDef |channel_source| to std::string
-std::string ToString(const ChannelSource& channel_source);
+EXPORT std::string ToString(const ChannelSource& channel_source);
 
 // Randomly pick channel source.
-ChannelSource PickRandomChannelSource(ChannelDef_Type type);
+EXPORT ChannelSource PickRandomChannelSource(ChannelDef_Type type);
 
 // Check if |channel_source| is a valid. Returns true if so.
-bool IsValidChannelSource(const ChannelSource& channel_source);
+EXPORT bool IsValidChannelSource(const ChannelSource& channel_source);
 
 // Check if |c| and |c2| are same. Returns true if so. Return false if
 // either |c| or |c2| is invalid or they are not same.
-bool IsSameChannelSource(const ChannelSource& c, const ChannelSource& c2);
+EXPORT bool IsSameChannelSource(const ChannelSource& c,
+                                const ChannelSource& c2);
 
 }  // namespace felicia
 

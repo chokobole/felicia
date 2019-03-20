@@ -15,6 +15,8 @@ namespace felicia {
 TCPServerChannel::TCPServerChannel() = default;
 TCPServerChannel::~TCPServerChannel() = default;
 
+bool TCPServerChannel::IsServer() const { return true; }
+
 bool TCPServerChannel::IsConnected() const {
   for (auto& accepted_socket : accepted_sockets_) {
     if (accepted_socket->IsConnected()) return true;

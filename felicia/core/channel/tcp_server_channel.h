@@ -15,14 +15,14 @@
 
 namespace felicia {
 
-class TCPServerChannel : public TCPChannelBase {
+class EXPORT TCPServerChannel : public TCPChannelBase {
  public:
   using AcceptCallback = ::base::RepeatingCallback<void(const Status& s)>;
 
   TCPServerChannel();
   ~TCPServerChannel();
 
-  bool IsServer() const override { return true; }
+  bool IsServer() const override;
 
   bool IsConnected() const override;
 

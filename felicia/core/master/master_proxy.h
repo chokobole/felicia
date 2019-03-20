@@ -31,48 +31,36 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
  public:
   static MasterProxy& GetInstance();
 
-  bool IsBoundToCurrentThread() const override {
-    return message_loop_->IsBoundToCurrentThread();
-  }
+  bool IsBoundToCurrentThread() const override;
 
   // TaskRunnerInterface methods
   bool PostTask(const ::base::Location& from_here,
-                ::base::OnceClosure callback) override {
-    return message_loop_->task_runner()->PostTask(from_here,
-                                                  std::move(callback));
-  }
+                ::base::OnceClosure callback) override;
 
   bool PostDelayedTask(const ::base::Location& from_here,
                        ::base::OnceClosure callback,
-                       ::base::TimeDelta delay) override {
-    return message_loop_->task_runner()->PostDelayedTask(
-        from_here, std::move(callback), delay);
-  }
+                       ::base::TimeDelta delay) override;
 
   // MasterClientInterface methods
   Status Start() override;
   Status Stop() override;
 
-#define CLIENT_METHOD(method)                                         \
-  void method##Async(const method##Request* request,                  \
-                     method##Response* response, StatusCallback done) \
-      override {                                                      \
-    master_client_interface_->method##Async(request, response,        \
-                                            std::move(done));         \
-  }
+#define CLIENT_METHOD(method)                        \
+  void method##Async(const method##Request* request, \
+                     method##Response* response, StatusCallback done) override
 
-  CLIENT_METHOD(RegisterClient)
-  CLIENT_METHOD(ListClients)
-  CLIENT_METHOD(RegisterNode)
-  CLIENT_METHOD(UnregisterNode)
-  CLIENT_METHOD(ListNodes)
-  CLIENT_METHOD(PublishTopic)
-  CLIENT_METHOD(UnpublishTopic)
-  CLIENT_METHOD(SubscribeTopic)
+  CLIENT_METHOD(RegisterClient);
+  CLIENT_METHOD(ListClients);
+  CLIENT_METHOD(RegisterNode);
+  CLIENT_METHOD(UnregisterNode);
+  CLIENT_METHOD(ListNodes);
+  CLIENT_METHOD(PublishTopic);
+  CLIENT_METHOD(UnpublishTopic);
+  CLIENT_METHOD(SubscribeTopic);
   // UnsubscribeTopic needs additional remove callback from
   // |topic_info_watcher_|
   // CLIENT_METHOD(UnsubscribeTopic)
-  CLIENT_METHOD(ListTopics)
+  CLIENT_METHOD(ListTopics);
 
 #undef CLIENT_METHOD
 
@@ -95,6 +83,7 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
   friend class ::base::NoDestructor<MasterProxy>;
   friend class PyMasterProxy;
   MasterProxy();
+  ~MasterProxy();
 
   void RegisterClient();
 

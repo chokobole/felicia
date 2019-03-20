@@ -3,7 +3,6 @@
 
 #include "pybind11/pybind11.h"
 
-#include "felicia/core/lib/base/export.h"
 #include "felicia/core/master/master_data.pb.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/python/core/lib/type_conversion/protobuf.h"
@@ -13,7 +12,7 @@ SUPPORT_PROTOBUF_TYPE_CAST(::felicia::NodeInfo, NodeInfo,
 
 namespace felicia {
 
-class EXPORT PyNodeLifecycle : public NodeLifecycle {
+class PyNodeLifecycle : public NodeLifecycle {
  public:
   using NodeLifecycle::NodeLifecycle;
 

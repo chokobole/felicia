@@ -12,12 +12,12 @@
 
 namespace felicia {
 
-class TCPClientChannel : public TCPChannelBase {
+class EXPORT TCPClientChannel : public TCPChannelBase {
  public:
   TCPClientChannel();
   ~TCPClientChannel();
 
-  bool IsClient() const override { return true; }
+  bool IsClient() const override;
 
   bool IsConnected() const override;
 

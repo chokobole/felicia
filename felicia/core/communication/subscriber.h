@@ -13,7 +13,6 @@
 
 #include "felicia/core/channel/channel_factory.h"
 #include "felicia/core/communication/state.h"
-#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/master_proxy.h"
@@ -33,7 +32,7 @@ struct Settings {
 }  // namespace communication
 
 template <typename MessageTy>
-class EXPORT Subscriber {
+class Subscriber {
  public:
   using OnMessageCallback = ::base::RepeatingCallback<void(const MessageTy&)>;
   using OnErrorCallback = ::base::RepeatingCallback<void(const Status& s)>;

@@ -74,7 +74,6 @@ limitations under the License.
 #include "third_party/chromium/base/compiler_specific.h"
 #include "third_party/chromium/base/macros.h"
 
-#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/lib/error/statusor_internals.h"
 
@@ -87,10 +86,10 @@ class WARN_UNUSED_RESULT StatusOr;
 #endif
 
 template <typename T>
-class EXPORT StatusOr : private internal_statusor::StatusOrData<T>,
-                        private internal_statusor::TraitsBase<
-                            std::is_copy_constructible<T>::value,
-                            std::is_move_constructible<T>::value> {
+class StatusOr : private internal_statusor::StatusOrData<T>,
+                 private internal_statusor::TraitsBase<
+                     std::is_copy_constructible<T>::value,
+                     std::is_move_constructible<T>::value> {
   template <typename U>
   friend class StatusOr;
 

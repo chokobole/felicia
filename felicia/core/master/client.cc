@@ -46,7 +46,11 @@ std::unique_ptr<Client> Client::NewClient(const ClientInfo& client_info) {
   return ::base::WrapUnique(new Client(new_client_info));
 }
 
+Client::Client(const ClientInfo& client_info) : client_info_(client_info) {}
+
 Client::~Client() { GetIDGenerator().Return(client_info().id()); }
+
+const ClientInfo& Client::client_info() const { return client_info_; }
 
 void Client::AddNode(std::unique_ptr<Node> node) {
   DFAKE_SCOPED_LOCK(add_remove_);

@@ -66,19 +66,19 @@ class EXPORT FlagParser {
   // }
   class EXPORT Delegate {
    public:
-    Delegate() : parser_index_(0) {}
-    virtual ~Delegate() = default;
+    Delegate();
+    virtual ~Delegate();
 
     virtual bool Parse(FlagParser& parser) = 0;
 
-    virtual bool Validate() const { return true; }
+    virtual bool Validate() const;
 
-    virtual std::vector<std::string> CollectUsages() const { return {}; }
-    virtual std::string Description() const { return ::base::EmptyString(); }
-    virtual std::vector<NamedHelpType> CollectNamedHelps() const { return {}; }
+    virtual std::vector<std::string> CollectUsages() const;
+    virtual std::string Description() const;
+    virtual std::vector<NamedHelpType> CollectNamedHelps() const;
 
    protected:
-    void PreParse() { parser_index_++; }
+    void PreParse();
 
     template <int N = 1, typename T>
     bool ParsePositionalFlag(FlagParser& parser, T&& arg) {
@@ -107,17 +107,15 @@ class EXPORT FlagParser {
     int parser_index_;
   };
 
-  FlagParser() : suppress_help_(false) {}
-  ~FlagParser() = default;
+  FlagParser();
+  ~FlagParser();
 
   // Set program name to display.
   // For example, when there are --foo, --bar flags and type --help,
   // It shows |program_name| [--foo] [--bar]
-  void set_program_name(const std::string& program_name) {
-    program_name_ = program_name;
-  }
-  std::string& program_name() { return program_name_; }
-  void mark_suppress_help() { suppress_help_ = true; }
+  void set_program_name(const std::string& program_name);
+  const std::string& program_name() const;
+  void mark_suppress_help();
   // Parse by passing every each |argv| to |delegate|.
   bool Parse(int argc, char** argv, Delegate* delegate);
 
@@ -129,7 +127,7 @@ class EXPORT FlagParser {
   void PrintDescription(Delegate* delegate);
   void PrintHelp(Delegate* delegate);
 
-  ::base::StringPiece current() { return argv_[current_idx_]; }
+  ::base::StringPiece current();
   void Proceed();
 
   std::string program_name_;

@@ -15,8 +15,8 @@ namespace felicia {
 
 class EXPORT MasterClientInterface {
  public:
-  MasterClientInterface() = default;
-  virtual ~MasterClientInterface() = default;
+  MasterClientInterface();
+  virtual ~MasterClientInterface();
 
   virtual Status Start() = 0;
   virtual Status Stop() = 0;

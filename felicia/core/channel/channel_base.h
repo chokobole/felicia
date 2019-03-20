@@ -4,24 +4,25 @@
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/net/base/io_buffer.h"
 
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"
 
 namespace felicia {
 
-class ChannelBase {
+class EXPORT ChannelBase {
  public:
-  ChannelBase() = default;
-  virtual ~ChannelBase() = default;
+  ChannelBase();
+  virtual ~ChannelBase();
 
-  virtual bool IsClient() const { return false; }
-  virtual bool IsServer() const { return false; }
+  virtual bool IsClient() const;
+  virtual bool IsServer() const;
 
   virtual void Write(::net::IOBufferWithSize* buffer,
                      StatusCallback callback) = 0;
   virtual void Read(::net::IOBufferWithSize* buffer,
                     StatusCallback callback) = 0;
 
-  static const int32_t kMaxReceiverBufferSize;
+  static size_t GetMaxReceiveBufferSize();
 
  protected:
   static void CallbackWithStatus(StatusCallback callback, int result);

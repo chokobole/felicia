@@ -11,20 +11,13 @@ namespace felicia {
 class UDPClientChannel;
 class UDPServerChannel;
 
-class UDPChannelBase : public ChannelBase {
+class EXPORT UDPChannelBase : public ChannelBase {
  public:
-  UDPChannelBase() = default;
-  ~UDPChannelBase() override = default;
+  UDPChannelBase();
+  ~UDPChannelBase();
 
-  UDPClientChannel* ToUDPClientChannel() {
-    DCHECK(IsClient());
-    return reinterpret_cast<UDPClientChannel*>(this);
-  }
-
-  UDPServerChannel* ToUDPServerChannel() {
-    DCHECK(IsServer());
-    return reinterpret_cast<UDPServerChannel*>(this);
-  }
+  UDPClientChannel* ToUDPClientChannel();
+  UDPServerChannel* ToUDPServerChannel();
 
   void OnRead(int result);
   void OnWrite(int result);

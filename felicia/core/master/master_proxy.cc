@@ -18,6 +18,30 @@ MasterProxy::MasterProxy()
       topic_info_watcher_(),
       heart_beat_signaller_(this) {}
 
+MasterProxy::~MasterProxy() = default;
+
+MasterProxy& MasterProxy::GetInstance() {
+  static ::base::NoDestructor<MasterProxy> master_proxy;
+  return *master_proxy;
+}
+
+bool MasterProxy::IsBoundToCurrentThread() const {
+  return message_loop_->IsBoundToCurrentThread();
+}
+
+// TaskRunnerInterface methods
+bool MasterProxy::PostTask(const ::base::Location& from_here,
+                           ::base::OnceClosure callback) {
+  return message_loop_->task_runner()->PostTask(from_here, std::move(callback));
+}
+
+bool MasterProxy::PostDelayedTask(const ::base::Location& from_here,
+                                  ::base::OnceClosure callback,
+                                  ::base::TimeDelta delay) {
+  return message_loop_->task_runner()->PostDelayedTask(
+      from_here, std::move(callback), delay);
+}
+
 Status MasterProxy::Start() {
   auto channel = ConnectGRPCService();
   master_client_interface_ = std::make_unique<GrpcMasterClient>(channel);
@@ -37,18 +61,36 @@ Status MasterProxy::Start() {
   return Status::OK();
 }
 
-void MasterProxy::Run() { run_loop_->Run(); }
-
 Status MasterProxy::Stop() {
   Status s = master_client_interface_->Stop();
   run_loop_->Quit();
   return s;
 }
 
-MasterProxy& MasterProxy::GetInstance() {
-  static ::base::NoDestructor<MasterProxy> master_proxy;
-  return *master_proxy;
-}
+#define CLIENT_METHOD(method)                                     \
+  void MasterProxy::method##Async(const method##Request* request, \
+                                  method##Response* response,     \
+                                  StatusCallback done) {          \
+    master_client_interface_->method##Async(request, response,    \
+                                            std::move(done));     \
+  }
+
+CLIENT_METHOD(RegisterClient)
+CLIENT_METHOD(ListClients)
+CLIENT_METHOD(RegisterNode)
+CLIENT_METHOD(UnregisterNode)
+CLIENT_METHOD(ListNodes)
+CLIENT_METHOD(PublishTopic)
+CLIENT_METHOD(UnpublishTopic)
+CLIENT_METHOD(SubscribeTopic)
+// UnsubscribeTopic needs additional remove callback from
+// |topic_info_watcher_|
+// CLIENT_METHOD(UnsubscribeTopic)
+CLIENT_METHOD(ListTopics)
+
+#undef CLIENT_METHOD
+
+void MasterProxy::Run() { run_loop_->Run(); }
 
 void MasterProxy::RegisterClient() {
   RegisterClientRequest* request = new RegisterClientRequest();

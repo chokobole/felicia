@@ -11,12 +11,10 @@
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/macros.h"
 
-#include "felicia/core/lib/base/export.h"
-
 namespace felicia {
 
 template <typename T, typename Size>
-class EXPORT Pool {
+class Pool {
  public:
   static_assert(std::is_unsigned<Size>::value, "Size type should be unsigned");
 
