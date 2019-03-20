@@ -20,7 +20,6 @@ fel_pybind_py_library(
     ],
     py_deps = [
         "//felicia/examples/learn/message_communication/protobuf:message_spec_proto_py",
-        "//felicia/python:communication",
     ],
 )
 

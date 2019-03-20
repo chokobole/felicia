@@ -8,12 +8,11 @@
 #include "third_party/chromium/base/memory/weak_ptr.h"
 #include "third_party/chromium/base/threading/thread_collision_warner.h"
 
-#include "felicia/core/lib/base/export.h"
 #include "felicia/core/node/node.h"
 
 namespace felicia {
 
-class EXPORT Client {
+class Client {
  public:
   // Return client unless there is a nuique id for client. If so,
   // return nullptr.

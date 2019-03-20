@@ -17,6 +17,11 @@ load(
     "chromium_srcs",
     "chromium_test_srcs",
 )
+load(
+    "//third_party/chromium/net:net.bzl",
+    "net_copts",
+    "net_linkopts",
+)
 
 chromium_cc_library(
     name = "net",
@@ -24,7 +29,6 @@ chromium_cc_library(
         "base/network_interfaces_getifaddrs.cc",
         "base/winsock_init.cc",
         "base/winsock_util.cc",
-        "third_party/**/*.cc",
     ]) + if_windows([
         ":net_win_srcs",
     ]) + if_not_windows_and_not_linux([
@@ -34,22 +38,16 @@ chromium_cc_library(
         "base/network_interfaces_getifaddrs.h",
         "base/winsock_init.h",
         "base/winsock_util.h",
-        "third_party/**/*.h",
     ]) + if_windows([
         ":net_win_hdrs",
     ]) + if_not_windows_and_not_linux([
         ":net_posix_hdrs",
     ]),
-    linkopts = select({
-        "//felicia:windows": [
-            "Iphlpapi.lib",
-            "Ws2_32.lib",
-        ],
-        "//conditions:default": [],
-    }),
+    copts = net_copts(),
+    linkopts = net_linkopts(),
     deps = [
-        ":third_party",
         "//third_party/chromium/base",
+        "//third_party/chromium/build",
         "//third_party/chromium/url",
     ],
 )
@@ -86,19 +84,6 @@ filegroup(
         "base/network_interfaces_getifaddrs.cc",
     ]),
     visibility = ["//visibility:private"],
-)
-
-chromium_cc_library(
-    name = "third_party",
-    srcs = [
-        "third_party/quic/platform/impl/quic_ptr_util_impl.h",
-    ],
-    hdrs = [
-        "third_party/quic/platform/api/quic_ptr_util.h",
-    ],
-    deps = [
-        "//third_party/chromium/base",
-    ],
 )
 
 chromium_cc_test(

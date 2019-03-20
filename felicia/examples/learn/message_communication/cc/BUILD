@@ -11,17 +11,14 @@ fel_cc_library(
     srcs = ["node_create_flag.cc"],
     hdrs = ["node_create_flag.h"],
     visibility = ["//felicia/examples/learn/message_communication/protobuf:internal"],
-    deps = [
-        "//felicia/core/util:command_line_interface",
-    ],
+    deps = ["//felicia"],
 )
 
 fel_cc_library(
     name = "simple_publishing_node",
     srcs = ["simple_publishing_node.h"],
     deps = [
-        "//felicia/core/communication",
-        "//felicia/core/node",
+        "//felicia",
         "//felicia/examples/learn/message_communication/protobuf:message_spec_proto_cc",
     ],
 )
@@ -30,8 +27,7 @@ fel_cc_library(
     name = "simple_subscribing_node",
     srcs = ["simple_subscribing_node.h"],
     deps = [
-        "//felicia/core/communication",
-        "//felicia/core/node",
+        "//felicia",
         "//felicia/examples/learn/message_communication/protobuf:message_spec_proto_cc",
     ],
 )

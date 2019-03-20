@@ -18,6 +18,11 @@ load(
     "chromium_srcs",
     "chromium_test_srcs",
 )
+load(
+    "//third_party/chromium/base:base.bzl",
+    "base_copts",
+    "base_linkopts",
+)
 
 package(default_visibility = ["//third_party/chromium:internal"])
 
@@ -81,23 +86,16 @@ chromium_cc_library(
         ":base_win_srcs",
     ]) + [
         "third_party/dmg_fp/dtoa_wrapper.cc",
+        "third_party/dmg_fp/g_fmt.cc",
+        "third_party/icu/icu_utf.cc",
         "third_party/nspr/prtime.cc",
     ],
-    hdrs = BASE_HDRS + [
-        "third_party/nspr/prtime.h",
-    ],
-    linkopts = select({
-        "//felicia:windows": [
-            "Advapi32.lib",
-            "Ole32.lib",
-            "User32.lib",
-            "Winmm.lib",
-        ],
-        "//conditions:default": [],
-    }),
+    hdrs = BASE_HDRS,
+    copts = base_copts(),
+    linkopts = base_linkopts(),
     deps = [
-        ":third_party",
-        ":buildflags",
+        ":third_party_c",
+        "//third_party/chromium/build",
         "//third_party/chromium/testing",
     ] + if_darwin([
         ":base_mac",
@@ -116,8 +114,9 @@ chromium_objc_library(
     srcs = chromium_objc_srcs() +
            chromium_srcs(base = "mac"),
     hdrs = BASE_HDRS,
+    copts = base_copts(),
     deps = [
-        ":buildflags",
+        "//third_party/chromium/build",
         "//third_party/chromium/testing",
     ],
 )
@@ -181,18 +180,9 @@ filegroup(
         "third_party/dmg_fp/dmg_fp.h",
         "third_party/dmg_fp/dtoa.cc",
         "third_party/icu/icu_utf.h",
+        "third_party/nspr/prtime.h",
     ],
     visibility = ["//visibility:private"],
-)
-
-chromium_cc_library(
-    name = "third_party",
-    srcs = [
-        "third_party/dmg_fp/g_fmt.cc",
-        "third_party/icu/icu_utf.cc",
-    ],
-    hdrs = [":third_party_hdrs"],
-    deps = [":third_party_c"],
 )
 
 chromium_c_library(
@@ -206,12 +196,7 @@ chromium_c_library(
         "third_party/valgrind/memcheck.h",
         "third_party/valgrind/valgrind.h",
     ],
-)
-
-chromium_cc_library(
-    name = "buildflags",
-    hdrs = [":buildflags_hdrs"],
-    deps = ["//third_party/chromium/build"],
+    copts = base_copts(),
 )
 
 chromium_cc_test(

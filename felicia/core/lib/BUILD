@@ -16,6 +16,7 @@ fel_proto_library(
 fel_cc_library(
     name = "lib",
     srcs = [
+        "base/task_runner_interface.cc",
         "error/status.cc",
         "error/statusor.cc",
         "net/net_util.cc",
@@ -43,8 +44,9 @@ fel_cc_library(
     }),
     deps = [
         ":error_codes_proto_cc",
-        "//third_party/chromium",
         "@com_google_googletest//:gtest",
+        "//third_party/chromium/base",
+        "//third_party/chromium/net",
     ],
 )
 
@@ -57,7 +59,7 @@ fel_cc_test(
         "containers/pool_test.cc",
     ],
     deps = [
-        ":lib",
+        "//felicia",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -67,7 +69,7 @@ fel_cc_test(
     srcs = ["containers/pool_benchmark.cc"],
     tags = ["benchmark"],
     deps = [
-        ":lib",
+        "//felicia",
         "@com_github_google_benchmark//:benchmark_main",
     ],
 )

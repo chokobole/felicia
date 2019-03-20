@@ -1,8 +1,4 @@
-load(
-    ":felicia.bzl",
-    "if_not_windows",
-    "if_windows",
-)
+load(":felicia.bzl", "if_windows")
 
 def define(flags):
     window_defines = ["/D" + flag for flag in flags]
@@ -37,10 +33,7 @@ def _fel_win_copts(is_external = False):
 
 def fel_copts(is_external = False):
     """ C options for felicia projet. """
-    return include(["third_party/chromium"]) + select({
-        "//felicia:windows": _fel_win_copts(is_external),
-        "//conditions:default": [],
-    })
+    return include(["third_party/chromium"]) + if_windows(_fel_win_copts(is_external))
 
 def fel_cxxopts(is_external = False):
     """ CXX options for felicia projet. """
@@ -276,41 +269,40 @@ def fel_cc_test(
         cmd = _dsym_command(name),
     )
 
-SHARED_LIBRARY_NAME_PATTERNS = [
-    "lib%s.so",  # On Linux, shared libraries are usually named as libfoo.so
-    "lib%s.dylib",  # On macos, shared libraries are usually named as libfoo.dylib
-    "%s.dll",  # On Windows, shared libraries are usually named as foo.dll
-]
-
-
-def shared_library(name):
-    return select({
-            "//felicia:windows": [":%s.dll" % name],
-            "//felicia:darwin": [":lib%s.dylib" % name],
-            "//felicia:darwin_x86_64": [":lib%s.dylib" % name],
-            "//conditions:default": [":lib%s.so" % name],
-        })
-
 def fel_cc_shared_library(
         name,
-        srcs = [],
+        srcs,
         deps = [],
+        copts = [],
         data = [],
         linkopts = [],
         collect_hdrs = True,
+        third_party_deps = [],
         **kwargs):
-    for libname in [pattern % name for pattern in SHARED_LIBRARY_NAME_PATTERNS]:
-        native.cc_binary(
-            name = libname,
-            srcs = srcs,
-            deps = deps,
-            copts = fel_copts(is_external = True),
-            linkshared = 1,
-            linkstatic = 1,
-            data = data,
-            linkopts = linkopts,
-            **kwargs
-        )
+    libname = "lib" + name + ".so"
+    native.cc_binary(
+        name = libname,
+        srcs = srcs,
+        deps = deps,
+        copts = copts,
+        linkshared = 1,
+        linkstatic = 1,
+        data = data,
+        linkopts = linkopts,
+        **kwargs
+    )
+
+    native.filegroup(
+        name = name + "_import_lib",
+        srcs = [":" + libname],
+        output_group = "interface_library",
+    )
+
+    native.cc_import(
+        name = name + "_import",
+        interface_library = ":" + name + "_import_lib",
+        shared_library = ":" + libname,
+    )
 
     if collect_hdrs:
         collect_transitive_hdrs(
@@ -324,38 +316,15 @@ def fel_cc_shared_library(
             hdrs = [":collect_" + name + "_hdrs"],
         )
 
-    native.filegroup(
-        name = name + "_import_lib",
-        srcs = select({
-            "//felicia:windows": [":%s.dll" % name],
-            "//felicia:darwin": [":lib%s.dylib" % name],
-            "//felicia:darwin_x86_64": [":lib%s.dylib" % name],
-            "//conditions:default": [":lib%s.so" % name],
-        }),
-        output_group = "interface_library",
-    )
-
-    native.cc_import(
-        name = name + "_import",
-        interface_library = ":" + name + "_import_lib",
-        shared_library = select({
-            "//felicia:windows": ":%s.dll" % name,
-            "//felicia:darwin": ":lib%s.dylib" % name,
-            "//felicia:darwin_x86_64": ":lib%s.dylib" % name,
-            "//conditions:default": ":lib%s.so" % name,
-        }),
-    )
-
-    if collect_hdrs:
         native.cc_library(
             name = name,
             deps = [
                 ":" + name + "_hdrs",
                 ":" + name + "_import",
-            ],
+            ] + third_party_deps,
         )
     else:
         native.cc_library(
             name = name,
-            deps = [":" + name + "_import"],
+            deps = [":" + name + "_import"] + third_party_deps,
         )

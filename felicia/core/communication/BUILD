@@ -12,6 +12,6 @@ fel_cc_library(
     deps = [
         "//felicia/core/channel",
         "//felicia/core/master:master_proxy",
-        "//felicia/core/node",
+        "//felicia/core/node:node_lifecycle",
     ],
 )

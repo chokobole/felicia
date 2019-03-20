@@ -11,11 +11,7 @@ fel_cc_library(
     name = "client",
     srcs = ["client.cc"],
     hdrs = ["client.h"],
-    deps = [
-        "//felicia/core/lib",
-        "//felicia/core/node",
-        "//felicia/core/util:uuid",
-    ],
+    deps = ["//felicia/core/node"],
 )
 
 fel_cc_library(
@@ -48,18 +44,16 @@ fel_proto_library(
 fel_proto_library(
     name = "master_proto",
     srcs = ["master.proto"],
-    protodeps = [
-        ":master_data_proto",
-        "//felicia/core/channel:channel_proto",
-    ],
+    protodeps = [":master_data_proto"],
     visibility = ["//felicia:internal"],
 )
 
 fel_cc_library(
     name = "master_client_interface",
+    srcs = ["master_client_interface.cc"],
     hdrs = ["master_client_interface.h"],
     deps = [
-        ":master_data_proto_cc",
+        ":master_proto_cc",
         "//felicia/core/lib",
     ],
 )
@@ -69,30 +63,29 @@ fel_cc_library(
     srcs = ["master_proxy.cc"],
     hdrs = ["master_proxy.h"],
     deps = [
+        ":heart_beat_signaller",
+        ":master_client_interface",
+        ":topic_info_watcher",
         "//felicia/core/channel",
-        "//felicia/core/master:heart_beat_signaller",
-        "//felicia/core/master:topic_info_watcher",
         "//felicia/core/master/rpc:grpc_master_client",
         "//felicia/core/master/rpc:grpc_util",
         "//felicia/core/master/rpc:master_service_proto_cc",
-        "//felicia/core/node",
+        "//felicia/core/node:node_lifecycle",
     ],
 )
 
 fel_cc_library(
     name = "master",
     srcs = [
-        "errors.h",
         "master.cc",
     ],
-    hdrs = ["master.h"],
+    hdrs = [
+        "errors.h",
+        "master.h",
+    ],
     deps = [
         ":client",
         ":heart_beat_listener",
-        ":master_proto_cc",
-        "//felicia/core/channel",
-        "//felicia/core/lib",
-        "//felicia/core/node",
     ],
 )
 
@@ -110,11 +103,11 @@ fel_cc_library(
 fel_cc_test(
     name = "master_test",
     size = "small",
-    srcs = [
-        "master_test.cc",
-    ],
+    srcs = ["master_test.cc"],
     deps = [
         ":master",
+        "//felicia",
+        "//felicia/core/node",
         "@com_google_googletest//:gtest_main",
     ],
 )

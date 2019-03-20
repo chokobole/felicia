@@ -2,41 +2,74 @@ load("//bazel:felicia_cc.bzl", "fel_cxxopts")
 
 def fel_pybind_py_library(
         name,
-        cc_name = None,
         copts = [],
         cc_srcs = [],
         cc_deps = [],
         py_srcs = [],
         py_deps = []):
-    if cc_name == None:
-        cc_name = name + ".so"
-
     cc_src = name + "_py.cc"
     if len(cc_srcs) == 0:
         cc_srcs = [cc_src]
 
-    cc_dep = ":" + cc_name
+    libname = "%s.so" % name
 
     native.cc_binary(
-        name = cc_name,
+        name = libname,
         srcs = cc_srcs,
         copts = fel_cxxopts() + copts,
         linkshared = 1,
         linkstatic = 1,
         deps = [
             "//felicia:felicia",
-            "//felicia:protobuf",
-            "//third_party/chromium",
-            "@com_google_googletest//:gtest",
-            "@com_google_protobuf//:protobuf_headers",
             "@pybind11",
         ] + cc_deps,
     )
 
+    # On windows, it needs a .pyd file but it can't generate *.pyd above
+    # at this moment
+    generate_pyd(
+        name = "%s_pyd" % name,
+        file = ":%s" % libname,
+        out = "%s.pyd" % name,
+    )
+
     native.py_library(
         name = name,
-        data = [cc_dep],
+        data = select({
+            "//felicia:windows": [":%s.pyd" % name, "//felicia:libfelicia.so"],
+            "//conditions:default": [":%s" % libname],
+        }),
         srcs = py_srcs,
         deps = py_deps,
-        imports = ["."],
     )
+
+
+def _impl(ctx):
+    output = ctx.outputs.out
+    target = ctx.attr.name[:-4]
+
+    rest = []
+    sopath = None
+    for file in ctx.files.file:
+        if "%s.so" % target == file.basename:
+            sopath = file
+        else:
+            rest.append(file)
+
+    if sopath == None:
+        fail("Failed to generate pyd")
+
+    ctx.actions.run_shell(
+        inputs = [sopath],
+        outputs = [output],
+        progress_message = "Copy %s to %s" % (sopath.short_path, output.short_path),
+        command = "cp %s %s" % (sopath.path, output.path),
+    )
+
+generate_pyd = rule(
+    implementation = _impl,
+    attrs = {
+        "file": attr.label(mandatory = True),
+        "out": attr.output(mandatory = True),
+    }
+)

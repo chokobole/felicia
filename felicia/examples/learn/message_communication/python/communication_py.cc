@@ -16,6 +16,10 @@ PYBIND11_MODULE(communication, m) {
 
   AddPublisher<MessageSpec>(m, "Publisher");
   AddSubscriber<MessageSpec>(m, "Subscriber");
+
+  py::class_<communication::Settings>(m, "Settings")
+      .def(py::init<uint32_t, uint8_t>(), py::arg("period") = 1000,
+           py::arg("queue_size") = 100);
 }
 
 }  // namespace felicia

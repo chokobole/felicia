@@ -1,6 +1,5 @@
-from felicia.examples.learn.message_communication.python.communication import Subscriber
+from felicia.examples.learn.message_communication.python.communication import Subscriber, Settings
 from felicia.python.core.node.node_lifecycle import NodeLifecycle
-from felicia.python.communication import Settings
 
 
 class SimpleSubscribingNode(NodeLifecycle):

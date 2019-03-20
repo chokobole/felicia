@@ -4,11 +4,13 @@
 
 #include "third_party/chromium/base/memory/ptr_util.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
+#include "third_party/chromium/build/build_config.h"
 
 #include "felicia/core/master/master_proxy.h"
 
 namespace felicia {
 
+#ifdef OS_POSIX
 namespace {
 
 void Shutdown(int signal) {
@@ -17,6 +19,7 @@ void Shutdown(int signal) {
 }
 
 }  // namespace
+#endif
 
 // static
 Status PyMasterProxy::Start() { return MasterProxy::GetInstance().Start(); }
@@ -26,13 +29,14 @@ Status PyMasterProxy::Stop() { return MasterProxy::GetInstance().Stop(); }
 
 // static
 void PyMasterProxy::Run() {
+#ifdef OS_POSIX
   // To handle general case when POSIX ask the process to quit.
   std::signal(SIGTERM, &::felicia::Shutdown);
   // To handle Ctrl + C.
   std::signal(SIGINT, &::felicia::Shutdown);
   // To handle when the terminal is closed.
   std::signal(SIGHUP, &::felicia::Shutdown);
-
+#endif
   MasterProxy::GetInstance().Run();
 }
 

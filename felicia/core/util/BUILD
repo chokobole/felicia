@@ -12,6 +12,7 @@ fel_cc_library(
         "command_line_interface/flag.cc",
         "command_line_interface/flag_parser.cc",
         "command_line_interface/table_writer.cc",
+        "command_line_interface/text_style.cc",
     ],
     hdrs = [
         "command_line_interface/flag.h",
@@ -48,8 +49,7 @@ fel_cc_test(
         "command_line_interface/flag_test.cc",
     ],
     deps = [
-        ":command_line_interface",
-        ":uuid",
+        "//felicia",
         "@com_google_googletest//:gtest_main",
     ],
 )

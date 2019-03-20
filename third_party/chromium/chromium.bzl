@@ -70,20 +70,20 @@ def chromium_cc_library(
 
 def chromium_objc_library(
         name,
-        copts = ["-fno-objc-arc"],
+        copts = [],
         **kwargs):
     fel_objc_library(
         name = name,
-        copts = copts,
+        copts = ["-fno-objc-arc"] + copts,
         **kwargs
     )
 
 def chromium_cc_test(
         name,
-        copts = define(["UNIT_TEST"]),
+        copts = [],
         **kwargs):
     fel_cc_test(
         name = name,
-        copts = copts,
+        copts = define(["UNIT_TEST"]) + copts,
         **kwargs
     )

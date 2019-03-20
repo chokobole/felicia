@@ -9,8 +9,6 @@ fel_cc_library(
     deps = ["//felicia"],
 )
 
-fel_pybind_py_library(name = "communication")
-
 fel_pybind_py_library(
     name = "master_proxy",
     cc_deps = [

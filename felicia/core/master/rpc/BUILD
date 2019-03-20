@@ -57,36 +57,20 @@ fel_proto_library_cc(
     visibility = ["//felicia:internal"],
 )
 
-fel_cc_library(
-    name = "grpc_master_service",
-    srcs = ["grpc_master_service.cc"],
-    hdrs = ["grpc_master_service.h"],
-    deps = [
-        ":grpc_call",
-        ":grpc_util",
-        ":master_service_proto_cc",
-        "//felicia/core/lib",
-        "//felicia/core/master",
-    ],
-)
-
-fel_cc_library(
-    name = "grpc_server",
-    srcs = ["grpc_server.cc"],
-    hdrs = ["grpc_server.h"],
-    deps = [
-        ":grpc_master_service",
-        ":grpc_util",
-        "//felicia:grpc++",
-        "//felicia/core/master",
-    ],
-)
-
 fel_cc_binary(
     name = "grpc_server_main",
-    srcs = ["grpc_server_main.cc"],
+    srcs = [
+        "grpc_server_main.cc",
+        "grpc_server.cc",
+        "grpc_server.h",
+        "grpc_master_service.cc",
+        "grpc_master_service.h",
+    ],
     deps = [
-        ":grpc_server",
+        ":grpc_call",
+        ":master_service_proto_cc",
+        "//felicia/core/master",
+        "//felicia",
     ],
 )
 
