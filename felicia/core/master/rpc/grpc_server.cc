@@ -10,7 +10,9 @@
 namespace felicia {
 
 Status GrpcServer::Init() {
+  std::string ip = ResolveGRPCServiceIp().ToString();
   uint16_t port = ResolveGRPCServicePort();
+  std::cout << "Running on " << ip << ":" << port << "..." << std::endl;
   std::string server_address(::base::StringPrintf("[::]:%d", port));
 
   ::grpc::ServerBuilder builder;
