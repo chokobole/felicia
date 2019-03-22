@@ -374,6 +374,7 @@ bool ParseValue(::base::StringPiece arg, bool* value) {
 
 template <>
 bool ParseValue(::base::StringPiece arg, std::string* value) {
+  if (arg.length() == 0) return false;
   *value = std::string(arg);
   return true;
 }
