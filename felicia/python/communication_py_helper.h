@@ -1,5 +1,5 @@
-#ifndef FELICIA_PYTHON_CORE_PY_COMMUNICATION_HELPER_H_
-#define FELICIA_PYTHON_CORE_PY_COMMUNICATION_HELPER_H_
+#ifndef FELICIA_PYTHON_COMMUNICATION_PY_HELPER_H_
+#define FELICIA_PYTHON_COMMUNICATION_PY_HELPER_H_
 
 #include "pybind11/pybind11.h"
 
@@ -123,4 +123,4 @@ void AddSubscriber(py::module& m, const char* name) {
 
 }  // namespace felicia
 
-#endif  // FELICIA_PYTHON_CORE_PY_COMMUNICATION_HELPER_H_
+#endif  // FELICIA_PYTHON_COMMUNICATION_PY_HELPER_H_

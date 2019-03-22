@@ -1,3 +1,6 @@
+#ifndef FELICIA_PYTHON_MASTER_PROXY_PY_H_
+#define FELICIA_PYTHON_MASTER_PROXY_PY_H_
+
 #include "pybind11/pybind11.h"
 
 #include "felicia/core/lib/error/status.h"
@@ -29,3 +32,5 @@ class PyMasterProxy {
 void AddMasterProxy(py::module& m);
 
 }  // namespace felicia
+
+#endif  // FELICIA_PYTHON_MASTER_PROXY_PY_H_
