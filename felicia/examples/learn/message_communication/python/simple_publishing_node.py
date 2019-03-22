@@ -30,8 +30,7 @@ class SimplePublishigNode(NodeLifecycle):
 
     def on_error(self, status):
         print("SimplePublishingNode.on_error()")
-        if not status.ok():
-            print(status.error_message())
+        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
     def request_publish(self):
         self.publisher.request_publish(
@@ -39,8 +38,7 @@ class SimplePublishigNode(NodeLifecycle):
 
     def on_request_publish(self, status):
         print("SimplePublishingNode.on_request_publish()")
-        if not status.ok():
-            print(status.error_message())
+        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
         self.repeating_publish()
 
     def repeating_publish(self):
@@ -52,8 +50,7 @@ class SimplePublishigNode(NodeLifecycle):
 
     def on_publish(self, status):
         print("SimplePublishingNode.on_request_publish()")
-        if not status.ok():
-            print(status.error_message())
+        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
     def generate_message(self):
         message_spec = MessageSpec()
@@ -70,5 +67,4 @@ class SimplePublishigNode(NodeLifecycle):
 
     def on_request_unpublish(self, status):
         print("SimplePublishingNode.on_request_unpublish()")
-        if not status.ok():
-            print(status.error_message())
+        fel.log_if(fel.ERROR, not status.ok(), status.error_message())

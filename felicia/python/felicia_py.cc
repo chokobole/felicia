@@ -1,6 +1,7 @@
 #include "pybind11/operators.h"
 #include "pybind11/pybind11.h"
 
+#include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/strings/string_number_conversions.h"
 
 #include "felicia/core/felicia_init.h"
@@ -16,6 +17,46 @@ extern void AddCommunication(py::module& m);
 
 void AddGlobalFunctions(py::module& m) {
   m.def("felicia_init", &FeliciaInit);
+
+  m.attr("INFO") = ::logging::LOG_INFO;
+  m.attr("WARNING") = ::logging::LOG_WARNING;
+  m.attr("ERROR") = ::logging::LOG_ERROR;
+  m.attr("FATAL") = ::logging::LOG_FATAL;
+
+  m.def(
+       "log",
+       [](::logging::LogSeverity severity, const std::string& text) {
+         if (severity == ::logging::LOG_INFO)
+           LOG(INFO) << text;
+         else if (severity == ::logging::LOG_WARNING)
+           LOG(WARNING) << text;
+         else if (severity == ::logging::LOG_ERROR)
+           LOG(ERROR) << text;
+         else if (severity == ::logging::LOG_FATAL)
+           LOG(FATAL) << text;
+       },
+       py::arg("severity"), py::arg("text"))
+      .def(
+          "log_if",
+          [](::logging::LogSeverity severity, bool condition,
+             const std::string& text) {
+            if (severity == ::logging::LOG_INFO)
+              LOG_IF(INFO, condition) << text;
+            else if (severity == ::logging::LOG_WARNING)
+              LOG_IF(WARNING, condition) << text;
+            else if (severity == ::logging::LOG_ERROR)
+              LOG_IF(ERROR, condition) << text;
+            else if (severity == ::logging::LOG_FATAL)
+              LOG_IF(FATAL, condition) << text;
+          },
+          py::arg("severity"), py::arg("condition"), py::arg("text"))
+      .def(
+          "check",
+          [](bool condition, const std::string& text) {
+            CHECK(condition) << text;
+          },
+          py::arg("condition"), py::arg("text") = ::base::EmptyString())
+      .def("not_reached", []() { NOTREACHED(); });
 
   m.def("from_days", &::base::TimeDelta::FromDays)
       .def("from_hours", &::base::TimeDelta::FromHours)

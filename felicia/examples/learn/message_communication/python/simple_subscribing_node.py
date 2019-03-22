@@ -34,13 +34,11 @@ class SimpleSubscribingNode(NodeLifecycle):
 
     def on_subscription_error(self, status):
         print("SimpleSubscribingNode.on_subscription_error()")
-        if not status.ok():
-            print(status.error_message())
+        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
     def on_request_subscribe(self, status):
         print("SimpleSubscribingNode.on_request_subscribe()")
-        if not status.ok():
-            print(status.error_message())
+        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
     def request_unsubscribe(self):
         self.subscriber.request_unsubscribe(
@@ -48,5 +46,4 @@ class SimpleSubscribingNode(NodeLifecycle):
 
     def on_request_unsubscribe(self, status):
         print("SimpleSubscribingNode.on_request_unsubscribe()")
-        if not status.ok():
-            print(status.error_message())
+        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
