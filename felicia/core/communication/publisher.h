@@ -56,6 +56,8 @@ class Publisher {
   void DoAcceptLoop();
   void OnAccept(const Status& s);
 
+  void Release();
+
   Pool<MessageTy, uint8_t> message_queue_;
   std::unique_ptr<Channel<MessageTy>> channel_;
 
@@ -204,10 +206,9 @@ void Publisher<MessageTy>::OnUnpublishTopicAsync(
     return;
   }
 
-  channel_.reset();
-  message_queue_.clear();
-
+  Release();
   state_.ToUneregistered();
+
   std::move(callback).Run(s);
 }
 
@@ -243,6 +244,20 @@ void Publisher<MessageTy>::DoAcceptLoop() {
 template <typename MessageTy>
 void Publisher<MessageTy>::OnAccept(const Status& s) {
   LOG_IF(ERROR, !s.ok()) << s.error_message();
+}
+
+template <typename MessageTy>
+void Publisher<MessageTy>::Release() {
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  if (!master_proxy.IsBoundToCurrentThread()) {
+    master_proxy.PostTask(FROM_HERE,
+                          ::base::BindOnce(&Publisher<MessageTy>::Release,
+                                           ::base::Unretained(this)));
+    return;
+  }
+
+  channel_.reset();
+  message_queue_.clear();
 }
 
 }  // namespace felicia

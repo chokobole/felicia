@@ -80,6 +80,8 @@ class Subscriber {
 
   void NotifyMessageLoop();
 
+  void Release();
+
   MessageTy message_;
   Pool<MessageTy, uint8_t> message_queue_;
   std::unique_ptr<Channel<MessageTy>> channel_;
@@ -261,14 +263,6 @@ void Subscriber<MessageTy>::StartMessageLoop() {
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::StopMessageLoop() {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(
-        FROM_HERE, ::base::BindOnce(&Subscriber<MessageTy>::StopMessageLoop,
-                                    ::base::Unretained(this)));
-    return;
-  }
-
   if (IsStopped()) return;
 
   if (!(IsUnregistered() || IsStarted())) {
@@ -280,10 +274,8 @@ void Subscriber<MessageTy>::StopMessageLoop() {
     return;
   }
 
+  Release();
   state_.ToStopped();
-
-  channel_.reset();
-  message_queue_.clear();
 }
 
 template <typename MessageTy>
@@ -330,6 +322,20 @@ void Subscriber<MessageTy>::NotifyMessageLoop() {
       ::base::BindOnce(&Subscriber<MessageTy>::NotifyMessageLoop,
                        ::base::Unretained(this)),
       period_);
+}
+
+template <typename MessageTy>
+void Subscriber<MessageTy>::Release() {
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  if (!master_proxy.IsBoundToCurrentThread()) {
+    master_proxy.PostTask(FROM_HERE,
+                          ::base::BindOnce(&Subscriber<MessageTy>::Release,
+                                           ::base::Unretained(this)));
+    return;
+  }
+
+  channel_.reset();
+  message_queue_.clear();
 }
 
 }  // namespace felicia
