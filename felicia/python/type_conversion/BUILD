@@ -4,6 +4,10 @@ package(default_visibility = ["//felicia:internal"])
 
 fel_cc_library(
     name = "type_conversion",
-    hdrs = ["protobuf.h"],
+    hdrs = [
+        "callback.h",
+        "callback_forward.h",
+        "protobuf.h",
+    ],
     deps = ["@pybind11"],
 )

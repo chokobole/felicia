@@ -25,6 +25,9 @@ class SimplePublishigNode(NodeLifecycle):
         self.node_info = node_info
         self.request_publish()
 
+        # fel.MasterProxy.post_delayed_task(
+        #     self.request_unpublish, fel.from_seconds(10))
+
     def on_error(self, status):
         print("SimplePublishingNode.on_error()")
         if not status.ok():
@@ -35,7 +38,7 @@ class SimplePublishigNode(NodeLifecycle):
             self.node_info, self.topic, self.channel_def, self.on_request_publish)
 
     def on_request_publish(self, status):
-        print("SimplePublishingNode.on_request_publish")
+        print("SimplePublishingNode.on_request_publish()")
         if not status.ok():
             print(status.error_message())
         self.repeating_publish()
@@ -43,14 +46,29 @@ class SimplePublishigNode(NodeLifecycle):
     def repeating_publish(self):
         self.publisher.publish(self.generate_message(), self.on_publish)
 
+        if not self.publisher.is_unregistered():
+            fel.MasterProxy.post_delayed_task(
+                self.repeating_publish, fel.from_seconds(1))
+
     def on_publish(self, status):
-        print("SimplePublishingNode.on_request_publish")
+        print("SimplePublishingNode.on_request_publish()")
         if not status.ok():
             print(status.error_message())
 
     def generate_message(self):
         message_spec = MessageSpec()
         message_spec.id = self.message_id
+        message_spec.timestamp = fel.now().to_double_t()
         message_spec.content = "hello world"
         self.message_id += 1
         return message_spec
+
+    def request_unpublish(self):
+        print("SimplePublishingNode.request_unpublish()")
+        self.publisher.request_unpublish(self.node_info, self.topic,
+                                       self.on_request_unpublish)
+
+    def on_request_unpublish(self, status):
+        print("SimplePublishingNode.on_request_unpublish()")
+        if not status.ok():
+            print(status.error_message())

@@ -25,6 +25,9 @@ class SimpleSubscribingNode(NodeLifecycle):
         self.subscriber.request_subscribe(self.node_info, self.topic, self.on_message,
                                           self.on_subscription_error, settings, self.on_request_subscribe)
 
+        # fel.MasterProxy.post_delayed_task(
+        #         self.request_unsubscribe, fel.from_seconds(10))
+
     def on_message(self, message):
         print("SimpleSubscribingNode.on_message()")
         print("message : {}".format(message))

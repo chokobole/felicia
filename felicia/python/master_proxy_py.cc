@@ -7,6 +7,7 @@
 #include "third_party/chromium/build/build_config.h"
 
 #include "felicia/core/master/master_proxy.h"
+#include "felicia/python/type_conversion/callback.h"
 #include "felicia/python/type_conversion/protobuf.h"
 
 SUPPORT_PROTOBUF_TYPE_CAST(::felicia::NodeInfo, NodeInfo,
@@ -112,7 +113,17 @@ void AddMasterProxy(py::module& m) {
       .def_static("start", &PyMasterProxy::Start)
       .def_static("stop", &PyMasterProxy::Stop)
       .def_static("run", &PyMasterProxy::Run)
-      .def_static("request_register_node", &PyMasterProxy::RequestRegisterNode);
+      .def_static("request_register_node", &PyMasterProxy::RequestRegisterNode)
+      .def_static("post_delayed_task", [](py::function callback,
+                                          ::base::TimeDelta delay) {
+        callback.inc_ref();
+        MasterProxy& master_proxy = MasterProxy::GetInstance();
+        master_proxy.PostDelayedTask(
+            FROM_HERE,
+            ::base::BindOnce(&PyOnceClosure::Invoke,
+                             ::base::Owned(new PyOnceClosure(callback))),
+            delay);
+      });
 }
 
 }  // namespace felicia

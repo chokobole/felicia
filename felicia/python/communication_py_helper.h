@@ -5,6 +5,7 @@
 
 #include "felicia/core/communication/publisher.h"
 #include "felicia/core/communication/subscriber.h"
+#include "felicia/python/type_conversion/callback.h"
 #include "felicia/python/type_conversion/protobuf.h"
 
 SUPPORT_PROTOBUF_TYPE_CAST(::felicia::ChannelDef, ChannelDef,
@@ -16,26 +17,8 @@ namespace py = pybind11;
 
 namespace felicia {
 
-class PYBIND11_EXPORT PyStatusCallback {
- public:
-  explicit PyStatusCallback(py::function func) : func_(func) {}
-
-  void Invoke(const Status& s) { func_(s); }
-
- private:
-  py::function func_;
-};
-
 template <typename MessageTy>
-class PYBIND11_EXPORT PyMesageCallback {
- public:
-  explicit PyMesageCallback(py::function func) : func_(func) {}
-
-  void Invoke(const MessageTy& s) { func_(s); }
-
- private:
-  py::function func_;
-};
+using PyMessageCallback = PyCallback<void(const MessageTy&)>;
 
 template <typename MessageTy>
 void AddPublisher(py::module& m, const char* name) {
@@ -98,9 +81,9 @@ void AddSubscriber(py::module& m, const char* name) {
              return self.RequestSubscribe(
                  node_info, topic,
                  ::base::BindRepeating(
-                     &PyMesageCallback<MessageTy>::Invoke,
-                     ::base::Owned(
-                         new PyMesageCallback<MessageTy>(on_message_callback))),
+                     &PyMessageCallback<MessageTy>::Invoke,
+                     ::base::Owned(new PyMessageCallback<MessageTy>(
+                         on_message_callback))),
                  ::base::BindRepeating(
                      &PyStatusCallback::Invoke,
                      ::base::Owned(new PyStatusCallback(on_error_callback))),
