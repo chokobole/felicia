@@ -34,7 +34,7 @@ def fel_pybind_py_library(
     native.py_library(
         name = name,
         data = select({
-            "//felicia:windows": [":%s.pyd" % name, "//felicia:libfelicia.so"],
+            "//felicia:windows": [":%s.pyd" % name],
             "//conditions:default": [":%s" % libname],
         }),
         srcs = py_srcs,
