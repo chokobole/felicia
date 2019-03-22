@@ -9,7 +9,7 @@
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/base/memory/weak_ptr.h"
 
-#include "felicia/core/master/master_data.pb.h"
+#include "felicia/core/protobuf/master_data.pb.h"
 
 namespace felicia {
 

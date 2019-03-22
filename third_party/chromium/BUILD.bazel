@@ -11,14 +11,3 @@ package_group(
         "//third_party/chromium/...",
     ],
 )
-
-# fel_cc_shared_library(
-#     name = "chromium",
-#     srcs = ["empty.cc"],
-#     deps = [
-#         "//third_party/chromium/base",
-#         "//third_party/chromium/build",
-#         "//third_party/chromium/net",
-#         "//third_party/chromium/testing",
-#     ],
-# )

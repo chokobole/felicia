@@ -53,18 +53,18 @@ fel_proto_library_cc(
     srcs = ["master_service.proto"],
     has_services = 1,
     cc_grpc_version = 1,
-    protodeps = ["//felicia/core/master:master_proto"],
+    protodeps = ["//felicia/core/protobuf:protos_all_proto"],
     visibility = ["//felicia:internal"],
 )
 
 fel_cc_binary(
     name = "grpc_server_main",
     srcs = [
-        "grpc_server_main.cc",
-        "grpc_server.cc",
-        "grpc_server.h",
         "grpc_master_service.cc",
         "grpc_master_service.h",
+        "grpc_server.cc",
+        "grpc_server.h",
+        "grpc_server_main.cc",
     ],
     deps = [
         ":grpc_call",

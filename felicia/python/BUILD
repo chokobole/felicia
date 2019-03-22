@@ -1,26 +1,35 @@
+load("//bazel:felicia.bzl", "fel_additional_deps")
 load("//bazel:felicia_cc.bzl", "fel_cc_library")
-load("//bazel:felicia_pybind.bzl", "fel_pybind_py_library")
 
 package(default_visibility = ["//felicia:internal"])
 
 fel_cc_library(
-    name = "communication_py_helper",
-    srcs = ["communication_py_helper.h"],
-    deps = ["//felicia"],
+    name = "basic_felicia_py_cc",
+    srcs = [
+        "felicia_py.cc",
+        "master_proxy_py.cc",
+        "master_proxy_py.h",
+        "node_py.cc",
+        "node_py.h",
+    ],
+    hdrs = [
+        "communication_py_helper.h",
+    ],
+    deps = [
+        "//felicia/core/communication",
+        "//felicia/core/master:master_proxy",
+        "//felicia/core/node:node_lifecycle",
+        "//felicia/python/type_conversion",
+        "//felicia/python/command_line_interface:flag_py",
+        "@pybind11",
+    ] + fel_additional_deps(),
 )
 
-fel_pybind_py_library(
-    name = "master_proxy",
-    cc_deps = [
-        "//felicia/python/core:type_conversion",
-    ],
-    cc_srcs = [
-        "master_proxy_py.cc",
-        "py_master_proxy.cc",
-        "py_master_proxy.h",
-    ],
-    py_deps = [
-        "//felicia/python/core/lib/error:status",
-        "//felicia/core/master:master_data_proto_py",
+py_library(
+    name = "basic_felicia_py_py",
+    srcs = ["node_lifecycle.py"],
+    deps = [
+        "//felicia/core/protobuf:protos_all_proto_py",
+        "//felicia/python/command_line_interface:flag_parser_delegate",
     ],
 )

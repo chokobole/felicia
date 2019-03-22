@@ -1,15 +1,12 @@
-#include "pybind11/pybind11.h"
+#include "felicia/python/node_py.h"
+#include "felicia/python/type_conversion/protobuf.h"
 
-#include "felicia/core/node/node_lifecycle.h"
-#include "felicia/python/core/node/py_node_lifecycle.h"
-
-namespace py = pybind11;
+SUPPORT_PROTOBUF_TYPE_CAST(::felicia::NodeInfo, NodeInfo,
+                           felicia.core.protobuf.master_data_pb2)
 
 namespace felicia {
 
-PYBIND11_MODULE(node, m) {
-  m.doc() = "Bindings for Node.";
-
+void AddNodeLifecycle(py::module& m) {
   py::class_<NodeLifecycle, PyNodeLifecycle>(m, "_NodeLifecycle")
       .def(py::init<>())
       .def("OnInit", &NodeLifecycle::OnInit,

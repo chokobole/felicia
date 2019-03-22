@@ -1,6 +1,6 @@
-from felicia.python.core.node.node import _NodeLifecycle
+import felicia_py as fel
 
-class NodeLifecycle(_NodeLifecycle):
+class NodeLifecycle(fel._NodeLifecycle):
     def OnInit(self):
         print("OnInit called")
         self.on_init()

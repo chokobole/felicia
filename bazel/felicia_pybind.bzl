@@ -1,3 +1,4 @@
+load("//bazel:felicia.bzl", "fel_additional_deps")
 load("//bazel:felicia_cc.bzl", "fel_cxxopts")
 
 def fel_pybind_py_library(
@@ -19,10 +20,7 @@ def fel_pybind_py_library(
         copts = fel_cxxopts() + copts,
         linkshared = 1,
         linkstatic = 1,
-        deps = [
-            "//felicia:felicia",
-            "@pybind11",
-        ] + cc_deps,
+        deps = ["@pybind11"] + cc_deps,
     )
 
     # On windows, it needs a .pyd file but it can't generate *.pyd above
@@ -41,8 +39,8 @@ def fel_pybind_py_library(
         }),
         srcs = py_srcs,
         deps = py_deps,
+        imports = ["."],
     )
-
 
 def _impl(ctx):
     output = ctx.outputs.out
@@ -71,5 +69,5 @@ generate_pyd = rule(
     attrs = {
         "file": attr.label(mandatory = True),
         "out": attr.output(mandatory = True),
-    }
+    },
 )

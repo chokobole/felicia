@@ -1,7 +1,8 @@
-from felicia.core.channel.channel_pb2 import ChannelDef
+import felicia_py as fel
+from felicia.core.protobuf.channel_pb2 import ChannelDef
+from felicia.python.node_lifecycle import NodeLifecycle
+
 from felicia.examples.learn.message_communication.protobuf.message_spec_pb2 import MessageSpec
-from felicia.examples.learn.message_communication.python.communication import Publisher
-from felicia.python.core.node.node_lifecycle import NodeLifecycle
 
 
 class SimplePublishigNode(NodeLifecycle):
@@ -13,7 +14,7 @@ class SimplePublishigNode(NodeLifecycle):
             self.channel_def.type = ChannelDef.TCP
         elif channel_type == 'UDP':
             self.channel_def.type = ChannelDef.UDP
-        self.publisher = Publisher()
+        self.publisher = fel.Publisher()
         self.message_id = 0
 
     def on_init(self):

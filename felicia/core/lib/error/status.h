@@ -22,7 +22,7 @@ limitations under the License.
 #include "third_party/chromium/base/strings/string_piece.h"
 
 #include "felicia/core/lib/base/export.h"
-#include "felicia/core/lib/error/error_codes.pb.h"
+#include "felicia/core/protobuf/error_codes.pb.h"
 
 namespace felicia {
 

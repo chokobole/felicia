@@ -1,14 +1,12 @@
-#ifndef FELICIA_PYTHON_CORE_NODE_PY_NODE_LIFECYCLE_H_
-#define FELICIA_PYTHON_CORE_NODE_PY_NODE_LIFECYCLE_H_
+#ifndef FELICIA_PYTHON_NODE_PY_H_
+#define FELICIA_PYTHON_NODE_PY_H_
 
 #include "pybind11/pybind11.h"
 
-#include "felicia/core/master/master_data.pb.h"
 #include "felicia/core/node/node_lifecycle.h"
-#include "felicia/python/core/lib/type_conversion/protobuf.h"
+#include "felicia/core/protobuf/master_data.pb.h"
 
-SUPPORT_PROTOBUF_TYPE_CAST(::felicia::NodeInfo, NodeInfo,
-                           felicia.core.master.master_data_pb2)
+namespace py = pybind11;
 
 namespace felicia {
 
@@ -43,6 +41,8 @@ class PyNodeLifecycle : public NodeLifecycle {
   }
 };
 
+void AddNodeLifecycle(py::module& m);
+
 }  // namespace felicia
 
-#endif  // FELICIA_PYTHON_CORE_NODE_PY_NODE_LIFECYCLE_H_
+#endif  // FELICIA_PYTHON_NODE_PY_H_

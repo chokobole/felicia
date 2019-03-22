@@ -4,7 +4,7 @@
 #include "third_party/chromium/base/macros.h"
 
 #include "felicia/core/lib/error/status.h"
-#include "felicia/core/master/master_data.pb.h"
+#include "felicia/core/protobuf/master_data.pb.h"
 
 namespace felicia {
 

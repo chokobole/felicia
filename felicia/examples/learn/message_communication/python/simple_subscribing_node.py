@@ -1,12 +1,12 @@
-from felicia.examples.learn.message_communication.python.communication import Subscriber, Settings
-from felicia.python.core.node.node_lifecycle import NodeLifecycle
+import felicia_py as fel
+from felicia.python.node_lifecycle import NodeLifecycle
 
 
 class SimpleSubscribingNode(NodeLifecycle):
     def __init__(self, topic):
         super().__init__()
         self.topic = topic
-        self.subscriber = Subscriber()
+        self.subscriber = fel.Subscriber()
 
     def on_init(self):
         print("SimpleSubscribingNode.on_init()")
@@ -20,7 +20,7 @@ class SimpleSubscribingNode(NodeLifecycle):
         print("SimpleSubscribingNode.on_error()")
 
     def request_subscribe(self):
-        settings = Settings()
+        settings = fel.Settings()
 
         self.subscriber.request_subscribe(self.node_info, self.topic, self.on_message,
                                           self.on_subscription_error, settings, self.on_request_subscribe)

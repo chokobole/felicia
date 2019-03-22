@@ -6,7 +6,7 @@
 
 #include "felicia/core/channel/channel.h"
 #include "felicia/core/lib/base/task_runner_interface.h"
-#include "felicia/core/master/master_data.pb.h"
+#include "felicia/core/protobuf/master_data.pb.h"
 
 namespace felicia {
 

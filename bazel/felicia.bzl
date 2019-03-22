@@ -61,3 +61,13 @@ def if_static(extra_deps, otherwise = []):
         "//felicia:framework_shared_object": otherwise,
         "//conditions:default": extra_deps,
     })
+
+def fel_additional_deps():
+    return [
+        "//felicia/core/protobuf:protos_all_cc_impl",
+        "//third_party/chromium/base",
+        "//third_party/chromium/net",
+        "//felicia:grpc++",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_googletest//:gtest",
+    ]

@@ -5,9 +5,9 @@
 
 #include "third_party/chromium/base/macros.h"
 
-#include "felicia/core/channel/channel.pb.h"
 #include "felicia/core/channel/tcp_channel.h"
 #include "felicia/core/channel/udp_channel.h"
+#include "felicia/core/protobuf/channel.pb.h"
 
 namespace felicia {
 

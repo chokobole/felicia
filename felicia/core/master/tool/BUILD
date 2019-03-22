@@ -14,7 +14,7 @@ fel_cc_library(
     name = "client_list_flag",
     srcs = ["client_list_flag.cc"],
     hdrs = ["client_list_flag.h"],
-    deps = ["//felicia"],
+    deps = ["//felicia/core/util:command_line_interface"],
 )
 
 fel_cc_library(
@@ -32,7 +32,7 @@ fel_cc_library(
     name = "node_list_flag",
     srcs = ["node_list_flag.cc"],
     hdrs = ["node_list_flag.h"],
-    deps = ["//felicia"],
+    deps = ["//felicia/core/util:command_line_interface"],
 )
 
 fel_cc_library(
@@ -50,7 +50,7 @@ fel_cc_library(
     name = "topic_list_flag",
     srcs = ["topic_list_flag.cc"],
     hdrs = ["topic_list_flag.h"],
-    deps = ["//felicia"],
+    deps = ["//felicia/core/util:command_line_interface"],
 )
 
 fel_cc_library(
@@ -79,12 +79,16 @@ fel_cc_library(
     hdrs = ["command_dispatcher.h"],
     deps = [
         ":cli_flag",
-        "//felicia:grpc++",
+        "//felicia/core/channel",
+        "//felicia/core/master/rpc:grpc_master_client",
     ],
 )
 
 fel_cc_binary(
     name = "grpc_master_client_cli",
     srcs = ["grpc_master_client_cli.cc"],
-    deps = [":command_disptacher"],
+    deps = [
+        ":command_disptacher",
+        "//felicia",
+    ],
 )

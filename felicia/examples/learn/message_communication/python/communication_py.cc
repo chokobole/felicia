@@ -2,6 +2,7 @@
 
 #include "felicia/examples/learn/message_communication/protobuf/message_spec.pb.h"
 #include "felicia/python/communication_py_helper.h"
+#include "felicia/python/type_conversion/protobuf.h"
 
 SUPPORT_PROTOBUF_TYPE_CAST(
     ::felicia::MessageSpec, MessageSpec,
@@ -11,9 +12,7 @@ namespace py = pybind11;
 
 namespace felicia {
 
-PYBIND11_MODULE(communication, m) {
-  m.doc() = "Bindings for communication.";
-
+void AddCommunication(py::module& m) {
   AddPublisher<MessageSpec>(m, "Publisher");
   AddSubscriber<MessageSpec>(m, "Subscriber");
 

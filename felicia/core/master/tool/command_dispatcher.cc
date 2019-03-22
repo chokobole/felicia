@@ -8,7 +8,6 @@
 #include "third_party/chromium/base/strings/string_number_conversions.h"
 
 #include "felicia/core/channel/channel.h"
-#include "felicia/core/master/master_proxy.h"
 #include "felicia/core/util/command_line_interface/table_writer.h"
 
 namespace felicia {

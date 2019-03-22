@@ -1,11 +1,6 @@
+#include "felicia/python/command_line_interface/flag_py.h"
+
 #include <type_traits>
-
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
-
-#include "felicia/core/util/command_line_interface/flag.h"
-#include "felicia/core/util/command_line_interface/flag_parser.h"
-#include "felicia/python/core/util/command_line_interface/py_flag_parser_delegate.h"
 
 namespace py = pybind11;
 
@@ -107,9 +102,7 @@ void AddFlag(py::module& m, const char* name) {
       .def("parse", &FlagTy::Parse);
 }
 
-PYBIND11_MODULE(flag, m) {
-  m.doc() = "Bindings for Flag.";
-
+void AddFlag(py::module& m) {
 #define ADD_FLAG(Flag)                      \
   AddFlagBuilder<Flag>(m, #Flag "Builder"); \
   AddFlag<Flag>(m, #Flag)
@@ -139,6 +132,21 @@ PYBIND11_MODULE(flag, m) {
       .def("CollectUsages", &FlagParser::Delegate::CollectUsages)
       .def("Description", &FlagParser::Delegate::Description)
       .def("CollectNamedHelps", &FlagParser::Delegate::CollectNamedHelps);
+
+  py::class_<TextStyle>(m, "TextStyle")
+      .def_static("red",
+                  [](const std::string& text) { return TextStyle::Red(text); })
+      .def_static(
+          "green",
+          [](const std::string& text) { return TextStyle::Green(text); })
+      .def_static("blue",
+                  [](const std::string& text) { return TextStyle::Blue(text); })
+      .def_static(
+          "yellow",
+          [](const std::string& text) { return TextStyle::Yellow(text); })
+      .def_static("bold", [](const std::string& text) {
+        return TextStyle::Bold(text);
+      });
 
   py::class_<FlagParser>(m, "FlagParser")
       .def(py::init<>())

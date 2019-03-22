@@ -3,7 +3,6 @@ load(
     "fel_cc_library",
     "fel_cc_test",
 )
-load("//bazel:felicia_proto.bzl", "fel_proto_library")
 
 package(default_visibility = ["//felicia:internal"])
 
@@ -19,7 +18,6 @@ fel_cc_library(
     srcs = ["heart_beat_listener.cc"],
     hdrs = ["heart_beat_listener.h"],
     deps = [
-        ":master_data_proto_cc",
         "//felicia/core/channel",
         "//felicia/core/lib",
     ],
@@ -29,23 +27,7 @@ fel_cc_library(
     name = "heart_beat_signaller",
     srcs = ["heart_beat_signaller.cc"],
     hdrs = ["heart_beat_signaller.h"],
-    deps = [
-        ":heart_beat_listener",
-    ],
-)
-
-fel_proto_library(
-    name = "master_data_proto",
-    srcs = ["master_data.proto"],
-    protodeps = ["//felicia/core/channel:channel_proto"],
-    visibility = ["//felicia:internal"],
-)
-
-fel_proto_library(
-    name = "master_proto",
-    srcs = ["master.proto"],
-    protodeps = [":master_data_proto"],
-    visibility = ["//felicia:internal"],
+    deps = [":heart_beat_listener"],
 )
 
 fel_cc_library(
@@ -53,8 +35,8 @@ fel_cc_library(
     srcs = ["master_client_interface.cc"],
     hdrs = ["master_client_interface.h"],
     deps = [
-        ":master_proto_cc",
         "//felicia/core/lib",
+        "//felicia/core/protobuf:protos_all_cc",
     ],
 )
 
@@ -94,9 +76,9 @@ fel_cc_library(
     srcs = ["topic_info_watcher.cc"],
     hdrs = ["topic_info_watcher.h"],
     deps = [
-        ":master_data_proto_cc",
         "//felicia/core/channel",
         "//felicia/core/lib",
+        "//felicia/core/protobuf:protos_all_cc",
     ],
 )
 

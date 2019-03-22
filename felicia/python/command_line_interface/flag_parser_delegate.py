@@ -1,18 +1,17 @@
 from six.moves import filter, map
 
-import felicia.python.core.util.command_line_interface.flag as flag
-from felicia.python.core.util.command_line_interface.text_style import TextStyle
+import felicia_py.command_line_interface as cli
 
-class FlagParserDelegate(flag._FlagParserDelegate):
+class FlagParserDelegate(cli._FlagParserDelegate):
     def __init__(self):
         super().__init__()
         self._flags = None
 
-    def _is_flag_type(self, f):
-        return isinstance(f, (flag.BoolFlag, flag.IntFlag, flag.DoubleFlag, flag.StringFlag,
-                              flag.BoolDefaultFlag, flag.IntDefaultFlag, flag.DoubleDefaultFlag, flag.StringDefaultFlag,
-                              flag.IntRangeFlag, flag.DoubleRangeFlag, flag.StringRangeFlag,
-                              flag.IntChoicesFlag, flag.DoubleChoicesFlag, flag.StringChoicesFlag))
+    def _is_flag_type(self, flag):
+        return isinstance(flag, (cli.BoolFlag, cli.IntFlag, cli.DoubleFlag, cli.StringFlag,
+                              cli.BoolDefaultFlag, cli.IntDefaultFlag, cli.DoubleDefaultFlag, cli.StringDefaultFlag,
+                              cli.IntRangeFlag, cli.DoubleRangeFlag, cli.StringRangeFlag,
+                              cli.IntChoicesFlag, cli.DoubleChoicesFlag, cli.StringChoicesFlag))
 
     def _collect_flags(self):
         if self._flags is not None:
@@ -58,9 +57,9 @@ class FlagParserDelegate(flag._FlagParserDelegate):
         positionals = filter(lambda x: x.is_positional(), self._flags)
         optionals = filter(lambda x: x.is_optional(), self._flags)
         return [
-            (TextStyle.blue("Positional arguments:"), list(
+            (cli.TextStyle.blue("Positional arguments:"), list(
                 map(lambda x: x.help(), positionals)) if positionals is not None else []),
-            (TextStyle.yellow("Optional arguments:"), list(
+            (cli.TextStyle.yellow("Optional arguments:"), list(
                 map(lambda x: x.help(), optionals)) if optionals is not None else [])
         ]
 

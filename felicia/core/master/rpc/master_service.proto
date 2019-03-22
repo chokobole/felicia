@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package felicia;
 
-import "felicia/core/master/master.proto";
+import "felicia/core/protobuf/master.proto";
 
 service MasterService {
   // Register client with a given RegisterClientRequest.

@@ -5,12 +5,12 @@
 
 #include "felicia/core/communication/publisher.h"
 #include "felicia/core/communication/subscriber.h"
-#include "felicia/python/core/lib/type_conversion/protobuf.h"
+#include "felicia/python/type_conversion/protobuf.h"
 
 SUPPORT_PROTOBUF_TYPE_CAST(::felicia::ChannelDef, ChannelDef,
-                           felicia.core.channel.channel_pb2)
+                           felicia.core.protobuf.channel_pb2)
 SUPPORT_PROTOBUF_TYPE_CAST(::felicia::NodeInfo, NodeInfo,
-                           felicia.core.master.master_data_pb2)
+                           felicia.core.protobuf.master_data_pb2)
 
 namespace py = pybind11;
 

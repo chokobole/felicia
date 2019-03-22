@@ -1,11 +1,8 @@
-#ifndef FELICIA_PYTHON_PY_MASTER_PROXY_H_
-#define FELICIA_PYTHON_PY_MASTER_PROXY_H_
-
 #include "pybind11/pybind11.h"
 
 #include "felicia/core/lib/error/status.h"
-#include "felicia/core/master/master.pb.h"
 #include "felicia/core/node/node_lifecycle.h"
+#include "felicia/core/protobuf/master.pb.h"
 
 namespace py = pybind11;
 
@@ -29,6 +26,6 @@ class PyMasterProxy {
                                   const Status& s);
 };
 
-}  // namespace felicia
+void AddMasterProxy(py::module& m);
 
-#endif  // FELICIA_PYTHON_PY_MASTER_PROXY_H_
+}  // namespace felicia

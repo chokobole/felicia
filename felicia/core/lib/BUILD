@@ -3,15 +3,8 @@ load(
     "fel_cc_library",
     "fel_cc_test",
 )
-load("//bazel:felicia_proto.bzl", "fel_proto_library")
 
 package(default_visibility = ["//felicia:internal"])
-
-fel_proto_library(
-    name = "error_codes_proto",
-    srcs = ["error/error_codes.proto"],
-    visibility = ["//felicia:internal"],
-)
 
 fel_cc_library(
     name = "lib",
@@ -43,10 +36,10 @@ fel_cc_library(
         ],
     }),
     deps = [
-        ":error_codes_proto_cc",
-        "@com_google_googletest//:gtest",
+        "//felicia/core/protobuf:protos_all_cc",
         "//third_party/chromium/base",
         "//third_party/chromium/net",
+        "@com_google_googletest//:gtest",
     ],
 )
 

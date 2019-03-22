@@ -1,3 +1,4 @@
+load("//bazel:felicia.bzl", "fel_additional_deps")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_binary",
@@ -103,33 +104,16 @@ fel_cc_library(
     }),
 )
 
-# Workaround to solve the issue related to
-# https://github.com/protocolbuffers/protobuf/issues/1941#issuecomment-284582895
-fel_cc_shared_library(
-    name = "protobuf",
-    srcs = ["empty.cc"],
-    deps = ["@com_google_protobuf//:protobuf"],
-    collect_hdrs = False,
-)
-
 fel_cc_shared_library(
     name = "felicia",
     srcs = ["empty.cc"],
     copts = fel_cxxopts(is_external = True),
+    third_party_deps = fel_additional_deps(),
     deps = [
-        "//felicia/core/lib",
         "//felicia/core/communication",
+        "//felicia/core/master",
         "//felicia/core/master:master_proxy",
         "//felicia/core/node:node_lifecycle",
         "//felicia/core/util",
     ],
-    third_party_deps = [
-        "//felicia/core/master:master_data_proto_cc",
-        "//felicia/core/master:master_proto_cc",
-        "//third_party/chromium/base",
-        "//third_party/chromium/net",
-        "@com_google_protobuf//:protobuf",
-        "@com_google_googletest//:gtest",
-        "//felicia:grpc++",
-    ]
 )

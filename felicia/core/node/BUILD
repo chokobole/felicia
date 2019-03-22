@@ -8,7 +8,7 @@ fel_cc_library(
     hdrs = ["node.h"],
     deps = [
         "//felicia/core/lib",
-        "//felicia/core/master:master_proto_cc",
+        "//felicia/core/protobuf:protos_all_cc",
         "//felicia/core/util",
     ],
 )
@@ -18,6 +18,6 @@ fel_cc_library(
     hdrs = ["node_lifecycle.h"],
     deps = [
         "//felicia/core/lib",
-        "//felicia/core/master:master_proto_cc",
+        "//felicia/core/protobuf:protos_all_cc",
     ],
 )

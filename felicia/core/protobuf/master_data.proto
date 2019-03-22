@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "felicia/core/channel/channel.proto";
+import "felicia/core/protobuf/channel.proto";
 
 package felicia;
 

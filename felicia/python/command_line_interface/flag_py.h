@@ -1,10 +1,13 @@
-#ifndef FELICIA_PYTHON_CORE_UTIL_COMMAND_LINE_INTERFACE_PY_FLAG_PARSER_DELEGATE_H_
-#define FELICIA_PYTHON_CORE_UTIL_COMMAND_LINE_INTERFACE_PY_FLAG_PARSER_DELEGATE_H_
+#ifndef FELICIA_PYTHON_COMMAND_LINE_INTERFACE_FLAG_PY_H_
+#define FELICIA_PYTHON_COMMAND_LINE_INTERFACE_FLAG_PY_H_
 
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 
+#include "felicia/core/util/command_line_interface/flag.h"
 #include "felicia/core/util/command_line_interface/flag_parser.h"
+
+namespace py = pybind11;
 
 namespace felicia {
 
@@ -54,6 +57,8 @@ class PyFlagParserDelegate : public FlagParser::Delegate {
   }
 };
 
+void AddFlag(py::module& m);
+
 }  // namespace felicia
 
-#endif  // FELICIA_PYTHON_CORE_UTIL_COMMAND_LINE_INTERFACE_PY_FLAG_PARSER_DELEGATE_H_
+#endif  // FELICIA_PYTHON_COMMAND_LINE_INTERFACE_FLAG_PY_H_

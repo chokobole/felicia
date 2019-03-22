@@ -1,13 +1,6 @@
 load("//bazel:felicia_cc.bzl", "fel_cc_library")
-load("//bazel:felicia_proto.bzl", "fel_proto_library")
 
 package(default_visibility = ["//felicia:internal"])
-
-fel_proto_library(
-    name = "channel_proto",
-    srcs = ["channel.proto"],
-    visibility = ["//felicia:internal"],
-)
 
 fel_cc_library(
     name = "channel",
@@ -35,8 +28,8 @@ fel_cc_library(
         "udp_server_channel.h",
     ],
     deps = [
-        ":channel_proto_cc",
         "//felicia/core/lib",
         "//felicia/core/message",
+        "//felicia/core/protobuf:protos_all_cc",
     ],
 )

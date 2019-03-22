@@ -12,13 +12,14 @@
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/channel/channel.h"
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/master/client.h"
 #include "felicia/core/master/errors.h"
-#include "felicia/core/master/master.pb.h"
+#include "felicia/core/protobuf/master.pb.h"
 
 namespace felicia {
 
-class Master {
+class EXPORT Master {
  public:
   ~Master();
 

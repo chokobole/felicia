@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 
-from core.util.command_line_interface.text_style import TextStyle
+from lib.text_style import TextStyle
 from lib.util import is_windows
 
 

@@ -6,9 +6,9 @@
 #include "third_party/chromium/net/base/io_buffer.h"
 #include "third_party/chromium/net/base/ip_endpoint.h"
 
-#include "felicia/core/channel/channel.pb.h"
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/statusor.h"
+#include "felicia/core/protobuf/channel.pb.h"
 
 namespace felicia {
 

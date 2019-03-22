@@ -276,7 +276,6 @@ def fel_cc_shared_library(
         copts = [],
         data = [],
         linkopts = [],
-        collect_hdrs = True,
         third_party_deps = [],
         **kwargs):
     libname = "lib" + name + ".so"
@@ -304,27 +303,21 @@ def fel_cc_shared_library(
         shared_library = ":" + libname,
     )
 
-    if collect_hdrs:
-        collect_transitive_hdrs(
-            name = "collect_" + name + "_hdrs",
-            deps = [installed_headers_for_dep(x) for x in deps],
-            visibility = ["//visibility:private"],
-        )
+    collect_transitive_hdrs(
+        name = "collect_" + name + "_hdrs",
+        deps = [installed_headers_for_dep(x) for x in deps],
+        visibility = ["//visibility:private"],
+    )
 
-        native.cc_library(
-            name = name + "_hdrs",
-            hdrs = [":collect_" + name + "_hdrs"],
-        )
+    native.cc_library(
+        name = name + "_hdrs",
+        hdrs = [":collect_" + name + "_hdrs"],
+    )
 
-        native.cc_library(
-            name = name,
-            deps = [
-                ":" + name + "_hdrs",
-                ":" + name + "_import",
-            ] + third_party_deps,
-        )
-    else:
-        native.cc_library(
-            name = name,
-            deps = [":" + name + "_import"] + third_party_deps,
-        )
+    native.cc_library(
+        name = name,
+        deps = [
+            ":" + name + "_hdrs",
+            ":" + name + "_import",
+        ] + third_party_deps,
+    )
