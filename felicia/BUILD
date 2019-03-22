@@ -110,6 +110,7 @@ fel_cc_shared_library(
     copts = fel_cxxopts(is_external = True),
     third_party_deps = fel_additional_deps(),
     deps = [
+        "//felicia/core:felicia_init",
         "//felicia/core/communication",
         "//felicia/core/master",
         "//felicia/core/master:master_proxy",

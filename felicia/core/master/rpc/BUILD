@@ -69,8 +69,9 @@ fel_cc_binary(
     deps = [
         ":grpc_call",
         ":master_service_proto_cc",
-        "//felicia/core/master",
         "//felicia",
+        "//felicia/core:felicia_init",
+        "//felicia/core/master",
     ],
 )
 

@@ -31,6 +31,8 @@ from simple_subscribing_node import SimpleSubscribingNode
 
 
 def main():
+    fel.felicia_init()
+
     delegate = NodeCreateFlag()
     parser = cli.FlagParser()
     parser.set_program_name('node_creator')

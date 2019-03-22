@@ -1,3 +1,4 @@
+#include "felicia/core/felicia_init.h"
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/examples/learn/message_communication/cc/node_create_flag.h"
 #include "felicia/examples/learn/message_communication/cc/simple_publishing_node.h"
@@ -6,6 +7,8 @@
 namespace felicia {
 
 int RealMain(int argc, char* argv[]) {
+  FeliciaInit();
+
   NodeCreateFlag delegate;
   FlagParser parser;
   parser.set_program_name("node_creator");

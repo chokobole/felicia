@@ -16,6 +16,7 @@ fel_cc_library(
         "communication_py_helper.h",
     ],
     deps = [
+        "//felicia/core:felicia_init",
         "//felicia/core/communication",
         "//felicia/core/master:master_proxy",
         "//felicia/core/node:node_lifecycle",

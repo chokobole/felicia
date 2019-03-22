@@ -90,5 +90,6 @@ fel_cc_binary(
     deps = [
         ":command_disptacher",
         "//felicia",
+        "//felicia/core:felicia_init",
     ],
 )
