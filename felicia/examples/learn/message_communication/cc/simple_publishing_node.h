@@ -81,7 +81,7 @@ class SimplePublishingNode : public NodeLifecycle {
     static int id = 0;
     MessageSpec message_spec;
     message_spec.set_id(id++);
-    message_spec.set_timestamp(::base::Time::Now().ToInternalValue());
+    message_spec.set_timestamp(::base::Time::Now().ToDoubleT());
     message_spec.set_content("hello world");
     return message_spec;
   }
