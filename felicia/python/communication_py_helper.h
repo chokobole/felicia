@@ -16,7 +16,7 @@ namespace py = pybind11;
 
 namespace felicia {
 
-class __attribute__((visibility("hidden"))) PyStatusCallback {
+class PYBIND11_EXPORT PyStatusCallback {
  public:
   explicit PyStatusCallback(py::function func) : func_(func) {}
 
@@ -27,7 +27,7 @@ class __attribute__((visibility("hidden"))) PyStatusCallback {
 };
 
 template <typename MessageTy>
-class __attribute__((visibility("hidden"))) PyMesageCallback {
+class PYBIND11_EXPORT PyMesageCallback {
  public:
   explicit PyMesageCallback(py::function func) : func_(func) {}
 
