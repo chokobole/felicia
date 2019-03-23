@@ -108,10 +108,8 @@ class SimplePublishingNode: public NodeLifecycle {
 }  // namespace felicia
 ```
 
-**NOTE:** Besides callback, you have to make a constructor which accept the `const NodeInfo&` as the first argument. the rest arguments are free! Anyway as either `Publisher<T>` or `Subscriber<T>` requires `NodeLiecylce*` to construct, I think it is a required pattern to make a use of `felicia`.
-
 Inside `MasterProxy::RequestRegisterNode`, it tries to request grpc to register node.
-Before requiest, `CustomNode::OnInit()` will be called. If the given `node_info` doesn't have a name, then Server register node with a random unique name. If it succeeds to register the node, then `CustomNode::OnDidCreate(const NodeInfo&)` is called. While this process, if it happens an error, `CustomNode::OnError(const Status&)` will be called.
+Before requiest, `OnInit()` will be called. If the given `node_info` doesn't have a name, then Server register node with a random unique name. If it succeeds to register the node, then `OnDidCreate(const NodeInfo&)` is called. While this process, if it happens an error, `OnError(const Status&)` will be called.
 
 
 Then how is possibly publishing topics? If you want to publish topic, you have to use `Publisher<T>` and it is very simple to use. Very first, you have to request server that we hope to publish topic.
@@ -174,7 +172,7 @@ void OnRequestUnpublish(const Status& s) {
 }
 ```
 
-[simple_subscribing_node.h](simple_subscribing_node.h) is very similar to above. When just seeing the key different part, you have to request subscribe. Unlike `publisher` you have to pass one more callback, and settings. Callback is called every `period` milliseconds inside the settings.
+[simple_subscribing_node.h](simple_subscribing_node.h) is very similar to above. When just seeing the key different part, you have to request subscribe. Unlike `publisher` you have to pass 2 more callbacks, and settings. Callback is called every `period` milliseconds inside the settings, and the other is called when there's an error occurred.
 
 ```c++
 void RequestSubscribe() {
@@ -183,6 +181,8 @@ void RequestSubscribe() {
   subscriber_.RequestSubscribe(
       node_info_, topic_,
       ::base::BindRepeating(&SimpleSubscribingNode::OnMessage,
+                            ::base::Unretained(this)),
+      ::base::BindRepeating(&SimpleSubscribingNode::OnSubscriptionError,
                             ::base::Unretained(this)),
       settings,
       ::base::BindOnce(&SimpleSubscribingNode::OnRequestSubscribe,

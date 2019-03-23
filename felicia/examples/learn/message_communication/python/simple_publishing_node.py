@@ -63,7 +63,7 @@ class SimplePublishigNode(NodeLifecycle):
     def request_unpublish(self):
         print("SimplePublishingNode.request_unpublish()")
         self.publisher.request_unpublish(self.node_info, self.topic,
-                                       self.on_request_unpublish)
+                                         self.on_request_unpublish)
 
     def on_request_unpublish(self, status):
         print("SimplePublishingNode.on_request_unpublish()")
