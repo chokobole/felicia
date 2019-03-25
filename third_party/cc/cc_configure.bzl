@@ -1,8 +1,8 @@
 load(
     "@bazel_tools//tools/cpp:lib_cc_configure.bzl",
     "auto_configure_fail",
-    "get_cpu_value",
     "escape_string",
+    "get_cpu_value",
 )
 load(
     "@bazel_tools//tools/cpp:windows_cc_configure.bzl",
@@ -37,7 +37,6 @@ def _configure_windows_tool_path(repository_ctx):
         for path in escaped_lib_paths.split(";"):
             if path:
                 flags.append("/LIBPATH:%s" % path)
-
 
         return find_msvc_tool(repository_ctx, vc_path, "cl.exe"), flags
 
@@ -82,7 +81,7 @@ def _cc_autoconf_impl(repository_ctx):
             "%{CC}": "\"%s\"" % output[0],
             "%{MAJOR_VERSION}": output[1],
             "%{MINOR_VERSION}": output[2],
-        }
+        },
     )
 
 cc_configure = repository_rule(
@@ -117,7 +116,7 @@ cc_configure = repository_rule(
         "VS110COMNTOOLS",
         "VS120COMNTOOLS",
         "VS140COMNTOOLS",
-    ]
+    ],
 )
 """Detects and configure the compiler for C++
 

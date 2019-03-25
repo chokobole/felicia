@@ -1,3 +1,4 @@
+load("//bazel:felicia.bzl", "fel_shared_library")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
@@ -51,8 +52,7 @@ fel_cc_test(
         "base/range_test.cc",
         "containers/pool_test.cc",
     ],
-    deps = [
-        "//felicia",
+    deps = fel_shared_library() + [
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -61,8 +61,7 @@ fel_cc_test(
     name = "pool_benchmark",
     srcs = ["containers/pool_benchmark.cc"],
     tags = ["benchmark"],
-    deps = [
-        "//felicia",
+    deps = fel_shared_library() + [
         "@com_github_google_benchmark//:benchmark_main",
     ],
 )

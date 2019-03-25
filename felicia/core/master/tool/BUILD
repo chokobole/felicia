@@ -1,3 +1,4 @@
+load("//bazel:felicia.bzl", "fel_shared_library")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_binary",
@@ -87,9 +88,8 @@ fel_cc_library(
 fel_cc_binary(
     name = "grpc_master_client_cli",
     srcs = ["grpc_master_client_cli.cc"],
-    deps = [
+    deps = fel_shared_library() + [
         ":command_disptacher",
-        "//felicia",
         "//felicia/core:felicia_init",
     ],
 )

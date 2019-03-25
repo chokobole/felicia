@@ -76,3 +76,15 @@ def load_deps():
         remote = "https://github.com/pybind/pybind11.git",
         tag = "v2.2.2",
     )
+
+    http_archive(
+        name = "io_bazel_rules_go",
+        sha256 = "f87fa87475ea107b3c69196f39c82b7bbf58fe27c62a338684c20ca17d1d8613",
+        url = "https://github.com/bazelbuild/rules_go/releases/download/0.16.2/rules_go-0.16.2.tar.gz",
+    )
+
+    http_archive(
+        name = "com_github_bazelbuild_buildtools",
+        strip_prefix = "buildtools-db073457c5a56d810e46efc18bb93a4fd7aa7b5e",
+        url = "https://github.com/bazelbuild/buildtools/archive/db073457c5a56d810e46efc18bb93a4fd7aa7b5e.zip",
+    )

@@ -12,9 +12,9 @@ fel_proto_library(
 fel_proto_library(
     name = "protos_all_proto",
     srcs = [
-      "master.proto",
-      "master_data.proto",
-      "channel.proto",
+        "channel.proto",
+        "master.proto",
+        "master_data.proto",
     ],
     default_header = True,
     visibility = ["//visibility:public"],
@@ -30,4 +30,3 @@ fel_proto_library(
     ],
     visibility = ["//visibility:public"],
 )
-

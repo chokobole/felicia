@@ -1,3 +1,4 @@
+load("//bazel:felicia.bzl", "fel_shared_library")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
@@ -86,9 +87,8 @@ fel_cc_test(
     name = "master_test",
     size = "small",
     srcs = ["master_test.cc"],
-    deps = [
+    deps = fel_shared_library() + [
         ":master",
-        "//felicia",
         "//felicia/core/node",
         "@com_google_googletest//:gtest_main",
     ],

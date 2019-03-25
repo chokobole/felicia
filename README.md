@@ -65,5 +65,13 @@ python3 scripts/docker_exec.py bazel build //felicia/...
 ```
 
 ## For Users
+
 Follow this link to check [examples](felicia/examples)
 
+## For Developers
+
+After you write the any BUILD, or *.bzl, don't forget to run buildifier!
+
+```bash
+bazel run //:buildifier
+```

@@ -1,3 +1,4 @@
+load("//bazel:felicia.bzl", "fel_shared_library")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_binary",
@@ -66,10 +67,9 @@ fel_cc_binary(
         "grpc_server.h",
         "grpc_server_main.cc",
     ],
-    deps = [
+    deps = fel_shared_library() + [
         ":grpc_call",
         ":master_service_proto_cc",
-        "//felicia",
         "//felicia/core:felicia_init",
         "//felicia/core/master",
     ],

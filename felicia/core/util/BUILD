@@ -1,3 +1,4 @@
+load("//bazel:felicia.bzl", "fel_shared_library")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
@@ -48,8 +49,7 @@ fel_cc_test(
         "command_line_interface/flag_parser_test.cc",
         "command_line_interface/flag_test.cc",
     ],
-    deps = [
-        "//felicia",
+    deps = fel_shared_library() + [
         "@com_google_googletest//:gtest_main",
     ],
 )

@@ -1,3 +1,4 @@
+load("//bazel:felicia.bzl", "fel_shared_library")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_binary",
@@ -36,8 +37,7 @@ fel_cc_library(
 fel_cc_binary(
     name = "node_creator",
     srcs = ["node_creator.cc"],
-    deps = [
-        "//felicia",
+    deps = fel_shared_library() + [
         ":node_create_flag",
         ":simple_publishing_node",
         ":simple_subscribing_node",
