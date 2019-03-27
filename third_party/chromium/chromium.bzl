@@ -14,7 +14,7 @@ load(
     "fel_objc_library",
 )
 
-def chromium_files(suffix, base, exclude):
+def _chromium_platform_files(suffix, base, exclude):
     if base == None:
         files = native.glob(["**/*" + suffix], exclude = exclude)
     else:
@@ -40,17 +40,17 @@ def chromium_files(suffix, base, exclude):
     return base_files + if_linux(linux_files) + if_darwin(mac_files) + \
            if_windows(win_files) + if_not_windows(posix_files)
 
-def chromium_hdrs(base = None, exclude = []):
-    return chromium_files(".h", base = base, exclude = exclude)
+def chromium_platform_hdrs(base = None, exclude = []):
+    return _chromium_platform_files(".h", base = base, exclude = exclude)
 
-def chromium_srcs(base = None, exclude = []):
-    return chromium_files(".cc", base = base, exclude = exclude + ["**/*unittest*", "**/*perftest*"])
+def chromium_platform_srcs(base = None, exclude = []):
+    return _chromium_platform_files(".cc", base = base, exclude = exclude + ["**/*unittest*", "**/*perftest*"])
 
-def chromium_objc_srcs(base = None, exclude = []):
-    return chromium_files(".mm", base = base, exclude = exclude + ["**/*unittest*", "**/*perftest*"])
+def chromium_platform_objc_srcs(base = None, exclude = []):
+    return _chromium_platform_files(".mm", base = base, exclude = exclude + ["**/*unittest*", "**/*perftest*"])
 
-def chromium_test_srcs(base = None, exclude = []):
-    return chromium_files("_unittest.cc", base = base, exclude = exclude + ["**/*perftest*"])
+def chromium_platform_test_srcs(base = None, exclude = []):
+    return _chromium_platform_files("_unittest.cc", base = base, exclude = exclude + ["**/*perftest*"])
 
 def chromium_c_library(
         name,

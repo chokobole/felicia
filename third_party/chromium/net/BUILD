@@ -13,9 +13,9 @@ load(
     "//third_party/chromium:chromium.bzl",
     "chromium_cc_library",
     "chromium_cc_test",
-    "chromium_hdrs",
-    "chromium_srcs",
-    "chromium_test_srcs",
+    "chromium_platform_hdrs",
+    "chromium_platform_srcs",
+    "chromium_platform_test_srcs",
 )
 load(
     "//third_party/chromium/net:net.bzl",
@@ -25,7 +25,7 @@ load(
 
 chromium_cc_library(
     name = "net",
-    srcs = chromium_srcs(exclude = [
+    srcs = chromium_platform_srcs(exclude = [
         "base/network_interfaces_getifaddrs.cc",
         "base/winsock_init.cc",
         "base/winsock_util.cc",
@@ -34,7 +34,7 @@ chromium_cc_library(
     ]) + if_not_windows_and_not_linux([
         ":net_posix_srcs",
     ]),
-    hdrs = chromium_hdrs(exclude = [
+    hdrs = chromium_platform_hdrs(exclude = [
         "base/network_interfaces_getifaddrs.h",
         "base/winsock_init.h",
         "base/winsock_util.h",
@@ -89,7 +89,7 @@ filegroup(
 chromium_cc_test(
     name = "test",
     size = "small",
-    srcs = chromium_test_srcs(exclude = [
+    srcs = chromium_platform_test_srcs(exclude = [
         "base/address_tracker_linux_unittest.cc",
         "base/network_interfaces_getifaddrs_unittest.cc",
         "socket/socket_tag_unittest.cc",  # missing headers

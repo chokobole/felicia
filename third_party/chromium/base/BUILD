@@ -12,11 +12,11 @@ load(
     "chromium_c_library",
     "chromium_cc_library",
     "chromium_cc_test",
-    "chromium_hdrs",
     "chromium_objc_library",
-    "chromium_objc_srcs",
-    "chromium_srcs",
-    "chromium_test_srcs",
+    "chromium_platform_hdrs",
+    "chromium_platform_objc_srcs",
+    "chromium_platform_srcs",
+    "chromium_platform_test_srcs",
 )
 load(
     "//third_party/chromium/base:base.bzl",
@@ -36,7 +36,7 @@ filegroup(
     ],
 )
 
-BASE_HDRS = chromium_hdrs(exclude = [
+BASE_HDRS = chromium_platform_hdrs(exclude = [
     # ":buildflags_hdrs",
     # Bazel on windows raised error like below.
     # java.nio.file.InvalidPathException: Illegal char <:>
@@ -68,7 +68,7 @@ BASE_HDRS = chromium_hdrs(exclude = [
 
 chromium_cc_library(
     name = "base",
-    srcs = chromium_srcs(exclude = [
+    srcs = chromium_platform_srcs(exclude = [
         "mac/**/*.cc",
         "message_loop/message_pump_libevent.cc",
         "posix/**/*.cc",
@@ -106,13 +106,13 @@ chromium_cc_library(
 
 filegroup(
     name = "base_mac_hdrs",
-    srcs = chromium_hdrs(base = "mac"),
+    srcs = chromium_platform_hdrs(base = "mac"),
 )
 
 chromium_objc_library(
     name = "base_mac",
-    srcs = chromium_objc_srcs() +
-           chromium_srcs(base = "mac"),
+    srcs = chromium_platform_objc_srcs() +
+           chromium_platform_srcs(base = "mac"),
     hdrs = BASE_HDRS,
     copts = base_copts(),
     deps = [
@@ -123,7 +123,7 @@ chromium_objc_library(
 
 filegroup(
     name = "base_posix_hdrs",
-    srcs = chromium_hdrs(
+    srcs = chromium_platform_hdrs(
         base = "posix",
         exclude = [
             "posix/can_lower_nice_to.h",
@@ -137,7 +137,7 @@ filegroup(
 
 filegroup(
     name = "base_posix_srcs",
-    srcs = chromium_srcs(
+    srcs = chromium_platform_srcs(
         base = "posix",
         exclude = [
             "posix/can_lower_nice_to.cc",
@@ -157,7 +157,7 @@ filegroup(
 
 filegroup(
     name = "base_win_hdrs",
-    srcs = chromium_hdrs(
+    srcs = chromium_platform_hdrs(
         base = "win",
         exclude = [
             "win/base_win_buildflags.h",
@@ -170,7 +170,7 @@ filegroup(
 
 filegroup(
     name = "base_win_srcs",
-    srcs = chromium_srcs(base = "win"),
+    srcs = chromium_platform_srcs(base = "win"),
     visibility = ["//visibility:private"],
 )
 
@@ -202,7 +202,7 @@ chromium_c_library(
 chromium_cc_test(
     name = "test",
     size = "large",
-    srcs = chromium_test_srcs(exclude = [
+    srcs = chromium_platform_test_srcs(exclude = [
         "posix/**",
         "mac/**",
         "win/**",
@@ -256,7 +256,7 @@ chromium_cc_test(
 chromium_cc_test(
     name = "test_mac",
     size = "small",
-    srcs = chromium_test_srcs(
+    srcs = chromium_platform_test_srcs(
         base = "mac",
         exclude = [
             "mac/dispatch_source_mach_unittest.cc",  # missing headers(base/test/test_timeouts.h)
@@ -275,7 +275,7 @@ chromium_cc_test(
 chromium_cc_test(
     name = "test_posix",
     size = "small",
-    srcs = chromium_test_srcs(
+    srcs = chromium_platform_test_srcs(
         base = "posix",
         exclude = [
         ],
@@ -297,7 +297,7 @@ chromium_cc_test(
 chromium_cc_test(
     name = "test_win",
     size = "small",
-    srcs = chromium_test_srcs(
+    srcs = chromium_platform_test_srcs(
         base = "win",
         exclude = [
         ],

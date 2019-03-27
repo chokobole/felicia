@@ -6,15 +6,15 @@ load(
     "//third_party/chromium:chromium.bzl",
     "chromium_cc_library",
     "chromium_cc_test",
-    "chromium_hdrs",
-    "chromium_srcs",
-    "chromium_test_srcs",
+    "chromium_platform_hdrs",
+    "chromium_platform_srcs",
+    "chromium_platform_test_srcs",
 )
 
 chromium_cc_library(
     name = "url",
-    srcs = chromium_srcs(),
-    hdrs = chromium_hdrs(),
+    srcs = chromium_platform_srcs(),
+    hdrs = chromium_platform_hdrs(),
     deps = [
         "//third_party/chromium/base",
     ],
@@ -23,7 +23,7 @@ chromium_cc_library(
 chromium_cc_test(
     name = "test",
     size = "small",
-    srcs = chromium_test_srcs(),
+    srcs = chromium_platform_test_srcs(),
     tags = [
         "chromium",
         "third_party",
