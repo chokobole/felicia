@@ -8,13 +8,6 @@ load(
 package(default_visibility = ["//visibility:private"])
 
 fel_cc_library(
-    name = "node_create_flag",
-    srcs = ["node_create_flag.cc"],
-    hdrs = ["node_create_flag.h"],
-    deps = ["//felicia/core/util:command_line_interface"],
-)
-
-fel_cc_library(
     name = "simple_publishing_node",
     srcs = ["simple_publishing_node.h"],
     deps = [
@@ -38,9 +31,9 @@ fel_cc_binary(
     name = "node_creator",
     srcs = ["node_creator.cc"],
     deps = fel_shared_library() + [
-        ":node_create_flag",
         ":simple_publishing_node",
         ":simple_subscribing_node",
         "//felicia/core:felicia_init",
+        "//felicia/examples/learn/message_communication/common/cc:node_create_flag",
     ],
 )

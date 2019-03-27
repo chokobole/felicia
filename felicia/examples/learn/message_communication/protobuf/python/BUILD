@@ -2,11 +2,6 @@ load("//bazel:felicia_pybind.bzl", "fel_pybind_py_library")
 
 package(default_visibility = ["//visibility:private"])
 
-py_library(
-    name = "node_create_flag",
-    srcs = ["node_create_flag.py"],
-)
-
 fel_pybind_py_library(
     name = "felicia_py",
     cc_deps = [
@@ -30,6 +25,6 @@ py_binary(
     main = "node_creator.py",
     deps = [
         ":felicia_py",
-        ":node_create_flag",
+        "//felicia/examples/learn/message_communication/common/python:node_create_flag",
     ],
 )

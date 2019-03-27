@@ -1,8 +1,8 @@
 #include "felicia/core/felicia_init.h"
 #include "felicia/core/master/master_proxy.h"
-#include "felicia/examples/learn/message_communication/cc/node_create_flag.h"
-#include "felicia/examples/learn/message_communication/cc/simple_publishing_node.h"
-#include "felicia/examples/learn/message_communication/cc/simple_subscribing_node.h"
+#include "felicia/examples/learn/message_communication/common/cc/node_create_flag.h"
+#include "felicia/examples/learn/message_communication/protobuf/cc/simple_publishing_node.h"
+#include "felicia/examples/learn/message_communication/protobuf/cc/simple_subscribing_node.h"
 
 namespace felicia {
 

@@ -25,7 +25,7 @@ import felicia_py as fel
 from felicia.core.protobuf.master_data_pb2 import NodeInfo
 import felicia_py.command_line_interface as cli
 
-from node_create_flag import NodeCreateFlag
+from felicia.examples.learn.message_communication.common.python.node_create_flag import NodeCreateFlag
 from simple_publishing_node import SimplePublishigNode
 from simple_subscribing_node import SimpleSubscribingNode
 
