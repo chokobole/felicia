@@ -73,7 +73,7 @@ class State {
 
   ALWAYS_INLINE Status InvalidStateError() const {
     std::string text = ToString();
-    return errors::Unavailable(
+    return errors::Aborted(
         ::base::StringPrintf("Invalid state(%s)", text.c_str()));
   }
 
