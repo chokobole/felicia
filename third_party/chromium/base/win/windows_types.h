@@ -101,11 +101,11 @@ typedef struct _GUID GUID;
 typedef GUID CLSID;
 
 typedef struct tagLOGFONTW LOGFONTW, *PLOGFONTW, *NPLOGFONTW, *LPLOGFONTW;
-// typedef LOGFONTW LOGFONT;
+typedef LOGFONTW LOGFONT;
 
 typedef struct _FILETIME FILETIME;
 
-// typedef struct tagMENUITEMINFOW MENUITEMINFOW, MENUITEMINFO;
+typedef struct tagMENUITEMINFOW MENUITEMINFOW, MENUITEMINFO;
 
 typedef struct tagNMHDR NMHDR;
 

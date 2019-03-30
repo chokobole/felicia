@@ -15,14 +15,14 @@ WorkQueue::WorkQueue(TaskQueueImpl* task_queue,
                      const char* name,
                      QueueType queue_type)
     : task_queue_(task_queue), name_(name), queue_type_(queue_type) {}
-/*
+
 void WorkQueue::AsValueInto(TimeTicks now,
                             trace_event::TracedValue* state) const {
   for (const Task& task : tasks_) {
     TaskQueueImpl::TaskAsValueInto(task, now, state);
   }
 }
-*/
+
 WorkQueue::~WorkQueue() {
   DCHECK(!work_queue_sets_) << task_queue_->GetName() << " : "
                             << work_queue_sets_->GetName() << " : " << name_;

@@ -7,7 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/message_loop/message_pump.h"
 #include "base/time/tick_clock.h"
-// #include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 
 #if defined(OS_IOS)
@@ -315,7 +315,7 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
   // third_party/catapult/tracing/tracing/extras/chrome/event_finder_utils.html
   // TODO(alexclarke): Rename this event to whatever we end up calling this
   // after the DoWork / DoDelayed work merge.
-  // TRACE_EVENT0("toplevel", "ThreadControllerImpl::RunTask");
+  TRACE_EVENT0("toplevel", "ThreadControllerImpl::RunTask");
 
   DCHECK(main_thread_only().task_source);
 
@@ -328,11 +328,11 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
     main_thread_only().task_execution_allowed = false;
 
     work_id_provider_->IncrementWorkId();
-    // TRACE_TASK_EXECUTION("ThreadController::Task", *task);
+    TRACE_TASK_EXECUTION("ThreadController::Task", *task);
     // Trace-parsing tools (DevTools, Lighthouse, etc) consume this event
     // to determine long tasks.
     // See https://crbug.com/681863 and https://crbug.com/874982
-    // TRACE_EVENT0("devtools.timeline", "RunTask");
+    TRACE_EVENT0("devtools.timeline", "RunTask");
     task_annotator_.RunTask("ThreadController::Task", &*task);
     *ran_task = true;
 

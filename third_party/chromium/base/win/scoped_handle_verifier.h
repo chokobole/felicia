@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 #include "base/base_export.h"
-// #include "base/debug/stack_trace.h"
+#include "base/debug/stack_trace.h"
 #include "base/hash.h"
 #include "base/synchronization/lock_impl.h"
 #include "base/threading/thread_local.h"
@@ -31,7 +31,7 @@ struct ScopedHandleVerifierInfo {
   const void* owner;
   const void* pc1;
   const void* pc2;
-  // base::debug::StackTrace stack;
+  base::debug::StackTrace stack;
   DWORD thread_id;
 };
 
@@ -71,7 +71,7 @@ class [[clang::lto_visibility_public]] ScopedHandleVerifier {
   static base::internal::LockImpl* GetLock();
   static void InstallVerifier();
 
-  // base::debug::StackTrace creation_stack_;
+  base::debug::StackTrace creation_stack_;
   bool enabled_;
   base::ThreadLocalBoolean closing_;
   base::internal::LockImpl* lock_;

@@ -24,9 +24,8 @@
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/threading/thread_checker.h"
-#include "base/time/time_override.h"
-// #include "base/trace_event/trace_event.h"
-// #include "base/trace_event/traced_value.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/traced_value.h"
 
 namespace base {
 namespace sequence_manager {
@@ -121,7 +120,7 @@ class BASE_EXPORT TaskQueueImpl {
   void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer);
   void SetTimeDomain(TimeDomain* time_domain);
   TimeDomain* GetTimeDomain() const;
-  // void SetBlameContext(trace_event::BlameContext* blame_context);
+  void SetBlameContext(trace_event::BlameContext* blame_context);
   void InsertFence(TaskQueue::InsertFencePosition position);
   void InsertFenceAt(TimeTicks time);
   void RemoveFence();
@@ -141,9 +140,9 @@ class BASE_EXPORT TaskQueueImpl {
   // Must only be called from the thread this task queue was created on.
   void ReloadEmptyImmediateWorkQueue();
 
-  // void AsValueInto(TimeTicks now,
-  //                  trace_event::TracedValue* state,
-  //                  bool force_verbose) const;
+  void AsValueInto(TimeTicks now,
+                   trace_event::TracedValue* state,
+                   bool force_verbose) const;
 
   bool GetQuiescenceMonitored() const { return should_monitor_quiescence_; }
   bool GetShouldNotifyObservers() const { return should_notify_observers_; }
@@ -325,7 +324,7 @@ class BASE_EXPORT TaskQueueImpl {
 
     void SweepCancelledTasks();
     std::priority_queue<Task> TakeTasks() { return std::move(queue_); }
-    // void AsValueInto(TimeTicks now, trace_event::TracedValue* state) const;
+    void AsValueInto(TimeTicks now, trace_event::TracedValue* state) const;
 
    private:
     struct PQueue : public std::priority_queue<Task> {
@@ -359,7 +358,7 @@ class BASE_EXPORT TaskQueueImpl {
     ObserverList<MessageLoop::TaskObserver>::Unchecked task_observers;
     base::internal::HeapHandle heap_handle;
     bool is_enabled;
-    // trace_event::BlameContext* blame_context;  // Not owned.
+    trace_event::BlameContext* blame_context;  // Not owned.
     EnqueueOrder current_fence;
     Optional<TimeTicks> delayed_fence;
     OnTaskStartedHandler on_task_started_handler;
@@ -401,15 +400,15 @@ class BASE_EXPORT TaskQueueImpl {
   void TakeImmediateIncomingQueueTasks(TaskDeque* queue);
 
   void TraceQueueSize() const;
-  // static void QueueAsValueInto(const TaskDeque& queue,
-  //                              TimeTicks now,
-  //                              trace_event::TracedValue* state);
-  // static void QueueAsValueInto(const std::priority_queue<Task>& queue,
-  //                              TimeTicks now,
-  //                              trace_event::TracedValue* state);
-  // static void TaskAsValueInto(const Task& task,
-  //                             TimeTicks now,
-  //                             trace_event::TracedValue* state);
+  static void QueueAsValueInto(const TaskDeque& queue,
+                               TimeTicks now,
+                               trace_event::TracedValue* state);
+  static void QueueAsValueInto(const std::priority_queue<Task>& queue,
+                               TimeTicks now,
+                               trace_event::TracedValue* state);
+  static void TaskAsValueInto(const Task& task,
+                              TimeTicks now,
+                              trace_event::TracedValue* state);
 
   void EnableOrDisableWithSelector(bool enable);
 

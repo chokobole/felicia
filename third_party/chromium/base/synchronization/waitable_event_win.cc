@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <utility>
 
-// #include "base/debug/activity_tracker.h"
+#include "base/debug/activity_tracker.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
@@ -57,11 +57,11 @@ void WaitableEvent::Wait() {
   // Record the event that this thread is blocking upon (for hang diagnosis) and
   // consider it blocked for scheduling purposes. Ignore this for non-blocking
   // WaitableEvents.
-  // Optional<debug::ScopedEventWaitActivity> event_activity;
+  Optional<debug::ScopedEventWaitActivity> event_activity;
   Optional<internal::ScopedBlockingCallWithBaseSyncPrimitives>
       scoped_blocking_call;
   if (waiting_is_blocking_) {
-    // event_activity.emplace(this);
+    event_activity.emplace(this);
     scoped_blocking_call.emplace(BlockingType::MAY_BLOCK);
   }
 
@@ -115,11 +115,11 @@ bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
   // Record the event that this thread is blocking upon (for hang diagnosis) and
   // consider it blocked for scheduling purposes. Ignore this for non-blocking
   // WaitableEvents.
-  // Optional<debug::ScopedEventWaitActivity> event_activity;
+  Optional<debug::ScopedEventWaitActivity> event_activity;
   Optional<internal::ScopedBlockingCallWithBaseSyncPrimitives>
       scoped_blocking_call;
   if (waiting_is_blocking_) {
-    // event_activity.emplace(this);
+    event_activity.emplace(this);
     scoped_blocking_call.emplace(BlockingType::MAY_BLOCK);
   }
 
@@ -136,11 +136,11 @@ bool WaitableEvent::TimedWaitUntil(const TimeTicks& end_time) {
   // Record the event that this thread is blocking upon (for hang diagnosis) and
   // consider it blocked for scheduling purposes. Ignore this for non-blocking
   // WaitableEvents.
-  // Optional<debug::ScopedEventWaitActivity> event_activity;
+  Optional<debug::ScopedEventWaitActivity> event_activity;
   Optional<internal::ScopedBlockingCallWithBaseSyncPrimitives>
       scoped_blocking_call;
   if (waiting_is_blocking_) {
-    // event_activity.emplace(this);
+    event_activity.emplace(this);
     scoped_blocking_call.emplace(BlockingType::MAY_BLOCK);
   }
 
@@ -157,7 +157,7 @@ size_t WaitableEvent::WaitMany(WaitableEvent** events, size_t count) {
   internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
       BlockingType::MAY_BLOCK);
   // Record an event (the first) that this thread is blocking upon.
-  // debug::ScopedEventWaitActivity event_activity(events[0]);
+  debug::ScopedEventWaitActivity event_activity(events[0]);
 
   HANDLE handles[MAXIMUM_WAIT_OBJECTS];
   CHECK_LE(count, static_cast<size_t>(MAXIMUM_WAIT_OBJECTS))

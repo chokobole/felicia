@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_for_io.h"
-// #include "base/message_loop/message_pump_for_ui.h"
+#include "base/message_loop/message_pump_for_ui.h"
 #include "base/no_destructor.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -128,7 +128,7 @@ void MessageLoopCurrent::UnbindFromCurrentThreadInternal(
 bool MessageLoopCurrent::operator==(const MessageLoopCurrent& other) const {
   return current_ == other.current_;
 }
-/*
+
 #if !defined(OS_NACL)
 
 //------------------------------------------------------------------------------
@@ -201,7 +201,7 @@ void MessageLoopCurrentForUI::RemoveMessagePumpObserver(
 #endif  // defined(OS_WIN)
 
 #endif  // !defined(OS_NACL)
-*/
+
 //------------------------------------------------------------------------------
 // MessageLoopCurrentForIO
 

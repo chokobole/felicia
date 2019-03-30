@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_pump_for_io.h"
-// #include "base/message_loop/message_pump_for_ui.h"
+#include "base/message_loop/message_pump_for_ui.h"
 #include "base/pending_task.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/task_observer.h"
@@ -216,7 +216,7 @@ class BASE_EXPORT MessageLoopCurrent {
 
   MessageLoopBase* current_;
 };
-/*
+
 #if !defined(OS_NACL)
 
 // ForUI extension of MessageLoopCurrent.
@@ -272,7 +272,7 @@ class BASE_EXPORT MessageLoopCurrentForUI : public MessageLoopCurrent {
 };
 
 #endif  // !defined(OS_NACL)
-*/
+
 // ForIO extension of MessageLoopCurrent.
 class BASE_EXPORT MessageLoopCurrentForIO : public MessageLoopCurrent {
  public:

@@ -30,12 +30,6 @@ fel_cc_library(
         "net/net_util.h",
         "strings/str_util.h",
     ],
-    linkopts = select({
-        "//felicia:windows": [],
-        "//conditions:default": [
-            "-lpthread",
-        ],
-    }),
     deps = [
         "//felicia/core/protobuf:protos_all_cc",
         "//third_party/chromium/base",

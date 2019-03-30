@@ -24,7 +24,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-// #include "testing/platform_test.h"
+#include "testing/platform_test.h"
 
 namespace base {
 
@@ -33,7 +33,7 @@ namespace {
 // Define our test class, with several common variables.
 //------------------------------------------------------------------------------
 
-class ConditionVariableTest : public ::testing::Test {
+class ConditionVariableTest : public PlatformTest {
  public:
   const TimeDelta kZeroMs;
   const TimeDelta kTenMs;

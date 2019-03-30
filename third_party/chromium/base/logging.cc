@@ -84,16 +84,15 @@ typedef pthread_mutex_t* MutexHandle;
 #include <string>
 #include <utility>
 
-// #include "base/base_switches.h"
+#include "base/base_switches.h"
 #include "base/callback.h"
-// #include "base/command_line.h"
+#include "base/command_line.h"
 #include "base/containers/stack.h"
-// #include "base/debug/activity_tracker.h"
+#include "base/debug/activity_tracker.h"
 #include "base/debug/alias.h"
 #include "base/debug/debugger.h"
-// #include "base/debug/stack_trace.h"
+#include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
-#include "base/files/file_path.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -407,7 +406,6 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
   // Can log only to the system debug log.
   CHECK_EQ(settings.logging_dest & ~LOG_TO_SYSTEM_DEBUG_LOG, 0);
 #endif
-  /*
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // Don't bother initializing |g_vlog_info| unless we use one of the
   // vlog switches.
@@ -424,7 +422,7 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
                      command_line->GetSwitchValueASCII(switches::kVModule),
                      &g_min_log_level);
   }
-  */
+
   g_logging_destination = settings.logging_dest;
 
   // ignore file options unless logging to file is set.
@@ -587,9 +585,9 @@ LogMessage::~LogMessage() {
     !defined(OS_AIX)
   if (severity_ == LOG_FATAL && !base::debug::BeingDebugged()) {
     // Include a stack trace on a fatal, unless a debugger is attached.
-    // base::debug::StackTrace trace;
-    // stream_ << std::endl;  // Newline to separate from log message.
-    // trace.OutputToStream(&stream_);
+    base::debug::StackTrace trace;
+    stream_ << std::endl;  // Newline to separate from log message.
+    trace.OutputToStream(&stream_);
   }
 #endif
   stream_ << std::endl;
@@ -830,10 +828,10 @@ LogMessage::~LogMessage() {
 
   if (severity_ == LOG_FATAL) {
     // Write the log message to the global activity tracker, if running.
-    // base::debug::GlobalActivityTracker* tracker =
-    //     base::debug::GlobalActivityTracker::Get();
-    // if (tracker)
-    //   tracker->RecordLogMessage(str_newline);
+    base::debug::GlobalActivityTracker* tracker =
+        base::debug::GlobalActivityTracker::Get();
+    if (tracker)
+      tracker->RecordLogMessage(str_newline);
 
     // Ensure the first characters of the string are on the stack so they
     // are contained in minidumps for diagnostic purposes. We place start

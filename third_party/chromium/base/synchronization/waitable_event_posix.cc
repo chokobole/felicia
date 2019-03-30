@@ -8,7 +8,7 @@
 #include <limits>
 #include <vector>
 
-// #include "base/debug/activity_tracker.h"
+#include "base/debug/activity_tracker.h"
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/synchronization/condition_variable.h"
@@ -166,11 +166,11 @@ bool WaitableEvent::TimedWaitUntil(const TimeTicks& end_time) {
   // Record the event that this thread is blocking upon (for hang diagnosis) and
   // consider it blocked for scheduling purposes. Ignore this for non-blocking
   // WaitableEvents.
-  // Optional<debug::ScopedEventWaitActivity> event_activity;
+  Optional<debug::ScopedEventWaitActivity> event_activity;
   Optional<internal::ScopedBlockingCallWithBaseSyncPrimitives>
       scoped_blocking_call;
   if (waiting_is_blocking_) {
-    // event_activity.emplace(this);
+    event_activity.emplace(this);
     scoped_blocking_call.emplace(BlockingType::MAY_BLOCK);
   }
 
@@ -250,7 +250,7 @@ size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables,
   internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
       BlockingType::MAY_BLOCK);
   // Record an event (the first) that this thread is blocking upon.
-  // debug::ScopedEventWaitActivity event_activity(raw_waitables[0]);
+  debug::ScopedEventWaitActivity event_activity(raw_waitables[0]);
 
   // We need to acquire the locks in a globally consistent order. Thus we sort
   // the array of waitables by address. We actually sort a pairs so that we can

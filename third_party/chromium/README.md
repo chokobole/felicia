@@ -14,18 +14,12 @@ Chromium is an open-source browser project that aims to build a safer, faster, a
 
 Followings were taken or changed to original code.
 - Support to build using bazel.
-- Manually write buildflags, planning to write automatically.
-  - base/win/base_win_buildflags.h
-  - base/synchronization/synchronization_buidlflags.h
-  - base/debug/debugging_buildflags.h
-  - base/clang_coverage_buildflags.h
-- Comment somes due to not adopted ones because of quick merging into project, such as `trace_event` or `debug`. But we are planning to adopt soon. You can check whole differences using following. you have to replace `prefix`.
-   ```bash
-  find third_party/chromium -type d > LIST && cat LIST | awk  '{loc=$1;prefix="/path/to/chromium";original_loc=prefix"/"substr($1,13); print "diff " loc " " original_loc " > " loc  ".diff"}' | sh && rm LIST
-  ```
-- Excluded list
-  - base/message_loop/message_loop_glib*
-  - base/message_loop/message_pump_for_ui.h
-  - *_android.cc
-  - *_fuzz.cc
-  - *_ios.cc
+  - TODO: add configurable settings, currently configurable value is fixed.
+  - TODO: adopt compiler flags from build/.
+- Modify codes to be compiled.
+- Not compiled
+  - base64url*, base64*
+  - i18n/*
+  - trace_event/trace_event_etw_export_win*
+  - Maybe these lists can be more.
+- See difference in base.diff

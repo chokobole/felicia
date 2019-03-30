@@ -209,15 +209,15 @@ TYPE_NAME_FOR_CF_TYPE_DEFN(CFString)
 TYPE_NAME_FOR_CF_TYPE_DEFN(CFURL)
 TYPE_NAME_FOR_CF_TYPE_DEFN(CFUUID)
 
-// TYPE_NAME_FOR_CF_TYPE_DEFN(CGColor)
+TYPE_NAME_FOR_CF_TYPE_DEFN(CGColor)
 
-// TYPE_NAME_FOR_CF_TYPE_DEFN(CTFont)
-// TYPE_NAME_FOR_CF_TYPE_DEFN(CTRun)
+TYPE_NAME_FOR_CF_TYPE_DEFN(CTFont)
+TYPE_NAME_FOR_CF_TYPE_DEFN(CTRun)
 
 #if !defined(OS_IOS)
-// TYPE_NAME_FOR_CF_TYPE_DEFN(SecCertificate)
-// TYPE_NAME_FOR_CF_TYPE_DEFN(SecKey)
-// TYPE_NAME_FOR_CF_TYPE_DEFN(SecPolicy)
+TYPE_NAME_FOR_CF_TYPE_DEFN(SecCertificate)
+TYPE_NAME_FOR_CF_TYPE_DEFN(SecKey)
+TYPE_NAME_FOR_CF_TYPE_DEFN(SecPolicy)
 #endif
 
 #undef TYPE_NAME_FOR_CF_TYPE_DEFN
@@ -303,7 +303,7 @@ CF_TO_NS_CAST_DEFN(CFReadStream, NSInputStream)
 CF_TO_NS_CAST_DEFN(CFWriteStream, NSOutputStream)
 CF_TO_NS_MUTABLE_CAST_DEFN(String)
 CF_TO_NS_CAST_DEFN(CFURL, NSURL)
-/*
+
 #if defined(OS_IOS)
 CF_TO_NS_CAST_DEFN(CTFont, UIFont)
 #else
@@ -328,7 +328,7 @@ CTFontRef NSToCFCast(NSFont* ns_val) {
   return cf_val;
 }
 #endif
-*/
+
 #undef CF_TO_NS_CAST_DEFN
 #undef CF_TO_NS_MUTABLE_CAST_DEFN
 
@@ -364,11 +364,11 @@ CF_CAST_DEFN(CFString)
 CF_CAST_DEFN(CFURL)
 CF_CAST_DEFN(CFUUID)
 
-// CF_CAST_DEFN(CGColor)
+CF_CAST_DEFN(CGColor)
 
-// CF_CAST_DEFN(CTFontDescriptor)
-// CF_CAST_DEFN(CTRun)
-/*
+CF_CAST_DEFN(CTFontDescriptor)
+CF_CAST_DEFN(CTRun)
+
 #if defined(OS_IOS)
 CF_CAST_DEFN(CTFont)
 #else
@@ -401,13 +401,13 @@ CFCastStrict<CTFontRef>(const CFTypeRef& cf_val) {
   return rv;
 }
 #endif
-*/
+
 #if !defined(OS_IOS)
-// CF_CAST_DEFN(SecACL)
-// CF_CAST_DEFN(SecCertificate)
-// CF_CAST_DEFN(SecKey)
-// CF_CAST_DEFN(SecPolicy)
-// CF_CAST_DEFN(SecTrustedApplication)
+CF_CAST_DEFN(SecACL)
+CF_CAST_DEFN(SecCertificate)
+CF_CAST_DEFN(SecKey)
+CF_CAST_DEFN(SecPolicy)
+CF_CAST_DEFN(SecTrustedApplication)
 #endif
 
 #undef CF_CAST_DEFN

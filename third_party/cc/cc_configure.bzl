@@ -33,7 +33,7 @@ def _configure_windows_tool_path(repository_ctx):
         for path in escaped_include_paths.split(";"):
             if path:
                 flags.append("/I%s" % path)
-        flags.extend(["/link LIBCMT.lib"])
+        flags += ["/link LIBCMT.lib"]
         for path in escaped_lib_paths.split(";"):
             if path:
                 flags.append("/LIBPATH:%s" % path)
@@ -62,8 +62,8 @@ def _cc_autoconf_impl(repository_ctx):
     if flags != None:
         # MSVC
         cmd = [tool_path, source]
-        cmd.extend(flags)
-        cmd.append("/Fe%s" % executable)
+        cmd += flags
+        cmd += ["/Fe%s" % executable]
     else:
         cmd = [tool_path, source, "-o", executable]
     result = repository_ctx.execute(cmd)
@@ -81,6 +81,8 @@ def _cc_autoconf_impl(repository_ctx):
             "%{CC}": "\"%s\"" % output[0],
             "%{MAJOR_VERSION}": output[1],
             "%{MINOR_VERSION}": output[2],
+            "%{OS}": "\"%s\"" % output[3],
+            "%{ARCH}": "\"%s\"" % output[4],
         },
     )
 

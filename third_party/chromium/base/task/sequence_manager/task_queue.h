@@ -257,7 +257,7 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   // Set the blame context which is entered and left while executing tasks from
   // this task queue. |blame_context| must be null or outlive this task queue.
   // Must be called on the thread this TaskQueue was created by.
-  // void SetBlameContext(trace_event::BlameContext* blame_context);
+  void SetBlameContext(trace_event::BlameContext* blame_context);
 
   // Removes the task queue from the previous TimeDomain and adds it to
   // |domain|.  This is a moderately expensive operation.

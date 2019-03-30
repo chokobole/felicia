@@ -6,17 +6,17 @@
 
 #include <stddef.h>
 
-// #include "base/debug/activity_tracker.h"
+#include "base/debug/activity_tracker.h"
 #include "base/debug/alias.h"
-// #include "base/debug/profiler.h"
+#include "base/debug/profiler.h"
 #include "base/logging.h"
-// #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/scoped_handle.h"
-// #include "base/win/windows_version.h"
+#include "base/win/windows_version.h"
 
 #include <windows.h>
 
@@ -124,7 +124,7 @@ bool CreateThreadInternal(size_t stack_size,
 
   void* thread_handle;
   {
-    // SCOPED_UMA_HISTOGRAM_TIMER("Windows.CreateThreadTime");
+    SCOPED_UMA_HISTOGRAM_TIMER("Windows.CreateThreadTime");
 
     // Using CreateThread here vs _beginthreadex makes thread creation a bit
     // faster and doesn't require the loader lock to be available.  Our code
@@ -151,8 +151,8 @@ bool CreateThreadInternal(size_t stack_size,
 }  // namespace
 
 namespace features {
-// const Feature kWindowsThreadModeBackground{"WindowsThreadModeBackground",
-//                                            FEATURE_DISABLED_BY_DEFAULT};
+const Feature kWindowsThreadModeBackground{"WindowsThreadModeBackground",
+                                           FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features
 
 namespace internal {
@@ -164,7 +164,7 @@ void AssertMemoryPriority(HANDLE thread, int memory_priority) {
           ::GetModuleHandle(L"Kernel32.dll"), "GetThreadInformation"));
 
   if (!get_thread_information_fn) {
-    // DCHECK_EQ(win::GetVersion(), win::VERSION_WIN7);
+    DCHECK_EQ(win::GetVersion(), win::VERSION_WIN7);
     return;
   }
 
@@ -272,7 +272,7 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   base::debug::Alias(&last_error);
 
   // Record the event that this thread is blocking upon (for hang diagnosis).
-  // base::debug::ScopedThreadJoinActivity thread_activity(&thread_handle);
+  base::debug::ScopedThreadJoinActivity thread_activity(&thread_handle);
 
   base::internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
       base::BlockingType::MAY_BLOCK);
@@ -304,10 +304,10 @@ void PlatformThread::SetCurrentThreadPriorityImpl(ThreadPriority priority) {
   //
   // TODO(fdoray): Remove experiment code. https://crbug.com/872820
   const bool use_thread_mode_background =
-      (priority == ThreadPriority::BACKGROUND);
-          //  ? FeatureList::IsEnabled(features::kWindowsThreadModeBackground)
-          //  : (FeatureList::GetInstance() &&
-          //     FeatureList::IsEnabled(features::kWindowsThreadModeBackground)));
+      (priority == ThreadPriority::BACKGROUND
+           ? FeatureList::IsEnabled(features::kWindowsThreadModeBackground)
+           : (FeatureList::GetInstance() &&
+              FeatureList::IsEnabled(features::kWindowsThreadModeBackground)));
 
   PlatformThreadHandle::Handle thread_handle =
       PlatformThread::CurrentHandle().platform_handle();
@@ -373,7 +373,7 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
   switch (priority) {
     case THREAD_PRIORITY_IDLE:
     case internal::kWin7BackgroundThreadModePriority:
-      // DCHECK_EQ(win::GetVersion(), win::VERSION_WIN7);
+      DCHECK_EQ(win::GetVersion(), win::VERSION_WIN7);
       FALLTHROUGH;
     case kWin8AboveBackgroundThreadModePriority:
     case THREAD_PRIORITY_LOWEST:

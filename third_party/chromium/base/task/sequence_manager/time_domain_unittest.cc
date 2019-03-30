@@ -389,8 +389,10 @@ TEST_F(TimeDomainTest, SetNextWakeUpForQueueInThePast) {
   constexpr auto kType = MessageLoop::TYPE_DEFAULT;
   constexpr auto kDelay = TimeDelta::FromMilliseconds(20);
   SimpleTestTickClock clock;
-  auto sequence_manager = sequence_manager::CreateUnboundSequenceManager(
-      SequenceManager::Settings{.message_loop_type = kType, .clock = &clock});
+  SequenceManager::Settings settings;
+  settings.message_loop_type = kType;
+  settings.clock = &clock;
+  auto sequence_manager = sequence_manager::CreateUnboundSequenceManager(std::move(settings));
   sequence_manager->BindToMessagePump(
       MessageLoop::CreateMessagePumpForType(kType));
   auto high_prio_queue =

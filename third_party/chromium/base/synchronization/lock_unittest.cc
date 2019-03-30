@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #include "base/compiler_specific.h"
-// #include "base/debug/activity_tracker.h"
+#include "base/debug/activity_tracker.h"
 #include "base/macros.h"
 #include "base/threading/platform_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -149,7 +149,7 @@ TEST(LockTest, TryLock) {
 
 TEST(LockTest, TryTrackedLock) {
   // Enable the activity tracker.
-  // debug::GlobalActivityTracker::CreateWithLocalMemory(64 << 10, 0, "", 3, 0);
+  debug::GlobalActivityTracker::CreateWithLocalMemory(64 << 10, 0, "", 3, 0);
 
   Lock lock;
 
@@ -185,7 +185,7 @@ TEST(LockTest, TryTrackedLock) {
   }
 
   lock.Release();
-  // debug::GlobalActivityTracker::ReleaseForTesting();
+  debug::GlobalActivityTracker::ReleaseForTesting();
 }
 
 // Tests that locks actually exclude -------------------------------------------

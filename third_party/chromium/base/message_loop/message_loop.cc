@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/message_loop/message_pump_for_io.h"
-// #include "base/message_loop/message_pump_for_ui.h"
+#include "base/message_loop/message_pump_for_ui.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/task/sequence_manager/sequence_manager.h"
@@ -20,7 +20,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_MACOSX)
-// #include "base/message_loop/message_pump_mac.h"
+#include "base/message_loop/message_pump_mac.h"
 #endif
 
 namespace base {
@@ -101,19 +101,18 @@ bool MessageLoop::InitMessagePumpForUIFactory(MessagePumpFactory* factory) {
 // static
 std::unique_ptr<MessagePump> MessageLoop::CreateMessagePumpForType(Type type) {
   if (type == MessageLoop::TYPE_UI) {
+    if (message_pump_for_ui_factory_)
+      return message_pump_for_ui_factory_();
+#if defined(OS_IOS) || defined(OS_MACOSX)
+    return MessagePumpMac::Create();
+#elif defined(OS_NACL) || defined(OS_AIX)
+    // Currently NaCl and AIX don't have a UI MessageLoop.
+    // TODO(abarth): Figure out if we need this.
     NOTREACHED();
-//     if (message_pump_for_ui_factory_)
-//       return message_pump_for_ui_factory_();
-// #if defined(OS_IOS) || defined(OS_MACOSX)
-//     return MessagePumpMac::Create();
-// #elif defined(OS_NACL) || defined(OS_AIX)
-//     // Currently NaCl and AIX don't have a UI MessageLoop.
-//     // TODO(abarth): Figure out if we need this.
-//     NOTREACHED();
-//     return nullptr;
-// #else
-//     return std::make_unique<MessagePumpForUI>();
-// #endif
+    return nullptr;
+#else
+    return std::make_unique<MessagePumpForUI>();
+#endif
   }
 
   if (type == MessageLoop::TYPE_IO)
@@ -171,7 +170,8 @@ std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(Type type) {
 
 MessageLoop::MessageLoop(Type type, std::unique_ptr<MessagePump> custom_pump)
     : backend_(sequence_manager::internal::SequenceManagerImpl::CreateUnbound(
-          sequence_manager::SequenceManager::Settings{type, false, DefaultTickClock::GetInstance()})),
+          sequence_manager::SequenceManager::Settings{.message_loop_type =
+                                                          type})),
       default_task_queue_(CreateDefaultTaskQueue()),
       type_(type),
       custom_pump_(std::move(custom_pump)) {
@@ -231,7 +231,7 @@ void MessageLoop::SetTaskRunner(
   DCHECK(task_runner);
   backend_->SetTaskRunner(task_runner);
 }
-/*
+
 #if !defined(OS_NACL)
 
 //------------------------------------------------------------------------------
@@ -272,5 +272,5 @@ void MessageLoopForUI::EnableWmQuit() {
 #endif  // defined(OS_WIN)
 
 #endif  // !defined(OS_NACL)
-*/
+
 }  // namespace base

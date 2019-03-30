@@ -52,7 +52,7 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
   WorkQueue* SelectWorkQueueToService();
 
   // Serialize the selector state for tracing.
-  // void AsValueInto(trace_event::TracedValue* state) const;
+  void AsValueInto(trace_event::TracedValue* state) const;
 
   class BASE_EXPORT Observer {
    public:
@@ -192,13 +192,13 @@ class BASE_EXPORT TaskQueueSelector : public WorkQueueSets::Observer {
           0,
 
           // kHighPriority
-          static_cast<int64_t>(kMaxHighPriorityStarvationScore),
+          kMaxHighPriorityStarvationScore,
 
           // kNormalPriority
-          static_cast<int64_t>(kMaxNormalPriorityStarvationScore),
+          kMaxNormalPriorityStarvationScore,
 
           // kLowPriority
-          static_cast<int64_t>(kMaxLowPriorityStarvationScore),
+          kMaxLowPriorityStarvationScore,
 
           // kBestEffortPriority (unused)
           std::numeric_limits<int64_t>::max()};

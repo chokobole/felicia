@@ -161,7 +161,7 @@ void TaskQueue::ShutdownTaskQueue() {
     impl_.reset();
     return;
   }
-  // impl_->SetBlameContext(nullptr);
+  impl_->SetBlameContext(nullptr);
   impl_->SetOnTaskStartedHandler(
       internal::TaskQueueImpl::OnTaskStartedHandler());
   impl_->SetOnTaskCompletedHandler(
@@ -261,14 +261,14 @@ TimeDomain* TaskQueue::GetTimeDomain() const {
     return nullptr;
   return impl_->GetTimeDomain();
 }
-/*
+
 void TaskQueue::SetBlameContext(trace_event::BlameContext* blame_context) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (!impl_)
     return;
   impl_->SetBlameContext(blame_context);
 }
-*/
+
 void TaskQueue::InsertFence(InsertFencePosition position) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (!impl_)

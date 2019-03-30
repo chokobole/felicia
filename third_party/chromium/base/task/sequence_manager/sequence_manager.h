@@ -170,7 +170,7 @@ class SequenceManager {
   virtual size_t GetPendingTaskCountForTesting() const = 0;
 
   // Returns a JSON string which describes all pending tasks.
-  // virtual std::string DescribeAllPendingTasks() const = 0;
+  virtual std::string DescribeAllPendingTasks() const = 0;
 
  protected:
   virtual std::unique_ptr<internal::TaskQueueImpl> CreateTaskQueueImpl(

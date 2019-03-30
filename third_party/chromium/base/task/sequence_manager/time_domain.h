@@ -56,7 +56,7 @@ class BASE_EXPORT TimeDomain {
   // NOTE: |lazy_now| and the return value are in the SequenceManager's time.
   virtual Optional<TimeDelta> DelayTillNextTask(LazyNow* lazy_now) = 0;
 
-  // void AsValueInto(trace_event::TracedValue* state) const;
+  void AsValueInto(trace_event::TracedValue* state) const;
   bool HasPendingHighResolutionTasks() const;
 
   // This is the signal that virtual time should step forward. If
@@ -86,7 +86,7 @@ class BASE_EXPORT TimeDomain {
   virtual void RequestDoWork();
 
   // For implementation-specific tracing.
-  // virtual void AsValueIntoInternal(trace_event::TracedValue* state) const;
+  virtual void AsValueIntoInternal(trace_event::TracedValue* state) const;
 
   virtual const char* GetName() const = 0;
 

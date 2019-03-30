@@ -5,8 +5,8 @@ licenses(["notice"])  # BSD 3-Clause
 
 load(
     "//bazel:felicia.bzl",
-    "if_darwin",
     "if_linux",
+    "if_mac_or_ios",
 )
 load(
     "//third_party/chromium:chromium.bzl",
@@ -27,7 +27,7 @@ filegroup(
         "evrpc.h",
         "evutil.h",
         "log.h",
-    ] + if_darwin([
+    ] + if_mac_or_ios([
         "mac/config.h",
         "mac/event-config.h",
     ]) + if_linux([
@@ -58,13 +58,13 @@ chromium_c_library(
         "signal.c",
         "strlcpy-internal.h",
         "strlcpy.c",
-    ] + if_darwin([
+    ] + if_mac_or_ios([
         "kqueue.c",
     ]) + if_linux([
         "epoll.c",
     ]),
     hdrs = [":libevent_hdrs"],
-    copts = if_darwin([
+    copts = if_mac_or_ios([
         "-Ithird_party/chromium/base/third_party/libevent/mac",
     ]) + if_linux([
         "-Ithird_party/chromium/base/third_party/libevent/linux",

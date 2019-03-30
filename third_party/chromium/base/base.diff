@@ -1,0 +1,160 @@
+Only in third_party/chromium/base: base.bzl
+Only in third_party/chromium/base: BUILD
+diff -r third_party/chromium/base/containers/any_internal.h ../chromium/base/containers/any_internal.h
+48c48
+<   /* constexpr */ bool has_value() const noexcept { return !!type_ops_; }
+---
+>   constexpr bool has_value() const noexcept { return !!type_ops_; }
+163c163
+< constexpr AnyInternal::TypeOps AnyInternal::TypeOpsHelper<T>::type_ops;
+---
+> const AnyInternal::TypeOps AnyInternal::TypeOpsHelper<T>::type_ops;
+diff -r third_party/chromium/base/containers/util.h ../chromium/base/containers/util.h
+8,9d7
+< #include <stdint.h>
+< 
+diff -r third_party/chromium/base/debug/debugger_posix.cc ../chromium/base/debug/debugger_posix.cc
+22d21
+< #if BUILDFLAG(CLANG_COVERAGE)
+24d22
+< #endif
+diff -r third_party/chromium/base/debug/debugger_win.cc ../chromium/base/debug/debugger_win.cc
+11d10
+< #if BUILDFLAG(CLANG_COVERAGE)
+13d11
+< #endif
+diff -r third_party/chromium/base/process/process_fuchsia.cc ../chromium/base/process/process_fuchsia.cc
+16d15
+< #if BUILDFLAG(CLANG_COVERAGE)
+18d16
+< #endif
+diff -r third_party/chromium/base/process/process_posix.cc ../chromium/base/process/process_posix.cc
+19d18
+< #if BUILDFLAG(CLANG_COVERAGE)
+21d19
+< #endif
+diff -r third_party/chromium/base/process/process_unittest.cc ../chromium/base/process/process_unittest.cc
+10d9
+< #if defined(OS_WIN)
+12d10
+< #endif
+diff -r third_party/chromium/base/process/process_win.cc ../chromium/base/process/process_win.cc
+12d11
+< #if BUILDFLAG(CLANG_COVERAGE)
+14d12
+< #endif
+diff -r third_party/chromium/base/task/sequence_manager/test/sequence_manager_for_test.h ../chromium/base/task/sequence_manager/test/sequence_manager_for_test.h
+31,32c31,32
+<       SequenceManager::Settings settings); /* = SequenceManager::Settings{
+<           .randomised_sampling_enabled = true}); */
+---
+>       SequenceManager::Settings settings = SequenceManager::Settings{
+>           .randomised_sampling_enabled = true});
+37,38c37,38
+<       SequenceManager::Settings settings); /* = SequenceManager::Settings{
+<           .randomised_sampling_enabled = true}); */
+---
+>       SequenceManager::Settings settings = SequenceManager::Settings{
+>           .randomised_sampling_enabled = true});
+diff -r third_party/chromium/base/task/sequence_manager/time_domain_unittest.cc ../chromium/base/task/sequence_manager/time_domain_unittest.cc
+392,395c392,393
+<   SequenceManager::Settings settings;
+<   settings.message_loop_type = kType;
+<   settings.clock = &clock;
+<   auto sequence_manager = sequence_manager::CreateUnboundSequenceManager(std::move(settings));
+---
+>   auto sequence_manager = sequence_manager::CreateUnboundSequenceManager(
+>       SequenceManager::Settings{.message_loop_type = kType, .clock = &clock});
+Only in third_party/chromium/base/test: run_all_tests.cc
+diff -r third_party/chromium/base/test/scoped_task_environment.h ../chromium/base/test/scoped_task_environment.h
+207c207
+<   /* constexpr */ MainThreadType main_thread_type() const {
+---
+>   constexpr MainThreadType main_thread_type() const {
+211c211
+<   /* constexpr */ ExecutionMode execution_control_mode() const {
+---
+>   constexpr ExecutionMode execution_control_mode() const {
+Only in third_party/chromium/base/third_party/libevent: BUILD
+diff -r third_party/chromium/base/trace_event/trace_arguments.h ../chromium/base/trace_event/trace_arguments.h
+493,495c493,495
+<   /* constexpr */ size_t size() const { return data_ ? data_->size : 0u; }
+<   /* constexpr */ const char* data() const { return data_ ? data_->chars : nullptr; }
+<   /* constexpr */ char* data() { return data_ ? data_->chars : nullptr; }
+---
+>   constexpr size_t size() const { return data_ ? data_->size : 0u; }
+>   constexpr const char* data() const { return data_ ? data_->chars : nullptr; }
+>   constexpr char* data() { return data_ ? data_->chars : nullptr; }
+497,498c497,498
+<   /* constexpr */ const char* begin() const { return data(); }
+<   /* constexpr */ const char* end() const { return data() + size(); }
+---
+>   constexpr const char* begin() const { return data(); }
+>   constexpr const char* end() const { return data() + size(); }
+503c503
+<   /* constexpr */ bool empty() const { return size() == 0; }
+---
+>   constexpr bool empty() const { return size() == 0; }
+507c507
+<   /* constexpr */ bool Contains(const void* ptr) const {
+---
+>   constexpr bool Contains(const void* ptr) const {
+518c518
+<   /* constexpr */ size_t EstimateTraceMemoryOverhead() const {
+---
+>   constexpr size_t EstimateTraceMemoryOverhead() const {
+diff -r third_party/chromium/base/trace_event/trace_log.cc ../chromium/base/trace_event/trace_log.cc
+48c48
+< // #include "base/trace_event/trace_event_etw_export_win.h"
+---
+> #include "base/trace_event/trace_event_etw_export_win.h"
+493,496c493,496
+<   // if (base::trace_event::TraceEventETWExport::IsCategoryGroupEnabled(
+<   //         category->name())) {
+<   //   state_flags |= TraceCategory::ENABLED_FOR_ETW_EXPORT;
+<   // }
+---
+>   if (base::trace_event::TraceEventETWExport::IsCategoryGroupEnabled(
+>           category->name())) {
+>     state_flags |= TraceCategory::ENABLED_FOR_ETW_EXPORT;
+>   }
+1214,1216c1214,1216
+<   // if (*category_group_enabled & TraceCategory::ENABLED_FOR_ETW_EXPORT)
+<   //   TraceEventETWExport::AddEvent(phase, category_group_enabled, name, id,
+<   //                                 args);
+---
+>   if (*category_group_enabled & TraceCategory::ENABLED_FOR_ETW_EXPORT)
+>     TraceEventETWExport::AddEvent(phase, category_group_enabled, name, id,
+>                                   args);
+1404,1405c1404,1405
+<   // if (category_group_enabled_local & TraceCategory::ENABLED_FOR_ETW_EXPORT)
+<   //   TraceEventETWExport::AddCompleteEndEvent(name);
+---
+>   if (category_group_enabled_local & TraceCategory::ENABLED_FOR_ETW_EXPORT)
+>     TraceEventETWExport::AddCompleteEndEvent(name);
+1662,1673c1662,1673
+< // void TraceLog::UpdateETWCategoryGroupEnabledFlags() {
+< //   // Go through each category and set/clear the ETW bit depending on whether the
+< //   // category is enabled.
+< //   for (TraceCategory& category : CategoryRegistry::GetAllCategories()) {
+< //     if (base::trace_event::TraceEventETWExport::IsCategoryGroupEnabled(
+< //             category.name())) {
+< //       category.set_state_flag(TraceCategory::ENABLED_FOR_ETW_EXPORT);
+< //     } else {
+< //       category.clear_state_flag(TraceCategory::ENABLED_FOR_ETW_EXPORT);
+< //     }
+< //   }
+< // }
+---
+> void TraceLog::UpdateETWCategoryGroupEnabledFlags() {
+>   // Go through each category and set/clear the ETW bit depending on whether the
+>   // category is enabled.
+>   for (TraceCategory& category : CategoryRegistry::GetAllCategories()) {
+>     if (base::trace_event::TraceEventETWExport::IsCategoryGroupEnabled(
+>             category.name())) {
+>       category.set_state_flag(TraceCategory::ENABLED_FOR_ETW_EXPORT);
+>     } else {
+>       category.clear_state_flag(TraceCategory::ENABLED_FOR_ETW_EXPORT);
+>     }
+>   }
+> }

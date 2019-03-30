@@ -2,6 +2,10 @@
 
 licenses(["notice"])  # BSD 3-Clause
 
+load("//bazel:felicia.bzl", "if_windows")
+load("//third_party/chromium:chromium.bzl", "chromium_cc_library")
+load("//third_party/chromium/build:build.bzl", "write_build_date_header")
+
 package(default_visibility = [":internal"])
 
 package_group(
@@ -10,4 +14,35 @@ package_group(
         "//felicia/...",
         "//third_party/chromium/...",
     ],
+)
+
+chromium_cc_library(
+    name = "base_buildflags",
+    hdrs = [
+        "//third_party/chromium/base:allocator_buildflags",
+        "//third_party/chromium/base:cfi_buildflags",
+        "//third_party/chromium/base:clang_coverage_buildflags",
+        "//third_party/chromium/base:debugging_buildflags",
+        "//third_party/chromium/base:partition_alloc_buildflags",
+        "//third_party/chromium/base:protected_memory_buildflags",
+        "//third_party/chromium/base:sanitizer_buildflags",
+        "//third_party/chromium/base:synchronization_buildflags",
+    ] + if_windows([
+        "//third_party/chromium/base:base_win_buildflags",
+    ]),
+    includes = ["."],
+    deps = [
+        "//third_party/chromium/build",
+    ],
+)
+
+write_build_date_header(
+    name = "build_date_hdr",
+    dep = "//third_party/chromium/build:timestamp",
+    output = "base/generated_build_date.h",
+)
+
+chromium_cc_library(
+    name = "build_date",
+    hdrs = [":build_date_hdr"],
 )

@@ -4,10 +4,9 @@
 
 #include "base/threading/platform_thread.h"
 
-#include <atomic>
 #include <memory>
 
-// #include "base/feature_list.h"
+#include "base/feature_list.h"
 
 namespace base {
 
@@ -15,8 +14,8 @@ namespace {
 
 // Whether thread priorities should be used. When disabled,
 // PlatformThread::SetCurrentThreadPriority() no-ops.
-// const Feature kThreadPrioritiesFeature{"ThreadPriorities",
-//                                        FEATURE_ENABLED_BY_DEFAULT};
+const Feature kThreadPrioritiesFeature{"ThreadPriorities",
+                                       FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether thread priorities should be used.
 //
@@ -40,10 +39,10 @@ void InitializeThreadPrioritiesFeature() {
   // feature has been checked before. To avoid triggering this DCHECK in unit
   // tests that call this before initializing the FeatureList, only check the
   // state of the feature if the FeatureList is initialized.
-  // if (FeatureList::GetInstance() &&
-  //     !FeatureList::IsEnabled(kThreadPrioritiesFeature)) {
-  //   g_use_thread_priorities.store(false);
-  // }
+  if (FeatureList::GetInstance() &&
+      !FeatureList::IsEnabled(kThreadPrioritiesFeature)) {
+    g_use_thread_priorities.store(false);
+  }
 }
 
 }  // namespace internal

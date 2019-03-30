@@ -4,7 +4,7 @@
 
 #include "base/synchronization/lock_impl.h"
 
-// #include "base/debug/activity_tratcker.h"
+#include "base/debug/activity_tracker.h"
 
 #include <windows.h>
 
@@ -28,11 +28,11 @@ void LockImpl::Lock() {
   // (tracked) blocking call if that fails. Since "try" itself is a system
   // call, and thus also somewhat expensive, don't bother with it unless
   // tracking is actually enabled.
-  // if (base::debug::GlobalActivityTracker::IsEnabled())
-  //   if (Try())
-  //     return;
+  if (base::debug::GlobalActivityTracker::IsEnabled())
+    if (Try())
+      return;
 
-  // base::debug::ScopedLockAcquireActivity lock_activity(this);
+  base::debug::ScopedLockAcquireActivity lock_activity(this);
   ::AcquireSRWLockExclusive(reinterpret_cast<PSRWLOCK>(&native_handle_));
 }
 

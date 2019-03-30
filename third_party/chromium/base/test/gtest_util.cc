@@ -9,9 +9,9 @@
 #include <memory>
 
 #include "base/files/file_path.h"
-// #include "base/json/json_file_value_serializer.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/strings/string_util.h"
-// #include "base/values.h"
+#include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -49,7 +49,7 @@ std::vector<TestIdentifier> GetCompiledInTests() {
   }
   return tests;
 }
-/*
+
 bool WriteCompiledInTestsToFile(const FilePath& path) {
   std::vector<TestIdentifier> tests(GetCompiledInTests());
 
@@ -107,5 +107,5 @@ bool ReadTestNamesFromFile(const FilePath& path,
   output->swap(result);
   return true;
 }
-*/
+
 }  // namespace base

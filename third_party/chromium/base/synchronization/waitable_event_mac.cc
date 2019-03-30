@@ -8,8 +8,7 @@
 #include <mach/mach.h>
 #include <sys/event.h>
 
-// #include "base/debug/activity_tracker.h"
-#include "base/callback.h"
+#include "base/debug/activity_tracker.h"
 #include "base/files/scoped_file.h"
 #include "base/mac/dispatch_source_mach.h"
 #include "base/mac/mac_util.h"
@@ -116,11 +115,11 @@ bool WaitableEvent::TimedWaitUntil(const TimeTicks& end_time) {
   // Record the event that this thread is blocking upon (for hang diagnosis) and
   // consider blocked for scheduling purposes. Ignore this for non-blocking
   // WaitableEvents.
-  // Optional<debug::ScopedEventWaitActivity> event_activity;
+  Optional<debug::ScopedEventWaitActivity> event_activity;
   Optional<internal::ScopedBlockingCallWithBaseSyncPrimitives>
       scoped_blocking_call;
   if (waiting_is_blocking_) {
-    // event_activity.emplace(this);
+    event_activity.emplace(this);
     scoped_blocking_call.emplace(BlockingType::MAY_BLOCK);
   }
 
@@ -182,7 +181,7 @@ size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables, size_t count) {
   internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
       BlockingType::MAY_BLOCK);
   // Record an event (the first) that this thread is blocking upon.
-  // debug::ScopedEventWaitActivity event_activity(raw_waitables[0]);
+  debug::ScopedEventWaitActivity event_activity(raw_waitables[0]);
 
   // On macOS 10.11+, using Mach port sets may cause system instability, per
   // https://crbug.com/756102. On macOS 10.12+, a kqueue can be used

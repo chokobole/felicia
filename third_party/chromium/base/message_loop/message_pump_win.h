@@ -15,7 +15,7 @@
 #include "base/message_loop/message_pump.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-// #include "base/win/message_window.h"
+#include "base/win/message_window.h"
 #include "base/win/scoped_handle.h"
 
 namespace base {
@@ -75,7 +75,7 @@ class BASE_EXPORT MessagePumpWin : public MessagePump {
   // State for the current invocation of Run.
   RunState* state_ = nullptr;
 };
-/*
+
 //-----------------------------------------------------------------------------
 // MessagePumpForUI extends MessagePumpWin with methods that are particular to a
 // MessageLoop instantiated with TYPE_UI.
@@ -159,7 +159,7 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
   bool ProcessMessageHelper(const MSG& msg);
   bool ProcessPumpReplacementMessage();
 
-  // base::win::MessageWindow message_window_;
+  base::win::MessageWindow message_window_;
 
   // Whether MessagePumpForUI responds to WM_QUIT messages or not.
   // TODO(thestig): Remove when the Cloud Print Service goes away.
@@ -167,7 +167,7 @@ class BASE_EXPORT MessagePumpForUI : public MessagePumpWin {
 
   ObserverList<Observer>::Unchecked observers_;
 };
-*/
+
 //-----------------------------------------------------------------------------
 // MessagePumpForIO extends MessagePumpWin with methods that are particular to a
 // MessageLoop instantiated with TYPE_IO. This version of MessagePump does not

@@ -94,13 +94,13 @@ std::vector<TestIdentifier> GetCompiledInTests();
 
 // Writes the list of gtest-based tests compiled into
 // current executable as a JSON file. Returns true on success.
-// bool WriteCompiledInTestsToFile(const FilePath& path) WARN_UNUSED_RESULT;
+bool WriteCompiledInTestsToFile(const FilePath& path) WARN_UNUSED_RESULT;
 
 // Reads the list of gtest-based tests from |path| into |output|.
 // Returns true on success.
-// bool ReadTestNamesFromFile(
-//     const FilePath& path,
-//     std::vector<TestIdentifier>* output) WARN_UNUSED_RESULT;
+bool ReadTestNamesFromFile(
+    const FilePath& path,
+    std::vector<TestIdentifier>* output) WARN_UNUSED_RESULT;
 
 }  // namespace base
 

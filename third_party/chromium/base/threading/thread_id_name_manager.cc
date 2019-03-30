@@ -12,7 +12,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_local.h"
-// #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
+#include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 
 namespace base {
 namespace {
@@ -93,8 +93,8 @@ void ThreadIdNameManager::SetName(const std::string& name) {
   // call GetName(which holds a lock) during the first allocation because it can
   // cause a deadlock when the first allocation happens in the
   // ThreadIdNameManager itself when holding the lock.
-  // trace_event::AllocationContextTracker::SetCurrentThreadName(
-  //     leaked_str->c_str());
+  trace_event::AllocationContextTracker::SetCurrentThreadName(
+      leaked_str->c_str());
 }
 
 const char* ThreadIdNameManager::GetName(PlatformThreadId id) {

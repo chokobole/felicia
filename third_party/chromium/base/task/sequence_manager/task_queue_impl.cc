@@ -13,8 +13,8 @@
 #include "base/task/sequence_manager/work_queue.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
-// #include "base/trace_event/blame_context.h"
-// #include "base/trace_event/common/trace_event_common.h"
+#include "base/trace_event/blame_context.h"
+#include "base/trace_event/common/trace_event_common.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -133,7 +133,7 @@ TaskQueueImpl::MainThreadOnly::MainThreadOnly(TaskQueueImpl* task_queue,
                                          "immediate",
                                          WorkQueue::QueueType::kImmediate)),
       is_enabled(true),
-      // blame_context(nullptr),
+      blame_context(nullptr),
       is_enabled_for_test(true) {}
 
 TaskQueueImpl::MainThreadOnly::~MainThreadOnly() = default;
@@ -145,7 +145,7 @@ scoped_refptr<SingleThreadTaskRunner> TaskQueueImpl::CreateTaskRunner(
 }
 
 void TaskQueueImpl::UnregisterTaskQueue() {
-  // TRACE_EVENT0("base", "TaskQueueImpl::UnregisterTaskQueue");
+  TRACE_EVENT0("base", "TaskQueueImpl::UnregisterTaskQueue");
   // Detach task runners.
   {
     ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
@@ -492,11 +492,11 @@ void TaskQueueImpl::WakeUpForDelayedWork(LazyNow* lazy_now) {
 }
 
 void TaskQueueImpl::TraceQueueSize() const {
-  // bool is_tracing;
-  // TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-  //     TRACE_DISABLED_BY_DEFAULT("sequence_manager"), &is_tracing);
-  // if (!is_tracing)
-  //   return;
+  bool is_tracing;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("sequence_manager"), &is_tracing);
+  if (!is_tracing)
+    return;
 
   // It's only safe to access the work queues from the main thread.
   // TODO(alexclarke): We should find another way of tracing this
@@ -504,11 +504,11 @@ void TaskQueueImpl::TraceQueueSize() const {
     return;
 
   AutoLock lock(immediate_incoming_queue_lock_);
-  // TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("sequence_manager"), GetName(),
-  //                immediate_incoming_queue_.size() +
-  //                    main_thread_only().immediate_work_queue->Size() +
-  //                    main_thread_only().delayed_work_queue->Size() +
-  //                    main_thread_only().delayed_incoming_queue.size());
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("sequence_manager"), GetName(),
+                 immediate_incoming_queue_.size() +
+                     main_thread_only().immediate_work_queue->Size() +
+                     main_thread_only().delayed_work_queue->Size() +
+                     main_thread_only().delayed_incoming_queue.size());
 }
 
 void TaskQueueImpl::SetQueuePriority(TaskQueue::QueuePriority priority) {
@@ -523,7 +523,7 @@ TaskQueue::QueuePriority TaskQueueImpl::GetQueuePriority() const {
   DCHECK_EQ(set_index, delayed_work_queue()->work_queue_set_index());
   return static_cast<TaskQueue::QueuePriority>(set_index);
 }
-/*
+
 void TaskQueueImpl::AsValueInto(TimeTicks now,
                                 trace_event::TracedValue* state,
                                 bool force_verbose) const {
@@ -600,7 +600,7 @@ void TaskQueueImpl::AsValueInto(TimeTicks now,
   state->SetString("priority", TaskQueue::PriorityToString(GetQueuePriority()));
   state->EndDictionary();
 }
-*/
+
 void TaskQueueImpl::AddTaskObserver(MessageLoop::TaskObserver* task_observer) {
   main_thread_only().task_observers.AddObserver(task_observer);
 }
@@ -612,8 +612,8 @@ void TaskQueueImpl::RemoveTaskObserver(
 
 void TaskQueueImpl::NotifyWillProcessTask(const PendingTask& pending_task) {
   DCHECK(should_notify_observers_);
-  // if (main_thread_only().blame_context)
-  //   main_thread_only().blame_context->Enter();
+  if (main_thread_only().blame_context)
+    main_thread_only().blame_context->Enter();
   for (auto& observer : main_thread_only().task_observers)
     observer.WillProcessTask(pending_task);
 }
@@ -622,8 +622,8 @@ void TaskQueueImpl::NotifyDidProcessTask(const PendingTask& pending_task) {
   DCHECK(should_notify_observers_);
   for (auto& observer : main_thread_only().task_observers)
     observer.DidProcessTask(pending_task);
-  // if (main_thread_only().blame_context)
-  //   main_thread_only().blame_context->Leave();
+  if (main_thread_only().blame_context)
+    main_thread_only().blame_context->Leave();
 }
 
 void TaskQueueImpl::SetTimeDomain(TimeDomain* time_domain) {
@@ -657,11 +657,11 @@ TimeDomain* TaskQueueImpl::GetTimeDomain() const {
          !associated_thread_->IsBound());
   return main_thread_only().time_domain;
 }
-/*
+
 void TaskQueueImpl::SetBlameContext(trace_event::BlameContext* blame_context) {
   main_thread_only().blame_context = blame_context;
 }
-*/
+
 void TaskQueueImpl::InsertFence(TaskQueue::InsertFencePosition position) {
   // Only one fence may be present at a time.
   main_thread_only().delayed_fence = nullopt;
@@ -761,7 +761,7 @@ bool TaskQueueImpl::CouldTaskRun(EnqueueOrder enqueue_order) const {
 
   return enqueue_order < main_thread_only().current_fence;
 }
-/*
+
 // static
 void TaskQueueImpl::QueueAsValueInto(const TaskDeque& queue,
                                      TimeTicks now,
@@ -789,7 +789,7 @@ void TaskQueueImpl::TaskAsValueInto(const Task& task,
                    (task.delayed_run_time - now).InMillisecondsF());
   state->EndDictionary();
 }
-*/
+
 bool TaskQueueImpl::IsQueueEnabled() const {
   return main_thread_only().is_enabled;
 }
@@ -1084,7 +1084,7 @@ void TaskQueueImpl::DelayedIncomingQueue::SweepCancelledTasks() {
   if (task_deleted)
     std::make_heap(queue_.c.begin(), queue_.c.end(), queue_.comp);
 }
-/*
+
 void TaskQueueImpl::DelayedIncomingQueue::AsValueInto(
     TimeTicks now,
     trace_event::TracedValue* state) const {
@@ -1092,7 +1092,7 @@ void TaskQueueImpl::DelayedIncomingQueue::AsValueInto(
     TaskAsValueInto(task, now, state);
   }
 }
-*/
+
 }  // namespace internal
 }  // namespace sequence_manager
 }  // namespace base

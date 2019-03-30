@@ -12,11 +12,11 @@
 #include "base/bind.h"
 #include "base/debug/alias.h"
 #include "base/memory/ptr_util.h"
-// #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-// #include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/current_module.h"
-// #include "base/win/wrapped_window_proc.h"
+#include "base/win/wrapped_window_proc.h"
 
 namespace base {
 
@@ -82,7 +82,7 @@ int MessagePumpWin::GetCurrentDelay() const {
       (timeout > std::numeric_limits<int>::max() ?
        std::numeric_limits<int>::max() : static_cast<int>(timeout));
 }
-/*
+
 //-----------------------------------------------------------------------------
 // MessagePumpForUI public:
 
@@ -443,7 +443,7 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
   ScheduleWork();
   return ProcessMessageHelper(msg);
 }
-*/
+
 //-----------------------------------------------------------------------------
 // MessagePumpForIO public:
 
@@ -474,8 +474,8 @@ void MessagePumpForIO::ScheduleWork() {
   // See comment in MessagePumpForUI::ScheduleWork() for this error recovery.
 
   work_scheduled_ = false;  // Clarify that we didn't succeed.
-  // UMA_HISTOGRAM_ENUMERATION("Chrome.MessageLoopProblem", COMPLETION_POST_ERROR,
-  //                           MESSAGE_LOOP_PROBLEM_MAX);
+  UMA_HISTOGRAM_ENUMERATION("Chrome.MessageLoopProblem", COMPLETION_POST_ERROR,
+                            MESSAGE_LOOP_PROBLEM_MAX);
 }
 
 void MessagePumpForIO::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {

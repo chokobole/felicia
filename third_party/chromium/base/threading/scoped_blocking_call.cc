@@ -8,7 +8,7 @@
 #include "base/scoped_clear_last_error.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
-// #include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -73,8 +73,8 @@ ScopedBlockingCall::ScopedBlockingCall(BlockingType blocking_type)
 #endif
 
   internal::AssertBlockingAllowed();
-  // TRACE_EVENT_BEGIN1("base", "ScopedBlockingCall", "blocking_type",
-  //                    static_cast<int>(blocking_type));
+  TRACE_EVENT_BEGIN1("base", "ScopedBlockingCall", "blocking_type",
+                     static_cast<int>(blocking_type));
 
 #if DCHECK_IS_ON()
   tls_construction_in_progress.Get().Set(false);
@@ -82,7 +82,7 @@ ScopedBlockingCall::ScopedBlockingCall(BlockingType blocking_type)
 }
 
 ScopedBlockingCall::~ScopedBlockingCall() {
-  // TRACE_EVENT_END0("base", "ScopedBlockingCall");
+  TRACE_EVENT_END0("base", "ScopedBlockingCall");
 }
 
 namespace internal {
@@ -96,8 +96,8 @@ ScopedBlockingCallWithBaseSyncPrimitives::
 #endif
 
   internal::AssertBaseSyncPrimitivesAllowed();
-  // TRACE_EVENT_BEGIN1("base", "ScopedBlockingCallWithBaseSyncPrimitives",
-  //                    "blocking_type", static_cast<int>(blocking_type));
+  TRACE_EVENT_BEGIN1("base", "ScopedBlockingCallWithBaseSyncPrimitives",
+                     "blocking_type", static_cast<int>(blocking_type));
 
 #if DCHECK_IS_ON()
   tls_construction_in_progress.Get().Set(false);
@@ -106,7 +106,7 @@ ScopedBlockingCallWithBaseSyncPrimitives::
 
 ScopedBlockingCallWithBaseSyncPrimitives::
     ~ScopedBlockingCallWithBaseSyncPrimitives() {
-  // TRACE_EVENT_END0("base", "ScopedBlockingCallWithBaseSyncPrimitives");
+  TRACE_EVENT_END0("base", "ScopedBlockingCallWithBaseSyncPrimitives");
 }
 
 void SetBlockingObserverForCurrentThread(BlockingObserver* blocking_observer) {

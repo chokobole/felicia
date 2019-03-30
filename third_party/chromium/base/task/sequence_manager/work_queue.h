@@ -10,8 +10,8 @@
 #include "base/task/sequence_manager/enqueue_order.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
-// #include "base/trace_event/trace_event.h"
-// #include "base/trace_event/traced_value.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/traced_value.h"
 
 namespace base {
 namespace sequence_manager {
@@ -43,7 +43,7 @@ class BASE_EXPORT WorkQueue {
   // Assigns the current set index.
   void AssignSetIndex(size_t work_queue_set_index);
 
-  // void AsValueInto(TimeTicks now, trace_event::TracedValue* state) const;
+  void AsValueInto(TimeTicks now, trace_event::TracedValue* state) const;
 
   // Returns true if the |tasks_| is empty. This method ignores any fences.
   bool Empty() const { return tasks_.empty(); }

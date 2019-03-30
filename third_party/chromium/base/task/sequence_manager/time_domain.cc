@@ -139,7 +139,7 @@ Optional<TimeTicks> TimeDomain::NextScheduledRunTime() const {
     return nullopt;
   return delayed_wake_up_queue_.Min().wake_up.time;
 }
-/*
+
 void TimeDomain::AsValueInto(trace_event::TracedValue* state) const {
   state->BeginDictionary();
   state->SetString("name", GetName());
@@ -155,7 +155,7 @@ void TimeDomain::AsValueInto(trace_event::TracedValue* state) const {
 void TimeDomain::AsValueIntoInternal(trace_event::TracedValue* state) const {
   // Can be overriden to trace some additional state.
 }
-*/
+
 bool TimeDomain::HasPendingHighResolutionTasks() const {
   return pending_high_res_wake_up_count_;
 }

@@ -34,8 +34,8 @@ Optional<TimeDelta> RealTimeDomain::DelayTillNextTask(LazyNow* lazy_now) {
   }
 
   TimeDelta delay = *next_run_time - now;
-  // TRACE_EVENT1("sequence_manager", "RealTimeDomain::DelayTillNextTask",
-  //              "delay_ms", delay.InMillisecondsF());
+  TRACE_EVENT1("sequence_manager", "RealTimeDomain::DelayTillNextTask",
+               "delay_ms", delay.InMillisecondsF());
   return delay;
 }
 

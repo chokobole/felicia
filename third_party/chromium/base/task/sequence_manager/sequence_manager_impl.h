@@ -120,7 +120,7 @@ class BASE_EXPORT SequenceManagerImpl
   size_t GetPendingTaskCountForTesting() const override;
   scoped_refptr<TaskQueue> CreateTaskQueue(
       const TaskQueue::Spec& spec) override;
-  // std::string DescribeAllPendingTasks() const override;
+  std::string DescribeAllPendingTasks() const override;
 
   // SequencedTaskSource implementation:
   Optional<PendingTask> TakeTask() override;
@@ -319,9 +319,9 @@ class BASE_EXPORT SequenceManagerImpl
 
   bool GetAddQueueTimeToTasks();
 
-  // std::unique_ptr<trace_event::ConvertableToTraceFormat>
-  // AsValueWithSelectorResult(internal::WorkQueue* selected_work_queue,
-  //                           bool force_verbose) const;
+  std::unique_ptr<trace_event::ConvertableToTraceFormat>
+  AsValueWithSelectorResult(internal::WorkQueue* selected_work_queue,
+                            bool force_verbose) const;
 
   // Adds |queue| to |any_thread().has_incoming_immediate_work_| and if
   // |schedule_work| is true it makes sure a DoWork is posted.

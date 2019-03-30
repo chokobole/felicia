@@ -40,7 +40,7 @@ chromium_cc_library(
         "base/winsock_util.h",
     ]) + if_windows([
         ":net_win_hdrs",
-    ]) + if_not_windows_and_not_linux([
+    ]) + if_not_windows([
         ":net_posix_hdrs",
     ]),
     copts = net_copts(),

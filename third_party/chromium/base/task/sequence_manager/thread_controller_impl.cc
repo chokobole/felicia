@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
-// #include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event.h"
 
 namespace base {
 namespace sequence_manager {
@@ -73,8 +73,8 @@ void ThreadControllerImpl::SetTimerSlack(TimerSlack timer_slack) {
 }
 
 void ThreadControllerImpl::ScheduleWork() {
-  // TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
-  //              "ThreadControllerImpl::ScheduleWork::PostTask");
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
+               "ThreadControllerImpl::ScheduleWork::PostTask");
 
   if (work_deduplicator_.OnWorkRequested() ==
       ShouldScheduleWork::kScheduleImmediate)
@@ -102,9 +102,9 @@ void ThreadControllerImpl::SetNextDelayedDoWork(LazyNow* lazy_now,
   }
 
   base::TimeDelta delay = std::max(TimeDelta(), run_time - lazy_now->Now());
-  // TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
-  //              "ThreadControllerImpl::SetNextDelayedDoWork::PostDelayedTask",
-  //              "delay_ms", delay.InMillisecondsF());
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
+               "ThreadControllerImpl::SetNextDelayedDoWork::PostDelayedTask",
+               "delay_ms", delay.InMillisecondsF());
 
   main_sequence_only().next_delayed_do_work = run_time;
   // Reset also causes cancellation of the previous DoWork task.
@@ -168,7 +168,7 @@ void ThreadControllerImpl::WillQueueTask(PendingTask* pending_task) {
 }
 
 void ThreadControllerImpl::DoWork(WorkType work_type) {
-  // TRACE_EVENT0("sequence_manager", "ThreadControllerImpl::DoWork");
+  TRACE_EVENT0("sequence_manager", "ThreadControllerImpl::DoWork");
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(associated_thread_->sequence_checker);
   DCHECK(sequence_);
@@ -183,11 +183,11 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
       break;
 
     {
-      // TRACE_TASK_EXECUTION("ThreadControllerImpl::RunTask", *task);
+      TRACE_TASK_EXECUTION("ThreadControllerImpl::RunTask", *task);
       // Trace-parsing tools (DevTools, Lighthouse, etc) consume this event
       // to determine long tasks.
       // See https://crbug.com/681863 and https://crbug.com/874982
-      // TRACE_EVENT0("devtools.timeline", "RunTask");
+      TRACE_EVENT0("devtools.timeline", "RunTask");
       task_annotator_.RunTask("ThreadControllerImpl::RunTask", &*task);
     }
 

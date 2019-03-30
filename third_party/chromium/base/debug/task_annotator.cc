@@ -6,12 +6,12 @@
 
 #include <array>
 
-// #include "base/debug/activity_tracker.h"
+#include "base/debug/activity_tracker.h"
 #include "base/debug/alias.h"
 #include "base/no_destructor.h"
 #include "base/pending_task.h"
 #include "base/threading/thread_local.h"
-// #include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event.h"
 
 namespace base {
 namespace debug {
@@ -39,10 +39,10 @@ void TaskAnnotator::WillQueueTask(const char* trace_event_name,
                                   PendingTask* pending_task) {
   DCHECK(trace_event_name);
   DCHECK(pending_task);
-  // TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
-  //                        trace_event_name,
-  //                        TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)),
-  //                        TRACE_EVENT_FLAG_FLOW_OUT);
+  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+                         trace_event_name,
+                         TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)),
+                         TRACE_EVENT_FLAG_FLOW_OUT);
 
   DCHECK(!pending_task->task_backtrace[0])
       << "Task backtrace was already set, task posted twice??";
@@ -63,11 +63,11 @@ void TaskAnnotator::RunTask(const char* trace_event_name,
   DCHECK(trace_event_name);
   DCHECK(pending_task);
 
-  // ScopedTaskRunActivity task_activity(*pending_task);
+  ScopedTaskRunActivity task_activity(*pending_task);
 
-  // TRACE_EVENT_WITH_FLOW0(
-  //     TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), trace_event_name,
-  //     TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)), TRACE_EVENT_FLAG_FLOW_IN);
+  TRACE_EVENT_WITH_FLOW0(
+      TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), trace_event_name,
+      TRACE_ID_MANGLE(GetTaskTraceID(*pending_task)), TRACE_EVENT_FLAG_FLOW_IN);
 
   // Before running the task, store the task backtrace with the chain of
   // PostTasks that resulted in this call and deliberately alias it to ensure
