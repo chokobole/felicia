@@ -15,28 +15,21 @@ matrix:
         - travis_wait 50 docker build . -t felicia -f docker/Dockerfile.ubuntu
         - python3 scripts/docker_exec.py bazel build //felicia/...
         - python3 scripts/docker_exec.py bazel test --test_tag_filters -benchmark //felicia/...
-        - python3 scripts/docker_exec.py bazel clean
         - python3 scripts/docker_exec.py bazel build -c dbg //felicia/...
         - python3 scripts/docker_exec.py bazel build -c dbg --test_tag_filters -benchmark //felicia/...
     - os: osx
-      osx_image: xcode10
+      osx_image: xcode10.2
       sudo: required
       compiler: clang
       env:
         - PYTHON_BIN_PATH=/usr/local/bin/python3
       before_install:
         - sudo xcodebuild -license accept
-        # TODO(chokobole): When doing just "softwareupdate --install" with label,
-        # Command Line Tools (macOS High Sierra version 10.13) for Xcode,
-        # says Command Line Tools (macOS High Sierra version 10.13) for Xcode: No such update
-        # so did workaround with -r option.
-        - travis_wait 50 softwareupdate --install -r
       install:
         - ./installers/install_bazel.sh
       script:
         - bazel build --cpu darwin_x86_64 //felicia/...
         - bazel test --cpu darwin_x86_64 --test_tag_filters -benchmark //felicia/...
-        - bazel clean
         - bazel build -c dbg --cpu darwin_x86_64 //felicia/...
         - bazel test -c dbg --cpu darwin_x86_64 --test_tag_filters -benchmark //felicia/...
 notifications:
