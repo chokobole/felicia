@@ -126,7 +126,7 @@ DrainableIOBuffer::~DrainableIOBuffer() {
   // The buffer is owned by the |base_| instance.
   data_ = NULL;
 }
-/*
+
 GrowableIOBuffer::GrowableIOBuffer()
     : IOBuffer(),
       capacity_(0),
@@ -173,7 +173,7 @@ void PickledIOBuffer::Done() {
 PickledIOBuffer::~PickledIOBuffer() {
   data_ = NULL;
 }
-*/
+
 WrappedIOBuffer::WrappedIOBuffer(const char* data)
     : IOBuffer(const_cast<char*>(data)) {
 }

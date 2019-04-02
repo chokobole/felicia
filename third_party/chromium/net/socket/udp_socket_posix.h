@@ -531,7 +531,7 @@ class NET_EXPORT UDPSocketPosix {
   int RandomBind(const IPAddress& address);
 
   // Helpers for |WriteAsync|
-  // base::SequencedTaskRunner* GetTaskRunner();
+  base::SequencedTaskRunner* GetTaskRunner();
   void OnWriteAsyncTimerFired();
   void LocalSendBuffers();
   void PostSendBuffers();

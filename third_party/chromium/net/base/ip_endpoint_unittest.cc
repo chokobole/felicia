@@ -17,7 +17,7 @@
 #include "base/sys_byteorder.h"
 #include "net/base/sockaddr_storage.h"
 #include "testing/gtest/include/gtest/gtest.h"
-// #include "testing/platform_test.h"
+#include "testing/platform_test.h"
 
 namespace net {
 
@@ -62,7 +62,7 @@ struct TestData {
   { "2001:db8:0::42", "[2001:db8::42]", true },
 };
 
-class IPEndPointTest : public ::testing::Test {
+class IPEndPointTest : public PlatformTest {
  public:
   void SetUp() override {
     // This is where we populate the TestData.

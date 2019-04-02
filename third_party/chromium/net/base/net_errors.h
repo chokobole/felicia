@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-// #include "base/files/file.h"
+#include "base/files/file.h"
 #include "base/logging.h"
 #include "net/base/net_export.h"
 
@@ -53,7 +53,7 @@ NET_EXPORT bool IsDnsError(int error);
 NET_EXPORT Error MapSystemError(logging::SystemErrorCode os_error);
 
 // A convenient function to translate file error to net error code.
-// NET_EXPORT Error FileErrorToNetError(base::File::Error file_error);
+NET_EXPORT Error FileErrorToNetError(base::File::Error file_error);
 
 }  // namespace net
 

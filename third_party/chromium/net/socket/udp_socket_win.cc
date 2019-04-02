@@ -11,10 +11,10 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-// #include "base/metrics/histogram_functions.h"
-// #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-// #include "base/task/post_task.h"
+#include "base/task/post_task.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -302,8 +302,8 @@ void UDPSocketWin::Close() {
 
   base::TimeTicks start_time = base::TimeTicks::Now();
   closesocket(socket_);
-  // UMA_HISTOGRAM_TIMES("Net.UDPSocketWinClose",
-  //                     base::TimeTicks::Now() - start_time);
+  UMA_HISTOGRAM_TIMES("Net.UDPSocketWinClose",
+                      base::TimeTicks::Now() - start_time);
   socket_ = INVALID_SOCKET;
   addr_family_ = 0;
   is_connected_ = false;
@@ -476,7 +476,7 @@ int UDPSocketWin::InternalConnect(const IPEndPoint& address) {
   // else connect() does the DatagramSocket::DEFAULT_BIND
 
   if (rv < 0) {
-    // base::UmaHistogramSparse("Net.UdpSocketRandomBindErrorCode", -rv);
+    base::UmaHistogramSparse("Net.UdpSocketRandomBindErrorCode", -rv);
     return rv;
   }
 
@@ -536,8 +536,8 @@ int UDPSocketWin::SetReceiveBufferSize(int32_t size) {
     return MapSystemError(WSAGetLastError());
   if (actual_size >= size)
     return OK;
-  // UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SocketUnchangeableReceiveBuffer",
-  //                             actual_size, 1000, 1000000, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SocketUnchangeableReceiveBuffer",
+                              actual_size, 1000, 1000000, 50);
   return ERR_SOCKET_RECEIVE_BUFFER_SIZE_UNCHANGEABLE;
 }
 
@@ -557,8 +557,8 @@ int UDPSocketWin::SetSendBufferSize(int32_t size) {
     return MapSystemError(WSAGetLastError());
   if (actual_size >= size)
     return OK;
-  // UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SocketUnchangeableSendBuffer",
-  //                             actual_size, 1000, 1000000, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SocketUnchangeableSendBuffer",
+                              actual_size, 1000, 1000000, 50);
   return ERR_SOCKET_SEND_BUFFER_SIZE_UNCHANGEABLE;
 }
 

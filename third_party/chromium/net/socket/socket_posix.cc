@@ -15,13 +15,13 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/posix/eintr_wrapper.h"
-// #include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/sockaddr_storage.h"
-// #include "net/base/trace_constants.h"
+#include "net/base/trace_constants.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 #if defined(OS_FUCHSIA)
@@ -463,8 +463,8 @@ void SocketPosix::DetachFromThread() {
 }
 
 void SocketPosix::OnFileCanReadWithoutBlocking(int fd) {
-  // TRACE_EVENT0(NetTracingCategory(),
-  //              "SocketPosix::OnFileCanReadWithoutBlocking");
+  TRACE_EVENT0(NetTracingCategory(),
+               "SocketPosix::OnFileCanReadWithoutBlocking");
   if (!accept_callback_.is_null()) {
     AcceptCompleted();
   } else {

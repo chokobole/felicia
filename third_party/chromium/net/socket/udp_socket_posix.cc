@@ -19,12 +19,12 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
-// #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
-// #include "base/task/post_task.h"
-// #include "base/task_runner_util.h"
-// #include "base/trace_event/trace_event.h"
+#include "base/task/post_task.h"
+#include "base/task_runner_util.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
@@ -490,7 +490,7 @@ int UDPSocketPosix::InternalConnect(const IPEndPoint& address) {
   // else connect() does the DatagramSocket::DEFAULT_BIND
 
   if (rv < 0) {
-    // base::UmaHistogramSparse("Net.UdpSocketRandomBindErrorCode", -rv);
+    base::UmaHistogramSparse("Net.UdpSocketRandomBindErrorCode", -rv);
     return rv;
   }
 
@@ -1325,17 +1325,17 @@ void UDPSocketPosix::FlushPending() {
   if (write_async_timer_running_)
     write_async_timer_.Reset();
 
-  // int num_pending_writes = static_cast<int>(pending_writes_.size());
-  // if (!write_multi_core_enabled_ ||
-  //     // Don't bother with post if not enough buffers
-  //     (num_pending_writes <= kWriteAsyncMinBuffersThreshold &&
-  //      // but not if there is a previous post
-  //      // outstanding, to prevent out of order transmission.
-  //      (num_pending_writes == write_async_outstanding_))) {
+  int num_pending_writes = static_cast<int>(pending_writes_.size());
+  if (!write_multi_core_enabled_ ||
+      // Don't bother with post if not enough buffers
+      (num_pending_writes <= kWriteAsyncMinBuffersThreshold &&
+       // but not if there is a previous post
+       // outstanding, to prevent out of order transmission.
+       (num_pending_writes == write_async_outstanding_))) {
     LocalSendBuffers();
-  // } else {
-  //   PostSendBuffers();
-  // }
+  } else {
+    PostSendBuffers();
+  }
 }
 
 // TODO(ckrasic) Sad face.  Do this lazily because many tests exploded
@@ -1344,14 +1344,13 @@ void UDPSocketPosix::FlushPending() {
 // for all tests that might exercise QUIC is too daunting.  Also, in
 // some tests it seemed like following the advice just broke in other
 // ways.
-/*
 base::SequencedTaskRunner* UDPSocketPosix::GetTaskRunner() {
   if (task_runner_ == nullptr) {
     task_runner_ = CreateSequencedTaskRunnerWithTraits(base::TaskTraits());
   }
   return task_runner_.get();
 }
-*/
+
 void UDPSocketPosix::OnWriteAsyncTimerFired() {
   DVLOG(2) << __func__ << " pending writes " << pending_writes_.size();
   if (pending_writes_.empty()) {
@@ -1371,7 +1370,7 @@ void UDPSocketPosix::LocalSendBuffers() {
            << write_async_outstanding_ << " total";
   DidSendBuffers(sender_->SendBuffers(socket_, std::move(pending_writes_)));
 }
-/*
+
 void UDPSocketPosix::PostSendBuffers() {
   DVLOG(1) << __func__ << " queue " << pending_writes_.size() << " out of "
            << write_async_outstanding_ << " total";
@@ -1382,7 +1381,7 @@ void UDPSocketPosix::PostSendBuffers() {
       base::BindOnce(&UDPSocketPosix::DidSendBuffers,
                      weak_factory_.GetWeakPtr()));
 }
-*/
+
 void UDPSocketPosix::DidSendBuffers(SendResult send_result) {
   DVLOG(3) << __func__;
   int write_count = send_result.write_count;

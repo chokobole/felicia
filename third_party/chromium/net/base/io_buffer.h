@@ -10,9 +10,9 @@
 #include <memory>
 #include <string>
 
-// #include "base/memory/free_deleter.h"
+#include "base/memory/free_deleter.h"
 #include "base/memory/ref_counted.h"
-// #include "base/pickle.h"
+#include "base/pickle.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -199,7 +199,6 @@ class NET_EXPORT DrainableIOBuffer : public IOBuffer {
 //   buf->set_offset(buf->offset() + bytes_read);
 // }
 //
-/*
 class NET_EXPORT GrowableIOBuffer : public IOBuffer {
  public:
   GrowableIOBuffer();
@@ -222,10 +221,9 @@ class NET_EXPORT GrowableIOBuffer : public IOBuffer {
   int capacity_;
   int offset_;
 };
-*/
+
 // This versions allows a pickle to be used as the storage for a write-style
 // operation, avoiding an extra data copy.
-/*
 class NET_EXPORT PickledIOBuffer : public IOBuffer {
  public:
   PickledIOBuffer();
@@ -241,7 +239,7 @@ class NET_EXPORT PickledIOBuffer : public IOBuffer {
 
   base::Pickle pickle_;
 };
-*/
+
 // This class allows the creation of a temporary IOBuffer that doesn't really
 // own the underlying buffer. Please use this class only as a last resort.
 // A good example is the buffer for a synchronous operation, where we can be
