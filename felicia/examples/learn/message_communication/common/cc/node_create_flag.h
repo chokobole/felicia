@@ -26,7 +26,7 @@ class NodeCreateFlag : public FlagParser::Delegate {
   AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(name_flag_, topic_flag_,
                                           channel_type_flag_)
 
- private:
+ protected:
   bool is_publishing_node_;
   std::string name_;
   std::string topic_;

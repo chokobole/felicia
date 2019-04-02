@@ -12,8 +12,8 @@ namespace felicia {
 
 class SimplePublishingNode : public NodeLifecycle {
  public:
-  explicit SimplePublishingNode(const std::string& topic,
-                                const std::string& channel_type)
+  SimplePublishingNode(const std::string& topic,
+                       const std::string& channel_type)
       : topic_(topic) {
     if (channel_type.compare("TCP") == 0) {
       channel_def_.set_type(ChannelDef::TCP);

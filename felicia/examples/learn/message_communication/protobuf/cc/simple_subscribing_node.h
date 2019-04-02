@@ -10,7 +10,7 @@ namespace felicia {
 
 class SimpleSubscribingNode : public NodeLifecycle {
  public:
-  explicit SimpleSubscribingNode(const std::string& topic) : topic_(topic) {}
+  SimpleSubscribingNode(const std::string& topic) : topic_(topic) {}
 
   void OnInit() override {
     std::cout << "SimpleSubscribingNode::OnInit()" << std::endl;
