@@ -23,15 +23,29 @@ matrix:
       compiler: clang
       env:
         - PYTHON_BIN_PATH=/usr/local/bin/python3
-      before_install:
-        - sudo xcodebuild -license accept
       install:
         - ./installers/install_bazel.sh
+        - ./installers/install_python_deps.sh --three
       script:
         - bazel build --cpu darwin_x86_64 //felicia/...
         - bazel test --cpu darwin_x86_64 --test_tag_filters -benchmark //felicia/...
         - bazel build -c dbg --cpu darwin_x86_64 //felicia/...
         - bazel test -c dbg --cpu darwin_x86_64 --test_tag_filters -benchmark //felicia/...
+    - os: windows
+      env:
+        - USE_CLANG_CL=1
+      before_install:
+        - export PATH=/c/Python3:/c/Python3/Scripts:$PATH
+      install:
+        - choco install python3 --params "/InstallDir:C:\Python3"
+        - ./installers/install_python_deps.sh
+        - choco install bazel --version 0.20.0
+      script:
+        - bazel build //felicia/...
+        - bazel test --test_tag_filters -benchmark //felicia/...
+        - bazel build -c dbg //felicia/...
+        - bazel test -c dbg --test_tag_filters -benchmark //felicia/...
+
 notifications:
     email:
         on_success: always

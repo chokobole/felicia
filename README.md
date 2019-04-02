@@ -24,7 +24,7 @@ Or you can set environment variable `PYTHON_BIN_PATH` to `/path/to/python/`.
 
 ### For Windows developers
 
-For only window developers, you have to do more. You have to download llvm from [llvm.org](http://llvm.org/builds/) also. Because you need `clang-cl` for compiler. And then to change default compiler for bazel, you have to set `USE_CLANG_CL` to `1` and `BAZEL_LLVM` to `/path/to/llvm`. This feature is a quite new, so you need a recent released one. We tested on `0.20.0`.
+For only window developers, you have to do more. You have to download llvm from [llvm.org](http://llvm.org/builds/) also. Because you need `clang-cl` for compiler. And then to change default compiler for bazel, you have to set `USE_CLANG_CL` to `1` and `BAZEL_LLVM` to `/path/to/llvm` if you install llvm at not regular location. This feature is a quite new, so you need a recent released one. We tested on `0.20.0`.
 
 ## How to build
 

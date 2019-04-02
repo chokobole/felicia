@@ -29,7 +29,7 @@ ENV PATH="${HOME}/.local/bin:${PATH}"
 
 COPY installers /tmp/installers
 RUN cd /tmp/ && bash ./installers/install_bazel.sh
-RUN cd /tmp/ && bash ./installers/install_python_deps.sh
+RUN cd /tmp/ && bash ./installers/install_python_deps.sh --three
 
 # refer to third_party/py/python_configure_path.bzl
 ENV PYTHON_BIN_PATH=/usr/bin/python3

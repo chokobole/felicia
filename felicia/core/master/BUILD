@@ -1,4 +1,4 @@
-load("//bazel:felicia.bzl", "fel_shared_library")
+load("//bazel:felicia.bzl", "fel_shared_library", "if_not_windows")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
@@ -86,7 +86,7 @@ fel_cc_library(
 fel_cc_test(
     name = "master_test",
     size = "small",
-    srcs = ["master_test.cc"],
+    srcs = if_not_windows(["master_test.cc"]),
     deps = fel_shared_library() + [
         ":master",
         "//felicia/core/node",
