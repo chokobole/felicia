@@ -1,0 +1,131 @@
+Only in ../chromium/url: android
+Only in third_party/chromium/url: BUILD
+Only in ../chromium/url: BUILD.gn
+Only in ../chromium/url: DEPS
+Only in ../chromium/url: features.gni
+Only in ../chromium/url: gurl.cc
+Only in ../chromium/url: gurl_fuzzer.cc
+Only in ../chromium/url: gurl_fuzzer.dict
+Only in ../chromium/url: gurl.h
+Only in ../chromium/url: gurl_unittest.cc
+Only in ../chromium/url: ipc
+Only in ../chromium/url: mojom
+Only in ../chromium/url: origin.cc
+Only in ../chromium/url: origin.h
+Only in ../chromium/url: origin_unittest.cc
+Only in ../chromium/url: OWNERS
+Only in ../chromium/url: README.md
+Only in ../chromium/url: run_all_perftests.cc
+Only in ../chromium/url: run_all_unittests.cc
+Only in ../chromium/url: scheme_host_port.cc
+Only in ../chromium/url: scheme_host_port.h
+Only in ../chromium/url: scheme_host_port_unittest.cc
+diff -r third_party/chromium/url/third_party/mozilla/url_parse.cc ../chromium/url/third_party/mozilla/url_parse.cc
+43,44c43,44
+< // #include "url/url_util.h"
+< // #include "url/url_util_internal.h"
+---
+> #include "url/url_util.h"
+> #include "url/url_util_internal.h"
+347c347
+< /*
+---
+> 
+462c462
+< */
+---
+> 
+514c514
+< /*
+---
+> 
+576c576
+< */
+---
+> 
+899,913c899,913
+< // void ParseFileSystemURL(const char* url, int url_len, Parsed* parsed) {
+< //   DoParseFileSystemURL(url, url_len, parsed);
+< // }
+< 
+< // void ParseFileSystemURL(const base::char16* url, int url_len, Parsed* parsed) {
+< //   DoParseFileSystemURL(url, url_len, parsed);
+< // }
+< 
+< // void ParseMailtoURL(const char* url, int url_len, Parsed* parsed) {
+< //   DoParseMailtoURL(url, url_len, parsed);
+< // }
+< 
+< // void ParseMailtoURL(const base::char16* url, int url_len, Parsed* parsed) {
+< //   DoParseMailtoURL(url, url_len, parsed);
+< // }
+---
+> void ParseFileSystemURL(const char* url, int url_len, Parsed* parsed) {
+>   DoParseFileSystemURL(url, url_len, parsed);
+> }
+> 
+> void ParseFileSystemURL(const base::char16* url, int url_len, Parsed* parsed) {
+>   DoParseFileSystemURL(url, url_len, parsed);
+> }
+> 
+> void ParseMailtoURL(const char* url, int url_len, Parsed* parsed) {
+>   DoParseMailtoURL(url, url_len, parsed);
+> }
+> 
+> void ParseMailtoURL(const base::char16* url, int url_len, Parsed* parsed) {
+>   DoParseMailtoURL(url, url_len, parsed);
+> }
+diff -r third_party/chromium/url/third_party/mozilla/url_parse.h ../chromium/url/third_party/mozilla/url_parse.h
+258,261c258,261
+< // COMPONENT_EXPORT(URL)
+< // void ParseFileSystemURL(const char* url, int url_len, Parsed* parsed);
+< // COMPONENT_EXPORT(URL)
+< // void ParseFileSystemURL(const base::char16* url, int url_len, Parsed* parsed);
+---
+> COMPONENT_EXPORT(URL)
+> void ParseFileSystemURL(const char* url, int url_len, Parsed* parsed);
+> COMPONENT_EXPORT(URL)
+> void ParseFileSystemURL(const base::char16* url, int url_len, Parsed* parsed);
+264,267c264,267
+< // COMPONENT_EXPORT(URL)
+< // void ParseMailtoURL(const char* url, int url_len, Parsed* parsed);
+< // COMPONENT_EXPORT(URL)
+< // void ParseMailtoURL(const base::char16* url, int url_len, Parsed* parsed);
+---
+> COMPONENT_EXPORT(URL)
+> void ParseMailtoURL(const char* url, int url_len, Parsed* parsed);
+> COMPONENT_EXPORT(URL)
+> void ParseMailtoURL(const base::char16* url, int url_len, Parsed* parsed);
+Only in ../chromium/url: url_canon_etc.cc
+Only in ../chromium/url: url_canon_filesystemurl.cc
+Only in ../chromium/url: url_canon_fileurl.cc
+Only in ../chromium/url: url_canon_host.cc
+Only in ../chromium/url: url_canon_icu.cc
+Only in ../chromium/url: url_canon_icu.h
+Only in ../chromium/url: url_canon_icu_unittest.cc
+Only in ../chromium/url: url_canon_internal_file.h
+Only in ../chromium/url: url_canon_mailtourl.cc
+Only in ../chromium/url: url_canon_path.cc
+Only in ../chromium/url: url_canon_pathurl.cc
+Only in ../chromium/url: url_canon_query.cc
+Only in ../chromium/url: url_canon_relative.cc
+Only in ../chromium/url: url_canon_stdurl.cc
+Only in ../chromium/url: url_canon_unittest.cc
+Only in third_party/chromium/url: url.diff
+Only in ../chromium/url: url_idna_icu_alternatives_android.cc
+Only in ../chromium/url: url_idna_icu_alternatives_ios.mm
+Only in ../chromium/url: url_idna_icu.cc
+diff -r third_party/chromium/url/url_parse_unittest.cc ../chromium/url/url_parse_unittest.cc
+599c599
+< /*
+---
+> 
+688c688
+< */
+---
+> 
+Only in ../chromium/url: url_test_utils.h
+Only in ../chromium/url: url_util.cc
+Only in ../chromium/url: url_util.h
+Only in ../chromium/url: url_util_internal.h
+Only in ../chromium/url: url_util_unittest.cc

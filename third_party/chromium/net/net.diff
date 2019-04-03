@@ -1,0 +1,2637 @@
+Only in ../chromium/net: android
+Only in ../chromium/net/base: address_list.cc
+Only in ../chromium/net/base: address_list.h
+Only in ../chromium/net/base: address_list_unittest.cc
+diff -r third_party/chromium/net/base/address_tracker_linux.cc ../chromium/net/base/address_tracker_linux.cc
+19d18
+< #include "base/threading/thread_restrictions.h"
+Only in ../chromium/net/base: auth.cc
+Only in ../chromium/net/base: auth.h
+Only in ../chromium/net/base: backoff_entry.cc
+Only in ../chromium/net/base: backoff_entry.h
+Only in ../chromium/net/base: backoff_entry_serializer.cc
+Only in ../chromium/net/base: backoff_entry_serializer.h
+Only in ../chromium/net/base: backoff_entry_serializer_unittest.cc
+Only in ../chromium/net/base: backoff_entry_unittest.cc
+Only in ../chromium/net/base: cache_type.h
+Only in ../chromium/net/base: chunked_upload_data_stream.cc
+Only in ../chromium/net/base: chunked_upload_data_stream.h
+Only in ../chromium/net/base: chunked_upload_data_stream_unittest.cc
+Only in ../chromium/net/base: data_url.cc
+Only in ../chromium/net/base: data_url.h
+Only in ../chromium/net/base: data_url_unittest.cc
+Only in ../chromium/net/base: DEPS
+Only in ../chromium/net/base: directory_lister.cc
+Only in ../chromium/net/base: directory_lister.h
+Only in ../chromium/net/base: directory_lister_unittest.cc
+Only in ../chromium/net/base: directory_listing.cc
+Only in ../chromium/net/base: directory_listing.h
+Only in ../chromium/net/base: directory_listing_unittest.cc
+Only in ../chromium/net/base: dir_header.html
+Only in ../chromium/net/base: elements_upload_data_stream.cc
+Only in ../chromium/net/base: elements_upload_data_stream.h
+Only in ../chromium/net/base: elements_upload_data_stream_unittest.cc
+Only in ../chromium/net/base: escape.cc
+Only in ../chromium/net/base: escape.h
+Only in ../chromium/net/base: escape_unittest.cc
+Only in ../chromium/net/base: expiring_cache.h
+Only in ../chromium/net/base: expiring_cache_unittest.cc
+Only in ../chromium/net/base: features.cc
+Only in ../chromium/net/base: features.h
+Only in ../chromium/net/base: filename_util.cc
+Only in ../chromium/net/base: filename_util.h
+Only in ../chromium/net/base: filename_util_icu.cc
+Only in ../chromium/net/base: filename_util_internal.cc
+Only in ../chromium/net/base: filename_util_internal.h
+Only in ../chromium/net/base: filename_util_unittest.cc
+Only in ../chromium/net/base: file_stream.cc
+Only in ../chromium/net/base: file_stream_context.cc
+Only in ../chromium/net/base: file_stream_context.h
+Only in ../chromium/net/base: file_stream_context_posix.cc
+Only in ../chromium/net/base: file_stream_context_win.cc
+Only in ../chromium/net/base: file_stream.h
+Only in ../chromium/net/base: file_stream_unittest.cc
+Only in ../chromium/net/base: fuzzer_test_support.cc
+Only in ../chromium/net/base: hash_value.cc
+Only in ../chromium/net/base: hash_value.h
+Only in ../chromium/net/base: hex_utils.cc
+Only in ../chromium/net/base: hex_utils.h
+Only in ../chromium/net/base: hex_utils_test.cc
+Only in ../chromium/net/base: host_mapping_rules.cc
+Only in ../chromium/net/base: host_mapping_rules.h
+Only in ../chromium/net/base: host_mapping_rules_unittest.cc
+Only in ../chromium/net/base: host_port_pair.cc
+Only in ../chromium/net/base: host_port_pair.h
+Only in ../chromium/net/base: host_port_pair_unittest.cc
+Only in ../chromium/net/base: interval.h
+Only in ../chromium/net/base: interval_set.h
+Only in ../chromium/net/base: interval_set_test.cc
+Only in ../chromium/net/base: interval_test.cc
+diff -r third_party/chromium/net/base/ip_address.cc ../chromium/net/base/ip_address.cc
+15a16
+> #include "url/gurl.h"
+17d17
+< #include "url/url_canon_stdstring.h"
+Only in ../chromium/net/base: ip_pattern.cc
+Only in ../chromium/net/base: ip_pattern.h
+Only in ../chromium/net/base: ip_pattern_unittest.cc
+Only in ../chromium/net/base: layered_network_delegate.cc
+Only in ../chromium/net/base: layered_network_delegate.h
+Only in ../chromium/net/base: layered_network_delegate_unittest.cc
+Only in ../chromium/net/base: linked_hash_map.h
+Only in ../chromium/net/base: load_flags.h
+Only in ../chromium/net/base: load_flags_list.h
+Only in ../chromium/net/base: load_states.h
+Only in ../chromium/net/base: load_states_list.h
+Only in ../chromium/net/base: load_timing_info.cc
+Only in ../chromium/net/base: load_timing_info.h
+Only in ../chromium/net/base: load_timing_info_test_util.cc
+Only in ../chromium/net/base: load_timing_info_test_util.h
+Only in ../chromium/net/base: logging_network_change_observer.cc
+Only in ../chromium/net/base: logging_network_change_observer.h
+Only in ../chromium/net/base: lookup_string_in_fixed_set.cc
+Only in ../chromium/net/base: lookup_string_in_fixed_set.h
+Only in ../chromium/net/base: lookup_string_in_fixed_set_unittest.cc
+Only in ../chromium/net/base: mac
+Only in ../chromium/net/base: mime_sniffer.cc
+Only in ../chromium/net/base: mime_sniffer_fuzzer.cc
+Only in ../chromium/net/base: mime_sniffer.h
+Only in ../chromium/net/base: mime_sniffer_perftest.cc
+Only in ../chromium/net/base: mime_sniffer_unittest.cc
+Only in ../chromium/net/base: mime_util.cc
+Only in ../chromium/net/base: mime_util.h
+Only in ../chromium/net/base: mime_util_unittest.cc
+Only in ../chromium/net/base: mock_file_stream.cc
+Only in ../chromium/net/base: mock_file_stream.h
+Only in ../chromium/net/base: mock_network_change_notifier.cc
+Only in ../chromium/net/base: mock_network_change_notifier.h
+Only in ../chromium/net/base: net_error_details.h
+diff -r third_party/chromium/net/base/net_errors.cc ../chromium/net/base/net_errors.cc
+7c7
+< // #include "net/third_party/quic/core/quic_error_codes.h"
+---
+> #include "net/third_party/quic/core/quic_error_codes.h"
+16,20c16,20
+<   // if (error == ERR_QUIC_PROTOCOL_ERROR && extended_error_code != 0) {
+<   //   return std::string("net::ERR_QUIC_PROTOCOL_ERROR.") +
+<   //          QuicErrorCodeToString(
+<   //              static_cast<quic::QuicErrorCode>(extended_error_code));
+<   // }
+---
+>   if (error == ERR_QUIC_PROTOCOL_ERROR && extended_error_code != 0) {
+>     return std::string("net::ERR_QUIC_PROTOCOL_ERROR.") +
+>            QuicErrorCodeToString(
+>                static_cast<quic::QuicErrorCode>(extended_error_code));
+>   }
+Only in ../chromium/net/base: net_info_source_list.h
+Only in ../chromium/net/base: net_module.cc
+Only in ../chromium/net/base: net_module.h
+Only in ../chromium/net/base: net_resources.grd
+Only in ../chromium/net/base: net_string_util.h
+Only in ../chromium/net/base: net_string_util_icu_alternatives_android.cc
+Only in ../chromium/net/base: net_string_util_icu_alternatives_ios.mm
+Only in ../chromium/net/base: net_string_util_icu.cc
+Only in ../chromium/net/base: net_string_util_unittest.cc
+diff -r third_party/chromium/net/base/network_change_notifier.cc ../chromium/net/base/network_change_notifier.cc
+6a7,11
+> #include <limits>
+> #include <unordered_set>
+> 
+> #include "base/macros.h"
+> #include "base/stl_util.h"
+7a13,17
+> #include "base/synchronization/lock.h"
+> #include "base/threading/thread_checker.h"
+> #include "base/timer/timer.h"
+> #include "build/build_config.h"
+> #include "net/base/network_change_notifier_factory.h"
+8a19,40
+> #include "net/base/url_util.h"
+> #include "net/dns/dns_config.h"
+> #include "net/url_request/url_request.h"
+> #include "url/gurl.h"
+> 
+> #if defined(OS_ANDROID)
+> #include "base/metrics/histogram_functions.h"
+> #include "base/strings/string_number_conversions.h"
+> #include "net/android/network_library.h"
+> #endif
+> 
+> #if defined(OS_WIN)
+> #include "net/base/network_change_notifier_win.h"
+> #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+> #include "net/base/network_change_notifier_linux.h"
+> #elif defined(OS_MACOSX)
+> #include "net/base/network_change_notifier_mac.h"
+> #elif defined(OS_CHROMEOS)
+> #include "net/base/network_change_notifier_posix.h"
+> #elif defined(OS_FUCHSIA)
+> #include "net/base/network_change_notifier_fuchsia.h"
+> #endif
+11a44,474
+> namespace {
+> 
+> // The actual singleton notifier.  The class contract forbids usage of the API
+> // in ways that would require us to place locks around access to this object.
+> // (The prohibition on global non-POD objects makes it tricky to do such a thing
+> // anyway.)
+> NetworkChangeNotifier* g_network_change_notifier = NULL;
+> 
+> // Class factory singleton.
+> NetworkChangeNotifierFactory* g_network_change_notifier_factory = NULL;
+> 
+> class MockNetworkChangeNotifier : public NetworkChangeNotifier {
+>  public:
+>   ConnectionType GetCurrentConnectionType() const override {
+>     return CONNECTION_UNKNOWN;
+>   }
+> };
+> 
+> }  // namespace
+> 
+> // static
+> bool NetworkChangeNotifier::test_notifications_only_ = false;
+> // static
+> const NetworkChangeNotifier::NetworkHandle
+>     NetworkChangeNotifier::kInvalidNetworkHandle = -1;
+> 
+> // NetworkState is thread safe.
+> class NetworkChangeNotifier::NetworkState {
+>  public:
+>   NetworkState() = default;
+>   ~NetworkState() = default;
+> 
+>   void GetDnsConfig(DnsConfig* config) const {
+>     base::AutoLock lock(lock_);
+>     *config = dns_config_;
+>   }
+> 
+>   bool SetDnsConfig(const DnsConfig& dns_config) {
+>     base::AutoLock lock(lock_);
+>     dns_config_ = dns_config;
+>     bool was_set = set_;
+>     set_ = true;
+>     return was_set;
+>   }
+> 
+>   void ClearDnsConfigForTesting() {
+>     base::AutoLock lock(lock_);
+>     set_ = false;
+>   }
+> 
+>  private:
+>   mutable base::Lock lock_;
+>   DnsConfig dns_config_;
+>   bool set_ = false;
+> };
+> 
+> NetworkChangeNotifier::NetworkChangeCalculatorParams::
+>     NetworkChangeCalculatorParams() = default;
+> 
+> // Calculates NetworkChange signal from IPAddress and ConnectionType signals.
+> class NetworkChangeNotifier::NetworkChangeCalculator
+>     : public ConnectionTypeObserver,
+>       public IPAddressObserver {
+>  public:
+>   explicit NetworkChangeCalculator(const NetworkChangeCalculatorParams& params)
+>       : params_(params),
+>         have_announced_(false),
+>         last_announced_connection_type_(CONNECTION_NONE),
+>         pending_connection_type_(CONNECTION_NONE) {}
+> 
+>   void Init() {
+>     DCHECK(thread_checker_.CalledOnValidThread());
+>     DCHECK(g_network_change_notifier);
+>     AddConnectionTypeObserver(this);
+>     AddIPAddressObserver(this);
+>   }
+> 
+>   ~NetworkChangeCalculator() override {
+>     DCHECK(thread_checker_.CalledOnValidThread());
+>     DCHECK(g_network_change_notifier);
+>     RemoveConnectionTypeObserver(this);
+>     RemoveIPAddressObserver(this);
+>   }
+> 
+>   // NetworkChangeNotifier::IPAddressObserver implementation.
+>   void OnIPAddressChanged() override {
+>     DCHECK(thread_checker_.CalledOnValidThread());
+>     base::TimeDelta delay = last_announced_connection_type_ == CONNECTION_NONE
+>         ? params_.ip_address_offline_delay_ : params_.ip_address_online_delay_;
+>     // Cancels any previous timer.
+>     timer_.Start(FROM_HERE, delay, this, &NetworkChangeCalculator::Notify);
+>   }
+> 
+>   // NetworkChangeNotifier::ConnectionTypeObserver implementation.
+>   void OnConnectionTypeChanged(ConnectionType type) override {
+>     DCHECK(thread_checker_.CalledOnValidThread());
+>     pending_connection_type_ = type;
+>     base::TimeDelta delay = last_announced_connection_type_ == CONNECTION_NONE
+>         ? params_.connection_type_offline_delay_
+>         : params_.connection_type_online_delay_;
+>     // Cancels any previous timer.
+>     timer_.Start(FROM_HERE, delay, this, &NetworkChangeCalculator::Notify);
+>   }
+> 
+>  private:
+>   void Notify() {
+>     DCHECK(thread_checker_.CalledOnValidThread());
+>     // Don't bother signaling about dead connections.
+>     if (have_announced_ &&
+>         (last_announced_connection_type_ == CONNECTION_NONE) &&
+>         (pending_connection_type_ == CONNECTION_NONE)) {
+>       return;
+>     }
+>     have_announced_ = true;
+>     last_announced_connection_type_ = pending_connection_type_;
+>     // Immediately before sending out an online signal, send out an offline
+>     // signal to perform any destructive actions before constructive actions.
+>     if (pending_connection_type_ != CONNECTION_NONE)
+>       NetworkChangeNotifier::NotifyObserversOfNetworkChange(CONNECTION_NONE);
+>     NetworkChangeNotifier::NotifyObserversOfNetworkChange(
+>         pending_connection_type_);
+>   }
+> 
+>   const NetworkChangeCalculatorParams params_;
+> 
+>   // Indicates if NotifyObserversOfNetworkChange has been called yet.
+>   bool have_announced_;
+>   // Last value passed to NotifyObserversOfNetworkChange.
+>   ConnectionType last_announced_connection_type_;
+>   // Value to pass to NotifyObserversOfNetworkChange when Notify is called.
+>   ConnectionType pending_connection_type_;
+>   // Used to delay notifications so duplicates can be combined.
+>   base::OneShotTimer timer_;
+> 
+>   base::ThreadChecker thread_checker_;
+> 
+>   DISALLOW_COPY_AND_ASSIGN(NetworkChangeCalculator);
+> };
+> 
+> NetworkChangeNotifier::~NetworkChangeNotifier() {
+>   network_change_calculator_.reset();
+>   DCHECK_EQ(this, g_network_change_notifier);
+>   g_network_change_notifier = NULL;
+> }
+> 
+> // static
+> NetworkChangeNotifierFactory* NetworkChangeNotifier::GetFactory() {
+>   return g_network_change_notifier_factory;
+> }
+> 
+> // static
+> void NetworkChangeNotifier::SetFactory(
+>     NetworkChangeNotifierFactory* factory) {
+>   CHECK(!g_network_change_notifier_factory);
+>   g_network_change_notifier_factory = factory;
+> }
+> 
+> // static
+> NetworkChangeNotifier* NetworkChangeNotifier::Create() {
+>   if (g_network_change_notifier_factory)
+>     return g_network_change_notifier_factory->CreateInstance();
+> 
+> #if defined(OS_WIN)
+>   NetworkChangeNotifierWin* network_change_notifier =
+>       new NetworkChangeNotifierWin();
+>   network_change_notifier->WatchForAddressChange();
+>   return network_change_notifier;
+> #elif defined(OS_ANDROID)
+>   // Android builds MUST use their own class factory.
+>   CHECK(false);
+>   return NULL;
+> #elif defined(OS_CHROMEOS)
+>   return new NetworkChangeNotifierPosix();
+> #elif defined(OS_LINUX)
+>   return new NetworkChangeNotifierLinux(std::unordered_set<std::string>());
+> #elif defined(OS_MACOSX)
+>   return new NetworkChangeNotifierMac();
+> #elif defined(OS_FUCHSIA)
+>   return new NetworkChangeNotifierFuchsia(0 /* required_features */);
+> #else
+>   NOTIMPLEMENTED();
+>   return NULL;
+> #endif
+> }
+> 
+> // static
+> bool NetworkChangeNotifier::HasNetworkChangeNotifier() {
+>   return g_network_change_notifier != nullptr;
+> }
+> 
+> // static
+> NetworkChangeNotifier::ConnectionType
+> NetworkChangeNotifier::GetConnectionType() {
+>   return g_network_change_notifier ?
+>       g_network_change_notifier->GetCurrentConnectionType() :
+>       CONNECTION_UNKNOWN;
+> }
+> 
+> // static
+> NetworkChangeNotifier::ConnectionSubtype
+> NetworkChangeNotifier::GetConnectionSubtype() {
+>   return g_network_change_notifier
+>              ? g_network_change_notifier->GetCurrentConnectionSubtype()
+>              : SUBTYPE_UNKNOWN;
+> }
+> 
+> // static
+> void NetworkChangeNotifier::GetMaxBandwidthAndConnectionType(
+>     double* max_bandwidth_mbps,
+>     ConnectionType* connection_type) {
+>   if (!g_network_change_notifier) {
+>     *connection_type = CONNECTION_UNKNOWN;
+>     *max_bandwidth_mbps =
+>         GetMaxBandwidthMbpsForConnectionSubtype(SUBTYPE_UNKNOWN);
+>     return;
+>   }
+> 
+>   g_network_change_notifier->GetCurrentMaxBandwidthAndConnectionType(
+>       max_bandwidth_mbps, connection_type);
+> }
+> 
+> // static
+> double NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(
+>     ConnectionSubtype subtype) {
+>   switch (subtype) {
+>     case SUBTYPE_GSM:
+>       return 0.01;
+>     case SUBTYPE_IDEN:
+>       return 0.064;
+>     case SUBTYPE_CDMA:
+>       return 0.115;
+>     case SUBTYPE_1XRTT:
+>       return 0.153;
+>     case SUBTYPE_GPRS:
+>       return 0.237;
+>     case SUBTYPE_EDGE:
+>       return 0.384;
+>     case SUBTYPE_UMTS:
+>       return 2.0;
+>     case SUBTYPE_EVDO_REV_0:
+>       return 2.46;
+>     case SUBTYPE_EVDO_REV_A:
+>       return 3.1;
+>     case SUBTYPE_HSPA:
+>       return 3.6;
+>     case SUBTYPE_EVDO_REV_B:
+>       return 14.7;
+>     case SUBTYPE_HSDPA:
+>       return 14.3;
+>     case SUBTYPE_HSUPA:
+>       return 14.4;
+>     case SUBTYPE_EHRPD:
+>       return 21.0;
+>     case SUBTYPE_HSPAP:
+>       return 42.0;
+>     case SUBTYPE_LTE:
+>       return 100.0;
+>     case SUBTYPE_LTE_ADVANCED:
+>       return 100.0;
+>     case SUBTYPE_BLUETOOTH_1_2:
+>       return 1.0;
+>     case SUBTYPE_BLUETOOTH_2_1:
+>       return 3.0;
+>     case SUBTYPE_BLUETOOTH_3_0:
+>       return 24.0;
+>     case SUBTYPE_BLUETOOTH_4_0:
+>       return 1.0;
+>     case SUBTYPE_ETHERNET:
+>       return 10.0;
+>     case SUBTYPE_FAST_ETHERNET:
+>       return 100.0;
+>     case SUBTYPE_GIGABIT_ETHERNET:
+>       return 1000.0;
+>     case SUBTYPE_10_GIGABIT_ETHERNET:
+>       return 10000.0;
+>     case SUBTYPE_WIFI_B:
+>       return 11.0;
+>     case SUBTYPE_WIFI_G:
+>       return 54.0;
+>     case SUBTYPE_WIFI_N:
+>       return 600.0;
+>     case SUBTYPE_WIFI_AC:
+>       return 1300.0;
+>     case SUBTYPE_WIFI_AD:
+>       return 7000.0;
+>     case SUBTYPE_UNKNOWN:
+>       return std::numeric_limits<double>::infinity();
+>     case SUBTYPE_NONE:
+>       return 0.0;
+>     case SUBTYPE_OTHER:
+>       return std::numeric_limits<double>::infinity();
+>   }
+>   NOTREACHED();
+>   return std::numeric_limits<double>::infinity();
+> }
+> 
+> // static
+> bool NetworkChangeNotifier::AreNetworkHandlesSupported() {
+>   if (g_network_change_notifier) {
+>     return g_network_change_notifier->AreNetworkHandlesCurrentlySupported();
+>   }
+>   return false;
+> }
+> 
+> // static
+> void NetworkChangeNotifier::GetConnectedNetworks(NetworkList* network_list) {
+>   DCHECK(AreNetworkHandlesSupported());
+>   if (g_network_change_notifier) {
+>     g_network_change_notifier->GetCurrentConnectedNetworks(network_list);
+>   } else {
+>     network_list->clear();
+>   }
+> }
+> 
+> // static
+> NetworkChangeNotifier::ConnectionType
+> NetworkChangeNotifier::GetNetworkConnectionType(NetworkHandle network) {
+>   DCHECK(AreNetworkHandlesSupported());
+>   return g_network_change_notifier
+>              ? g_network_change_notifier->GetCurrentNetworkConnectionType(
+>                    network)
+>              : CONNECTION_UNKNOWN;
+> }
+> 
+> // static
+> NetworkChangeNotifier::NetworkHandle
+> NetworkChangeNotifier::GetDefaultNetwork() {
+>   DCHECK(AreNetworkHandlesSupported());
+>   return g_network_change_notifier
+>              ? g_network_change_notifier->GetCurrentDefaultNetwork()
+>              : kInvalidNetworkHandle;
+> }
+> 
+> // static
+> void NetworkChangeNotifier::GetDnsConfig(DnsConfig* config) {
+>   if (!g_network_change_notifier) {
+>     *config = DnsConfig();
+>   } else {
+>     g_network_change_notifier->network_state_->GetDnsConfig(config);
+>   }
+> }
+> 
+> // static
+> const char* NetworkChangeNotifier::ConnectionTypeToString(
+>     ConnectionType type) {
+>   static const char* const kConnectionTypeNames[] = {
+>     "CONNECTION_UNKNOWN",
+>     "CONNECTION_ETHERNET",
+>     "CONNECTION_WIFI",
+>     "CONNECTION_2G",
+>     "CONNECTION_3G",
+>     "CONNECTION_4G",
+>     "CONNECTION_NONE",
+>     "CONNECTION_BLUETOOTH"
+>   };
+>   static_assert(base::size(kConnectionTypeNames) ==
+>                     NetworkChangeNotifier::CONNECTION_LAST + 1,
+>                 "ConnectionType name count should match");
+>   if (type < CONNECTION_UNKNOWN || type > CONNECTION_LAST) {
+>     NOTREACHED();
+>     return "CONNECTION_INVALID";
+>   }
+>   return kConnectionTypeNames[type];
+> }
+> 
+> // static
+> void NetworkChangeNotifier::FinalizingMetricsLogRecord() {
+>   if (!g_network_change_notifier)
+>     return;
+>   g_network_change_notifier->OnFinalizingMetricsLogRecord();
+> }
+> 
+> // static
+> void NetworkChangeNotifier::LogOperatorCodeHistogram(ConnectionType type) {
+> #if defined(OS_ANDROID)
+>   // On a connection type change to cellular, log the network operator MCC/MNC.
+>   // Log zero in other cases.
+>   unsigned mcc_mnc = 0;
+>   if (NetworkChangeNotifier::IsConnectionCellular(type)) {
+>     // Log zero if not perfectly converted.
+>     if (!base::StringToUint(android::GetTelephonyNetworkOperator(), &mcc_mnc)) {
+>       mcc_mnc = 0;
+>     }
+>   }
+>   base::UmaHistogramSparse("NCN.NetworkOperatorMCCMNC", mcc_mnc);
+> #endif
+> }
+> 
+> #if defined(OS_LINUX)
+> // static
+> const internal::AddressTrackerLinux*
+> NetworkChangeNotifier::GetAddressTracker() {
+>   return g_network_change_notifier ?
+>         g_network_change_notifier->GetAddressTrackerInternal() : NULL;
+> }
+> #endif
+> 
+> // static
+> bool NetworkChangeNotifier::IsOffline() {
+>   return GetConnectionType() == CONNECTION_NONE;
+> }
+> 
+> // static
+> bool NetworkChangeNotifier::IsConnectionCellular(ConnectionType type) {
+>   bool is_cellular = false;
+>   switch (type) {
+>     case CONNECTION_2G:
+>     case CONNECTION_3G:
+>     case CONNECTION_4G:
+>       is_cellular =  true;
+>       break;
+>     case CONNECTION_UNKNOWN:
+>     case CONNECTION_ETHERNET:
+>     case CONNECTION_WIFI:
+>     case CONNECTION_NONE:
+>     case CONNECTION_BLUETOOTH:
+>       is_cellular = false;
+>       break;
+>   }
+>   return is_cellular;
+> }
+> 
+> // static
+> NetworkChangeNotifier::ConnectionType
+> NetworkChangeNotifier::ConnectionTypeFromInterfaces() {
+>   NetworkInterfaceList interfaces;
+>   if (!GetNetworkList(&interfaces, EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES))
+>     return CONNECTION_UNKNOWN;
+>   return ConnectionTypeFromInterfaceList(interfaces);
+> }
+> 
+49c512,878
+< }  // namespace net
+\ No newline at end of file
+---
+> // static
+> NetworkChangeNotifier* NetworkChangeNotifier::CreateMock() {
+>   return new MockNetworkChangeNotifier();
+> }
+> 
+> void NetworkChangeNotifier::AddIPAddressObserver(IPAddressObserver* observer) {
+>   if (g_network_change_notifier)
+>     g_network_change_notifier->ip_address_observer_list_->AddObserver(observer);
+> }
+> 
+> void NetworkChangeNotifier::AddConnectionTypeObserver(
+>     ConnectionTypeObserver* observer) {
+>   if (g_network_change_notifier) {
+>     g_network_change_notifier->connection_type_observer_list_->AddObserver(
+>         observer);
+>   }
+> }
+> 
+> void NetworkChangeNotifier::AddDNSObserver(DNSObserver* observer) {
+>   if (g_network_change_notifier) {
+>     g_network_change_notifier->resolver_state_observer_list_->AddObserver(
+>         observer);
+>   }
+> }
+> 
+> void NetworkChangeNotifier::AddNetworkChangeObserver(
+>     NetworkChangeObserver* observer) {
+>   if (g_network_change_notifier) {
+>     g_network_change_notifier->network_change_observer_list_->AddObserver(
+>         observer);
+>   }
+> }
+> 
+> void NetworkChangeNotifier::AddMaxBandwidthObserver(
+>     MaxBandwidthObserver* observer) {
+>   if (g_network_change_notifier) {
+>     g_network_change_notifier->max_bandwidth_observer_list_->AddObserver(
+>         observer);
+>   }
+> }
+> 
+> void NetworkChangeNotifier::AddNetworkObserver(NetworkObserver* observer) {
+>   DCHECK(AreNetworkHandlesSupported());
+>   if (g_network_change_notifier) {
+>     g_network_change_notifier->network_observer_list_->AddObserver(observer);
+>   }
+> }
+> 
+> void NetworkChangeNotifier::RemoveIPAddressObserver(
+>     IPAddressObserver* observer) {
+>   if (g_network_change_notifier) {
+>     g_network_change_notifier->ip_address_observer_list_->RemoveObserver(
+>         observer);
+>   }
+> }
+> 
+> void NetworkChangeNotifier::RemoveConnectionTypeObserver(
+>     ConnectionTypeObserver* observer) {
+>   if (g_network_change_notifier) {
+>     g_network_change_notifier->connection_type_observer_list_->RemoveObserver(
+>         observer);
+>   }
+> }
+> 
+> void NetworkChangeNotifier::RemoveDNSObserver(DNSObserver* observer) {
+>   if (g_network_change_notifier) {
+>     g_network_change_notifier->resolver_state_observer_list_->RemoveObserver(
+>         observer);
+>   }
+> }
+> 
+> void NetworkChangeNotifier::RemoveNetworkChangeObserver(
+>     NetworkChangeObserver* observer) {
+>   if (g_network_change_notifier) {
+>     g_network_change_notifier->network_change_observer_list_->RemoveObserver(
+>         observer);
+>   }
+> }
+> 
+> void NetworkChangeNotifier::RemoveMaxBandwidthObserver(
+>     MaxBandwidthObserver* observer) {
+>   if (g_network_change_notifier) {
+>     g_network_change_notifier->max_bandwidth_observer_list_->RemoveObserver(
+>         observer);
+>   }
+> }
+> 
+> void NetworkChangeNotifier::RemoveNetworkObserver(NetworkObserver* observer) {
+>   DCHECK(AreNetworkHandlesSupported());
+>   if (g_network_change_notifier) {
+>     g_network_change_notifier->network_observer_list_->RemoveObserver(observer);
+>   }
+> }
+> 
+> // static
+> void NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests() {
+>   if (g_network_change_notifier)
+>     g_network_change_notifier->NotifyObserversOfIPAddressChangeImpl();
+> }
+> 
+> // static
+> void NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
+>     ConnectionType type) {
+>   if (g_network_change_notifier)
+>     g_network_change_notifier->NotifyObserversOfConnectionTypeChangeImpl(type);
+> }
+> 
+> // static
+> void NetworkChangeNotifier::NotifyObserversOfDNSChangeForTests() {
+>   if (g_network_change_notifier)
+>     g_network_change_notifier->NotifyObserversOfDNSChangeImpl();
+> }
+> 
+> // static
+> void NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+>     ConnectionType type) {
+>   if (g_network_change_notifier)
+>     g_network_change_notifier->NotifyObserversOfNetworkChangeImpl(type);
+> }
+> 
+> // static
+> void NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadForTests() {
+>   if (g_network_change_notifier)
+>     g_network_change_notifier->NotifyObserversOfInitialDNSConfigReadImpl();
+> }
+> 
+> // static
+> void NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChangeForTests(
+>     double max_bandwidth_mbps,
+>     ConnectionType type) {
+>   if (g_network_change_notifier) {
+>     g_network_change_notifier->NotifyObserversOfMaxBandwidthChangeImpl(
+>         max_bandwidth_mbps, type);
+>   }
+> }
+> 
+> // static
+> void NetworkChangeNotifier::SetTestNotificationsOnly(bool test_only) {
+>   DCHECK(!g_network_change_notifier);
+>   NetworkChangeNotifier::test_notifications_only_ = test_only;
+> }
+> 
+> NetworkChangeNotifier::NetworkChangeNotifier(
+>     const NetworkChangeCalculatorParams& params
+>     /*= NetworkChangeCalculatorParams()*/)
+>     : ip_address_observer_list_(
+>           new base::ObserverListThreadSafe<IPAddressObserver>(
+>               base::ObserverListPolicy::EXISTING_ONLY)),
+>       connection_type_observer_list_(
+>           new base::ObserverListThreadSafe<ConnectionTypeObserver>(
+>               base::ObserverListPolicy::EXISTING_ONLY)),
+>       resolver_state_observer_list_(
+>           new base::ObserverListThreadSafe<DNSObserver>(
+>               base::ObserverListPolicy::EXISTING_ONLY)),
+>       network_change_observer_list_(
+>           new base::ObserverListThreadSafe<NetworkChangeObserver>(
+>               base::ObserverListPolicy::EXISTING_ONLY)),
+>       max_bandwidth_observer_list_(
+>           new base::ObserverListThreadSafe<MaxBandwidthObserver>(
+>               base::ObserverListPolicy::EXISTING_ONLY)),
+>       network_observer_list_(new base::ObserverListThreadSafe<NetworkObserver>(
+>           base::ObserverListPolicy::EXISTING_ONLY)),
+>       network_state_(new NetworkState()),
+>       network_change_calculator_(new NetworkChangeCalculator(params)) {
+>   DCHECK(!g_network_change_notifier);
+>   g_network_change_notifier = this;
+>   network_change_calculator_->Init();
+> }
+> 
+> #if defined(OS_LINUX)
+> const internal::AddressTrackerLinux*
+> NetworkChangeNotifier::GetAddressTrackerInternal() const {
+>   return NULL;
+> }
+> #endif
+> 
+> NetworkChangeNotifier::ConnectionSubtype
+> NetworkChangeNotifier::GetCurrentConnectionSubtype() const {
+>   return SUBTYPE_UNKNOWN;
+> }
+> 
+> void NetworkChangeNotifier::GetCurrentMaxBandwidthAndConnectionType(
+>     double* max_bandwidth_mbps,
+>     ConnectionType* connection_type) const {
+>   // This default implementation conforms to the NetInfo V3 specification but
+>   // should be overridden to provide specific bandwidth data based on the
+>   // platform.
+>   *connection_type = GetCurrentConnectionType();
+>   *max_bandwidth_mbps =
+>       *connection_type == CONNECTION_NONE
+>           ? GetMaxBandwidthMbpsForConnectionSubtype(SUBTYPE_NONE)
+>           : GetMaxBandwidthMbpsForConnectionSubtype(SUBTYPE_UNKNOWN);
+> }
+> 
+> bool NetworkChangeNotifier::AreNetworkHandlesCurrentlySupported() const {
+>   return false;
+> }
+> 
+> void NetworkChangeNotifier::GetCurrentConnectedNetworks(
+>     NetworkList* network_list) const {
+>   network_list->clear();
+> }
+> 
+> NetworkChangeNotifier::ConnectionType
+> NetworkChangeNotifier::GetCurrentNetworkConnectionType(
+>     NetworkHandle network) const {
+>   return CONNECTION_UNKNOWN;
+> }
+> 
+> NetworkChangeNotifier::NetworkHandle
+> NetworkChangeNotifier::GetCurrentDefaultNetwork() const {
+>   return kInvalidNetworkHandle;
+> }
+> 
+> // static
+> void NetworkChangeNotifier::NotifyObserversOfIPAddressChange() {
+>   if (g_network_change_notifier &&
+>       !NetworkChangeNotifier::test_notifications_only_) {
+>     g_network_change_notifier->NotifyObserversOfIPAddressChangeImpl();
+>   }
+> }
+> 
+> // static
+> void NetworkChangeNotifier::NotifyObserversOfConnectionTypeChange() {
+>   if (g_network_change_notifier &&
+>       !NetworkChangeNotifier::test_notifications_only_) {
+>     g_network_change_notifier->NotifyObserversOfConnectionTypeChangeImpl(
+>         GetConnectionType());
+>   }
+> }
+> 
+> // static
+> void NetworkChangeNotifier::NotifyObserversOfNetworkChange(
+>     ConnectionType type) {
+>   if (g_network_change_notifier &&
+>       !NetworkChangeNotifier::test_notifications_only_) {
+>     g_network_change_notifier->NotifyObserversOfNetworkChangeImpl(type);
+>   }
+> }
+> 
+> // static
+> void NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChange(
+>     double max_bandwidth_mbps,
+>     ConnectionType type) {
+>   if (g_network_change_notifier &&
+>       !NetworkChangeNotifier::test_notifications_only_) {
+>     g_network_change_notifier->NotifyObserversOfMaxBandwidthChangeImpl(
+>         max_bandwidth_mbps, type);
+>   }
+> }
+> 
+> // static
+> void NetworkChangeNotifier::NotifyObserversOfDNSChange() {
+>   if (g_network_change_notifier &&
+>       !NetworkChangeNotifier::test_notifications_only_) {
+>     g_network_change_notifier->NotifyObserversOfDNSChangeImpl();
+>   }
+> }
+> 
+> // static
+> void NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigRead() {
+>   if (g_network_change_notifier &&
+>       !NetworkChangeNotifier::test_notifications_only_) {
+>     g_network_change_notifier->NotifyObserversOfInitialDNSConfigReadImpl();
+>   }
+> }
+> 
+> // static
+> void NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
+>     NetworkChangeType type,
+>     NetworkHandle network) {
+>   if (g_network_change_notifier &&
+>       !NetworkChangeNotifier::test_notifications_only_) {
+>     g_network_change_notifier->NotifyObserversOfSpecificNetworkChangeImpl(
+>         type, network);
+>   }
+> }
+> 
+> // static
+> void NetworkChangeNotifier::SetDnsConfig(const DnsConfig& config) {
+>   if (!g_network_change_notifier)
+>     return;
+>   if (g_network_change_notifier->network_state_->SetDnsConfig(config)) {
+>     NotifyObserversOfDNSChange();
+>   } else {
+>     NotifyObserversOfInitialDNSConfigRead();
+>   }
+> }
+> 
+> void NetworkChangeNotifier::ClearDnsConfigForTesting() {
+>   if (!g_network_change_notifier)
+>     return;
+>   g_network_change_notifier->network_state_->ClearDnsConfigForTesting();
+> }
+> 
+> void NetworkChangeNotifier::NotifyObserversOfIPAddressChangeImpl() {
+>   ip_address_observer_list_->Notify(FROM_HERE,
+>                                     &IPAddressObserver::OnIPAddressChanged);
+> }
+> 
+> void NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeImpl(
+>     ConnectionType type) {
+>   connection_type_observer_list_->Notify(
+>       FROM_HERE, &ConnectionTypeObserver::OnConnectionTypeChanged, type);
+> }
+> 
+> void NetworkChangeNotifier::NotifyObserversOfNetworkChangeImpl(
+>     ConnectionType type) {
+>   network_change_observer_list_->Notify(
+>       FROM_HERE, &NetworkChangeObserver::OnNetworkChanged, type);
+> }
+> 
+> void NetworkChangeNotifier::NotifyObserversOfDNSChangeImpl() {
+>   resolver_state_observer_list_->Notify(FROM_HERE, &DNSObserver::OnDNSChanged);
+> }
+> 
+> void NetworkChangeNotifier::NotifyObserversOfInitialDNSConfigReadImpl() {
+>   resolver_state_observer_list_->Notify(FROM_HERE,
+>                                         &DNSObserver::OnInitialDNSConfigRead);
+> }
+> 
+> void NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChangeImpl(
+>     double max_bandwidth_mbps,
+>     ConnectionType type) {
+>   max_bandwidth_observer_list_->Notify(
+>       FROM_HERE, &MaxBandwidthObserver::OnMaxBandwidthChanged,
+>       max_bandwidth_mbps, type);
+> }
+> 
+> void NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChangeImpl(
+>     NetworkChangeType type,
+>     NetworkHandle network) {
+>   switch (type) {
+>     case CONNECTED:
+>       network_observer_list_->Notify(
+>           FROM_HERE, &NetworkObserver::OnNetworkConnected, network);
+>       break;
+>     case DISCONNECTED:
+>       network_observer_list_->Notify(
+>           FROM_HERE, &NetworkObserver::OnNetworkDisconnected, network);
+>       break;
+>     case SOON_TO_DISCONNECT:
+>       network_observer_list_->Notify(
+>           FROM_HERE, &NetworkObserver::OnNetworkSoonToDisconnect, network);
+>       break;
+>     case MADE_DEFAULT:
+>       network_observer_list_->Notify(
+>           FROM_HERE, &NetworkObserver::OnNetworkMadeDefault, network);
+>       break;
+>   }
+> }
+> 
+> NetworkChangeNotifier::DisableForTest::DisableForTest()
+>     : network_change_notifier_(g_network_change_notifier) {
+>   DCHECK(g_network_change_notifier);
+>   g_network_change_notifier = NULL;
+> }
+> 
+> NetworkChangeNotifier::DisableForTest::~DisableForTest() {
+>   DCHECK(!g_network_change_notifier);
+>   g_network_change_notifier = network_change_notifier_;
+> }
+> 
+> void NetworkChangeNotifier::DNSObserver::OnInitialDNSConfigRead() {
+> }
+> 
+> }  // namespace net
+Only in ../chromium/net/base: network_change_notifier_factory.h
+Only in ../chromium/net/base: network_change_notifier_fuchsia.cc
+Only in ../chromium/net/base: network_change_notifier_fuchsia.h
+Only in ../chromium/net/base: network_change_notifier_fuchsia_unittest.cc
+diff -r third_party/chromium/net/base/network_change_notifier.h ../chromium/net/base/network_change_notifier.h
+13a14,15
+> #include "base/observer_list_threadsafe.h"
+> #include "base/time/time.h"
+17a20,21
+> struct DnsConfig;
+> class NetworkChangeNotifierFactory;
+20a25,30
+> #if defined(OS_LINUX)
+> namespace internal {
+> class AddressTrackerLinux;
+> }
+> #endif
+> 
+48a59,372
+>   // This is the NetInfo v3 set of connection technologies as seen in
+>   // http://w3c.github.io/netinfo/. This enum is duplicated in histograms.xml
+>   // so be sure to change both at once. Additionally, since this enum is used in
+>   // a UMA histogram, it should not be re-ordered and any new values should be
+>   // added to the end.
+>   //
+>   // A Java counterpart will be generated for this enum.
+>   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.net
+>   enum ConnectionSubtype {
+>     SUBTYPE_UNKNOWN = 0,
+>     SUBTYPE_NONE,
+>     SUBTYPE_OTHER,
+>     SUBTYPE_GSM,
+>     SUBTYPE_IDEN,
+>     SUBTYPE_CDMA,
+>     SUBTYPE_1XRTT,
+>     SUBTYPE_GPRS,
+>     SUBTYPE_EDGE,
+>     SUBTYPE_UMTS,
+>     SUBTYPE_EVDO_REV_0,
+>     SUBTYPE_EVDO_REV_A,
+>     SUBTYPE_HSPA,
+>     SUBTYPE_EVDO_REV_B,
+>     SUBTYPE_HSDPA,
+>     SUBTYPE_HSUPA,
+>     SUBTYPE_EHRPD,
+>     SUBTYPE_HSPAP,
+>     SUBTYPE_LTE,
+>     SUBTYPE_LTE_ADVANCED,
+>     SUBTYPE_BLUETOOTH_1_2,
+>     SUBTYPE_BLUETOOTH_2_1,
+>     SUBTYPE_BLUETOOTH_3_0,
+>     SUBTYPE_BLUETOOTH_4_0,
+>     SUBTYPE_ETHERNET,
+>     SUBTYPE_FAST_ETHERNET,
+>     SUBTYPE_GIGABIT_ETHERNET,
+>     SUBTYPE_10_GIGABIT_ETHERNET,
+>     SUBTYPE_WIFI_B,
+>     SUBTYPE_WIFI_G,
+>     SUBTYPE_WIFI_N,
+>     SUBTYPE_WIFI_AC,
+>     SUBTYPE_WIFI_AD,
+>     SUBTYPE_LAST = SUBTYPE_WIFI_AD
+>   };
+> 
+>   // DEPRECATED. Please use NetworkChangeObserver instead. crbug.com/754695.
+>   class NET_EXPORT IPAddressObserver {
+>    public:
+>     // Will be called when the IP address of the primary interface changes.
+>     // This includes when the primary interface itself changes.
+>     virtual void OnIPAddressChanged() = 0;
+> 
+>    protected:
+>     IPAddressObserver() {}
+>     virtual ~IPAddressObserver() {}
+> 
+>    private:
+>     DISALLOW_COPY_AND_ASSIGN(IPAddressObserver);
+>   };
+> 
+>   // DEPRECATED. Please use NetworkChangeObserver instead. crbug.com/754695.
+>   class NET_EXPORT ConnectionTypeObserver {
+>    public:
+>     // Will be called when the connection type of the system has changed.
+>     // See NetworkChangeNotifier::GetConnectionType() for important caveats
+>     // about the unreliability of using this signal to infer the ability to
+>     // reach remote sites.
+>     virtual void OnConnectionTypeChanged(ConnectionType type) = 0;
+> 
+>    protected:
+>     ConnectionTypeObserver() {}
+>     virtual ~ConnectionTypeObserver() {}
+> 
+>    private:
+>     DISALLOW_COPY_AND_ASSIGN(ConnectionTypeObserver);
+>   };
+> 
+>   class NET_EXPORT DNSObserver {
+>    public:
+>     // Will be called when the DNS settings of the system may have changed.
+>     // Use GetDnsConfig to obtain the current settings.
+>     virtual void OnDNSChanged() = 0;
+>     // Will be called when DNS settings of the system have been loaded.
+>     // Use GetDnsConfig to obtain the current settings.
+>     // NOTE(pauljensen): This will not be called if the initial DNS config
+>     // has already been read before this observer is registered.
+>     // Determining if a DNS config has already been read can be done by
+>     // calling GetDnsConfig() after registering an observer, and seeing if
+>     // the DnsConfig's IsValid() returns true.
+>     virtual void OnInitialDNSConfigRead();
+> 
+>    protected:
+>     DNSObserver() {}
+>     virtual ~DNSObserver() {}
+> 
+>    private:
+>     DISALLOW_COPY_AND_ASSIGN(DNSObserver);
+>   };
+> 
+>   class NET_EXPORT NetworkChangeObserver {
+>    public:
+>     // OnNetworkChanged will be called when a change occurs to the host
+>     // computer's hardware or software that affects the route network packets
+>     // take to any network server. Some examples:
+>     //   1. A network connection becoming available or going away. For example
+>     //      plugging or unplugging an Ethernet cable, WiFi or cellular modem
+>     //      connecting or disconnecting from a network, or a VPN tunnel being
+>     //      established or taken down.
+>     //   2. An active network connection's IP address changes.
+>     //   3. A change to the local IP routing tables.
+>     // The signal shall only be produced when the change is complete.  For
+>     // example if a new network connection has become available, only give the
+>     // signal once we think the O/S has finished establishing the connection
+>     // (i.e. DHCP is done) to the point where the new connection is usable.
+>     // The signal shall not be produced spuriously as it will be triggering some
+>     // expensive operations, like socket pools closing all connections and
+>     // sockets and then re-establishing them.
+>     // |type| indicates the type of the active primary network connection after
+>     // the change.  Observers performing "constructive" activities like trying
+>     // to establish a connection to a server should only do so when
+>     // |type != CONNECTION_NONE|.  Observers performing "destructive" activities
+>     // like resetting already established server connections should only do so
+>     // when |type == CONNECTION_NONE|.  OnNetworkChanged will always be called
+>     // with CONNECTION_NONE immediately prior to being called with an online
+>     // state; this is done to make sure that destructive actions take place
+>     // prior to constructive actions.
+>     virtual void OnNetworkChanged(ConnectionType type) = 0;
+> 
+>    protected:
+>     NetworkChangeObserver() {}
+>     virtual ~NetworkChangeObserver() {}
+> 
+>    private:
+>     DISALLOW_COPY_AND_ASSIGN(NetworkChangeObserver);
+>   };
+> 
+>   class NET_EXPORT MaxBandwidthObserver {
+>    public:
+>     // Called when a change occurs to the network's maximum bandwidth as
+>     // defined in http://w3c.github.io/netinfo/. Also called on type change,
+>     // even if the maximum bandwidth doesn't change. See the documentation of
+>     // GetMaxBanwidthAndConnectionType for what to expect for the values of
+>     // |max_bandwidth_mbps|.
+>     virtual void OnMaxBandwidthChanged(double max_bandwidth_mbps,
+>                                        ConnectionType type) = 0;
+> 
+>    protected:
+>     MaxBandwidthObserver() {}
+>     virtual ~MaxBandwidthObserver() {}
+> 
+>    private:
+>     DISALLOW_COPY_AND_ASSIGN(MaxBandwidthObserver);
+>   };
+> 
+>   // Opaque handle for device-wide connection to a particular network. For
+>   // example an association with a particular WiFi network with a particular
+>   // SSID or a connection to particular cellular network.
+>   // The meaning of this handle is target-dependent. On Android NetworkHandles
+>   // are equivalent to:
+>   //   On Lollipop, the framework's concept of NetIDs (e.g. Network.netId), and
+>   //   On Marshmallow and newer releases, network handles
+>   //           (e.g. Network.getNetworkHandle()).
+>   typedef int64_t NetworkHandle;
+> 
+>   // A list of networks.
+>   typedef std::vector<NetworkHandle> NetworkList;
+> 
+>   // An interface that when implemented and added via AddNeworkObserver(),
+>   // provides notifications when networks come and go.
+>   // Only implemented for Android (Lollipop and newer), no callbacks issued when
+>   // unimplemented.
+>   class NET_EXPORT NetworkObserver {
+>    public:
+>     // Called when device connects to |network|. For example device associates
+>     // with a WiFi access point. This does not imply the network has Internet
+>     // access as it may well be behind a captive portal.
+>     virtual void OnNetworkConnected(NetworkHandle network) = 0;
+>     // Called when device disconnects from |network|.
+>     virtual void OnNetworkDisconnected(NetworkHandle network) = 0;
+>     // Called when device determines the connection to |network| is no longer
+>     // preferred, for example when a device transitions from cellular to WiFi
+>     // it might deem the cellular connection no longer preferred. The device
+>     // will disconnect from |network| in a period of time (30s on Android),
+>     // allowing network communications via |network| to wrap up.
+>     virtual void OnNetworkSoonToDisconnect(NetworkHandle network) = 0;
+>     // Called when |network| is made the default network for communication.
+>     virtual void OnNetworkMadeDefault(NetworkHandle network) = 0;
+> 
+>    protected:
+>     NetworkObserver() {}
+>     virtual ~NetworkObserver() {}
+> 
+>    private:
+>     DISALLOW_COPY_AND_ASSIGN(NetworkObserver);
+>   };
+> 
+>   // An invalid NetworkHandle.
+>   static const NetworkHandle kInvalidNetworkHandle;
+> 
+>   virtual ~NetworkChangeNotifier();
+> 
+>   // Returns the factory or nullptr if it is not set.
+>   static NetworkChangeNotifierFactory* GetFactory();
+> 
+>   // Replaces the default class factory instance of NetworkChangeNotifier class.
+>   // The method will take over the ownership of |factory| object.
+>   static void SetFactory(NetworkChangeNotifierFactory* factory);
+> 
+>   // Creates the process-wide, platform-specific NetworkChangeNotifier.  The
+>   // caller owns the returned pointer.  You may call this on any thread.  You
+>   // may also avoid creating this entirely (in which case nothing will be
+>   // monitored), but if you do create it, you must do so before any other
+>   // threads try to access the API below, and it must outlive all other threads
+>   // which might try to use it.
+>   static NetworkChangeNotifier* Create();
+> 
+>   // Returns whether the process-wide, platform-specific NetworkChangeNotifier
+>   // has been created.
+>   static bool HasNetworkChangeNotifier();
+> 
+>   // Returns the connection type.
+>   // A return value of |CONNECTION_NONE| is a pretty strong indicator that the
+>   // user won't be able to connect to remote sites. However, another return
+>   // value doesn't imply that the user will be able to connect to remote sites;
+>   // even if some link is up, it is uncertain whether a particular connection
+>   // attempt to a particular remote site will be successful.
+>   // The returned value only describes the first-hop connection, for example if
+>   // the device is connected via WiFi to a 4G hotspot, the returned value will
+>   // be CONNECTION_WIFI, not CONNECTION_4G.
+>   static ConnectionType GetConnectionType();
+> 
+>   // Returns the device's current default active network connection's subtype.
+>   // The returned value only describes the first-hop connection, for example if
+>   // the device is connected via WiFi to a 4G hotspot, the returned value will
+>   // reflect WiFi, not 4G. This method may return SUBTYPE_UNKNOWN even if the
+>   // connection type is known.
+>   static ConnectionSubtype GetConnectionSubtype();
+> 
+>   // Sets |max_bandwidth_mbps| to a theoretical upper limit on download
+>   // bandwidth, potentially based on underlying connection type, signal
+>   // strength, or some other signal. If the network subtype is unknown then
+>   // |max_bandwidth_mbps| is set to +Infinity and if there is no network
+>   // connection then it is set to 0.0. The circumstances in which a more
+>   // specific value is given are: when an Android device is connected to a
+>   // cellular or WiFi network, and when a ChromeOS device is connected to a
+>   // cellular network. See the NetInfo spec for the mapping of
+>   // specific subtypes to bandwidth values: http://w3c.github.io/netinfo/.
+>   // |connection_type| is set to the current active default network's connection
+>   // type.
+>   static void GetMaxBandwidthAndConnectionType(double* max_bandwidth_mbps,
+>                                                ConnectionType* connection_type);
+> 
+>   // Returns a theoretical upper limit (in Mbps) on download bandwidth given a
+>   // connection subtype. The mapping of connection type to maximum bandwidth is
+>   // provided in the NetInfo spec: http://w3c.github.io/netinfo/.
+>   static double GetMaxBandwidthMbpsForConnectionSubtype(
+>       ConnectionSubtype subtype);
+> 
+>   // Returns true if the platform supports use of APIs based on NetworkHandles.
+>   // Public methods that use NetworkHandles are GetNetworkConnectionType(),
+>   // GetNetworkConnectionType(), GetDefaultNetwork(), AddNetworkObserver(),
+>   // RemoveNetworkObserver(), and all public NetworkObserver methods.
+>   static bool AreNetworkHandlesSupported();
+> 
+>   // Sets |network_list| to a list of all networks that are currently connected.
+>   // Only implemented for Android (Lollipop and newer), leaves |network_list|
+>   // empty when unimplemented. Requires NetworkHandles support, see
+>   // AreNetworkHandlesSupported().
+>   static void GetConnectedNetworks(NetworkList* network_list);
+> 
+>   // Returns the type of connection |network| uses. Note that this may vary
+>   // slightly over time (e.g. CONNECTION_2G to CONNECTION_3G). If |network|
+>   // is no longer connected, it will return CONNECTION_UNKNOWN.
+>   // Only implemented for Android (Lollipop and newer), returns
+>   // CONNECTION_UNKNOWN when unimplemented. Requires NetworkHandles support,
+>   // see AreNetworkHandlesSupported().
+>   static ConnectionType GetNetworkConnectionType(NetworkHandle network);
+> 
+>   // Returns the device's current default network connection. This is the
+>   // network used for newly created socket communication for sockets that are
+>   // not explicitly bound to a particular network (e.g. via
+>   // DatagramClientSocket.BindToNetwork). Returns |kInvalidNetworkHandle| if
+>   // there is no default connected network.
+>   // Only implemented for Android (Lollipop and newer), returns
+>   // |kInvalidNetworkHandle| when unimplemented.
+>   // Requires NetworkHandles support, see AreNetworkHandlesSupported().
+>   static NetworkHandle GetDefaultNetwork();
+> 
+>   // Retrieve the last read DnsConfig. This could be expensive if the system has
+>   // a large HOSTS file.
+>   static void GetDnsConfig(DnsConfig* config);
+> 
+> #if defined(OS_LINUX)
+>   // Returns the AddressTrackerLinux if present.
+>   static const internal::AddressTrackerLinux* GetAddressTracker();
+> #endif
+> 
+>   // Convenience method to determine if the user is offline.
+>   // Returns true if there is currently no internet connection.
+>   //
+>   // A return value of |true| is a pretty strong indicator that the user
+>   // won't be able to connect to remote sites. However, a return value of
+>   // |false| is inconclusive; even if some link is up, it is uncertain
+>   // whether a particular connection attempt to a particular remote site
+>   // will be successfully.
+>   static bool IsOffline();
+> 
+>   // Returns true if |type| is a cellular connection.
+>   // Returns false if |type| is CONNECTION_UNKNOWN, and thus, depending on the
+>   // implementation of GetConnectionType(), it is possible that
+>   // IsConnectionCellular(GetConnectionType()) returns false even if the
+>   // current connection is cellular.
+>   static bool IsConnectionCellular(ConnectionType type);
+> 
+54a379,593
+> 
+>   // Like Create(), but for use in tests.  The mock object doesn't monitor any
+>   // events, it merely rebroadcasts notifications when requested.
+>   static NetworkChangeNotifier* CreateMock();
+> 
+>   // Registers |observer| to receive notifications of network changes.  The
+>   // thread on which this is called is the thread on which |observer| will be
+>   // called back with notifications.  This is safe to call if Create() has not
+>   // been called (as long as it doesn't race the Create() call on another
+>   // thread), in which case it will simply do nothing.
+> 
+>   // DEPRECATED. IPAddressObserver is deprecated. Please use
+>   // NetworkChangeObserver instead. crbug.com/754695.
+>   static void AddIPAddressObserver(IPAddressObserver* observer);
+>   // DEPRECATED. ConnectionTypeObserver is deprecated. Please use
+>   // NetworkChangeObserver instead. crbug.com/754695.
+>   static void AddConnectionTypeObserver(ConnectionTypeObserver* observer);
+>   static void AddDNSObserver(DNSObserver* observer);
+>   static void AddNetworkChangeObserver(NetworkChangeObserver* observer);
+>   static void AddMaxBandwidthObserver(MaxBandwidthObserver* observer);
+>   static void AddNetworkObserver(NetworkObserver* observer);
+> 
+>   // Unregisters |observer| from receiving notifications.  This must be called
+>   // on the same thread on which AddObserver() was called.  Like AddObserver(),
+>   // this is safe to call if Create() has not been called (as long as it doesn't
+>   // race the Create() call on another thread), in which case it will simply do
+>   // nothing.  Technically, it's also safe to call after the notifier object has
+>   // been destroyed, if the call doesn't race the notifier's destruction, but
+>   // there's no reason to use the API in this risky way, so don't do it.
+> 
+>   // DEPRECATED. IPAddressObserver is deprecated. Please use
+>   // NetworkChangeObserver instead. crbug.com/754695.
+>   static void RemoveIPAddressObserver(IPAddressObserver* observer);
+>   // DEPRECATED. ConnectionTypeObserver is deprecated. Please use
+>   // NetworkChangeObserver instead. crbug.com/754695.
+>   static void RemoveConnectionTypeObserver(ConnectionTypeObserver* observer);
+>   static void RemoveDNSObserver(DNSObserver* observer);
+>   static void RemoveNetworkChangeObserver(NetworkChangeObserver* observer);
+>   static void RemoveMaxBandwidthObserver(MaxBandwidthObserver* observer);
+>   static void RemoveNetworkObserver(NetworkObserver* observer);
+> 
+>   // Allow unit tests to trigger notifications.
+>   static void NotifyObserversOfIPAddressChangeForTests();
+>   static void NotifyObserversOfConnectionTypeChangeForTests(
+>       ConnectionType type);
+>   static void NotifyObserversOfDNSChangeForTests();
+>   static void NotifyObserversOfNetworkChangeForTests(ConnectionType type);
+>   static void NotifyObserversOfInitialDNSConfigReadForTests();
+>   static void NotifyObserversOfMaxBandwidthChangeForTests(
+>       double max_bandwidth_mbps,
+>       ConnectionType type);
+> 
+>   // Enable or disable notifications from the host. After setting to true, be
+>   // sure to pump the RunLoop until idle to finish any preexisting
+>   // notifications. To use this, it must must be called before a
+>   // NetworkChangeNotifier is created.
+>   static void SetTestNotificationsOnly(bool test_only);
+> 
+>   // Return a string equivalent to |type|.
+>   static const char* ConnectionTypeToString(ConnectionType type);
+> 
+>   // Invoked at the time a new user metrics log record is being finalized, on
+>   // the main thread. NCN Histograms that want to be logged once per record
+>   // should be logged in this method. Platform-specific histograms should be
+>   // logged in an overridden implementaton of OnFinalizingMetricsLogRecord.
+>   static void FinalizingMetricsLogRecord();
+> 
+>   // Log the |NCN.NetworkOperatorMCCMNC| histogram.
+>   static void LogOperatorCodeHistogram(ConnectionType type);
+> 
+>   // Allows a second NetworkChangeNotifier to be created for unit testing, so
+>   // the test suite can create a MockNetworkChangeNotifier, but platform
+>   // specific NetworkChangeNotifiers can also be created for testing.  To use,
+>   // create an DisableForTest object, and then create the new
+>   // NetworkChangeNotifier object.  The NetworkChangeNotifier must be
+>   // destroyed before the DisableForTest object, as its destruction will restore
+>   // the original NetworkChangeNotifier.
+>   class NET_EXPORT DisableForTest {
+>    public:
+>     DisableForTest();
+>     ~DisableForTest();
+> 
+>    private:
+>     // The original NetworkChangeNotifier to be restored on destruction.
+>     NetworkChangeNotifier* network_change_notifier_;
+>   };
+> 
+>  protected:
+>   // Types of network changes specified to
+>   // NotifyObserversOfSpecificNetworkChange.
+>   enum NetworkChangeType {
+>     CONNECTED,
+>     DISCONNECTED,
+>     SOON_TO_DISCONNECT,
+>     MADE_DEFAULT
+>   };
+> 
+>   // NetworkChanged signal is calculated from the IPAddressChanged and
+>   // ConnectionTypeChanged signals. Delay parameters control how long to delay
+>   // producing NetworkChanged signal after particular input signals so as to
+>   // combine duplicates.  In other words if an input signal is repeated within
+>   // the corresponding delay period, only one resulting NetworkChange signal is
+>   // produced.
+>   struct NET_EXPORT NetworkChangeCalculatorParams {
+>     NetworkChangeCalculatorParams();
+>     // Controls delay after OnIPAddressChanged when transitioning from an
+>     // offline state.
+>     base::TimeDelta ip_address_offline_delay_;
+>     // Controls delay after OnIPAddressChanged when transitioning from an
+>     // online state.
+>     base::TimeDelta ip_address_online_delay_;
+>     // Controls delay after OnConnectionTypeChanged when transitioning from an
+>     // offline state.
+>     base::TimeDelta connection_type_offline_delay_;
+>     // Controls delay after OnConnectionTypeChanged when transitioning from an
+>     // online state.
+>     base::TimeDelta connection_type_online_delay_;
+>   };
+> 
+>   explicit NetworkChangeNotifier(
+>       const NetworkChangeCalculatorParams& params =
+>           NetworkChangeCalculatorParams());
+> 
+> #if defined(OS_LINUX)
+>   // Returns the AddressTrackerLinux if present.
+>   // TODO(szym): Retrieve AddressMap from NetworkState. http://crbug.com/144212
+>   virtual const internal::AddressTrackerLinux*
+>       GetAddressTrackerInternal() const;
+> #endif
+> 
+>   // These are the actual implementations of the static queryable APIs.
+>   // See the description of the corresponding functions named without "Current".
+>   // Implementations must be thread-safe. Implementations must also be
+>   // cheap as they are called often.
+>   virtual ConnectionType GetCurrentConnectionType() const = 0;
+>   virtual ConnectionSubtype GetCurrentConnectionSubtype() const;
+>   virtual void GetCurrentMaxBandwidthAndConnectionType(
+>       double* max_bandwidth_mbps,
+>       ConnectionType* connection_type) const;
+>   virtual bool AreNetworkHandlesCurrentlySupported() const;
+>   virtual void GetCurrentConnectedNetworks(NetworkList* network_list) const;
+>   virtual ConnectionType GetCurrentNetworkConnectionType(
+>       NetworkHandle network) const;
+>   virtual NetworkHandle GetCurrentDefaultNetwork() const;
+> 
+>   // Hook that allows derived implementations to log histograms at the time a
+>   // new histogram record is being finalized.
+>   virtual void OnFinalizingMetricsLogRecord() {}
+> 
+>   // Broadcasts a notification to all registered observers.  Note that this
+>   // happens asynchronously, even for observers on the current thread, even in
+>   // tests.
+>   static void NotifyObserversOfIPAddressChange();
+>   static void NotifyObserversOfConnectionTypeChange();
+>   static void NotifyObserversOfDNSChange();
+>   static void NotifyObserversOfInitialDNSConfigRead();
+>   static void NotifyObserversOfNetworkChange(ConnectionType type);
+>   static void NotifyObserversOfMaxBandwidthChange(double max_bandwidth_mbps,
+>                                                   ConnectionType type);
+>   static void NotifyObserversOfSpecificNetworkChange(NetworkChangeType type,
+>                                                      NetworkHandle network);
+> 
+>   // Stores |config| in NetworkState and notifies observers. The first
+>   // notification will be OnInitialDNSConfigRead, and after that OnDNSChanged.
+>   static void SetDnsConfig(const DnsConfig& config);
+> 
+>   // Clears previous DnsConfig, if any, to simulate the first one being set.
+>   static void ClearDnsConfigForTesting();
+> 
+>   // Infer connection type from |GetNetworkList|. If all network interfaces
+>   // have the same type, return it, otherwise return CONNECTION_UNKNOWN.
+>   static ConnectionType ConnectionTypeFromInterfaces();
+> 
+>  private:
+>   friend class HostResolverImplDnsTest;
+>   friend class NetworkChangeNotifierAndroidTest;
+>   friend class NetworkChangeNotifierLinuxTest;
+>   friend class NetworkChangeNotifierWinTest;
+> 
+>   class NetworkState;
+>   class NetworkChangeCalculator;
+> 
+>   void NotifyObserversOfIPAddressChangeImpl();
+>   void NotifyObserversOfConnectionTypeChangeImpl(ConnectionType type);
+>   void NotifyObserversOfDNSChangeImpl();
+>   void NotifyObserversOfInitialDNSConfigReadImpl();
+>   void NotifyObserversOfNetworkChangeImpl(ConnectionType type);
+>   void NotifyObserversOfMaxBandwidthChangeImpl(double max_bandwidth_mbps,
+>                                                ConnectionType type);
+>   void NotifyObserversOfSpecificNetworkChangeImpl(NetworkChangeType type,
+>                                                   NetworkHandle network);
+> 
+>   const scoped_refptr<base::ObserverListThreadSafe<IPAddressObserver>>
+>       ip_address_observer_list_;
+>   const scoped_refptr<base::ObserverListThreadSafe<ConnectionTypeObserver>>
+>       connection_type_observer_list_;
+>   const scoped_refptr<base::ObserverListThreadSafe<DNSObserver>>
+>       resolver_state_observer_list_;
+>   const scoped_refptr<base::ObserverListThreadSafe<NetworkChangeObserver>>
+>       network_change_observer_list_;
+>   const scoped_refptr<base::ObserverListThreadSafe<MaxBandwidthObserver>>
+>       max_bandwidth_observer_list_;
+>   const scoped_refptr<base::ObserverListThreadSafe<NetworkObserver>>
+>       network_observer_list_;
+> 
+>   // The current network state. Hosts DnsConfig, exposed via GetDnsConfig.
+>   std::unique_ptr<NetworkState> network_state_;
+> 
+>   // Computes NetworkChange signal from IPAddress and ConnectionType signals.
+>   std::unique_ptr<NetworkChangeCalculator> network_change_calculator_;
+> 
+>   // Set true to disable non-test notifications (to prevent flakes in tests).
+>   static bool test_notifications_only_;
+> 
+>   DISALLOW_COPY_AND_ASSIGN(NetworkChangeNotifier);
+Only in ../chromium/net/base: network_change_notifier_linux.cc
+Only in ../chromium/net/base: network_change_notifier_linux.h
+Only in ../chromium/net/base: network_change_notifier_mac.cc
+Only in ../chromium/net/base: network_change_notifier_mac.h
+Only in ../chromium/net/base: network_change_notifier_posix.cc
+Only in ../chromium/net/base: network_change_notifier_posix.h
+Only in ../chromium/net/base: network_change_notifier_posix_unittest.cc
+Only in ../chromium/net/base: network_change_notifier_unittest.cc
+Only in ../chromium/net/base: network_change_notifier_win.cc
+Only in ../chromium/net/base: network_change_notifier_win.h
+Only in ../chromium/net/base: network_change_notifier_win_unittest.cc
+Only in ../chromium/net/base: network_config_watcher_mac.cc
+Only in ../chromium/net/base: network_config_watcher_mac.h
+Only in ../chromium/net/base: network_delegate.cc
+Only in ../chromium/net/base: network_delegate.h
+Only in ../chromium/net/base: network_delegate_impl.cc
+Only in ../chromium/net/base: network_delegate_impl.h
+diff -r third_party/chromium/net/base/network_interfaces.cc ../chromium/net/base/network_interfaces.cc
+21c21
+<     : /*type(NetworkChangeNotifier::CONNECTION_UNKNOWN),*/ prefix_length(0) {
+---
+>     : type(NetworkChangeNotifier::CONNECTION_UNKNOWN), prefix_length(0) {
+Only in ../chromium/net/base: network_interfaces_fuchsia.cc
+Only in ../chromium/net/base: network_interfaces_fuchsia.h
+diff -r third_party/chromium/net/base/network_interfaces_getifaddrs.cc ../chromium/net/base/network_interfaces_getifaddrs.cc
+11d10
+< #include <unistd.h>
+diff -r third_party/chromium/net/base/network_interfaces_linux.cc ../chromium/net/base/network_interfaces_linux.cc
+27c27
+< // #include "net/base/escape.h"
+---
+> #include "net/base/escape.h"
+31c31
+< // #include "url/gurl.h"
+---
+> #include "url/gurl.h"
+Only in ../chromium/net/base: network_interfaces_nacl.cc
+diff -r third_party/chromium/net/base/network_interfaces_win.cc ../chromium/net/base/network_interfaces_win.cc
+19c19
+< // #include "net/base/escape.h"
+---
+> #include "net/base/escape.h"
+22c22
+< // #include "url/gurl.h"
+---
+> #include "url/gurl.h"
+Only in ../chromium/net/base: network_throttle_manager_impl.cc
+Only in ../chromium/net/base: network_throttle_manager_impl.h
+Only in ../chromium/net/base: OWNERS
+Only in ../chromium/net/base: parse_data_url_fuzzer.cc
+Only in ../chromium/net/base: parse_ip_pattern_fuzzer.cc
+Only in ../chromium/net/base: parse_url_hostname_to_address_fuzzer.cc
+Only in ../chromium/net/base: platform_mime_util_fuchsia.cc
+Only in ../chromium/net/base: platform_mime_util.h
+Only in ../chromium/net/base: platform_mime_util_linux.cc
+Only in ../chromium/net/base: platform_mime_util_mac.mm
+Only in ../chromium/net/base: platform_mime_util_win.cc
+Only in ../chromium/net/base: port_util.cc
+Only in ../chromium/net/base: port_util.h
+Only in ../chromium/net/base: port_util_unittest.cc
+Only in ../chromium/net/base: prioritized_dispatcher.cc
+Only in ../chromium/net/base: prioritized_dispatcher.h
+Only in ../chromium/net/base: prioritized_dispatcher_unittest.cc
+Only in ../chromium/net/base: prioritized_task_runner.cc
+Only in ../chromium/net/base: prioritized_task_runner.h
+Only in ../chromium/net/base: prioritized_task_runner_unittest.cc
+Only in ../chromium/net/base: priority_queue.h
+Only in ../chromium/net/base: priority_queue_unittest.cc
+Only in ../chromium/net/base: privacy_mode.h
+Only in ../chromium/net/base: proxy_delegate.h
+Only in ../chromium/net/base: proxy_server.cc
+Only in ../chromium/net/base: proxy_server.h
+Only in ../chromium/net/base: proxy_server_mac.cc
+Only in ../chromium/net/base: rand_callback.h
+Only in ../chromium/net/base: registry_controlled_domains
+Only in ../chromium/net/base: request_priority.cc
+Only in ../chromium/net/base: request_priority.h
+Only in ../chromium/net/base: static_cookie_policy.cc
+Only in ../chromium/net/base: static_cookie_policy.h
+Only in ../chromium/net/base: static_cookie_policy_unittest.cc
+Only in ../chromium/net/base: test_completion_callback.cc
+Only in ../chromium/net/base: test_completion_callback.h
+Only in ../chromium/net/base: test_completion_callback_unittest.cc
+Only in ../chromium/net/base: test_data_stream.cc
+Only in ../chromium/net/base: test_data_stream.h
+Only in ../chromium/net/base: test_proxy_delegate.cc
+Only in ../chromium/net/base: test_proxy_delegate.h
+Only in ../chromium/net/base: unescape_url_component_fuzzer.cc
+Only in ../chromium/net/base: unescape_url_component_fuzzer.dict
+Only in ../chromium/net/base: upload_bytes_element_reader.cc
+Only in ../chromium/net/base: upload_bytes_element_reader.h
+Only in ../chromium/net/base: upload_bytes_element_reader_unittest.cc
+Only in ../chromium/net/base: upload_data_stream.cc
+Only in ../chromium/net/base: upload_data_stream.h
+Only in ../chromium/net/base: upload_element_reader.cc
+Only in ../chromium/net/base: upload_element_reader.h
+Only in ../chromium/net/base: upload_file_element_reader.cc
+Only in ../chromium/net/base: upload_file_element_reader.h
+Only in ../chromium/net/base: upload_file_element_reader_unittest.cc
+Only in ../chromium/net/base: upload_progress.h
+Only in ../chromium/net/base: url_util.cc
+Only in ../chromium/net/base: url_util.h
+Only in ../chromium/net/base: url_util_unittest.cc
+Only in third_party/chromium/net: BUILD
+Only in ../chromium/net: BUILD.gn
+Only in ../chromium/net: cert
+Only in ../chromium/net: cert_net
+Only in ../chromium/net: cookies
+Only in ../chromium/net: data
+Only in ../chromium/net: DEPS
+Only in ../chromium/net: der
+Only in ../chromium/net: disk_cache
+Only in ../chromium/net: dns
+Only in ../chromium/net: docs
+Only in ../chromium/net: extras
+Only in ../chromium/net: features.gni
+Only in ../chromium/net: filter
+Only in ../chromium/net: ftp
+Only in ../chromium/net: http
+Only in ../chromium/net: http2
+Only in ../chromium/net: log
+Only in third_party/chromium/net: net.bzl
+Only in third_party/chromium/net: net.diff
+Only in ../chromium/net: network_error_logging
+Only in ../chromium/net: nqe
+Only in ../chromium/net: ntlm
+Only in ../chromium/net: OWNERS
+Only in ../chromium/net: proxy_resolution
+Only in ../chromium/net: quic
+Only in ../chromium/net: README.md
+Only in ../chromium/net: reporting
+Only in ../chromium/net: server
+Only in ../chromium/net/socket: client_socket_factory.cc
+Only in ../chromium/net/socket: client_socket_factory.h
+Only in ../chromium/net/socket: client_socket_handle.cc
+Only in ../chromium/net/socket: client_socket_handle.h
+Only in ../chromium/net/socket: client_socket_pool_base.cc
+Only in ../chromium/net/socket: client_socket_pool_base.h
+Only in ../chromium/net/socket: client_socket_pool_base_unittest.cc
+Only in ../chromium/net/socket: client_socket_pool.cc
+Only in ../chromium/net/socket: client_socket_pool.h
+Only in ../chromium/net/socket: client_socket_pool_manager.cc
+Only in ../chromium/net/socket: client_socket_pool_manager.h
+Only in ../chromium/net/socket: client_socket_pool_manager_impl.cc
+Only in ../chromium/net/socket: client_socket_pool_manager_impl.h
+Only in ../chromium/net/socket: connection_attempts.h
+Only in ../chromium/net/socket: connect_job.cc
+Only in ../chromium/net/socket: connect_job.h
+Only in ../chromium/net/socket: connect_job_test_util.cc
+Only in ../chromium/net/socket: connect_job_test_util.h
+Only in ../chromium/net/socket: connect_job_unittest.cc
+Only in ../chromium/net/socket: datagram_client_socket.h
+Only in ../chromium/net/socket: datagram_server_socket.h
+Only in ../chromium/net/socket: fuzzed_datagram_client_socket.cc
+Only in ../chromium/net/socket: fuzzed_datagram_client_socket.h
+Only in ../chromium/net/socket: fuzzed_server_socket.cc
+Only in ../chromium/net/socket: fuzzed_server_socket.h
+Only in ../chromium/net/socket: fuzzed_socket.cc
+Only in ../chromium/net/socket: fuzzed_socket_factory.cc
+Only in ../chromium/net/socket: fuzzed_socket_factory.h
+Only in ../chromium/net/socket: fuzzed_socket.h
+Only in ../chromium/net/socket: mock_client_socket_pool_manager.cc
+Only in ../chromium/net/socket: mock_client_socket_pool_manager.h
+Only in ../chromium/net/socket: next_proto.cc
+Only in ../chromium/net/socket: next_proto.h
+Only in ../chromium/net/socket: OWNERS
+Only in ../chromium/net/socket: sequenced_socket_data_unittest.cc
+Only in ../chromium/net/socket: server_socket.cc
+Only in ../chromium/net/socket: server_socket.h
+Only in ../chromium/net/socket: socket_bio_adapter.cc
+Only in ../chromium/net/socket: socket_bio_adapter.h
+Only in ../chromium/net/socket: socket_bio_adapter_unittest.cc
+Only in ../chromium/net/socket: socket.cc
+Only in ../chromium/net/socket: socket.h
+Only in ../chromium/net/socket: socket_net_log_params.cc
+Only in ../chromium/net/socket: socket_net_log_params.h
+Only in ../chromium/net/socket: socket_test_util.cc
+Only in ../chromium/net/socket: socket_test_util.h
+Only in ../chromium/net/socket: socks5_client_socket.cc
+Only in ../chromium/net/socket: socks5_client_socket_fuzzer.cc
+Only in ../chromium/net/socket: socks5_client_socket.h
+Only in ../chromium/net/socket: socks5_client_socket_unittest.cc
+Only in ../chromium/net/socket: socks_client_socket.cc
+Only in ../chromium/net/socket: socks_client_socket_fuzzer.cc
+Only in ../chromium/net/socket: socks_client_socket.h
+Only in ../chromium/net/socket: socks_client_socket_pool_unittest.cc
+Only in ../chromium/net/socket: socks_client_socket_unittest.cc
+Only in ../chromium/net/socket: socks_connect_job.cc
+Only in ../chromium/net/socket: socks_connect_job.h
+Only in ../chromium/net/socket: socks_connect_job_unittest.cc
+Only in ../chromium/net/socket: ssl_client_socket.cc
+Only in ../chromium/net/socket: ssl_client_socket.h
+Only in ../chromium/net/socket: ssl_client_socket_impl.cc
+Only in ../chromium/net/socket: ssl_client_socket_impl.h
+Only in ../chromium/net/socket: ssl_client_socket_pool_unittest.cc
+Only in ../chromium/net/socket: ssl_client_socket_unittest.cc
+Only in ../chromium/net/socket: ssl_connect_job.cc
+Only in ../chromium/net/socket: ssl_connect_job.h
+Only in ../chromium/net/socket: ssl_connect_job_unittest.cc
+Only in ../chromium/net/socket: ssl_server_socket.h
+Only in ../chromium/net/socket: ssl_server_socket_impl.cc
+Only in ../chromium/net/socket: ssl_server_socket_impl.h
+Only in ../chromium/net/socket: ssl_server_socket_unittest.cc
+Only in ../chromium/net/socket: ssl_socket.h
+Only in ../chromium/net/socket: stream_socket.cc
+Only in ../chromium/net/socket: stream_socket.h
+Only in ../chromium/net/socket: tcp_client_socket.cc
+Only in ../chromium/net/socket: tcp_client_socket.h
+Only in ../chromium/net/socket: tcp_client_socket_unittest.cc
+Only in ../chromium/net/socket: tcp_server_socket.cc
+Only in ../chromium/net/socket: tcp_server_socket.h
+Only in ../chromium/net/socket: tcp_server_socket_unittest.cc
+diff -r third_party/chromium/net/socket/tcp_socket_posix.cc ../chromium/net/socket/tcp_socket_posix.cc
+26c26
+< // #include "net/base/address_list.h"
+---
+> #include "net/base/address_list.h"
+31c31
+< // #include "net/base/network_change_notifier.h"
+---
+> #include "net/base/network_change_notifier.h"
+33,38c33,38
+< // #include "net/http/http_util.h"
+< // #include "net/log/net_log.h"
+< // #include "net/log/net_log_event_type.h"
+< // #include "net/log/net_log_source.h"
+< // #include "net/log/net_log_source_type.h"
+< // #include "net/socket/socket_net_log_params.h"
+---
+> #include "net/http/http_util.h"
+> #include "net/log/net_log.h"
+> #include "net/log/net_log_event_type.h"
+> #include "net/log/net_log_source.h"
+> #include "net/log/net_log_source_type.h"
+> #include "net/socket/socket_net_log_params.h"
+136,138c136,138
+<     std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher)
+<     // NetLog* net_log,
+<     // const NetLogSource& source)
+---
+>     std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+>     NetLog* net_log,
+>     const NetLogSource& source)
+140,143c140,143
+<       logging_multiple_connect_attempts_(false) {
+<       // net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::SOCKET)) {
+<   // net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,
+<   //                     source.ToEventParametersCallback());
+---
+>       logging_multiple_connect_attempts_(false),
+>       net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::SOCKET)) {
+>   net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,
+>                       source.ToEventParametersCallback());
+147c147
+<   // net_log_.EndEvent(NetLogEventType::SOCKET_ALIVE);
+---
+>   net_log_.EndEvent(NetLogEventType::SOCKET_ALIVE);
+217c217
+<   // net_log_.BeginEvent(NetLogEventType::TCP_ACCEPT);
+---
+>   net_log_.BeginEvent(NetLogEventType::TCP_ACCEPT);
+232,233c232,233
+<   // if (!logging_multiple_connect_attempts_)
+<   //   LogConnectBegin(AddressList(address));
+---
+>   if (!logging_multiple_connect_attempts_)
+>     LogConnectBegin(AddressList(address));
+235,236c235,236
+<   // net_log_.BeginEvent(NetLogEventType::TCP_CONNECT_ATTEMPT,
+<   //                     CreateNetLogIPEndPointCallback(&address));
+---
+>   net_log_.BeginEvent(NetLogEventType::TCP_CONNECT_ATTEMPT,
+>                       CreateNetLogIPEndPointCallback(&address));
+436,441c436,441
+<   // if (!logging_multiple_connect_attempts_) {
+<   //   logging_multiple_connect_attempts_ = true;
+<   //   LogConnectBegin(addresses);
+<   // } else {
+<   //   NOTREACHED();
+<   // }
+---
+>   if (!logging_multiple_connect_attempts_) {
+>     logging_multiple_connect_attempts_ = true;
+>     LogConnectBegin(addresses);
+>   } else {
+>     NOTREACHED();
+>   }
+445,450c445,450
+<   // if (logging_multiple_connect_attempts_) {
+<   //   LogConnectEnd(net_error);
+<   //   logging_multiple_connect_attempts_ = false;
+<   // } else {
+<   //   NOTREACHED();
+<   // }
+---
+>   if (logging_multiple_connect_attempts_) {
+>     LogConnectEnd(net_error);
+>     logging_multiple_connect_attempts_ = false;
+>   } else {
+>     NOTREACHED();
+>   }
+486,491c486,491
+<   // if (rv == OK) {
+<   //   net_log_.EndEvent(NetLogEventType::TCP_ACCEPT,
+<   //                     CreateNetLogIPEndPointCallback(address));
+<   // } else {
+<   //   net_log_.EndEventWithNetErrorCode(NetLogEventType::TCP_ACCEPT, rv);
+<   // }
+---
+>   if (rv == OK) {
+>     net_log_.EndEvent(NetLogEventType::TCP_ACCEPT,
+>                       CreateNetLogIPEndPointCallback(address));
+>   } else {
+>     net_log_.EndEventWithNetErrorCode(NetLogEventType::TCP_ACCEPT, rv);
+>   }
+509c509
+<       new TCPSocketPosix(nullptr)); // , net_log_.net_log(), net_log_.source()));
+---
+>       new TCPSocketPosix(nullptr, net_log_.net_log(), net_log_.source()));
+522,523c522,523
+<     // net_log_.EndEvent(NetLogEventType::TCP_CONNECT_ATTEMPT,
+<     //                   NetLog::IntCallback("os_error", errno));
+---
+>     net_log_.EndEvent(NetLogEventType::TCP_CONNECT_ATTEMPT,
+>                       NetLog::IntCallback("os_error", errno));
+526c526
+<     // net_log_.EndEvent(NetLogEventType::TCP_CONNECT_ATTEMPT);
+---
+>     net_log_.EndEvent(NetLogEventType::TCP_CONNECT_ATTEMPT);
+531,532c531,532
+<   // if (rv == ERR_ADDRESS_UNREACHABLE && NetworkChangeNotifier::IsOffline())
+<   //   rv = ERR_INTERNET_DISCONNECTED;
+---
+>   if (rv == ERR_ADDRESS_UNREACHABLE && NetworkChangeNotifier::IsOffline())
+>     rv = ERR_INTERNET_DISCONNECTED;
+541,542c541,542
+<   // net_log_.BeginEvent(NetLogEventType::TCP_CONNECT,
+<   //                     addresses.CreateNetLogCallback());
+---
+>   net_log_.BeginEvent(NetLogEventType::TCP_CONNECT,
+>                       addresses.CreateNetLogCallback());
+547c547
+<     // net_log_.EndEventWithNetErrorCode(NetLogEventType::TCP_CONNECT, net_error);
+---
+>     net_log_.EndEventWithNetErrorCode(NetLogEventType::TCP_CONNECT, net_error);
+556c556
+<     // net_log_.EndEventWithNetErrorCode(NetLogEventType::TCP_CONNECT, rv);
+---
+>     net_log_.EndEventWithNetErrorCode(NetLogEventType::TCP_CONNECT, rv);
+560,562c560,562
+<   // net_log_.EndEvent(
+<   //     NetLogEventType::TCP_CONNECT,
+<   //     CreateNetLogSourceAddressCallback(storage.addr, storage.addr_len));
+---
+>   net_log_.EndEvent(
+>       NetLogEventType::TCP_CONNECT,
+>       CreateNetLogSourceAddressCallback(storage.addr, storage.addr_len));
+592,593c592,593
+<   // net_log_.AddByteTransferEvent(NetLogEventType::SOCKET_BYTES_RECEIVED, rv,
+<   //                               buf->data());
+---
+>   net_log_.AddByteTransferEvent(NetLogEventType::SOCKET_BYTES_RECEIVED, rv,
+>                                 buf->data());
+601,602c601,602
+<     // net_log_.AddEvent(NetLogEventType::SOCKET_READ_ERROR,
+<     //                   CreateNetLogSocketErrorCallback(rv, errno));
+---
+>     net_log_.AddEvent(NetLogEventType::SOCKET_READ_ERROR,
+>                       CreateNetLogSocketErrorCallback(rv, errno));
+615,616c615,616
+<     // net_log_.AddEvent(NetLogEventType::SOCKET_WRITE_ERROR,
+<     //                   CreateNetLogSocketErrorCallback(rv, errno));
+---
+>     net_log_.AddEvent(NetLogEventType::SOCKET_WRITE_ERROR,
+>                       CreateNetLogSocketErrorCallback(rv, errno));
+624,625c624,625
+<   // net_log_.AddByteTransferEvent(NetLogEventType::SOCKET_BYTES_SENT, rv,
+<   //                               buf->data());
+---
+>   net_log_.AddByteTransferEvent(NetLogEventType::SOCKET_BYTES_SENT, rv,
+>                                 buf->data());
+diff -r third_party/chromium/net/socket/tcp_socket_posix.h ../chromium/net/socket/tcp_socket_posix.h
+18c18
+< // #include "net/log/net_log_with_source.h"
+---
+> #include "net/log/net_log_with_source.h"
+43,45c43,45
+<       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher);
+<       // NetLog* net_log,
+<       // const NetLogSource& source);
+---
+>       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+>       NetLog* net_log,
+>       const NetLogSource& source);
+149c149
+<   // const NetLogWithSource& net_log() const { return net_log_; }
+---
+>   const NetLogWithSource& net_log() const { return net_log_; }
+209c209
+<   // NetLogWithSource net_log_;
+---
+>   NetLogWithSource net_log_;
+diff -r third_party/chromium/net/socket/tcp_socket_win.cc ../chromium/net/socket/tcp_socket_win.cc
+18c18
+< // #include "net/base/address_list.h"
+---
+> #include "net/base/address_list.h"
+23c23
+< // #include "net/base/network_change_notifier.h"
+---
+> #include "net/base/network_change_notifier.h"
+27,30c27,30
+< // #include "net/log/net_log.h"
+< // #include "net/log/net_log_event_type.h"
+< // #include "net/log/net_log_source.h"
+< // #include "net/log/net_log_source_type.h"
+---
+> #include "net/log/net_log.h"
+> #include "net/log/net_log_event_type.h"
+> #include "net/log/net_log_source.h"
+> #include "net/log/net_log_source_type.h"
+32c32
+< // #include "net/socket/socket_net_log_params.h"
+---
+> #include "net/socket/socket_net_log_params.h"
+78,81c78,81
+<       // if (net_error == ERR_ADDRESS_UNREACHABLE &&
+<       //     NetworkChangeNotifier::IsOffline()) {
+<       //   return ERR_INTERNET_DISCONNECTED;
+<       // }
+---
+>       if (net_error == ERR_ADDRESS_UNREACHABLE &&
+>           NetworkChangeNotifier::IsOffline()) {
+>         return ERR_INTERNET_DISCONNECTED;
+>       }
+256,258c256,258
+<     std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher)
+<     // net::NetLog* net_log,
+<     // const net::NetLogSource& source)
+---
+>     std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+>     net::NetLog* net_log,
+>     const net::NetLogSource& source)
+268,271c268,271
+<       logging_multiple_connect_attempts_(false) {
+<       // net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::SOCKET)) {
+<   // net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,
+<   //                     source.ToEventParametersCallback());
+---
+>       logging_multiple_connect_attempts_(false),
+>       net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::SOCKET)) {
+>   net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,
+>                       source.ToEventParametersCallback());
+278c278
+<   // net_log_.EndEvent(NetLogEventType::SOCKET_ALIVE);
+---
+>   net_log_.EndEvent(NetLogEventType::SOCKET_ALIVE);
+392c392
+<   // net_log_.BeginEvent(NetLogEventType::TCP_ACCEPT);
+---
+>   net_log_.BeginEvent(NetLogEventType::TCP_ACCEPT);
+425,426c425,426
+<   // if (!logging_multiple_connect_attempts_)
+<   //   LogConnectBegin(AddressList(address));
+---
+>   if (!logging_multiple_connect_attempts_)
+>     LogConnectBegin(AddressList(address));
+521,522c521,522
+<       // net_log_.AddEvent(NetLogEventType::SOCKET_READ_ERROR,
+<       //                   CreateNetLogSocketErrorCallback(net_error, os_error));
+---
+>       net_log_.AddEvent(NetLogEventType::SOCKET_READ_ERROR,
+>                         CreateNetLogSocketErrorCallback(net_error, os_error));
+526,527c526,527
+<     // net_log_.AddByteTransferEvent(NetLogEventType::SOCKET_BYTES_RECEIVED, rv,
+<     //                               buf->data());
+---
+>     net_log_.AddByteTransferEvent(NetLogEventType::SOCKET_BYTES_RECEIVED, rv,
+>                                   buf->data());
+581,582c581,582
+<       // net_log_.AddByteTransferEvent(NetLogEventType::SOCKET_BYTES_SENT, rv,
+<       //                               buf->data());
+---
+>       net_log_.AddByteTransferEvent(NetLogEventType::SOCKET_BYTES_SENT, rv,
+>                                     buf->data());
+589,590c589,590
+<       // net_log_.AddEvent(NetLogEventType::SOCKET_WRITE_ERROR,
+<       //                   CreateNetLogSocketErrorCallback(net_error, os_error));
+---
+>       net_log_.AddEvent(NetLogEventType::SOCKET_WRITE_ERROR,
+>                         CreateNetLogSocketErrorCallback(net_error, os_error));
+684c684
+<     // net_log_.AddEvent(NetLogEventType::SOCKET_CLOSED);
+---
+>     net_log_.AddEvent(NetLogEventType::SOCKET_CLOSED);
+774,775c774,775
+<     // if (net_error != ERR_IO_PENDING)
+<     //   net_log_.EndEventWithNetErrorCode(NetLogEventType::TCP_ACCEPT, net_error);
+---
+>     if (net_error != ERR_IO_PENDING)
+>       net_log_.EndEventWithNetErrorCode(NetLogEventType::TCP_ACCEPT, net_error);
+785c785
+<     // net_log_.EndEventWithNetErrorCode(NetLogEventType::TCP_ACCEPT, net_error);
+---
+>     net_log_.EndEventWithNetErrorCode(NetLogEventType::TCP_ACCEPT, net_error);
+789c789
+<       new TCPSocketWin(NULL)); // , net_log_.net_log(), net_log_.source()));
+---
+>       new TCPSocketWin(NULL, net_log_.net_log(), net_log_.source()));
+792,793c792,793
+<     // net_log_.EndEventWithNetErrorCode(NetLogEventType::TCP_ACCEPT,
+<     //                                   adopt_result);
+---
+>     net_log_.EndEventWithNetErrorCode(NetLogEventType::TCP_ACCEPT,
+>                                       adopt_result);
+798,799c798,799
+<   // net_log_.EndEvent(NetLogEventType::TCP_ACCEPT,
+<   //                   CreateNetLogIPEndPointCallback(&ip_end_point));
+---
+>   net_log_.EndEvent(NetLogEventType::TCP_ACCEPT,
+>                     CreateNetLogIPEndPointCallback(&ip_end_point));
+832,833c832,833
+<   // net_log_.BeginEvent(NetLogEventType::TCP_CONNECT_ATTEMPT,
+<   //                     CreateNetLogIPEndPointCallback(peer_address_.get()));
+---
+>   net_log_.BeginEvent(NetLogEventType::TCP_CONNECT_ATTEMPT,
+>                       CreateNetLogIPEndPointCallback(peer_address_.get()));
+879,884c879,884
+<   // if (result != OK) {
+<   //   net_log_.EndEvent(NetLogEventType::TCP_CONNECT_ATTEMPT,
+<   //                     NetLog::IntCallback("os_error", os_error));
+<   // } else {
+<   //   net_log_.EndEvent(NetLogEventType::TCP_CONNECT_ATTEMPT);
+<   // }
+---
+>   if (result != OK) {
+>     net_log_.EndEvent(NetLogEventType::TCP_CONNECT_ATTEMPT,
+>                       NetLog::IntCallback("os_error", os_error));
+>   } else {
+>     net_log_.EndEvent(NetLogEventType::TCP_CONNECT_ATTEMPT);
+>   }
+891,892c891,892
+<   // net_log_.BeginEvent(NetLogEventType::TCP_CONNECT,
+<   //                     addresses.CreateNetLogCallback());
+---
+>   net_log_.BeginEvent(NetLogEventType::TCP_CONNECT,
+>                       addresses.CreateNetLogCallback());
+896d895
+<   /*
+919d917
+<   */
+979,980c977,978
+<     // net_log_.AddEvent(NetLogEventType::SOCKET_WRITE_ERROR,
+<     //                   CreateNetLogSocketErrorCallback(rv, os_error));
+---
+>     net_log_.AddEvent(NetLogEventType::SOCKET_WRITE_ERROR,
+>                       CreateNetLogSocketErrorCallback(rv, os_error));
+991,992c989,990
+<       // net_log_.AddByteTransferEvent(NetLogEventType::SOCKET_BYTES_SENT,
+<       //                               num_bytes, core_->write_iobuffer_->data());
+---
+>       net_log_.AddByteTransferEvent(NetLogEventType::SOCKET_BYTES_SENT,
+>                                     num_bytes, core_->write_iobuffer_->data());
+diff -r third_party/chromium/net/socket/tcp_socket_win.h ../chromium/net/socket/tcp_socket_win.h
+21c21
+< // #include "net/log/net_log_with_source.h"
+---
+> #include "net/log/net_log_with_source.h"
+38,40c38,40
+<       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher);
+<       // NetLog* net_log,
+<       // const NetLogSource& source);
+---
+>       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
+>       NetLog* net_log,
+>       const NetLogSource& source);
+121c121
+<   // const NetLogWithSource& net_log() const { return net_log_; }
+---
+>   const NetLogWithSource& net_log() const { return net_log_; }
+199c199
+<   // NetLogWithSource net_log_;
+---
+>   NetLogWithSource net_log_;
+Only in ../chromium/net/socket: transport_client_socket.cc
+Only in ../chromium/net/socket: transport_client_socket.h
+Only in ../chromium/net/socket: transport_client_socket_pool.cc
+Only in ../chromium/net/socket: transport_client_socket_pool.h
+Only in ../chromium/net/socket: transport_client_socket_pool_test_util.cc
+Only in ../chromium/net/socket: transport_client_socket_pool_test_util.h
+Only in ../chromium/net/socket: transport_client_socket_pool_unittest.cc
+Only in ../chromium/net/socket: transport_client_socket_unittest.cc
+Only in ../chromium/net/socket: transport_connect_job.cc
+Only in ../chromium/net/socket: transport_connect_job.h
+Only in ../chromium/net/socket: transport_connect_job_unittest.cc
+Only in ../chromium/net/socket: udp_client_socket.cc
+Only in ../chromium/net/socket: udp_client_socket.h
+Only in ../chromium/net/socket: udp_net_log_parameters.cc
+Only in ../chromium/net/socket: udp_net_log_parameters.h
+Only in ../chromium/net/socket: udp_server_socket.cc
+Only in ../chromium/net/socket: udp_server_socket.h
+diff -r third_party/chromium/net/socket/udp_socket_posix.cc ../chromium/net/socket/udp_socket_posix.cc
+35,39c35,39
+< // #include "net/base/trace_constants.h"
+< // #include "net/log/net_log.h"
+< // #include "net/log/net_log_event_type.h"
+< // #include "net/log/net_log_source.h"
+< // #include "net/log/net_log_source_type.h"
+---
+> #include "net/base/trace_constants.h"
+> #include "net/log/net_log.h"
+> #include "net/log/net_log_event_type.h"
+> #include "net/log/net_log_source.h"
+> #include "net/log/net_log_source_type.h"
+43c43
+< // #include "net/socket/udp_net_log_parameters.h"
+---
+> #include "net/socket/udp_net_log_parameters.h"
+177,179c177,179
+< UDPSocketPosix::UDPSocketPosix(DatagramSocket::BindType bind_type)
+<                               //  net::NetLog* net_log,
+<                               //  const net::NetLogSource& source)
+---
+> UDPSocketPosix::UDPSocketPosix(DatagramSocket::BindType bind_type,
+>                                net::NetLog* net_log,
+>                                const net::NetLogSource& source)
+201,202c201,202
+<       // net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::UDP_SOCKET)),
+<       // bound_network_(NetworkChangeNotifier::kInvalidNetworkHandle),
+---
+>       net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::UDP_SOCKET)),
+>       bound_network_(NetworkChangeNotifier::kInvalidNetworkHandle),
+205,206c205,206
+<   // net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,
+<   //                     source.ToEventParametersCallback());
+---
+>   net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,
+>                       source.ToEventParametersCallback());
+212c212
+<   // net_log_.EndEvent(NetLogEventType::SOCKET_ALIVE);
+---
+>   net_log_.EndEvent(NetLogEventType::SOCKET_ALIVE);
+367,369c367,369
+<     // net_log_.AddEvent(
+<     //     NetLogEventType::UDP_LOCAL_ADDRESS,
+<     //     CreateNetLogUDPConnectCallback(local_address_.get(), bound_network_));
+---
+>     net_log_.AddEvent(
+>         NetLogEventType::UDP_LOCAL_ADDRESS,
+>         CreateNetLogUDPConnectCallback(local_address_.get(), bound_network_));
+463,464c463,464
+<   // net_log_.BeginEvent(NetLogEventType::UDP_CONNECT,
+<   //                     CreateNetLogUDPConnectCallback(&address, bound_network_));
+---
+>   net_log_.BeginEvent(NetLogEventType::UDP_CONNECT,
+>                       CreateNetLogUDPConnectCallback(&address, bound_network_));
+469c469
+<   // net_log_.EndEventWithNetErrorCode(NetLogEventType::UDP_CONNECT, rv);
+---
+>   net_log_.EndEventWithNetErrorCode(NetLogEventType::UDP_CONNECT, rv);
+526c526
+< /*
+---
+> 
+603c603
+< */
+---
+> 
+710,711c710,711
+<   // TRACE_EVENT0(NetTracingCategory(),
+<   //              "UDPSocketPosix::ReadWatcher::OnFileCanReadWithoutBlocking");
+---
+>   TRACE_EVENT0(NetTracingCategory(),
+>                "UDPSocketPosix::ReadWatcher::OnFileCanReadWithoutBlocking");
+757,758c757,758
+<     // net_log_.AddEventWithNetErrorCode(NetLogEventType::UDP_RECEIVE_ERROR,
+<     //                                   result);
+---
+>     net_log_.AddEventWithNetErrorCode(NetLogEventType::UDP_RECEIVE_ERROR,
+>                                       result);
+762,771c762,771
+<   // if (net_log_.IsCapturing()) {
+<   //   DCHECK(addr_len > 0);
+<   //   DCHECK(addr);
+< 
+<   //   IPEndPoint address;
+<   //   bool is_address_valid = address.FromSockAddr(addr, addr_len);
+<   //   net_log_.AddEvent(NetLogEventType::UDP_BYTES_RECEIVED,
+<   //                     CreateNetLogUDPDataTranferCallback(
+<   //                         result, bytes, is_address_valid ? &address : NULL));
+<   // }
+---
+>   if (net_log_.IsCapturing()) {
+>     DCHECK(addr_len > 0);
+>     DCHECK(addr);
+> 
+>     IPEndPoint address;
+>     bool is_address_valid = address.FromSockAddr(addr, addr_len);
+>     net_log_.AddEvent(NetLogEventType::UDP_BYTES_RECEIVED,
+>                       CreateNetLogUDPDataTranferCallback(
+>                           result, bytes, is_address_valid ? &address : NULL));
+>   }
+793c793
+<     // net_log_.AddEventWithNetErrorCode(NetLogEventType::UDP_SEND_ERROR, result);
+---
+>     net_log_.AddEventWithNetErrorCode(NetLogEventType::UDP_SEND_ERROR, result);
+797,801c797,801
+<   // if (net_log_.IsCapturing()) {
+<   //   net_log_.AddEvent(
+<   //       NetLogEventType::UDP_BYTES_SENT,
+<   //       CreateNetLogUDPDataTranferCallback(result, bytes, address));
+<   // }
+---
+>   if (net_log_.IsCapturing()) {
+>     net_log_.AddEvent(
+>         NetLogEventType::UDP_BYTES_SENT,
+>         CreateNetLogUDPDataTranferCallback(result, bytes, address));
+>   }
+diff -r third_party/chromium/net/socket/udp_socket_posix.h ../chromium/net/socket/udp_socket_posix.h
+26,27c26,27
+< // #include "net/base/network_change_notifier.h"
+< // #include "net/log/net_log_with_source.h"
+---
+> #include "net/base/network_change_notifier.h"
+> #include "net/log/net_log_with_source.h"
+164,166c164,166
+<   UDPSocketPosix(DatagramSocket::BindType bind_type);
+<                 //  net::NetLog* net_log,
+<                 //  const net::NetLogSource& source);
+---
+>   UDPSocketPosix(DatagramSocket::BindType bind_type,
+>                  net::NetLog* net_log,
+>                  const net::NetLogSource& source);
+178c178
+<   // int BindToNetwork(NetworkChangeNotifier::NetworkHandle network);
+---
+>   int BindToNetwork(NetworkChangeNotifier::NetworkHandle network);
+281c281
+<   // const NetLogWithSource& NetLog() const { return net_log_; }
+---
+>   const NetLogWithSource& NetLog() const { return net_log_; }
+613c613
+<   // NetLogWithSource net_log_;
+---
+>   NetLogWithSource net_log_;
+616c616
+<   // NetworkChangeNotifier::NetworkHandle bound_network_;
+---
+>   NetworkChangeNotifier::NetworkHandle bound_network_;
+diff -r third_party/chromium/net/socket/udp_socket_win.cc ../chromium/net/socket/udp_socket_win.cc
+23c23
+< // #include "net/base/network_change_notifier.h"
+---
+> #include "net/base/network_change_notifier.h"
+27,30c27,30
+< // #include "net/log/net_log.h"
+< // #include "net/log/net_log_event_type.h"
+< // #include "net/log/net_log_source.h"
+< // #include "net/log/net_log_source_type.h"
+---
+> #include "net/log/net_log.h"
+> #include "net/log/net_log_event_type.h"
+> #include "net/log/net_log_source.h"
+> #include "net/log/net_log_source_type.h"
+34c34
+< // #include "net/socket/udp_net_log_parameters.h"
+---
+> #include "net/socket/udp_net_log_parameters.h"
+245,247c245,247
+< UDPSocketWin::UDPSocketWin(DatagramSocket::BindType bind_type)
+<                           //  net::NetLog* net_log,
+<                           //  const net::NetLogSource& source)
+---
+> UDPSocketWin::UDPSocketWin(DatagramSocket::BindType bind_type,
+>                            net::NetLog* net_log,
+>                            const net::NetLogSource& source)
+259c259
+<       // net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::UDP_SOCKET)),
+---
+>       net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::UDP_SOCKET)),
+262,263c262,263
+<   // net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,
+<   //                     source.ToEventParametersCallback());
+---
+>   net_log_.BeginEvent(NetLogEventType::SOCKET_ALIVE,
+>                       source.ToEventParametersCallback());
+269c269
+<   // net_log_.EndEvent(NetLogEventType::SOCKET_ALIVE);
+---
+>   net_log_.EndEvent(NetLogEventType::SOCKET_ALIVE);
+296c296
+<   // dscp_manager_ = nullptr;
+---
+>   dscp_manager_ = nullptr;
+364,367c364,367
+<     // net_log_.AddEvent(NetLogEventType::UDP_LOCAL_ADDRESS,
+<     //                   CreateNetLogUDPConnectCallback(
+<     //                       local_address_.get(),
+<     //                       NetworkChangeNotifier::kInvalidNetworkHandle));
+---
+>     net_log_.AddEvent(NetLogEventType::UDP_LOCAL_ADDRESS,
+>                       CreateNetLogUDPConnectCallback(
+>                           local_address_.get(),
+>                           NetworkChangeNotifier::kInvalidNetworkHandle));
+414d413
+<   /*
+419,420c418,419
+<     // if (rv != OK)
+<     //   net_log_.AddEventWithNetErrorCode(NetLogEventType::UDP_SEND_ERROR, rv);
+---
+>     if (rv != OK)
+>       net_log_.AddEventWithNetErrorCode(NetLogEventType::UDP_SEND_ERROR, rv);
+422d420
+<   */
+450,453c448,451
+<   // net_log_.BeginEvent(
+<   //     NetLogEventType::UDP_CONNECT,
+<   //     CreateNetLogUDPConnectCallback(
+<   //         &address, NetworkChangeNotifier::kInvalidNetworkHandle));
+---
+>   net_log_.BeginEvent(
+>       NetLogEventType::UDP_CONNECT,
+>       CreateNetLogUDPConnectCallback(
+>           &address, NetworkChangeNotifier::kInvalidNetworkHandle));
+458c456
+<   // net_log_.EndEventWithNetErrorCode(NetLogEventType::UDP_CONNECT, rv);
+---
+>   net_log_.EndEventWithNetErrorCode(NetLogEventType::UDP_CONNECT, rv);
+493,494c491,492
+<   // if (dscp_manager_)
+<   //   dscp_manager_->PrepareForSend(*remote_address_.get());
+---
+>   if (dscp_manager_)
+>     dscp_manager_->PrepareForSend(*remote_address_.get());
+516,519c514,517
+< // int UDPSocketWin::BindToNetwork(NetworkChangeNotifier::NetworkHandle network) {
+< //   NOTIMPLEMENTED();
+< //   return ERR_NOT_IMPLEMENTED;
+< // }
+---
+> int UDPSocketWin::BindToNetwork(NetworkChangeNotifier::NetworkHandle network) {
+>   NOTIMPLEMENTED();
+>   return ERR_NOT_IMPLEMENTED;
+> }
+742,743c740,741
+<     // net_log_.AddEventWithNetErrorCode(NetLogEventType::UDP_RECEIVE_ERROR,
+<     //                                   result);
+---
+>     net_log_.AddEventWithNetErrorCode(NetLogEventType::UDP_RECEIVE_ERROR,
+>                                       result);
+747,751c745,749
+<   // if (net_log_.IsCapturing()) {
+<   //   net_log_.AddEvent(
+<   //       NetLogEventType::UDP_BYTES_RECEIVED,
+<   //       CreateNetLogUDPDataTranferCallback(result, bytes, address));
+<   // }
+---
+>   if (net_log_.IsCapturing()) {
+>     net_log_.AddEvent(
+>         NetLogEventType::UDP_BYTES_RECEIVED,
+>         CreateNetLogUDPDataTranferCallback(result, bytes, address));
+>   }
+760c758
+<     // net_log_.AddEventWithNetErrorCode(NetLogEventType::UDP_SEND_ERROR, result);
+---
+>     net_log_.AddEventWithNetErrorCode(NetLogEventType::UDP_SEND_ERROR, result);
+764,768c762,766
+<   // if (net_log_.IsCapturing()) {
+<   //   net_log_.AddEvent(
+<   //       NetLogEventType::UDP_BYTES_SENT,
+<   //       CreateNetLogUDPDataTranferCallback(result, bytes, address));
+<   // }
+---
+>   if (net_log_.IsCapturing()) {
+>     net_log_.AddEvent(
+>         NetLogEventType::UDP_BYTES_SENT,
+>         CreateNetLogUDPDataTranferCallback(result, bytes, address));
+>   }
+1179c1177
+< /*
+---
+> 
+1201c1199
+< */
+---
+> 
+1248d1245
+< /*
+1379c1376
+< */
+---
+> 
+diff -r third_party/chromium/net/socket/udp_socket_win.h ../chromium/net/socket/udp_socket_win.h
+12d11
+< #include <set>
+28,29c27,28
+< // #include "net/base/network_change_notifier.h"
+< // #include "net/log/net_log_with_source.h"
+---
+> #include "net/base/network_change_notifier.h"
+> #include "net/log/net_log_with_source.h"
+107c106
+< /*
+---
+> 
+153c152
+< */
+---
+> 
+158,160c157,159
+<   UDPSocketWin(DatagramSocket::BindType bind_type);
+<               //  net::NetLog* net_log,
+<               //  const net::NetLogSource& source);
+---
+>   UDPSocketWin(DatagramSocket::BindType bind_type,
+>                net::NetLog* net_log,
+>                const net::NetLogSource& source);
+172c171
+<   // int BindToNetwork(NetworkChangeNotifier::NetworkHandle network);
+---
+>   int BindToNetwork(NetworkChangeNotifier::NetworkHandle network);
+263c262
+<   // const NetLogWithSource& NetLog() const { return net_log_; }
+---
+>   const NetLogWithSource& NetLog() const { return net_log_; }
+335c334
+<   // int SetDiffServCodePoint(DiffServCodePoint dscp);
+---
+>   int SetDiffServCodePoint(DiffServCodePoint dscp);
+484c483
+<   // NetLogWithSource net_log_;
+---
+>   NetLogWithSource net_log_;
+487c486
+<   // std::unique_ptr<DscpManager> dscp_manager_;
+---
+>   std::unique_ptr<DscpManager> dscp_manager_;
+Only in ../chromium/net/socket: unix_domain_client_socket_posix.cc
+Only in ../chromium/net/socket: unix_domain_client_socket_posix.h
+Only in ../chromium/net/socket: unix_domain_client_socket_posix_unittest.cc
+Only in ../chromium/net/socket: unix_domain_server_socket_posix.cc
+Only in ../chromium/net/socket: unix_domain_server_socket_posix.h
+Only in ../chromium/net/socket: unix_domain_server_socket_posix_unittest.cc
+Only in ../chromium/net/socket: websocket_endpoint_lock_manager.cc
+Only in ../chromium/net/socket: websocket_endpoint_lock_manager.h
+Only in ../chromium/net/socket: websocket_endpoint_lock_manager_unittest.cc
+Only in ../chromium/net/socket: websocket_transport_client_socket_pool.cc
+Only in ../chromium/net/socket: websocket_transport_client_socket_pool.h
+Only in ../chromium/net/socket: websocket_transport_client_socket_pool_unittest.cc
+Only in ../chromium/net/socket: websocket_transport_connect_job.cc
+Only in ../chromium/net/socket: websocket_transport_connect_job.h
+Only in ../chromium/net/socket: websocket_transport_connect_sub_job.cc
+Only in ../chromium/net/socket: websocket_transport_connect_sub_job.h
+Only in ../chromium/net: spdy
+Only in ../chromium/net: ssl
+Only in ../chromium/net: test
+Only in ../chromium/net/third_party: mozilla_security_manager
+Only in ../chromium/net/third_party: nist-pkits
+Only in ../chromium/net/third_party: nss
+Only in ../chromium/net/third_party/quic: core
+Only in ../chromium/net/third_party/quic/platform/api: quic_aligned.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_arraysize.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_bug_tracker.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_cert_utils.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_client_stats.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_clock.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_clock.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_containers.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_containers_test.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_default_proof_providers.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_endian.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_endian_test.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_epoll.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_estimate_memory_usage.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_expect_bug.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_exported_stats.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_export.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_fallthrough.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_file_utils.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_file_utils.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_flags.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_flag_utils.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_fuzzed_data_provider.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_hostname_utils.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_hostname_utils.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_hostname_utils_test.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_interval.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_iovec.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_ip_address.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_ip_address_family.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_ip_address.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_logging.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_map_util.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_mem_slice.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_mem_slice_span.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_mem_slice_span_test.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_mem_slice_storage.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_mem_slice_storage_test.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_mem_slice_test.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_mock_log.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_mutex.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_mutex.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_pcc_sender.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_port_utils.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_prefetch.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_reference_counted.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_reference_counted_test.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_server_stats.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_singleton.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_singleton_test.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_sleep.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_socket_address.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_socket_address.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_stack_trace.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_str_cat.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_str_cat_test.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_string.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_string_piece.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_string_utils.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_string_utils_test.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_test.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_test_loopback.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_test_loopback.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_test_mem_slice_vector.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_test_output.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_text_utils.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_text_utils_test.cc
+Only in ../chromium/net/third_party/quic/platform/api: quic_thread.h
+Only in ../chromium/net/third_party/quic/platform/api: quic_uint128.h
+Only in ../chromium/net/third_party/quic/platform/impl: batch_writer
+Only in ../chromium/net/third_party/quic/platform/impl: quic_aligned_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_arraysize_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_bug_tracker_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_cert_utils_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_chromium_clock.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_chromium_clock.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_chromium_clock_test.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_client_stats_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_containers_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_default_proof_providers_impl.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_default_proof_providers_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_endian_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_epoll_clock.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_epoll_clock.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_epoll_clock_test.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_epoll_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_estimate_memory_usage_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_expect_bug_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_export_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_fallthrough_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_file_utils_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_flags_impl.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_flags_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_flags_test.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_flag_utils_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_fuzzed_data_provider_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_hostname_utils_impl.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_hostname_utils_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_interval_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_iovec_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_ip_address_impl.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_ip_address_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_linux_socket_utils.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_linux_socket_utils.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_linux_socket_utils_test.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_logging_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_map_util_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_mem_slice_impl.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_mem_slice_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_mem_slice_span_impl.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_mem_slice_span_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_mem_slice_storage_impl.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_mem_slice_storage_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_mock_log_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_mutex_impl.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_mutex_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_pcc_sender_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_port_utils_impl.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_port_utils_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_prefetch_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_reference_counted_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_server_stats_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_singleton_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_sleep_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_socket_address_impl.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_socket_address_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_socket_utils.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_socket_utils.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_socket_utils_test.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_stack_trace_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_str_cat_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_string_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_string_piece_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_string_utils_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_test_impl.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_test_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_test_loopback_impl.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_test_loopback_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_test_mem_slice_vector_impl.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_test_mem_slice_vector_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_test_output_impl.cc
+Only in ../chromium/net/third_party/quic/platform/impl: quic_test_output_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_text_utils_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_thread_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_uint128_impl.h
+Only in ../chromium/net/third_party/quic/platform/impl: quic_uint128_impl_unittest.cc
+Only in ../chromium/net/third_party/quic/platform: README.md
+Only in ../chromium/net/third_party/quic: quartc
+Only in ../chromium/net/third_party/quic: test_tools
+Only in ../chromium/net/third_party/quic: tools
+Only in ../chromium/net/third_party: uri_template
+Only in ../chromium/net: tools
+Only in ../chromium/net/traffic_annotation: BUILD.gn
+Only in ../chromium/net: url_request
+Only in ../chromium/net: websockets

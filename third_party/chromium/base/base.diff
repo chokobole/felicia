@@ -1,4 +1,5 @@
 Only in third_party/chromium/base: base.bzl
+Only in third_party/chromium/base: base.diff
 Only in third_party/chromium/base: BUILD
 diff -r third_party/chromium/base/containers/any_internal.h ../chromium/base/containers/any_internal.h
 48c48
