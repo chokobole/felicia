@@ -1,0 +1,32 @@
+{
+  "name": "@felicia-viz/ui",
+  "version": "0.0.1",
+  "description": "UI toolkit for felicia-viz",
+  "main": "dist/es5/index.js",
+  "module": "dist/esm/index.js",
+  "esnext": "dist/es6/index.js",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "prop-types": "^15.7.2",
+    "react": "^16.8.5"
+  },
+  "scripts": {
+    "clean": "rm -fr dist && mkdir -p dist",
+    "build-es6": "BABEL_ENV=es6 babel src --root-mode upward --out-dir dist/es6 --source-maps --ignore 'node_modules/'",
+    "build-esm": "BABEL_ENV=esm babel src --root-mode upward --out-dir dist/esm --source-maps --ignore 'node_modules/'",
+    "build-es5": "BABEL_ENV=es5 babel src --root-mode upward --out-dir dist/es5 --source-maps --ignore 'node_modules/'",
+    "build": "npm run clean && npm run build-es6 && npm run build-esm && npm run build-es5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chokobole/felicia.git"
+  },
+  "author": "Wonyong Kim (chokobole33@gmail.com)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chokobole/felicia/issues"
+  },
+  "homepage": "https://github.com/chokobole/felicia#readme"
+}
