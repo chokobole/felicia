@@ -7,7 +7,24 @@
 #include "felicia/drivers/camera/linux/v4l2_camera.h"
 using Camera = felicia::V4l2Camera;
 #else
-#error Unsupported Platform
+
+namespace felicia {
+
+class FakeCamera : public CameraInterface {
+ public:
+  FakeCamera(const CameraDescriptor& descriptor) {}
+
+  Status Init() override { return Status::OK(); }
+  Status Start(CameraFrameCallback callback) override { return Status::OK(); }
+  Status Close() override { return Status::OK(); }
+
+  StatusOr<CameraFormat> GetFormat() override { return CameraFormat(); }
+  Status SetFormat(CameraFormat format) override { return Status::OK(); }
+};
+
+using Camera = FakeCamera;
+
+}  // namespace felicia
 #endif
 
 namespace felicia {

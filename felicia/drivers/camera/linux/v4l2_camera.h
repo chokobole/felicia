@@ -9,7 +9,6 @@
 
 #include "felicia/drivers/camera/camera_descriptor.h"
 #include "felicia/drivers/camera/camera_interface.h"
-#include "felicia/drivers/camera/linux/camera_buffer.h"
 
 namespace felicia {
 
@@ -19,10 +18,11 @@ class V4l2Camera : public CameraInterface,
   ~V4l2Camera();
 
   Status Init() override;
-  Status Start() override;
+  Status Start(CameraFrameCallback callback) override;
   Status Close() override;
 
-  Status TakePhoto() override;
+  StatusOr<CameraFormat> GetFormat() override;
+  Status SetFormat(CameraFormat format) override;
 
  private:
   friend class CameraFactory;
@@ -34,13 +34,16 @@ class V4l2Camera : public CameraInterface,
   void DoTakePhoto();
 
   int DoIoctl(int request, void* argp);
+  bool RunIoctl(int request, void* argp);
 
   CameraDescriptor descriptor_;
+  CameraFormat camera_format_;
   int fd_ = ::base::kInvalidPlatformFile;
 
   std::vector<CameraBuffer> buffers_;
   ::base::Thread thread_;
 
+  CameraFrameCallback callback_;
   Status error_status_;
 
   DISALLOW_COPY_AND_ASSIGN(V4l2Camera);

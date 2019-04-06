@@ -174,5 +174,6 @@ fel_cc_shared_library(
         "//felicia/core/master:master_proxy",
         "//felicia/core/node:node_lifecycle",
         "//felicia/core/util",
+        "//felicia/drivers/camera",
     ],
 )

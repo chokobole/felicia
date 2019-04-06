@@ -29,6 +29,7 @@ fel_cc_library(
         "error/statusor_internals.h",
         "net/net_util.h",
         "strings/str_util.h",
+        "unit/geometry/size.h",
     ],
     deps = [
         "//felicia/core/protobuf:protos_all_cc",

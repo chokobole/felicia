@@ -21,12 +21,32 @@ class CameraPublishingNode : public NodeLifecycle {
   }
 
   void OnInit() override {
-    std::cout << "SimplePublishingNode::OnInit()" << std::endl;
+    std::cout << "CameraPublishingNode::OnInit()" << std::endl;
     CameraDescriptor descriptor(display_name_, device_id_);
     std::unique_ptr<CameraInterface> camera =
         CameraFactory::NewCamera(descriptor);
     CHECK(camera->Init().ok());
-    camera->Start();
+    camera->Start(::base::BindRepeating(&CameraPublishingNode::OnImage,
+                                        ::base::Unretained(this)));
+  }
+
+  void OnImage(StatusOr<CameraFrame> status_or) {
+    LOG(INFO) << "CameraPublishingNode::OnImage" << std::endl;
+    static int frame_number = 0;
+    if (status_or.ok()) {
+      CameraFrame frame = std::move(status_or.ValueOrDie());
+      char filename[15];
+      frame_number++;
+      sprintf(filename, "frame-%d.argb", frame_number);
+      FILE* fp = fopen(filename, "wb");
+
+      fwrite(frame.data(), frame.size(), 1, fp);
+
+      fflush(fp);
+      fclose(fp);
+    } else {
+      LOG(ERROR) << status_or.status().error_message();
+    }
   }
 
  private:

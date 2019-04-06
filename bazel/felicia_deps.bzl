@@ -64,6 +64,13 @@ def load_deps():
         tag = "v1.19.1",
     )
 
+    new_git_repository(
+        name = "libyuv",
+        build_file = "//third_party:libyuv.BUILD",
+        remote = "https://chromium.googlesource.com/libyuv/libyuv.git",
+        commit = "4bd08cbc0e45fb434a1d1245004c7b922ed91beb",
+    )
+
     # Needed by pybind11
     new_git_repository(
         name = "eigen",

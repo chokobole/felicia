@@ -15,7 +15,22 @@ namespace felicia {
 
 namespace {
 
+constexpr size_t kDefaultWidth = 640;
+constexpr size_t kDefaultHeight = 480;
+
+// Maximum number of ioctl retries before giving up trying to reset controls.
+constexpr int kMaxIOCtrlRetries = 5;
+
 constexpr uint32_t kNumVideoBuffers = 4;
+
+void FillV4L2Format(v4l2_format* format, uint32_t width, uint32_t height,
+                    uint32_t pixelformat_fourcc) {
+  memset(format, 0, sizeof(*format));
+  format->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  format->fmt.pix.width = width;
+  format->fmt.pix.height = height;
+  format->fmt.pix.pixelformat = pixelformat_fourcc;
+}
 
 void FillV4L2Buffer(v4l2_buffer* buffer, int index) {
   memset(buffer, 0, sizeof(*buffer));
@@ -24,11 +39,11 @@ void FillV4L2Buffer(v4l2_buffer* buffer, int index) {
   buffer->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 }
 
-void FillV4L2RequestBuffer(v4l2_requestbuffers* request_buffer, int count) {
-  memset(request_buffer, 0, sizeof(*request_buffer));
-  request_buffer->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  request_buffer->memory = V4L2_MEMORY_MMAP;
-  request_buffer->count = count;
+void FillV4L2RequestBuffer(v4l2_requestbuffers* requestbuffers, int count) {
+  memset(requestbuffers, 0, sizeof(*requestbuffers));
+  requestbuffers->type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  requestbuffers->memory = V4L2_MEMORY_MMAP;
+  requestbuffers->count = count;
 }
 
 }  // namespace
@@ -36,19 +51,27 @@ void FillV4L2RequestBuffer(v4l2_requestbuffers* request_buffer, int count) {
 V4l2Camera::V4l2Camera(const CameraDescriptor& descriptor)
     : descriptor_(descriptor), thread_("V4l2CameraThread") {}
 
-V4l2Camera::~V4l2Camera() { thread_.Stop(); }
+V4l2Camera::~V4l2Camera() {
+  if (thread_.IsRunning()) thread_.Stop();
+}
 
 Status V4l2Camera::Init() {
   Status s = InitDevice();
   if (!s.ok()) {
-    fd_ = ::base::kInvalidPlatformFile;
     return s;
   }
+
+  StatusOr<CameraFormat> status_or = GetFormat();
+  if (!status_or.ok()) {
+    return status_or.status();
+  }
+  camera_format_ = status_or.ValueOrDie();
+  LOG(INFO) << "Default Format: " << camera_format_.ToString();
 
   return InitMmap();
 }
 
-Status V4l2Camera::Start() {
+Status V4l2Camera::Start(CameraFrameCallback callback) {
   for (size_t i = 0; i < buffers_.size(); ++i) {
     v4l2_buffer buffer;
     FillV4L2Buffer(&buffer, i);
@@ -64,6 +87,7 @@ Status V4l2Camera::Start() {
   }
 
   thread_.Start();
+  callback_ = callback;
   if (thread_.task_runner()->BelongsToCurrentThread()) {
     DoTakePhoto();
   } else {
@@ -74,9 +98,34 @@ Status V4l2Camera::Start() {
   return Status::OK();
 }
 
-Status V4l2Camera::Close() { return Status::OK(); }
+Status V4l2Camera::Close() {
+  if (fd_ != ::base::kInvalidPlatformFile) close(fd_);
+  return Status::OK();
+}
 
-Status V4l2Camera::TakePhoto() { return Status::OK(); }
+StatusOr<CameraFormat> V4l2Camera::GetFormat() {
+  struct v4l2_format format;
+  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+
+  if (DoIoctl(VIDIOC_G_FMT, &format) < 0) {
+    return errors::FailedToGetFormat();
+  }
+
+  return CameraFormat(
+      format.fmt.pix.width, format.fmt.pix.height,
+      CameraFormat::FromV4l2PixelFormat(format.fmt.pix.pixelformat));
+}
+
+Status V4l2Camera::SetFormat(CameraFormat camera_format) {
+  struct v4l2_format format;
+  FillV4L2Format(&format, camera_format.width(), camera_format.height(),
+                 camera_format.ToV4l2PixelFormat());
+  if (DoIoctl(VIDIOC_S_FMT, &format) < 0) {
+    return errors::FailedToSetFormat(camera_format);
+  }
+  camera_format_ = camera_format;
+  return Status::OK();
+}
 
 Status V4l2Camera::InitDevice() {
   const std::string& device_id = descriptor_.device_id();
@@ -97,14 +146,14 @@ Status V4l2Camera::InitDevice() {
 }
 
 Status V4l2Camera::InitMmap() {
-  v4l2_requestbuffers request_buffers;
-  FillV4L2RequestBuffer(&request_buffers, kNumVideoBuffers);
+  v4l2_requestbuffers requestbuffers;
+  FillV4L2RequestBuffer(&requestbuffers, kNumVideoBuffers);
 
-  if (DoIoctl(VIDIOC_REQBUFS, &request_buffers) < 0) {
+  if (DoIoctl(VIDIOC_REQBUFS, &requestbuffers) < 0) {
     return errors::FailedToRequestMmapBuffers();
   }
 
-  for (unsigned int i = 0; i < request_buffers.count; ++i) {
+  for (unsigned int i = 0; i < requestbuffers.count; ++i) {
     v4l2_buffer buffer;
     FillV4L2Buffer(&buffer, i);
 
@@ -129,7 +178,7 @@ void V4l2Camera::DoTakePhoto() {
   v4l2_buffer buffer;
   FillV4L2Buffer(&buffer, 0);
   if (DoIoctl(VIDIOC_DQBUF, &buffer) < 0) {
-    error_status_ = errors::FailedToDequeueBuffer();
+    callback_.Run(errors::FailedToDequeueBuffer());
     return;
   }
 
@@ -139,16 +188,21 @@ void V4l2Camera::DoTakePhoto() {
   bool buf_error_flag_set = false;
 #endif
   if (buf_error_flag_set) {
-#ifdef V4L2_BUF_FLAG_ERROR
-    LOG(ERROR) << "V4l2 error flag was set.";
-#endif
+    callback_.Run(errors::V4l2ErrorFlagWasSet());
   } else {
-    LOG(INFO) << "Take photo";
     buffers_[buffer.index].set_payload(buffer.bytesused);
+    ::base::Optional<CameraFrame> argb_frame =
+        ConvertToARGB(buffers_[buffer.index], camera_format_);
+    if (argb_frame.has_value()) {
+      callback_.Run(argb_frame.value());
+    } else {
+      callback_.Run(errors::FailedToConvertToARGB());
+    }
   }
 
   if (DoIoctl(VIDIOC_QBUF, &buffer) < 0) {
-    error_status_ = errors::FailedToEnqueueBuffer();
+    callback_.Run(errors::FailedToEnqueueBuffer());
+    return;
   }
 
   thread_.task_runner()->PostTask(
@@ -156,7 +210,19 @@ void V4l2Camera::DoTakePhoto() {
 }
 
 int V4l2Camera::DoIoctl(int request, void* argp) {
-  return HANDLE_EINTR(ioctl(fd_, request, argp));
+  int ret = HANDLE_EINTR(ioctl(fd_, request, argp));
+  DPLOG_IF(ERROR, ret < 0) << "ioctl";
+  return ret;
+}
+
+bool V4l2Camera::RunIoctl(int request, void* argp) {
+  int num_retries = 0;
+  for (; DoIoctl(request, argp) < 0 && num_retries < kMaxIOCtrlRetries;
+       ++num_retries) {
+    DPLOG(WARNING) << "ioctl";
+  }
+  DPLOG_IF(ERROR, num_retries == kMaxIOCtrlRetries);
+  return num_retries != kMaxIOCtrlRetries;
 }
 
 }  // namespace felicia

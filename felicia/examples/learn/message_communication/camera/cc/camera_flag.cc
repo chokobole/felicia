@@ -12,6 +12,8 @@ CameraFlag::CameraFlag() {
   {
 #if defined(OS_LINUX)
     std::string device_id = "/dev/video0";
+#else
+    std::string device_id = "";
 #endif
     StringDefaultFlag::Builder builder(MakeValueStore(&device_id_, device_id));
 

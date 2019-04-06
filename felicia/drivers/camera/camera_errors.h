@@ -1,10 +1,11 @@
 #ifndef FELICIA_DRIVERS_CAMERA_CAMERA_ERRORS_H_
 #define FELICIA_DRIVERS_CAMERA_CAMERA_ERRORS_H_
 
-#include "felicia/core/lib/error/errors.h"
-
 #include "third_party/chromium/base/strings/string_util.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
+
+#include "felicia/core/lib/error/errors.h"
+#include "felicia/drivers/camera/camera_format.h"
 
 namespace felicia {
 
@@ -44,6 +45,23 @@ inline ::felicia::Status FailedToDequeueBuffer() {
 
 inline ::felicia::Status FailedToStream() {
   return Unavailable("Failed to stream.");
+}
+
+inline ::felicia::Status V4l2ErrorFlagWasSet() {
+  return Unavailable("V4l2 Error flag was set.");
+}
+
+inline ::felicia::Status FailedToGetFormat() {
+  return Unavailable("Failed to get format.");
+}
+
+inline ::felicia::Status FailedToSetFormat(CameraFormat camera_format) {
+  return InvalidArgument(::base::StringPrintf(
+      "Failed to set format %s.", camera_format.ToString().c_str()));
+}
+
+inline ::felicia::Status FailedToConvertToARGB() {
+  return Unavailable(::base::StringPrintf("Failed To convert to ARGB."));
 }
 
 }  // namespace errors
