@@ -4,6 +4,8 @@ const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 const StartServerPlugin = require('start-server-webpack-plugin');
 
+const ROOT_PATH = resolve(__dirname, '..');
+
 const CONFIG = {
   entry: {
     server: resolve('src/main.js'),
@@ -12,6 +14,15 @@ const CONFIG = {
   target: 'node',
 
   externals: [nodeExternals()],
+
+  module: {
+    rules: [
+      {
+        test: /\.node$/,
+        use: 'node-loader',
+      }
+    ]
+  },
 
   plugins: [
     new webpack.DefinePlugin({
@@ -46,15 +57,17 @@ module.exports = env => {
 
       devtool: 'source-map',
 
-      module: {
-        rules: [
-          {
-            enforce: 'pre',
-            test: /\.js$/,
-            use: ['source-map-loader'],
-          },
-        ],
-      },
+      resolve: {
+        alias: {
+          'felicia_js.node': resolve(ROOT_PATH, '../felicia/js/build/Release/felicia_js.node')
+        }
+      }
+    });
+
+    config.module.rules = config.module.rules.concat({
+      enforce: 'pre',
+      test: /\.js$/,
+      use: ['source-map-loader'],
     });
 
     config.plugins = config.plugins.concat([

@@ -5,6 +5,7 @@ const devMiddleware = require('./lib/dev-middleware');
 const environment = require('./lib/environment');
 const packagejson = require('../package.json');
 const websocketMiddleWare = require('./websocket');
+const feliciaJs = require('felicia_js.node');
 
 const app = express();
 
@@ -19,6 +20,8 @@ if (environment.isDevelopment) {
 app.use(express.static('static'));
 
 websocketMiddleWare(app);
+
+console.log(feliciaJs.hello());
 
 app.listen(HTTP_PORT, () =>
   console.log(`Running FeliciaViz-${packagejson.version} on ${HTTP_PORT}`)

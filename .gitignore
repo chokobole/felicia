@@ -16,3 +16,4 @@ node_modules
 __pycache__
 /bazel-*
 /.bazelrc.user
+felicia/js/build
