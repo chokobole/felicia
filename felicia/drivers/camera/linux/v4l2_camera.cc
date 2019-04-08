@@ -194,6 +194,8 @@ void V4l2Camera::DoTakePhoto() {
     ::base::Optional<CameraFrame> argb_frame =
         ConvertToARGB(buffers_[buffer.index], camera_format_);
     if (argb_frame.has_value()) {
+      argb_frame.value().set_timestamp(
+          ::base::Time::FromTimeVal(buffer.timestamp));
       callback_.Run(argb_frame.value());
     } else {
       callback_.Run(errors::FailedToConvertToARGB());

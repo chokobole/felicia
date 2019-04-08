@@ -23,6 +23,7 @@ fel_cc_library(
         "//felicia/core/communication",
         "//felicia/core/master:master_proxy",
         "//felicia/drivers/camera",
+        "//felicia/examples/learn/message_communication/camera:camera_message_proto_cc",
     ],
 )
 
@@ -33,6 +34,7 @@ fel_cc_library(
         "//felicia/core/communication",
         "//felicia/core/master:master_proxy",
         "//felicia/drivers/camera",
+        "//felicia/examples/learn/message_communication/camera:camera_message_proto_cc",
     ],
 )
 

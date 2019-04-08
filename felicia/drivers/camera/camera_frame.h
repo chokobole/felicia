@@ -3,14 +3,15 @@
 
 #include <memory>
 
+#include "third_party/chromium/base/callback.h"
+#include "third_party/chromium/base/optional.h"
+#include "third_party/chromium/base/time/time.h"
+
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/statusor.h"
 #include "felicia/core/lib/unit/geometry/size.h"
 #include "felicia/drivers/camera/camera_buffer.h"
 #include "felicia/drivers/camera/camera_format.h"
-
-#include "third_party/chromium/base/callback.h"
-#include "third_party/chromium/base/optional.h"
 
 namespace felicia {
 
@@ -28,9 +29,13 @@ class EXPORT CameraFrame {
   size_t size() const;
   CameraFormat::PixelFormat pixel_format() const;
 
+  void set_timestamp(::base::Time time);
+  ::base::Time timestamp() const;
+
  private:
   uint8_t* data_;
   CameraFormat camera_format_;
+  ::base::Time timestamp_;
 };
 
 EXPORT ::base::Optional<CameraFrame> ConvertToARGB(CameraBuffer camera_buffer,

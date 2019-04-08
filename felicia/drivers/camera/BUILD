@@ -35,6 +35,6 @@ fel_cc_library(
     ]),
     deps = [
         "//felicia/core/lib",
-        "@libyuv//:libyuv",
+        "@libyuv",
     ],
 )

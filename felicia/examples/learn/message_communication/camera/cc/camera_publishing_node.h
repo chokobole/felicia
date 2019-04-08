@@ -1,8 +1,10 @@
 #ifndef FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_CAMERA_CC_CAMERA_PUBLISHING_NODE_H_
 #define FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_CAMERA_CC_CAMERA_PUBLISHING_NODE_H_
 
+#include "felicia/core/communication/publisher.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/drivers/camera/camera_factory.h"
+#include "felicia/examples/learn/message_communication/camera/camera_message.pb.h"
 
 namespace felicia {
 
@@ -23,30 +25,65 @@ class CameraPublishingNode : public NodeLifecycle {
   void OnInit() override {
     std::cout << "CameraPublishingNode::OnInit()" << std::endl;
     CameraDescriptor descriptor(display_name_, device_id_);
-    std::unique_ptr<CameraInterface> camera =
-        CameraFactory::NewCamera(descriptor);
-    CHECK(camera->Init().ok());
-    camera->Start(::base::BindRepeating(&CameraPublishingNode::OnImage,
-                                        ::base::Unretained(this)));
+    camera_ = CameraFactory::NewCamera(descriptor);
+    CHECK(camera_->Init().ok());
+  }
+
+  void OnDidCreate(const NodeInfo& node_info) override {
+    std::cout << "CameraPublishingNode::OnDidCreate()" << std::endl;
+    node_info_ = node_info;
+    RequestPublish();
+  }
+
+  void OnError(const Status& s) override {
+    std::cout << "CameraPublishingNode::OnError()" << std::endl;
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
+  }
+
+  void RequestPublish() {
+    publisher_.RequestPublish(
+        node_info_, topic_, channel_def_,
+        ::base::BindOnce(&CameraPublishingNode::OnRequestPublish,
+                         ::base::Unretained(this)));
+  }
+
+  void OnRequestPublish(const Status& s) {
+    std::cout << "CameraPublishingNode::OnRequestPublish()" << std::endl;
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    camera_->Start(::base::BindRepeating(&CameraPublishingNode::OnImage,
+                                         ::base::Unretained(this)));
   }
 
   void OnImage(StatusOr<CameraFrame> status_or) {
     LOG(INFO) << "CameraPublishingNode::OnImage" << std::endl;
-    static int frame_number = 0;
     if (status_or.ok()) {
-      CameraFrame frame = std::move(status_or.ValueOrDie());
-      char filename[15];
-      frame_number++;
-      sprintf(filename, "frame-%d.argb", frame_number);
-      FILE* fp = fopen(filename, "wb");
+      CameraFrame camera_frame = status_or.ValueOrDie();
 
-      fwrite(frame.data(), frame.size(), 1, fp);
+      if (last_timestamp_.is_null()) {
+        last_timestamp_ = camera_frame.timestamp();
+      } else {
+        if (camera_frame.timestamp() - last_timestamp_ <
+            ::base::TimeDelta::FromMilliseconds(100)) {
+          return;
+        } else {
+          last_timestamp_ = camera_frame.timestamp();
+        }
+      }
 
-      fflush(fp);
-      fclose(fp);
+      CameraMessage message;
+      message.set_data(camera_frame.data(), camera_frame.size());
+      message.set_timestamp(camera_frame.timestamp().ToDoubleT());
+      publisher_.Publish(std::move(message),
+                         ::base::BindOnce(&CameraPublishingNode::OnPublish,
+                                          ::base::Unretained(this)));
     } else {
       LOG(ERROR) << status_or.status().error_message();
     }
+  }
+
+  void OnPublish(const Status& s) {
+    std::cout << "CameraPublishingNode::OnPublish()" << std::endl;
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
  private:
@@ -55,6 +92,9 @@ class CameraPublishingNode : public NodeLifecycle {
   ChannelDef channel_def_;
   std::string display_name_;
   std::string device_id_;
+  Publisher<CameraMessage> publisher_;
+  std::unique_ptr<CameraInterface> camera_;
+  ::base::Time last_timestamp_;
 };
 
 }  // namespace felicia
