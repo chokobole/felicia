@@ -11,6 +11,9 @@ const app = express();
 if (environment.isDevelopment) {
   app.use(morgan('dev'));
   devMiddleware(app);
+} else {
+  app.use(morgan('common'));
+  app.use(express.static('dist'));
 }
 
 app.use(express.static('static'));

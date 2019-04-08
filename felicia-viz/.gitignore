@@ -1,2 +1,2 @@
-**/dist/**/*
-!**/dist/**/index.html
+dist
+!frontend/dist/index.html

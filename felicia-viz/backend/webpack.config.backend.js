@@ -32,7 +32,7 @@ module.exports = env => {
     },
   });
 
-  if (env.prod) {
+  if (env.production) {
     // production
     Object.assign(config, {
       mode: 'production',

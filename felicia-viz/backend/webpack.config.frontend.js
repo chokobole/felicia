@@ -52,7 +52,13 @@ const CONFIG = {
 
 module.exports = env => {
   const config = Object.assign({}, CONFIG);
-  const { rootPath } = env;
+  let rootPath;
+  if (env.build) {
+    rootPath = '..';
+  } else {
+    /* eslint prefer-destructuring: "off" */
+    rootPath = env.rootPath;
+  }
 
   Object.assign(config, {
     entry: {
@@ -60,7 +66,7 @@ module.exports = env => {
     },
 
     output: {
-      path: resolve(rootPath, 'dist'),
+      path: resolve(rootPath, 'backend/dist'),
       publicPath: '/',
       filename: 'bundle.js',
     },
@@ -70,7 +76,7 @@ module.exports = env => {
     },
   });
 
-  if (env.prod) {
+  if (env.production) {
     // production
     Object.assign(config, {
       mode: 'production',
@@ -81,8 +87,6 @@ module.exports = env => {
       mode: 'development',
 
       devtool: 'source-map',
-
-      watch: true,
     });
 
     config.module.rules = config.module.rules.concat({
@@ -106,9 +110,14 @@ module.exports = env => {
       new webpack.HotModuleReplacementPlugin(),
       new webpack.NoEmitOnErrorsPlugin(),
       new webpack.DefinePlugin({
-        SERVER_ADDRESS: 'localhost',
+        SERVER_ADDRESS: JSON.stringify('localhost'),
       })
     );
+
+    if (true) {
+      const a = env.a;
+      console.log(a);
+    }
   }
 
   return config;
