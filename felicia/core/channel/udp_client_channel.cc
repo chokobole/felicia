@@ -46,13 +46,6 @@ void UDPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
     return;
   }
 
-  rv = client_socket->SetReceiveBufferSize(
-      ChannelBase::GetMaxReceiveBufferSize());
-  if (rv != ::net::OK) {
-    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
-    return;
-  }
-
   rv = client_socket->JoinGroup(ip_endpoint.address());
   if (rv != ::net::OK) {
     std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
@@ -64,27 +57,57 @@ void UDPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
   std::move(callback).Run(Status::OK());
 }
 
-void UDPClientChannel::Write(::net::IOBufferWithSize* buffer,
+void UDPClientChannel::Write(::net::IOBuffer* buffer, int size,
                              StatusCallback callback) {
   DCHECK(!callback.is_null());
+  DCHECK(size > 0);
   write_callback_ = std::move(callback);
-  int rv = socket_->SendTo(
-      buffer, buffer->size(), multicast_ip_endpoint_,
-      ::base::BindOnce(&UDPClientChannel::OnWrite, ::base::Unretained(this)));
-  if (rv != ::net::ERR_IO_PENDING) {
-    OnWrite(rv);
+
+  int to_write = size;
+  int written = 0;
+  while (to_write > 0) {
+    int rv = socket_->SendTo(
+        buffer + written, to_write, multicast_ip_endpoint_,
+        ::base::BindOnce(&UDPClientChannel::OnWrite, ::base::Unretained(this)));
+
+    if (rv == ::net::ERR_IO_PENDING) break;
+
+    if (rv > 0) {
+      to_write -= rv;
+      written += rv;
+    }
+
+    if (to_write == 0 || rv <= 0) {
+      OnWrite(rv);
+      break;
+    }
   }
 }
 
-void UDPClientChannel::Read(::net::IOBufferWithSize* buffer,
+void UDPClientChannel::Read(::net::IOBuffer* buffer, int size,
                             StatusCallback callback) {
   DCHECK(!callback.is_null());
+  DCHECK(size > 0);
   read_callback_ = std::move(callback);
-  int rv = socket_->Read(
-      buffer, buffer->size(),
-      ::base::BindOnce(&UDPClientChannel::OnRead, ::base::Unretained(this)));
-  if (rv != ::net::ERR_IO_PENDING) {
-    OnRead(rv);
+
+  int to_read = size;
+  int read = 0;
+  while (to_read > 0) {
+    int rv = socket_->Read(
+        buffer + read, to_read,
+        ::base::BindOnce(&UDPClientChannel::OnRead, ::base::Unretained(this)));
+
+    if (rv == ::net::ERR_IO_PENDING) break;
+
+    if (rv > 0) {
+      to_read -= rv;
+      read += rv;
+    }
+
+    if (to_read == 0 || rv <= 0) {
+      OnRead(rv);
+      break;
+    }
   }
 }
 

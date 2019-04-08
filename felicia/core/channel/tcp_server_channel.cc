@@ -62,12 +62,13 @@ void TCPServerChannel::DoAcceptLoop(AcceptCallback callback) {
   DoAcceptLoop();
 }
 
-void TCPServerChannel::Write(::net::IOBufferWithSize* buffer,
+void TCPServerChannel::Write(::net::IOBuffer* buffer, int size,
                              StatusCallback callback) {
   DCHECK_EQ(0, to_write_count_);
   DCHECK_EQ(0, written_count_);
   DCHECK(write_callback_.is_null());
   DCHECK(!callback.is_null());
+  DCHECK(size > 0);
 
   EraseClosedSockets();
 
@@ -81,24 +82,37 @@ void TCPServerChannel::Write(::net::IOBufferWithSize* buffer,
   write_callback_ = std::move(callback);
   auto it = accepted_sockets_.begin();
   while (it != accepted_sockets_.end()) {
-    int rv =
-        (*it)->Write(buffer, buffer->size(),
-                     ::base::BindOnce(&TCPServerChannel::OnWrite,
-                                      ::base::Unretained(this), (*it).get()),
-                     ::net::DefineNetworkTrafficAnnotation("tcp_server_channel",
-                                                           "Send Message"));
-    if (rv != ::net::ERR_IO_PENDING) {
-      OnWrite((*it).get(), rv);
+    int to_write = size;
+    int written = 0;
+    while (to_write > 0) {
+      int rv =
+          (*it)->Write(buffer + written, to_write,
+                       ::base::BindOnce(&TCPServerChannel::OnWrite,
+                                        ::base::Unretained(this), (*it).get()),
+                       ::net::DefineNetworkTrafficAnnotation(
+                           "tcp_server_channel", "Send Message"));
+      if (rv == ::net::ERR_IO_PENDING) break;
+
+      if (rv >= 0) {
+        to_write -= rv;
+        written += rv;
+      }
+
+      if (to_write == 0 || rv <= 0) {
+        OnWrite((*it).get(), rv);
+        break;
+      }
     }
 
     it++;
   }
 }
 
-void TCPServerChannel::Read(::net::IOBufferWithSize* buffer,
+void TCPServerChannel::Read(::net::IOBuffer* buffer, int size,
                             StatusCallback callback) {
   DCHECK(read_callback_.is_null());
   DCHECK(!callback.is_null());
+  DCHECK(size > 0);
 
   EraseClosedSockets();
 
@@ -110,11 +124,25 @@ void TCPServerChannel::Read(::net::IOBufferWithSize* buffer,
 
   read_callback_ = std::move(callback);
   auto it = accepted_sockets_.rbegin();
-  int rv = (*it)->Read(buffer, buffer->size(),
-                       ::base::BindOnce(&TCPServerChannel::OnRead,
-                                        ::base::Unretained(this), (*it).get()));
-  if (rv != ::net::ERR_IO_PENDING) {
-    OnRead((*it).get(), rv);
+
+  int to_read = size;
+  int read = 0;
+  while (to_read > 0) {
+    int rv =
+        (*it)->Read(buffer + read, to_read,
+                    ::base::BindOnce(&TCPServerChannel::OnRead,
+                                     ::base::Unretained(this), (*it).get()));
+
+    if (rv == ::net::ERR_IO_PENDING) break;
+
+    if (rv >= 0) {
+      to_read -= rv;
+      read += rv;
+    }
+
+    if (to_read == 0 || rv <= 0) {
+      OnRead((*it).get(), rv);
+    }
   }
 }
 

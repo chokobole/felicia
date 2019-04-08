@@ -16,6 +16,8 @@ class EXPORT TCPChannelBase : public ChannelBase {
   TCPChannelBase();
   ~TCPChannelBase() override;
 
+  bool IsTCPChannelBase() const override;
+
   TCPClientChannel* ToTCPClientChannel();
   TCPServerChannel* ToTCPServerChannel();
 

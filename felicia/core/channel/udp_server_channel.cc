@@ -56,27 +56,55 @@ StatusOr<ChannelSource> UDPServerChannel::Bind() {
   return ToChannelSource(multicast_ip_endpoint_, ChannelDef::UDP);
 }
 
-void UDPServerChannel::Write(::net::IOBufferWithSize* buffer,
+void UDPServerChannel::Write(::net::IOBuffer* buffer, int size,
                              StatusCallback callback) {
   DCHECK(!callback.is_null());
+  DCHECK(size > 0);
   write_callback_ = std::move(callback);
-  int rv = socket_->SendTo(
-      buffer, buffer->size(), multicast_ip_endpoint_,
-      ::base::BindOnce(&UDPServerChannel::OnWrite, ::base::Unretained(this)));
-  if (rv != ::net::ERR_IO_PENDING) {
-    OnWrite(rv);
+  int to_write = size;
+  int written = 0;
+  while (to_write > 0) {
+    int rv = socket_->SendTo(
+        buffer + written, to_write, multicast_ip_endpoint_,
+        ::base::BindOnce(&UDPServerChannel::OnWrite, ::base::Unretained(this)));
+
+    if (rv == ::net::ERR_IO_PENDING) break;
+
+    if (rv >= 0) {
+      to_write -= rv;
+      written += rv;
+    }
+
+    if (to_write == 0 || rv <= 0) {
+      OnWrite(rv);
+      break;
+    }
   }
 }
 
-void UDPServerChannel::Read(::net::IOBufferWithSize* buffer,
+void UDPServerChannel::Read(::net::IOBuffer* buffer, int size,
                             StatusCallback callback) {
   DCHECK(!callback.is_null());
+  DCHECK(size > 0);
   read_callback_ = std::move(callback);
-  int rv = socket_->RecvFrom(
-      buffer, buffer->size(), &recv_from_ip_endpoint_,
-      ::base::BindOnce(&UDPServerChannel::OnRead, ::base::Unretained(this)));
-  if (rv != ::net::ERR_IO_PENDING) {
-    OnRead(rv);
+  int to_read = size;
+  int read = 0;
+  while (to_read > 0) {
+    int rv = socket_->RecvFrom(
+        buffer + read, to_read, &recv_from_ip_endpoint_,
+        ::base::BindOnce(&UDPServerChannel::OnRead, ::base::Unretained(this)));
+
+    if (rv == ::net::ERR_IO_PENDING) break;
+
+    if (rv >= 0) {
+      to_read -= rv;
+      read += rv;
+    }
+
+    if (to_read == 0 || rv <= 0) {
+      OnRead(rv);
+      break;
+    }
   }
 }
 

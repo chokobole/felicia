@@ -1,9 +1,13 @@
 #include "felicia/core/channel/udp_channel_base.h"
 
+#include "third_party/chromium/net/base/net_errors.h"
+
 namespace felicia {
 
 UDPChannelBase::UDPChannelBase() = default;
 UDPChannelBase::~UDPChannelBase() = default;
+
+bool UDPChannelBase::IsUDPChannelBase() const { return true; }
 
 UDPClientChannel* UDPChannelBase::ToUDPClientChannel() {
   DCHECK(IsClient());
@@ -20,6 +24,11 @@ void UDPChannelBase::OnWrite(int result) {
 }
 
 void UDPChannelBase::OnRead(int result) {
+  if (result == ::net::ERR_MSG_TOO_BIG) {
+    LOG(ERROR) << "Msg too big";
+    CallbackWithStatus(std::move(read_callback_), 0);
+    return;
+  }
   CallbackWithStatus(std::move(read_callback_), result);
 }
 

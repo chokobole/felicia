@@ -23,8 +23,10 @@ class EXPORT TCPClientChannel : public TCPChannelBase {
 
   void Connect(const ::net::IPEndPoint& ip_endpoint, StatusCallback callback);
 
-  void Write(::net::IOBufferWithSize* buffer, StatusCallback callback) override;
-  void Read(::net::IOBufferWithSize* buffer, StatusCallback callback) override;
+  void Write(::net::IOBuffer* buffer, int size,
+             StatusCallback callback) override;
+  void Read(::net::IOBuffer* buffer, int size,
+            StatusCallback callback) override;
 
  private:
   void OnConnect(int result);

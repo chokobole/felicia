@@ -5,6 +5,8 @@ namespace felicia {
 TCPChannelBase::TCPChannelBase() = default;
 TCPChannelBase::~TCPChannelBase() = default;
 
+bool TCPChannelBase::IsTCPChannelBase() const { return true; }
+
 TCPClientChannel* TCPChannelBase::ToTCPClientChannel() {
   DCHECK(IsClient());
   return reinterpret_cast<TCPClientChannel*>(this);

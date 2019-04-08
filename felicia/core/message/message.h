@@ -2,56 +2,49 @@
 #define FELICIA_CORE_MESSAGE_MESSAGE_H_
 
 #include "google/protobuf/message.h"
-#include "third_party/chromium/base/memory/ref_counted.h"
 #include "third_party/chromium/net/base/io_buffer.h"
 
 #include "felicia/core/message/header.h"
 
 namespace felicia {
 
-class MessageBase {
- public:
-  MessageBase() = default;
-
-  const Header& header() const { return header_; }
-
- protected:
-  // Header always should be set in serializer.
-  void set_heaer(const Header& header) { header_ = header; }
-
-  Header header_;
-};
-
 template <typename T, typename SFINAE = void>
 class Message;
 
 template <typename T>
-class Message<
-    T, std::enable_if_t<std::is_base_of<::google::protobuf::Message, T>::value>>
-    : public MessageBase {
+class Message<T, std::enable_if_t<
+                     std::is_base_of<::google::protobuf::Message, T>::value>> {
  public:
-  static bool SerializeToBuffer(
-      const T* proto, scoped_refptr<::net::IOBufferWithSize>* buffer) {
+  static bool SerializeToBuffer(const T* proto, ::net::IOBuffer* buffer,
+                                size_t* size) {
     std::string text;
-    bool ret = proto->SerializeToString(&text);
-    if (!ret) return false;
+    if (!proto->SerializeToString(&text)) return false;
 
     Header header;
     header.set_size(text.length());
-    *buffer = ::base::MakeRefCounted<::net::IOBufferWithSize>(sizeof(Header) +
-                                                              text.length());
-    memcpy((*buffer)->data(), &header, sizeof(Header));
-    memcpy((*buffer)->data() + sizeof(Header), text.data(), text.length());
+    memcpy(buffer->data(), &header, sizeof(Header));
+    memcpy(buffer->data() + sizeof(Header), text.data(), text.length());
+
+    *size = sizeof(Header) + text.length();
 
     return true;
   }
 
-  static bool ParseFromBuffer(scoped_refptr<::net::IOBufferWithSize> buffer,
-                              T* proto) {
-    Header header;
-    if (!Header::FromBytes(buffer->data(), &header)) return false;
+  static bool ParseHeaderFromBuffer(::net::IOBuffer* buffer, Header* header) {
+    if (!Header::FromBytes(buffer->data(), header)) return false;
 
-    std::string text(buffer->data() + sizeof(Header), header.size());
+    return true;
+  }
+
+  static bool ParseMessageFromBuffer(::net::IOBuffer* buffer,
+                                     const Header& header,
+                                     bool buffer_include_header, T* proto) {
+    std::string text;
+    char* start = buffer->data();
+    if (buffer_include_header) {
+      start += sizeof(Header);
+    }
+    text = std::string(start, header.size());
     if (!proto->ParseFromString(text)) return false;
 
     return true;

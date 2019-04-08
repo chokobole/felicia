@@ -48,29 +48,57 @@ void TCPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
   }
 }
 
-void TCPClientChannel::Write(::net::IOBufferWithSize* buffer,
+void TCPClientChannel::Write(::net::IOBuffer* buffer, int size,
                              StatusCallback callback) {
   DCHECK(!callback.is_null());
+  DCHECK(size > 0);
   write_callback_ = std::move(callback);
-  int rv = socket_->Write(
-      buffer, buffer->size(),
-      ::base::BindOnce(&TCPClientChannel::OnWrite, ::base::Unretained(this)),
-      ::net::DefineNetworkTrafficAnnotation("tcp_client_channel",
-                                            "Send Message"));
-  if (rv != ::net::ERR_IO_PENDING) {
-    OnWrite(rv);
+  int to_write = size;
+  int written = 0;
+  while (to_write > 0) {
+    int rv = socket_->Write(
+        buffer + written, to_write,
+        ::base::BindOnce(&TCPClientChannel::OnWrite, ::base::Unretained(this)),
+        ::net::DefineNetworkTrafficAnnotation("tcp_client_channel",
+                                              "Send Message"));
+
+    if (rv == ::net::ERR_IO_PENDING) break;
+
+    if (rv >= 0) {
+      to_write -= rv;
+      written += rv;
+    }
+
+    if (to_write == 0 || rv <= 0) {
+      OnWrite(rv);
+      break;
+    }
   }
 }
 
-void TCPClientChannel::Read(::net::IOBufferWithSize* buffer,
+void TCPClientChannel::Read(::net::IOBuffer* buffer, int size,
                             StatusCallback callback) {
   DCHECK(!callback.is_null());
+  DCHECK(size > 0);
   read_callback_ = std::move(callback);
-  int rv = socket_->Read(
-      buffer, buffer->size(),
-      ::base::BindOnce(&TCPClientChannel::OnRead, ::base::Unretained(this)));
-  if (rv != ::net::ERR_IO_PENDING) {
-    OnRead(rv);
+  int to_read = size;
+  int read = 0;
+  while (to_read > 0) {
+    int rv = socket_->Read(
+        buffer + read, to_read,
+        ::base::BindOnce(&TCPClientChannel::OnRead, ::base::Unretained(this)));
+
+    if (rv == ::net::ERR_IO_PENDING) break;
+
+    if (rv >= 0) {
+      to_read -= rv;
+      read += rv;
+    }
+
+    if (to_read == 0 || rv <= 0) {
+      OnRead(rv);
+      break;
+    }
   }
 }
 

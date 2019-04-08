@@ -9,6 +9,9 @@
 
 namespace felicia {
 
+class TCPChannelBase;
+class UDPChannelBase;
+
 class EXPORT ChannelBase {
  public:
   ChannelBase();
@@ -17,12 +20,18 @@ class EXPORT ChannelBase {
   virtual bool IsClient() const;
   virtual bool IsServer() const;
 
-  virtual void Write(::net::IOBufferWithSize* buffer,
+  virtual bool IsTCPChannelBase() const;
+  virtual bool IsUDPChannelBase() const;
+
+  TCPChannelBase* ToTCPChannelBase();
+  UDPChannelBase* ToUDPChannelBase();
+
+  virtual void Write(::net::IOBuffer* buffer, int size,
                      StatusCallback callback) = 0;
-  virtual void Read(::net::IOBufferWithSize* buffer,
+  virtual void Read(::net::IOBuffer* buffer, int size,
                     StatusCallback callback) = 0;
 
-  static size_t GetMaxReceiveBufferSize();
+  static size_t GetMaximumBufferSize();
 
  protected:
   static void CallbackWithStatus(StatusCallback callback, int result);

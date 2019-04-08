@@ -16,6 +16,8 @@ class EXPORT UDPChannelBase : public ChannelBase {
   UDPChannelBase();
   ~UDPChannelBase();
 
+  bool IsUDPChannelBase() const override;
+
   UDPClientChannel* ToUDPClientChannel();
   UDPServerChannel* ToUDPServerChannel();
 
