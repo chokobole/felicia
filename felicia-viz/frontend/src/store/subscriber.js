@@ -29,4 +29,4 @@ class Subscriber {
   }
 }
 
-export default new Subscriber('ws://localhost:3001');
+export default new Subscriber(`ws://${SERVER_ADDRESS}:${WEBSOCKET_PORT}`);

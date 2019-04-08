@@ -4,9 +4,9 @@
   "description": "Backed for felicia-viz",
   "main": "src/main.js",
   "scripts": {
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist && mkdir -p dist",
     "build": "rm -rf dist && NODE_ENV=production webpack -p --env.prod",
-    "start:dev": "NODE_ENV=development node src/main.js",
+    "start:dev": "webpack --mode development --config webpack.config.backend.js --env.dev",
     "start:prod": "NODE_ENV=production node src/main.js"
   },
   "dependencies": {
@@ -25,7 +25,8 @@
     "webpack": "^4.29.6",
     "webpack-cli": "^3.3.0",
     "webpack-dev-middleware": "^3.6.1",
-    "webpack-hot-middleware": "^2.24.3"
+    "webpack-hot-middleware": "^2.24.3",
+    "webpack-node-externals": "^1.7.2"
   },
   "repository": {
     "type": "git",

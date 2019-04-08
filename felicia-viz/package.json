@@ -5,6 +5,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
+    "clean": "lerna clean",
     "lint": "eslint .",
     "format": "prettier --write '**/*.js' '**/*.json' '!**/package-lock.json'"
   },

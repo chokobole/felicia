@@ -1,6 +1,7 @@
 const { resolve } = require('path');
 
-const ROOT_PATH = resolve(__dirname);
+const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const CONFIG = {
   module: {
@@ -40,12 +41,34 @@ const CONFIG = {
       },
     ],
   },
+
+  plugins: [
+    new webpack.DefinePlugin({
+      HTTP_PORT: 3000,
+      WEBSOCKET_PORT: 3001,
+    }),
+  ],
 };
 
-module.exports = (env, plugins) => {
+module.exports = env => {
   const config = Object.assign({}, CONFIG);
+  const { rootPath } = env;
 
-  config.plugins = plugins;
+  Object.assign(config, {
+    entry: {
+      app: resolve(rootPath, 'frontend/src/main.js'),
+    },
+
+    output: {
+      path: resolve(rootPath, 'dist'),
+      publicPath: '/',
+      filename: 'bundle.js',
+    },
+
+    resolve: {
+      modules: [resolve(rootPath, 'frontend/src'), resolve(rootPath, 'frontend/node_modules')],
+    },
+  });
 
   if (env.prod) {
     // production
@@ -59,14 +82,7 @@ module.exports = (env, plugins) => {
 
       devtool: 'source-map',
 
-      resolve: {
-        modules: [resolve(ROOT_PATH, 'frontend/src'), 'node_modules'],
-        alias: {
-          'react-dom': '@hot-loader/react-dom',
-          '@felicia-viz/config': resolve(ROOT_PATH, 'modules/config/src'),
-          '@felicia-viz/ui': resolve(ROOT_PATH, 'modules/ui/src'),
-        },
-      },
+      watch: true,
     });
 
     config.module.rules = config.module.rules.concat({
@@ -74,6 +90,25 @@ module.exports = (env, plugins) => {
       test: /\.js$/,
       use: ['source-map-loader'],
     });
+
+    config.resolve.alias = {
+      'react-dom': '@hot-loader/react-dom',
+      '@felicia-viz/config': resolve(rootPath, 'modules/config/src'),
+      '@felicia-viz/ui': resolve(rootPath, 'modules/ui/src'),
+    };
+
+    config.plugins.unshift(
+      new HtmlWebpackPlugin({
+        template: resolve(rootPath, 'frontend/dist/index.html'),
+        inject: true,
+      }),
+      new webpack.optimize.OccurrenceOrderPlugin(),
+      new webpack.HotModuleReplacementPlugin(),
+      new webpack.NoEmitOnErrorsPlugin(),
+      new webpack.DefinePlugin({
+        SERVER_ADDRESS: 'localhost',
+      })
+    );
   }
 
   return config;
