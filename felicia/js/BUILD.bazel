@@ -1,0 +1,7 @@
+load("//bazel:felicia_node_gyp.bzl", "fel_node_gyp_build")
+
+fel_node_gyp_build(
+    name = "felicia_js",
+    srcs = ["felicia_js.cc"],
+    binding_gyp = "binding.gyp",
+)

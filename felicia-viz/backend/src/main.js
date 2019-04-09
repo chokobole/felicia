@@ -1,11 +1,11 @@
 const express = require('express');
 const morgan = require('morgan');
 
+const feliciaJs = require('felicia_js.node');
 const devMiddleware = require('./lib/dev-middleware');
 const environment = require('./lib/environment');
 const packagejson = require('../package.json');
 const websocketMiddleWare = require('./websocket');
-const feliciaJs = require('felicia_js.node');
 
 const app = express();
 

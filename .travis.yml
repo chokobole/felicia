@@ -25,6 +25,8 @@ matrix:
         - PYTHON_BIN_PATH=/usr/local/bin/python3
       install:
         - ./installers/install_bazel.sh
+        - ./installers/install_nodejs.sh
+        - ./installers/install_nodejs_deps.sh
         - ./installers/install_python_deps.sh
       script:
         - bazel build --cpu darwin_x86_64 //felicia/...
@@ -35,11 +37,14 @@ matrix:
       env:
         - USE_CLANG_CL=1
         - PYTHON_BIN_PATH=/c/Python3/python.exe
-        - PATH=$PATH:/c/Python3:/c/Python3/Scripts
+        - PATH="$PATH:/c/Python3:/c/Python3/Scripts:/c/Program Files/nodejs:/c/Users/travis/AppData/Roaming/npm"
       install:
         - choco install python3 --params "/InstallDir:C:\Python3"
         - ./installers/install_python_deps.sh
         - choco install bazel --version 0.20.0
+        - choco install nodejs.install --version 10.15.3
+        - ./installers/install_nodejs_deps.sh
+      before_script:
       script:
         - bazel build //felicia/...
         - bazel test --test_tag_filters -benchmark //felicia/...

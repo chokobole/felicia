@@ -20,8 +20,8 @@ const CONFIG = {
       {
         test: /\.node$/,
         use: 'node-loader',
-      }
-    ]
+      },
+    ],
   },
 
   plugins: [
@@ -59,9 +59,12 @@ module.exports = env => {
 
       resolve: {
         alias: {
-          'felicia_js.node': resolve(ROOT_PATH, '../felicia/js/build/Release/felicia_js.node')
-        }
-      }
+          'felicia_js.node': resolve(
+            ROOT_PATH,
+            '../bazel-bin/felicia/js/build/Release/felicia_js.node'
+          ),
+        },
+      },
     });
 
     config.module.rules = config.module.rules.concat({

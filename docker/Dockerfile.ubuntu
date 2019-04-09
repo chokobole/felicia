@@ -8,6 +8,7 @@ RUN apt-get update -y && \
     curl \
     git \
     libtool \
+    python \
     python3 \
     python3-dev \
     unzip \
@@ -22,15 +23,20 @@ RUN groupadd -r ${USER} && useradd --no-log-init -m -r -g ${USER} ${USER}
 USER ${USER}
 ENV HOME ${HOME}
 
-# bazel is installed at ${HOME}/bin
+# bazel is installed location
 ENV PATH="${HOME}/bin:${PATH}"
-# pip is installed at ${HOME}/.local/bin
+# pip is installed location
 ENV PATH="${HOME}/.local/bin:${PATH}"
 # refer to third_party/py/python_configure_path.bzl
 ENV PYTHON_BIN_PATH=/usr/bin/python3
+# nodejs installed location
+ARG NODE_VERSION=v10.15.3
+ENV PATH="${HOME}/.nvm/versions/node/${NODE_VERSION}/bin:${PATH}"
 
 COPY installers /tmp/installers
 RUN cd /tmp/ && bash ./installers/install_bazel.sh
+RUN cd /tmp/ && bash ./installers/install_nodejs.sh
+RUN cd /tmp/ && bash ./installers/install_nodejs_deps.sh
 RUN cd /tmp/ && bash ./installers/install_python_deps.sh
 
 COPY --chown=felicia:felicia . /felicia
