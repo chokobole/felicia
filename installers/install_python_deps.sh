@@ -4,8 +4,8 @@ set -e
 
 curl -O https://bootstrap.pypa.io/get-pip.py
 
-if [ "$1" == "--three" ]; then
-  PYTHON_BIN="python3"
+if [ -v PYTHON_BIN_PATH ]; then
+  PYTHON_BIN="$PYTHON_BIN_PATH"
 else
   PYTHON_BIN="python"
 fi
