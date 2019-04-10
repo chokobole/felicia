@@ -37,8 +37,8 @@ bool DynamicProtobufMessage::SerializeToString(std::string* text) const {
   return message_->SerializeToString(text);
 }
 
-bool DynamicProtobufMessage::ParseFromString(const std::string& text) {
-  return message_->ParseFromString(text);
+bool DynamicProtobufMessage::ParseFromArray(const char* data, size_t size) {
+  return message_->ParseFromArray(data, size);
 }
 
 }  // namespace felicia

@@ -46,8 +46,7 @@ class MessageIO<T, std::enable_if_t<
     if (buffer_include_header) {
       start += sizeof(Header);
     }
-    text = std::string(start, header.size());
-    if (!proto->ParseFromString(text)) return false;
+    if (!proto->ParseFromArray(start, header.size())) return false;
 
     return true;
   }

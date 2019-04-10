@@ -17,7 +17,7 @@ class DynamicProtobufMessage {
   std::string DebugString() const;
 
   bool SerializeToString(std::string* text) const;
-  bool ParseFromString(const std::string& text);
+  bool ParseFromArray(const char* data, size_t size);
 
  private:
   ::google::protobuf::Message* message_ = nullptr;
