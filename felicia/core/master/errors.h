@@ -34,6 +34,10 @@ inline ::felicia::Status NodeAlreadyRegistered(const NodeInfo& node_info) {
                                             node_info.name().c_str()));
 }
 
+inline ::felicia::Status WatcherNodeAlreadyRegistered() {
+  return AlreadyExists("Watcher node already exists.");
+}
+
 inline ::felicia::Status TopicAlreadyPublishing(const TopicInfo& topic_info) {
   return AlreadyExists(::base::StringPrintf(
       "Topic '%s' is already being publishied.", topic_info.topic().c_str()));

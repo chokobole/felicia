@@ -7,6 +7,7 @@ package felicia;
 message NodeInfo {
   string name = 1;
   uint32 client_id = 2;
+  bool watcher = 3;
 }
 
 message PubSubTopics {
@@ -22,7 +23,8 @@ message ClientInfo {
 
 message TopicInfo {
   string topic = 1;
-  ChannelSource topic_source = 2;
+  string type_name = 2;
+  ChannelSource topic_source = 3;
 }
 
 // Element inside NodeFilter are mutually exclusive.
@@ -39,6 +41,7 @@ message NodeFilter {
   string publishing_topic = 2;
   string subscribing_topic = 3;
   string name = 4;
+  bool watcher = 5;
 }
 
 // Element inside TopicFilter are mutually exclusive.

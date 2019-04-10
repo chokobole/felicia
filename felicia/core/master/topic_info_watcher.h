@@ -24,6 +24,8 @@ class TopicInfoWatcher {
   void RegisterCallback(const std::string& topic,
                         NewTopicInfoCallback callback);
 
+  void RegisterAllTopicCallback(NewTopicInfoCallback callback);
+
   void UnregisterCallback(const std::string& topic);
 
   void Start();
@@ -38,6 +40,7 @@ class TopicInfoWatcher {
   TopicInfo topic_info_;
   std::unique_ptr<Channel<TopicInfo>> channel_;
   ::base::flat_map<std::string, NewTopicInfoCallback> callback_map_;
+  NewTopicInfoCallback all_topic_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TopicInfoWatcher);
 };

@@ -102,6 +102,15 @@ void Master::RegisterNode(const RegisterNodeRequest* arg,
     return;
   }
 
+  if (node_info.watcher()) {
+    NodeFilter node_filter;
+    node_filter.set_watcher(true);
+    if (FindNodes(node_filter).size() != 0) {
+      std::move(callback).Run(errors::WatcherNodeAlreadyRegistered());
+      return;
+    }
+  }
+
   std::unique_ptr<Node> node = Node::NewNode(node_info);
   if (!node) {
     std::move(callback).Run(errors::NodeAlreadyRegistered(node_info));
@@ -114,6 +123,12 @@ void Master::RegisterNode(const RegisterNodeRequest* arg,
                                      node->node_info().name().c_str());
   AddNode(std::move(node));
   std::move(callback).Run(Status::OK());
+
+  if (node_info.watcher()) {
+    thread_->task_runner()->PostTask(
+        FROM_HERE,
+        ::base::Bind(&Master::NotifyWatcher, ::base::Unretained(this)));
+  }
 }
 
 void Master::UnregisterNode(const UnregisterNodeRequest* arg,
@@ -484,11 +499,36 @@ void Master::NotifyAllSubscribers(const TopicInfo& topic_info) {
   NodeFilter node_filter;
   node_filter.set_subscribing_topic(topic_info.topic());
   std::vector<::base::WeakPtr<Node>> subscribing_nodes = FindNodes(node_filter);
+  node_filter.Clear();
+  node_filter.set_watcher(true);
+  std::vector<::base::WeakPtr<Node>> watcher_nodes = FindNodes(node_filter);
+  subscribing_nodes.insert(subscribing_nodes.end(), watcher_nodes.begin(),
+                           watcher_nodes.end());
   {
     ::base::AutoLock l(lock_);
     for (auto& subscribing_node : subscribing_nodes) {
       if (subscribing_node)
         DoNotifySubscriber(subscribing_node->node_info(), topic_info);
+    }
+  }
+}
+
+void Master::NotifyWatcher() {
+  NodeFilter node_filter;
+  node_filter.set_watcher(true);
+  std::vector<::base::WeakPtr<Node>> watcher_nodes = FindNodes(node_filter);
+  TopicFilter topic_filter;
+  topic_filter.set_all(true);
+  std::vector<TopicInfo> topic_infos = FindTopicInfos(topic_filter);
+  if (watcher_nodes.size() > 0) {
+    ::base::WeakPtr<Node> watcher_node = watcher_nodes[0];
+    {
+      ::base::AutoLock l(lock_);
+      if (watcher_node) {
+        for (TopicInfo& topic_info : topic_infos) {
+          DoNotifySubscriber(watcher_node->node_info(), topic_info);
+        }
+      }
     }
   }
 }

@@ -12,6 +12,16 @@ fel_cc_library(
     deps = [
         "//felicia/core/channel",
         "//felicia/core/master:master_proxy",
-        "//felicia/core/node:node_lifecycle",
     ],
+)
+
+fel_cc_library(
+    name = "dynamic_subscriber",
+    srcs = [
+        "dynamic_subscriber.cc",
+    ],
+    hdrs = [
+        "dynamic_subscriber.h",
+    ],
+    deps = [":communication"],
 )

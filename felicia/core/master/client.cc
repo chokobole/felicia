@@ -108,6 +108,13 @@ std::vector<::base::WeakPtr<Node>> Client::FindNodes(
         nodes.push_back(node->AsWeakPtr());
       }
     }
+  } else if (node_filter.watcher()) {
+    for (auto& node : nodes_) {
+      if (node->node_info().watcher()) {
+        nodes.push_back(node->AsWeakPtr());
+        break;
+      }
+    }
   }
 
   return nodes;

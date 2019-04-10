@@ -12,7 +12,7 @@
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/errors.h"
 #include "felicia/core/lib/error/statusor.h"
-#include "felicia/core/message/message.h"
+#include "felicia/core/message/message_io.h"
 #include "felicia/core/protobuf/channel.pb.h"
 
 namespace felicia {
@@ -84,8 +84,8 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
   }
 
   size_t to_send;
-  if (Message<MessageTy>::SerializeToBuffer(&message, send_buffer_.get(),
-                                            &to_send)) {
+  if (MessageIO<MessageTy>::SerializeToBuffer(&message, send_buffer_.get(),
+                                              &to_send)) {
     DLOG(INFO) << "SendMessage() write bytes: " << to_send;
     this->send_callback_ = std::move(callback);
     channel_->Write(send_buffer_.get(), to_send,
@@ -137,8 +137,8 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
     return;
   }
 
-  if (!Message<MessageTy>::ParseHeaderFromBuffer(receive_buffer_.get(),
-                                                 &header_)) {
+  if (!MessageIO<MessageTy>::ParseHeaderFromBuffer(receive_buffer_.get(),
+                                                   &header_)) {
     std::move(this->receive_callback_)
         .Run(errors::DataLoss("Failed to parse header from buffer."));
     return;
@@ -153,7 +153,7 @@ template <typename MessageTy>
 void Channel<MessageTy>::OnReceiveMessage(const Status& s) {
   DCHECK(channel_->IsTCPChannelBase());
   if (s.ok()) {
-    if (!Message<MessageTy>::ParseMessageFromBuffer(
+    if (!MessageIO<MessageTy>::ParseMessageFromBuffer(
             receive_buffer_.get(), header_, false, this->message_)) {
       std::move(this->receive_callback_)
           .Run(errors::DataLoss("Failed to parse message from buffer."));
@@ -172,14 +172,14 @@ void Channel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
     return;
   }
 
-  if (!Message<MessageTy>::ParseHeaderFromBuffer(receive_buffer_.get(),
-                                                 &header_)) {
+  if (!MessageIO<MessageTy>::ParseHeaderFromBuffer(receive_buffer_.get(),
+                                                   &header_)) {
     std::move(this->receive_callback_)
         .Run(errors::DataLoss("Failed to parse header from buffer."));
     return;
   }
 
-  if (!Message<MessageTy>::ParseMessageFromBuffer(
+  if (!MessageIO<MessageTy>::ParseMessageFromBuffer(
           receive_buffer_.get(), header_, true, this->message_)) {
     std::move(this->receive_callback_)
         .Run(errors::DataLoss("Failed to parse message from buffer."));

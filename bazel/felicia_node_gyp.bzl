@@ -4,7 +4,7 @@ def _fel_node_gyp_build_impl(ctx):
     else:
         outputs = [ctx.actions.declare_file("build/Release/%s.node" % (ctx.attr.name))]
 
-    cwd = ctx.build_file_path[:ctx.build_file_path.rindex('/')]
+    cwd = ctx.build_file_path[:ctx.build_file_path.rindex("/")]
     node_gyp_build_command = "node-gyp configure build -C %s --devdir %s" % (cwd, cwd)
     if ctx.attr.debug:
         node_gyp_build_command += " --debug"
@@ -29,6 +29,6 @@ fel_node_gyp_build = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "binding_gyp": attr.label(allow_single_file = True),
-        "debug": attr.bool(default=False)
-    }
+        "debug": attr.bool(default = False),
+    },
 )

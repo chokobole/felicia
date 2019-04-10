@@ -82,6 +82,7 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
  private:
   friend class ::base::NoDestructor<MasterProxy>;
   friend class PyMasterProxy;
+  friend class VisualizerNode;
   MasterProxy();
   ~MasterProxy();
 
@@ -114,8 +115,8 @@ std::enable_if_t<std::is_base_of<NodeLifecycle, NodeTy>::value, void>
 MasterProxy::RequestRegisterNode(const NodeInfo& node_info, Args&&... args) {
   RegisterNodeRequest* request = new RegisterNodeRequest();
   NodeInfo* new_node_info = request->mutable_node_info();
+  new_node_info->CopyFrom(node_info);
   new_node_info->set_client_id(client_info_.id());
-  new_node_info->set_name(node_info.name());
   RegisterNodeResponse* response = new RegisterNodeResponse();
 
   std::unique_ptr<NodeLifecycle> node = std::make_unique<NodeTy>(args...);

@@ -93,6 +93,8 @@ class EXPORT Master {
                         const NodeInfo& subscribing_node_info);
   // Notify all the subscribers about TopicInfo |topic_info|.
   void NotifyAllSubscribers(const TopicInfo& topic_info);
+  // Notify watcher about TopicInfos which are currently being published.
+  void NotifyWatcher();
 
   void OnConnetToTopicInfoWatcher(std::unique_ptr<Channel<TopicInfo>> channel,
                                   const TopicInfo& topic_info, const Status& s);

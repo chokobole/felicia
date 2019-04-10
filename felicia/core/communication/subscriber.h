@@ -58,7 +58,7 @@ class Subscriber {
   void RequestUnsubscribe(const NodeInfo& node_info, const std::string& topic,
                           StatusCallback callback);
 
- private:
+ protected:
   void OnSubscribeTopicAsync(SubscribeTopicRequest* request,
                              SubscribeTopicResponse* response,
                              StatusCallback callback,

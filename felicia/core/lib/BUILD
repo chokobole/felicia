@@ -4,8 +4,13 @@ load(
     "fel_cc_library",
     "fel_cc_test",
 )
+load("//felicia/core/lib:lib.bzl", "felicia_env")
 
 package(default_visibility = ["//felicia:internal"])
+
+felicia_env(
+    name = "felicia_env",
+)
 
 fel_cc_library(
     name = "lib",
@@ -30,7 +35,7 @@ fel_cc_library(
         "net/net_util.h",
         "strings/str_util.h",
         "unit/geometry/size.h",
-    ],
+    ] + [":felicia_env"],
     deps = [
         "//felicia/core/protobuf:protos_all_cc",
         "//third_party/chromium/base",

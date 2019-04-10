@@ -16,6 +16,10 @@ void TopicInfoWatcher::UnregisterCallback(const std::string& topic) {
   callback_map_.erase(callback_map_.find(topic));
 }
 
+void TopicInfoWatcher::RegisterAllTopicCallback(NewTopicInfoCallback callback) {
+  all_topic_callback_ = callback;
+}
+
 void TopicInfoWatcher::Start() {
   DCHECK(!channel_);
   ChannelDef channel_def;
@@ -50,6 +54,7 @@ void TopicInfoWatcher::OnNewTopicInfo(const Status& s) {
     if (it != callback_map_.end()) {
       it->second.Run(topic_info_);
     }
+    if (!all_topic_callback_.is_null()) all_topic_callback_.Run(topic_info_);
   }
 }
 

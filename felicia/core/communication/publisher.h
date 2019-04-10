@@ -98,6 +98,8 @@ void Publisher<MessageTy>::RequestPublish(const NodeInfo& node_info,
   *request->mutable_node_info() = node_info;
   TopicInfo* topic_info = request->mutable_topic_info();
   topic_info->set_topic(topic);
+  MessageTy message;
+  topic_info->set_type_name(message.GetTypeName());
   *topic_info->mutable_topic_source() = status_or.ValueOrDie();
   PublishTopicResponse* response = new PublishTopicResponse();
 
