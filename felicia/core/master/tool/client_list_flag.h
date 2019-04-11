@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_MASTER_TOOL_CLIENT_LIST_H_
-#define FELICIA_CORE_MASTER_TOOL_CLIENT_LIST_H_
+#ifndef FELICIA_CORE_MASTER_TOOL_CLIENT_LIST_FLAG_H_
+#define FELICIA_CORE_MASTER_TOOL_CLIENT_LIST_FLAG_H_
 
 #include <memory>
 
@@ -36,4 +36,4 @@ class ClientListFlag : public FlagParser::Delegate {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MASTER_TOOL_CLIENT_LIST_H_
+#endif  // FELICIA_CORE_MASTER_TOOL_CLIENT_LIST_FLAG_H_

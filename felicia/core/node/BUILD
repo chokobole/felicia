@@ -21,3 +21,14 @@ fel_cc_library(
         "//felicia/core/protobuf:protos_all_cc",
     ],
 )
+
+fel_cc_library(
+    name = "dynamic_subscribing_node",
+    srcs = ["dynamic_subscribing_node.cc"],
+    hdrs = ["dynamic_subscribing_node.h"],
+    deps = [
+        ":node_lifecycle",
+        "//felicia/core/communication:dynamic_subscriber",
+        "//felicia/core/master:master_proxy",
+    ],
+)

@@ -8,6 +8,8 @@
 #include "third_party/chromium/base/strings/string_number_conversions.h"
 
 #include "felicia/core/channel/channel.h"
+#include "felicia/core/master/master_proxy.h"
+#include "felicia/core/node/dynamic_subscribing_node.h"
 #include "felicia/core/util/command_line_interface/table_writer.h"
 
 namespace felicia {
@@ -18,19 +20,18 @@ constexpr size_t kIdLength = 13;
 constexpr size_t kNameLength = 20;
 constexpr size_t kChannelSourceLength = 22;
 
-class ScopedMasterClientStopper {
+class ScopedMasterProxyStopper {
  public:
-  ScopedMasterClientStopper(GrpcMasterClient* client) : client_(client) {}
-  ~ScopedMasterClientStopper() { client_->Stop(); }
-
- private:
-  GrpcMasterClient* client_;
+  ScopedMasterProxyStopper() {}
+  ~ScopedMasterProxyStopper() {
+    MasterProxy& master_proxy = MasterProxy::GetInstance();
+    master_proxy.Stop();
+  }
 };
 
 }  // namespace
 
-CommandDispatcher::CommandDispatcher(std::unique_ptr<GrpcMasterClient> client)
-    : master_client_(std::move(client)) {}
+CommandDispatcher::CommandDispatcher() {}
 
 void CommandDispatcher::Dispatch(const CliFlag& delegate) const {
   auto command = delegate.command();
@@ -62,8 +63,6 @@ void CommandDispatcher::Dispatch(const ClientFlag& delegate) const {
 }
 
 void CommandDispatcher::Dispatch(const ClientListFlag& delegate) const {
-  master_client_->Start();
-
   ClientFilter client_filter;
   if (delegate.all_flag()->is_set()) {
     client_filter.set_all(delegate.all_flag()->value());
@@ -74,18 +73,19 @@ void CommandDispatcher::Dispatch(const ClientListFlag& delegate) const {
   ListClientsRequest* request = new ListClientsRequest();
   *request->mutable_client_filter() = client_filter;
   ListClientsResponse* response = new ListClientsResponse();
-  master_client_->ListClientsAsync(
+
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  master_proxy.ListClientsAsync(
       request, response,
       ::base::BindOnce(&CommandDispatcher::OnListClientsAsync,
-                       ::base::Unretained(this), master_client_.get(),
-                       ::base::Owned(request), ::base::Owned(response)));
+                       ::base::Unretained(this), ::base::Owned(request),
+                       ::base::Owned(response)));
 }
 
-void CommandDispatcher::OnListClientsAsync(GrpcMasterClient* client,
-                                           ListClientsRequest* request,
+void CommandDispatcher::OnListClientsAsync(ListClientsRequest* request,
                                            ListClientsResponse* response,
                                            const Status& s) const {
-  ScopedMasterClientStopper stopper(client);
+  ScopedMasterProxyStopper stopper;
 
   if (!s.ok()) {
     std::cerr << s.error_message() << std::endl;
@@ -127,8 +127,6 @@ void CommandDispatcher::Dispatch(const NodeFlag& delegate) const {
 }
 
 void CommandDispatcher::Dispatch(const NodeListFlag& delegate) const {
-  master_client_->Start();
-
   NodeFilter node_filter;
   if (delegate.all_flag()->is_set()) {
     node_filter.set_all(delegate.all_flag()->value());
@@ -144,18 +142,19 @@ void CommandDispatcher::Dispatch(const NodeListFlag& delegate) const {
   ListNodesRequest* request = new ListNodesRequest();
   *request->mutable_node_filter() = node_filter;
   ListNodesResponse* response = new ListNodesResponse();
-  master_client_->ListNodesAsync(
+
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  master_proxy.ListNodesAsync(
       request, response,
       ::base::BindOnce(&CommandDispatcher::OnListNodesAsync,
-                       ::base::Unretained(this), master_client_.get(),
-                       ::base::Owned(request), ::base::Owned(response)));
+                       ::base::Unretained(this), ::base::Owned(request),
+                       ::base::Owned(response)));
 }
 
-void CommandDispatcher::OnListNodesAsync(GrpcMasterClient* client,
-                                         ListNodesRequest* request,
+void CommandDispatcher::OnListNodesAsync(ListNodesRequest* request,
                                          ListNodesResponse* response,
                                          const Status& s) const {
-  ScopedMasterClientStopper stopper(client);
+  ScopedMasterProxyStopper stopper;
 
   if (!s.ok()) {
     std::cerr << s.error_message() << std::endl;
@@ -208,12 +207,16 @@ void CommandDispatcher::Dispatch(const TopicFlag& delegate) const {
     case TopicFlag::Command::COMMAND_LIST:
       Dispatch(delegate.list_delegate());
       break;
+    case TopicFlag::Command::COMMAND_PUBLISH:
+      Dispatch(delegate.publish_delegate());
+      break;
+    case TopicFlag::Command::COMMAND_SUBSCRIBE:
+      Dispatch(delegate.subscribe_delegate());
+      break;
   }
 }
 
 void CommandDispatcher::Dispatch(const TopicListFlag& delegate) const {
-  master_client_->Start();
-
   TopicFilter topic_filter;
   if (delegate.all_flag()->is_set()) {
     topic_filter.set_all(delegate.all_flag()->value());
@@ -224,18 +227,31 @@ void CommandDispatcher::Dispatch(const TopicListFlag& delegate) const {
   ListTopicsRequest* request = new ListTopicsRequest();
   *request->mutable_topic_filter() = topic_filter;
   ListTopicsResponse* response = new ListTopicsResponse();
-  master_client_->ListTopicsAsync(
+
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  master_proxy.ListTopicsAsync(
       request, response,
       ::base::BindOnce(&CommandDispatcher::OnListTopicsAsync,
-                       ::base::Unretained(this), master_client_.get(),
-                       ::base::Owned(request), ::base::Owned(response)));
+                       ::base::Unretained(this), ::base::Owned(request),
+                       ::base::Owned(response)));
 }
 
-void CommandDispatcher::OnListTopicsAsync(GrpcMasterClient* client,
-                                          ListTopicsRequest* request,
+void CommandDispatcher::Dispatch(const TopicPublishFlag& delegate) const {
+  NOTIMPLEMENTED();
+}
+
+void CommandDispatcher::Dispatch(const TopicSubscribeFlag& delegate) const {
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+
+  NodeInfo node_info;
+  node_info.set_watcher(true);
+  master_proxy.RequestRegisterNode<DynamicSubscribingNode>(node_info);
+}
+
+void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
                                           ListTopicsResponse* response,
                                           const Status& s) const {
-  ScopedMasterClientStopper stopper(client);
+  ScopedMasterProxyStopper stopper;
 
   if (!s.ok()) {
     std::cerr << s.error_message() << std::endl;

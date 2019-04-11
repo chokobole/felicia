@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_MASTER_TOOL_TOPIC_LIST_FLAG_H_
-#define FELICIA_CORE_MASTER_TOOL_TOPIC_LIST_FLAG_H_
+#ifndef FELICIA_CORE_MASTER_TOOL_TOPIC_PUBLISH_FLAG_H_
+#define FELICIA_CORE_MASTER_TOOL_TOPIC_PUBLISH_FLAG_H_
 
 #include <memory>
 
@@ -9,12 +9,12 @@
 
 namespace felicia {
 
-class TopicListFlag : public FlagParser::Delegate {
+class TopicPublishFlag : public FlagParser::Delegate {
  public:
-  TopicListFlag();
-  ~TopicListFlag();
+  TopicPublishFlag();
+  ~TopicPublishFlag();
 
-  const BoolFlag* all_flag() const { return all_flag_.get(); }
+  const StringFlag* content_flag() const { return content_flag_.get(); }
   const StringFlag* topic_flag() const { return topic_flag_.get(); }
 
   bool Parse(FlagParser& parser) override;
@@ -26,14 +26,14 @@ class TopicListFlag : public FlagParser::Delegate {
   std::vector<NamedHelpType> CollectNamedHelps() const override;
 
  private:
-  bool all_;
+  std::string content_;
   std::string topic_;
-  std::unique_ptr<BoolFlag> all_flag_;
+  std::unique_ptr<StringFlag> content_flag_;
   std::unique_ptr<StringFlag> topic_flag_;
 
-  DISALLOW_COPY_AND_ASSIGN(TopicListFlag);
+  DISALLOW_COPY_AND_ASSIGN(TopicPublishFlag);
 };
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MASTER_TOOL_TOPIC_LIST_FLAG_H_
+#endif  // FELICIA_CORE_MASTER_TOOL_TOPIC_PUBLISH_FLAG_H_

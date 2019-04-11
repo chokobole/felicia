@@ -82,7 +82,7 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
  private:
   friend class ::base::NoDestructor<MasterProxy>;
   friend class PyMasterProxy;
-  friend class VisualizerNode;
+  friend class DynamicSubscribingNode;
   MasterProxy();
   ~MasterProxy();
 

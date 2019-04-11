@@ -70,10 +70,11 @@ std::vector<NamedHelpType> NodeFlag::CollectNamedHelps() const {
   switch (current_command_) {
     case COMMAND_SELF: {
       return {
-          std::make_pair(TextStyle::Yellow("Commands:"),
-                         std::vector<std::string>{
-                             MakeNamedHelpText(kLs, "List nodes"),
-                         }),
+          std::make_pair(
+              TextStyle::Yellow("Commands:"),
+              std::vector<std::string>{
+                  MakeNamedHelpText(kLs, list_delegate_.Description()),
+              }),
       };
     }
     case COMMAND_LIST:

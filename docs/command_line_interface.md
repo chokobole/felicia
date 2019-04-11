@@ -39,8 +39,11 @@ bazel-bin/felicia/core/master/tool/grpc_master_client_cli node ls -a
 
 * Topic command
 
-| COMMAND  | OPTION                  | DESCRIPTION                          |
-| -------: | ----------------------: | -----------------------------------: |
-| ls       | -a, -all                | List all the topics                  |
-|          | -t, --topic             | List topics with a given topic       |
+| COMMAND   | OPTION                  | DESCRIPTION                          |
+| --------: | ----------------------: | -----------------------------------: |
+| ls        | -a, -all                | List all the topics                  |
+|           | -t, --topic             | List topics with a given topic       |
+| publish   | content                 | Content to publish                   |
+|           | -t, --topic             | Topic to publish                     |
+| subscribe | -t, --topic             | Topic to subscribe                   |
 

@@ -1,6 +1,7 @@
 #include "grpcpp/grpcpp.h"
 
 #include "felicia/core/felicia_init.h"
+#include "felicia/core/master/master_proxy.h"
 #include "felicia/core/master/rpc/grpc_master_client.h"
 #include "felicia/core/master/rpc/grpc_util.h"
 #include "felicia/core/master/tool/cli_flag.h"
@@ -18,12 +19,14 @@ int RealMain(int argc, char* argv[]) {
     return 1;
   }
 
-  auto channel = ConnectGRPCService();
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  Status s = master_proxy.Start();
+  CHECK(s.ok());
 
-  std::unique_ptr<GrpcMasterClient> client =
-      std::make_unique<GrpcMasterClient>(channel);
-  CommandDispatcher dispatcher(std::move(client));
+  CommandDispatcher dispatcher;
   dispatcher.Dispatch(delegate);
+
+  master_proxy.Run();
 
   return 0;
 }

@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_MASTER_TOOL_NODE_LIST_H_
-#define FELICIA_CORE_MASTER_TOOL_NODE_LIST_H_
+#ifndef FELICIA_CORE_MASTER_TOOL_NODE_LIST_FLAG_H_
+#define FELICIA_CORE_MASTER_TOOL_NODE_LIST_FLAG_H_
 
 #include <memory>
 
@@ -46,4 +46,4 @@ class NodeListFlag : public FlagParser::Delegate {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MASTER_TOOL_NODE_LIST_H_
+#endif  // FELICIA_CORE_MASTER_TOOL_NODE_LIST_FLAG_H_

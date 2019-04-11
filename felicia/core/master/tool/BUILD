@@ -55,10 +55,28 @@ fel_cc_library(
 )
 
 fel_cc_library(
+    name = "topic_publish_flag",
+    srcs = ["topic_publish_flag.cc"],
+    hdrs = ["topic_publish_flag.h"],
+    deps = ["//felicia/core/util:command_line_interface"],
+)
+
+fel_cc_library(
+    name = "topic_subscribe_flag",
+    srcs = ["topic_subscribe_flag.cc"],
+    hdrs = ["topic_subscribe_flag.h"],
+    deps = ["//felicia/core/util:command_line_interface"],
+)
+
+fel_cc_library(
     name = "topic_flag",
     srcs = ["topic_flag.cc"],
     hdrs = ["topic_flag.h"],
-    deps = [":topic_list_flag"],
+    deps = [
+        ":topic_list_flag",
+        ":topic_publish_flag",
+        ":topic_subscribe_flag",
+    ],
 )
 
 ##########################################################################################
@@ -81,7 +99,8 @@ fel_cc_library(
     deps = [
         ":cli_flag",
         "//felicia/core/channel",
-        "//felicia/core/master/rpc:grpc_master_client",
+        "//felicia/core/master:master_proxy",
+        "//felicia/core/node:dynamic_subscribing_node",
     ],
 )
 

@@ -70,10 +70,11 @@ std::vector<NamedHelpType> ClientFlag::CollectNamedHelps() const {
   switch (current_command_) {
     case COMMAND_SELF: {
       return {
-          std::make_pair(TextStyle::Yellow("Commands:"),
-                         std::vector<std::string>{
-                             MakeNamedHelpText(kLs, "List clients"),
-                         }),
+          std::make_pair(
+              TextStyle::Yellow("Commands:"),
+              std::vector<std::string>{
+                  MakeNamedHelpText(kLs, list_delegate_.Description()),
+              }),
       };
     }
     case COMMAND_LIST:

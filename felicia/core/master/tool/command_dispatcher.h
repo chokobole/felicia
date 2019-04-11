@@ -1,18 +1,17 @@
 #ifndef FELICIA_CORE_MASTER_TOOL_COMMAND_DISPATCHER_H_
 #define FELICIA_CORE_MASTER_TOOL_COMMAND_DISPATCHER_H_
 
-#include <memory>
-
 #include "third_party/chromium/base/macros.h"
 
-#include "felicia/core/master/rpc/grpc_master_client.h"
+#include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/tool/cli_flag.h"
+#include "felicia/core/protobuf/master.pb.h"
 
 namespace felicia {
 
 class CommandDispatcher {
  public:
-  explicit CommandDispatcher(std::unique_ptr<GrpcMasterClient> client);
+  CommandDispatcher();
 
   void Dispatch(const CliFlag& delegate) const;
 
@@ -21,24 +20,24 @@ class CommandDispatcher {
   void Dispatch(const ClientFlag& delegate) const;
   void Dispatch(const ClientListFlag& delegate) const;
 
-  void OnListClientsAsync(GrpcMasterClient* client, ListClientsRequest* request,
+  void OnListClientsAsync(ListClientsRequest* request,
                           ListClientsResponse* response, const Status& s) const;
 
   // Node Commands
   void Dispatch(const NodeFlag& delegate) const;
   void Dispatch(const NodeListFlag& delegate) const;
 
-  void OnListNodesAsync(GrpcMasterClient* client, ListNodesRequest* request,
-                        ListNodesResponse* response, const Status& s) const;
+  void OnListNodesAsync(ListNodesRequest* request, ListNodesResponse* response,
+                        const Status& s) const;
 
   // Topic Commands
   void Dispatch(const TopicFlag& delegate) const;
   void Dispatch(const TopicListFlag& delegate) const;
+  void Dispatch(const TopicPublishFlag& delegate) const;
+  void Dispatch(const TopicSubscribeFlag& delegate) const;
 
-  void OnListTopicsAsync(GrpcMasterClient* client, ListTopicsRequest* request,
+  void OnListTopicsAsync(ListTopicsRequest* request,
                          ListTopicsResponse* response, const Status& s) const;
-
-  std::unique_ptr<GrpcMasterClient> master_client_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandDispatcher);
 };
