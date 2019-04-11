@@ -2,6 +2,7 @@
 
 #include "third_party/chromium/base/files/file_enumerator.h"
 #include "third_party/chromium/base/memory/ptr_util.h"
+#include "third_party/chromium/base/strings/string_util.h"
 
 #include "felicia/core/lib/strings/str_util.h"
 
@@ -14,29 +15,29 @@ ProtobufLoader::~ProtobufLoader() {}
 // static
 std::unique_ptr<ProtobufLoader> ProtobufLoader::Load(
     const ::base::FilePath& root_path) {
-  ::base::FilePath new_root_path = root_path.AsEndingWithSeparator();
+  ::base::FilePath root_path_with_separator = root_path.AsEndingWithSeparator();
+  std::string root_path_canonicalized;
+  ::base::ReplaceChars(root_path_with_separator.MaybeAsASCII(), "\\", "/",
+                       &root_path_canonicalized);
 
   ::google::protobuf::compiler::DiskSourceTree source_tree;
-  source_tree.MapPath("", new_root_path.value());
-  ::google::protobuf::io::ZeroCopyInputStream* input_stream =
-      source_tree.Open("");
-  if (!input_stream) {
-    LOG(ERROR) << "Failed to load" << source_tree.GetLastErrorMessage();
-    return nullptr;
-  }
+  source_tree.MapPath("", root_path_canonicalized);
 
   ::google::protobuf::compiler::SourceTreeDescriptorDatabase database(
       &source_tree);
 
   ProtobufLoader* loader = new ProtobufLoader();
   ::base::FileEnumerator enumerator(
-      new_root_path, true, ::base::FileEnumerator::FILES,
+      root_path_with_separator, true, ::base::FileEnumerator::FILES,
       FILE_PATH_LITERAL("*.proto"),
       ::base::FileEnumerator::FolderSearchPolicy::ALL);
 
   std::vector<std::string> failed_file_paths;
   for (auto path = enumerator.Next(); !path.empty(); path = enumerator.Next()) {
-    auto relative_path = path.value().substr(new_root_path.value().length());
+    std::string path_canonicalized;
+    ::base::ReplaceChars(path.MaybeAsASCII(), "\\", "/", &path_canonicalized);
+    auto relative_path =
+        path_canonicalized.substr(root_path_canonicalized.length());
     if (!strings::StartsWith(relative_path, "felicia")) continue;
 
     ::google::protobuf::FileDescriptorProto proto;

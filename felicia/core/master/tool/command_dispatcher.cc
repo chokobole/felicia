@@ -247,7 +247,8 @@ void CommandDispatcher::Dispatch(const TopicSubscribeFlag& delegate) const {
   NodeInfo node_info;
   if (delegate.all_flag()->value()) node_info.set_watcher(true);
 
-  protobuf_loader_ = ProtobufLoader::Load(::base::FilePath(FELICIA_ROOT));
+  protobuf_loader_ = ProtobufLoader::Load(
+      ::base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
 
   master_proxy.RequestRegisterNode<DynamicSubscribingNode>(
       node_info, protobuf_loader_.get(),
