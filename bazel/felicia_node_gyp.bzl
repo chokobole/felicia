@@ -1,4 +1,5 @@
 load("@local_config_python//:py.bzl", "PYTHON2_BIN")
+load("@env//:env.bzl", "TRAVIS")
 
 def _fel_node_gyp_build_impl(ctx):
     if ctx.attr.debug:
@@ -7,7 +8,11 @@ def _fel_node_gyp_build_impl(ctx):
         outputs = [ctx.actions.declare_file("build/Release/%s.node" % (ctx.attr.name))]
 
     cwd = ctx.build_file_path[:ctx.build_file_path.rindex("/")]
-    node_gyp_build_command = "node-gyp configure build --python %s -C %s --devdir %s" % (PYTHON2_BIN, cwd, cwd)
+    if TRAVIS.lower() == "true":
+        # At travis ci, there's no permission to install devdir at default location.
+        node_gyp_build_command = "node-gyp configure build --python %s -C %s --devdir %s" % (PYTHON2_BIN, cwd, cwd)
+    else:
+        node_gyp_build_command = "node-gyp configure build --python %s -C %s" % (PYTHON2_BIN, cwd)
     if ctx.attr.debug:
         node_gyp_build_command += " --debug"
 
