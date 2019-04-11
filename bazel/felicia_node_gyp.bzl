@@ -1,3 +1,5 @@
+load("@local_config_python//:py.bzl", "PYTHON2_BIN")
+
 def _fel_node_gyp_build_impl(ctx):
     if ctx.attr.debug:
         outputs = [ctx.actions.declare_file("build/Debug/%s.node" % (ctx.attr.name))]
@@ -5,7 +7,7 @@ def _fel_node_gyp_build_impl(ctx):
         outputs = [ctx.actions.declare_file("build/Release/%s.node" % (ctx.attr.name))]
 
     cwd = ctx.build_file_path[:ctx.build_file_path.rindex("/")]
-    node_gyp_build_command = "node-gyp configure build -C %s --devdir %s" % (cwd, cwd)
+    node_gyp_build_command = "node-gyp configure build --python %s -C %s --devdir %s" % (PYTHON2_BIN, cwd, cwd)
     if ctx.attr.debug:
         node_gyp_build_command += " --debug"
 
