@@ -3,6 +3,8 @@
 
 #include <memory>
 
+#include "third_party/chromium/base/strings/string_util.h"
+
 #include "felicia/core/communication/dynamic_subscriber.h"
 #include "felicia/core/message/dynamic_protobuf_message.h"
 #include "felicia/core/message/protobuf_loader.h"
@@ -12,7 +14,16 @@ namespace felicia {
 
 class DynamicSubscribingNode : public NodeLifecycle {
  public:
-  DynamicSubscribingNode();
+  using OnNewMessageCallback = ::base::RepeatingCallback<void(
+      const std::string&, const DynamicProtobufMessage&)>;
+  using OnSubscriptionErrorCallback =
+      ::base::RepeatingCallback<void(const std::string&, const Status&)>;
+
+  DynamicSubscribingNode(
+      ProtobufLoader* loader, OnNewMessageCallback on_new_message_callback,
+      OnSubscriptionErrorCallback on_subscription_error_callback,
+      const std::string& topic = ::base::EmptyString());
+
   ~DynamicSubscribingNode();
 
   void OnInit() override;
@@ -22,6 +33,8 @@ class DynamicSubscribingNode : public NodeLifecycle {
   void OnError(const Status& s) override;
 
  private:
+  void RequestSubscribe();
+
   void OnFindPublisher(const TopicInfo& topic_info);
 
   void OnNewMessage(const std::string& topic,
@@ -29,8 +42,13 @@ class DynamicSubscribingNode : public NodeLifecycle {
 
   void OnSubscriptionError(const std::string& topic, const Status& s);
 
-  std::unique_ptr<ProtobufLoader> loader_;
+  ProtobufLoader* loader_;  // not owned;
+  NodeInfo node_info_;
+  std::string topic_;
   std::vector<std::unique_ptr<DynamicSubscriber>> subscribers_;
+
+  OnNewMessageCallback on_new_message_callback_;
+  OnSubscriptionErrorCallback on_subscription_error_callback_;
 };
 
 }  // namespace felicia

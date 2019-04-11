@@ -8,6 +8,7 @@
 #include "third_party/chromium/base/strings/string_number_conversions.h"
 
 #include "felicia/core/channel/channel.h"
+#include "felicia/core/lib/felicia_env.h"
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/core/node/dynamic_subscribing_node.h"
 #include "felicia/core/util/command_line_interface/table_writer.h"
@@ -244,8 +245,17 @@ void CommandDispatcher::Dispatch(const TopicSubscribeFlag& delegate) const {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
 
   NodeInfo node_info;
-  node_info.set_watcher(true);
-  master_proxy.RequestRegisterNode<DynamicSubscribingNode>(node_info);
+  if (delegate.all_flag()->value()) node_info.set_watcher(true);
+
+  protobuf_loader_ = ProtobufLoader::Load(::base::FilePath(FELICIA_ROOT));
+
+  master_proxy.RequestRegisterNode<DynamicSubscribingNode>(
+      node_info, protobuf_loader_.get(),
+      ::base::BindRepeating(&CommandDispatcher::OnNewMessage,
+                            ::base::Unretained(this)),
+      ::base::BindRepeating(&CommandDispatcher::OnSubscriptionError,
+                            ::base::Unretained(this)),
+      delegate.topic_flag()->value());
 }
 
 void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
@@ -274,6 +284,21 @@ void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
   }
 
   std::cout << writer.ToString() << std::endl;
+}
+
+void CommandDispatcher::OnNewMessage(
+    const std::string& topic, const DynamicProtobufMessage& message) const {
+  std::cout << TextStyle::Green(
+                   ::base::StringPrintf("[TOPIC] %s", topic.c_str()))
+            << std::endl;
+  std::cout << message.DebugString();
+}
+
+void CommandDispatcher::OnSubscriptionError(const std::string& topic,
+                                            const Status& s) const {
+  std::cout << TextStyle::Red(::base::StringPrintf("[TOPIC] %s", topic.c_str()))
+            << std::endl;
+  LOG_IF(ERROR, !s.ok()) << s.error_message();
 }
 
 }  // namespace felicia

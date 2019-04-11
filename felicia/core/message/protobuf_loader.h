@@ -6,9 +6,9 @@
 #include "google/protobuf/compiler/importer.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
-
 #include "third_party/chromium/base/files/file_path.h"
 #include "third_party/chromium/base/macros.h"
+#include "third_party/chromium/base/no_destructor.h"
 
 namespace felicia {
 

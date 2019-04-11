@@ -45,5 +45,6 @@ bazel-bin/felicia/core/master/tool/grpc_master_client_cli node ls -a
 |           | -t, --topic             | List topics with a given topic       |
 | publish   | content                 | Content to publish                   |
 |           | -t, --topic             | Topic to publish                     |
-| subscribe | -t, --topic             | Topic to subscribe                   |
+| subscribe | -a, -all                | Subscribe all the topics             |
+|           | -t, --topic             | Topic to subscribe                   |
 

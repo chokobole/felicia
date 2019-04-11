@@ -14,6 +14,7 @@ class TopicSubscribeFlag : public FlagParser::Delegate {
   TopicSubscribeFlag();
   ~TopicSubscribeFlag();
 
+  const BoolFlag* all_flag() const { return all_flag_.get(); }
   const StringFlag* topic_flag() const { return topic_flag_.get(); }
 
   bool Parse(FlagParser& parser) override;
@@ -25,7 +26,9 @@ class TopicSubscribeFlag : public FlagParser::Delegate {
   std::vector<NamedHelpType> CollectNamedHelps() const override;
 
  private:
+  bool all_;
   std::string topic_;
+  std::unique_ptr<BoolFlag> all_flag_;
   std::unique_ptr<StringFlag> topic_flag_;
 
   DISALLOW_COPY_AND_ASSIGN(TopicSubscribeFlag);

@@ -82,6 +82,8 @@ class Subscriber {
 
   void Release();
 
+  virtual void ResetMessage(const TopicInfo& topic_info) {}
+
   MessageTy message_;
   Pool<MessageTy, uint8_t> message_queue_;
   std::unique_ptr<Channel<MessageTy>> channel_;
@@ -213,6 +215,8 @@ void Subscriber<MessageTy>::OnFindPublisher(const TopicInfo& topic_info) {
                                     ::base::Unretained(this), topic_info));
     return;
   }
+
+  ResetMessage(topic_info);
 
   channel_ = ChannelFactory::NewChannel<MessageTy>(
       topic_info.topic_source().channel_def());

@@ -7,14 +7,23 @@
 
 namespace felicia {
 
-class DynamicSubscriber : private Subscriber<DynamicProtobufMessage> {
+class DynamicSubscriber : public Subscriber<DynamicProtobufMessage> {
  public:
+  explicit DynamicSubscriber(ProtobufLoader* loader);
+  ~DynamicSubscriber();
+
   void Subscribe(OnMessageCallback on_message_callback,
                  OnErrorCallback on_error_callback,
-                 const communication::Settings& settings,
-                 const TopicInfo& topic_info, ProtobufLoader* loader);
+                 const communication::Settings& settings);
 
   void OnFindPublisher(const TopicInfo& topic_info);
+
+ private:
+  void ResetMessage(const TopicInfo& topic_info) override;
+
+  ProtobufLoader* loader_;  // not owned;
+
+  DISALLOW_COPY_AND_ASSIGN(DynamicSubscriber);
 };
 
 }  // namespace felicia

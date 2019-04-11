@@ -2,25 +2,40 @@
 
 #include "third_party/chromium/base/bind.h"
 
-#include "felicia/core/lib/felicia_env.h"
 #include "felicia/core/master/master_proxy.h"
 
 namespace felicia {
 
-DynamicSubscribingNode::DynamicSubscribingNode() = default;
+DynamicSubscribingNode::DynamicSubscribingNode(
+    ProtobufLoader* loader, OnNewMessageCallback on_new_message_callback,
+    OnSubscriptionErrorCallback on_subscription_error_callback,
+    const std::string& topic)
+    : loader_(loader),
+      topic_(topic),
+      on_new_message_callback_(on_new_message_callback),
+      on_subscription_error_callback_(on_subscription_error_callback) {}
+
 DynamicSubscribingNode::~DynamicSubscribingNode() = default;
 
 void DynamicSubscribingNode::OnInit() {
-  loader_ = ProtobufLoader::Load(::base::FilePath(FELICIA_ROOT));
-
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-
-  master_proxy.topic_info_watcher_.RegisterAllTopicCallback(
-      ::base::BindRepeating(&DynamicSubscribingNode::OnFindPublisher,
-                            ::base::Unretained(this)));
+  if (topic_.empty()) {
+    MasterProxy& master_proxy = MasterProxy::GetInstance();
+    master_proxy.topic_info_watcher_.RegisterAllTopicCallback(
+        ::base::BindRepeating(&DynamicSubscribingNode::OnFindPublisher,
+                              ::base::Unretained(this)));
+  }
 }
 
-void DynamicSubscribingNode::OnDidCreate(const NodeInfo& node_info) {}
+void DynamicSubscribingNode::OnDidCreate(const NodeInfo& node_info) {
+  node_info_ = node_info;
+  if (node_info.watcher()) {
+    DCHECK(topic_.empty());
+    // Do nothing
+  } else {
+    DCHECK(!topic_.empty());
+    RequestSubscribe();
+  }
+}
 
 void DynamicSubscribingNode::OnError(const Status& s) {
   if (!s.ok()) {
@@ -30,10 +45,29 @@ void DynamicSubscribingNode::OnError(const Status& s) {
   }
 }
 
-void DynamicSubscribingNode::OnFindPublisher(const TopicInfo& topic_info) {
-  LOG(INFO) << topic_info.DebugString();
+void DynamicSubscribingNode::RequestSubscribe() {
+  DCHECK(!node_info_.watcher());
   std::unique_ptr<DynamicSubscriber> subscriber =
-      std::make_unique<DynamicSubscriber>();
+      std::make_unique<DynamicSubscriber>(loader_);
+
+  communication::Settings settings;
+  subscriber->RequestSubscribe(
+      node_info_, topic_,
+      ::base::BindRepeating(&DynamicSubscribingNode::OnNewMessage,
+                            ::base::Unretained(this), topic_),
+      ::base::BindRepeating(&DynamicSubscribingNode::OnSubscriptionError,
+                            ::base::Unretained(this), topic_),
+      settings,
+      ::base::BindOnce(&DynamicSubscribingNode::OnSubscriptionError,
+                       ::base::Unretained(this), topic_));
+
+  subscribers_.push_back(std::move(subscriber));
+}
+
+void DynamicSubscribingNode::OnFindPublisher(const TopicInfo& topic_info) {
+  DCHECK(node_info_.watcher());
+  std::unique_ptr<DynamicSubscriber> subscriber =
+      std::make_unique<DynamicSubscriber>(loader_);
 
   communication::Settings settings;
   subscriber->Subscribe(
@@ -41,21 +75,20 @@ void DynamicSubscribingNode::OnFindPublisher(const TopicInfo& topic_info) {
                             ::base::Unretained(this), topic_info.topic()),
       ::base::BindRepeating(&DynamicSubscribingNode::OnSubscriptionError,
                             ::base::Unretained(this), topic_info.topic()),
-      settings, topic_info, loader_.get());
+      settings);
   subscriber->OnFindPublisher(topic_info);
+
   subscribers_.push_back(std::move(subscriber));
 }
 
 void DynamicSubscribingNode::OnNewMessage(
     const std::string& topic, const DynamicProtobufMessage& message) {
-  LOG(INFO) << "topic: " << topic;
-  LOG(INFO) << message.DebugString();
+  on_new_message_callback_.Run(topic, message);
 }
 
 void DynamicSubscribingNode::OnSubscriptionError(const std::string& topic,
                                                  const Status& s) {
-  LOG(ERROR) << "topic: " << topic;
-  LOG(ERROR) << s.error_message();
+  on_subscription_error_callback_.Run(topic, s);
 }
 
 }  // namespace felicia

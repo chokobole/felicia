@@ -6,6 +6,14 @@ namespace felicia {
 
 TopicSubscribeFlag::TopicSubscribeFlag() {
   {
+    BoolFlag::Builder builder(MakeValueStore(&all_));
+    auto flag = builder.SetShortName("-a")
+                    .SetLongName("--all")
+                    .SetHelp("Subscribe all the topcis")
+                    .Build();
+    all_flag_ = std::make_unique<BoolFlag>(flag);
+  }
+  {
     StringFlag::Builder builder(MakeValueStore(&topic_));
     auto flag = builder.SetShortName("-t")
                     .SetLongName("--topic")
@@ -18,10 +26,16 @@ TopicSubscribeFlag::TopicSubscribeFlag() {
 TopicSubscribeFlag::~TopicSubscribeFlag() = default;
 
 bool TopicSubscribeFlag::Parse(FlagParser& parser) {
-  return PARSE_OPTIONAL_FLAG(parser, topic_flag_);
+  return PARSE_OPTIONAL_FLAG(parser, all_flag_, topic_flag_);
 }
 
-bool TopicSubscribeFlag::Validate() const { return topic_flag_->is_set(); }
+bool TopicSubscribeFlag::Validate() const {
+  int is_set_cnt = 0;
+  if (all_flag_->is_set()) is_set_cnt++;
+  if (topic_flag_->is_set()) is_set_cnt++;
+
+  return is_set_cnt == 1;
+}
 
 std::vector<std::string> TopicSubscribeFlag::CollectUsages() const {
   return {"[OPTIONS]"};
@@ -35,6 +49,7 @@ std::vector<NamedHelpType> TopicSubscribeFlag::CollectNamedHelps() const {
   return {
       std::make_pair(TextStyle::Yellow("Options:"),
                      std::vector<std::string>{
+                         all_flag_->help(),
                          topic_flag_->help(),
                      }),
   };

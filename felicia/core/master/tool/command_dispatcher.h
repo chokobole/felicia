@@ -5,6 +5,8 @@
 
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/tool/cli_flag.h"
+#include "felicia/core/message/dynamic_protobuf_message.h"
+#include "felicia/core/message/protobuf_loader.h"
 #include "felicia/core/protobuf/master.pb.h"
 
 namespace felicia {
@@ -38,6 +40,13 @@ class CommandDispatcher {
 
   void OnListTopicsAsync(ListTopicsRequest* request,
                          ListTopicsResponse* response, const Status& s) const;
+
+  void OnNewMessage(const std::string& topic,
+                    const DynamicProtobufMessage& message) const;
+
+  void OnSubscriptionError(const std::string& topic, const Status& s) const;
+
+  mutable std::unique_ptr<ProtobufLoader> protobuf_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandDispatcher);
 };
