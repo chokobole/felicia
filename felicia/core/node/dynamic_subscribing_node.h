@@ -32,6 +32,12 @@ class DynamicSubscribingNode : public NodeLifecycle {
 
   void OnError(const Status& s) override;
 
+  const NodeInfo& node_info() const { return node_info_; }
+  const std::string& topic() const { return topic_; }
+  const std::vector<std::unique_ptr<DynamicSubscriber>>& subscribers() const {
+    return subscribers_;
+  }
+
  private:
   void RequestSubscribe();
 

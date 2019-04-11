@@ -10,6 +10,7 @@
 #include "felicia/core/channel/channel.h"
 #include "felicia/core/lib/felicia_env.h"
 #include "felicia/core/master/master_proxy.h"
+#include "felicia/core/node/dynamic_publishing_node.h"
 #include "felicia/core/node/dynamic_subscribing_node.h"
 #include "felicia/core/util/command_line_interface/table_writer.h"
 
@@ -241,7 +242,22 @@ void CommandDispatcher::Dispatch(const TopicListFlag& delegate) const {
 }
 
 void CommandDispatcher::Dispatch(const TopicPublishFlag& delegate) const {
-  NOTIMPLEMENTED();
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+
+  NodeInfo node_info;
+
+  protobuf_loader_ = ProtobufLoader::Load(
+      ::base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
+
+  ChannelDef channel_def;
+  channel_def.set_type(ChannelDef::TCP);
+
+  master_proxy.RequestRegisterNode<DynamicPublishingNode>(
+      node_info, protobuf_loader_.get(), delegate.topic_flag()->value(),
+      delegate.type_flag()->value(), channel_def,
+      ::base::BindOnce(
+          &CommandDispatcher::PublishMessageFromJSON, ::base::Unretained(this),
+          delegate.message_flag()->value(), delegate.interval_flag()->value()));
 }
 
 void CommandDispatcher::Dispatch(const TopicSubscribeFlag& delegate) const {
@@ -292,6 +308,34 @@ void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
   std::cout << writer.ToString() << std::endl;
 }
 
+void CommandDispatcher::PublishMessageFromJSON(
+    const std::string& message, int64_t delay,
+    DynamicPublisher* publisher) const {
+  if (publisher) {
+    publisher->Publish(message, ::base::BindOnce(&CommandDispatcher::OnPublish,
+                                                 ::base::Unretained(this)));
+    if (!publisher->IsUnregistered()) {
+      if (delay > 0) {
+        MasterProxy& master_proxy = MasterProxy::GetInstance();
+        master_proxy.PostDelayedTask(
+            FROM_HERE,
+            ::base::BindOnce(&CommandDispatcher::PublishMessageFromJSON,
+                             ::base::Unretained(this), message, delay,
+                             ::base::Unretained(publisher)),
+            ::base::TimeDelta::FromMilliseconds(delay));
+      }
+    }
+
+  } else {
+    LOG(ERROR) << "Failed to request publish or memory was corrupted while "
+                  "publishing message.";
+  }
+}
+
+void CommandDispatcher::OnPublish(const Status& s) const {
+  LOG_IF(ERROR, !s.ok()) << s.error_message();
+}
+
 void CommandDispatcher::OnNewMessage(
     const std::string& topic, const DynamicProtobufMessage& message) const {
   std::cout << TextStyle::Green(
@@ -304,7 +348,7 @@ void CommandDispatcher::OnSubscriptionError(const std::string& topic,
                                             const Status& s) const {
   std::cout << TextStyle::Red(::base::StringPrintf("[TOPIC] %s", topic.c_str()))
             << std::endl;
-  LOG_IF(ERROR, !s.ok()) << s.error_message();
+  LOG(ERROR) << s.error_message();
 }
 
 }  // namespace felicia

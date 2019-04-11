@@ -16,12 +16,15 @@ fel_cc_library(
 )
 
 fel_cc_library(
+    name = "dynamic_publisher",
+    srcs = ["dynamic_publisher.cc"],
+    hdrs = ["dynamic_publisher.h"],
+    deps = [":communication"],
+)
+
+fel_cc_library(
     name = "dynamic_subscriber",
-    srcs = [
-        "dynamic_subscriber.cc",
-    ],
-    hdrs = [
-        "dynamic_subscriber.h",
-    ],
+    srcs = ["dynamic_subscriber.cc"],
+    hdrs = ["dynamic_subscriber.h"],
     deps = [":communication"],
 )

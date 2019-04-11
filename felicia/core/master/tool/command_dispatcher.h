@@ -3,6 +3,7 @@
 
 #include "third_party/chromium/base/macros.h"
 
+#include "felicia/core/communication/dynamic_publisher.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/tool/cli_flag.h"
 #include "felicia/core/message/dynamic_protobuf_message.h"
@@ -40,6 +41,11 @@ class CommandDispatcher {
 
   void OnListTopicsAsync(ListTopicsRequest* request,
                          ListTopicsResponse* response, const Status& s) const;
+
+  void PublishMessageFromJSON(const std::string& message, int64_t delay,
+                              DynamicPublisher* publisher) const;
+
+  void OnPublish(const Status& s) const;
 
   void OnNewMessage(const std::string& topic,
                     const DynamicProtobufMessage& message) const;

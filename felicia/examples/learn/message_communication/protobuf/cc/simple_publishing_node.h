@@ -1,7 +1,6 @@
 #ifndef FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_PROTOBUF_CC_SIMPLE_PUBLISHING_NODE_H_
 #define FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_PROTOBUF_CC_SIMPLE_PUBLISHING_NODE_H_
 
-#include "google/protobuf/util/json_util.h"
 #include "third_party/chromium/base/json/json_reader.h"
 #include "third_party/chromium/base/strings/strcat.h"
 #include "third_party/chromium/base/time/time.h"

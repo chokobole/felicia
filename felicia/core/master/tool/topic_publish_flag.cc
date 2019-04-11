@@ -16,7 +16,7 @@ TopicPublishFlag::TopicPublishFlag() {
     type_flag_ = std::make_unique<StringFlag>(flag);
   }
   {
-    StringFlag::Builder builder(MakeValueStore(&type_));
+    StringFlag::Builder builder(MakeValueStore(&message_));
     auto flag = builder.SetName("message")
                     .SetHelp("Content of message, in JSON format")
                     .Build();

@@ -28,6 +28,11 @@ void DynamicProtobufMessage::Reset(::google::protobuf::Message* message) {
   message_ = message;
 }
 
+std::string DynamicProtobufMessage::GetTypeName() const {
+  if (message_) return message_->GetTypeName();
+  return ::base::EmptyString();
+}
+
 std::string DynamicProtobufMessage::DebugString() const {
   if (!message_) return ::base::EmptyString();
   return message_->DebugString();

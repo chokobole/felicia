@@ -32,3 +32,14 @@ fel_cc_library(
         "//felicia/core/master:master_proxy",
     ],
 )
+
+fel_cc_library(
+    name = "dynamic_publishing_node",
+    srcs = ["dynamic_publishing_node.cc"],
+    hdrs = ["dynamic_publishing_node.h"],
+    deps = [
+        ":node_lifecycle",
+        "//felicia/core/communication:dynamic_publisher",
+        "//felicia/core/master:master_proxy",
+    ],
+)

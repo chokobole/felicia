@@ -100,6 +100,7 @@ fel_cc_library(
         ":cli_flag",
         "//felicia/core/channel",
         "//felicia/core/master:master_proxy",
+        "//felicia/core/node:dynamic_publishing_node",
         "//felicia/core/node:dynamic_subscribing_node",
     ],
 )

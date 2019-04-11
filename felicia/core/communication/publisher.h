@@ -41,7 +41,7 @@ class Publisher {
   void RequestUnpublish(const NodeInfo& node_info, const std::string& topic,
                         StatusCallback callback);
 
- private:
+ protected:
   void OnPublishTopicAsync(PublishTopicRequest* request,
                            PublishTopicResponse* response,
                            StatusCallback callback, const Status& s);
@@ -57,6 +57,13 @@ class Publisher {
   void OnAccept(const Status& s);
 
   void Release();
+
+  // Because DynamicProtobufMessage's type can't be determined at compile time.
+  // we should workaround by doing runtime asking DynamicPublisher.
+  virtual std::string GetMessageTypeName() const {
+    MessageTy message;
+    return message.GetTypeName();
+  }
 
   Pool<MessageTy, uint8_t> message_queue_;
   std::unique_ptr<Channel<MessageTy>> channel_;
@@ -98,8 +105,7 @@ void Publisher<MessageTy>::RequestPublish(const NodeInfo& node_info,
   *request->mutable_node_info() = node_info;
   TopicInfo* topic_info = request->mutable_topic_info();
   topic_info->set_topic(topic);
-  MessageTy message;
-  topic_info->set_type_name(message.GetTypeName());
+  topic_info->set_type_name(GetMessageTypeName());
   *topic_info->mutable_topic_source() = status_or.ValueOrDie();
   PublishTopicResponse* response = new PublishTopicResponse();
 

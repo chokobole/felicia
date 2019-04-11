@@ -12,9 +12,14 @@ class DynamicProtobufMessage {
   DynamicProtobufMessage& operator=(const DynamicProtobufMessage& other);
   ~DynamicProtobufMessage();
 
+  ::google::protobuf::Message* message() { return message_; }
+  const ::google::protobuf::Message* message() const { return message_; }
+
   void Reset(::google::protobuf::Message* message);
 
   std::string DebugString() const;
+
+  std::string GetTypeName() const;
 
   bool SerializeToString(std::string* text) const;
   bool ParseFromArray(const char* data, size_t size);
