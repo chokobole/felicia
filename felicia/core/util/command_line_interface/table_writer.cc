@@ -42,7 +42,21 @@ std::string TableWriter::ToString() const {
   for (auto& row : elements_) {
     size_t idx = 0;
     for (auto& element : row) {
-      ss << std::left << std::setw(heads_[idx].width) << element;
+      std::string content;
+      if (element.length() > heads_[idx].width - 1) {
+        if (heads_[idx].width > 4) {
+          content =
+              ::base::StrCat({element.substr(0, heads_[idx].width - 4), "..."});
+        } else {
+          DLOG(WARNING) << "Maybe you should set enough header width... "
+                        << heads_[idx].title << "(" << heads_[idx].width << ")";
+          content = element.substr(0, heads_[idx].width - 1);
+        }
+      } else {
+        content = element;
+      }
+
+      ss << std::left << std::setw(heads_[idx].width) << content;
       idx++;
     }
     ss << std::endl;

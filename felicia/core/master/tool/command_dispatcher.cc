@@ -19,6 +19,9 @@ namespace {
 
 constexpr size_t kIdLength = 13;
 constexpr size_t kNameLength = 20;
+constexpr size_t kTopicNameLength = 20;
+constexpr size_t kMessageTypeLength = 30;
+constexpr size_t kChannelProtocolLength = 12;
 constexpr size_t kChannelSourceLength = 22;
 
 class ScopedMasterProxyStopper {
@@ -271,16 +274,18 @@ void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
   auto topic_infos = response->topic_infos();
   TableWriterBuilder builder;
   auto writer =
-      builder.AddColumn(TableWriter::Column{"NAME", kNameLength})
-          .AddColumn(TableWriter::Column{"TYPE", 8})
+      builder.AddColumn(TableWriter::Column{"NAME", kTopicNameLength})
+          .AddColumn(TableWriter::Column{"TYPE", kMessageTypeLength})
+          .AddColumn(TableWriter::Column{"PROTOCOL", kChannelProtocolLength})
           .AddColumn(TableWriter::Column{"END POINT", kChannelSourceLength})
           .Build();
   size_t row = 0;
   for (auto& topic_info : topic_infos) {
     writer.SetElement(row, 0, topic_info.topic());
+    writer.SetElement(row, 1, topic_info.type_name());
     const ChannelSource& channel_source = topic_info.topic_source();
-    writer.SetElement(row, 1, ToString(channel_source.channel_def()));
-    writer.SetElement(row, 2, ToString(channel_source));
+    writer.SetElement(row, 2, ToString(channel_source.channel_def()));
+    writer.SetElement(row, 3, ToString(channel_source));
     row++;
   }
 
