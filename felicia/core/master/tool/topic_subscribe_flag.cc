@@ -30,11 +30,7 @@ bool TopicSubscribeFlag::Parse(FlagParser& parser) {
 }
 
 bool TopicSubscribeFlag::Validate() const {
-  int is_set_cnt = 0;
-  if (all_flag_->is_set()) is_set_cnt++;
-  if (topic_flag_->is_set()) is_set_cnt++;
-
-  return is_set_cnt == 1;
+  return CheckIfOneOfFlagWasSet(all_flag_, topic_flag_);
 }
 
 std::vector<std::string> TopicSubscribeFlag::CollectUsages() const {

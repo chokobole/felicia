@@ -6,34 +6,49 @@ namespace felicia {
 
 TopicPublishFlag::TopicPublishFlag() {
   {
-    StringFlag::Builder builder(MakeValueStore(&content_));
-    auto flag =
-        builder.SetName("content").SetHelp("Content to publish").Build();
-    content_flag_ = std::make_unique<StringFlag>(flag);
+    StringFlag::Builder builder(MakeValueStore(&topic_));
+    auto flag = builder.SetName("topic").SetHelp("Topic to publish").Build();
+    topic_flag_ = std::make_unique<StringFlag>(flag);
   }
   {
-    StringFlag::Builder builder(MakeValueStore(&topic_));
-    auto flag = builder.SetShortName("-t")
-                    .SetLongName("--topic")
-                    .SetHelp("Topic to publish")
+    StringFlag::Builder builder(MakeValueStore(&type_));
+    auto flag = builder.SetName("type").SetHelp("Type of message").Build();
+    type_flag_ = std::make_unique<StringFlag>(flag);
+  }
+  {
+    StringFlag::Builder builder(MakeValueStore(&type_));
+    auto flag = builder.SetName("message")
+                    .SetHelp("Content of message, in JSON format")
                     .Build();
-    topic_flag_ = std::make_unique<StringFlag>(flag);
+    message_flag_ = std::make_unique<StringFlag>(flag);
+  }
+  {
+    DefaultFlag<int64_t>::Builder builder(
+        MakeValueStore<int64_t>(&interval_, 1000));
+    auto flag =
+        builder.SetShortName("-i")
+            .SetLongName("--interval")
+            .SetHelp(
+                "Interval between messages, in milliseconds, default: 1000")
+            .Build();
+    interval_flag_ = std::make_unique<DefaultFlag<int64_t>>(flag);
   }
 }
 
 TopicPublishFlag::~TopicPublishFlag() = default;
 
 bool TopicPublishFlag::Parse(FlagParser& parser) {
-  PARSE_POSITIONAL_FLAG(parser, 1, content_flag_);
-  return PARSE_OPTIONAL_FLAG(parser, topic_flag_);
+  PARSE_POSITIONAL_FLAG(parser, 3, topic_flag_, type_flag_, message_flag_);
+  return PARSE_OPTIONAL_FLAG(parser, interval_flag_);
 }
 
 bool TopicPublishFlag::Validate() const {
-  return content_flag_->is_set() && topic_flag_->is_set();
+  return CheckIfFlagWasSet(topic_flag_) && CheckIfFlagWasSet(type_flag_) &&
+         CheckIfFlagWasSet(message_flag_);
 }
 
 std::vector<std::string> TopicPublishFlag::CollectUsages() const {
-  return {"[OPTIONS]"};
+  return {"topic type message [OPTIONS]"};
 }
 
 std::string TopicPublishFlag::Description() const { return "Publish topics"; }
@@ -42,8 +57,10 @@ std::vector<NamedHelpType> TopicPublishFlag::CollectNamedHelps() const {
   return {
       std::make_pair(TextStyle::Yellow("Options:"),
                      std::vector<std::string>{
-                         content_flag_->help(),
                          topic_flag_->help(),
+                         type_flag_->help(),
+                         message_flag_->help(),
+                         interval_flag_->help(),
                      }),
   };
 }

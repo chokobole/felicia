@@ -48,13 +48,8 @@ bool NodeListFlag::Parse(FlagParser& parser) {
 }
 
 bool NodeListFlag::Validate() const {
-  int is_set_cnt = 0;
-  if (all_flag_->is_set()) is_set_cnt++;
-  if (publishing_topic_flag_->is_set()) is_set_cnt++;
-  if (subscribing_topic_flag_->is_set()) is_set_cnt++;
-  if (name_flag_->is_set()) is_set_cnt++;
-
-  return is_set_cnt == 1;
+  return CheckIfOneOfFlagWasSet(all_flag_, publishing_topic_flag_,
+                                subscribing_topic_flag_, name_flag_);
 }
 
 std::vector<std::string> NodeListFlag::CollectUsages() const {

@@ -14,8 +14,12 @@ class TopicPublishFlag : public FlagParser::Delegate {
   TopicPublishFlag();
   ~TopicPublishFlag();
 
-  const StringFlag* content_flag() const { return content_flag_.get(); }
   const StringFlag* topic_flag() const { return topic_flag_.get(); }
+  const StringFlag* type_flag() const { return type_flag_.get(); }
+  const StringFlag* message_flag() const { return message_flag_.get(); }
+  const DefaultFlag<int64_t>* interval_flag() const {
+    return interval_flag_.get();
+  }
 
   bool Parse(FlagParser& parser) override;
 
@@ -26,10 +30,14 @@ class TopicPublishFlag : public FlagParser::Delegate {
   std::vector<NamedHelpType> CollectNamedHelps() const override;
 
  private:
-  std::string content_;
   std::string topic_;
-  std::unique_ptr<StringFlag> content_flag_;
+  std::string type_;
+  std::string message_;
+  int64_t interval_;
   std::unique_ptr<StringFlag> topic_flag_;
+  std::unique_ptr<StringFlag> type_flag_;
+  std::unique_ptr<StringFlag> message_flag_;
+  std::unique_ptr<DefaultFlag<int64_t>> interval_flag_;
 
   DISALLOW_COPY_AND_ASSIGN(TopicPublishFlag);
 };

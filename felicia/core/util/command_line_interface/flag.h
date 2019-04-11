@@ -3,7 +3,8 @@
 
 #include <stddef.h>
 
-#include <string>
+#include <iostream>
+#include <vector>
 
 #include "gtest/gtest_prod.h"
 #include "third_party/chromium/base/logging.h"
@@ -435,6 +436,50 @@ bool Flag<T, Traits>::ParseValue(::base::StringPiece arg) {
     return set_value(value);
   }
   return false;
+}
+
+template <typename T>
+bool CheckIfFlagWasSet(T&& flag) {
+  bool ret = flag->is_set();
+  if (ret) return ret;
+
+  std::string name;
+  if (flag->is_positional()) {
+    name = flag->name();
+  } else {
+    name = flag->long_name();
+  }
+
+  std::cerr << TextStyle::Red("Error: ") << name << " was not set."
+            << std::endl;
+
+  return ret;
+}
+
+EXPORT bool CheckIfOneOfFlagWasSet(std::vector<std::string>& names);
+
+template <typename T, typename... Rest>
+bool CheckIfOneOfFlagWasSet(std::vector<std::string>& names, T&& flag,
+                            Rest&&... rest) {
+  bool ret = flag->is_set();
+  if (ret) return ret;
+
+  std::string name;
+  if (flag->is_positional()) {
+    name = flag->name();
+  } else {
+    name = flag->long_name();
+  }
+
+  names.push_back(name);
+
+  return CheckIfOneOfFlagWasSet(names, std::forward<Rest>(rest)...);
+}
+
+template <typename T, typename... Rest>
+bool CheckIfOneOfFlagWasSet(T&& flag, Rest&&... rest) {
+  std::vector<std::string> names;
+  return CheckIfOneOfFlagWasSet(names, flag, std::forward<Rest>(rest)...);
 }
 
 }  // namespace felicia

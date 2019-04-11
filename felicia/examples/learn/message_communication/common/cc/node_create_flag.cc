@@ -49,12 +49,6 @@ bool NodeCreateFlag::Parse(FlagParser& parser) {
                              topic_flag_, channel_type_flag_);
 }
 
-bool NodeCreateFlag::Validate() const {
-  bool is_set = topic_flag_->is_set();
-  if (!is_set) {
-    std::cerr << TextStyle::Red("Error:") << " topic is not set." << std::endl;
-  }
-  return is_set;
-}
+bool NodeCreateFlag::Validate() const { return CheckIfFlagWasSet(topic_flag_); }
 
 }  // namespace felicia
