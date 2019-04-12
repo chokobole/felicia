@@ -13,9 +13,9 @@ uint32_t CameraFormat::ToV4l2PixelFormat() const {
     return v4l2_format;
 #include "felicia/drivers/camera/camera_format_list.h"
 #undef PIXEL_FORMAT
+    case PIXEL_FORMAT_UNKNOWN:
+      return V4L2_PIX_FMT_RGB24;
   }
-  NOTREACHED();
-  return V4L2_PIX_FMT_RGB24;
 }
 
 // static

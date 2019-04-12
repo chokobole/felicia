@@ -12,6 +12,7 @@ load(
     "fel_cc_library",
     "fel_cc_test",
     "fel_objc_library",
+    "include",
 )
 load(
     "//third_party/chromium/build/config:build.bzl",
@@ -23,6 +24,7 @@ load(
     "chromium_code",
     "no_exception",
 )
+load("//third_party/chromium/build/config/win:build.bzl", "default_win_build_config")
 
 def _chromium_platform_files(suffix, base, exclude):
     if base == None:
@@ -87,7 +89,20 @@ def chromium_platform_test_srcs(base = None, exclude = []):
     return _chromium_platform_files("_unittest.cc", base = base, exclude = exclude + ["**/*perftest*", "**/*fuzzer*"])
 
 def default_compiler_configs():
-    return feature_flags() + chromium_code() + no_exception()
+    return feature_flags() + chromium_code() + no_exception() + default_win_build_config()
+
+def chromium_copts():
+    return include(["third_party/chromium"])
+
+def chromium_cxxopts():
+    return chromium_copts() + select({
+        "//felicia:windows": [
+            "/std:c++14",
+        ],
+        "//conditions:default": [
+            "-std=c++14",
+        ],
+    })
 
 def chromium_c_library(
         name,
@@ -96,7 +111,8 @@ def chromium_c_library(
         **kwargs):
     fel_c_library(
         name = name,
-        copts = default_compiler_configs() + copts,
+        copts = default_compiler_configs() + chromium_copts() + copts,
+        use_fel_copt = False,
         linkopts = default_libs() + linkopts,
         **kwargs
     )
@@ -108,7 +124,8 @@ def chromium_cc_library(
         **kwargs):
     fel_cc_library(
         name = name,
-        copts = default_compiler_configs() + copts,
+        copts = default_compiler_configs() + chromium_cxxopts() + copts,
+        use_fel_cxxopt = False,
         linkopts = default_libs() + linkopts,
         **kwargs
     )
@@ -119,7 +136,8 @@ def chromium_objc_library(
         **kwargs):
     fel_objc_library(
         name = name,
-        copts = default_compiler_configs() + ["-fno-objc-arc"] + copts,
+        copts = default_compiler_configs() + chromium_cxxopts() + ["-fno-objc-arc"] + copts,
+        use_fel_cxxopt = False,
         **kwargs
     )
 
@@ -129,6 +147,7 @@ def chromium_cc_test(
         **kwargs):
     fel_cc_test(
         name = name,
-        copts = default_compiler_configs() + define(["UNIT_TEST"]) + copts,
+        copts = default_compiler_configs() + chromium_cxxopts() + define(["UNIT_TEST"]) + copts,
+        use_fel_cxxopt = False,
         **kwargs
     )
