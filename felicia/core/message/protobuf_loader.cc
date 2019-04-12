@@ -8,7 +8,10 @@
 
 namespace felicia {
 
-ProtobufLoader::ProtobufLoader() {}
+ProtobufLoader::ProtobufLoader(
+    ::google::protobuf::compiler::DiskSourceTree* source_tree)
+    : source_tree_database_(source_tree),
+      descriptor_pool_(&source_tree_database_, &error_collector_) {}
 
 ProtobufLoader::~ProtobufLoader() {}
 
@@ -23,16 +26,12 @@ std::unique_ptr<ProtobufLoader> ProtobufLoader::Load(
   ::google::protobuf::compiler::DiskSourceTree source_tree;
   source_tree.MapPath("", root_path_canonicalized);
 
-  ::google::protobuf::compiler::SourceTreeDescriptorDatabase database(
-      &source_tree);
-
-  ProtobufLoader* loader = new ProtobufLoader();
+  ProtobufLoader* loader = new ProtobufLoader(&source_tree);
   ::base::FileEnumerator enumerator(
       root_path_with_separator, true, ::base::FileEnumerator::FILES,
       FILE_PATH_LITERAL("*.proto"),
       ::base::FileEnumerator::FolderSearchPolicy::ALL);
 
-  std::vector<std::string> failed_file_paths;
   for (auto path = enumerator.Next(); !path.empty(); path = enumerator.Next()) {
     std::string path_canonicalized;
     ::base::ReplaceChars(path.MaybeAsASCII(), "\\", "/", &path_canonicalized);
@@ -40,38 +39,7 @@ std::unique_ptr<ProtobufLoader> ProtobufLoader::Load(
         path_canonicalized.substr(root_path_canonicalized.length());
     if (!strings::StartsWith(relative_path, "felicia")) continue;
 
-    ::google::protobuf::FileDescriptorProto proto;
-    if (!database.FindFileByName(relative_path, &proto)) {
-      LOG(ERROR) << "Failed to FindFileByName " << path;
-      continue;
-    }
-    const ::google::protobuf::FileDescriptor* descriptor =
-        loader->descriptor_pool_.BuildFile(proto);
-    if (!descriptor) {
-      failed_file_paths.push_back(relative_path);
-    }
-  }
-
-  size_t last_size = 0;
-  while (last_size != failed_file_paths.size()) {
-    last_size = failed_file_paths.size();
-    auto it = failed_file_paths.begin();
-    while (it != failed_file_paths.end()) {
-      ::google::protobuf::FileDescriptorProto proto;
-      database.FindFileByName(*it, &proto);
-
-      const ::google::protobuf::FileDescriptor* descriptor =
-          loader->descriptor_pool_.BuildFile(proto);
-      if (descriptor) {
-        it = failed_file_paths.erase(it);
-        continue;
-      }
-      it++;
-    }
-  }
-
-  for (auto& failed_path : failed_file_paths) {
-    LOG(ERROR) << "Failed to Parse. path : " << failed_path;
+    loader->descriptor_pool_.FindFileByName(relative_path);
   }
 
   return ::base::WrapUnique(std::move(loader));
@@ -87,6 +55,22 @@ const ::google::protobuf::Message* ProtobufLoader::NewMessage(
   }
 
   return message_factory_.GetPrototype(descriptor);
+}
+
+void ProtobufLoader::ErrorCollector::AddError(
+    const std::string& filename, const std::string& element_name,
+    const google::protobuf::Message* descriptor,
+    google::protobuf::DescriptorPool::ErrorCollector::ErrorLocation location,
+    const std::string& message) {
+  LOG(ERROR) << message;
+}
+
+void ProtobufLoader::ErrorCollector::AddWarning(
+    const std::string& filename, const std::string& element_name,
+    const google::protobuf::Message* descriptor,
+    google::protobuf::DescriptorPool::ErrorCollector::ErrorLocation location,
+    const std::string& message) {
+  LOG(WARNING) << message;
 }
 
 }  // namespace felicia

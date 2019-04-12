@@ -14,6 +14,23 @@ namespace felicia {
 
 class ProtobufLoader {
  public:
+  class ErrorCollector
+      : public ::google::protobuf::DescriptorPool::ErrorCollector {
+    void AddError(
+        const std::string& filename, const std::string& element_name,
+        const google::protobuf::Message* descriptor,
+        google::protobuf::DescriptorPool::ErrorCollector::ErrorLocation
+            location,
+        const std::string& message) override;
+
+    void AddWarning(
+        const std::string& filename, const std::string& element_name,
+        const google::protobuf::Message* descriptor,
+        google::protobuf::DescriptorPool::ErrorCollector::ErrorLocation
+            location,
+        const std::string& message) override;
+  };
+
   ~ProtobufLoader();
 
   static std::unique_ptr<ProtobufLoader> Load(const ::base::FilePath& path);
@@ -21,11 +38,14 @@ class ProtobufLoader {
   const ::google::protobuf::Message* NewMessage(const std::string& type_name);
 
  private:
-  ProtobufLoader();
+  ProtobufLoader(::google::protobuf::compiler::DiskSourceTree* source_tree);
 
+  ::google::protobuf::compiler::SourceTreeDescriptorDatabase
+      source_tree_database_;
   ::google::protobuf::DescriptorPool descriptor_pool_;
-
   ::google::protobuf::DynamicMessageFactory message_factory_;
+
+  ErrorCollector error_collector_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtobufLoader);
 };
