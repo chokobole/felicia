@@ -287,25 +287,50 @@ void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
     std::cerr << s.error_message() << std::endl;
     return;
   }
-  auto topic_infos = response->topic_infos();
-  TableWriterBuilder builder;
-  auto writer =
-      builder.AddColumn(TableWriter::Column{"NAME", kTopicNameLength})
-          .AddColumn(TableWriter::Column{"TYPE", kMessageTypeLength})
-          .AddColumn(TableWriter::Column{"PROTOCOL", kChannelProtocolLength})
-          .AddColumn(TableWriter::Column{"END POINT", kChannelSourceLength})
-          .Build();
-  size_t row = 0;
-  for (auto& topic_info : topic_infos) {
-    writer.SetElement(row, 0, topic_info.topic());
-    writer.SetElement(row, 1, topic_info.type_name());
-    const ChannelSource& channel_source = topic_info.topic_source();
-    writer.SetElement(row, 2, ToString(channel_source.channel_def()));
-    writer.SetElement(row, 3, ToString(channel_source));
-    row++;
-  }
 
-  std::cout << writer.ToString() << std::endl;
+  auto topic_infos = response->topic_infos();
+  if (topic_infos.size() == 0) return;
+
+  if (request->topic_filter().all()) {
+    TableWriterBuilder builder;
+    auto writer =
+        builder.AddColumn(TableWriter::Column{"NAME", kTopicNameLength})
+            .AddColumn(TableWriter::Column{"TYPE", kMessageTypeLength})
+            .AddColumn(TableWriter::Column{"PROTOCOL", kChannelProtocolLength})
+            .AddColumn(TableWriter::Column{"END POINT", kChannelSourceLength})
+            .Build();
+    size_t row = 0;
+    for (auto& topic_info : topic_infos) {
+      writer.SetElement(row, 0, topic_info.topic());
+      writer.SetElement(row, 1, topic_info.type_name());
+      const ChannelSource& channel_source = topic_info.topic_source();
+      writer.SetElement(row, 2, ToString(channel_source.channel_def()));
+      writer.SetElement(row, 3, ToString(channel_source));
+      row++;
+    }
+
+    std::cout << writer.ToString() << std::endl;
+  } else {
+    auto topic_info = topic_infos[0];
+    const ChannelSource& channel_source = topic_info.topic_source();
+
+    protobuf_loader_ = ProtobufLoader::Load(
+        ::base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
+
+    const ::google::protobuf::Message* message =
+        protobuf_loader_->NewMessage(topic_info.type_name());
+
+    std::cout << ::base::StringPrintf(
+                     "TYPE: %s\n"
+                     "FORMAT: %s\n"
+                     "PROTOCOL: %s\n"
+                     "END_POINT: %s\n",
+                     topic_info.type_name().c_str(),
+                     message->GetDescriptor()->DebugString().c_str(),
+                     ToString(channel_source.channel_def()).c_str(),
+                     ToString(channel_source).c_str())
+              << std::endl;
+  }
 }
 
 void CommandDispatcher::PublishMessageFromJSON(

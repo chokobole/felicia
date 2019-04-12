@@ -17,7 +17,7 @@ TopicListFlag::TopicListFlag() {
     StringFlag::Builder builder(MakeValueStore(&topic_));
     auto flag = builder.SetShortName("-t")
                     .SetLongName("--topic")
-                    .SetHelp("List topics with a given topic")
+                    .SetHelp("List a given topic")
                     .Build();
     topic_flag_ = std::make_unique<StringFlag>(flag);
   }

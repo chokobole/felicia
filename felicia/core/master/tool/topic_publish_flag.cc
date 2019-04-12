@@ -48,18 +48,21 @@ bool TopicPublishFlag::Validate() const {
 }
 
 std::vector<std::string> TopicPublishFlag::CollectUsages() const {
-  return {"topic type message [OPTIONS]"};
+  return {"TOPIC TYPE MESSAGE [OPTIONS]"};
 }
 
 std::string TopicPublishFlag::Description() const { return "Publish topics"; }
 
 std::vector<NamedHelpType> TopicPublishFlag::CollectNamedHelps() const {
   return {
-      std::make_pair(TextStyle::Yellow("Options:"),
+      std::make_pair(TextStyle::Blue("Positions:"),
                      std::vector<std::string>{
                          topic_flag_->help(),
                          type_flag_->help(),
                          message_flag_->help(),
+                     }),
+      std::make_pair(TextStyle::Yellow("Options:"),
+                     std::vector<std::string>{
                          interval_flag_->help(),
                      }),
   };
