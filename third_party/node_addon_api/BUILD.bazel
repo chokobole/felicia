@@ -1,0 +1,45 @@
+load(
+    "//:node_addon_api.bzl",
+    "NODE_VERSION",
+    "node_addon_api_copts",
+)
+
+config_setting(
+    name = "windows",
+    constraint_values = ["@bazel_tools//platforms:windows"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "node_addon_api",
+    srcs = [
+        "node_modules/node-addon-api/src/node_api.cc",
+        "node_modules/node-addon-api/src/node_internals.cc",
+    ],
+    hdrs = [
+        "node_modules/node-addon-api/napi.h",
+        "node_modules/node-addon-api/napi-inl.deprecated.h",
+        "node_modules/node-addon-api/napi-inl.h",
+        "node_modules/node-addon-api/src/node_api.h",
+        "node_modules/node-addon-api/src/node_api_types.h",
+        "node_modules/node-addon-api/src/node_internals.h",
+        "node_modules/node-addon-api/src/util.h",
+        "node_modules/node-addon-api/src/util-inl.h",
+    ],
+    copts = ["-fvisibility=hidden"] + node_addon_api_copts(),
+    includes = [
+        "node_modules/node-addon-api",
+        "node_modules/node-addon-api/src",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [":node_addon"],
+)
+
+cc_library(
+    name = "node_addon",
+    hdrs = glob(["%s/include/**/*.h" % (NODE_VERSION)]),
+    includes = [
+        "%s/include" % (NODE_VERSION),
+        "%s/include/node" % (NODE_VERSION),
+    ],
+)

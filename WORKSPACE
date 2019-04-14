@@ -4,6 +4,10 @@ load("//bazel:felicia_deps.bzl", "load_deps")
 
 load_deps()
 
+load("//third_party/node_addon_api:install.bzl", "npm_install_node_addon_api")
+
+npm_install_node_addon_api(name = "node_addon_api")
+
 load("@com_github_grpc_grpc//bazel:grpc_deps.bzl", "grpc_deps")
 
 grpc_deps()

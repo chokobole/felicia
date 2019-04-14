@@ -42,7 +42,7 @@ def fel_pybind_py_library(
         imports = ["."],
     )
 
-def _impl(ctx):
+def _generate_pyd_impl(ctx):
     output = ctx.outputs.out
     target = ctx.attr.name[:-4]
 
@@ -65,7 +65,7 @@ def _impl(ctx):
     )
 
 generate_pyd = rule(
-    implementation = _impl,
+    implementation = _generate_pyd_impl,
     attrs = {
         "file": attr.label(mandatory = True),
         "out": attr.output(mandatory = True),

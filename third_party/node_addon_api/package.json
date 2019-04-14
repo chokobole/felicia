@@ -1,0 +1,8 @@
+{
+  "name": "felicia-js-dependencies",
+  "description": "Dependencies to JS binding for felicia",
+  "gypfile": true,
+  "dependencies": {
+    "node-addon-api": "*"
+  }
+}

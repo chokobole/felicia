@@ -21,8 +21,10 @@ app.use(express.static('static'));
 
 websocketMiddleWare(app);
 
-console.log(feliciaJs.hello());
-
 app.listen(HTTP_PORT, () =>
   console.log(`Running FeliciaViz-${packagejson.version} on ${HTTP_PORT}`)
 );
+
+feliciaJs.MasterProxy.Start();
+
+feliciaJs.MasterProxy.Run();
