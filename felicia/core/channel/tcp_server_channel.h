@@ -18,6 +18,7 @@ namespace felicia {
 class EXPORT TCPServerChannel : public TCPChannelBase {
  public:
   using AcceptCallback = ::base::RepeatingCallback<void(const Status& s)>;
+  using AcceptOnceCallback = ::base::OnceCallback<void(const Status& s)>;
 
   TCPServerChannel();
   ~TCPServerChannel();
@@ -29,6 +30,8 @@ class EXPORT TCPServerChannel : public TCPChannelBase {
   StatusOr<ChannelSource> Listen();
 
   void DoAcceptLoop(AcceptCallback callback);
+
+  void AcceptOnce(AcceptOnceCallback callback);
 
   // Write the |buffer| to the |accepted_sockets_|. If it succeeds to write
   // all the sockets, then callback with Status::OK(), otherwise callback
@@ -44,6 +47,7 @@ class EXPORT TCPServerChannel : public TCPChannelBase {
             StatusCallback callback) override;
 
  private:
+  int DoAccept();
   void DoAcceptLoop();
   void HandleAccpetResult(int result);
   void OnAccept(int result);
@@ -54,6 +58,7 @@ class EXPORT TCPServerChannel : public TCPChannelBase {
   void EraseClosedSockets();
 
   AcceptCallback accept_callback_;
+  AcceptOnceCallback accept_once_callback_;
 
   size_t to_write_count_ = 0;
   size_t written_count_ = 0;

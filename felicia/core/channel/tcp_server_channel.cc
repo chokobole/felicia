@@ -58,8 +58,17 @@ StatusOr<ChannelSource> TCPServerChannel::Listen() {
 }
 
 void TCPServerChannel::DoAcceptLoop(AcceptCallback callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(accept_callback_.is_null() && accept_once_callback_.is_null());
   accept_callback_ = callback;
   DoAcceptLoop();
+}
+
+void TCPServerChannel::AcceptOnce(AcceptOnceCallback callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(accept_callback_.is_null() && accept_once_callback_.is_null());
+  accept_once_callback_ = std::move(callback);
+  DoAccept();
 }
 
 void TCPServerChannel::Write(::net::IOBuffer* buffer, int size,
@@ -146,13 +155,18 @@ void TCPServerChannel::Read(::net::IOBuffer* buffer, int size,
   }
 }
 
+int TCPServerChannel::DoAccept() {
+  int result = socket_->Accept(
+      &accepted_socket_, &accepted_endpoint_,
+      ::base::BindOnce(&TCPServerChannel::OnAccept, ::base::Unretained(this)));
+  if (result != ::net::ERR_IO_PENDING) HandleAccpetResult(result);
+  return result;
+}
+
 void TCPServerChannel::DoAcceptLoop() {
   int result = ::net::OK;
   while (result == ::net::OK) {
-    result = socket_->Accept(&accepted_socket_, &accepted_endpoint_,
-                             ::base::BindOnce(&TCPServerChannel::OnAccept,
-                                              ::base::Unretained(this)));
-    if (result != ::net::ERR_IO_PENDING) HandleAccpetResult(result);
+    result = DoAccept();
   }
 }
 
@@ -166,13 +180,16 @@ void TCPServerChannel::HandleAccpetResult(int result) {
   }
 
   accepted_sockets_.push_back(std::move(accepted_socket_));
-  accept_callback_.Run(Status::OK());
+  if (accept_callback_)
+    accept_callback_.Run(Status::OK());
+  else
+    std::move(accept_once_callback_).Run(Status::OK());
 }
 
 void TCPServerChannel::OnAccept(int result) {
   HandleAccpetResult(result);
   if (result == ::net::OK) {
-    DoAcceptLoop();
+    if (accept_callback_) DoAcceptLoop();
   }
 }
 

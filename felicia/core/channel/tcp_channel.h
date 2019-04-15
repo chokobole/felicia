@@ -31,6 +31,8 @@ class TCPChannel : public Channel<MessageTy> {
 
   void DoAcceptLoop(TCPServerChannel::AcceptCallback accept_callback);
 
+  void AcceptOnce(TCPServerChannel::AcceptOnceCallback accept_once_callback);
+
   void Connect(const ChannelSource& channel_source,
                StatusCallback callback) override;
 
@@ -60,6 +62,15 @@ void TCPChannel<MessageTy>::DoAcceptLoop(
   DCHECK(!accept_callback.is_null());
   this->channel_->ToTCPChannelBase()->ToTCPServerChannel()->DoAcceptLoop(
       accept_callback);
+}
+
+template <typename MessageTy>
+void TCPChannel<MessageTy>::AcceptOnce(
+    TCPServerChannel::AcceptOnceCallback accept_once_callback) {
+  DCHECK(this->channel_);
+  DCHECK(!accept_once_callback.is_null());
+  this->channel_->ToTCPChannelBase()->ToTCPServerChannel()->AcceptOnce(
+      std::move(accept_once_callback));
 }
 
 template <typename MessageTy>

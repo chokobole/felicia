@@ -36,15 +36,9 @@ void TopicInfoWatcher::Start() {
 }
 
 void TopicInfoWatcher::DoAccept() {
-  if (!task_runner_interface_->IsBoundToCurrentThread()) {
-    task_runner_interface_->PostTask(
-        FROM_HERE, ::base::BindOnce(&TopicInfoWatcher::DoAccept,
-                                    ::base::Unretained(this)));
-    return;
-  }
   TCPChannel<TopicInfo>* tcp_channel = channel_->ToTCPChannel();
-  tcp_channel->DoAcceptLoop(::base::BindRepeating(&TopicInfoWatcher::OnAccept,
-                                                  ::base::Unretained(this)));
+  tcp_channel->AcceptOnce(
+      ::base::BindOnce(&TopicInfoWatcher::OnAccept, ::base::Unretained(this)));
 }
 
 void TopicInfoWatcher::OnAccept(const Status& s) {
@@ -70,6 +64,7 @@ void TopicInfoWatcher::OnNewTopicInfo(const Status& s) {
     }
     if (!all_topic_callback_.is_null()) all_topic_callback_.Run(topic_info_);
   }
+  DoAccept();
 }
 
 }  // namespace felicia
