@@ -34,7 +34,7 @@ feliciaJs.MasterProxy.requestRegisterDynamicSubscribingNode(function (topic, mes
   console.log(message);
 }, function (topic, s) {
   console.log(`[TOPIC]: ${topic}`);
-  console.error(s.error_message());
+  console.error(s.errorMessage());
 });
 
 feliciaJs.MasterProxy.run();

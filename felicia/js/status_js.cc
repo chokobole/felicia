@@ -30,11 +30,13 @@ void JsStatus::Init(::Napi::Env env, ::Napi::Object exports) {
 
 // static
 ::Napi::Object JsStatus::New(::Napi::Env env, const Status& s) {
-  ::Napi::HandleScope scope(env);
+  ::Napi::EscapableHandleScope scope(env);
 
-  return constructor_.New(
+  ::Napi::Object object = constructor_.New(
       {::Napi::Number::New(env, static_cast<double>(s.error_code())),
        ::Napi::String::New(env, s.error_message())});
+
+  return scope.Escape(napi_value(object)).ToObject();
 }
 
 JsStatus::JsStatus(const ::Napi::CallbackInfo& info)
