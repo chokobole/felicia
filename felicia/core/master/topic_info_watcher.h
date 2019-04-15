@@ -8,6 +8,7 @@
 #include "third_party/chromium/base/macros.h"
 
 #include "felicia/core/channel/channel.h"
+#include "felicia/core/lib/base/task_runner_interface.h"
 #include "felicia/core/protobuf/master_data.pb.h"
 
 namespace felicia {
@@ -17,7 +18,7 @@ class TopicInfoWatcher {
   using NewTopicInfoCallback =
       ::base::RepeatingCallback<void(const TopicInfo&)>;
 
-  TopicInfoWatcher() {}
+  explicit TopicInfoWatcher(TaskRunnerInterface* task_runner_interface);
 
   const ChannelSource& channel_source() const { return channel_source_; }
 
@@ -31,11 +32,13 @@ class TopicInfoWatcher {
   void Start();
 
  private:
+  void DoAccept();
   void OnAccept(const Status& s);
 
   void WatchNewTopicInfo();
   void OnNewTopicInfo(const Status& s);
 
+  TaskRunnerInterface* task_runner_interface_;  // not owned
   ChannelSource channel_source_;
   TopicInfo topic_info_;
   std::unique_ptr<Channel<TopicInfo>> channel_;

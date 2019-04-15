@@ -14,6 +14,7 @@
 #include "third_party/chromium/base/no_destructor.h"
 #include "third_party/chromium/base/run_loop.h"
 #include "third_party/chromium/base/synchronization/waitable_event.h"
+#include "third_party/chromium/base/threading/thread.h"
 
 #include "felicia/core/channel/channel.h"
 #include "felicia/core/lib/base/export.h"
@@ -29,6 +30,7 @@ class PyMasterProxy;
 class EXPORT MasterProxy final : public TaskRunnerInterface,
                                  public MasterClientInterface {
  public:
+  static void SetBackground();
   static MasterProxy& GetInstance();
 
   bool IsBoundToCurrentThread() const override;
@@ -86,6 +88,8 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
   MasterProxy();
   ~MasterProxy();
 
+  void Setup(::base::WaitableEvent* event);
+
   void RegisterClient();
 
   void OnRegisterClient(::base::WaitableEvent* event,
@@ -98,6 +102,7 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
 
   std::unique_ptr<::base::MessageLoop> message_loop_;
   std::unique_ptr<::base::RunLoop> run_loop_;
+  std::unique_ptr<::base::Thread> thread_;
   std::unique_ptr<MasterClientInterface> master_client_interface_;
 
   ClientInfo client_info_;

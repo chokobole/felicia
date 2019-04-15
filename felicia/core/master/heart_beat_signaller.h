@@ -19,6 +19,7 @@ class HeartBeatSignaller {
   void Start();
 
  private:
+  void DoAccept();
   void OnAccept(const Status& s);
   void Signal();
   void OnSignal(const Status& s);

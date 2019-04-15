@@ -11,35 +11,63 @@
 
 namespace felicia {
 
+namespace {
+
+bool g_on_background = false;
+
+}  // namespace
+
 MasterProxy::MasterProxy()
-    : message_loop_(
-          std::make_unique<::base::MessageLoop>(::base::MessageLoop::TYPE_IO)),
-      run_loop_(std::make_unique<::base::RunLoop>()),
-      topic_info_watcher_(),
-      heart_beat_signaller_(this) {}
+    : topic_info_watcher_(this), heart_beat_signaller_(this) {
+  if (g_on_background) {
+    thread_ = std::make_unique<::base::Thread>("MasterProxy");
+  } else {
+    message_loop_ =
+        std::make_unique<::base::MessageLoop>(::base::MessageLoop::TYPE_IO);
+    run_loop_ = std::make_unique<::base::RunLoop>();
+  }
+}
 
 MasterProxy::~MasterProxy() = default;
 
+// static
+void MasterProxy::SetBackground() { g_on_background = true; }
+
+// static
 MasterProxy& MasterProxy::GetInstance() {
   static ::base::NoDestructor<MasterProxy> master_proxy;
   return *master_proxy;
 }
 
 bool MasterProxy::IsBoundToCurrentThread() const {
-  return message_loop_->IsBoundToCurrentThread();
+  if (g_on_background) {
+    return thread_->task_runner()->BelongsToCurrentThread();
+  } else {
+    return message_loop_->IsBoundToCurrentThread();
+  }
 }
 
 // TaskRunnerInterface methods
 bool MasterProxy::PostTask(const ::base::Location& from_here,
                            ::base::OnceClosure callback) {
-  return message_loop_->task_runner()->PostTask(from_here, std::move(callback));
+  if (g_on_background) {
+    return thread_->task_runner()->PostTask(from_here, std::move(callback));
+  } else {
+    return message_loop_->task_runner()->PostTask(from_here,
+                                                  std::move(callback));
+  }
 }
 
 bool MasterProxy::PostDelayedTask(const ::base::Location& from_here,
                                   ::base::OnceClosure callback,
                                   ::base::TimeDelta delay) {
-  return message_loop_->task_runner()->PostDelayedTask(
-      from_here, std::move(callback), delay);
+  if (g_on_background) {
+    return thread_->task_runner()->PostDelayedTask(from_here,
+                                                   std::move(callback), delay);
+  } else {
+    return message_loop_->task_runner()->PostDelayedTask(
+        from_here, std::move(callback), delay);
+  }
 }
 
 Status MasterProxy::Start() {
@@ -48,13 +76,16 @@ Status MasterProxy::Start() {
   Status s = master_client_interface_->Start();
   if (!s.ok()) return s;
 
-  heart_beat_signaller_.Start();
-  topic_info_watcher_.Start();
+  if (g_on_background) {
+    thread_->StartWithOptions(
+        ::base::Thread::Options{::base::MessageLoop::TYPE_IO, 0});
+  }
 
-  *client_info_.mutable_heart_beat_signaller_source() =
-      heart_beat_signaller_.channel_source();
-  *client_info_.mutable_topic_info_watcher_source() =
-      topic_info_watcher_.channel_source();
+  ::base::WaitableEvent* event = new ::base::WaitableEvent;
+  Setup(event);
+
+  event->Wait();
+  delete event;
 
   RegisterClient();
 
@@ -63,7 +94,11 @@ Status MasterProxy::Start() {
 
 Status MasterProxy::Stop() {
   Status s = master_client_interface_->Stop();
-  run_loop_->Quit();
+  if (g_on_background) {
+    thread_->Stop();
+  } else {
+    run_loop_->Quit();
+  }
   return s;
 }
 
@@ -90,7 +125,28 @@ CLIENT_METHOD(ListTopics)
 
 #undef CLIENT_METHOD
 
-void MasterProxy::Run() { run_loop_->Run(); }
+void MasterProxy::Run() {
+  if (g_on_background) return;
+  run_loop_->Run();
+}
+
+void MasterProxy::Setup(::base::WaitableEvent* event) {
+  if (!IsBoundToCurrentThread()) {
+    PostTask(FROM_HERE, ::base::BindOnce(&MasterProxy::Setup,
+                                         ::base::Unretained(this), event));
+    return;
+  }
+
+  heart_beat_signaller_.Start();
+  topic_info_watcher_.Start();
+
+  *client_info_.mutable_heart_beat_signaller_source() =
+      heart_beat_signaller_.channel_source();
+  *client_info_.mutable_topic_info_watcher_source() =
+      topic_info_watcher_.channel_source();
+
+  event->Signal();
+}
 
 void MasterProxy::RegisterClient() {
   RegisterClientRequest* request = new RegisterClientRequest();

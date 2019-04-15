@@ -1,5 +1,7 @@
 #include "felicia/js/master_proxy_js.h"
 
+#include "third_party/chromium/base/threading/thread.h"
+
 #include "felicia/js/status_js.h"
 #include "felicia/js/typed_call.h"
 
@@ -11,15 +13,16 @@ namespace felicia {
 void JsMasterProxy::Init(::Napi::Env env, ::Napi::Object exports) {
   ::Napi::HandleScope scope(env);
 
-  ::Napi::Function func =
-      DefineClass(env, "MasterProxy",
-                  {
-                      StaticMethod("start", &JsMasterProxy::Start),
-                      StaticMethod("stop", &JsMasterProxy::Stop),
-                      StaticMethod("run", &JsMasterProxy::Run),
-                      StaticMethod("requestRegisterNode",
-                                   &JsMasterProxy::RequestRegisterNode),
-                  });
+  ::Napi::Function func = DefineClass(
+      env, "MasterProxy",
+      {
+          StaticMethod("setBackground", &JsMasterProxy::SetBackground),
+          StaticMethod("start", &JsMasterProxy::Start),
+          StaticMethod("stop", &JsMasterProxy::Stop),
+          StaticMethod("run", &JsMasterProxy::Run),
+          StaticMethod("requestRegisterNode",
+                       &JsMasterProxy::RequestRegisterNode),
+      });
 
   constructor_ = ::Napi::Persistent(func);
   constructor_.SuppressDestruct();
@@ -34,6 +37,11 @@ JsMasterProxy::JsMasterProxy(const ::Napi::CallbackInfo& info)
 
   ::Napi::TypeError::New(env, "Cann't instantiate MasterProxy.")
       .ThrowAsJavaScriptException();
+}
+
+// static
+void JsMasterProxy::SetBackground(const ::Napi::CallbackInfo& info) {
+  TypedCall(info, &MasterProxy::SetBackground);
 }
 
 // static
@@ -59,7 +67,7 @@ JsMasterProxy::JsMasterProxy(const ::Napi::CallbackInfo& info)
   JS_CHECK_NUM_ARGS(info.Env(), 0);
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
-  Status s = master_proxy.Start();
+  Status s = master_proxy.Stop();
 
   ::Napi::Object obj = JsStatus::New(s, info);
 

@@ -7,6 +7,9 @@
 
 namespace felicia {
 
+TopicInfoWatcher::TopicInfoWatcher(TaskRunnerInterface* task_runner_interface)
+    : task_runner_interface_(task_runner_interface) {}
+
 void TopicInfoWatcher::RegisterCallback(const std::string& topic,
                                         NewTopicInfoCallback callback) {
   callback_map_[topic] = callback;
@@ -29,6 +32,17 @@ void TopicInfoWatcher::Start() {
   TCPChannel<TopicInfo>* tcp_channel = channel_->ToTCPChannel();
   auto status_or = tcp_channel->Listen();
   channel_source_ = status_or.ValueOrDie();
+  DoAccept();
+}
+
+void TopicInfoWatcher::DoAccept() {
+  if (!task_runner_interface_->IsBoundToCurrentThread()) {
+    task_runner_interface_->PostTask(
+        FROM_HERE, ::base::BindOnce(&TopicInfoWatcher::DoAccept,
+                                    ::base::Unretained(this)));
+    return;
+  }
+  TCPChannel<TopicInfo>* tcp_channel = channel_->ToTCPChannel();
   tcp_channel->DoAcceptLoop(::base::BindRepeating(&TopicInfoWatcher::OnAccept,
                                                   ::base::Unretained(this)));
 }

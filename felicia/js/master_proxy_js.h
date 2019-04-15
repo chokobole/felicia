@@ -12,6 +12,8 @@ class JsMasterProxy : public ::Napi::ObjectWrap<JsMasterProxy> {
   static void Init(::Napi::Env env, ::Napi::Object exports);
   JsMasterProxy(const ::Napi::CallbackInfo& info);
 
+  static void SetBackground(const ::Napi::CallbackInfo& info);
+
   static ::Napi::Value Start(const ::Napi::CallbackInfo& info);
   static ::Napi::Value Stop(const ::Napi::CallbackInfo& info);
 
