@@ -17,8 +17,8 @@ void JsStatus::Init(::Napi::Env env, ::Napi::Object exports) {
       DefineClass(env, "Status",
                   {
                       StaticMethod("OK", &JsStatus::OK),
-                      InstanceMethod("error_code", &JsStatus::error_code),
-                      InstanceMethod("error_message", &JsStatus::error_message),
+                      InstanceMethod("errorCode", &JsStatus::error_code),
+                      InstanceMethod("errorMessage", &JsStatus::error_message),
                       InstanceMethod("ok", &JsStatus::ok),
                   });
 

@@ -14,10 +14,10 @@ void JsMasterProxy::Init(::Napi::Env env, ::Napi::Object exports) {
   ::Napi::Function func =
       DefineClass(env, "MasterProxy",
                   {
-                      StaticMethod("Start", &JsMasterProxy::Start),
-                      StaticMethod("Stop", &JsMasterProxy::Stop),
-                      StaticMethod("Run", &JsMasterProxy::Run),
-                      StaticMethod("RequestRegisterNode",
+                      StaticMethod("start", &JsMasterProxy::Start),
+                      StaticMethod("stop", &JsMasterProxy::Stop),
+                      StaticMethod("run", &JsMasterProxy::Run),
+                      StaticMethod("requestRegisterNode",
                                    &JsMasterProxy::RequestRegisterNode),
                   });
 
