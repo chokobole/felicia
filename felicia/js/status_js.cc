@@ -3,6 +3,7 @@
 #include "third_party/chromium/base/logging.h"
 
 #include "felicia/core/lib/error/errors.h"
+#include "felicia/js/typed_call.h"
 
 namespace felicia {
 
@@ -28,10 +29,14 @@ void JsStatus::Init(::Napi::Env env, ::Napi::Object exports) {
 }
 
 // static
-::Napi::Object JsStatus::New() { return constructor_.New({}); }
+::Napi::Object JsStatus::New(const Status& s,
+                             const ::Napi::CallbackInfo& info) {
+  ::Napi::Env env = info.Env();
+  ::Napi::HandleScope scope(env);
 
-::Napi::Object JsStatus::New(::Napi::Value arg, ::Napi::Value arg2) {
-  return constructor_.New({arg, arg2});
+  return constructor_.New(
+      {::Napi::Number::New(env, static_cast<double>(s.error_code())),
+       ::Napi::String::New(env, s.error_message())});
 }
 
 JsStatus::JsStatus(const ::Napi::CallbackInfo& info)
@@ -42,11 +47,13 @@ JsStatus::JsStatus(const ::Napi::CallbackInfo& info)
   if (info.Length() == 0) {
     status_ = Status();
   } else if (info.Length() == 2) {
-    ::Napi::TypeError::New(env, "Not Implemented.")
-        .ThrowAsJavaScriptException();
+    felicia::error::Code error_code = static_cast<felicia::error::Code>(
+        info[0].As<::Napi::Number>().Int32Value());
+    std::string error_message = info[1].As<::Napi::String>().Utf8Value();
+
+    status_ = Status(error_code, error_message);
   } else {
-    ::Napi::TypeError::New(env, "Wrong number of arguments.")
-        .ThrowAsJavaScriptException();
+    THROW_JS_WRONG_NUMBER_OF_ARGUMENTS(env);
   }
 }
 
@@ -56,18 +63,15 @@ JsStatus::JsStatus(const ::Napi::CallbackInfo& info)
 }
 
 ::Napi::Value JsStatus::error_code(const ::Napi::CallbackInfo& info) {
-  ::Napi::Env env = info.Env();
-  return ::Napi::Number::New(env, status_.error_code());
+  return TypedCall(info, &Status::error_code, &status_);
 }
 
 ::Napi::Value JsStatus::error_message(const ::Napi::CallbackInfo& info) {
-  ::Napi::Env env = info.Env();
-  return ::Napi::String::New(env, status_.error_message());
+  return TypedCall(info, &Status::error_message, &status_);
 }
 
 ::Napi::Value JsStatus::ok(const ::Napi::CallbackInfo& info) {
-  ::Napi::Env env = info.Env();
-  return ::Napi::Boolean::New(env, status_.ok());
+  return TypedCall(info, &Status::ok, &status_);
 }
 
 }  // namespace felicia

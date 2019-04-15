@@ -10,8 +10,7 @@ namespace felicia {
 class JsStatus : public ::Napi::ObjectWrap<JsStatus> {
  public:
   static void Init(::Napi::Env env, ::Napi::Object exports);
-  static ::Napi::Object New();
-  static ::Napi::Object New(::Napi::Value arg, ::Napi::Value arg2);
+  static ::Napi::Object New(const Status& s, const ::Napi::CallbackInfo& info);
   JsStatus(const ::Napi::CallbackInfo& info);
 
   static ::Napi::Value OK(const ::Napi::CallbackInfo& info);

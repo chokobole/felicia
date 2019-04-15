@@ -1,6 +1,7 @@
 #include "felicia/js/master_proxy_js.h"
 
 #include "felicia/js/status_js.h"
+#include "felicia/js/typed_call.h"
 
 namespace felicia {
 
@@ -40,10 +41,12 @@ JsMasterProxy::JsMasterProxy(const ::Napi::CallbackInfo& info)
   ::Napi::Env env = info.Env();
   ::Napi::EscapableHandleScope scope(env);
 
+  JS_CHECK_NUM_ARGS(info.Env(), 0);
+
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   Status s = master_proxy.Start();
 
-  ::Napi::Object obj = JsStatus::New();
+  ::Napi::Object obj = JsStatus::New(s, info);
 
   return scope.Escape(napi_value(obj)).ToObject();
 }
@@ -53,16 +56,20 @@ JsMasterProxy::JsMasterProxy(const ::Napi::CallbackInfo& info)
   ::Napi::Env env = info.Env();
   ::Napi::EscapableHandleScope scope(env);
 
+  JS_CHECK_NUM_ARGS(info.Env(), 0);
+
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   Status s = master_proxy.Start();
 
-  ::Napi::Object obj = JsStatus::New();
+  ::Napi::Object obj = JsStatus::New(s, info);
 
   return scope.Escape(napi_value(obj)).ToObject();
 }
 
 // static
 void JsMasterProxy::Run(const ::Napi::CallbackInfo& info) {
+  JS_CHECK_NUM_ARGS(info.Env(), 0);
+
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.Run();
 }
