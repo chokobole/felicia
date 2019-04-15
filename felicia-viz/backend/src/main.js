@@ -25,6 +25,16 @@ app.listen(HTTP_PORT, () =>
   console.log(`Running FeliciaViz-${packagejson.version} on ${HTTP_PORT}`)
 );
 
-feliciaJs.MasterProxy.Start();
+feliciaJs.MasterProxy.setBackground();
 
-feliciaJs.MasterProxy.Run();
+const s = feliciaJs.MasterProxy.start();
+
+feliciaJs.MasterProxy.requestRegisterDynamicSubscribingNode(function (topic, message) {
+  console.log(`[TOPIC]: ${topic}`);
+  console.log(message);
+}, function (topic, s) {
+  console.log(`[TOPIC]: ${topic}`);
+  console.error(s.error_message());
+});
+
+feliciaJs.MasterProxy.run();

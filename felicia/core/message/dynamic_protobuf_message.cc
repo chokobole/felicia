@@ -20,6 +20,8 @@ DynamicProtobufMessage& DynamicProtobufMessage::operator=(
     message_ = other.message_->New();
     message_->CopyFrom(*other.message_);
   }
+
+  return *this;
 }
 
 DynamicProtobufMessage::~DynamicProtobufMessage() { delete message_; }
@@ -36,6 +38,13 @@ std::string DynamicProtobufMessage::GetTypeName() const {
 std::string DynamicProtobufMessage::DebugString() const {
   if (!message_) return ::base::EmptyString();
   return message_->DebugString();
+}
+
+Status DynamicProtobufMessage::MessageToJsonString(std::string* text) const {
+  ::google::protobuf::util::Status status =
+      ::google::protobuf::util::MessageToJsonString(*message_, text);
+  return Status(static_cast<felicia::error::Code>(status.error_code()),
+                status.error_message().as_string());
 }
 
 bool DynamicProtobufMessage::SerializeToString(std::string* text) const {

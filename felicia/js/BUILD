@@ -25,5 +25,6 @@ fel_nodejs_bind_node_library(
         ":typed_call",
         "//felicia/core/lib",
         "//felicia/core/master:master_proxy",
+        "//felicia/core/node:dynamic_subscribing_node",
     ],
 )

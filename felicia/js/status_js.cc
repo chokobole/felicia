@@ -29,9 +29,7 @@ void JsStatus::Init(::Napi::Env env, ::Napi::Object exports) {
 }
 
 // static
-::Napi::Object JsStatus::New(const Status& s,
-                             const ::Napi::CallbackInfo& info) {
-  ::Napi::Env env = info.Env();
+::Napi::Object JsStatus::New(::Napi::Env env, const Status& s) {
   ::Napi::HandleScope scope(env);
 
   return constructor_.New(

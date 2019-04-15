@@ -2,8 +2,11 @@
 #define FELICIA_JS_MASTER_PROXY_JS_H_
 
 #include "napi.h"
+#include "uv.h"
 
 #include "felicia/core/master/master_proxy.h"
+#include "felicia/core/message/protobuf_loader.h"
+#include "felicia/core/node/dynamic_subscribing_node.h"
 
 namespace felicia {
 
@@ -19,10 +22,21 @@ class JsMasterProxy : public ::Napi::ObjectWrap<JsMasterProxy> {
 
   static void Run(const ::Napi::CallbackInfo& info);
 
-  static void RequestRegisterNode(const ::Napi::CallbackInfo& info);
+  static void RequestRegisterDynamicSubscribingNode(
+      const ::Napi::CallbackInfo& info);
 
  private:
+  friend void OnCallback(uv_async_t*);
+
+  static void OnNewMessage(const std::string& topic,
+                           const DynamicProtobufMessage& message);
+
+  static void OnSubscriptionError(const std::string& topic, const Status& s);
+
   static ::Napi::FunctionReference constructor_;
+
+  static ::Napi::FunctionReference on_new_message_;
+  static ::Napi::FunctionReference on_subscription_error_;
 };
 
 }  // namespace felicia
