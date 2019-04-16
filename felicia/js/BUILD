@@ -5,11 +5,19 @@ package(default_visibility = ["//felicia:internal"])
 
 fel_cc_library(
     name = "typed_call",
+    srcs = [
+        "protobuf_type_convertor.cc",
+    ],
     hdrs = [
+        "protobuf_type_convertor.h",
         "type_convertor.h",
+        "type_convertor_forward.h",
         "typed_call.h",
     ],
-    deps = ["@node_addon_api"],
+    deps = [
+        "//felicia/core/lib",
+        "@node_addon_api",
+    ],
 )
 
 fel_nodejs_bind_node_library(

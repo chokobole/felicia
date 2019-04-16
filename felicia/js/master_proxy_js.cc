@@ -2,6 +2,7 @@
 
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/felicia_env.h"
+#include "felicia/js/protobuf_type_convertor.h"
 #include "felicia/js/status_js.h"
 #include "felicia/js/typed_call.h"
 
@@ -135,22 +136,11 @@ void OnCallback(uv_async_t* handle) {
   ::Napi::HandleScope scope(env);
 
   if (topic_data.IsMessageData()) {
-    std::string json_message;
-    Status s = topic_data.message.MessageToJsonString(&json_message);
-    if (s.ok()) {
-      ::Napi::Object obj = ::Napi::Object::New(env);
-      obj["type"] = ::Napi::String::New(env, topic_data.message.GetTypeName());
-      ::Napi::Function func = env.Global()
-                                  .Get("JSON")
-                                  .As<::Napi::Object>()
-                                  .Get("parse")
-                                  .As<::Napi::Function>();
-      obj["message"] =
-          func.Call(env.Global(), {::Napi::String::New(env, json_message)});
-
-      JsMasterProxy::on_new_message_.Call(
-          env.Global(), {::Napi::String::New(env, topic_data.topic), obj});
-    }
+    ::Napi::Value value =
+        js::TypeConvertor<::google::protobuf::Message>::ToJSValue(
+            env, *topic_data.message.message());
+    JsMasterProxy::on_new_message_.Call(
+        env.Global(), {::Napi::String::New(env, topic_data.topic), value});
   } else {
     JsMasterProxy::on_subscription_error_.Call(
         env.Global(), {::Napi::String::New(env, topic_data.topic),

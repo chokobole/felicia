@@ -3,13 +3,10 @@
 
 #include <type_traits>
 
-#include "napi.h"
+#include "felicia/js/type_convertor_forward.h"
 
 namespace felicia {
 namespace js {
-
-template <typename T, typename SFINAE = void>
-class TypeConvertor;
 
 template <>
 class TypeConvertor<bool> {
@@ -59,6 +56,7 @@ class TypeConvertor<T, std::enable_if_t<std::is_integral<T>::value &&
                                         (sizeof(T) > sizeof(int32_t))>> {
  public:
   static T ToNativeValue(::Napi::Value value) {
+    // Should return with ::Napi::BigInt once released officialy.
     return value.As<::Napi::Number>().Int64Value();
   }
 
