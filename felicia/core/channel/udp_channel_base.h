@@ -21,6 +21,9 @@ class EXPORT UDPChannelBase : public ChannelBase {
   UDPClientChannel* ToUDPClientChannel();
   UDPServerChannel* ToUDPServerChannel();
 
+  void OnReadAsync(char* buffer,
+                   scoped_refptr<::net::IOBufferWithSize> read_buffer,
+                   int result);
   void OnRead(int result);
   void OnWrite(int result);
 

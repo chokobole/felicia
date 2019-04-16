@@ -71,8 +71,7 @@ void TCPServerChannel::AcceptOnce(AcceptOnceCallback callback) {
   DoAccept();
 }
 
-void TCPServerChannel::Write(::net::IOBuffer* buffer, int size,
-                             StatusCallback callback) {
+void TCPServerChannel::Write(char* buffer, int size, StatusCallback callback) {
   DCHECK_EQ(0, to_write_count_);
   DCHECK_EQ(0, written_count_);
   DCHECK(write_callback_.is_null());
@@ -94,8 +93,11 @@ void TCPServerChannel::Write(::net::IOBuffer* buffer, int size,
     int to_write = size;
     int written = 0;
     while (to_write > 0) {
+      scoped_refptr<::net::IOBufferWithSize> write_buffer =
+          base::MakeRefCounted<::net::IOBufferWithSize>(to_write);
+      memcpy(write_buffer->data(), buffer + written, to_write);
       int rv =
-          (*it)->Write(buffer + written, to_write,
+          (*it)->Write(write_buffer.get(), write_buffer->size(),
                        ::base::BindOnce(&TCPServerChannel::OnWrite,
                                         ::base::Unretained(this), (*it).get()),
                        ::net::DefineNetworkTrafficAnnotation(
@@ -117,8 +119,7 @@ void TCPServerChannel::Write(::net::IOBuffer* buffer, int size,
   }
 }
 
-void TCPServerChannel::Read(::net::IOBuffer* buffer, int size,
-                            StatusCallback callback) {
+void TCPServerChannel::Read(char* buffer, int size, StatusCallback callback) {
   DCHECK(read_callback_.is_null());
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
@@ -137,14 +138,18 @@ void TCPServerChannel::Read(::net::IOBuffer* buffer, int size,
   int to_read = size;
   int read = 0;
   while (to_read > 0) {
+    scoped_refptr<::net::IOBufferWithSize> read_buffer =
+        base::MakeRefCounted<::net::IOBufferWithSize>(to_read);
     int rv =
-        (*it)->Read(buffer + read, to_read,
-                    ::base::BindOnce(&TCPServerChannel::OnRead,
-                                     ::base::Unretained(this), (*it).get()));
+        (*it)->Read(read_buffer.get(), read_buffer->size(),
+                    ::base::BindOnce(&TCPServerChannel::OnReadAsync,
+                                     ::base::Unretained(this), buffer + read,
+                                     read_buffer, (*it).get()));
 
     if (rv == ::net::ERR_IO_PENDING) break;
 
-    if (rv >= 0) {
+    if (rv > 0) {
+      memcpy(buffer + read, read_buffer->data(), rv);
       to_read -= rv;
       read += rv;
     }
@@ -191,6 +196,13 @@ void TCPServerChannel::OnAccept(int result) {
   if (result == ::net::OK) {
     if (accept_callback_) DoAcceptLoop();
   }
+}
+
+void TCPServerChannel::OnReadAsync(
+    char* buffer, scoped_refptr<::net::IOBufferWithSize> read_buffer,
+    ::net::TCPSocket* socket, int result) {
+  if (result > 0) memcpy(buffer, read_buffer->data(), result);
+  OnRead(socket, result);
 }
 
 void TCPServerChannel::OnRead(::net::TCPSocket* socket, int result) {

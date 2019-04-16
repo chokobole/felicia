@@ -26,10 +26,8 @@ class EXPORT ChannelBase {
   TCPChannelBase* ToTCPChannelBase();
   UDPChannelBase* ToUDPChannelBase();
 
-  virtual void Write(::net::IOBuffer* buffer, int size,
-                     StatusCallback callback) = 0;
-  virtual void Read(::net::IOBuffer* buffer, int size,
-                    StatusCallback callback) = 0;
+  virtual void Write(char* buffer, int size, StatusCallback callback) = 0;
+  virtual void Read(char* buffer, int size, StatusCallback callback) = 0;
 
   static size_t GetMaximumBufferSize();
 

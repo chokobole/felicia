@@ -63,9 +63,9 @@ class Channel {
   MessageTy* message_ = nullptr;
 
   std::unique_ptr<ChannelBase> channel_;
-  scoped_refptr<::net::IOBufferWithSize> send_buffer_;
+  std::vector<char> send_buffer_;
   StatusCallback send_callback_;
-  scoped_refptr<::net::IOBufferWithSize> receive_buffer_;
+  std::vector<char> receive_buffer_;
   StatusCallback receive_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Channel);
@@ -78,17 +78,16 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
   DCHECK(this->send_callback_.is_null());
   DCHECK(!callback.is_null());
 
-  if (!send_buffer_) {
-    send_buffer_ = ::base::MakeRefCounted<::net::IOBufferWithSize>(
-        ChannelBase::GetMaximumBufferSize());
+  if (send_buffer_.size() == 0) {
+    send_buffer_.resize(ChannelBase::GetMaximumBufferSize());
   }
 
   size_t to_send;
-  if (MessageIO<MessageTy>::SerializeToBuffer(&message, send_buffer_.get(),
+  if (MessageIO<MessageTy>::SerializeToBuffer(&message, send_buffer_.data(),
                                               &to_send)) {
     DLOG(INFO) << "SendMessage() write bytes: " << to_send;
     this->send_callback_ = std::move(callback);
-    channel_->Write(send_buffer_.get(), to_send,
+    channel_->Write(send_buffer_.data(), to_send,
                     ::base::BindOnce(&Channel<MessageTy>::OnSendMessage,
                                      ::base::Unretained(this)));
   } else {
@@ -112,18 +111,17 @@ void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
   this->message_ = message;
   this->receive_callback_ = std::move(callback);
 
-  if (!receive_buffer_) {
-    receive_buffer_ = ::base::MakeRefCounted<::net::IOBufferWithSize>(
-        ChannelBase::GetMaximumBufferSize());
+  if (receive_buffer_.size() == 0) {
+    receive_buffer_.resize(ChannelBase::GetMaximumBufferSize());
   }
 
   if (channel_->IsTCPChannelBase()) {
-    channel_->Read(receive_buffer_.get(), sizeof(Header),
+    channel_->Read(receive_buffer_.data(), sizeof(Header),
                    ::base::BindOnce(&Channel<MessageTy>::OnReceiveHeader,
                                     ::base::Unretained(this)));
   } else {
     channel_->Read(
-        receive_buffer_.get(), receive_buffer_->size(),
+        receive_buffer_.data(), receive_buffer_.size(),
         ::base::BindOnce(&Channel<MessageTy>::OnReceiveMessageWithHeader,
                          ::base::Unretained(this)));
   }
@@ -137,14 +135,14 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
     return;
   }
 
-  if (!MessageIO<MessageTy>::ParseHeaderFromBuffer(receive_buffer_.get(),
+  if (!MessageIO<MessageTy>::ParseHeaderFromBuffer(receive_buffer_.data(),
                                                    &header_)) {
     std::move(this->receive_callback_)
         .Run(errors::DataLoss("Failed to parse header from buffer."));
     return;
   }
 
-  channel_->Read(receive_buffer_.get(), header_.size(),
+  channel_->Read(receive_buffer_.data(), header_.size(),
                  ::base::BindOnce(&Channel<MessageTy>::OnReceiveMessage,
                                   ::base::Unretained(this)));
 }
@@ -154,7 +152,7 @@ void Channel<MessageTy>::OnReceiveMessage(const Status& s) {
   DCHECK(channel_->IsTCPChannelBase());
   if (s.ok()) {
     if (!MessageIO<MessageTy>::ParseMessageFromBuffer(
-            receive_buffer_.get(), header_, false, this->message_)) {
+            receive_buffer_.data(), header_, false, this->message_)) {
       std::move(this->receive_callback_)
           .Run(errors::DataLoss("Failed to parse message from buffer."));
       return;
@@ -172,7 +170,7 @@ void Channel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
     return;
   }
 
-  if (!MessageIO<MessageTy>::ParseHeaderFromBuffer(receive_buffer_.get(),
+  if (!MessageIO<MessageTy>::ParseHeaderFromBuffer(receive_buffer_.data(),
                                                    &header_)) {
     std::move(this->receive_callback_)
         .Run(errors::DataLoss("Failed to parse header from buffer."));
@@ -180,7 +178,7 @@ void Channel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
   }
 
   if (!MessageIO<MessageTy>::ParseMessageFromBuffer(
-          receive_buffer_.get(), header_, true, this->message_)) {
+          receive_buffer_.data(), header_, true, this->message_)) {
     std::move(this->receive_callback_)
         .Run(errors::DataLoss("Failed to parse message from buffer."));
     return;

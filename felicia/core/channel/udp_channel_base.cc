@@ -23,6 +23,13 @@ void UDPChannelBase::OnWrite(int result) {
   CallbackWithStatus(std::move(write_callback_), result);
 }
 
+void UDPChannelBase::OnReadAsync(
+    char* buffer, scoped_refptr<::net::IOBufferWithSize> read_buffer,
+    int result) {
+  if (result > 0) memcpy(buffer, read_buffer->data(), result);
+  OnRead(result);
+}
+
 void UDPChannelBase::OnRead(int result) {
   if (result == ::net::ERR_MSG_TOO_BIG) {
     LOG(ERROR) << "Msg too big";

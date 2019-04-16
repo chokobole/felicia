@@ -17,32 +17,30 @@ class MessageIO<T, std::enable_if_t<
                        std::is_base_of<::google::protobuf::Message, T>::value ||
                        std::is_same<DynamicProtobufMessage, T>::value>> {
  public:
-  static bool SerializeToBuffer(const T* proto, ::net::IOBuffer* buffer,
-                                size_t* size) {
+  static bool SerializeToBuffer(const T* proto, char* buffer, size_t* size) {
     std::string text;
     if (!proto->SerializeToString(&text)) return false;
 
     Header header;
     header.set_size(text.length());
-    memcpy(buffer->data(), &header, sizeof(Header));
-    memcpy(buffer->data() + sizeof(Header), text.data(), text.length());
+    memcpy(buffer, &header, sizeof(Header));
+    memcpy(buffer + sizeof(Header), text.data(), text.length());
 
     *size = sizeof(Header) + text.length();
 
     return true;
   }
 
-  static bool ParseHeaderFromBuffer(::net::IOBuffer* buffer, Header* header) {
-    if (!Header::FromBytes(buffer->data(), header)) return false;
+  static bool ParseHeaderFromBuffer(char* buffer, Header* header) {
+    if (!Header::FromBytes(buffer, header)) return false;
 
     return true;
   }
 
-  static bool ParseMessageFromBuffer(::net::IOBuffer* buffer,
-                                     const Header& header,
+  static bool ParseMessageFromBuffer(char* buffer, const Header& header,
                                      bool buffer_include_header, T* proto) {
     std::string text;
-    char* start = buffer->data();
+    char* start = buffer;
     if (buffer_include_header) {
       start += sizeof(Header);
     }

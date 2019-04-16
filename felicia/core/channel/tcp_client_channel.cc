@@ -48,23 +48,25 @@ void TCPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
   }
 }
 
-void TCPClientChannel::Write(::net::IOBuffer* buffer, int size,
-                             StatusCallback callback) {
+void TCPClientChannel::Write(char* buffer, int size, StatusCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
   write_callback_ = std::move(callback);
   int to_write = size;
   int written = 0;
   while (to_write > 0) {
+    scoped_refptr<::net::IOBufferWithSize> write_buffer =
+        base::MakeRefCounted<::net::IOBufferWithSize>(to_write);
+    memcpy(write_buffer->data(), buffer + written, to_write);
     int rv = socket_->Write(
-        buffer + written, to_write,
+        write_buffer.get(), write_buffer->size(),
         ::base::BindOnce(&TCPClientChannel::OnWrite, ::base::Unretained(this)),
         ::net::DefineNetworkTrafficAnnotation("tcp_client_channel",
                                               "Send Message"));
 
     if (rv == ::net::ERR_IO_PENDING) break;
 
-    if (rv >= 0) {
+    if (rv > 0) {
       to_write -= rv;
       written += rv;
     }
@@ -76,21 +78,24 @@ void TCPClientChannel::Write(::net::IOBuffer* buffer, int size,
   }
 }
 
-void TCPClientChannel::Read(::net::IOBuffer* buffer, int size,
-                            StatusCallback callback) {
+void TCPClientChannel::Read(char* buffer, int size, StatusCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
   read_callback_ = std::move(callback);
   int to_read = size;
   int read = 0;
   while (to_read > 0) {
+    scoped_refptr<::net::IOBufferWithSize> read_buffer =
+        base::MakeRefCounted<::net::IOBufferWithSize>(to_read);
     int rv = socket_->Read(
-        buffer + read, to_read,
-        ::base::BindOnce(&TCPClientChannel::OnRead, ::base::Unretained(this)));
+        read_buffer.get(), read_buffer->size(),
+        ::base::BindOnce(&TCPClientChannel::OnReadAsync,
+                         ::base::Unretained(this), buffer + read, read_buffer));
 
     if (rv == ::net::ERR_IO_PENDING) break;
 
-    if (rv >= 0) {
+    if (rv > 0) {
+      memcpy(buffer + read, read_buffer->data(), rv);
       to_read -= rv;
       read += rv;
     }
@@ -111,6 +116,13 @@ void TCPClientChannel::OnWrite(int result) {
     socket_.reset();
   }
   CallbackWithStatus(std::move(write_callback_), result);
+}
+
+void TCPClientChannel::OnReadAsync(
+    char* buffer, scoped_refptr<::net::IOBufferWithSize> read_buffer,
+    int result) {
+  if (result > 0) memcpy(buffer, read_buffer->data(), result);
+  OnRead(result);
 }
 
 void TCPClientChannel::OnRead(int result) {

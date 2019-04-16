@@ -57,8 +57,7 @@ void UDPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
   std::move(callback).Run(Status::OK());
 }
 
-void UDPClientChannel::Write(::net::IOBuffer* buffer, int size,
-                             StatusCallback callback) {
+void UDPClientChannel::Write(char* buffer, int size, StatusCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
   write_callback_ = std::move(callback);
@@ -66,8 +65,11 @@ void UDPClientChannel::Write(::net::IOBuffer* buffer, int size,
   int to_write = size;
   int written = 0;
   while (to_write > 0) {
+    scoped_refptr<::net::IOBufferWithSize> write_buffer =
+        base::MakeRefCounted<::net::IOBufferWithSize>(to_write);
+    memcpy(write_buffer->data(), buffer + written, to_write);
     int rv = socket_->SendTo(
-        buffer + written, to_write, multicast_ip_endpoint_,
+        write_buffer.get(), write_buffer->size(), multicast_ip_endpoint_,
         ::base::BindOnce(&UDPClientChannel::OnWrite, ::base::Unretained(this)));
 
     if (rv == ::net::ERR_IO_PENDING) break;
@@ -84,8 +86,7 @@ void UDPClientChannel::Write(::net::IOBuffer* buffer, int size,
   }
 }
 
-void UDPClientChannel::Read(::net::IOBuffer* buffer, int size,
-                            StatusCallback callback) {
+void UDPClientChannel::Read(char* buffer, int size, StatusCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
   read_callback_ = std::move(callback);
@@ -93,13 +94,17 @@ void UDPClientChannel::Read(::net::IOBuffer* buffer, int size,
   int to_read = size;
   int read = 0;
   while (to_read > 0) {
+    scoped_refptr<::net::IOBufferWithSize> read_buffer =
+        base::MakeRefCounted<::net::IOBufferWithSize>(to_read);
     int rv = socket_->Read(
-        buffer + read, to_read,
-        ::base::BindOnce(&UDPClientChannel::OnRead, ::base::Unretained(this)));
+        read_buffer.get(), read_buffer->size(),
+        ::base::BindOnce(&UDPClientChannel::OnReadAsync,
+                         ::base::Unretained(this), buffer + read, read_buffer));
 
     if (rv == ::net::ERR_IO_PENDING) break;
 
     if (rv > 0) {
+      memcpy(buffer + read, read_buffer->data(), rv);
       to_read -= rv;
       read += rv;
     }
