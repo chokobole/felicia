@@ -26,16 +26,16 @@ class EXPORT ChannelBase {
   TCPChannelBase* ToTCPChannelBase();
   UDPChannelBase* ToUDPChannelBase();
 
-  virtual void Write(char* buffer, int size, StatusCallback callback) = 0;
-  virtual void Read(char* buffer, int size, StatusCallback callback) = 0;
+  virtual void Write(char* buffer, int size, StatusOnceCallback callback) = 0;
+  virtual void Read(char* buffer, int size, StatusOnceCallback callback) = 0;
 
   static size_t GetMaximumBufferSize();
 
  protected:
-  static void CallbackWithStatus(StatusCallback callback, int result);
+  static void CallbackWithStatus(StatusOnceCallback callback, int result);
 
-  StatusCallback write_callback_;
-  StatusCallback read_callback_;
+  StatusOnceCallback write_callback_;
+  StatusOnceCallback read_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelBase);
 };

@@ -23,7 +23,7 @@ class GrpcAsyncClientCall : public GrpcClientCQTag {
   GrpcAsyncClientCall(Stub* stub, const RequestMessage* request,
                       ResponseMessage* response,
                       PrepareAsyncFunction prepare_async_function,
-                      ::grpc::CompletionQueue* cq, StatusCallback done)
+                      ::grpc::CompletionQueue* cq, StatusOnceCallback done)
       : done_(std::move(done)) {
     call_ = (stub->*prepare_async_function)(&context_, *request, cq);
     call_->StartCall();
@@ -51,7 +51,7 @@ class GrpcAsyncClientCall : public GrpcClientCQTag {
   ::grpc::Status status_;
   ::grpc::ClientContext context_;
   std::unique_ptr<::grpc::ClientAsyncResponseReader<ResponseMessage>> call_;
-  StatusCallback done_;
+  StatusOnceCallback done_;
 };
 
 }  // namespace felicia

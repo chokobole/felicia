@@ -53,21 +53,21 @@ class Subscriber {
                         OnMessageCallback on_message_callback,
                         OnErrorCallback on_error_callback,
                         const communication::Settings& settings,
-                        StatusCallback callback);
+                        StatusOnceCallback callback);
 
   void RequestUnsubscribe(const NodeInfo& node_info, const std::string& topic,
-                          StatusCallback callback);
+                          StatusOnceCallback callback);
 
  protected:
   void OnSubscribeTopicAsync(SubscribeTopicRequest* request,
                              SubscribeTopicResponse* response,
-                             StatusCallback callback,
+                             StatusOnceCallback callback,
                              OnMessageCallback on_message_callback,
                              const communication::Settings& settings,
                              const Status& s);
   void OnUnubscribeTopicAsync(UnsubscribeTopicRequest* request,
                               UnsubscribeTopicResponse* response,
-                              StatusCallback callback, const Status& s);
+                              StatusOnceCallback callback, const Status& s);
 
   void OnFindPublisher(const TopicInfo& topic_info);
   void OnConnectToPublisher(const Status& s);
@@ -102,7 +102,7 @@ template <typename MessageTy>
 void Subscriber<MessageTy>::RequestSubscribe(
     const NodeInfo& node_info, const std::string& topic,
     OnMessageCallback on_message_callback, OnErrorCallback on_error_callback,
-    const communication::Settings& settings, StatusCallback callback) {
+    const communication::Settings& settings, StatusOnceCallback callback) {
   if (!(IsUnregistered() || IsStopped())) {
     std::move(callback).Run(state_.InvalidStateError());
     return;
@@ -132,7 +132,7 @@ void Subscriber<MessageTy>::RequestSubscribe(
 template <typename MessageTy>
 void Subscriber<MessageTy>::RequestUnsubscribe(const NodeInfo& node_info,
                                                const std::string& topic,
-                                               StatusCallback callback) {
+                                               StatusOnceCallback callback) {
   if (!(IsRegistered() || IsStarted())) {
     std::move(callback).Run(state_.InvalidStateError());
     return;
@@ -158,7 +158,7 @@ void Subscriber<MessageTy>::RequestUnsubscribe(const NodeInfo& node_info,
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnSubscribeTopicAsync(
     SubscribeTopicRequest* request, SubscribeTopicResponse* response,
-    StatusCallback callback, OnMessageCallback on_message_callback,
+    StatusOnceCallback callback, OnMessageCallback on_message_callback,
     const communication::Settings& settings, const Status& s) {
   DCHECK(IsRegistering());
 
@@ -180,7 +180,7 @@ void Subscriber<MessageTy>::OnSubscribeTopicAsync(
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnUnubscribeTopicAsync(
     UnsubscribeTopicRequest* request, UnsubscribeTopicResponse* response,
-    StatusCallback callback, const Status& s) {
+    StatusOnceCallback callback, const Status& s) {
   DCHECK(IsUnregistering());
 
   if (!s.ok()) {

@@ -16,7 +16,7 @@ UDPClientChannel::~UDPClientChannel() = default;
 bool UDPClientChannel::IsClient() const { return true; }
 
 void UDPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
-                               StatusCallback callback) {
+                               StatusOnceCallback callback) {
   DCHECK(!callback.is_null());
   auto client_socket = std::make_unique<::net::UDPSocket>(
       ::net::DatagramSocket::BindType::DEFAULT_BIND);
@@ -57,7 +57,8 @@ void UDPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
   std::move(callback).Run(Status::OK());
 }
 
-void UDPClientChannel::Write(char* buffer, int size, StatusCallback callback) {
+void UDPClientChannel::Write(char* buffer, int size,
+                             StatusOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
   write_callback_ = std::move(callback);
@@ -86,7 +87,8 @@ void UDPClientChannel::Write(char* buffer, int size, StatusCallback callback) {
   }
 }
 
-void UDPClientChannel::Read(char* buffer, int size, StatusCallback callback) {
+void UDPClientChannel::Read(char* buffer, int size,
+                            StatusOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
   read_callback_ = std::move(callback);

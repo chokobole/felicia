@@ -29,7 +29,7 @@ UDPChannelBase* ChannelBase::ToUDPChannelBase() {
 }
 
 // static
-void ChannelBase::CallbackWithStatus(StatusCallback callback, int result) {
+void ChannelBase::CallbackWithStatus(StatusOnceCallback callback, int result) {
   if (result >= 0) {
     std::move(callback).Run(Status::OK());
   } else {

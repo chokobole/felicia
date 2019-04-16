@@ -24,9 +24,10 @@ class EXPORT GrpcMasterClient : public MasterClientInterface {
   Status Start() override;
   Status Stop() override;
 
-#define CLIENT_METHOD(method)                        \
-  void method##Async(const method##Request* request, \
-                     method##Response* response, StatusCallback done) override
+#define CLIENT_METHOD(method)                                             \
+  void method##Async(const method##Request* request,                      \
+                     method##Response* response, StatusOnceCallback done) \
+      override
 
   CLIENT_METHOD(RegisterClient);
   CLIENT_METHOD(ListClients);

@@ -13,7 +13,7 @@ void DynamicPublisher::ResetMessage(const std::string& message_type) {
 }
 
 void DynamicPublisher::Publish(const std::string& json_message,
-                               StatusCallback callback) {
+                               StatusOnceCallback callback) {
   DCHECK(message_prototype_.message());
 
   ::google::protobuf::util::Status status =

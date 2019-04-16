@@ -33,26 +33,27 @@ class Publisher {
   ALWAYS_INLINE bool IsUnregistered() const { return state_.IsUnregistered(); }
 
   void RequestPublish(const NodeInfo& node_info, const std::string& topic,
-                      const ChannelDef& channel_def, StatusCallback callback);
+                      const ChannelDef& channel_def,
+                      StatusOnceCallback callback);
 
-  void Publish(const MessageTy& message, StatusCallback callback);
-  void Publish(MessageTy&& message, StatusCallback callback);
+  void Publish(const MessageTy& message, StatusOnceCallback callback);
+  void Publish(MessageTy&& message, StatusOnceCallback callback);
 
   void RequestUnpublish(const NodeInfo& node_info, const std::string& topic,
-                        StatusCallback callback);
+                        StatusOnceCallback callback);
 
  protected:
   void OnPublishTopicAsync(PublishTopicRequest* request,
                            PublishTopicResponse* response,
-                           StatusCallback callback, const Status& s);
+                           StatusOnceCallback callback, const Status& s);
 
   void OnUnpublishTopicAsync(UnpublishTopicRequest* request,
                              UnpublishTopicResponse* response,
-                             StatusCallback callback, const Status& s);
+                             StatusOnceCallback callback, const Status& s);
 
   StatusOr<ChannelSource> Setup(const ChannelDef& channel_def);
 
-  void SendMesasge(StatusCallback callback);
+  void SendMesasge(StatusOnceCallback callback);
   void DoAcceptLoop();
   void OnAccept(const Status& s);
 
@@ -77,7 +78,7 @@ template <typename MessageTy>
 void Publisher<MessageTy>::RequestPublish(const NodeInfo& node_info,
                                           const std::string& topic,
                                           const ChannelDef& channel_def,
-                                          StatusCallback callback) {
+                                          StatusOnceCallback callback) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(
@@ -118,7 +119,7 @@ void Publisher<MessageTy>::RequestPublish(const NodeInfo& node_info,
 
 template <typename MessageTy>
 void Publisher<MessageTy>::Publish(const MessageTy& message,
-                                   StatusCallback callback) {
+                                   StatusOnceCallback callback) {
   if (!IsRegistered()) {
     std::move(callback).Run(state_.InvalidStateError());
     return;
@@ -131,7 +132,7 @@ void Publisher<MessageTy>::Publish(const MessageTy& message,
 
 template <typename MessageTy>
 void Publisher<MessageTy>::Publish(MessageTy&& message,
-                                   StatusCallback callback) {
+                                   StatusOnceCallback callback) {
   if (!IsRegistered()) {
     std::move(callback).Run(state_.InvalidStateError());
     return;
@@ -145,7 +146,7 @@ void Publisher<MessageTy>::Publish(MessageTy&& message,
 template <typename MessageTy>
 void Publisher<MessageTy>::RequestUnpublish(const NodeInfo& node_info,
                                             const std::string& topic,
-                                            StatusCallback callback) {
+                                            StatusOnceCallback callback) {
   if (!IsRegistered()) {
     std::move(callback).Run(state_.InvalidStateError());
     return;
@@ -186,7 +187,7 @@ StatusOr<ChannelSource> Publisher<MessageTy>::Setup(
 template <typename MessageTy>
 void Publisher<MessageTy>::OnPublishTopicAsync(PublishTopicRequest* request,
                                                PublishTopicResponse* response,
-                                               StatusCallback callback,
+                                               StatusOnceCallback callback,
                                                const Status& s) {
   DCHECK(IsRegistering());
 
@@ -205,7 +206,7 @@ void Publisher<MessageTy>::OnPublishTopicAsync(PublishTopicRequest* request,
 template <typename MessageTy>
 void Publisher<MessageTy>::OnUnpublishTopicAsync(
     UnpublishTopicRequest* request, UnpublishTopicResponse* response,
-    StatusCallback callback, const Status& s) {
+    StatusOnceCallback callback, const Status& s) {
   DCHECK(IsUnregistering());
 
   if (!s.ok()) {
@@ -221,7 +222,7 @@ void Publisher<MessageTy>::OnUnpublishTopicAsync(
 }
 
 template <typename MessageTy>
-void Publisher<MessageTy>::SendMesasge(StatusCallback callback) {
+void Publisher<MessageTy>::SendMesasge(StatusOnceCallback callback) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   if (!channel_->IsSendingMessage() && master_proxy.IsBoundToCurrentThread()) {
     if (!message_queue_.empty()) {

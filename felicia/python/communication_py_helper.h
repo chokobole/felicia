@@ -36,28 +36,29 @@ void AddPublisher(py::module& m, const char* name) {
              return self.RequestPublish(
                  node_info, topic, channel_def,
                  ::base::BindOnce(
-                     &PyStatusCallback::Invoke,
-                     ::base::Owned(new PyStatusCallback(callback))));
+                     &PyStatusOnceCallback::Invoke,
+                     ::base::Owned(new PyStatusOnceCallback(callback))));
            })
       .def("publish",
            [](Publisher<MessageTy>& self, const MessageTy& message,
               py::function callback) {
              callback.inc_ref();
              return self.Publish(
-                 message, ::base::BindOnce(
-                              &PyStatusCallback::Invoke,
-                              ::base::Owned(new PyStatusCallback(callback))));
+                 message,
+                 ::base::BindOnce(
+                     &PyStatusOnceCallback::Invoke,
+                     ::base::Owned(new PyStatusOnceCallback(callback))));
            })
-      .def("request_unpublish", [](Publisher<MessageTy>& self,
-                                   const NodeInfo& node_info,
-                                   const std::string& topic,
-                                   py::function callback) {
-        callback.inc_ref();
-        return self.RequestUnpublish(
-            node_info, topic,
-            ::base::BindOnce(&PyStatusCallback::Invoke,
-                             ::base::Owned(new PyStatusCallback(callback))));
-      });
+      .def("request_unpublish",
+           [](Publisher<MessageTy>& self, const NodeInfo& node_info,
+              const std::string& topic, py::function callback) {
+             callback.inc_ref();
+             return self.RequestUnpublish(
+                 node_info, topic,
+                 ::base::BindOnce(
+                     &PyStatusOnceCallback::Invoke,
+                     ::base::Owned(new PyStatusOnceCallback(callback))));
+           });
 }
 
 template <typename MessageTy>
@@ -70,38 +71,39 @@ void AddSubscriber(py::module& m, const char* name) {
       .def("is_unregistered", &Subscriber<MessageTy>::IsUnregistered)
       .def("is_started", &Subscriber<MessageTy>::IsStarted)
       .def("is_stopped", &Subscriber<MessageTy>::IsStopped)
-      .def("request_subscribe",
+      .def(
+          "request_subscribe",
+          [](Subscriber<MessageTy>& self, const NodeInfo& node_info,
+             const std::string& topic, py::function on_message_callback,
+             py::function on_error_callback,
+             const communication::Settings& settings, py::function callback) {
+            on_message_callback.inc_ref();
+            on_error_callback.inc_ref();
+            callback.inc_ref();
+            return self.RequestSubscribe(
+                node_info, topic,
+                ::base::BindRepeating(
+                    &PyMessageCallback<MessageTy>::Invoke,
+                    ::base::Owned(
+                        new PyMessageCallback<MessageTy>(on_message_callback))),
+                ::base::BindRepeating(
+                    &PyStatusOnceCallback::Invoke,
+                    ::base::Owned(new PyStatusOnceCallback(on_error_callback))),
+                settings,
+                ::base::BindOnce(
+                    &PyStatusOnceCallback::Invoke,
+                    ::base::Owned(new PyStatusOnceCallback(callback))));
+          })
+      .def("request_unsubscribe",
            [](Subscriber<MessageTy>& self, const NodeInfo& node_info,
-              const std::string& topic, py::function on_message_callback,
-              py::function on_error_callback,
-              const communication::Settings& settings, py::function callback) {
-             on_message_callback.inc_ref();
-             on_error_callback.inc_ref();
+              const std::string& topic, py::function callback) {
              callback.inc_ref();
-             return self.RequestSubscribe(
+             return self.RequestUnsubscribe(
                  node_info, topic,
-                 ::base::BindRepeating(
-                     &PyMessageCallback<MessageTy>::Invoke,
-                     ::base::Owned(new PyMessageCallback<MessageTy>(
-                         on_message_callback))),
-                 ::base::BindRepeating(
-                     &PyStatusCallback::Invoke,
-                     ::base::Owned(new PyStatusCallback(on_error_callback))),
-                 settings,
                  ::base::BindOnce(
-                     &PyStatusCallback::Invoke,
-                     ::base::Owned(new PyStatusCallback(callback))));
-           })
-      .def("request_unsubscribe", [](Subscriber<MessageTy>& self,
-                                     const NodeInfo& node_info,
-                                     const std::string& topic,
-                                     py::function callback) {
-        callback.inc_ref();
-        return self.RequestUnsubscribe(
-            node_info, topic,
-            ::base::BindOnce(&PyStatusCallback::Invoke,
-                             ::base::Owned(new PyStatusCallback(callback))));
-      });
+                     &PyStatusOnceCallback::Invoke,
+                     ::base::Owned(new PyStatusOnceCallback(callback))));
+           });
 }
 
 }  // namespace felicia

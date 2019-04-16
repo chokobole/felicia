@@ -19,7 +19,7 @@ bool TCPClientChannel::IsConnected() const {
 }
 
 void TCPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
-                               StatusCallback callback) {
+                               StatusOnceCallback callback) {
   DCHECK(!socket_);
   DCHECK(connect_callback_.is_null());
   DCHECK(!callback.is_null());
@@ -48,7 +48,8 @@ void TCPClientChannel::Connect(const ::net::IPEndPoint& ip_endpoint,
   }
 }
 
-void TCPClientChannel::Write(char* buffer, int size, StatusCallback callback) {
+void TCPClientChannel::Write(char* buffer, int size,
+                             StatusOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
   write_callback_ = std::move(callback);
@@ -78,7 +79,8 @@ void TCPClientChannel::Write(char* buffer, int size, StatusCallback callback) {
   }
 }
 
-void TCPClientChannel::Read(char* buffer, int size, StatusCallback callback) {
+void TCPClientChannel::Read(char* buffer, int size,
+                            StatusOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
   read_callback_ = std::move(callback);

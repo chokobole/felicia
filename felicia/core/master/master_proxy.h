@@ -47,9 +47,10 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
   Status Start() override;
   Status Stop() override;
 
-#define CLIENT_METHOD(method)                        \
-  void method##Async(const method##Request* request, \
-                     method##Response* response, StatusCallback done) override
+#define CLIENT_METHOD(method)                                             \
+  void method##Async(const method##Request* request,                      \
+                     method##Response* response, StatusOnceCallback done) \
+      override
 
   CLIENT_METHOD(RegisterClient);
   CLIENT_METHOD(ListClients);
@@ -74,12 +75,12 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
 
   void SubscribeTopicAsync(const SubscribeTopicRequest* request,
                            SubscribeTopicResponse* response,
-                           StatusCallback callback,
+                           StatusOnceCallback callback,
                            TopicInfoWatcher::NewTopicInfoCallback callback2);
 
   void UnsubscribeTopicAsync(const UnsubscribeTopicRequest* request,
                              UnsubscribeTopicResponse* response,
-                             StatusCallback callback) override;
+                             StatusOnceCallback callback) override;
 
  private:
   friend class ::base::NoDestructor<MasterProxy>;

@@ -25,7 +25,7 @@ class UDPChannel : public Channel<MessageTy> {
   StatusOr<ChannelSource> Bind();
 
   void Connect(const ChannelSource& channel_source,
-               StatusCallback callback) override;
+               StatusOnceCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UDPChannel);
@@ -46,7 +46,7 @@ StatusOr<ChannelSource> UDPChannel<MessageTy>::Bind() {
 
 template <typename MessageTy>
 void UDPChannel<MessageTy>::Connect(const ChannelSource& channel_source,
-                                    StatusCallback callback) {
+                                    StatusOnceCallback callback) {
   DCHECK(!this->channel_);
   DCHECK(!callback.is_null());
   ::net::IPEndPoint ip_endpoint;

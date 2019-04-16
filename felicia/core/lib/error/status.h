@@ -57,7 +57,8 @@ class EXPORT Status {
 EXPORT std::ostream& operator<<(std::ostream& os, const Status& x);
 
 // Convenient typedef for a closure passing a Status.
-typedef ::base::OnceCallback<void(const Status&)> StatusCallback;
+typedef ::base::RepeatingCallback<void(const Status&)> StatusCallback;
+typedef ::base::OnceCallback<void(const Status&)> StatusOnceCallback;
 
 }  // namespace felicia
 

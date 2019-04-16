@@ -105,7 +105,7 @@ Status MasterProxy::Stop() {
 #define CLIENT_METHOD(method)                                     \
   void MasterProxy::method##Async(const method##Request* request, \
                                   method##Response* response,     \
-                                  StatusCallback done) {          \
+                                  StatusOnceCallback done) {      \
     master_client_interface_->method##Async(request, response,    \
                                             std::move(done));     \
   }
@@ -189,7 +189,8 @@ void MasterProxy::OnRegisterNodeAsync(std::unique_ptr<NodeLifecycle> node,
 
 void MasterProxy::SubscribeTopicAsync(
     const SubscribeTopicRequest* request, SubscribeTopicResponse* response,
-    StatusCallback callback, TopicInfoWatcher::NewTopicInfoCallback callback2) {
+    StatusOnceCallback callback,
+    TopicInfoWatcher::NewTopicInfoCallback callback2) {
   topic_info_watcher_.RegisterCallback(request->topic(), callback2);
   master_client_interface_->SubscribeTopicAsync(request, response,
                                                 std::move(callback));
@@ -197,7 +198,7 @@ void MasterProxy::SubscribeTopicAsync(
 
 void MasterProxy::UnsubscribeTopicAsync(const UnsubscribeTopicRequest* request,
                                         UnsubscribeTopicResponse* response,
-                                        StatusCallback callback) {
+                                        StatusOnceCallback callback) {
   topic_info_watcher_.UnregisterCallback(request->topic());
   master_client_interface_->UnsubscribeTopicAsync(request, response,
                                                   std::move(callback));

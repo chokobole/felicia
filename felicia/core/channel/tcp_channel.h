@@ -34,7 +34,7 @@ class TCPChannel : public Channel<MessageTy> {
   void AcceptOnce(TCPServerChannel::AcceptOnceCallback accept_once_callback);
 
   void Connect(const ChannelSource& channel_source,
-               StatusCallback callback) override;
+               StatusOnceCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TCPChannel);
@@ -75,7 +75,7 @@ void TCPChannel<MessageTy>::AcceptOnce(
 
 template <typename MessageTy>
 void TCPChannel<MessageTy>::Connect(const ChannelSource& channel_source,
-                                    StatusCallback callback) {
+                                    StatusOnceCallback callback) {
   DCHECK(!this->channel_);
   DCHECK(!callback.is_null());
   ::net::IPEndPoint ip_endpoint;

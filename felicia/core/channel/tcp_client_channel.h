@@ -21,10 +21,11 @@ class EXPORT TCPClientChannel : public TCPChannelBase {
 
   bool IsConnected() const override;
 
-  void Connect(const ::net::IPEndPoint& ip_endpoint, StatusCallback callback);
+  void Connect(const ::net::IPEndPoint& ip_endpoint,
+               StatusOnceCallback callback);
 
-  void Write(char* buffer, int size, StatusCallback callback) override;
-  void Read(char* buffer, int size, StatusCallback callback) override;
+  void Write(char* buffer, int size, StatusOnceCallback callback) override;
+  void Read(char* buffer, int size, StatusOnceCallback callback) override;
 
  private:
   void OnConnect(int result);
@@ -35,7 +36,7 @@ class EXPORT TCPClientChannel : public TCPChannelBase {
                    int result);
   void OnRead(int result);
 
-  StatusCallback connect_callback_;
+  StatusOnceCallback connect_callback_;
 
   std::unique_ptr<::net::TCPSocket> socket_;
 

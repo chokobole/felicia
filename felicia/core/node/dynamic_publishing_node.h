@@ -32,7 +32,7 @@ class DynamicPublishingNode : public NodeLifecycle {
   const ChannelDef& channel_def() const { return channel_def_; }
 
   void PublishMessageFromJSON(const std::string& json_message,
-                              StatusCallback callback);
+                              StatusOnceCallback callback);
 
  private:
   void RequestPublish();

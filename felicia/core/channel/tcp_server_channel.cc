@@ -71,7 +71,8 @@ void TCPServerChannel::AcceptOnce(AcceptOnceCallback callback) {
   DoAccept();
 }
 
-void TCPServerChannel::Write(char* buffer, int size, StatusCallback callback) {
+void TCPServerChannel::Write(char* buffer, int size,
+                             StatusOnceCallback callback) {
   DCHECK_EQ(0, to_write_count_);
   DCHECK_EQ(0, written_count_);
   DCHECK(write_callback_.is_null());
@@ -119,7 +120,8 @@ void TCPServerChannel::Write(char* buffer, int size, StatusCallback callback) {
   }
 }
 
-void TCPServerChannel::Read(char* buffer, int size, StatusCallback callback) {
+void TCPServerChannel::Read(char* buffer, int size,
+                            StatusOnceCallback callback) {
   DCHECK(read_callback_.is_null());
   DCHECK(!callback.is_null());
   DCHECK(size > 0);

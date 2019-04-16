@@ -14,7 +14,7 @@ class DynamicPublisher : public Publisher<DynamicProtobufMessage> {
 
   void ResetMessage(const std::string& message_type);
 
-  void Publish(const std::string& json_message, StatusCallback callback);
+  void Publish(const std::string& json_message, StatusOnceCallback callback);
 
  private:
   std::string GetMessageTypeName() const override;

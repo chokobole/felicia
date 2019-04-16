@@ -26,7 +26,7 @@ void DynamicPublishingNode::OnError(const Status& s) {
 }
 
 void DynamicPublishingNode::PublishMessageFromJSON(
-    const std::string& json_message, StatusCallback callback) {
+    const std::string& json_message, StatusOnceCallback callback) {
   publisher_->Publish(json_message, std::move(callback));
 }
 

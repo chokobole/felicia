@@ -37,12 +37,12 @@ class EXPORT TCPServerChannel : public TCPChannelBase {
   // all the sockets, then callback with Status::OK(), otherwise callback
   // with the |write_result_|, which is recorded at every time finishing
   // write.
-  void Write(char* buffer, int size, StatusCallback callback) override;
+  void Write(char* buffer, int size, StatusOnceCallback callback) override;
   // Read from the last |accepted_sockets_|. Currently the read case
   // is only happend communication between master and master proxy.
   // TODO(chokobole): Divide TCPServerChannel to for broadcast use and
   // unicast use. For broadcast use, remove the method below.
-  void Read(char* buffer, int size, StatusCallback callback) override;
+  void Read(char* buffer, int size, StatusOnceCallback callback) override;
 
  private:
   int DoAccept();

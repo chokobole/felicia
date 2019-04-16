@@ -40,7 +40,7 @@ void Master::Stop() { thread_->Stop(); }
 
 void Master::RegisterClient(const RegisterClientRequest* arg,
                             RegisterClientResponse* result,
-                            StatusCallback callback) {
+                            StatusOnceCallback callback) {
   ClientInfo client_info = arg->client_info();  // intend to copy
   if (!IsValidChannelSource(client_info.heart_beat_signaller_source())) {
     std::move(callback).Run(errors::ChannelSourceNotValid(
@@ -72,7 +72,8 @@ void Master::RegisterClient(const RegisterClientRequest* arg,
 }
 
 void Master::ListClients(const ListClientsRequest* arg,
-                         ListClientsResponse* result, StatusCallback callback) {
+                         ListClientsResponse* result,
+                         StatusOnceCallback callback) {
   const ClientFilter& client_filter = arg->client_filter();
   {
     ::base::AutoLock l(lock_);
@@ -95,7 +96,7 @@ void Master::ListClients(const ListClientsRequest* arg,
 
 void Master::RegisterNode(const RegisterNodeRequest* arg,
                           RegisterNodeResponse* result,
-                          StatusCallback callback) {
+                          StatusOnceCallback callback) {
   const NodeInfo& node_info = arg->node_info();
   if (!CheckIfClientExists(node_info.client_id())) {
     std::move(callback).Run(errors::ClientNotRegistered());
@@ -133,7 +134,7 @@ void Master::RegisterNode(const RegisterNodeRequest* arg,
 
 void Master::UnregisterNode(const UnregisterNodeRequest* arg,
                             UnregisterNodeResponse* result,
-                            StatusCallback callback) {
+                            StatusOnceCallback callback) {
   const NodeInfo& node_info = arg->node_info();
   CHECK_NODE_EXISTS(node_info);
 
@@ -144,7 +145,7 @@ void Master::UnregisterNode(const UnregisterNodeRequest* arg,
 }
 
 void Master::ListNodes(const ListNodesRequest* arg, ListNodesResponse* result,
-                       StatusCallback callback) {
+                       StatusOnceCallback callback) {
   const NodeFilter& node_filter = arg->node_filter();
   std::vector<::base::WeakPtr<Node>> nodes = FindNodes(node_filter);
   if (!node_filter.name().empty()) {
@@ -177,7 +178,7 @@ void Master::ListNodes(const ListNodesRequest* arg, ListNodesResponse* result,
 
 void Master::PublishTopic(const PublishTopicRequest* arg,
                           PublishTopicResponse* result,
-                          StatusCallback callback) {
+                          StatusOnceCallback callback) {
   const NodeInfo& node_info = arg->node_info();
   CHECK_NODE_EXISTS(node_info);
 
@@ -228,7 +229,7 @@ void Master::PublishTopic(const PublishTopicRequest* arg,
 
 void Master::UnpublishTopic(const UnpublishTopicRequest* arg,
                             UnpublishTopicResponse* result,
-                            StatusCallback callback) {
+                            StatusOnceCallback callback) {
   const NodeInfo& node_info = arg->node_info();
   CHECK_NODE_EXISTS(node_info);
 
@@ -263,7 +264,7 @@ void Master::UnpublishTopic(const UnpublishTopicRequest* arg,
 
 void Master::SubscribeTopic(const SubscribeTopicRequest* arg,
                             SubscribeTopicResponse* result,
-                            StatusCallback callback) {
+                            StatusOnceCallback callback) {
   const NodeInfo& node_info = arg->node_info();
   CHECK_NODE_EXISTS(node_info);
 
@@ -305,7 +306,7 @@ void Master::SubscribeTopic(const SubscribeTopicRequest* arg,
 
 void Master::UnsubscribeTopic(const UnsubscribeTopicRequest* arg,
                               UnsubscribeTopicResponse* result,
-                              StatusCallback callback) {
+                              StatusOnceCallback callback) {
   const NodeInfo& node_info = arg->node_info();
   CHECK_NODE_EXISTS(node_info);
 
@@ -340,7 +341,8 @@ void Master::UnsubscribeTopic(const UnsubscribeTopicRequest* arg,
 }
 
 void Master::ListTopics(const ListTopicsRequest* arg,
-                        ListTopicsResponse* result, StatusCallback callback) {
+                        ListTopicsResponse* result,
+                        StatusOnceCallback callback) {
   const TopicFilter& topic_filter = arg->topic_filter();
   std::vector<TopicInfo> topic_infos = FindTopicInfos(topic_filter);
   for (auto& topic_info : topic_infos) {

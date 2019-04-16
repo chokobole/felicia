@@ -56,7 +56,8 @@ StatusOr<ChannelSource> UDPServerChannel::Bind() {
   return ToChannelSource(multicast_ip_endpoint_, ChannelDef::UDP);
 }
 
-void UDPServerChannel::Write(char* buffer, int size, StatusCallback callback) {
+void UDPServerChannel::Write(char* buffer, int size,
+                             StatusOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
   write_callback_ = std::move(callback);
@@ -84,7 +85,8 @@ void UDPServerChannel::Write(char* buffer, int size, StatusCallback callback) {
   }
 }
 
-void UDPServerChannel::Read(char* buffer, int size, StatusCallback callback) {
+void UDPServerChannel::Read(char* buffer, int size,
+                            StatusOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
   read_callback_ = std::move(callback);

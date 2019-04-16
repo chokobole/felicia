@@ -20,8 +20,8 @@ class EXPORT UDPServerChannel : public UDPChannelBase {
 
   StatusOr<ChannelSource> Bind();
 
-  void Write(char* buffer, int size, StatusCallback callback) override;
-  void Read(char* buffer, int size, StatusCallback callback) override;
+  void Write(char* buffer, int size, StatusOnceCallback callback) override;
+  void Read(char* buffer, int size, StatusOnceCallback callback) override;
 
  private:
   std::unique_ptr<::net::UDPSocket> socket_;

@@ -44,10 +44,10 @@ class Channel {
   }
 
   virtual void Connect(const ChannelSource& channel_source,
-                       StatusCallback callback) = 0;
+                       StatusOnceCallback callback) = 0;
 
-  void SendMessage(const MessageTy& message, StatusCallback callback);
-  void ReceiveMessage(MessageTy* message, StatusCallback callback);
+  void SendMessage(const MessageTy& message, StatusOnceCallback callback);
+  void ReceiveMessage(MessageTy* message, StatusOnceCallback callback);
 
  protected:
   friend class ChannelFactory;
@@ -64,16 +64,16 @@ class Channel {
 
   std::unique_ptr<ChannelBase> channel_;
   std::vector<char> send_buffer_;
-  StatusCallback send_callback_;
+  StatusOnceCallback send_callback_;
   std::vector<char> receive_buffer_;
-  StatusCallback receive_callback_;
+  StatusOnceCallback receive_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Channel);
 };
 
 template <typename MessageTy>
 void Channel<MessageTy>::SendMessage(const MessageTy& message,
-                                     StatusCallback callback) {
+                                     StatusOnceCallback callback) {
   DCHECK(channel_);
   DCHECK(this->send_callback_.is_null());
   DCHECK(!callback.is_null());
@@ -103,7 +103,7 @@ void Channel<MessageTy>::OnSendMessage(const Status& s) {
 
 template <typename MessageTy>
 void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
-                                        StatusCallback callback) {
+                                        StatusOnceCallback callback) {
   DCHECK(channel_);
   DCHECK(this->receive_callback_.is_null());
   DCHECK(!callback.is_null());

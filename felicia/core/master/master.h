@@ -28,7 +28,7 @@ class EXPORT Master {
 
 #define MASTER_METHOD(method)                                       \
   void method(const method##Request* arg, method##Response* result, \
-              StatusCallback callback)
+              StatusOnceCallback callback)
 
   MASTER_METHOD(RegisterClient);
   MASTER_METHOD(ListClients);

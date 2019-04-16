@@ -24,7 +24,7 @@ class EXPORT MasterClientInterface {
 #define CLIENT_METHOD(method)                                \
   virtual void method##Async(const method##Request* request, \
                              method##Response* response,     \
-                             StatusCallback done) = 0
+                             StatusOnceCallback done) = 0
 
   CLIENT_METHOD(RegisterClient);
   CLIENT_METHOD(ListClients);

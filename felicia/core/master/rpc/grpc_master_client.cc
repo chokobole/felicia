@@ -33,7 +33,7 @@ Status GrpcMasterClient::Stop() {
 #define CLIENT_METHOD(method)                                           \
   void GrpcMasterClient::method##Async(const method##Request* request,  \
                                        method##Response* response,      \
-                                       StatusCallback done) {           \
+                                       StatusOnceCallback done) {       \
     new GrpcAsyncClientCall<grpc::MasterService::Stub, method##Request, \
                             method##Response>(                          \
         stub_.get(), request, response,                                 \
