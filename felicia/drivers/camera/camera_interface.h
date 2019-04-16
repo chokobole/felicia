@@ -14,11 +14,16 @@ class EXPORT CameraInterface {
   virtual ~CameraInterface();
 
   virtual Status Init() = 0;
-  virtual Status Start(CameraFrameCallback callback) = 0;
+  virtual Status Start(CameraFrameCallback camera_frame_callback,
+                       StatusCallback status_callback) = 0;
   virtual Status Close() = 0;
 
   virtual StatusOr<CameraFormat> GetFormat() = 0;
   virtual Status SetFormat(CameraFormat format) = 0;
+
+ protected:
+  CameraFrameCallback camera_frame_callback_;
+  StatusCallback status_callback_;
 };
 
 }  // namespace felicia

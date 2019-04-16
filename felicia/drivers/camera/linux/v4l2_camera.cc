@@ -71,7 +71,8 @@ Status V4l2Camera::Init() {
   return InitMmap();
 }
 
-Status V4l2Camera::Start(CameraFrameCallback callback) {
+Status V4l2Camera::Start(CameraFrameCallback camera_frame_callback,
+                         StatusCallback status_callback) {
   for (size_t i = 0; i < buffers_.size(); ++i) {
     v4l2_buffer buffer;
     FillV4L2Buffer(&buffer, i);
@@ -87,7 +88,8 @@ Status V4l2Camera::Start(CameraFrameCallback callback) {
   }
 
   thread_.Start();
-  callback_ = callback;
+  camera_frame_callback_ = camera_frame_callback;
+  status_callback_ = status_callback;
   if (thread_.task_runner()->BelongsToCurrentThread()) {
     DoTakePhoto();
   } else {
@@ -178,7 +180,7 @@ void V4l2Camera::DoTakePhoto() {
   v4l2_buffer buffer;
   FillV4L2Buffer(&buffer, 0);
   if (DoIoctl(VIDIOC_DQBUF, &buffer) < 0) {
-    callback_.Run(errors::FailedToDequeueBuffer());
+    status_callback_.Run(errors::FailedToDequeueBuffer());
     return;
   }
 
@@ -188,7 +190,7 @@ void V4l2Camera::DoTakePhoto() {
   bool buf_error_flag_set = false;
 #endif
   if (buf_error_flag_set) {
-    callback_.Run(errors::V4l2ErrorFlagWasSet());
+    status_callback_.Run(errors::V4l2ErrorFlagWasSet());
   } else {
     buffers_[buffer.index].set_payload(buffer.bytesused);
     ::base::Optional<CameraFrame> argb_frame =
@@ -196,14 +198,14 @@ void V4l2Camera::DoTakePhoto() {
     if (argb_frame.has_value()) {
       argb_frame.value().set_timestamp(
           ::base::Time::FromTimeVal(buffer.timestamp));
-      callback_.Run(argb_frame.value());
+      camera_frame_callback_.Run(std::move(argb_frame.value()));
     } else {
-      callback_.Run(errors::FailedToConvertToARGB());
+      status_callback_.Run(errors::FailedToConvertToARGB());
     }
   }
 
   if (DoIoctl(VIDIOC_QBUF, &buffer) < 0) {
-    callback_.Run(errors::FailedToEnqueueBuffer());
+    status_callback_.Run(errors::FailedToEnqueueBuffer());
     return;
   }
 

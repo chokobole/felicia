@@ -17,12 +17,13 @@ namespace felicia {
 
 class EXPORT CameraFrame {
  public:
-  CameraFrame(uint8_t* data, CameraFormat camera_format);
-  CameraFrame(const CameraFrame& other);
-  CameraFrame& operator=(const CameraFrame& other);
+  CameraFrame(std::unique_ptr<uint8_t> data, CameraFormat camera_format);
+  CameraFrame(CameraFrame&& other);
+  CameraFrame& operator=(CameraFrame&& other);
   ~CameraFrame();
 
-  uint8_t* data();
+  std::unique_ptr<uint8_t> data();
+  const uint8_t* data_ptr() const;
   size_t width() const;
   size_t height() const;
   size_t area() const;
@@ -33,16 +34,17 @@ class EXPORT CameraFrame {
   ::base::Time timestamp() const;
 
  private:
-  uint8_t* data_;
+  std::unique_ptr<uint8_t> data_;
   CameraFormat camera_format_;
   ::base::Time timestamp_;
+
+  DISALLOW_COPY_AND_ASSIGN(CameraFrame);
 };
 
 EXPORT ::base::Optional<CameraFrame> ConvertToARGB(CameraBuffer camera_buffer,
                                                    CameraFormat camera_format);
 
-typedef ::base::RepeatingCallback<void(StatusOr<CameraFrame>)>
-    CameraFrameCallback;
+typedef ::base::RepeatingCallback<void(CameraFrame)> CameraFrameCallback;
 
 }  // namespace felicia
 

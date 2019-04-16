@@ -18,7 +18,8 @@ class V4l2Camera : public CameraInterface,
   ~V4l2Camera();
 
   Status Init() override;
-  Status Start(CameraFrameCallback callback) override;
+  Status Start(CameraFrameCallback camera_frame_callback,
+               StatusCallback status_callback) override;
   Status Close() override;
 
   StatusOr<CameraFormat> GetFormat() override;
@@ -42,9 +43,6 @@ class V4l2Camera : public CameraInterface,
 
   std::vector<CameraBuffer> buffers_;
   ::base::Thread thread_;
-
-  CameraFrameCallback callback_;
-  Status error_status_;
 
   DISALLOW_COPY_AND_ASSIGN(V4l2Camera);
 };

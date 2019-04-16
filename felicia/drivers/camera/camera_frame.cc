@@ -7,15 +7,26 @@
 
 namespace felicia {
 
-CameraFrame::CameraFrame(uint8_t* data, CameraFormat camera_format)
+CameraFrame::CameraFrame(std::unique_ptr<uint8_t> data,
+                         CameraFormat camera_format)
     : data_(std::move(data)), camera_format_(camera_format) {}
 
-CameraFrame::CameraFrame(const CameraFrame& other) = default;
-CameraFrame& CameraFrame::operator=(const CameraFrame& other) = default;
+CameraFrame::CameraFrame(CameraFrame&& other)
+    : data_(std::move(other.data_)),
+      camera_format_(other.camera_format_),
+      timestamp_(other.timestamp_) {}
+
+CameraFrame& CameraFrame::operator=(CameraFrame&& other) {
+  data_ = std::move(other.data_);
+  camera_format_ = other.camera_format_;
+  timestamp_ = other.timestamp_;
+}
 
 CameraFrame::~CameraFrame() = default;
 
-uint8_t* CameraFrame::data() { return data_; }
+std::unique_ptr<uint8_t> CameraFrame::data() { return std::move(data_); }
+
+const uint8_t* CameraFrame::data_ptr() const { return data_.get(); }
 
 size_t CameraFrame::width() const { return camera_format_.width(); }
 
@@ -55,12 +66,10 @@ void CameraFrame::set_timestamp(::base::Time timestamp) {
 
   CameraFormat rgba_camera_format(camera_format.width(), camera_format.height(),
                                   CameraFormat::PIXEL_FORMAT_ARGB);
-  // TODO(chokobole): Allocate this by std::unique_ptr, currently because of
-  // StatusOr<CameraFrame> is not supported when CameraFrame is not copy
-  // constructible.
-  uint8_t* tmp_argb = new uint8_t[AllocationSize(rgba_camera_format)];
+  std::unique_ptr<uint8_t> tmp_argb =
+      std::unique_ptr<uint8_t>(new uint8_t[AllocationSize(rgba_camera_format)]);
   if (libyuv::ConvertToARGB(camera_buffer.start(), camera_buffer.payload(),
-                            tmp_argb, camera_format.width() * 4,
+                            tmp_argb.get(), camera_format.width() * 4,
                             0 /* crop_x_pos */, 0 /* crop_y_pos */,
                             camera_format.width(), camera_format.height(),
                             camera_format.width(), camera_format.height(),
@@ -68,7 +77,7 @@ void CameraFrame::set_timestamp(::base::Time timestamp) {
     return ::base::nullopt;
   }
 
-  return CameraFrame(tmp_argb, rgba_camera_format);
+  return CameraFrame(std::move(tmp_argb), rgba_camera_format);
 }
 
 }  // namespace felicia

@@ -50,35 +50,36 @@ class CameraPublishingNode : public NodeLifecycle {
   void OnRequestPublish(const Status& s) {
     std::cout << "CameraPublishingNode::OnRequestPublish()" << std::endl;
     LOG_IF(ERROR, !s.ok()) << s.error_message();
-    camera_->Start(::base::BindRepeating(&CameraPublishingNode::OnImage,
+    camera_->Start(::base::BindRepeating(&CameraPublishingNode::OnCameraFrame,
+                                         ::base::Unretained(this)),
+                   ::base::BindRepeating(&CameraPublishingNode::OnCameraError,
                                          ::base::Unretained(this)));
   }
 
-  void OnImage(StatusOr<CameraFrame> status_or) {
-    LOG(INFO) << "CameraPublishingNode::OnImage" << std::endl;
-    if (status_or.ok()) {
-      CameraFrame camera_frame = status_or.ValueOrDie();
-
-      if (last_timestamp_.is_null()) {
-        last_timestamp_ = camera_frame.timestamp();
-      } else {
-        if (camera_frame.timestamp() - last_timestamp_ <
-            ::base::TimeDelta::FromMilliseconds(100)) {
-          return;
-        } else {
-          last_timestamp_ = camera_frame.timestamp();
-        }
-      }
-
-      CameraMessage message;
-      message.set_data(camera_frame.data(), camera_frame.size());
-      message.set_timestamp(camera_frame.timestamp().ToDoubleT());
-      publisher_.Publish(std::move(message),
-                         ::base::BindOnce(&CameraPublishingNode::OnPublish,
-                                          ::base::Unretained(this)));
+  void OnCameraFrame(CameraFrame camera_frame) {
+    LOG(INFO) << "CameraPublishingNode::OnCameraFrame" << std::endl;
+    if (last_timestamp_.is_null()) {
+      last_timestamp_ = camera_frame.timestamp();
     } else {
-      LOG(ERROR) << status_or.status().error_message();
+      if (camera_frame.timestamp() - last_timestamp_ <
+          ::base::TimeDelta::FromMilliseconds(100)) {
+        return;
+      } else {
+        last_timestamp_ = camera_frame.timestamp();
+      }
     }
+
+    CameraMessage message;
+    message.set_data(camera_frame.data_ptr(), camera_frame.size());
+    message.set_timestamp(camera_frame.timestamp().ToDoubleT());
+    publisher_.Publish(std::move(message),
+                       ::base::BindOnce(&CameraPublishingNode::OnPublish,
+                                        ::base::Unretained(this)));
+  }
+
+  void OnCameraError(const Status& s) {
+    LOG(INFO) << "CameraPublishingNode::OnCameraError" << std::endl;
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
   void OnPublish(const Status& s) {
