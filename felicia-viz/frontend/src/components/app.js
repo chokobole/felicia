@@ -20,8 +20,8 @@ export default class App extends Component {
 
   render() {
     const { store } = this.props;
-    const { currentTime } = store;
+    const { currentTime, camera } = store;
 
-    return <CameraPanel currentTime={currentTime} />;
+    return <CameraPanel currentTime={currentTime} frame={camera.frame} />;
   }
 }

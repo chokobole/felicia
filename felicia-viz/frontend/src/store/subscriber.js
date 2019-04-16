@@ -1,9 +1,11 @@
 import STORE from 'store';
+import Worker from 'util/webworker.js';
 
 class Subscriber {
   constructor(serverAddr) {
     this.serverAddr = serverAddr;
     this.websocket = null;
+    this.worker = new Worker();
   }
 
   initialize() {
@@ -18,9 +20,14 @@ class Subscriber {
       return;
     }
     this.websocket.onmessage = event => {
-      STORE.update({
-        currentTime: parseInt(event.data, 10),
+      this.worker.postMessage({
+        source: 'camera',
+        data: event.data,
       });
+    };
+
+    this.worker.onmessage = event => {
+      STORE.update(event.data);
     };
     this.websocket.onclose = event => {
       console.log(`WebSocket connection closed with code: ${event.code}`);

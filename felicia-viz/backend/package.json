@@ -27,7 +27,8 @@
     "webpack-cli": "^3.3.0",
     "webpack-dev-middleware": "^3.6.1",
     "webpack-hot-middleware": "^2.24.3",
-    "webpack-node-externals": "^1.7.2"
+    "webpack-node-externals": "^1.7.2",
+    "worker-loader": "^2.0.0"
   },
   "repository": {
     "type": "git",

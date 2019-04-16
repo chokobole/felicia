@@ -19,6 +19,14 @@ const CONFIG = {
         ],
       },
       {
+        test: /webworker\.js$/,
+        use: [
+          {
+            loader: 'worker-loader',
+          },
+        ],
+      },
+      {
         test: /\.s?css$/,
         use: [
           {
@@ -69,6 +77,7 @@ module.exports = env => {
       path: resolve(rootPath, 'backend/dist'),
       publicPath: '/',
       filename: 'bundle.js',
+      globalObject: 'this',
     },
 
     resolve: {

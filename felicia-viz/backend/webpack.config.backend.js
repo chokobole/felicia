@@ -59,10 +59,7 @@ module.exports = env => {
 
       resolve: {
         alias: {
-          'felicia_js.node': resolve(
-            ROOT_PATH,
-            '../bazel-bin/felicia/js/felicia_js.node',
-          ),
+          'felicia_js.node': resolve(ROOT_PATH, '../bazel-bin/felicia/js/felicia_js.node'),
         },
       },
     });

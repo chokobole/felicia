@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
 import ImageView from 'components/image-view';
+import { CameraFrame } from 'store/camera';
 
 export default class CameraPanel extends PureComponent {
   static propTypes = {
@@ -10,6 +11,7 @@ export default class CameraPanel extends PureComponent {
     height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
 
     currentTime: PropTypes.number,
+    frame: PropTypes.instanceOf(CameraFrame),
   };
 
   static defaultProps = {
@@ -17,10 +19,11 @@ export default class CameraPanel extends PureComponent {
     height: 'auto',
 
     currentTime: 0,
+    frame: null,
   };
 
   render() {
-    const { currentTime, width, height } = this.props;
-    return <ImageView width={width} height={height} src={`images/image${currentTime}.jpg`} />;
+    const { frame, width, height } = this.props;
+    return <ImageView width={width} height={height} frame={frame} />;
   }
 }

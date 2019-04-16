@@ -5,7 +5,7 @@ const feliciaJs = require('felicia_js.node');
 const devMiddleware = require('./lib/dev-middleware');
 const environment = require('./lib/environment');
 const packagejson = require('../package.json');
-const websocketMiddleWare = require('./websocket');
+const websocketMiddleware = require('./websocket');
 
 const app = express();
 
@@ -19,7 +19,7 @@ if (environment.isDevelopment) {
 
 app.use(express.static('static'));
 
-websocketMiddleWare(app);
+const websocket = websocketMiddleware(app);
 
 app.listen(HTTP_PORT, () =>
   console.log(`Running FeliciaViz-${packagejson.version} on ${HTTP_PORT}`)
@@ -28,13 +28,32 @@ app.listen(HTTP_PORT, () =>
 feliciaJs.MasterProxy.setBackground();
 
 const s = feliciaJs.MasterProxy.start();
+if (!s.ok()) {
+  process.exit(1);
+}
 
-feliciaJs.MasterProxy.requestRegisterDynamicSubscribingNode(function (topic, message) {
-  console.log(`[TOPIC]: ${topic}`);
-  console.log(message);
-}, function (topic, s) {
-  console.log(`[TOPIC]: ${topic}`);
-  console.error(s.errorMessage());
-});
+feliciaJs.MasterProxy.requestRegisterDynamicSubscribingNode(
+  function(topic, message) {
+    console.log(`[TOPIC]: ${topic}`);
+    if (message.type === 'felicia.CameraMessage') {
+      const { timestamp, data } = message.message;
+      websocket.broadcast(
+        JSON.stringify({
+          currentTime: timestamp,
+          frame: {
+            length: data.byteLength,
+            width: 640,
+            height: 480,
+            data: new Uint8Array(data),
+          },
+        })
+      );
+    }
+  },
+  function(topic, status) {
+    console.log(`[TOPIC]: ${topic}`);
+    console.error(status.errorMessage());
+  }
+);
 
 feliciaJs.MasterProxy.run();
