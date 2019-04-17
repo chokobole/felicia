@@ -174,13 +174,8 @@ void JsMasterProxy::OnSubscriptionError(const std::string& topic,
 // static
 void JsMasterProxy::RequestRegisterDynamicSubscribingNode(
     const ::Napi::CallbackInfo& info) {
-  ::Napi::Env env = info.Env();
-
   communication::Settings settings;
-  if (info.Length() >= 2) {
-    on_new_message_ = ::Napi::Persistent(info[0].As<::Napi::Function>());
-    on_subscription_error_ = ::Napi::Persistent(info[1].As<::Napi::Function>());
-  } else if (info.Length() >= 3) {
+  if (info.Length() >= 3) {
     on_new_message_ = ::Napi::Persistent(info[0].As<::Napi::Function>());
     on_subscription_error_ = ::Napi::Persistent(info[1].As<::Napi::Function>());
     ::Napi::Object settings_arg = info[2].As<::Napi::Object>();
@@ -193,6 +188,9 @@ void JsMasterProxy::RequestRegisterDynamicSubscribingNode(
       settings.queue_size =
           static_cast<uint8_t>(period.As<::Napi::Number>().Uint32Value());
     }
+  } else if (info.Length() >= 2) {
+    on_new_message_ = ::Napi::Persistent(info[0].As<::Napi::Function>());
+    on_subscription_error_ = ::Napi::Persistent(info[1].As<::Napi::Function>());
   }
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
