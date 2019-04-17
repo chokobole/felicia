@@ -21,10 +21,9 @@ class TypeConvertor<bool> {
 };
 
 template <typename T>
-class TypeConvertor<
-    T, std::enable_if_t<
-           std::is_integral<T>::value && !std::is_same<bool, T>::value &&
-           std::is_signed<T>::value && sizeof(T) <= sizeof(int32_t)>> {
+class TypeConvertor<T, std::enable_if_t<std::is_integral<T>::value &&
+                                        std::is_signed<T>::value &&
+                                        sizeof(T) <= sizeof(int32_t)>> {
  public:
   static T ToNativeValue(::Napi::Value value) {
     return value.As<::Napi::Number>().Int32Value();
