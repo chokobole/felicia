@@ -29,6 +29,7 @@ class CameraSubscribingNode : public NodeLifecycle {
 
   void RequestSubscribe() {
     communication::Settings settings;
+    settings.period = 100;
 
     subscriber_.RequestSubscribe(
         node_info_, topic_,
@@ -44,16 +45,16 @@ class CameraSubscribingNode : public NodeLifecycle {
   void OnMessage(CameraMessage&& message) {
     std::cout << "CameraSubscribingNode::OnMessage()" << std::endl;
 
-    static int frame_number = 0;
-    char filename[15];
-    frame_number++;
-    sprintf(filename, "frame-%d.argb", frame_number);
-    FILE* fp = fopen(filename, "wb");
+    // static int frame_number = 0;
+    // char filename[15];
+    // frame_number++;
+    // sprintf(filename, "frame-%d.argb", frame_number);
+    // FILE* fp = fopen(filename, "wb");
 
-    fwrite(message.data().c_str(), message.data().size(), 1, fp);
+    // fwrite(message.data().c_str(), message.data().size(), 1, fp);
 
-    fflush(fp);
-    fclose(fp);
+    // fflush(fp);
+    // fclose(fp);
   }
 
   void OnSubscriptionError(const Status& s) {
