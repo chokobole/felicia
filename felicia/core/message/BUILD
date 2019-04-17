@@ -8,14 +8,17 @@ fel_cc_library(
         "dynamic_protobuf_message.cc",
         "header.cc",
         "protobuf_loader.cc",
+        "protobuf_util.cc",
     ],
     hdrs = [
         "dynamic_protobuf_message.h",
         "header.h",
         "message_io.h",
         "protobuf_loader.h",
+        "protobuf_util.h",
     ],
     deps = [
         "//felicia/core/lib",
+        "//felicia/core/util:command_line_interface",
     ],
 )

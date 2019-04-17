@@ -166,10 +166,6 @@ void TypeConvertor<::google::protobuf::Message>::ToNativeValue(
       return ::Napi::String::New(
           env, reflection->GetStringReference(message, field_desc, &scratch));
     }
-    case ::google::protobuf::FieldDescriptor::TYPE_GROUP: {
-      LOG(ERROR) << "Not supported type: " << field_desc->type_name();
-      return env.Undefined();
-    }
     case ::google::protobuf::FieldDescriptor::TYPE_MESSAGE:
       return ToJSObject(env, reflection->GetMessage(message, field_desc));
     case ::google::protobuf::FieldDescriptor::TYPE_BYTES: {

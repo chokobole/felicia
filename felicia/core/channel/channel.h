@@ -91,8 +91,7 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
                     ::base::BindOnce(&Channel<MessageTy>::OnSendMessage,
                                      ::base::Unretained(this)));
   } else {
-    std::move(callback).Run(errors::InvalidArgument(::base::StrCat(
-        {"message is invalid, which is", message.DebugString().c_str()})));
+    std::move(callback).Run(errors::InvalidArgument("Failed to serialize"));
   }
 }
 

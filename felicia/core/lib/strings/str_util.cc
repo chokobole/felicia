@@ -45,5 +45,7 @@ bool StringComparator::operator()(const ::base::StringPiece text) {
   return Equals(text_, text);
 }
 
+std::string BoolToString(bool b) { return b ? "true" : "false"; }
+
 }  // namespace strings
 }  // namespace felicia

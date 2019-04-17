@@ -20,7 +20,7 @@ class DynamicProtobufMessage {
 
   void Reset(::google::protobuf::Message* message);
 
-  std::string DebugString() const;
+  std::string ToString() const;
 
   std::string GetTypeName() const;
 

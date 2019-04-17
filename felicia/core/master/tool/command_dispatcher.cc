@@ -370,7 +370,7 @@ void CommandDispatcher::OnNewMessage(
   std::cout << TextStyle::Green(
                    ::base::StringPrintf("[TOPIC] %s", topic.c_str()))
             << std::endl;
-  std::cout << message.DebugString();
+  std::cout << message.ToString();
 }
 
 void CommandDispatcher::OnSubscriptionError(const std::string& topic,

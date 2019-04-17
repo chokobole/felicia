@@ -2,6 +2,8 @@
 
 #include "third_party/chromium/base/strings/string_util.h"
 
+#include "felicia/core/message/protobuf_util.h"
+
 namespace felicia {
 
 DynamicProtobufMessage::DynamicProtobufMessage() = default;
@@ -35,9 +37,9 @@ std::string DynamicProtobufMessage::GetTypeName() const {
   return ::base::EmptyString();
 }
 
-std::string DynamicProtobufMessage::DebugString() const {
+std::string DynamicProtobufMessage::ToString() const {
   if (!message_) return ::base::EmptyString();
-  return message_->DebugString();
+  return protobuf::ToString(*message_);
 }
 
 Status DynamicProtobufMessage::MessageToJsonString(std::string* text) const {

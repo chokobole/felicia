@@ -35,6 +35,8 @@ class EXPORT StringComparator {
   ::base::StringPiece text_;
 };
 
+EXPORT std::string BoolToString(bool b);
+
 }  // namespace strings
 }  // namespace felicia
 
