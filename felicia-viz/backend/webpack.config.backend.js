@@ -30,6 +30,12 @@ const CONFIG = {
       WEBSOCKET_PORT: 3001,
     }),
   ],
+
+  resolve: {
+    alias: {
+      'felicia_js.node': resolve(ROOT_PATH, '../bazel-bin/felicia/js/felicia_js.node'),
+    },
+  },
 };
 
 module.exports = env => {
@@ -56,12 +62,6 @@ module.exports = env => {
       watch: true,
 
       devtool: 'source-map',
-
-      resolve: {
-        alias: {
-          'felicia_js.node': resolve(ROOT_PATH, '../bazel-bin/felicia/js/felicia_js.node'),
-        },
-      },
     });
 
     config.module.rules = config.module.rules.concat({
