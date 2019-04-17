@@ -367,8 +367,8 @@ void CommandDispatcher::OnPublish(const Status& s) const {
   LOG_IF(ERROR, !s.ok()) << s.error_message();
 }
 
-void CommandDispatcher::OnNewMessage(
-    const std::string& topic, const DynamicProtobufMessage& message) const {
+void CommandDispatcher::OnNewMessage(const std::string& topic,
+                                     DynamicProtobufMessage&& message) const {
   std::cout << TextStyle::Green(
                    ::base::StringPrintf("[TOPIC] %s", topic.c_str()))
             << std::endl;

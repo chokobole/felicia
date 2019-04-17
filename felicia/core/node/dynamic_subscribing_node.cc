@@ -80,9 +80,9 @@ void DynamicSubscribingNode::OnFindPublisher(const TopicInfo& topic_info) {
   subscribers_.push_back(std::move(subscriber));
 }
 
-void DynamicSubscribingNode::OnNewMessage(
-    const std::string& topic, const DynamicProtobufMessage& message) {
-  on_new_message_callback_.Run(topic, message);
+void DynamicSubscribingNode::OnNewMessage(const std::string& topic,
+                                          DynamicProtobufMessage&& message) {
+  on_new_message_callback_.Run(topic, std::move(message));
 }
 
 void DynamicSubscribingNode::OnSubscriptionError(const std::string& topic,

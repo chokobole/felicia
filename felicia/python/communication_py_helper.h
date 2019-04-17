@@ -18,7 +18,7 @@ namespace py = pybind11;
 namespace felicia {
 
 template <typename MessageTy>
-using PyMessageCallback = PyCallback<void(const MessageTy&)>;
+using PyMessageCallback = PyCallback<void(MessageTy&&)>;
 
 template <typename MessageTy>
 void AddPublisher(py::module& m, const char* name) {

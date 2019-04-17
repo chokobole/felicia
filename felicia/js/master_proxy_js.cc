@@ -31,6 +31,9 @@ struct TopicData {
   TopicData(const std::string& topic, const DynamicProtobufMessage& message)
       : topic(topic), message(message), is_message_data(true) {}
 
+  TopicData(const std::string& topic, DynamicProtobufMessage&& message)
+      : topic(topic), message(std::move(message)), is_message_data(true) {}
+
   TopicData(const std::string& topic, const Status& status)
       : topic(topic), status(status), is_message_data(false) {}
 
@@ -149,10 +152,10 @@ void OnCallback(uv_async_t* handle) {
 }
 
 void JsMasterProxy::OnNewMessage(const std::string& topic,
-                                 const DynamicProtobufMessage& message) {
+                                 DynamicProtobufMessage&& message) {
   {
     ::base::AutoLock l(g_lock);
-    g_message_queue->push({topic, message});
+    g_message_queue->push({topic, std::move(message)});
   }
 
   uv_async_send(&g_handle);

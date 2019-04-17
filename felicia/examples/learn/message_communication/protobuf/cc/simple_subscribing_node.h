@@ -48,7 +48,7 @@ class SimpleSubscribingNode : public NodeLifecycle {
                          ::base::Unretained(this)));
   }
 
-  void OnMessage(const MessageSpec& message) {
+  void OnMessage(MessageSpec&& message) {
     std::cout << "SimpleSubscribingNode::OnMessage()" << std::endl;
     std::cout << "message : " << message.DebugString() << std::endl;
   }

@@ -34,7 +34,7 @@ struct Settings {
 template <typename MessageTy>
 class Subscriber {
  public:
-  using OnMessageCallback = ::base::RepeatingCallback<void(const MessageTy&)>;
+  using OnMessageCallback = ::base::RepeatingCallback<void(MessageTy&&)>;
   using OnErrorCallback = ::base::RepeatingCallback<void(const Status& s)>;
 
   Subscriber() { state_.ToUneregistered(); }
@@ -353,7 +353,7 @@ void Subscriber<MessageTy>::NotifyMessageLoop() {
   if (!message_queue_.empty()) {
     MessageTy message = std::move(message_queue_.front());
     message_queue_.pop();
-    on_message_callback_.Run(message);
+    on_message_callback_.Run(std::move(message));
   }
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();

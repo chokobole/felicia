@@ -15,7 +15,7 @@ namespace felicia {
 class DynamicSubscribingNode : public NodeLifecycle {
  public:
   using OnNewMessageCallback = ::base::RepeatingCallback<void(
-      const std::string&, const DynamicProtobufMessage&)>;
+      const std::string&, DynamicProtobufMessage&&)>;
   using OnSubscriptionErrorCallback =
       ::base::RepeatingCallback<void(const std::string&, const Status&)>;
 
@@ -44,8 +44,7 @@ class DynamicSubscribingNode : public NodeLifecycle {
 
   void OnFindPublisher(const TopicInfo& topic_info);
 
-  void OnNewMessage(const std::string& topic,
-                    const DynamicProtobufMessage& message);
+  void OnNewMessage(const std::string& topic, DynamicProtobufMessage&& message);
 
   void OnSubscriptionError(const std::string& topic, const Status& s);
 

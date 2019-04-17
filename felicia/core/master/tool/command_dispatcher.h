@@ -48,7 +48,7 @@ class CommandDispatcher {
   void OnPublish(const Status& s) const;
 
   void OnNewMessage(const std::string& topic,
-                    const DynamicProtobufMessage& message) const;
+                    DynamicProtobufMessage&& message) const;
 
   void OnSubscriptionError(const std::string& topic, const Status& s) const;
 

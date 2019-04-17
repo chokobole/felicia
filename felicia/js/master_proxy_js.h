@@ -29,7 +29,7 @@ class JsMasterProxy : public ::Napi::ObjectWrap<JsMasterProxy> {
   friend void OnCallback(uv_async_t*);
 
   static void OnNewMessage(const std::string& topic,
-                           const DynamicProtobufMessage& message);
+                           DynamicProtobufMessage&& message);
 
   static void OnSubscriptionError(const std::string& topic, const Status& s);
 

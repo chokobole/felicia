@@ -41,7 +41,7 @@ class CameraSubscribingNode : public NodeLifecycle {
                          ::base::Unretained(this)));
   }
 
-  void OnMessage(const CameraMessage& message) {
+  void OnMessage(CameraMessage&& message) {
     std::cout << "CameraSubscribingNode::OnMessage()" << std::endl;
 
     static int frame_number = 0;
