@@ -5,12 +5,20 @@ self.onmessage = event => {
   let message = null;
   const { data } = event.data;
   switch (event.data.source) {
-    case 'camera': {
+    case 'subscriber': {
       const parsed = JSON.parse(data);
-      message = {
-        currentTime: parseInt(parsed.currentTime, 10),
-        frame: parsed.frame,
-      };
+      if (parsed.type === 'felicia.CameraMessage') {
+        message = {
+          type: parsed.type,
+          currentTime: parseInt(parsed.currentTime, 10),
+          frame: parsed.frame,
+        };
+      } else {
+        message = {
+          type: parsed.type,
+          data: parsed.data,
+        };
+      }
       break;
     }
     case 'imageView': {

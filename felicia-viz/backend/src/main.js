@@ -39,6 +39,7 @@ feliciaJs.MasterProxy.requestRegisterDynamicSubscribingNode(
       const { timestamp, data } = message.message;
       websocket.broadcast(
         JSON.stringify({
+          type: message.type,
           currentTime: timestamp,
           frame: {
             length: data.byteLength,
@@ -46,6 +47,13 @@ feliciaJs.MasterProxy.requestRegisterDynamicSubscribingNode(
             height: 480,
             data: new Uint8Array(data),
           },
+        })
+      );
+    } else {
+      websocket.broadcast(
+        JSON.stringify({
+          type: message.type,
+          data: message.message,
         })
       );
     }

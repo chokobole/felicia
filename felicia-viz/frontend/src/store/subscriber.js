@@ -21,7 +21,7 @@ class Subscriber {
     }
     this.websocket.onmessage = event => {
       this.worker.postMessage({
-        source: 'camera',
+        source: 'subscriber',
         data: event.data,
       });
     };
