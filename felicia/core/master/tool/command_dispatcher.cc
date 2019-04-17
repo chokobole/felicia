@@ -270,8 +270,10 @@ void CommandDispatcher::Dispatch(const TopicSubscribeFlag& delegate) const {
       ::base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
 
   communication::Settings settings;
-  settings.period = delegate.period_flag()->value();
-  settings.queue_size = delegate.queue_size_flag()->value();
+  if (delegate.period_flag()->is_set())
+    settings.period = delegate.period_flag()->value();
+  if (delegate.queue_size_flag()->is_set())
+    settings.queue_size = delegate.queue_size_flag()->value();
 
   master_proxy.RequestRegisterNode<DynamicSubscribingNode>(
       node_info, protobuf_loader_.get(),
