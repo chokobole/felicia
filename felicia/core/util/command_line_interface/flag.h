@@ -361,34 +361,81 @@ EXPORT std::string MakeNamedHelpText(::base::StringPiece name,
 
 namespace {
 
+template <typename T, typename SFINAE = void>
+class ValueParser;
+
 template <typename T>
-bool ParseValue(::base::StringPiece arg, T* value) {
-  NOTIMPLEMENTED();
-  return false;
-}
+class ValueParser<T, std::enable_if_t<std::is_integral<T>::value &&
+                                      std::is_signed<T>::value &&
+                                      !std::is_same<T, int64_t>::value>> {
+ public:
+  static bool ParseValue(::base::StringPiece arg, T* value) {
+    int value_tmp;
+    bool ret = ::base::StringToInt(arg, &value_tmp);
+    *value = static_cast<T>(value_tmp);
+    return ret;
+  }
+};
+
+template <typename T>
+class ValueParser<T, std::enable_if_t<std::is_integral<T>::value &&
+                                      !std::is_signed<T>::value &&
+                                      !std::is_same<T, bool>::value &&
+                                      !std::is_same<T, uint64_t>::value>> {
+ public:
+  static bool ParseValue(::base::StringPiece arg, T* value) {
+    unsigned value_tmp;
+    bool ret = ::base::StringToUint(arg, &value_tmp);
+    *value = static_cast<T>(value_tmp);
+    return ret;
+  }
+};
+
+template <typename T>
+class ValueParser<T, std::enable_if_t<std::is_floating_point<T>::value>> {
+ public:
+  static bool ParseValue(::base::StringPiece arg, T* value) {
+    double value_tmp;
+    bool ret = ::base::StringToDouble(std::string(arg), &value_tmp);
+    *value = static_cast<T>(value_tmp);
+    return ret;
+  }
+};
 
 template <>
-bool ParseValue(::base::StringPiece arg, bool* value) {
-  *value = true;
-  return true;
-}
+class ValueParser<int64_t> {
+ public:
+  static bool ParseValue(::base::StringPiece arg, int64_t* value) {
+    return ::base::StringToInt64(arg, value);
+  }
+};
 
 template <>
-bool ParseValue(::base::StringPiece arg, std::string* value) {
-  if (arg.length() == 0) return false;
-  *value = std::string(arg);
-  return true;
-}
+class ValueParser<uint64_t> {
+ public:
+  static bool ParseValue(::base::StringPiece arg, uint64_t* value) {
+    return ::base::StringToUint64(arg, value);
+  }
+};
 
 template <>
-bool ParseValue(::base::StringPiece arg, int* value) {
-  return ::base::StringToInt(arg, value);
-}
+class ValueParser<bool> {
+ public:
+  static bool ParseValue(::base::StringPiece arg, bool* value) {
+    *value = true;
+    return true;
+  }
+};
 
 template <>
-bool ParseValue(::base::StringPiece arg, double* value) {
-  return ::base::StringToDouble(std::string(arg), value);
-}
+class ValueParser<std::string> {
+ public:
+  static bool ParseValue(::base::StringPiece arg, std::string* value) {
+    if (arg.length() == 0) return false;
+    *value = std::string(arg);
+    return true;
+  }
+};
 
 }  // namespace
 
@@ -432,7 +479,7 @@ bool Flag<T, Traits>::ConsumeEqualOrProceed(FlagParser& parser,
 template <typename T, typename Traits>
 bool Flag<T, Traits>::ParseValue(::base::StringPiece arg) {
   value_type value;
-  if (::felicia::ParseValue(arg, &value)) {
+  if (ValueParser<value_type>::ParseValue(arg, &value)) {
     return set_value(value);
   }
   return false;
