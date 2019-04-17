@@ -21,12 +21,30 @@ TopicSubscribeFlag::TopicSubscribeFlag() {
                     .Build();
     topic_flag_ = std::make_unique<StringFlag>(flag);
   }
+  {
+    Flag<uint32_t>::Builder builder(MakeValueStore(&period_));
+    auto flag =
+        builder.SetShortName("-i")
+            .SetLongName("--interval")
+            .SetHelp("Interval between messages in milliseconds, default: 1000")
+            .Build();
+    period_flag_ = std::make_unique<Flag<uint32_t>>(flag);
+  }
+  {
+    Flag<uint8_t>::Builder builder(MakeValueStore(&queue_size_));
+    auto flag = builder.SetShortName("-q")
+                    .SetLongName("--queue_size")
+                    .SetHelp("Queue size for each subsciber, default 10")
+                    .Build();
+    queue_size_flag_ = std::make_unique<Flag<uint8_t>>(flag);
+  }
 }
 
 TopicSubscribeFlag::~TopicSubscribeFlag() = default;
 
 bool TopicSubscribeFlag::Parse(FlagParser& parser) {
-  return PARSE_OPTIONAL_FLAG(parser, all_flag_, topic_flag_);
+  return PARSE_OPTIONAL_FLAG(parser, all_flag_, topic_flag_, period_flag_,
+                             queue_size_flag_);
 }
 
 bool TopicSubscribeFlag::Validate() const {
@@ -47,6 +65,8 @@ std::vector<NamedHelpType> TopicSubscribeFlag::CollectNamedHelps() const {
                      std::vector<std::string>{
                          all_flag_->help(),
                          topic_flag_->help(),
+                         period_flag_->help(),
+                         queue_size_flag_->help(),
                      }),
   };
 }

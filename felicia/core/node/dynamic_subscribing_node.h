@@ -22,6 +22,7 @@ class DynamicSubscribingNode : public NodeLifecycle {
   DynamicSubscribingNode(
       ProtobufLoader* loader, OnNewMessageCallback on_new_message_callback,
       OnSubscriptionErrorCallback on_subscription_error_callback,
+      const communication::Settings& settings,
       const std::string& topic = ::base::EmptyString());
 
   ~DynamicSubscribingNode();
@@ -51,6 +52,7 @@ class DynamicSubscribingNode : public NodeLifecycle {
   ProtobufLoader* loader_;  // not owned;
   NodeInfo node_info_;
   std::string topic_;
+  communication::Settings settings_;
   std::vector<std::unique_ptr<DynamicSubscriber>> subscribers_;
 
   OnNewMessageCallback on_new_message_callback_;

@@ -16,6 +16,10 @@ class TopicSubscribeFlag : public FlagParser::Delegate {
 
   const BoolFlag* all_flag() const { return all_flag_.get(); }
   const StringFlag* topic_flag() const { return topic_flag_.get(); }
+  const Flag<uint32_t>* period_flag() const { return period_flag_.get(); }
+  const Flag<uint8_t>* queue_size_flag() const {
+    return queue_size_flag_.get();
+  }
 
   bool Parse(FlagParser& parser) override;
 
@@ -28,8 +32,12 @@ class TopicSubscribeFlag : public FlagParser::Delegate {
  private:
   bool all_;
   std::string topic_;
+  uint32_t period_;
+  uint8_t queue_size_;
   std::unique_ptr<BoolFlag> all_flag_;
   std::unique_ptr<StringFlag> topic_flag_;
+  std::unique_ptr<Flag<uint32_t>> period_flag_;
+  std::unique_ptr<Flag<uint8_t>> queue_size_flag_;
 
   DISALLOW_COPY_AND_ASSIGN(TopicSubscribeFlag);
 };

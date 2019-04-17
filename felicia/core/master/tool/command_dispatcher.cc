@@ -269,13 +269,17 @@ void CommandDispatcher::Dispatch(const TopicSubscribeFlag& delegate) const {
   protobuf_loader_ = ProtobufLoader::Load(
       ::base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
 
+  communication::Settings settings;
+  settings.period = delegate.period_flag()->value();
+  settings.queue_size = delegate.queue_size_flag()->value();
+
   master_proxy.RequestRegisterNode<DynamicSubscribingNode>(
       node_info, protobuf_loader_.get(),
       ::base::BindRepeating(&CommandDispatcher::OnNewMessage,
                             ::base::Unretained(this)),
       ::base::BindRepeating(&CommandDispatcher::OnSubscriptionError,
                             ::base::Unretained(this)),
-      delegate.topic_flag()->value());
+      settings, delegate.topic_flag()->value());
 }
 
 void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,

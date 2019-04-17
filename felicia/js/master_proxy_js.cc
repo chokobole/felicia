@@ -172,13 +172,25 @@ void JsMasterProxy::OnSubscriptionError(const std::string& topic,
 void JsMasterProxy::RequestRegisterDynamicSubscribingNode(
     const ::Napi::CallbackInfo& info) {
   ::Napi::Env env = info.Env();
-  JS_CHECK_NUM_ARGS(env, 2);
 
-  ::Napi::Function on_new_message = info[0].As<::Napi::Function>();
-  ::Napi::Function on_subscription_error = info[1].As<::Napi::Function>();
-
-  on_new_message_ = ::Napi::Persistent(on_new_message);
-  on_subscription_error_ = ::Napi::Persistent(on_subscription_error);
+  communication::Settings settings;
+  if (info.Length() >= 2) {
+    on_new_message_ = ::Napi::Persistent(info[0].As<::Napi::Function>());
+    on_subscription_error_ = ::Napi::Persistent(info[1].As<::Napi::Function>());
+  } else if (info.Length() >= 3) {
+    on_new_message_ = ::Napi::Persistent(info[0].As<::Napi::Function>());
+    on_subscription_error_ = ::Napi::Persistent(info[1].As<::Napi::Function>());
+    ::Napi::Object settings_arg = info[2].As<::Napi::Object>();
+    ::Napi::Value period = settings_arg["period"];
+    if (!period.IsUndefined()) {
+      settings.period = period.As<::Napi::Number>().Uint32Value();
+    }
+    ::Napi::Value queue_size = settings_arg["queue_size"];
+    if (!queue_size.IsUndefined()) {
+      settings.queue_size =
+          static_cast<uint8_t>(period.As<::Napi::Number>().Uint32Value());
+    }
+  }
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
 
@@ -195,7 +207,7 @@ void JsMasterProxy::RequestRegisterDynamicSubscribingNode(
   master_proxy.RequestRegisterNode<DynamicSubscribingNode>(
       node_info, g_protobuf_loader.get(),
       ::base::BindRepeating(&JsMasterProxy::OnNewMessage),
-      ::base::BindRepeating(&JsMasterProxy::OnSubscriptionError));
+      ::base::BindRepeating(&JsMasterProxy::OnSubscriptionError), settings);
 }
 
 }  // namespace felicia

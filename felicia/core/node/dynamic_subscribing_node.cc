@@ -9,9 +9,10 @@ namespace felicia {
 DynamicSubscribingNode::DynamicSubscribingNode(
     ProtobufLoader* loader, OnNewMessageCallback on_new_message_callback,
     OnSubscriptionErrorCallback on_subscription_error_callback,
-    const std::string& topic)
+    const communication::Settings& settings, const std::string& topic)
     : loader_(loader),
       topic_(topic),
+      settings_(settings),
       on_new_message_callback_(on_new_message_callback),
       on_subscription_error_callback_(on_subscription_error_callback) {}
 
@@ -50,14 +51,13 @@ void DynamicSubscribingNode::RequestSubscribe() {
   std::unique_ptr<DynamicSubscriber> subscriber =
       std::make_unique<DynamicSubscriber>(loader_);
 
-  communication::Settings settings;
   subscriber->RequestSubscribe(
       node_info_, topic_,
       ::base::BindRepeating(&DynamicSubscribingNode::OnNewMessage,
                             ::base::Unretained(this), topic_),
       ::base::BindRepeating(&DynamicSubscribingNode::OnSubscriptionError,
                             ::base::Unretained(this), topic_),
-      settings,
+      settings_,
       ::base::BindOnce(&DynamicSubscribingNode::OnSubscriptionError,
                        ::base::Unretained(this), topic_));
 
@@ -69,13 +69,12 @@ void DynamicSubscribingNode::OnFindPublisher(const TopicInfo& topic_info) {
   std::unique_ptr<DynamicSubscriber> subscriber =
       std::make_unique<DynamicSubscriber>(loader_);
 
-  communication::Settings settings;
   subscriber->Subscribe(
       ::base::BindRepeating(&DynamicSubscribingNode::OnNewMessage,
                             ::base::Unretained(this), topic_info.topic()),
       ::base::BindRepeating(&DynamicSubscribingNode::OnSubscriptionError,
                             ::base::Unretained(this), topic_info.topic()),
-      settings);
+      settings_);
   subscriber->OnFindPublisher(topic_info);
 
   subscribers_.push_back(std::move(subscriber));

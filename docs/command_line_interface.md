@@ -49,4 +49,6 @@ bazel-bin/felicia/core/master/tool/grpc_master_client_cli node ls -a
 |           | -i, --interval          | Interval between messages, in milliseconds, default: 1000 |
 | subscribe | -a, -all                | Subscribe all the topics                                  |
 |           | -t, --topic             | Topic to subscribe                                        |
+|           | -i, --interval          | Interval between messages, in milliseconds, default: 1000 |
+|           | -q, --queue_size        | Queue size for each subsciber, default 10                 |
 
