@@ -189,7 +189,10 @@ void Publisher<MessageTy>::OnPublishTopicAsync(PublishTopicRequest* request,
                                                PublishTopicResponse* response,
                                                StatusOnceCallback callback,
                                                const Status& s) {
-  DCHECK(IsRegistering());
+  if (!IsRegistering()) {
+    std::move(callback).Run(state_.InvalidStateError());
+    return;
+  }
 
   if (!s.ok()) {
     state_.ToUneregistered();
@@ -207,7 +210,10 @@ template <typename MessageTy>
 void Publisher<MessageTy>::OnUnpublishTopicAsync(
     UnpublishTopicRequest* request, UnpublishTopicResponse* response,
     StatusOnceCallback callback, const Status& s) {
-  DCHECK(IsUnregistering());
+  if (!IsUnregistering()) {
+    std::move(callback).Run(state_.InvalidStateError());
+    return;
+  }
 
   if (!s.ok()) {
     state_.ToRegistered();

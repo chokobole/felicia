@@ -70,6 +70,7 @@ class Subscriber {
                               StatusOnceCallback callback, const Status& s);
 
   void OnFindPublisher(const TopicInfo& topic_info);
+  void ConnectToPublisher();
   void OnConnectToPublisher(const Status& s);
 
   void StartMessageLoop();
@@ -86,14 +87,18 @@ class Subscriber {
 
   MessageTy message_;
   Pool<MessageTy, uint8_t> message_queue_;
+  TopicInfo topic_info_;
   std::unique_ptr<Channel<MessageTy>> channel_;
   OnMessageCallback on_message_callback_;
   OnErrorCallback on_error_callback_;
 
   communication::State last_state_;
   communication::State state_;
+  uint8_t receive_message_failed_cnt_ = 0;
   uint8_t queue_size_;
   ::base::TimeDelta period_;
+
+  static constexpr uint8_t kMaximumReceiveMessageFailedAllowed = 5;
 
   DISALLOW_COPY_AND_ASSIGN(Subscriber);
 };
@@ -160,7 +165,10 @@ void Subscriber<MessageTy>::OnSubscribeTopicAsync(
     SubscribeTopicRequest* request, SubscribeTopicResponse* response,
     StatusOnceCallback callback, OnMessageCallback on_message_callback,
     const communication::Settings& settings, const Status& s) {
-  DCHECK(IsRegistering());
+  if (!IsRegistering()) {
+    on_error_callback_.Run(state_.InvalidStateError());
+    return;
+  }
 
   if (!s.ok()) {
     state_ = last_state_;
@@ -181,7 +189,10 @@ template <typename MessageTy>
 void Subscriber<MessageTy>::OnUnubscribeTopicAsync(
     UnsubscribeTopicRequest* request, UnsubscribeTopicResponse* response,
     StatusOnceCallback callback, const Status& s) {
-  DCHECK(IsUnregistering());
+  if (!IsUnregistering()) {
+    on_error_callback_.Run(state_.InvalidStateError());
+    return;
+  }
 
   if (!s.ok()) {
     state_ = last_state_;
@@ -216,13 +227,30 @@ void Subscriber<MessageTy>::OnFindPublisher(const TopicInfo& topic_info) {
     return;
   }
 
+  if (!(IsRegistered() || IsStopped())) {
+    on_error_callback_.Run(state_.InvalidStateError());
+    return;
+  }
+
+  // If MesageTy is DynamicProtobufMessage, in other words, this class is
+  // a instance of DynamicSubscriber, then subscriber resolves its type
+  // using |type_name| inside |topic_info|.
   ResetMessage(topic_info);
 
+  // Subscriber holds this in case of data corruption. If it happens, subscriber
+  // connects to publisher again using |topic_info_|.
+  topic_info_ = topic_info;
+
+  ConnectToPublisher();
+}
+
+template <typename MessageTy>
+void Subscriber<MessageTy>::ConnectToPublisher() {
   channel_ = ChannelFactory::NewChannel<MessageTy>(
-      topic_info.topic_source().channel_def());
+      topic_info_.topic_source().channel_def());
 
   channel_->Connect(
-      topic_info.topic_source(),
+      topic_info_.topic_source(),
       ::base::BindOnce(&Subscriber<MessageTy>::OnConnectToPublisher,
                        ::base::Unretained(this)));
 }
@@ -296,6 +324,7 @@ void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
   if (IsStopped()) return;
 
   if (s.ok()) {
+    receive_message_failed_cnt_ = 0;
     message_queue_.push(std::move(message_));
   } else {
     Status new_status(s.error_code(),
@@ -304,6 +333,13 @@ void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
     on_error_callback_.Run(new_status);
     if (channel_->IsTCPChannel() && !channel_->ToTCPChannel()->IsConnected()) {
       StopMessageLoop();
+      return;
+    }
+    receive_message_failed_cnt_++;
+    if (receive_message_failed_cnt_ >= kMaximumReceiveMessageFailedAllowed) {
+      receive_message_failed_cnt_ = 0;
+      StopMessageLoop();
+      ConnectToPublisher();
       return;
     }
   }
