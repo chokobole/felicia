@@ -119,4 +119,42 @@ TEST(PoolTest, Grow) {
   ASSERT_EQ(2, pool.front());
 }
 
+class ABC {
+ public:
+  ABC() { alive_++; }
+
+  ABC(const ABC& other) { alive_++; }
+
+  ABC(ABC&& other) { alive_++; }
+
+  ~ABC() { alive_--; }
+
+  static int alive_;
+};
+
+int ABC::alive_ = 0;
+
+TEST(PoolTest, AliveTest) {
+  felicia::Pool<ABC, uint8_t> pool(10);
+  for (int i = 0; i < 20; i++) {
+    ABC a;
+    pool.push(a);
+  }
+
+  ASSERT_EQ(ABC::alive_, 10);
+
+  for (int i = 0; i < 5; i++) {
+    pool.pop();
+  }
+
+  ASSERT_EQ(ABC::alive_, 5);
+
+  for (int i = 0; i < 20; i++) {
+    ABC a;
+    pool.push(std::move(a));
+  }
+
+  ASSERT_EQ(ABC::alive_, 10);
+}
+
 }  // namespace felicia

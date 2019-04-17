@@ -325,7 +325,7 @@ void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
 
   if (s.ok()) {
     receive_message_failed_cnt_ = 0;
-    message_queue_.push(std::move(message_));
+    message_queue_.push(message_);
   } else {
     Status new_status(s.error_code(),
                       ::base::StringPrintf("Failed to receive a message: %s",

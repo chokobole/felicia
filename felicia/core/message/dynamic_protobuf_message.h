@@ -13,6 +13,8 @@ class DynamicProtobufMessage {
   DynamicProtobufMessage();
   DynamicProtobufMessage(const DynamicProtobufMessage& other);
   DynamicProtobufMessage& operator=(const DynamicProtobufMessage& other);
+  DynamicProtobufMessage(DynamicProtobufMessage&& other);
+  DynamicProtobufMessage& operator=(DynamicProtobufMessage&& other);
   ~DynamicProtobufMessage();
 
   ::google::protobuf::Message* message() { return message_; }

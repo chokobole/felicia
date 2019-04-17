@@ -60,22 +60,6 @@ class Pool {
 
  private:
   ALWAYS_INLINE void inc_push_index() {
-    if (is_ailve_after_push_index_ && push_index_ == pop_index_) {
-      // Suppose, we have a case below,
-      //     (push_index_)
-      //  y       e         f  g ....
-      //     (pop_index_)
-      //
-      // And push 'z' this time.
-      //
-      //     (push_index_)
-      //  y       z         f  g ....
-      //     (pop_index_)
-      //
-      // Then the next element to be popped should be 'f'.
-      inc_pop_index();
-    }
-
     push_index_ = inc_index(push_index_);
     if (push_index_ == 0) {
       is_ailve_after_push_index_ = true;
@@ -179,6 +163,7 @@ void Pool<T, Size>::set_capacity(size_type capacity) {
 template <typename T, typename Size>
 void Pool<T, Size>::push(const value_type& v) {
   DCHECK(capacity_ > 0);
+  if (is_ailve_after_push_index_) pop();
   new (&buffer_[push_index_]) T(v);
   inc_push_index();
 }
@@ -186,6 +171,7 @@ void Pool<T, Size>::push(const value_type& v) {
 template <typename T, typename Size>
 void Pool<T, Size>::push(value_type&& v) {
   DCHECK(capacity_ > 0);
+  if (is_ailve_after_push_index_) pop();
   new (&buffer_[push_index_]) T(std::move(v));
   inc_push_index();
 }
