@@ -1,5 +1,4 @@
 load("@local_config_python//:py.bzl", "PYTHON2_BIN")
-load("@env//:env.bzl", "TRAVIS")
 
 def _npm_install_node_addon_api_impl(repository_ctx):
     repository_ctx.symlink(Label("//third_party/node_addon_api:BUILD.bazel"), "BUILD.bazel")
