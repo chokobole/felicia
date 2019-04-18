@@ -1,13 +1,13 @@
-const path = require('path');
+import path from 'path';
 
 /* eslint import/no-extraneous-dependencies: ["error", {"devDependencies": true}] */
-const webpack = require('webpack');
-const webpackDevMiddleware = require('webpack-dev-middleware');
-const webpackHotMiddleware = require('webpack-hot-middleware');
+import webpack from 'webpack';
+import webpackDevMiddleware from 'webpack-dev-middleware';
+import webpackHotMiddleware from 'webpack-hot-middleware';
 
-const webpackConfig = require('../../webpack.config.frontend');
+import webpackConfig from '../../webpack.config.frontend';
 
-module.exports = function(app) {
+export default app => {
   const config = webpackConfig({
     dev: true,
     rootPath: path.resolve('..'),

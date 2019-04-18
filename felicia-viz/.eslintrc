@@ -14,6 +14,7 @@
   },
   "globals": {
     "document": "readonly",
+    "HEARTBEAT_INTERVAL": "readonly",
     "HTTP_PORT": "readonly",
     "Image": "readonly",
     "ResizeObserver": "readonly",
@@ -25,7 +26,7 @@
   "settings": {
     "import/resolver": {
       "node": {
-        "paths": ["frontend/src"],
+        "paths": [".", "frontend/src"],
       }
     }
 

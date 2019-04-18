@@ -1,23 +1,28 @@
-const http = require('http');
+import WebSocket from 'ws';
 
-const WebSocket = require('ws');
+import Connection from './connection';
 
-module.exports = function(app) {
-  const server = http.createServer(app);
-  const wss = new WebSocket.Server({ server, port: WEBSOCKET_PORT });
+const connections = [];
 
-  wss.on('connection', function connection(ws) {
-    ws.on('message', function incoming(message) {
-      console.log(`received: ${message}`);
-    });
+export default () => {
+  const wss = new WebSocket.Server({ port: WEBSOCKET_PORT });
+
+  wss.on('connection', ws => {
+    connections.push(new Connection(ws));
   });
 
+  setInterval(() => {
+    for (let i = 0; i < connections.length; i += 1) {
+      if (connections[i].closed()) {
+        connections.splice(i, 1);
+      }
+    }
+  }, HEARTBEAT_INTERVAL);
+
   return {
-    broadcast: data => {
-      wss.clients.forEach(function each(client) {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(data);
-        }
+    broadcast: (data, type) => {
+      connections.forEach(connection => {
+        connection.send(data, type);
       });
     },
   };

@@ -1,8 +1,9 @@
 const { resolve } = require('path');
 
-const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 const StartServerPlugin = require('start-server-webpack-plugin');
+
+const commonConfig = require('./webpack.config.common.js');
 
 const ROOT_PATH = resolve(__dirname, '..');
 
@@ -15,60 +16,30 @@ const CONFIG = {
 
   externals: [nodeExternals()],
 
-  module: {
-    rules: [
-      {
-        test: /\.node$/,
-        use: 'node-loader',
-      },
-    ],
-  },
-
-  plugins: [
-    new webpack.DefinePlugin({
-      HTTP_PORT: 3000,
-      WEBSOCKET_PORT: 3001,
-    }),
-  ],
-
-  resolve: {
-    alias: {
-      'felicia_js.node': resolve(ROOT_PATH, '../bazel-bin/felicia/js/felicia_js.node'),
-    },
+  output: {
+    path: resolve('dist'),
+    publicPath: '/',
+    filename: '[name].js',
   },
 };
 
 module.exports = env => {
-  const config = Object.assign({}, CONFIG);
+  const config = Object.assign(commonConfig(env), CONFIG);
 
-  Object.assign(config, {
-    output: {
-      path: resolve('dist'),
-      publicPath: '/',
-      filename: '[name].js',
-    },
+  config.resolve.alias = {
+    'felicia_js.node': resolve(ROOT_PATH, '../bazel-bin/felicia/js/felicia_js.node'),
+  };
+
+  config.module.rules = config.module.rules.concat({
+    test: /\.node$/,
+    use: 'node-loader',
   });
 
   if (env.production) {
     // production
-    Object.assign(config, {
-      mode: 'production',
-    });
   } else {
     // development
-    Object.assign(config, {
-      mode: 'development',
-
-      watch: true,
-
-      devtool: 'source-map',
-    });
-
-    config.module.rules = config.module.rules.concat({
-      enforce: 'pre',
-      test: /\.js$/,
-      use: ['source-map-loader'],
-    });
+    config.watch = true;
 
     config.plugins = config.plugins.concat([
       new StartServerPlugin({

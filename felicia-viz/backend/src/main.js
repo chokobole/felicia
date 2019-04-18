@@ -1,15 +1,14 @@
-const express = require('express');
-const morgan = require('morgan');
+import express from 'express';
+import morgan from 'morgan';
 
-const feliciaJs = require('felicia_js.node');
-const devMiddleware = require('./lib/dev-middleware');
-const environment = require('./lib/environment');
-const packagejson = require('../package.json');
-const websocketMiddleware = require('./websocket');
+import feliciaBinding from './felicia-binding';
+import devMiddleware from './lib/dev-middleware';
+import { isDevelopment } from './lib/environment';
+import packagejson from '../package.json';
 
 const app = express();
 
-if (environment.isDevelopment) {
+if (isDevelopment) {
   app.use(morgan('dev'));
   devMiddleware(app);
 } else {
@@ -19,52 +18,8 @@ if (environment.isDevelopment) {
 
 app.use(express.static('static'));
 
-const websocket = websocketMiddleware(app);
-
 app.listen(HTTP_PORT, () =>
   console.log(`Running FeliciaViz-${packagejson.version} on ${HTTP_PORT}`)
 );
 
-feliciaJs.MasterProxy.setBackground();
-
-const s = feliciaJs.MasterProxy.start();
-if (!s.ok()) {
-  process.exit(1);
-}
-
-feliciaJs.MasterProxy.requestRegisterDynamicSubscribingNode(
-  function(topic, message) {
-    console.log(`[TOPIC]: ${topic}`);
-    if (message.type === 'felicia.CameraMessage') {
-      const { timestamp, data } = message.message;
-      websocket.broadcast(
-        JSON.stringify({
-          type: message.type,
-          currentTime: timestamp,
-          frame: {
-            length: data.byteLength,
-            width: 640,
-            height: 480,
-            data: new Uint8Array(data),
-          },
-        })
-      );
-    } else {
-      websocket.broadcast(
-        JSON.stringify({
-          type: message.type,
-          data: message.message,
-        })
-      );
-    }
-  },
-  function(topic, status) {
-    console.log(`[TOPIC]: ${topic}`);
-    console.error(status.errorMessage());
-  },
-  {
-    period: 100,
-  }
-);
-
-feliciaJs.MasterProxy.run();
+feliciaBinding();

@@ -2,8 +2,7 @@ import { observable, action } from 'mobx';
 
 export class CameraFrame {
   constructor(frame) {
-    const { length, width, height, data } = frame;
-    this.length = length;
+    const { width, height, data } = frame;
     this.width = width;
     this.height = height;
     this.data = data;
