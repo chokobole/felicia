@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package felicia;
+
+message Test {
+  uint32 id = 1;
+  string content = 2;
+}
+
+message Test2 {
+  uint32 id = 1;
+  string content = 2;
+}
