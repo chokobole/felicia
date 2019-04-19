@@ -24,15 +24,23 @@ fel_nodejs_bind_node_library(
     name = "felicia_js",
     srcs = [
         "felicia_js.cc",
-        "master_proxy_js.cc",
-        "master_proxy_js.h",
         "status_js.cc",
         "status_js.h",
-    ],
+    ] + select({
+        "//felicia:windows": [],
+        "//conditions:default": [
+            "master_proxy_js.cc",
+            "master_proxy_js.h",
+        ]
+    }),
     deps = [
         ":typed_call",
         "//felicia/core/lib",
-        "//felicia/core/master:master_proxy",
-        "//felicia/core/node:dynamic_subscribing_node",
-    ],
+    ] + select({
+        "//felicia:windows": [],
+        "//conditions:default": [
+            "//felicia/core/master:master_proxy",
+            "//felicia/core/node:dynamic_subscribing_node",
+        ]
+    }),
 )

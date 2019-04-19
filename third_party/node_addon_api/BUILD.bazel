@@ -10,6 +10,12 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
+config_setting(
+    name = "x86_64",
+    constraint_values = ["@bazel_tools//platforms:x86_64"],
+    visibility = ["//visibility:public"],
+)
+
 cc_library(
     name = "node_addon_api",
     srcs = [
@@ -32,7 +38,16 @@ cc_library(
         "node_modules/node-addon-api/src",
     ],
     visibility = ["//visibility:public"],
-    deps = [":node_addon"],
+    deps = [":node_addon"]
+)
+
+cc_import(
+    name = "node_addon_win_lib",
+    interface_library = select({
+        "//:x86_64": "%s/x64/node.lib" % (NODE_VERSION),
+        "//conditions:default": "%s/ia32/node.lib" % (NODE_VERSION),
+    }),
+    system_provided = 1,
 )
 
 cc_library(
@@ -42,4 +57,14 @@ cc_library(
         "%s/include" % (NODE_VERSION),
         "%s/include/node" % (NODE_VERSION),
     ],
+    deps = select({
+        "//:windows": [":node_addon_win_lib"],
+        "//conditions:default": []
+    }),
+    linkopts = select({
+        "//:windows": [
+            "/DELAYLOAD:\"node.exe\""
+        ],
+        "//conditions:default": []
+    })
 )

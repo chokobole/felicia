@@ -18,14 +18,23 @@ def include(flags):
 
 def node_addon_api_copts():
     return define([
-        "EXTERNAL_API",
         "USING_UV_SHARED=1",
         "USING_V8_SHARED=1",
         "V8_DEPRECATION_WARNINGS=1",
-        "_LARGEFILE_SOURCE",
-        "_FILE_OFFSET_BITS=64",
         "NAPI_DISABLE_CPP_EXCEPTIONS",
         "BUILDING_NODE_EXTENSION"
-    ]) + [
-        "-fno-rtti", "-fno-exceptions"
-    ]
+    ]) + select({
+        "//:windows": [
+            "/DWIN32",
+            "/D_CRT_SECURE_NO_DEPRECATE",
+            "/D_CRT_NONSTDC_NO_DEPRECATE",
+            "/GR-",
+            "/D_HAS_EXCEPTIONS=0"
+        ],
+        "//conditions:default": [
+            "-D_LARGEFILE_SOURCE",
+            "-D_FILE_OFFSET_BITS=64",
+            "-fno-rtti",
+            "-fno-exceptions"
+        ],
+    })

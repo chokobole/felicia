@@ -15,7 +15,10 @@ class FakeCamera : public CameraInterface {
   FakeCamera(const CameraDescriptor& descriptor) {}
 
   Status Init() override { return Status::OK(); }
-  Status Start(CameraFrameCallback callback) override { return Status::OK(); }
+  Status Start(CameraFrameCallback camera_frame_callback,
+               StatusCallback status_callback) override {
+    return Status::OK();
+  }
   Status Close() override { return Status::OK(); }
 
   StatusOr<CameraFormat> GetFormat() override { return CameraFormat(); }

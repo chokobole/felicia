@@ -5,12 +5,15 @@ def _npm_install_node_addon_api_impl(repository_ctx):
     repository_ctx.symlink(Label("//third_party/node_addon_api:package.json"), "package.json")
     repository_ctx.symlink(Label("//third_party/node_addon_api:package-lock.json"), "package-lock.json")
     repository_ctx.symlink(Label("//third_party/node_addon_api:binding.gyp"), "binding.gyp")
-    cmd = ["npm", "install"]
+
+    bash = repository_ctx.which('bash')
+    cmd = [bash, "-c", "npm install"]
     result = repository_ctx.execute(cmd)
     if result.return_code != 0:
         fail("Failed to npm install.", result.stdout)
 
-    cmd = ["node-gyp", "configure", "--python", PYTHON2_BIN, "--devdir", "."]
+    cmd = [bash, "-c", "node-gyp configure --python %s --devdir ." % PYTHON2_BIN]
+
     result = repository_ctx.execute(cmd)
     if result.return_code != 0:
         fail("Failed to node-gyp configure.", result.stdout)
