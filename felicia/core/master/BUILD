@@ -45,16 +45,23 @@ fel_cc_library(
     name = "master_proxy",
     srcs = ["master_proxy.cc"],
     hdrs = ["master_proxy.h"],
+    copts = select({
+        "//felicia:win_no_grpc": ["/DFEL_WIN_NO_GRPC"],
+        "//conditions:default": [],
+    }),
     deps = [
         ":heart_beat_signaller",
         ":master_client_interface",
         ":topic_info_watcher",
         "//felicia/core/channel",
-        "//felicia/core/master/rpc:grpc_master_client",
-        "//felicia/core/master/rpc:grpc_util",
-        "//felicia/core/master/rpc:master_service_proto_cc",
         "//felicia/core/node:node_lifecycle",
-    ],
+    ] + select({
+        "//felicia:win_no_grpc": [],
+        "//conditions:default": [
+            "//felicia/core/master/rpc:grpc_master_client",
+            "//felicia/core/master/rpc:grpc_util",
+        ],
+    }),
 )
 
 fel_cc_library(

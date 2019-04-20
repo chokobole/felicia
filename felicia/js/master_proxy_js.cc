@@ -46,22 +46,34 @@ struct TopicData {
 
 Pool<TopicData, uint8_t>* g_message_queue;
 
+napi_env g_current_env;
+
 }  // namespace
+
+class ScopedEnvSetter {
+ public:
+  ScopedEnvSetter(::Napi::Env env) { g_current_env = napi_env(env); }
+
+  ~ScopedEnvSetter() { g_current_env = nullptr; }
+};
 
 // static
 void JsMasterProxy::Init(::Napi::Env env, ::Napi::Object exports) {
   ::Napi::HandleScope scope(env);
 
-  ::Napi::Function func = DefineClass(
-      env, "MasterProxy",
-      {
-          StaticMethod("setBackground", &JsMasterProxy::SetBackground),
-          StaticMethod("start", &JsMasterProxy::Start),
-          StaticMethod("stop", &JsMasterProxy::Stop),
-          StaticMethod("run", &JsMasterProxy::Run),
-          StaticMethod("requestRegisterDynamicSubscribingNode",
-                       &JsMasterProxy::RequestRegisterDynamicSubscribingNode),
-      });
+  ::Napi::Function func = DefineClass(env, "MasterProxy", {
+    StaticMethod("setBackground", &JsMasterProxy::SetBackground),
+#if defined(FEL_WIN_NO_GRPC)
+        StaticMethod("startGrpcMasterClient",
+                     &JsMasterProxy::StartGrpcMasterClient),
+        StaticMethod("isClientInfoSet", &JsMasterProxy::is_client_info_set),
+#endif
+        StaticMethod("start", &JsMasterProxy::Start),
+        StaticMethod("stop", &JsMasterProxy::Stop),
+        StaticMethod("run", &JsMasterProxy::Run),
+        StaticMethod("requestRegisterDynamicSubscribingNode",
+                     &JsMasterProxy::RequestRegisterDynamicSubscribingNode),
+  });
 
   constructor_ = ::Napi::Persistent(func);
   constructor_.SuppressDestruct();
@@ -72,6 +84,7 @@ void JsMasterProxy::Init(::Napi::Env env, ::Napi::Object exports) {
 JsMasterProxy::JsMasterProxy(const ::Napi::CallbackInfo& info)
     : ::Napi::ObjectWrap<JsMasterProxy>(info) {
   ::Napi::Env env = info.Env();
+  ScopedEnvSetter scoped_env_setter(env);
   ::Napi::HandleScope scope(env);
 
   ::Napi::TypeError::New(env, "Cann't instantiate MasterProxy.")
@@ -79,20 +92,43 @@ JsMasterProxy::JsMasterProxy(const ::Napi::CallbackInfo& info)
 }
 
 // static
+napi_env JsMasterProxy::CurrentEnv() { return g_current_env; }
+
+// static
 void JsMasterProxy::SetBackground(const ::Napi::CallbackInfo& info) {
   TypedCall(info, &MasterProxy::SetBackground);
 }
 
+#if defined(FEL_WIN_NO_GRPC)
+// static
+::Napi::Value JsMasterProxy::StartGrpcMasterClient(
+    const ::Napi::CallbackInfo& info) {
+  ::Napi::Env env = info.Env();
+  ScopedEnvSetter scoped_env_setter(env);
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  return TypedCall(info, &MasterProxy::StartGrpcMasterClient, &master_proxy);
+}
+
+// static
+::Napi::Value JsMasterProxy::is_client_info_set(
+    const ::Napi::CallbackInfo& info) {
+  ::Napi::Env env = info.Env();
+  ScopedEnvSetter scoped_env_setter(env);
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  return TypedCall(info, &MasterProxy::is_client_info_set, &master_proxy);
+}
+#endif
+
 // static
 ::Napi::Value JsMasterProxy::Start(const ::Napi::CallbackInfo& info) {
   ::Napi::Env env = info.Env();
+  ScopedEnvSetter scoped_env_setter(env);
   ::Napi::EscapableHandleScope scope(env);
 
   JS_CHECK_NUM_ARGS(info.Env(), 0);
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   Status s = master_proxy.Start();
-
   ::Napi::Object obj = JsStatus::New(env, s);
 
   return scope.Escape(napi_value(obj)).ToObject();
@@ -101,6 +137,7 @@ void JsMasterProxy::SetBackground(const ::Napi::CallbackInfo& info) {
 // static
 ::Napi::Value JsMasterProxy::Stop(const ::Napi::CallbackInfo& info) {
   ::Napi::Env env = info.Env();
+  ScopedEnvSetter scoped_env_setter(env);
   ::Napi::EscapableHandleScope scope(env);
 
   JS_CHECK_NUM_ARGS(info.Env(), 0);
@@ -121,7 +158,9 @@ void JsMasterProxy::SetBackground(const ::Napi::CallbackInfo& info) {
 
 // static
 void JsMasterProxy::Run(const ::Napi::CallbackInfo& info) {
-  JS_CHECK_NUM_ARGS(info.Env(), 0);
+  ::Napi::Env env = info.Env();
+  JS_CHECK_NUM_ARGS(env, 0);
+  ScopedEnvSetter scoped_env_setter(env);
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.Run();
@@ -174,6 +213,9 @@ void JsMasterProxy::OnSubscriptionError(const std::string& topic,
 // static
 void JsMasterProxy::RequestRegisterDynamicSubscribingNode(
     const ::Napi::CallbackInfo& info) {
+  ::Napi::Env env = info.Env();
+  ScopedEnvSetter scoped_env_setter(env);
+
   communication::Settings settings;
   if (info.Length() >= 3) {
     on_new_message_ = ::Napi::Persistent(info[0].As<::Napi::Function>());
@@ -191,6 +233,9 @@ void JsMasterProxy::RequestRegisterDynamicSubscribingNode(
   } else if (info.Length() >= 2) {
     on_new_message_ = ::Napi::Persistent(info[0].As<::Napi::Function>());
     on_subscription_error_ = ::Napi::Persistent(info[1].As<::Napi::Function>());
+  } else {
+    THROW_JS_WRONG_NUMBER_OF_ARGUMENTS(env);
+    return;
   }
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();

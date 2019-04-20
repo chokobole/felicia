@@ -1,4 +1,3 @@
-load("//bazel:felicia.bzl", "fel_additional_deps")
 load("//bazel:felicia_cc.bzl", "fel_cxxopts")
 
 def fel_pybind_py_library(

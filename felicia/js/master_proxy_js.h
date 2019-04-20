@@ -15,7 +15,14 @@ class JsMasterProxy : public ::Napi::ObjectWrap<JsMasterProxy> {
   static void Init(::Napi::Env env, ::Napi::Object exports);
   JsMasterProxy(const ::Napi::CallbackInfo& info);
 
+  static napi_env CurrentEnv();
+
   static void SetBackground(const ::Napi::CallbackInfo& info);
+
+#if defined(FEL_WIN_NO_GRPC)
+  static ::Napi::Value StartGrpcMasterClient(const ::Napi::CallbackInfo& info);
+  static ::Napi::Value is_client_info_set(const ::Napi::CallbackInfo& info);
+#endif
 
   static ::Napi::Value Start(const ::Napi::CallbackInfo& info);
   static ::Napi::Value Stop(const ::Napi::CallbackInfo& info);

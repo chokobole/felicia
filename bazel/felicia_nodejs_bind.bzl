@@ -4,6 +4,7 @@ def fel_nodejs_bind_node_library(
         name,
         srcs = [],
         copts = [],
+        linkopts = [],
         deps = []):
     libname = "%s.so" % name
 
@@ -11,6 +12,7 @@ def fel_nodejs_bind_node_library(
         name = libname,
         srcs = srcs,
         copts = fel_cxxopts() + copts,
+        linkopts = linkopts,
         linkshared = 1,
         linkstatic = 1,
         deps = ["@node_addon_api"] + deps,

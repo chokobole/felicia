@@ -69,6 +69,7 @@ fel_cc_binary(
     ],
     deps = fel_shared_library() + [
         ":grpc_call",
+        ":grpc_util",
         ":master_service_proto_cc",
         "//felicia/core:felicia_init",
         "//felicia/core/master",
@@ -80,7 +81,15 @@ fel_cc_library(
     srcs = ["grpc_util.cc"],
     hdrs = ["grpc_util.h"],
     deps = [
+        ":grpc_info",
         "//felicia:grpc++",
         "//felicia/core/lib",
     ],
+)
+
+fel_cc_library(
+    name = "grpc_info",
+    srcs = ["grpc_info.cc"],
+    hdrs = ["grpc_info.h"],
+    deps = ["//felicia/core/lib"],
 )

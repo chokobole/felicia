@@ -54,6 +54,7 @@ JsStatus::JsStatus(const ::Napi::CallbackInfo& info)
     status_ = Status(error_code, error_message);
   } else {
     THROW_JS_WRONG_NUMBER_OF_ARGUMENTS(env);
+    return;
   }
 }
 

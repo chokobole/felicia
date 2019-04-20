@@ -8,6 +8,7 @@ const CONFIG = {
       HEARTBEAT_INTERVAL: 30000,
       HTTP_PORT: 3000,
       WEBSOCKET_PORT: 3001,
+      FELICIA_ROOT: JSON.stringify(resolve('../..')),
     }),
   ],
 

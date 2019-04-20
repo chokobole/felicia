@@ -1,10 +1,6 @@
 #ifndef FELICIA_CORE_MASTER_RPC_GRPC_UTIL_H_
 #define FELICIA_CORE_MASTER_RPC_GRPC_UTIL_H_
 
-#include <stdint.h>
-
-#include <string>
-
 #include "grpcpp/grpcpp.h"
 #include "third_party/chromium/net/base/ip_address.h"
 
@@ -37,10 +33,6 @@ inline ::grpc::Status ToGrpcStatus(const Status& s) {
     }
   }
 }
-
-EXPORT ::net::IPAddress ResolveGRPCServiceIp();
-
-EXPORT uint16_t ResolveGRPCServicePort();
 
 EXPORT std::shared_ptr<::grpc::Channel> ConnectGRPCService();
 

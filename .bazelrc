@@ -17,5 +17,7 @@ build:apple_debug --compilation_mode dbg
 # with --compilation_mode=dbg instead of --config=apple_debug.
 build:apple_debug --copt="-DAPPLE_DEBUG"
 
+build:win_no_grpc --define win_no_grpc=true
+
 # Put user-specific options in .bazelrc.user
 try-import %workspace%/.bazelrc.user

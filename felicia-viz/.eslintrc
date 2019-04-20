@@ -14,6 +14,7 @@
   },
   "globals": {
     "document": "readonly",
+    "FELICIA_ROOT": "readonly",
     "HEARTBEAT_INTERVAL": "readonly",
     "HTTP_PORT": "readonly",
     "Image": "readonly",

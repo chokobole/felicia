@@ -25,15 +25,18 @@ def node_addon_api_copts():
         "BUILDING_NODE_EXTENSION"
     ]) + select({
         "//:windows": [
+            "/GS",
             "/DWIN32",
             "/D_CRT_SECURE_NO_DEPRECATE",
             "/D_CRT_NONSTDC_NO_DEPRECATE",
             "/GR-",
+            "/GF",
             "/D_HAS_EXCEPTIONS=0"
         ],
         "//conditions:default": [
             "-D_LARGEFILE_SOURCE",
             "-D_FILE_OFFSET_BITS=64",
+            "-fvisibility=hidden",
             "-fno-rtti",
             "-fno-exceptions"
         ],

@@ -43,6 +43,12 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
                        ::base::OnceClosure callback,
                        ::base::TimeDelta delay) override;
 
+#if defined(FEL_WIN_NO_GRPC)
+  Status StartGrpcMasterClient();
+
+  bool is_client_info_set() const;
+#endif
+
   // MasterClientInterface methods
   Status Start() override;
   Status Stop() override;
@@ -112,6 +118,10 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
   HeartBeatSignaller heart_beat_signaller_;
 
   std::vector<std::unique_ptr<NodeLifecycle>> nodes_;
+
+#if defined(FEL_WIN_NO_GRPC)
+  bool is_client_info_set_ = false;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(MasterProxy);
 };

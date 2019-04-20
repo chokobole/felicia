@@ -33,8 +33,7 @@ void TypeConvertor<::google::protobuf::Message>::ToNativeValue(
   for (int i = 0; i < descriptor->field_count(); ++i) {
     const ::google::protobuf::FieldDescriptor* field_desc =
         descriptor->field(i);
-    obj[field_desc->json_name()] =
-        ToJSValue(env, reflection, value, field_desc);
+    obj[field_desc->name()] = ToJSValue(env, reflection, value, field_desc);
   }
 
   return obj;

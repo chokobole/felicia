@@ -1,24 +1,17 @@
-#ifndef FELICIA_CORE_MASTER_RPC_GRPC_MASTER_CLIENT_H_
-#define FELICIA_CORE_MASTER_RPC_GRPC_MASTER_CLIENT_H_
+#ifndef FELICIA_JS_NODE_GRPC_GRPC_MASTER_CLIENT_H_
+#define FELICIA_JS_NODE_GRPC_GRPC_MASTER_CLIENT_H_
 
-#include <utility>
+#if defined(FEL_WIN_NO_GRPC)
 
-#include "grpcpp/grpcpp.h"
 #include "third_party/chromium/base/macros.h"
-#include "third_party/chromium/base/threading/thread.h"
 
-#include "felicia/core/lib/base/export.h"
-#include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/master_client_interface.h"
-#include "felicia/core/master/rpc/grpc_async_client_call.h"
-#include "felicia/core/master/rpc/grpc_client_cq_tag.h"
-#include "felicia/core/master/rpc/master_service.grpc.pb.h"
 
 namespace felicia {
 
-class EXPORT GrpcMasterClient : public MasterClientInterface {
+class GrpcMasterClient : public MasterClientInterface {
  public:
-  explicit GrpcMasterClient(std::shared_ptr<::grpc::Channel> channel);
+  GrpcMasterClient();
   ~GrpcMasterClient();
 
   Status Start() override;
@@ -42,16 +35,14 @@ class EXPORT GrpcMasterClient : public MasterClientInterface {
 
 #undef CLIENT_METHOD
 
-  void HandleRpcsLoop();
-
  private:
-  std::unique_ptr<grpc::MasterService::Stub> stub_;
-  ::grpc::CompletionQueue cq_;
-  std::vector<std::unique_ptr<::base::Thread>> threads_;
+  ::Napi::ObjectReference grpc_master_client_;
 
   DISALLOW_COPY_AND_ASSIGN(GrpcMasterClient);
 };
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MASTER_RPC_GRPC_MASTER_CLIENT_H_
+#endif  // defined(FEL_WIN_NO_GRPC)
+
+#endif  // FELICIA_JS_NODE_GRPC_GRPC_MASTER_CLIENT_H_

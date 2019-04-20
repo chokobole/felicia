@@ -139,6 +139,19 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
+# This is used when js bidning on windows, Becuase node.lib provided from
+# nodejs linked against its own zlib and openssl, on the other way grpc
+# linked agains its own zlib and boringssl. It makes linker give a
+# duplicated symbol error.
+config_setting(
+    name = "win_no_grpc",
+    constraint_values = ["@bazel_tools//platforms:windows"],
+    define_values = {
+        "win_no_grpc": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
 package_group(
     name = "internal",
     packages = [

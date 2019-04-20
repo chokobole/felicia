@@ -32,17 +32,18 @@ cc_library(
         "node_modules/node-addon-api/src/util.h",
         "node_modules/node-addon-api/src/util-inl.h",
     ],
-    copts = ["-fvisibility=hidden"] + node_addon_api_copts(),
+    copts = node_addon_api_copts(),
+    defines = ["EXTERNAL_NAPI"],
     includes = [
         "node_modules/node-addon-api",
         "node_modules/node-addon-api/src",
     ],
     visibility = ["//visibility:public"],
-    deps = [":node_addon"]
+    deps = [":node"],
 )
 
 cc_import(
-    name = "node_addon_win_lib",
+    name = "node_win_lib",
     interface_library = select({
         "//:x86_64": "%s/x64/node.lib" % (NODE_VERSION),
         "//conditions:default": "%s/ia32/node.lib" % (NODE_VERSION),
@@ -51,20 +52,21 @@ cc_import(
 )
 
 cc_library(
-    name = "node_addon",
+    name = "node",
     hdrs = glob(["%s/include/**/*.h" % (NODE_VERSION)]),
     includes = [
         "%s/include" % (NODE_VERSION),
         "%s/include/node" % (NODE_VERSION),
     ],
-    deps = select({
-        "//:windows": [":node_addon_win_lib"],
-        "//conditions:default": []
-    }),
     linkopts = select({
         "//:windows": [
-            "/DELAYLOAD:\"node.exe\""
+            "DelayImp.lib",
+            "/DELAYLOAD:\"node.exe\"",
         ],
-        "//conditions:default": []
-    })
+        "//conditions:default": [],
+    }),
+    deps = select({
+        "//:windows": [":node_win_lib"],
+        "//conditions:default": [],
+    }),
 )

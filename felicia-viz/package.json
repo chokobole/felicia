@@ -7,7 +7,7 @@
     "build": "lerna run build",
     "clean": "lerna clean",
     "lint": "eslint .",
-    "format": "prettier --write '**/*.js' '**/*.json' '!**/package-lock.json'"
+    "format": "prettier --write \"**/*.js\" \"**/*.json\" \"!**/package-lock.json\""
   },
   "repository": {
     "type": "git",

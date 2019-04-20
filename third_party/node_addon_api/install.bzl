@@ -6,7 +6,7 @@ def _npm_install_node_addon_api_impl(repository_ctx):
     repository_ctx.symlink(Label("//third_party/node_addon_api:package-lock.json"), "package-lock.json")
     repository_ctx.symlink(Label("//third_party/node_addon_api:binding.gyp"), "binding.gyp")
 
-    bash = repository_ctx.which('bash')
+    bash = repository_ctx.which("bash")
     cmd = [bash, "-c", "npm install"]
     result = repository_ctx.execute(cmd)
     if result.return_code != 0:

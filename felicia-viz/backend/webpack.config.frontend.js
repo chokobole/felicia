@@ -78,15 +78,18 @@ module.exports = env => {
     }
   );
 
+  // Should move under development once published
+  config.resolve.alias = {
+    '@felicia-viz/ui': resolve(rootPath, 'modules/ui/src'),
+  };
+
   if (env.production) {
     // production
   } else {
     // development
-    config.resolve.alias = {
+    config.resolve.alias = Object.assign(config.resolve.alias, {
       'react-dom': '@hot-loader/react-dom',
-      '@felicia-viz/config': resolve(rootPath, 'modules/config/src'),
-      '@felicia-viz/ui': resolve(rootPath, 'modules/ui/src'),
-    };
+    });
 
     config.plugins.unshift(
       new HtmlWebpackPlugin({

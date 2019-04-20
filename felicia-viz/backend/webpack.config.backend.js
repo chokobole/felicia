@@ -26,6 +26,7 @@ const CONFIG = {
 module.exports = env => {
   const config = Object.assign(commonConfig(env), CONFIG);
 
+  // Should move under development once published
   config.resolve.alias = {
     'felicia_js.node': resolve(ROOT_PATH, '../bazel-bin/felicia/js/felicia_js.node'),
   };

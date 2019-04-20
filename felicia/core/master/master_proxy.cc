@@ -6,8 +6,15 @@
 #include "felicia/core/channel/channel_factory.h"
 #include "felicia/core/lib/net/net_util.h"
 #include "felicia/core/lib/strings/str_util.h"
+
+#if defined(FEL_WIN_NO_GRPC)
+namespace felicia {
+extern std::unique_ptr<MasterClientInterface> NewGrpcMasterClient();
+}  // namespace felicia
+#else
 #include "felicia/core/master/rpc/grpc_master_client.h"
 #include "felicia/core/master/rpc/grpc_util.h"
+#endif
 
 namespace felicia {
 
@@ -70,11 +77,22 @@ bool MasterProxy::PostDelayedTask(const ::base::Location& from_here,
   }
 }
 
+#if defined(FEL_WIN_NO_GRPC)
+Status MasterProxy::StartGrpcMasterClient() {
+  master_client_interface_ = NewGrpcMasterClient();
+  return master_client_interface_->Start();
+}
+
+bool MasterProxy::is_client_info_set() const { return is_client_info_set_; }
+#endif
+
 Status MasterProxy::Start() {
+#if !defined(FEL_WIN_NO_GRPC)
   auto channel = ConnectGRPCService();
   master_client_interface_ = std::make_unique<GrpcMasterClient>(channel);
   Status s = master_client_interface_->Start();
   if (!s.ok()) return s;
+#endif
 
   if (g_on_background) {
     thread_->StartWithOptions(
@@ -153,6 +171,13 @@ void MasterProxy::RegisterClient() {
   *request->mutable_client_info() = client_info_;
   RegisterClientResponse* response = new RegisterClientResponse();
 
+#if defined(FEL_WIN_NO_GRPC)
+  master_client_interface_->RegisterClientAsync(
+      request, response,
+      ::base::BindOnce(&MasterProxy::OnRegisterClient, ::base::Unretained(this),
+                       nullptr, ::base::Owned(request),
+                       ::base::Owned(response)));
+#else
   ::base::WaitableEvent* event = new ::base::WaitableEvent;
   master_client_interface_->RegisterClientAsync(
       request, response,
@@ -160,14 +185,24 @@ void MasterProxy::RegisterClient() {
                        event, ::base::Owned(request), ::base::Owned(response)));
   event->Wait();
   delete event;
+#endif
 }
 
 void MasterProxy::OnRegisterClient(::base::WaitableEvent* event,
                                    RegisterClientRequest* request,
                                    RegisterClientResponse* response,
                                    const Status& s) {
-  client_info_.set_id(response->id());
-  event->Signal();
+  if (s.ok()) {
+    client_info_.set_id(response->id());
+#if defined(FEL_WIN_NO_GRPC)
+    DCHECK(!event);
+    is_client_info_set_ = true;
+#else
+    event->Signal();
+#endif
+  } else {
+    LOG(FATAL) << s.error_message();
+  }
 }
 
 void MasterProxy::OnRegisterNodeAsync(std::unique_ptr<NodeLifecycle> node,

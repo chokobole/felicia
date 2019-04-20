@@ -5,6 +5,7 @@
 #include "third_party/chromium/base/strings/stringprintf.h"
 #include "third_party/chromium/base/threading/thread.h"
 
+#include "felicia/core/master/rpc/grpc_info.h"
 #include "felicia/core/master/rpc/grpc_util.h"
 
 namespace felicia {
