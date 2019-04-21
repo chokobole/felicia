@@ -1,35 +1,37 @@
 # Message Communication
 
-In this example, you can learn how to declare custom message, and communicate.
+A 'Hello World' example of ***C++*** message communication programming.
 
-Here you need 3 terminals to try.
+In this example, you will learn how to make your own custom messages and initiate communication between nodes.
+
+Here you need three terminals, each for running grpc main server, publisher and subscriber.
 
 Before beginning, let's build the binary.
 
 ```bash
 bazel build //felicia/core/master/rpc:grpc_server_main
-bazel build //felicia/examples/learn/message_communication/cc:node_creator
+bazel build //felicia/examples/learn/message_communication/protobuf/cc:node_creator
 ```
 
-Done. now let's begin! On one shell, let's run the server!
+Done. Now let's begin and run the server!
 
 ```bash
 bazel-bin/felicia/core/master/rpc/grpc_server_main
 ```
 
-On 2nd shell, run the publisher. For that, you have to pass `-t`, which means topic name to publish, and `-p` to indicate we want to make publisher. You can also pass `--name` to the command line, then server will try to generate a node with the name unless there is an already registered node with the name.
+On the second and third shell prompts, execute the ***publisher*** and ***subscriber***. In order to run an example node in publisher mode, you need to pass `-t`, a topic name to publish, with an additional argument `-p` to indicate we want to make it a publisher. You can also pass `--name` argument to the command. Then, server will try to generate a node with the name unless there is an already registered node with the name.
 
+Running a node_creator in ***publisher*** mode:
 ```bash
-bazel-bin/felicia/examples/learn/message_communication/cc/node_creator -p -t message
+bazel-bin/felicia/examples/learn/message_communication/protobuf/cc/node_creator -p -t message
 ```
 
-Lastly run the subscriber. Mostly same with the above besides you have to remove `-p` flag.
-
+Running a node creator in ***subscriber*** mode (without `-p` option):
 ```bash
-bazel-bin/felicia/examples/learn/message_communication/cc/node_creator -t message
+bazel-bin/felicia/examples/learn/message_communication/protobuf/cc/node_creator -t message
 ```
 
-And Now look into the [node_creator.cc](node_creator.cc).
+For further details, take a look at [node_creator.cc](node_creator.cc).
 
 At the very first time, you have to start `MasterProxy`.
 
