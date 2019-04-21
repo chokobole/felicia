@@ -1,5 +1,5 @@
-#ifndef FELICIA_JS_NODE_GRPC_GRPC_MASTER_CLIENT_H_
-#define FELICIA_JS_NODE_GRPC_GRPC_MASTER_CLIENT_H_
+#ifndef FELICIA_JS_GRPC_MASTER_CLIENT_H_
+#define FELICIA_JS_GRPC_MASTER_CLIENT_H_
 
 #if defined(FEL_WIN_NO_GRPC)
 
@@ -45,4 +45,4 @@ class GrpcMasterClient : public MasterClientInterface {
 
 #endif  // defined(FEL_WIN_NO_GRPC)
 
-#endif  // FELICIA_JS_NODE_GRPC_GRPC_MASTER_CLIENT_H_
+#endif  // FELICIA_JS_GRPC_MASTER_CLIENT_H_
