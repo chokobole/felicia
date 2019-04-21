@@ -79,6 +79,7 @@ Status GrpcMasterClient::Stop() { return Status::OK(); }
     ::Napi::Function func =                                                  \
         grpc_master_client_.Get(#method).As<::Napi::Function>();             \
                                                                              \
+    /* TODO(chokobole): Remove this once c++ support lambda move capture. */ \
     StatusOnceCallbackHolder* callback_holder =                              \
         new StatusOnceCallbackHolder(std::move(done));                       \
                                                                              \
@@ -94,6 +95,7 @@ Status GrpcMasterClient::Stop() { return Status::OK(); }
            Napi::Env env = info.Env();                                       \
            ::Napi::HandleScope handle_scope(env);                            \
            if (info.Length() != 2) {                                         \
+             delete callback_holder;                                         \
              THROW_JS_WRONG_NUMBER_OF_ARGUMENTS(env);                        \
              return;                                                         \
            }                                                                 \
