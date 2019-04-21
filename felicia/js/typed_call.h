@@ -5,7 +5,7 @@
 #include "napi.h"
 
 //
-// You can check how to use from 'typed_call_test.cc'
+// You can check how to use from 'test/typed_call_test.cc'
 //
 namespace felicia {
 
