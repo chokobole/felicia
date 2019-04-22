@@ -13,11 +13,11 @@ On linux and mac, simply you can do like below!
 ./installers/install_bazel.sh
 ```
 
-Also we need python and numpy. Currently we tested on python3. Our suggestion is using `pipenv`.
+Also we need python and some dependencies such as `numpy`. Currently we tested on python3. Our suggestion is using `pipenv`.
 
 ```bash
 pipenv --three
-pip install numpy
+./installers/install_python_deps.sh
 ```
 
 Or you can set environment variable `PYTHON_BIN_PATH` to `/path/to/python/`.
