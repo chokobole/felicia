@@ -36,5 +36,4 @@ ENV PATH="${HOME}/.nvm/versions/node/${NODE_VERSION}/bin:${PATH}"
 COPY installers /tmp/installers
 RUN cd /tmp/ && bash ./installers/install_bazel.sh
 RUN cd /tmp/ && bash ./installers/install_nodejs.sh
-RUN cd /tmp/ && bash ./installers/install_nodejs_deps.sh
 RUN cd /tmp/ && bash ./installers/install_python_deps.sh

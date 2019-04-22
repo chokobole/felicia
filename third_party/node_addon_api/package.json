@@ -3,6 +3,7 @@
   "description": "node-addon-api for felicia_js",
   "gypfile": false,
   "dependencies": {
-    "node-addon-api": "*"
+    "node-addon-api": "*",
+    "node-gyp": "^3.8.0"
   }
 }

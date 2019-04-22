@@ -12,7 +12,7 @@ def _npm_install_node_addon_api_impl(repository_ctx):
     if result.return_code != 0:
         fail("Failed to npm install.", result.stdout)
 
-    cmd = [bash, "-c", "node-gyp configure --python %s --devdir ." % PYTHON2_BIN]
+    cmd = [bash, "-c", "npx node-gyp configure --python %s --devdir ." % PYTHON2_BIN]
 
     result = repository_ctx.execute(cmd)
     if result.return_code != 0:
