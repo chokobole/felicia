@@ -49,7 +49,7 @@ class SimplePublishigNode(NodeLifecycle):
                 self.repeating_publish, fel.from_seconds(1))
 
     def on_publish(self, status):
-        print("SimplePublishingNode.on_request_publish()")
+        print("SimplePublishingNode.on_publish()")
         fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
     def generate_message(self):
@@ -61,7 +61,6 @@ class SimplePublishigNode(NodeLifecycle):
         return message_spec
 
     def request_unpublish(self):
-        print("SimplePublishingNode.request_unpublish()")
         self.publisher.request_unpublish(self.node_info, self.topic,
                                          self.on_request_unpublish)
 

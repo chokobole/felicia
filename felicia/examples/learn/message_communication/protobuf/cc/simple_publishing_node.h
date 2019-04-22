@@ -90,7 +90,6 @@ class SimplePublishingNode : public NodeLifecycle {
   }
 
   void RequestUnpublish() {
-    std::cout << "SimplePublishingNode::RequestUnpublish()" << std::endl;
     publisher_.RequestUnpublish(
         node_info_, topic_,
         ::base::BindOnce(&SimplePublishingNode::OnRequestUnpublish,
