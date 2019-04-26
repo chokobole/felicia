@@ -15,6 +15,7 @@ fel_cc_library(
     hdrs = [
         "communication_py_helper.h",
     ],
+    is_external = True,
     deps = [
         "//felicia/core:felicia_init",
         "//felicia/core/communication",

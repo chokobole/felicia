@@ -9,5 +9,6 @@ fel_cc_library(
     name = "felicia_init",
     srcs = ["felicia_init.cc"],
     hdrs = ["felicia_init.h"],
+    is_external = True,
     deps = ["//felicia/core/lib"],
 )

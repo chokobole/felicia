@@ -6,6 +6,7 @@ fel_cc_library(
     name = "flag_py",
     srcs = ["flag_py.cc"],
     hdrs = ["flag_py.h"],
+    is_external = True,
     deps = [
         "//felicia/core/util:command_line_interface",
         "@pybind11",

@@ -8,16 +8,16 @@ load(
 package(default_visibility = ["//felicia:internal"])
 
 fel_cc_library(
-    name = "client",
-    srcs = ["client.cc"],
-    hdrs = ["client.h"],
-    deps = ["//felicia/core/node"],
-)
-
-fel_cc_library(
-    name = "heart_beat_listener",
-    srcs = ["heart_beat_listener.cc"],
-    hdrs = ["heart_beat_listener.h"],
+    name = "heart_beat",
+    srcs = [
+        "heart_beat_listener.cc",
+        "heart_beat_signaller.cc",
+    ],
+    hdrs = [
+        "heart_beat_listener.h",
+        "heart_beat_signaller.h",
+    ],
+    is_external = True,
     deps = [
         "//felicia/core/channel",
         "//felicia/core/lib",
@@ -25,16 +25,10 @@ fel_cc_library(
 )
 
 fel_cc_library(
-    name = "heart_beat_signaller",
-    srcs = ["heart_beat_signaller.cc"],
-    hdrs = ["heart_beat_signaller.h"],
-    deps = [":heart_beat_listener"],
-)
-
-fel_cc_library(
     name = "master_client_interface",
     srcs = ["master_client_interface.cc"],
     hdrs = ["master_client_interface.h"],
+    is_external = True,
     deps = [
         "//felicia/core/lib",
         "//felicia/core/protobuf:protos_all_cc",
@@ -43,16 +37,22 @@ fel_cc_library(
 
 fel_cc_library(
     name = "master_proxy",
-    srcs = ["master_proxy.cc"],
-    hdrs = ["master_proxy.h"],
+    srcs = [
+        "master_proxy.cc",
+        "topic_info_watcher.cc",
+        "topic_info_watcher.h",
+    ],
+    hdrs = [
+        "master_proxy.h",
+    ],
     copts = select({
         "//felicia:win_no_grpc": ["/DFEL_WIN_NO_GRPC"],
         "//conditions:default": [],
     }),
+    is_external = True,
     deps = [
-        ":heart_beat_signaller",
+        ":heart_beat",
         ":master_client_interface",
-        ":topic_info_watcher",
         "//felicia/core/channel",
         "//felicia/core/node:node_lifecycle",
     ] + select({
@@ -67,26 +67,19 @@ fel_cc_library(
 fel_cc_library(
     name = "master",
     srcs = [
+        "client.cc",
+        "client.h",
         "master.cc",
     ],
     hdrs = [
         "errors.h",
         "master.h",
     ],
+    is_external = True,
     deps = [
-        ":client",
-        ":heart_beat_listener",
-    ],
-)
-
-fel_cc_library(
-    name = "topic_info_watcher",
-    srcs = ["topic_info_watcher.cc"],
-    hdrs = ["topic_info_watcher.h"],
-    deps = [
-        "//felicia/core/channel",
-        "//felicia/core/lib",
-        "//felicia/core/protobuf:protos_all_cc",
+        ":heart_beat",
+        "//felicia/core/node",
+        "//felicia/core/util",
     ],
 )
 

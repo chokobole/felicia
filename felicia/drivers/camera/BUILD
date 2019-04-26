@@ -51,6 +51,7 @@ fel_cc_library(
         "win/dshow_camera_errors.h",
         "win/dshow_camera.h",
     ]),
+    is_external = True,
     deps = [
         "//felicia/core/lib",
         "@libyuv",

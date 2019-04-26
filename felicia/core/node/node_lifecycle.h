@@ -3,14 +3,15 @@
 
 #include "third_party/chromium/base/macros.h"
 
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/protobuf/master_data.pb.h"
 
 namespace felicia {
 
-class NodeLifecycle {
+class EXPORT NodeLifecycle {
  public:
-  NodeLifecycle() = default;
+  constexpr NodeLifecycle() = default;
 
   // Life cycle functions
   // It is called before created, each node has to initialize.

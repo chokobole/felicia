@@ -23,6 +23,7 @@ fel_cc_library(
         "command_line_interface/table_writer.h",
         "command_line_interface/text_style.h",
     ],
+    is_external = True,
     deps = ["//felicia/core/lib"],
 )
 
@@ -31,6 +32,7 @@ fel_cc_library(
     hdrs = [
         "uuid/generator.h",
     ],
+    is_external = True,
     deps = ["//felicia/core/lib"],
 )
 

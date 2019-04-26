@@ -16,7 +16,7 @@ def fel_pybind_py_library(
     native.cc_binary(
         name = libname,
         srcs = cc_srcs,
-        copts = fel_cxxopts() + copts,
+        copts = fel_cxxopts(is_external = True) + copts,
         linkshared = 1,
         linkstatic = 1,
         deps = ["@pybind11"] + cc_deps,

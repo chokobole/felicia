@@ -7,10 +7,6 @@ load(
     "if_windows",
 )
 load(
-    "//bazel:felicia_cc.bzl",
-    "fel_cc_shared_library",
-)
-load(
     "//third_party/chromium:chromium.bzl",
     "chromium_cc_library",
 )

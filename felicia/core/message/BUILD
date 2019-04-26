@@ -19,6 +19,7 @@ fel_cc_library(
         "protobuf_loader.h",
         "protobuf_util.h",
     ],
+    is_external = True,
     deps = [
         "//felicia/core/lib",
         "//felicia/core/util:command_line_interface",

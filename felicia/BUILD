@@ -178,11 +178,11 @@ fel_cc_library(
 fel_cc_shared_library(
     name = "felicia",
     srcs = ["empty.cc"],
-    copts = fel_cxxopts(is_external = True),
     third_party_deps = fel_additional_deps(),
     deps = [
         "//felicia/core:felicia_init",
         "//felicia/core/communication",
+        "//felicia/core/lib",
         "//felicia/core/master",
         "//felicia/core/master:master_proxy",
         "//felicia/core/node:node_lifecycle",

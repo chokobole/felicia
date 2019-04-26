@@ -27,7 +27,7 @@ def _fel_win_copts(is_external = False):
 def fel_copts(is_external = False):
     """ C options for felicia projet. """
     return include(["third_party/chromium"]) + if_windows(_fel_win_copts(is_external)) + select({
-        "//felicia:windows": [],
+        "//felicia:windows": ["-Wno-builtin-macro-redefined", "-Wno-macro-redefined"],
         "//conditions:default": ["-Werror=switch"],
     })
 
@@ -151,6 +151,7 @@ def fel_c_library(
         hdrs = [],
         deps = [],
         copts = [],
+        is_external = False,
         use_fel_copt = True,
         **kwargs):
     native.cc_library(
@@ -158,7 +159,7 @@ def fel_c_library(
         srcs = srcs,
         hdrs = hdrs,
         deps = deps,
-        copts = copts + (fel_copts() if use_fel_copt else []),
+        copts = copts + (fel_copts(is_external = is_external) if use_fel_copt else []),
         **kwargs
     )
 
@@ -175,6 +176,7 @@ def fel_cc_library(
         hdrs = [],
         deps = [],
         copts = [],
+        is_external = False,
         use_fel_cxxopt = True,
         **kwargs):
     native.cc_library(
@@ -182,7 +184,7 @@ def fel_cc_library(
         srcs = srcs,
         hdrs = hdrs,
         deps = deps,
-        copts = copts + (fel_cxxopts() if use_fel_cxxopt else []),
+        copts = copts + (fel_cxxopts(is_external = is_external) if use_fel_cxxopt else []),
         **kwargs
     )
 
@@ -199,6 +201,7 @@ def fel_objc_library(
         hdrs = [],
         deps = [],
         copts = [],
+        is_external = False,
         use_fel_cxxopt = True,
         **kwargs):
     native.objc_library(
@@ -206,7 +209,7 @@ def fel_objc_library(
         srcs = srcs,
         hdrs = hdrs,
         deps = deps,
-        copts = copts + (fel_cxxopts() if use_fel_cxxopt else []),
+        copts = copts + (fel_cxxopts(is_external = is_external) if use_fel_cxxopt else []),
         **kwargs
     )
 
@@ -285,7 +288,7 @@ def fel_cc_shared_library(
         name = libname,
         srcs = srcs,
         deps = deps,
-        copts = copts + (fel_cxxopts() if use_fel_cxxopt else []),
+        copts = copts + (fel_cxxopts(is_external = True) if use_fel_cxxopt else []),
         linkshared = 1,
         linkstatic = 1,
         data = data,

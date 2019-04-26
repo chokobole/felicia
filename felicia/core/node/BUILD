@@ -16,6 +16,7 @@ fel_cc_library(
 fel_cc_library(
     name = "node_lifecycle",
     hdrs = ["node_lifecycle.h"],
+    is_external = True,
     deps = [
         "//felicia/core/lib",
         "//felicia/core/protobuf:protos_all_cc",
