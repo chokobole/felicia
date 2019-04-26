@@ -7,6 +7,8 @@ fel_cc_library(
     srcs = [
         "dynamic_protobuf_message.cc",
         "header.cc",
+        "message_io.cc",
+        "message_io_error_list.h",
         "protobuf_loader.cc",
         "protobuf_util.cc",
     ],

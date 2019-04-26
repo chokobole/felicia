@@ -9,6 +9,14 @@
 
 namespace felicia {
 
+enum MessageIoError {
+#define MESSAGE_IO_ERR(ERR, _) ERR,
+#include "felicia/core/message/message_io_error_list.h"
+#undef MESSAGE_IO_ERR
+};
+
+std::string ToString(MessageIoError mesasge_io_error);
+
 template <typename T, typename SFINAE = void>
 class MessageIO;
 
@@ -17,36 +25,45 @@ class MessageIO<T, std::enable_if_t<
                        std::is_base_of<::google::protobuf::Message, T>::value ||
                        std::is_same<DynamicProtobufMessage, T>::value>> {
  public:
-  static bool SerializeToBuffer(const T* proto, char* buffer, size_t* size) {
+  static MessageIoError SerializeToBuffer(const T* proto,
+                                          std::vector<char>& buffer,
+                                          size_t* size) {
     std::string text;
-    if (!proto->SerializeToString(&text)) return false;
+    if (!proto->SerializeToString(&text))
+      return MessageIoError::ERR_FAILED_TO_SERIALIZE;
+    if (buffer.size() < text.length())
+      return MessageIoError::ERR_NOT_ENOUGH_BUFFER;
 
     Header header;
     header.set_size(text.length());
-    memcpy(buffer, &header, sizeof(Header));
-    memcpy(buffer + sizeof(Header), text.data(), text.length());
+    memcpy(buffer.data(), &header, sizeof(Header));
+    memcpy(buffer.data() + sizeof(Header), text.data(), text.length());
 
     *size = sizeof(Header) + text.length();
 
-    return true;
+    return MessageIoError::OK;
   }
 
-  static bool ParseHeaderFromBuffer(char* buffer, Header* header) {
-    if (!Header::FromBytes(buffer, header)) return false;
+  static MessageIoError ParseHeaderFromBuffer(char* buffer, Header* header) {
+    if (!Header::FromBytes(buffer, header))
+      return MessageIoError::ERR_CORRUPTED_HEADER;
 
-    return true;
+    return MessageIoError::OK;
   }
 
-  static bool ParseMessageFromBuffer(char* buffer, const Header& header,
-                                     bool buffer_include_header, T* proto) {
+  static MessageIoError ParseMessageFromBuffer(char* buffer,
+                                               const Header& header,
+                                               bool buffer_include_header,
+                                               T* proto) {
     std::string text;
     char* start = buffer;
     if (buffer_include_header) {
       start += sizeof(Header);
     }
-    if (!proto->ParseFromArray(start, header.size())) return false;
+    if (!proto->ParseFromArray(start, header.size()))
+      return MessageIoError::ERR_FAILED_TO_PARSE;
 
-    return true;
+    return MessageIoError::OK;
   }
 };
 

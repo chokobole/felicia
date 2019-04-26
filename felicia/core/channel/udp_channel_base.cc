@@ -31,11 +31,6 @@ void UDPChannelBase::OnReadAsync(
 }
 
 void UDPChannelBase::OnRead(int result) {
-  if (result == ::net::ERR_MSG_TOO_BIG) {
-    LOG(ERROR) << "Msg too big";
-    CallbackWithStatus(std::move(read_callback_), 0);
-    return;
-  }
   CallbackWithStatus(std::move(read_callback_), result);
 }
 

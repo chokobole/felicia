@@ -83,15 +83,16 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
   }
 
   size_t to_send;
-  if (MessageIO<MessageTy>::SerializeToBuffer(&message, send_buffer_.data(),
-                                              &to_send)) {
+  MessageIoError err =
+      MessageIO<MessageTy>::SerializeToBuffer(&message, send_buffer_, &to_send);
+  if (err == MessageIoError::OK) {
     DLOG(INFO) << "SendMessage() write bytes: " << to_send;
     this->send_callback_ = std::move(callback);
     channel_->Write(send_buffer_.data(), to_send,
                     ::base::BindOnce(&Channel<MessageTy>::OnSendMessage,
                                      ::base::Unretained(this)));
   } else {
-    std::move(callback).Run(errors::InvalidArgument("Failed to serialize"));
+    std::move(callback).Run(errors::Unavailable(ToString(err)));
   }
 }
 
@@ -134,10 +135,10 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
     return;
   }
 
-  if (!MessageIO<MessageTy>::ParseHeaderFromBuffer(receive_buffer_.data(),
-                                                   &header_)) {
-    std::move(this->receive_callback_)
-        .Run(errors::DataLoss("Failed to parse header from buffer."));
+  MessageIoError err = MessageIO<MessageTy>::ParseHeaderFromBuffer(
+      receive_buffer_.data(), &header_);
+  if (err != MessageIoError::OK) {
+    std::move(this->receive_callback_).Run(errors::DataLoss(ToString(err)));
     return;
   }
 
@@ -150,8 +151,9 @@ template <typename MessageTy>
 void Channel<MessageTy>::OnReceiveMessage(const Status& s) {
   DCHECK(channel_->IsTCPChannelBase());
   if (s.ok()) {
-    if (!MessageIO<MessageTy>::ParseMessageFromBuffer(
-            receive_buffer_.data(), header_, false, this->message_)) {
+    MessageIoError err = MessageIO<MessageTy>::ParseMessageFromBuffer(
+        receive_buffer_.data(), header_, false, this->message_);
+    if (err != MessageIoError::OK) {
       std::move(this->receive_callback_)
           .Run(errors::DataLoss("Failed to parse message from buffer."));
       return;
@@ -169,15 +171,16 @@ void Channel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
     return;
   }
 
-  if (!MessageIO<MessageTy>::ParseHeaderFromBuffer(receive_buffer_.data(),
-                                                   &header_)) {
-    std::move(this->receive_callback_)
-        .Run(errors::DataLoss("Failed to parse header from buffer."));
+  MessageIoError err = MessageIO<MessageTy>::ParseHeaderFromBuffer(
+      receive_buffer_.data(), &header_);
+  if (err != MessageIoError::OK) {
+    std::move(this->receive_callback_).Run(errors::DataLoss(ToString(err)));
     return;
   }
 
-  if (!MessageIO<MessageTy>::ParseMessageFromBuffer(
-          receive_buffer_.data(), header_, true, this->message_)) {
+  err = MessageIO<MessageTy>::ParseMessageFromBuffer(
+      receive_buffer_.data(), header_, true, this->message_);
+  if (err != MessageIoError::OK) {
     std::move(this->receive_callback_)
         .Run(errors::DataLoss("Failed to parse message from buffer."));
     return;
