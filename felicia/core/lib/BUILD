@@ -20,6 +20,7 @@ fel_cc_library(
         "error/statusor.cc",
         "net/net_util.cc",
         "strings/str_util.cc",
+        "unit/bytes.cc",
     ],
     hdrs = [
         "base/choices.h",
@@ -35,6 +36,7 @@ fel_cc_library(
         "net/net_util.h",
         "strings/str_util.h",
         "unit/geometry/size.h",
+        "unit/bytes.h",
     ] + [":felicia_env"],
     deps = [
         "//felicia/core/protobuf:protos_all_cc",
@@ -51,6 +53,7 @@ fel_cc_test(
         "base/choices_test.cc",
         "base/range_test.cc",
         "containers/pool_test.cc",
+        "unit/bytes_test.cc",
     ],
     deps = fel_shared_library() + [
         "@com_google_googletest//:gtest_main",
