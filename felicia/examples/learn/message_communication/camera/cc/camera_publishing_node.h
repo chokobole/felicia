@@ -50,6 +50,13 @@ class CameraPublishingNode : public NodeLifecycle {
   void OnRequestPublish(const Status& s) {
     std::cout << "CameraPublishingNode::OnRequestPublish()" << std::endl;
     LOG_IF(ERROR, !s.ok()) << s.error_message();
+    MasterProxy& master_proxy = MasterProxy::GetInstance();
+    master_proxy.PostTask(FROM_HERE,
+                          ::base::BindOnce(&CameraPublishingNode::StartCamera,
+                                           ::base::Unretained(this)));
+  }
+
+  void StartCamera() {
     camera_->Start(::base::BindRepeating(&CameraPublishingNode::OnCameraFrame,
                                          ::base::Unretained(this)),
                    ::base::BindRepeating(&CameraPublishingNode::OnCameraError,
@@ -58,7 +65,7 @@ class CameraPublishingNode : public NodeLifecycle {
 
   void OnCameraFrame(CameraFrame camera_frame) {
     LOG(INFO) << "CameraPublishingNode::OnCameraFrame" << std::endl;
-    if (last_timestamp_.is_null()) {
+    if (last_timestamp_.is_zero()) {
       last_timestamp_ = camera_frame.timestamp();
     } else {
       if (camera_frame.timestamp() - last_timestamp_ <
@@ -71,7 +78,7 @@ class CameraPublishingNode : public NodeLifecycle {
 
     CameraMessage message;
     message.set_data(camera_frame.data_ptr(), camera_frame.size());
-    message.set_timestamp(camera_frame.timestamp().ToDoubleT());
+    message.set_timestamp(camera_frame.timestamp().InSecondsF());
     publisher_.Publish(std::move(message),
                        ::base::BindOnce(&CameraPublishingNode::OnPublish,
                                         ::base::Unretained(this)));
@@ -95,7 +102,7 @@ class CameraPublishingNode : public NodeLifecycle {
   std::string device_id_;
   Publisher<CameraMessage> publisher_;
   std::unique_ptr<CameraInterface> camera_;
-  ::base::Time last_timestamp_;
+  ::base::TimeDelta last_timestamp_;
 };
 
 }  // namespace felicia

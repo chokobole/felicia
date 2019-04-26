@@ -30,13 +30,13 @@ class EXPORT CameraFrame {
   size_t size() const;
   CameraFormat::PixelFormat pixel_format() const;
 
-  void set_timestamp(::base::Time time);
-  ::base::Time timestamp() const;
+  void set_timestamp(::base::TimeDelta time);
+  ::base::TimeDelta timestamp() const;
 
  private:
   std::unique_ptr<uint8_t> data_;
   CameraFormat camera_format_;
-  ::base::Time timestamp_;
+  ::base::TimeDelta timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(CameraFrame);
 };

@@ -6,6 +6,9 @@
 #if defined(OS_LINUX)
 #include "felicia/drivers/camera/linux/v4l2_camera.h"
 using Camera = felicia::V4l2Camera;
+#elif defined(OS_WIN)
+#include "felicia/drivers/camera/win/dshow_camera.h"
+using Camera = felicia::DshowCamera;
 #else
 
 namespace felicia {
@@ -22,7 +25,7 @@ class FakeCamera : public CameraInterface {
   Status Close() override { return Status::OK(); }
 
   StatusOr<CameraFormat> GetFormat() override { return CameraFormat(); }
-  Status SetFormat(CameraFormat format) override { return Status::OK(); }
+  Status SetFormat(const CameraFormat& format) override { return Status::OK(); }
 };
 
 using Camera = FakeCamera;

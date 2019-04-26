@@ -19,7 +19,7 @@ class EXPORT CameraInterface {
   virtual Status Close() = 0;
 
   virtual StatusOr<CameraFormat> GetFormat() = 0;
-  virtual Status SetFormat(CameraFormat format) = 0;
+  virtual Status SetFormat(const CameraFormat& format) = 0;
 
  protected:
   CameraFrameCallback camera_frame_callback_;

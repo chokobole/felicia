@@ -1,3 +1,8 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+// Modified by Wonyong Kim(chokobole33@gmail.com)
+
 #include "felicia/drivers/camera/linux/v4l2_camera.h"
 
 #include <linux/version.h>
@@ -66,7 +71,7 @@ Status V4l2Camera::Init() {
     return status_or.status();
   }
   camera_format_ = status_or.ValueOrDie();
-  LOG(INFO) << "Default Format: " << camera_format_.ToString();
+  DLOG(INFO) << "Default Format: " << camera_format_.ToString();
 
   return InitMmap();
 }
@@ -118,7 +123,7 @@ StatusOr<CameraFormat> V4l2Camera::GetFormat() {
       CameraFormat::FromV4l2PixelFormat(format.fmt.pix.pixelformat));
 }
 
-Status V4l2Camera::SetFormat(CameraFormat camera_format) {
+Status V4l2Camera::SetFormat(const CameraFormat& camera_format) {
   struct v4l2_format format;
   FillV4L2Format(&format, camera_format.width(), camera_format.height(),
                  camera_format.ToV4l2PixelFormat());
@@ -196,8 +201,10 @@ void V4l2Camera::DoTakePhoto() {
     ::base::Optional<CameraFrame> argb_frame =
         ConvertToARGB(buffers_[buffer.index], camera_format_);
     if (argb_frame.has_value()) {
-      argb_frame.value().set_timestamp(
-          ::base::Time::FromTimeVal(buffer.timestamp));
+      const base::TimeTicks now = base::TimeTicks::Now();
+      if (first_ref_time_.is_null()) first_ref_time_ = now;
+      const base::TimeDelta timestamp = now - first_ref_time_;
+      argb_frame.value().set_timestamp(timestamp);
       camera_frame_callback_.Run(std::move(argb_frame.value()));
     } else {
       status_callback_.Run(errors::FailedToConvertToARGB());

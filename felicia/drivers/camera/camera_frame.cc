@@ -38,11 +38,11 @@ CameraFormat::PixelFormat CameraFrame::pixel_format() const {
   return camera_format_.pixel_format();
 }
 
-void CameraFrame::set_timestamp(::base::Time timestamp) {
+void CameraFrame::set_timestamp(::base::TimeDelta timestamp) {
   timestamp_ = timestamp;
 }
 
-::base::Time CameraFrame::timestamp() const { return timestamp_; }
+::base::TimeDelta CameraFrame::timestamp() const { return timestamp_; }
 
 ::base::Optional<CameraFrame> ConvertToARGB(CameraBuffer camera_buffer,
                                             CameraFormat camera_format) {

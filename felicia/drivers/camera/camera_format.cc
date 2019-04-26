@@ -15,9 +15,24 @@ CameraFormat::PixelFormat CameraFormat::pixel_format() const {
   return pixel_format_;
 }
 
+void CameraFormat::set_pixel_format(PixelFormat pixel_format) {
+  pixel_format_ = pixel_format;
+}
+
 int CameraFormat::width() const { return size_.width(); }
 
 int CameraFormat::height() const { return size_.height(); }
+
+void CameraFormat::SetSize(int width, int height) {
+  size_.set_width(width);
+  size_.set_height(height);
+}
+
+float CameraFormat::frame_rate() const { return frame_rate_; }
+
+void CameraFormat::set_frame_rate(float frame_rate) {
+  frame_rate_ = frame_rate;
+}
 
 // static
 std::string CameraFormat::FourccToString(uint32_t fourcc) {
@@ -38,8 +53,8 @@ std::string CameraFormat::ToString() const {
 // static
 std::string CameraFormat::PixelFormatToString(PixelFormat pixel_format) {
   switch (pixel_format) {
-#define PIXEL_FORMAT(format, v4l2_format) \
-  case format:                            \
+#define PIXEL_FORMAT(format) \
+  case format:               \
     return #format;
 #include "felicia/drivers/camera/camera_format_list.h"
 #undef PIXEL_FORMAT

@@ -5,7 +5,7 @@
   "main": "src/main.js",
   "scripts": {
     "clean": "rm -rf dist && mkdir -p dist",
-    "build": "./script/build.sh",
+    "build": "bash ./script/build.sh",
     "start:dev": "webpack -d --config webpack.config.backend.js --env.development",
     "start:prod": "NODE_ENV=production node dist/server.js"
   },

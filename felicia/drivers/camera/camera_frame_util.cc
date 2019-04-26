@@ -39,7 +39,7 @@ bool RequiresEvenSizeAllocation(CameraFormat camera_format) {
     // case CameraFormat::PIXEL_FORMAT_XRGB:
     case CameraFormat::PIXEL_FORMAT_RGB24:
     case CameraFormat::PIXEL_FORMAT_RGB32:
-      // case CameraFormat::PIXEL_FORMAT_Y16:
+    case CameraFormat::PIXEL_FORMAT_Y16:
       // case CameraFormat::PIXEL_FORMAT_ABGR:
       // case CameraFormat::PIXEL_FORMAT_XBGR:
       return false;
@@ -83,7 +83,7 @@ size_t NumPlanes(CameraFormat camera_format) {
     case CameraFormat::PIXEL_FORMAT_RGB24:
     case CameraFormat::PIXEL_FORMAT_RGB32:
     case CameraFormat::PIXEL_FORMAT_MJPEG:
-      // case CameraFormat::PIXEL_FORMAT_Y16:
+    case CameraFormat::PIXEL_FORMAT_Y16:
       // case CameraFormat::PIXEL_FORMAT_ABGR:
       // case CameraFormat::PIXEL_FORMAT_XBGR:
       return 1;
@@ -138,8 +138,8 @@ Sizei SampleSize(CameraFormat camera_format, size_t plane) {
           // case CameraFormat::PIXEL_FORMAT_YUV444P9:
           // case CameraFormat::PIXEL_FORMAT_YUV444P10:
           // case CameraFormat::PIXEL_FORMAT_YUV444P12:
-          // case CameraFormat::PIXEL_FORMAT_Y16:
-          //   return gfx::Size(1, 1);
+        case CameraFormat::PIXEL_FORMAT_Y16:
+          return Sizei(1, 1);
 
           // case CameraFormat::PIXEL_FORMAT_I422:
           // case CameraFormat::PIXEL_FORMAT_YUV422P9:
@@ -189,7 +189,7 @@ int BytesPerElement(CameraFormat camera_format, size_t plane) {
       return 4;
     case CameraFormat::PIXEL_FORMAT_RGB24:
       return 3;
-    // case CameraFormat::PIXEL_FORMAT_Y16:
+    case CameraFormat::PIXEL_FORMAT_Y16:
     case CameraFormat::PIXEL_FORMAT_UYVY:
     case CameraFormat::PIXEL_FORMAT_YUY2:
       // case CameraFormat::PIXEL_FORMAT_YUV420P9:
