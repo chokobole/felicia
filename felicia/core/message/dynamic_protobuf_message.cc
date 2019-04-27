@@ -30,7 +30,8 @@ DynamicProtobufMessage& DynamicProtobufMessage::operator=(
   return *this;
 }
 
-DynamicProtobufMessage::DynamicProtobufMessage(DynamicProtobufMessage&& other) {
+DynamicProtobufMessage::DynamicProtobufMessage(
+    DynamicProtobufMessage&& other) noexcept {
   if (other.message_) {
     message_ = other.message_;
     other.message_ = nullptr;

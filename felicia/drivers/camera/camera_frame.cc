@@ -11,7 +11,7 @@ CameraFrame::CameraFrame(std::unique_ptr<uint8_t> data,
                          CameraFormat camera_format)
     : data_(std::move(data)), camera_format_(camera_format) {}
 
-CameraFrame::CameraFrame(CameraFrame&& other)
+CameraFrame::CameraFrame(CameraFrame&& other) noexcept
     : data_(std::move(other.data_)),
       camera_format_(other.camera_format_),
       timestamp_(other.timestamp_) {}

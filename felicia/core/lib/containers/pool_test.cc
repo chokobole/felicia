@@ -125,7 +125,7 @@ class ABC {
 
   ABC(const ABC& other) { alive_++; }
 
-  ABC(ABC&& other) { alive_++; }
+  ABC(ABC&& other) noexcept { alive_++; }
 
   ~ABC() { alive_--; }
 
