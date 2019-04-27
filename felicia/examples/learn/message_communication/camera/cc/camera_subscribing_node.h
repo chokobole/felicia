@@ -10,7 +10,8 @@ namespace felicia {
 
 class CameraSubscribingNode : public NodeLifecycle {
  public:
-  CameraSubscribingNode(const std::string& topic) : topic_(topic) {}
+  CameraSubscribingNode(const std::string& topic, size_t buffer_size)
+      : topic_(topic), buffer_size_(buffer_size) {}
 
   void OnInit() override {
     std::cout << "CameraSubscribingNode::OnInit()" << std::endl;
@@ -29,7 +30,8 @@ class CameraSubscribingNode : public NodeLifecycle {
 
   void RequestSubscribe() {
     communication::Settings settings;
-    settings.period = 100;
+    settings.period = ::base::TimeDelta::FromMilliseconds(100);
+    settings.buffer_size = Bytes::FromBytes(buffer_size_);
 
     subscriber_.RequestSubscribe(
         node_info_, topic_,
@@ -82,6 +84,7 @@ class CameraSubscribingNode : public NodeLifecycle {
  private:
   NodeInfo node_info_;
   std::string topic_;
+  size_t buffer_size_;
   Subscriber<CameraMessage> subscriber_;
 };
 

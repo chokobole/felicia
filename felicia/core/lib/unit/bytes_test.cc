@@ -33,12 +33,16 @@ TEST(BytesTest, Operator) {
   const size_t amount = 100;
   Bytes bytes = Bytes::FromBytes(amount);
   ASSERT_EQ(bytes * 2, Bytes(amount * 2));
+  ASSERT_EQ(2 * bytes, Bytes(amount * 2));
   ASSERT_EQ(bytes * 3.742, Bytes(amount * 3.742));
+  ASSERT_EQ(3.742 * bytes, Bytes(amount * 3.742));
   ASSERT_EQ(bytes * std::numeric_limits<size_t>::max(), Bytes::Max());
+  ASSERT_EQ(std::numeric_limits<size_t>::max() * bytes, Bytes::Max());
   ASSERT_EQ(bytes / 2, Bytes(amount / 2));
   ASSERT_EQ(bytes / 2.5, Bytes(amount / 2.5));
   ASSERT_EQ(bytes / -2.5, Bytes());
   ASSERT_EQ(bytes / 0, Bytes());
+  ASSERT_EQ(bytes / Bytes::FromBytes(50), 2);
   const size_t amount2 = 35;
   Bytes bytes2 = Bytes::FromBytes(amount2);
   ASSERT_EQ(bytes + bytes2, Bytes(amount + amount2));

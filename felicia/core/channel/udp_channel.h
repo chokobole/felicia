@@ -14,6 +14,10 @@
 
 namespace felicia {
 
+namespace {
+constexpr Bytes kMaximumBufferSize = Bytes::FromKilloBytes(64);
+}  // namespace
+
 template <typename MessageTy>
 class UDPChannel : public Channel<MessageTy> {
  public:
@@ -26,6 +30,21 @@ class UDPChannel : public Channel<MessageTy> {
 
   void Connect(const ChannelSource& channel_source,
                StatusOnceCallback callback) override;
+
+  void SetSendBufferSize(Bytes bytes) override {
+    if (bytes > kMaximumBufferSize) {
+      LOG(ERROR) << "UDP buffer can't exceed " << bytes << "Bytes";
+      bytes = kMaximumBufferSize;
+    }
+    this->send_buffer_.resize(bytes.bytes());
+  }
+  void SetReceiveBufferSize(Bytes bytes) override {
+    if (bytes > kMaximumBufferSize) {
+      LOG(ERROR) << "UDP buffer can't exceed " << bytes << "Bytes";
+      bytes = kMaximumBufferSize;
+    }
+    this->receive_buffer_.resize(bytes.bytes());
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UDPChannel);

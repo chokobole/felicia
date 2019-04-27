@@ -117,10 +117,15 @@ Before requiest, `OnInit()` will be called. If the given `node_info` doesn't hav
 Then how is possibly publishing topics? If you want to publish topic, you have to use `Publisher<T>` and it is very simple to use. Very first, you have to request server that we hope to publish topic.
 
 ```c++
-publisher_.RequestPublish(
-      node_info_, topic_, channel_def_,
-      ::base::BindOnce(&SimplePublishingNode::OnRequestPublish,
-                        ::base::Unretained(this)));
+void RequestPublish() {
+  communication::Settings settings;
+  settings.buffer_size = Bytes::FromBytes(512);
+
+  publisher_.RequestPublish(
+        node_info_, topic_, channel_def_, settings,
+        ::base::BindOnce(&SimplePublishingNode::OnRequestPublish,
+                         ::base::Unretained(this)));
+}
 ```
 
 `base` namespace is from [chromium](/third_party/chromium). Inside the `felicia`, it depends on `base` which comes from [chromium/base](https://github.com/chromium/chromium/tree/master/base). We try to less expose api from chromium, though.
@@ -179,6 +184,7 @@ void OnRequestUnpublish(const Status& s) {
 ```c++
 void RequestSubscribe() {
   communication::Settings settings;
+  settings.buffer_size = Bytes::FromBytes(512);
 
   subscriber_.RequestSubscribe(
       node_info_, topic_,
@@ -195,17 +201,25 @@ void RequestSubscribe() {
 `Settings` looks like below.
 
 ```c++
+namespace felicia {
 namespace communication {
 
 struct Settings {
-  Settings(uint32_t period = 1000, uint8_t queue_size = 100)
-      : period(period), queue_size(queue_size) {}
+  static constexpr int64_t kDefaultPeriod = 1000;
+  static constexpr size_t kDefaultMessageSize = Bytes::kMegaBytes;
+  static constexpr uint8_t kDefaultQueueSize = 100;
 
-  uint32_t period;  // in milliseconds
-  uint8_t queue_size;
+  constexpr Settings() {}
+
+  ::base::TimeDelta period = ::base::TimeDelta::FromMilliseconds(
+      kDefaultPeriod);  // used only in subscriber
+  Bytes buffer_size = Bytes::FromBytes(kDefaultMessageSize);
+  bool is_dynamic_buffer = false;
+  uint8_t queue_size = kDefaultQueueSize;
 };
 
 }  // namespace communication
+}  // namespace felicia
 ```
 
 To `Unsubscribe`, it's also very similar.

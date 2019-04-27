@@ -29,8 +29,6 @@ class EXPORT ChannelBase {
   virtual void Write(char* buffer, int size, StatusOnceCallback callback) = 0;
   virtual void Read(char* buffer, int size, StatusOnceCallback callback) = 0;
 
-  static size_t GetMaximumBufferSize();
-
  protected:
   static void CallbackWithStatus(StatusOnceCallback callback, int result);
 

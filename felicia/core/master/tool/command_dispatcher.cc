@@ -271,7 +271,8 @@ void CommandDispatcher::Dispatch(const TopicSubscribeFlag& delegate) const {
 
   communication::Settings settings;
   if (delegate.period_flag()->is_set())
-    settings.period = delegate.period_flag()->value();
+    settings.period =
+        ::base::TimeDelta::FromMilliseconds(delegate.period_flag()->value());
   if (delegate.queue_size_flag()->is_set())
     settings.queue_size = delegate.queue_size_flag()->value();
 

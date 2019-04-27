@@ -31,10 +31,10 @@ void AddPublisher(py::module& m, const char* name) {
       .def("request_publish",
            [](Publisher<MessageTy>& self, const NodeInfo& node_info,
               const std::string& topic, const ChannelDef& channel_def,
-              py::function callback) {
+              const communication::Settings& settings, py::function callback) {
              callback.inc_ref();
              return self.RequestPublish(
-                 node_info, topic, channel_def,
+                 node_info, topic, channel_def, settings,
                  ::base::BindOnce(
                      &PyStatusOnceCallback::Invoke,
                      ::base::Owned(new PyStatusOnceCallback(callback))));

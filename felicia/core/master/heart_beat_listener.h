@@ -12,6 +12,8 @@
 
 namespace felicia {
 
+extern Bytes kHeartBeatBytes;
+
 class HeartBeatListener {
  public:
   using OnDisconnectCallback =

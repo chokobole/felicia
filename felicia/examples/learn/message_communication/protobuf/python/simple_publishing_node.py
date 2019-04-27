@@ -26,15 +26,18 @@ class SimplePublishigNode(NodeLifecycle):
         self.request_publish()
 
         # fel.MasterProxy.post_delayed_task(
-        #     self.request_unpublish, fel.from_seconds(10))
+        #     self.request_unpublish, fel.TimeDelta.from_seconds(10))
 
     def on_error(self, status):
         print("SimplePublishingNode.on_error()")
         fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
     def request_publish(self):
+        settings = fel.Settings()
+        settings.buffer_size = fel.Bytes.from_bytes(512)
+
         self.publisher.request_publish(
-            self.node_info, self.topic, self.channel_def, self.on_request_publish)
+            self.node_info, self.topic, self.channel_def, settings, self.on_request_publish)
 
     def on_request_publish(self, status):
         print("SimplePublishingNode.on_request_publish()")
@@ -46,7 +49,7 @@ class SimplePublishigNode(NodeLifecycle):
 
         if not self.publisher.is_unregistered():
             fel.MasterProxy.post_delayed_task(
-                self.repeating_publish, fel.from_seconds(1))
+                self.repeating_publish, fel.TimeDelta.from_seconds(1))
 
     def on_publish(self, status):
         print("SimplePublishingNode.on_publish()")
@@ -55,7 +58,7 @@ class SimplePublishigNode(NodeLifecycle):
     def generate_message(self):
         message_spec = MessageSpec()
         message_spec.id = self.message_id
-        message_spec.timestamp = fel.now().to_double_t()
+        message_spec.timestamp = fel.Time.now().to_double_t()
         message_spec.content = "hello world"
         self.message_id += 1
         return message_spec

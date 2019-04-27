@@ -35,8 +35,11 @@ void DynamicPublishingNode::RequestPublish() {
   LOG(INFO) << message_type_;
   publisher_->ResetMessage(message_type_);
 
+  communication::Settings settings;
+  settings.is_dynamic_buffer = true;
+
   publisher_->RequestPublish(
-      node_info_, topic_, channel_def_,
+      node_info_, topic_, channel_def_, settings,
       ::base::BindOnce(&DynamicPublishingNode::OnRequestPublish,
                        ::base::Unretained(this)));
 }

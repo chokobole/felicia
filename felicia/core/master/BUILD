@@ -8,6 +8,12 @@ load(
 package(default_visibility = ["//felicia:internal"])
 
 fel_cc_library(
+    name = "bytes_constants",
+    srcs = ["bytes_constants.cc"],
+    deps = ["//felicia/core/lib"],
+)
+
+fel_cc_library(
     name = "heart_beat",
     srcs = [
         "heart_beat_listener.cc",
@@ -19,6 +25,7 @@ fel_cc_library(
     ],
     is_external = True,
     deps = [
+        ":bytes_constants",
         "//felicia/core/channel",
         "//felicia/core/lib",
     ],

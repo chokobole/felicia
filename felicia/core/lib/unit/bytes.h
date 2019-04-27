@@ -8,7 +8,7 @@
 
 namespace felicia {
 
-class Bytes {
+class EXPORT Bytes {
  public:
   static constexpr size_t kKilloBytes = 1000;
   static constexpr size_t kMegaBytes = 1000 * kKilloBytes;
@@ -77,13 +77,15 @@ class Bytes {
     return Bytes::Max();
   }
   template <typename T>
-  Bytes& operator*=(size_t a) {
+  Bytes& operator*=(T a) {
     return *this = (*this * a);
   }
   template <typename T>
-  constexpr Bytes& operator/=(size_t a) {
+  constexpr Bytes& operator/=(T a) {
     return *this = (*this / a);
   }
+
+  constexpr double operator/(Bytes a) const { return bytes_ / a.bytes_; }
 
   size_t bytes() const { return bytes_; }
 
@@ -95,6 +97,11 @@ class Bytes {
 
   size_t bytes_ = 0;
 };
+
+template <typename T>
+Bytes operator*(T a, Bytes bytes) {
+  return bytes * a;
+}
 
 // static
 constexpr Bytes Bytes::FromBytes(size_t bytes) { return Bytes(bytes); }
@@ -127,22 +134,6 @@ constexpr Bytes Bytes::FromGigaBytes(size_t giga_bytes) {
 // static
 constexpr Bytes Bytes::FromGigaBytesD(double giga_bytes) {
   return FromDouble(giga_bytes * kGigaBytes);
-}
-
-// static
-Bytes Bytes::SaturateAdd(size_t value, size_t value2) {
-  ::base::CheckedNumeric<size_t> rv(value);
-  rv += value2;
-  if (rv.IsValid()) return Bytes(rv.ValueOrDie());
-  return Bytes::Max();
-}
-
-// static
-Bytes Bytes::SaturateSub(size_t value, size_t value2) {
-  ::base::CheckedNumeric<size_t> rv(value);
-  rv -= value2;
-  if (rv.IsValid()) return Bytes(rv.ValueOrDie());
-  return Bytes();
 }
 
 // static

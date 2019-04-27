@@ -19,6 +19,8 @@
 
 namespace felicia {
 
+extern Bytes kTopicInfoBytes;
+
 class EXPORT Master {
  public:
   ~Master();

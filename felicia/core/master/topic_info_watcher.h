@@ -13,6 +13,8 @@
 
 namespace felicia {
 
+extern Bytes kTopicInfoBytes;
+
 class TopicInfoWatcher {
  public:
   using NewTopicInfoCallback =

@@ -105,8 +105,12 @@ Before requiest, `on_init()` will be called. If the given `node_info` doesn't ha
 Then how is possibly publishing topics? If you want to publish topic, you have to use `felicia_py.Publisher` and it is very simple to use. Very first, you have to request server that we hope to publish topic.
 
 ```python
-self.publisher.request_publish(
-            self.node_info, self.topic, self.channel_def, self.on_request_publish)
+def request_publish(self):
+    settings = fel.Settings()
+    settings.buffer_size = fel.Bytes.from_bytes(512)
+
+    self.publisher.request_publish(
+        self.node_info, self.topic, self.channel_def, settings, self.on_request_publish)
 ```
 
 If request is successfully delivered to the server, then callback `on_request_publish(status)` will be called. Here simply we call `Publish` api every 1 second. But you can publish a topic whenever you want to.
@@ -148,31 +152,49 @@ def on_request_unpublish(self, status):
 [simple_subscribing_node.py](simple_subscribing_node.py) is very similar to above. When just seeing the key different part, you have to request subscribe. Unlike `publisher` you have to pass 2 more callbacks, and settings. Callback is called every `period` milliseconds inside the settings, and the other is called when there's an error occurred.
 
 ```python
-void RequestSubscribe() {
-  communication::Settings settings;
+def request_subscribe(self):
+    settings = fel.Settings()
+    settings.buffer_size = fel.Bytes.from_bytes(512)
 
-  subscriber_.RequestSubscribe(
-      node_info_, topic_,
-      ::base::BindRepeating(&SimpleSubscribingNode::OnMessage,
-                            ::base::Unretained(this)),
-      settings,
-      ::base::BindOnce(&SimpleSubscribingNode::OnRequestSubscribe,
-                        ::base::Unretained(this)));
-}
+    self.subscriber.request_subscribe(self.node_info, self.topic, self.on_message,
+                                        self.on_subscription_error, settings, self.on_request_subscribe)
 ```
 
-`Settings` looks like below. `period` is in milliseconds.
+`Settings` looks like below.
 
 ```python
 Help on class Settings in module felicia_py:
 
 class Settings(pybind11_builtins.pybind11_object)
+ |  Method resolution order:
+ |      Settings
+ |      pybind11_builtins.pybind11_object
+ |      builtins.object
  |
- |      ...
- |      __init__(self: felicia_py.Settings, period: int=1000, queue_size: int=100) -> None
- |      ...
+ |  Methods defined here:
  |
+ |  __init__(...)
+ |      __init__(self: felicia_py.Settings) -> None
+ |
+ |  ----------------------------------------------------------------------
+ |  Data descriptors defined here:
+ |
+ |  buffer_size
+ |
+ |  is_dynamic_buffer
+ |
+ |  period
+ |
+ |  queue_size
+ |
+ |  ----------------------------------------------------------------------
+ |  Methods inherited from pybind11_builtins.pybind11_object:
+ |
+ |  __new__(*args, **kwargs) from pybind11_builtins.pybind11_type
+ |      Create and return a new object.  See help(type) for accurate signature.
 ```
+
+Here, `period` is a type of `felicia_py.TimeDelta`, `queue_size` is `int` of 1byte, `buffer_size` is a type of `felicia_py.Bytes`.
 
 To `Unsubscribe`, it's also very similar.
 

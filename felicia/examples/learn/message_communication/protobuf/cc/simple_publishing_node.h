@@ -48,8 +48,11 @@ class SimplePublishingNode : public NodeLifecycle {
   }
 
   void RequestPublish() {
+    communication::Settings settings;
+    settings.buffer_size = Bytes::FromBytes(512);
+
     publisher_.RequestPublish(
-        node_info_, topic_, channel_def_,
+        node_info_, topic_, channel_def_, settings,
         ::base::BindOnce(&SimplePublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
   }

@@ -31,6 +31,11 @@ class MessageIO<T, std::enable_if_t<
     std::string text;
     if (!proto->SerializeToString(&text))
       return MessageIoError::ERR_FAILED_TO_SERIALIZE;
+
+    // This should be before return `ERR_NOT_ENOUGH_BUFFER`. Caller might use
+    // this |size| to reallocate buffer.
+    *size = sizeof(Header) + text.length();
+
     if (buffer.size() < text.length())
       return MessageIoError::ERR_NOT_ENOUGH_BUFFER;
 

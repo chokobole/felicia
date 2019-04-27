@@ -37,7 +37,4 @@ void ChannelBase::CallbackWithStatus(StatusOnceCallback callback, int result) {
   }
 }
 
-// static
-size_t ChannelBase::GetMaximumBufferSize() { return 5 * 1000 * 1000; }
-
 }  // namespace felicia

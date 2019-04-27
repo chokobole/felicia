@@ -11,9 +11,7 @@ void DynamicSubscriber::Subscribe(OnMessageCallback on_message_callback,
                                   OnErrorCallback on_error_callback,
                                   const communication::Settings& settings) {
   on_message_callback_ = on_message_callback;
-  on_error_callback_ = on_error_callback;
-  queue_size_ = settings.queue_size;
-  period_ = ::base::TimeDelta::FromMilliseconds(settings.period);
+  settings_ = settings;
 
   state_.ToStopped();
 }

@@ -470,6 +470,8 @@ void Master::DoNotifySubscriber(const NodeInfo& subscribing_node_info,
   channel_def.set_type(ChannelDef::TCP);
   auto channel = ChannelFactory::NewChannel<TopicInfo>(channel_def);
 
+  channel->SetSendBufferSize(kTopicInfoBytes);
+
   auto it = client_map_.find(subscribing_node_info.client_id());
   if (it == client_map_.end()) return;
   const ChannelSource& channel_source =

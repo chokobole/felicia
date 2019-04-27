@@ -36,6 +36,7 @@ class SimpleSubscribingNode : public NodeLifecycle {
 
   void RequestSubscribe() {
     communication::Settings settings;
+    settings.buffer_size = Bytes::FromBytes(512);
 
     subscriber_.RequestSubscribe(
         node_info_, topic_,

@@ -11,6 +11,8 @@ namespace {
 
 static constexpr int64_t kDefeaultHeartBeatDuration = 1000;
 
+::base::TimeDelta g_heart_beat_duration = ::base::TimeDelta();
+
 }  // namespace
 
 ::base::TimeDelta GetHeartBeatDuration() {
@@ -29,12 +31,6 @@ static constexpr int64_t kDefeaultHeartBeatDuration = 1000;
   return ::base::TimeDelta::FromMilliseconds(duration);
 }
 
-namespace {
-
-::base::TimeDelta g_heart_beat_duration = ::base::TimeDelta();
-
-}  // namespace
-
 HeartBeatListener::HeartBeatListener(const ClientInfo& client_info,
                                      OnDisconnectCallback callback)
     : client_info_(client_info), callback_(std::move(callback)) {
@@ -52,6 +48,8 @@ void HeartBeatListener::StartCheckHeartBeat() {
 
   channel_ = ChannelFactory::NewChannel<HeartBeat>(
       client_info_.heart_beat_signaller_source().channel_def());
+
+  channel_->SetReceiveBufferSize(kHeartBeatBytes);
 
   channel_->Connect(client_info_.heart_beat_signaller_source(),
                     ::base::BindOnce(&HeartBeatListener::DoCheckHeartBeat,

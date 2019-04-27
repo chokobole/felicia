@@ -14,7 +14,9 @@ DynamicSubscribingNode::DynamicSubscribingNode(
       topic_(topic),
       settings_(settings),
       on_new_message_callback_(on_new_message_callback),
-      on_subscription_error_callback_(on_subscription_error_callback) {}
+      on_subscription_error_callback_(on_subscription_error_callback) {
+  settings_.is_dynamic_buffer = true;
+}
 
 DynamicSubscribingNode::~DynamicSubscribingNode() = default;
 

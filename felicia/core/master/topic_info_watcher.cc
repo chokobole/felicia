@@ -29,6 +29,8 @@ void TopicInfoWatcher::Start() {
   channel_def.set_type(ChannelDef::TCP);
   channel_ = ChannelFactory::NewChannel<TopicInfo>(channel_def);
 
+  channel_->SetReceiveBufferSize(kTopicInfoBytes);
+
   TCPChannel<TopicInfo>* tcp_channel = channel_->ToTCPChannel();
   auto status_or = tcp_channel->Listen();
   channel_source_ = status_or.ValueOrDie();

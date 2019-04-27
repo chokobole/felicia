@@ -6,6 +6,7 @@ fel_cc_library(
     name = "communication",
     hdrs = [
         "publisher.h",
+        "settings.h",
         "state.h",
         "subscriber.h",
     ],

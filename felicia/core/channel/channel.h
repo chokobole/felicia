@@ -12,6 +12,7 @@
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/errors.h"
 #include "felicia/core/lib/error/statusor.h"
+#include "felicia/core/lib/unit/bytes.h"
 #include "felicia/core/message/message_io.h"
 #include "felicia/core/protobuf/channel.pb.h"
 
@@ -21,6 +22,8 @@ template <typename MessageTy>
 class TCPChannel;
 template <typename MessageTy>
 class UDPChannel;
+
+extern Bytes kDefaultBufferSize;
 
 template <typename MessageTy>
 class Channel {
@@ -49,6 +52,15 @@ class Channel {
   void SendMessage(const MessageTy& message, StatusOnceCallback callback);
   void ReceiveMessage(MessageTy* message, StatusOnceCallback callback);
 
+  virtual void SetSendBufferSize(Bytes bytes) {
+    send_buffer_.resize(bytes.bytes());
+  }
+  virtual void SetReceiveBufferSize(Bytes bytes) {
+    receive_buffer_.resize(bytes.bytes());
+  }
+
+  void EnableDynamicBuffer() { is_dynamic_buffer_ = true; }
+
  protected:
   friend class ChannelFactory;
 
@@ -68,6 +80,8 @@ class Channel {
   std::vector<char> receive_buffer_;
   StatusOnceCallback receive_callback_;
 
+  bool is_dynamic_buffer_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(Channel);
 };
 
@@ -78,8 +92,9 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
   DCHECK(this->send_callback_.is_null());
   DCHECK(!callback.is_null());
 
-  if (send_buffer_.size() == 0) {
-    send_buffer_.resize(ChannelBase::GetMaximumBufferSize());
+  if (!is_dynamic_buffer_ && send_buffer_.size() == 0) {
+    DLOG(WARNING) << "Send buffer was not allocated, used default size.";
+    send_buffer_.resize(kDefaultBufferSize.bytes());
   }
 
   size_t to_send;
@@ -91,6 +106,14 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
     channel_->Write(send_buffer_.data(), to_send,
                     ::base::BindOnce(&Channel<MessageTy>::OnSendMessage,
                                      ::base::Unretained(this)));
+  } else if (err == MessageIoError::ERR_NOT_ENOUGH_BUFFER) {
+    if (is_dynamic_buffer_) {
+      DLOG(INFO) << "Dynamically allocate buffer " << Bytes::FromBytes(to_send);
+      send_buffer_.resize(to_send);
+    } else {
+      std::move(callback).Run(errors::Aborted(ToString(err)));
+      return;
+    }
   } else {
     std::move(callback).Run(errors::Unavailable(ToString(err)));
   }
@@ -111,8 +134,23 @@ void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
   this->message_ = message;
   this->receive_callback_ = std::move(callback);
 
-  if (receive_buffer_.size() == 0) {
-    receive_buffer_.resize(ChannelBase::GetMaximumBufferSize());
+  if (is_dynamic_buffer_) {
+    if (receive_buffer_.size() == 0) {
+      if (IsTCPChannel()) {
+        receive_buffer_.resize(sizeof(Header));
+      } else {
+        LOG(INFO)
+            << "You can ignore the following error statement, This is a hack "
+               "for allocating the maximum buffer for UDP channel.";
+        // On |SetReceiveBufferSize| is a virtual method, and in UDPChannel,
+        // because the maximum bytes the channel handle is fixed, and it is
+        // implemented inside the method and we use it!
+        SetReceiveBufferSize(Bytes::Max());
+      }
+    }
+  } else if (receive_buffer_.size() == 0) {
+    DLOG(WARNING) << "Receive buffer was not allocated, used default size.";
+    receive_buffer_.resize(kDefaultBufferSize.bytes());
   }
 
   if (channel_->IsTCPChannelBase()) {
@@ -140,6 +178,19 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
   if (err != MessageIoError::OK) {
     std::move(this->receive_callback_).Run(errors::DataLoss(ToString(err)));
     return;
+  }
+
+  if (receive_buffer_.size() < header_.size()) {
+    if (is_dynamic_buffer_) {
+      DLOG(INFO) << "Dynamically allocate buffer "
+                 << Bytes::FromBytes(header_.size());
+      receive_buffer_.resize(header_.size());
+    } else {
+      std::move(this->receive_callback_)
+          .Run(
+              errors::Aborted(ToString(MessageIoError::ERR_NOT_ENOUGH_BUFFER)));
+      return;
+    }
   }
 
   channel_->Read(receive_buffer_.data(), header_.size(),
@@ -175,6 +226,12 @@ void Channel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
       receive_buffer_.data(), &header_);
   if (err != MessageIoError::OK) {
     std::move(this->receive_callback_).Run(errors::DataLoss(ToString(err)));
+    return;
+  }
+
+  if (receive_buffer_.size() - sizeof(Header) < header_.size()) {
+    std::move(this->receive_callback_)
+        .Run(errors::Aborted(ToString(MessageIoError::ERR_NOT_ENOUGH_BUFFER)));
     return;
   }
 

@@ -12,24 +12,13 @@
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/channel/channel_factory.h"
+#include "felicia/core/communication/settings.h"
 #include "felicia/core/communication/state.h"
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/master_proxy.h"
 
 namespace felicia {
-
-namespace communication {
-
-struct Settings {
-  Settings(uint32_t period = 1000, uint8_t queue_size = 100)
-      : period(period), queue_size(queue_size) {}
-
-  uint32_t period;  // in milliseconds
-  uint8_t queue_size;
-};
-
-}  // namespace communication
 
 template <typename MessageTy>
 class Subscriber {
@@ -94,9 +83,8 @@ class Subscriber {
 
   communication::State last_state_;
   communication::State state_;
+  communication::Settings settings_;
   uint8_t receive_message_failed_cnt_ = 0;
-  uint8_t queue_size_;
-  ::base::TimeDelta period_;
 
   static constexpr uint8_t kMaximumReceiveMessageFailedAllowed = 5;
 
@@ -178,8 +166,7 @@ void Subscriber<MessageTy>::OnSubscribeTopicAsync(
   }
 
   on_message_callback_ = on_message_callback;
-  queue_size_ = settings.queue_size;
-  period_ = ::base::TimeDelta::FromMilliseconds(settings.period);
+  settings_ = settings;
 
   state_.ToRegistered();
   std::move(callback).Run(s);
@@ -249,6 +236,12 @@ void Subscriber<MessageTy>::ConnectToPublisher() {
   channel_ = ChannelFactory::NewChannel<MessageTy>(
       topic_info_.topic_source().channel_def());
 
+  if (settings_.is_dynamic_buffer) {
+    channel_->EnableDynamicBuffer();
+  } else {
+    channel_->SetReceiveBufferSize(settings_.buffer_size);
+  }
+
   channel_->Connect(
       topic_info_.topic_source(),
       ::base::BindOnce(&Subscriber<MessageTy>::OnConnectToPublisher,
@@ -288,7 +281,7 @@ void Subscriber<MessageTy>::StartMessageLoop() {
   }
 
   state_.ToStarted();
-  message_queue_.set_capacity(queue_size_);
+  message_queue_.set_capacity(settings_.queue_size);
   ReceiveMessageLoop();
   NotifyMessageLoop();
 }
@@ -361,7 +354,7 @@ void Subscriber<MessageTy>::NotifyMessageLoop() {
       FROM_HERE,
       ::base::BindOnce(&Subscriber<MessageTy>::NotifyMessageLoop,
                        ::base::Unretained(this)),
-      period_);
+      settings_.period);
 }
 
 template <typename MessageTy>

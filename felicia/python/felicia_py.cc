@@ -4,6 +4,7 @@
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/strings/string_number_conversions.h"
 
+#include "felicia/core/communication/settings.h"
 #include "felicia/core/felicia_init.h"
 #include "felicia/python/command_line_interface/flag_py.h"
 #include "felicia/python/master_proxy_py.h"
@@ -57,29 +58,6 @@ void AddGlobalFunctions(py::module& m) {
           },
           py::arg("condition"), py::arg("text") = ::base::EmptyString())
       .def("not_reached", []() { NOTREACHED(); });
-
-  m.def("from_days", &::base::TimeDelta::FromDays)
-      .def("from_hours", &::base::TimeDelta::FromHours)
-      .def("from_minutes", &::base::TimeDelta::FromMinutes)
-      .def("from_seconds", &::base::TimeDelta::FromSecondsD)
-      .def("from_milliseconds", &::base::TimeDelta::FromMillisecondsD)
-      .def("from_microseconds", &::base::TimeDelta::FromMicrosecondsD)
-      .def("from_nanosecods", &::base::TimeDelta::FromNanosecondsD);
-
-  m.def("unix_epoch", &::base::Time::UnixEpoch,
-        "Returns the time for epoch in Unix-like system (Jan 1, 1970).")
-      .def("now", &::base::Time::Now,
-           "Returns the current time. Watch out, the system might adjust its "
-           "clock in which case time will actually go backwards. We don't "
-           "guarantee that times are increasing, or that two calls to Now() "
-           "won't be the same.")
-      .def("now_from_system_time", &::base::Time::NowFromSystemTime,
-           "Returns the current time. Same as Now() except that this function "
-           "always uses system time so that there are no discrepancies between"
-           "the returned time and system time even on virtual environments "
-           "including our test bot. or timing sensitive unittests, this "
-           "function should be used.")
-      .def("from_double_t", &::base::Time::FromDoubleT);
 }
 
 void AddGlobalObject(py::module& m) {
@@ -93,6 +71,13 @@ void AddGlobalObject(py::module& m) {
 
   py::class_<::base::TimeDelta>(m, "TimeDelta")
       .def(py::init<>())
+      .def_static("from_days", &::base::TimeDelta::FromDays)
+      .def_static("from_hours", &::base::TimeDelta::FromHours)
+      .def_static("from_minutes", &::base::TimeDelta::FromMinutes)
+      .def_static("from_seconds", &::base::TimeDelta::FromSecondsD)
+      .def_static("from_milliseconds", &::base::TimeDelta::FromMillisecondsD)
+      .def_static("from_microseconds", &::base::TimeDelta::FromMicrosecondsD)
+      .def_static("from_nanosecods", &::base::TimeDelta::FromNanosecondsD)
       .def("in_days", &::base::TimeDelta::InDays)
       .def("in_days_floored", &::base::TimeDelta::InDaysFloored)
       .def("in_hours", &::base::TimeDelta::InHours)
@@ -109,9 +94,13 @@ void AddGlobalObject(py::module& m) {
       .def(py::self + py::self)
       .def(py::self - py::self)
       .def(py::self += py::self)
+      .def(py::self -= py::self)
       .def(-py::self)
       .def(double() * py::self)
       .def(py::self * double())
+      .def(py::self *= double())
+      .def(py::self / double())
+      .def(py::self /= double())
       .def(py::self / py::self)
       .def(py::self % py::self)
       .def(py::self == py::self)
@@ -121,13 +110,31 @@ void AddGlobalObject(py::module& m) {
       .def(py::self > py::self)
       .def(py::self >= py::self)
       .def("__str__", [](const ::base::TimeDelta& self) {
-        return ::base::StrCat(
-            {::base::NumberToString(self.InMilliseconds()), "ms"});
+        std::stringstream ss;
+        ss << self;
+        return ss.str();
       });
 
   py::class_<::base::Time>(m, "Time")
       .def(py::init<>(),
            "Contains the NULL time. Use Time::Now() to get the current time.")
+      .def_static(
+          "unix_epoch", &::base::Time::UnixEpoch,
+          "Returns the time for epoch in Unix-like system (Jan 1, 1970).")
+      .def_static(
+          "now", &::base::Time::Now,
+          "Returns the current time. Watch out, the system might adjust its "
+          "clock in which case time will actually go backwards. We don't "
+          "guarantee that times are increasing, or that two calls to Now() "
+          "won't be the same.")
+      .def_static(
+          "now_from_system_time", &::base::Time::NowFromSystemTime,
+          "Returns the current time. Same as Now() except that this function "
+          "always uses system time so that there are no discrepancies between"
+          "the returned time and system time even on virtual environments "
+          "including our test bot. or timing sensitive unittests, this "
+          "function should be used.")
+      .def_static("from_double_t", &::base::Time::FromDoubleT)
       .def("to_double_t", &::base::Time::ToDoubleT)
       .def("__add__",
            [](const ::base::Time& time, const ::base::TimeDelta& delta) {
@@ -152,8 +159,49 @@ void AddGlobalObject(py::module& m) {
       .def(py::self > py::self)
       .def(py::self >= py::self)
       .def("__str__", [](const ::base::Time& self) {
-        return ::base::StrCat({::base::NumberToString(self.ToDoubleT()), "s"});
+        std::stringstream ss;
+        ss << self;
+        return ss.str();
       });
+
+  py::class_<Bytes>(m, "Bytes")
+      .def(py::init<>())
+      .def_static("from_bytes", &Bytes::FromBytes)
+      .def_static("from_killo_bytes", &Bytes::FromKilloBytes)
+      .def_static("from_killo_bytes_d", &Bytes::FromKilloBytesD)
+      .def_static("from_mega_bytes", &Bytes::FromMegaBytes)
+      .def_static("from_mega_bytes_d", &Bytes::FromMegaBytesD)
+      .def_static("from_giga_bytes", &Bytes::FromGigaBytes)
+      .def_static("from_giga_bytes_d", &Bytes::FromGigaBytesD)
+      .def(py::self + py::self)
+      .def(py::self - py::self)
+      .def(py::self += py::self)
+      .def(py::self -= py::self)
+      .def(double() * py::self)
+      .def(py::self * double())
+      .def(py::self *= double())
+      .def(py::self / double())
+      .def(py::self /= double())
+      .def(py::self / py::self)
+      .def(py::self == py::self)
+      .def(py::self != py::self)
+      .def(py::self < py::self)
+      .def(py::self <= py::self)
+      .def(py::self > py::self)
+      .def(py::self >= py::self)
+      .def("__str__", [](const Bytes& self) {
+        std::stringstream ss;
+        ss << self;
+        return ss.str();
+      });
+
+  py::class_<communication::Settings>(m, "Settings")
+      .def(py::init<>())
+      .def_readwrite("period", &communication::Settings::period)
+      .def_readwrite("buffer_size", &communication::Settings::buffer_size)
+      .def_readwrite("is_dynamic_buffer",
+                     &communication::Settings::is_dynamic_buffer)
+      .def_readwrite("queue_size", &communication::Settings::queue_size);
 }
 
 PYBIND11_MODULE(felicia_py, m) {

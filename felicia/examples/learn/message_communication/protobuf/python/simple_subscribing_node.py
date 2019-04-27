@@ -21,6 +21,7 @@ class SimpleSubscribingNode(NodeLifecycle):
 
     def request_subscribe(self):
         settings = fel.Settings()
+        settings.buffer_size = fel.Bytes.from_bytes(512)
 
         self.subscriber.request_subscribe(self.node_info, self.topic, self.on_message,
                                           self.on_subscription_error, settings, self.on_request_subscribe)

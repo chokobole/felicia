@@ -26,10 +26,10 @@ int RealMain(int argc, char* argv[]) {
   if (delegate.is_publishing_node()) {
     master_proxy.RequestRegisterNode<CameraPublishingNode>(
         node_info, delegate.topic(), delegate.channel_type(),
-        delegate.display_name(), delegate.device_id());
+        delegate.device_id(), delegate.buffer_size());
   } else {
-    master_proxy.RequestRegisterNode<CameraSubscribingNode>(node_info,
-                                                            delegate.topic());
+    master_proxy.RequestRegisterNode<CameraSubscribingNode>(
+        node_info, delegate.topic(), delegate.buffer_size());
   }
 
   master_proxy.Run();

@@ -11,6 +11,7 @@
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 #include "felicia/core/channel/channel_factory.h"
+#include "felicia/core/communication/settings.h"
 #include "felicia/core/communication/state.h"
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/error/status.h"
@@ -34,6 +35,7 @@ class Publisher {
 
   void RequestPublish(const NodeInfo& node_info, const std::string& topic,
                       const ChannelDef& channel_def,
+                      const communication::Settings& settings,
                       StatusOnceCallback callback);
 
   void Publish(const MessageTy& message, StatusOnceCallback callback);
@@ -45,6 +47,7 @@ class Publisher {
  protected:
   void OnPublishTopicAsync(PublishTopicRequest* request,
                            PublishTopicResponse* response,
+                           const communication::Settings& settings,
                            StatusOnceCallback callback, const Status& s);
 
   void OnUnpublishTopicAsync(UnpublishTopicRequest* request,
@@ -75,16 +78,17 @@ class Publisher {
 };
 
 template <typename MessageTy>
-void Publisher<MessageTy>::RequestPublish(const NodeInfo& node_info,
-                                          const std::string& topic,
-                                          const ChannelDef& channel_def,
-                                          StatusOnceCallback callback) {
+void Publisher<MessageTy>::RequestPublish(
+    const NodeInfo& node_info, const std::string& topic,
+    const ChannelDef& channel_def, const communication::Settings& settings,
+    StatusOnceCallback callback) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(
-        FROM_HERE, ::base::BindOnce(&Publisher<MessageTy>::RequestPublish,
-                                    ::base::Unretained(this), node_info, topic,
-                                    channel_def, std::move(callback)));
+        FROM_HERE,
+        ::base::BindOnce(&Publisher<MessageTy>::RequestPublish,
+                         ::base::Unretained(this), node_info, topic,
+                         channel_def, settings, std::move(callback)));
     return;
   }
 
@@ -114,7 +118,7 @@ void Publisher<MessageTy>::RequestPublish(const NodeInfo& node_info,
       request, response,
       ::base::BindOnce(&Publisher<MessageTy>::OnPublishTopicAsync,
                        ::base::Unretained(this), ::base::Owned(request),
-                       ::base::Owned(response), std::move(callback)));
+                       ::base::Owned(response), settings, std::move(callback)));
 }
 
 template <typename MessageTy>
@@ -185,10 +189,10 @@ StatusOr<ChannelSource> Publisher<MessageTy>::Setup(
 }
 
 template <typename MessageTy>
-void Publisher<MessageTy>::OnPublishTopicAsync(PublishTopicRequest* request,
-                                               PublishTopicResponse* response,
-                                               StatusOnceCallback callback,
-                                               const Status& s) {
+void Publisher<MessageTy>::OnPublishTopicAsync(
+    PublishTopicRequest* request, PublishTopicResponse* response,
+    const communication::Settings& settings, StatusOnceCallback callback,
+    const Status& s) {
   if (!IsRegistering()) {
     std::move(callback).Run(state_.InvalidStateError());
     return;
@@ -200,7 +204,12 @@ void Publisher<MessageTy>::OnPublishTopicAsync(PublishTopicRequest* request,
     return;
   }
 
-  message_queue_.set_capacity(10);
+  message_queue_.set_capacity(settings.queue_size);
+  if (settings.is_dynamic_buffer) {
+    channel_->EnableDynamicBuffer();
+  } else {
+    channel_->SetSendBufferSize(settings.buffer_size);
+  }
 
   state_.ToRegistered();
   std::move(callback).Run(s);

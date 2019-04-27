@@ -217,13 +217,15 @@ void JsMasterProxy::RequestRegisterDynamicSubscribingNode(
   ScopedEnvSetter scoped_env_setter(env);
 
   communication::Settings settings;
+  settings.is_dynamic_buffer = true;
   if (info.Length() >= 3) {
     on_new_message_ = ::Napi::Persistent(info[0].As<::Napi::Function>());
     on_subscription_error_ = ::Napi::Persistent(info[1].As<::Napi::Function>());
     ::Napi::Object settings_arg = info[2].As<::Napi::Object>();
     ::Napi::Value period = settings_arg["period"];
     if (!period.IsUndefined()) {
-      settings.period = period.As<::Napi::Number>().Uint32Value();
+      settings.period = ::base::TimeDelta::FromMilliseconds(
+          period.As<::Napi::Number>().Uint32Value());
     }
     ::Napi::Value queue_size = settings_arg["queue_size"];
     if (!queue_size.IsUndefined()) {
