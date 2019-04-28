@@ -6,8 +6,6 @@
 
 namespace felicia {
 
-Bytes kDefaultBufferSize = Bytes::FromKilloBytes(1);
-
 bool ToNetIPEndPoint(const ChannelSource& channel_source,
                      ::net::IPEndPoint* ip_endpoint) {
   ::net::IPAddress ip;

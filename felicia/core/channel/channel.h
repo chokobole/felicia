@@ -23,8 +23,6 @@ class TCPChannel;
 template <typename MessageTy>
 class UDPChannel;
 
-extern Bytes kDefaultBufferSize;
-
 template <typename MessageTy>
 class Channel {
  public:
@@ -94,7 +92,7 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
 
   if (!is_dynamic_buffer_ && send_buffer_.size() == 0) {
     DLOG(WARNING) << "Send buffer was not allocated, used default size.";
-    send_buffer_.resize(kDefaultBufferSize.bytes());
+    send_buffer_.resize(Bytes::FromKilloBytes(1).bytes());
   }
 
   size_t to_send;
@@ -150,7 +148,7 @@ void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
     }
   } else if (receive_buffer_.size() == 0) {
     DLOG(WARNING) << "Receive buffer was not allocated, used default size.";
-    receive_buffer_.resize(kDefaultBufferSize.bytes());
+    receive_buffer_.resize(Bytes::FromKilloBytes(1).bytes());
   }
 
   if (channel_->IsTCPChannelBase()) {

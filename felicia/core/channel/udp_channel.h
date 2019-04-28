@@ -15,7 +15,7 @@
 namespace felicia {
 
 namespace {
-constexpr Bytes kMaximumBufferSize = Bytes::FromKilloBytes(64);
+Bytes kMaximumBufferSize = Bytes::FromKilloBytes(64);
 }  // namespace
 
 template <typename MessageTy>
