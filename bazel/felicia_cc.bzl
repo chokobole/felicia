@@ -27,7 +27,7 @@ def _fel_win_copts(is_external = False):
 def fel_copts(is_external = False):
     """ C options for felicia projet. """
     return include(["third_party/chromium"]) + if_windows(_fel_win_copts(is_external)) + select({
-        "//felicia:windows": ["-Wno-builtin-macro-redefined", "-Wno-macro-redefined"],
+        "//felicia:windows": [],
         "//conditions:default": ["-Werror=switch"],
     })
 

@@ -1,4 +1,5 @@
 build --apple_platform_type=macos
+build --copt="-Wno-builtin-macro-redefined" --copt="-Wno-macro-redefined"
 
 build -c opt
 
