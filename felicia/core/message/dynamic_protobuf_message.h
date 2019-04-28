@@ -4,11 +4,12 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/util/json_util.h"
 
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"
 
 namespace felicia {
 
-class DynamicProtobufMessage {
+class EXPORT DynamicProtobufMessage {
  public:
   DynamicProtobufMessage();
   DynamicProtobufMessage(const DynamicProtobufMessage& other);
@@ -17,8 +18,8 @@ class DynamicProtobufMessage {
   DynamicProtobufMessage& operator=(DynamicProtobufMessage&& other);
   ~DynamicProtobufMessage();
 
-  ::google::protobuf::Message* message() { return message_; }
-  const ::google::protobuf::Message* message() const { return message_; }
+  ::google::protobuf::Message* message();
+  const ::google::protobuf::Message* message() const;
 
   void Reset(::google::protobuf::Message* message);
 

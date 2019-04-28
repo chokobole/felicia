@@ -10,11 +10,13 @@
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/base/no_destructor.h"
 
+#include "felicia/core/lib/base/export.h"
+
 namespace felicia {
 
-class ProtobufLoader {
+class EXPORT ProtobufLoader {
  public:
-  class ErrorCollector
+  class EXPORT ErrorCollector
       : public ::google::protobuf::DescriptorPool::ErrorCollector {
     void AddError(
         const std::string& filename, const std::string& element_name,

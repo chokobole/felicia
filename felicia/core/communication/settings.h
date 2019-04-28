@@ -1,9 +1,9 @@
 #ifndef FELICIA_CORE_COMMUNICATION_SETTINGS_H_
 #define FELICIA_CORE_COMMUNICATION_SETTINGS_H_
 
-#include "felicia/core/lib/unit/bytes.h"
-
 #include "third_party/chromium/base/time/time.h"
+
+#include "felicia/core/lib/unit/bytes.h"
 
 namespace felicia {
 namespace communication {

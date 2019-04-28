@@ -3,10 +3,12 @@
 
 #include "google/protobuf/message.h"
 
+#include "felicia/core/lib/base/export.h"
+
 namespace felicia {
 namespace protobuf {
 
-std::string ToString(const ::google::protobuf::Message& message);
+EXPORT std::string ToString(const ::google::protobuf::Message& message);
 
 }  // namespace protobuf
 }  // namespace felicia

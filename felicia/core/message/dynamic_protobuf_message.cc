@@ -53,6 +53,14 @@ DynamicProtobufMessage& DynamicProtobufMessage::operator=(
 
 DynamicProtobufMessage::~DynamicProtobufMessage() { delete message_; }
 
+::google::protobuf::Message* DynamicProtobufMessage::message() {
+  return message_;
+}
+
+const ::google::protobuf::Message* DynamicProtobufMessage::message() const {
+  return message_;
+}
+
 void DynamicProtobufMessage::Reset(::google::protobuf::Message* message) {
   DCHECK(message);
   delete message_;
