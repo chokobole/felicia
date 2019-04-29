@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // Modified by Wonyong Kim(chokobole33@gmail.com)
+// Followings are taken and modified from
+// https://github.com/chromium/chromium/blob/5db095c2653f332334d56ad739ae5fe1053308b1/media/capture/video/win/pin_base_win.h
 
 // Implement a simple base class for a DirectShow input pin. It may only be
 // used in a single threaded apartment.

@@ -14,6 +14,9 @@
 
 namespace felicia {
 
+// In device identifiers, the USB VID and PID are stored in 4 bytes each.
+const size_t kVidPidSize = 4;
+
 AvfCamera::AvfCamera(const CameraDescriptor& descriptor)
     : descriptor_(descriptor), task_runner_(::base::ThreadTaskRunnerHandle::Get()) {}
 
@@ -21,12 +24,15 @@ AvfCamera::~AvfCamera() {}
 
 // static
 Status AvfCamera::GetCameraDescriptors(CameraDescriptors* camera_descriptors) {
+  DCHECK(camera_descriptors);
+
   NSDictionary* capture_devices;
   capture_devices = [AvfCameraDelegate deviceNames];
   for (NSString* key in capture_devices) {
     const std::string device_id = [key UTF8String];
     const std::string display_name = [[[capture_devices valueForKey:key] deviceName] UTF8String];
-    camera_descriptors->emplace_back(display_name, device_id);
+    const std::string model_id = AvfCamera::GetDeviceModelId(device_id);
+    camera_descriptors->emplace_back(display_name, device_id, model_id);
   }
   return Status::OK();
 }
@@ -57,6 +63,17 @@ StatusOr<CameraFormat> AvfCamera::GetCurrentCameraFormat() {
 Status AvfCamera::SetCameraFormat(const CameraFormat& camera_format) {
   camera_format_ = camera_format;
   return Status::OK();
+}
+
+// static
+std::string AvfCamera::GetDeviceModelId(const std::string& device_id) {
+  // The last characters of device id is a concatenation of VID and then PID.
+  const size_t vid_location = device_id.size() - 2 * kVidPidSize;
+  std::string id_vendor = device_id.substr(vid_location, kVidPidSize);
+  const size_t pid_location = device_id.size() - kVidPidSize;
+  std::string id_product = device_id.substr(pid_location, kVidPidSize);
+
+  return id_vendor + ":" + id_product;
 }
 
 }  // namespace felicia

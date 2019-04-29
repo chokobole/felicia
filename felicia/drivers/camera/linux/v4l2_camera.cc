@@ -139,6 +139,8 @@ V4l2Camera::~V4l2Camera() {
 
 // static
 Status V4l2Camera::GetCameraDescriptors(CameraDescriptors* camera_descriptors) {
+  DCHECK(camera_descriptors);
+
   DevVideoFilePathsDeviceProvider device_provider;
   std::vector<std::string> filepaths;
   device_provider.GetDeviceIds(&filepaths);
@@ -156,11 +158,10 @@ Status V4l2Camera::GetCameraDescriptors(CameraDescriptors* camera_descriptors) {
       continue;
     }
 
-    // const std::string model_id =
-    // device_provider_->GetDeviceModelId(unique_id);
     std::string display_name = device_provider.GetDeviceDisplayName(unique_id);
+    const std::string model_id = device_provider.GetDeviceModelId(unique_id);
     if (display_name.empty()) display_name = reinterpret_cast<char*>(cap.card);
-    camera_descriptors->emplace_back(display_name, unique_id);
+    camera_descriptors->emplace_back(display_name, unique_id, model_id);
   }
 
   return Status::OK();

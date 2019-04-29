@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // Modified by Wonyong Kim(chokobole33@gmail.com)
+// Followings are taken and modified from
+// https://github.com/chromium/chromium/blob/5db095c2653f332334d56ad739ae5fe1053308b1/media/capture/video/win/video_capture_device_win.cc
+// https://github.com/chromium/chromium/blob/5db095c2653f332334d56ad739ae5fe1053308b1/media/capture/video/win/video_capture_device_factory_win.cc
 
 #include "felicia/drivers/camera/win/dshow_camera.h"
 
@@ -18,6 +21,12 @@ using base::win::ScopedVariant;
 using Microsoft::WRL::ComPtr;
 
 namespace felicia {
+
+// In Windows device identifiers, the USB VID and PID are preceded by the string
+// "vid_" or "pid_".  The identifiers are each 4 bytes long.
+const char kVidPrefix[] = "vid_";  // Also contains '\0'.
+const char kPidPrefix[] = "pid_";  // Also contains '\0'.
+const size_t kVidPidSize = 4;
 
 // Check if a Pin matches a category.
 bool PinMatchesCategory(IPin* pin, REFGUID category) {
@@ -104,7 +113,47 @@ DshowCamera::~DshowCamera() {
 // static
 Status DshowCamera::GetCameraDescriptors(
     CameraDescriptors* camera_descriptors) {
-  return errors::Unimplemented("Not implemented yet.");
+  DCHECK(camera_descriptors);
+
+  ComPtr<IEnumMoniker> enum_moniker;
+  HRESULT hr = EnumerateDirectShowDevices(enum_moniker.GetAddressOf());
+  // CreateClassEnumerator returns S_FALSE on some Windows OS
+  // when no camera exist. Therefore the FAILED macro can't be used.
+  if (hr != S_OK) return Status::OK();
+
+  // Enumerate all video capture devices.
+  for (ComPtr<IMoniker> moniker;
+       enum_moniker->Next(1, moniker.GetAddressOf(), NULL) == S_OK;
+       moniker.Reset()) {
+    ComPtr<IPropertyBag> prop_bag;
+    hr = moniker->BindToStorage(0, 0, IID_PPV_ARGS(&prop_bag));
+    if (FAILED(hr)) continue;
+
+    // Find the description or friendly name.
+    ScopedVariant name;
+    hr = prop_bag->Read(L"Description", name.Receive(), 0);
+    if (FAILED(hr)) hr = prop_bag->Read(L"FriendlyName", name.Receive(), 0);
+
+    if (FAILED(hr) || name.type() != VT_BSTR) continue;
+
+    const std::string device_name(::base::SysWideToUTF8(V_BSTR(name.ptr())));
+
+    name.Reset();
+    hr = prop_bag->Read(L"DevicePath", name.Receive(), 0);
+    std::string id;
+    if (FAILED(hr) || name.type() != VT_BSTR) {
+      id = device_name;
+    } else {
+      DCHECK_EQ(name.type(), VT_BSTR);
+      id = ::base::SysWideToUTF8(V_BSTR(name.ptr()));
+    }
+
+    const std::string model_id = GetDeviceModelId(id);
+
+    camera_descriptors->emplace_back(device_name, id, model_id);
+  }
+
+  return Status::OK();
 }
 
 Status DshowCamera::Init() {
@@ -246,20 +295,31 @@ void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
 
 void DshowCamera::FrameDropped(const Status& s) { status_callback_.Run(s); }
 
+// static
+HRESULT DshowCamera::EnumerateDirectShowDevices(IEnumMoniker** enum_moniker) {
+  DCHECK(enum_moniker);
+
+  ComPtr<ICreateDevEnum> dev_enum;
+  HRESULT hr = ::CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC,
+                                  IID_PPV_ARGS(&dev_enum));
+  if (FAILED(hr)) {
+    DLOG(ERROR) << ::logging::SystemErrorCodeToString(hr);
+    return hr;
+  }
+
+  hr = dev_enum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory,
+                                       enum_moniker, 0);
+  return hr;
+}
+
 // Finds and creates a DirectShow Video Capture filter matching the |device_id|.
 // static
 HRESULT DshowCamera::GetDeviceFilter(const std::string& device_id,
                                      IBaseFilter** filter) {
   DCHECK(filter);
 
-  ComPtr<ICreateDevEnum> dev_enum;
-  HRESULT hr = ::CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC,
-                                  IID_PPV_ARGS(&dev_enum));
-  if (FAILED(hr)) return hr;
-
   ComPtr<IEnumMoniker> enum_moniker;
-  hr = dev_enum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory,
-                                       enum_moniker.GetAddressOf(), 0);
+  HRESULT hr = EnumerateDirectShowDevices(enum_moniker.GetAddressOf());
   // CreateClassEnumerator returns S_FALSE on some Windows OS
   // when no camera exist. Therefore the FAILED macro can't be used.
   if (hr != S_OK) return hr;
@@ -328,6 +388,27 @@ ComPtr<IPin> DshowCamera::GetPin(IBaseFilter* filter, PIN_DIRECTION pin_dir,
 
   DCHECK(!pin.Get());
   return pin;
+}
+
+// static
+std::string DshowCamera::GetDeviceModelId(const std::string& device_id) {
+  const size_t vid_prefix_size = sizeof(kVidPrefix) - 1;
+  const size_t pid_prefix_size = sizeof(kPidPrefix) - 1;
+  const size_t vid_location = device_id.find(kVidPrefix);
+  if (vid_location == std::string::npos ||
+      vid_location + vid_prefix_size + kVidPidSize > device_id.size()) {
+    return std::string();
+  }
+  const size_t pid_location = device_id.find(kPidPrefix);
+  if (pid_location == std::string::npos ||
+      pid_location + pid_prefix_size + kVidPidSize > device_id.size()) {
+    return std::string();
+  }
+  const std::string id_vendor =
+      device_id.substr(vid_location + vid_prefix_size, kVidPidSize);
+  const std::string id_product =
+      device_id.substr(pid_location + pid_prefix_size, kVidPidSize);
+  return id_vendor + ":" + id_product;
 }
 
 }  // namespace felicia

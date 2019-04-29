@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // Modified by Wonyong Kim(chokobole33@gmail.com)
+// Followings are taken and modified from
+// https://github.com/chromium/chromium/blob/5db095c2653f332334d56ad739ae5fe1053308b1/media/capture/video/win/sink_filter_win.h
 
 // Implement a DirectShow sink filter used for receiving captured frames from
 // a DirectShow Capture filter.

@@ -7,6 +7,7 @@
 #endif
 
 #include "felicia/core/lib/error/errors.h"
+#include "felicia/core/master/master_proxy.h"
 
 namespace felicia {
 
@@ -20,6 +21,8 @@ Status FeliciaInit() {
   dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
   if (!SetConsoleMode(a, dwMode))
     return errors::FailedPrecondition("Failed to run SetConsoleMode");
+
+  MasterProxy::GetInstance();
 #endif
   return Status::OK();
 }

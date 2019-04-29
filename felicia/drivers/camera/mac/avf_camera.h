@@ -37,6 +37,8 @@ class AvfCamera : public CameraInterface {
 
   AvfCamera(const CameraDescriptor& descriptor);
 
+  static std::string GetDeviceModelId(const std::string& device_id);
+
   CameraDescriptor descriptor_;
   CameraFormat camera_format_;
 

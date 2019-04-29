@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // Modified by Wonyong Kim(chokobole33@gmail.com)
+// Followings are taken and modified from
+// https://github.com/chromium/chromium/blob/5db095c2653f332334d56ad739ae5fe1053308b1/media/capture/video/win/video_capture_device_win.h
+// https://github.com/chromium/chromium/blob/5db095c2653f332334d56ad739ae5fe1053308b1/media/capture/video/win/video_capture_device_factory_win.h
 
 #ifndef FELICIA_DRIVERS_CAEMRA_WIN_DSHOW_CAMERA_H_
 #define FELICIA_DRIVERS_CAEMRA_WIN_DSHOW_CAMERA_H_
@@ -10,8 +13,6 @@
 #define NO_DSHOW_STRSAFE
 #include <dshow.h>
 #include <wrl/client.h>
-
-#include "third_party/chromium/base/win/scoped_com_initializer.h"
 
 #include "felicia/drivers/camera/camera_interface.h"
 #include "felicia/drivers/camera/win/sink_filter.h"
@@ -63,6 +64,7 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
   void FrameDropped(const Status& s) override;
 
  private:
+  static HRESULT EnumerateDirectShowDevices(IEnumMoniker** enum_moniker);
   static HRESULT GetDeviceFilter(const std::string& device_id,
                                  IBaseFilter** filter);
 
@@ -70,6 +72,8 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
                                              PIN_DIRECTION pin_dir,
                                              REFGUID category,
                                              REFGUID major_type);
+
+  static std::string GetDeviceModelId(const std::string& device_id);
 
   friend class CameraFactory;
 
@@ -90,8 +94,6 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
   CameraFormat camera_format_;
 
   ::base::TimeTicks first_ref_time_;
-
-  ::base::win::ScopedCOMInitializer scoped_com_initializer_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DshowCamera);
 };

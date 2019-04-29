@@ -9,5 +9,8 @@ fel_cc_library(
     name = "felicia_init",
     srcs = ["felicia_init.cc"],
     hdrs = ["felicia_init.h"],
-    deps = ["//felicia/core/lib"],
+    deps = [
+        "//felicia/core/lib",
+        "//felicia/core/master:master_proxy",
+    ],
 )

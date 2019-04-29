@@ -15,6 +15,9 @@
 #include "third_party/chromium/base/run_loop.h"
 #include "third_party/chromium/base/synchronization/waitable_event.h"
 #include "third_party/chromium/base/threading/thread.h"
+#if defined(OS_WIN)
+#include "third_party/chromium/base/win/scoped_com_initializer.h"
+#endif
 
 #include "felicia/core/channel/channel.h"
 #include "felicia/core/lib/base/export.h"
@@ -118,6 +121,10 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
   HeartBeatSignaller heart_beat_signaller_;
 
   std::vector<std::unique_ptr<NodeLifecycle>> nodes_;
+
+#if defined(OS_WIN)
+  ::base::win::ScopedCOMInitializer scoped_com_initializer_;
+#endif
 
 #if defined(FEL_WIN_NO_GRPC)
   bool is_client_info_set_ = false;
