@@ -23,7 +23,6 @@ fel_cc_library(
         "heart_beat_listener.h",
         "heart_beat_signaller.h",
     ],
-    is_external = True,
     deps = [
         ":bytes_constants",
         "//felicia/core/channel",
@@ -35,7 +34,6 @@ fel_cc_library(
     name = "master_client_interface",
     srcs = ["master_client_interface.cc"],
     hdrs = ["master_client_interface.h"],
-    is_external = True,
     deps = [
         "//felicia/core/lib",
         "//felicia/core/protobuf:protos_all_cc",
@@ -56,7 +54,6 @@ fel_cc_library(
         "//felicia:win_no_grpc": ["/DFEL_WIN_NO_GRPC"],
         "//conditions:default": [],
     }),
-    is_external = True,
     deps = [
         ":heart_beat",
         ":master_client_interface",
@@ -82,7 +79,6 @@ fel_cc_library(
         "errors.h",
         "master.h",
     ],
-    is_external = True,
     deps = [
         ":heart_beat",
         "//felicia/core/node",

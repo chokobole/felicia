@@ -151,7 +151,6 @@ def fel_c_library(
         hdrs = [],
         deps = [],
         copts = [],
-        is_external = False,
         use_fel_copt = True,
         **kwargs):
     native.cc_library(
@@ -159,7 +158,7 @@ def fel_c_library(
         srcs = srcs,
         hdrs = hdrs,
         deps = deps,
-        copts = copts + (fel_copts(is_external = is_external) if use_fel_copt else []),
+        copts = copts + (fel_copts(is_external = True) if use_fel_copt else []),
         **kwargs
     )
 
@@ -176,7 +175,6 @@ def fel_cc_library(
         hdrs = [],
         deps = [],
         copts = [],
-        is_external = False,
         use_fel_cxxopt = True,
         **kwargs):
     native.cc_library(
@@ -184,7 +182,7 @@ def fel_cc_library(
         srcs = srcs,
         hdrs = hdrs,
         deps = deps,
-        copts = copts + (fel_cxxopts(is_external = is_external) if use_fel_cxxopt else []),
+        copts = copts + (fel_cxxopts(is_external = True) if use_fel_cxxopt else []),
         **kwargs
     )
 
@@ -201,7 +199,6 @@ def fel_objc_library(
         hdrs = [],
         deps = [],
         copts = [],
-        is_external = False,
         use_fel_cxxopt = True,
         **kwargs):
     native.objc_library(
@@ -209,7 +206,7 @@ def fel_objc_library(
         srcs = srcs,
         hdrs = hdrs,
         deps = deps,
-        copts = copts + (fel_cxxopts(is_external = is_external) if use_fel_cxxopt else []),
+        copts = copts + (fel_cxxopts(is_external = True) if use_fel_cxxopt else []),
         **kwargs
     )
 

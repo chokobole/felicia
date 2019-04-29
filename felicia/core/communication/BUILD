@@ -10,7 +10,6 @@ fel_cc_library(
         "state.h",
         "subscriber.h",
     ],
-    is_external = True,
     deps = [
         "//felicia/core/channel",
         "//felicia/core/master:master_proxy",

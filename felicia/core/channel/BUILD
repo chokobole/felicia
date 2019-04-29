@@ -27,7 +27,6 @@ fel_cc_library(
         "udp_client_channel.h",
         "udp_server_channel.h",
     ],
-    is_external = True,
     deps = [
         "//felicia/core/lib",
         "//felicia/core/message",

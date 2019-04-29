@@ -38,7 +38,6 @@ fel_cc_library(
         "unit/geometry/size.h",
         "unit/bytes.h",
     ] + [":felicia_env"],
-    is_external = True,
     deps = [
         "//felicia/core/protobuf:protos_all_cc",
         "//third_party/chromium/base",

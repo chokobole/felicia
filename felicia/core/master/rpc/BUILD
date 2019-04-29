@@ -40,7 +40,6 @@ fel_cc_library(
     name = "grpc_master_client",
     srcs = ["grpc_master_client.cc"],
     hdrs = ["grpc_master_client.h"],
-    is_external = True,
     deps = [
         ":grpc_async_client_call",
         ":master_service_proto_cc",
@@ -81,7 +80,6 @@ fel_cc_library(
     name = "grpc_util",
     srcs = ["grpc_util.cc"],
     hdrs = ["grpc_util.h"],
-    is_external = True,
     deps = [
         ":grpc_info",
         "//felicia:grpc++",
@@ -93,6 +91,5 @@ fel_cc_library(
     name = "grpc_info",
     srcs = ["grpc_info.cc"],
     hdrs = ["grpc_info.h"],
-    is_external = True,
     deps = ["//felicia/core/lib"],
 )
