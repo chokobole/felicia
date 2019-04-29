@@ -18,9 +18,10 @@ class CameraFlag : public NodeCreateFlag {
 
   bool Validate() const override;
 
-  AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(name_flag_, topic_flag_,
-                                          channel_type_flag_, device_list_flag_,
-                                          device_index_flag_, buffer_size_flag_)
+  AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(is_publishing_node_flag_, name_flag_,
+                                          topic_flag_, channel_type_flag_,
+                                          device_list_flag_, device_index_flag_,
+                                          buffer_size_flag_)
 
  private:
   bool device_list_;

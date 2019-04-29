@@ -13,8 +13,8 @@ std::string MakeNamedHelpText(::base::StringPiece name,
 bool CheckIfOneOfFlagWasSet(std::vector<std::string>& names) {
   std::string names_txt = ::base::JoinString(names, ", ");
 
-  std::cerr << TextStyle::Red("Error: ") << "Either one of [" << names_txt
-            << "] should be set." << std::endl;
+  std::cerr << kRedError << "Either one of [" << names_txt << "] should be set."
+            << std::endl;
   return false;
 }
 

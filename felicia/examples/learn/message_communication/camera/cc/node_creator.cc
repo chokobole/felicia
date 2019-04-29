@@ -31,7 +31,7 @@ int RealMain(int argc, char* argv[]) {
   CameraDescriptors camera_descriptors;
   Status s = CameraFactory::GetCameraDescriptors(&camera_descriptors);
   if (!s.ok()) {
-    std::cerr << TextStyle::Red("Error: ") << s << std::endl;
+    std::cerr << kRedError << s << std::endl;
     return 1;
   }
 
@@ -43,7 +43,7 @@ int RealMain(int argc, char* argv[]) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   s = master_proxy.Start();
   if (!s.ok()) {
-    std::cerr << TextStyle::Red("Error: ") << s << std::endl;
+    std::cerr << kRedError << s << std::endl;
     return 1;
   }
 
@@ -52,8 +52,8 @@ int RealMain(int argc, char* argv[]) {
 
   if (delegate.is_publishing_node()) {
     if (camera_descriptors.size() <= delegate.device_index()) {
-      std::cerr << TextStyle::Red("Error: ")
-                << "Please set device_index among them.." << std::endl;
+      std::cerr << kRedError << "Please set device_index among them.."
+                << std::endl;
       Print(camera_descriptors);
       return 1;
     }

@@ -40,7 +40,7 @@ std::string ClientListFlag::Description() const { return "List clients"; }
 
 std::vector<NamedHelpType> ClientListFlag::CollectNamedHelps() const {
   return {
-      std::make_pair(TextStyle::Yellow("Options:"),
+      std::make_pair(kYellowOptions,
                      std::vector<std::string>{
                          all_flag_->help(),
                          id_flag_->help(),

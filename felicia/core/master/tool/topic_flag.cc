@@ -94,7 +94,7 @@ std::vector<NamedHelpType> TopicFlag::CollectNamedHelps() const {
     case COMMAND_SELF: {
       return {
           std::make_pair(
-              TextStyle::Yellow("Commands:"),
+              kYellowCommands,
               std::vector<std::string>{
                   MakeNamedHelpText(kLs, list_delegate_.Description()),
                   MakeNamedHelpText(kPublish, publish_delegate_.Description()),

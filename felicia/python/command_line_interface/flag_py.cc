@@ -166,6 +166,10 @@ void AddFlag(py::module& m) {
           },
           py::call_guard<py::gil_scoped_release>(),
           "// Parse by passing every each |argv| to |flag|.");
+
+  m.attr("RED_ERROR") = kRedError;
+  m.attr("YELLOW_OPTIONS") = kYellowOptions;
+  m.attr("YELLOW_COMMANDS") = kYellowCommands;
 }
 
 }  // namespace felicia

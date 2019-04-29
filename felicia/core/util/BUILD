@@ -13,6 +13,7 @@ fel_cc_library(
         "command_line_interface/flag.cc",
         "command_line_interface/flag_parser.cc",
         "command_line_interface/table_writer.cc",
+        "command_line_interface/text_constants.cc",
         "command_line_interface/text_style.cc",
     ],
     hdrs = [
@@ -21,6 +22,7 @@ fel_cc_library(
         "command_line_interface/flag_parser.h",
         "command_line_interface/flag_value_traits.h",
         "command_line_interface/table_writer.h",
+        "command_line_interface/text_constants.h",
         "command_line_interface/text_style.h",
     ],
     deps = ["//felicia/core/lib"],

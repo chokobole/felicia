@@ -60,7 +60,7 @@ std::string NodeListFlag::Description() const { return "List nodes"; }
 
 std::vector<NamedHelpType> NodeListFlag::CollectNamedHelps() const {
   return {
-      std::make_pair(TextStyle::Yellow("Options:"),
+      std::make_pair(kYellowOptions,
                      std::vector<std::string>{
                          all_flag_->help(),
                          publishing_topic_flag_->help(),

@@ -23,8 +23,8 @@ class NodeCreateFlag : public FlagParser::Delegate {
 
   bool Validate() const override;
 
-  AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(name_flag_, topic_flag_,
-                                          channel_type_flag_)
+  AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(is_publishing_node_flag_, name_flag_,
+                                          topic_flag_, channel_type_flag_)
 
  protected:
   bool is_publishing_node_;

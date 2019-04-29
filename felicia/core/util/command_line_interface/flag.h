@@ -16,6 +16,7 @@
 #include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/util/command_line_interface/flag_forward.h"
 #include "felicia/core/util/command_line_interface/flag_parser.h"
+#include "felicia/core/util/command_line_interface/text_constants.h"
 
 namespace felicia {
 
@@ -497,8 +498,7 @@ bool CheckIfFlagWasSet(T&& flag) {
     name = flag->long_name();
   }
 
-  std::cerr << TextStyle::Red("Error: ") << name << " was not set."
-            << std::endl;
+  std::cerr << kRedError << name << " was not set." << std::endl;
 
   return ret;
 }

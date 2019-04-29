@@ -61,7 +61,7 @@ std::string TopicSubscribeFlag::Description() const {
 
 std::vector<NamedHelpType> TopicSubscribeFlag::CollectNamedHelps() const {
   return {
-      std::make_pair(TextStyle::Yellow("Options:"),
+      std::make_pair(kYellowOptions,
                      std::vector<std::string>{
                          all_flag_->help(),
                          topic_flag_->help(),

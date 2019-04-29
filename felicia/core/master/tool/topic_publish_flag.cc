@@ -61,7 +61,7 @@ std::vector<NamedHelpType> TopicPublishFlag::CollectNamedHelps() const {
                          type_flag_->help(),
                          message_flag_->help(),
                      }),
-      std::make_pair(TextStyle::Yellow("Options:"),
+      std::make_pair(kYellowOptions,
                      std::vector<std::string>{
                          interval_flag_->help(),
                      }),

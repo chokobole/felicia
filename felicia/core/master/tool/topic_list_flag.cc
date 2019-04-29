@@ -41,7 +41,7 @@ std::string TopicListFlag::Description() const { return "List topics"; }
 
 std::vector<NamedHelpType> TopicListFlag::CollectNamedHelps() const {
   return {
-      std::make_pair(TextStyle::Yellow("Options:"),
+      std::make_pair(kYellowOptions,
                      std::vector<std::string>{
                          all_flag_->help(),
                          topic_flag_->help(),

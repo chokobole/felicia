@@ -41,7 +41,7 @@ def main():
 
     s = fel.MasterProxy.start()
     if not s.ok():
-        print("{} {}.".format(cli.TextStyle.red("Error:"), s), file=sys.stderr)
+        print("{} {}.".format(cli.RED_ERROR, s), file=sys.stderr)
         sys.exit(1)
 
     node_info = NodeInfo()

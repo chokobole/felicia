@@ -71,7 +71,7 @@ std::vector<NamedHelpType> NodeFlag::CollectNamedHelps() const {
     case COMMAND_SELF: {
       return {
           std::make_pair(
-              TextStyle::Yellow("Commands:"),
+              kYellowCommands,
               std::vector<std::string>{
                   MakeNamedHelpText(kLs, list_delegate_.Description()),
               }),

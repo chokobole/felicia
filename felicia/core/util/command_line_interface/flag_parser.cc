@@ -6,6 +6,7 @@
 
 #include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/util/command_line_interface/flag.h"
+#include "felicia/core/util/command_line_interface/text_constants.h"
 #include "felicia/core/util/command_line_interface/text_style.h"
 
 namespace felicia {
@@ -51,8 +52,7 @@ bool FlagParser::Parse(int argc, char** argv, Delegate* delegate) {
       return false;
     }
     if (!delegate->Parse(*this)) {
-      std::cerr << TextStyle::Red("Error: ") << current() << " is not valid"
-                << std::endl;
+      std::cerr << kRedError << current() << " is not valid" << std::endl;
       if (!suppress_help_) PrintHelp(delegate);
       return false;
     }

@@ -19,7 +19,7 @@ int RealMain(int argc, char* argv[]) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   Status s = master_proxy.Start();
   if (!s.ok()) {
-    std::cerr << TextStyle::Red("Error: ") << s << std::endl;
+    std::cerr << kRedError << s << std::endl;
     return 1;
   }
 
