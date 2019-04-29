@@ -2,7 +2,7 @@
 
 namespace felicia {
 
-std::string ToString(MessageIoError mesasge_io_error) {
+std::string MessageIoErrorToString(MessageIoError mesasge_io_error) {
   switch (mesasge_io_error) {
 #define MESSAGE_IO_ERR(ERR, ERR_STR) \
   case MessageIoError::ERR:          \

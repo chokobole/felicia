@@ -109,10 +109,10 @@ void CommandDispatcher::OnListClientsAsync(ListClientsRequest* request,
     writer.SetElement(row, 0, ::base::NumberToString(client_info.id()));
     const ChannelSource& hbs_channel_source =
         client_info.heart_beat_signaller_source();
-    writer.SetElement(row, 1, ToString(hbs_channel_source));
+    writer.SetElement(row, 1, ChannelSourceToString(hbs_channel_source));
     const ChannelSource& tiw_channel_source =
         client_info.topic_info_watcher_source();
-    writer.SetElement(row, 2, ToString(tiw_channel_source));
+    writer.SetElement(row, 2, ChannelSourceToString(tiw_channel_source));
     row++;
   }
 
@@ -311,8 +311,9 @@ void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
       writer.SetElement(row, 0, topic_info.topic());
       writer.SetElement(row, 1, topic_info.type_name());
       const ChannelSource& channel_source = topic_info.topic_source();
-      writer.SetElement(row, 2, ToString(channel_source.channel_def()));
-      writer.SetElement(row, 3, ToString(channel_source));
+      writer.SetElement(row, 2,
+                        ChannelDefToString(channel_source.channel_def()));
+      writer.SetElement(row, 3, ChannelSourceToString(channel_source));
       row++;
     }
 
@@ -334,8 +335,8 @@ void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
                      "END_POINT: %s\n",
                      topic_info.type_name().c_str(),
                      message->GetDescriptor()->DebugString().c_str(),
-                     ToString(channel_source.channel_def()).c_str(),
-                     ToString(channel_source).c_str())
+                     ChannelDefToString(channel_source.channel_def()).c_str(),
+                     ChannelSourceToString(channel_source).c_str())
               << std::endl;
   }
 }

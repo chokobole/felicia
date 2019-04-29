@@ -15,7 +15,7 @@ enum MessageIoError {
 #undef MESSAGE_IO_ERR
 };
 
-std::string ToString(MessageIoError mesasge_io_error);
+std::string MessageIoErrorToString(MessageIoError mesasge_io_error);
 
 template <typename T, typename SFINAE = void>
 class MessageIO;

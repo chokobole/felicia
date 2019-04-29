@@ -109,11 +109,11 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
       DLOG(INFO) << "Dynamically allocate buffer " << Bytes::FromBytes(to_send);
       send_buffer_.resize(to_send);
     } else {
-      std::move(callback).Run(errors::Aborted(ToString(err)));
+      std::move(callback).Run(errors::Aborted(MessageIoErrorToString(err)));
       return;
     }
   } else {
-    std::move(callback).Run(errors::Unavailable(ToString(err)));
+    std::move(callback).Run(errors::Unavailable(MessageIoErrorToString(err)));
   }
 }
 
@@ -174,7 +174,8 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
   MessageIoError err = MessageIO<MessageTy>::ParseHeaderFromBuffer(
       receive_buffer_.data(), &header_);
   if (err != MessageIoError::OK) {
-    std::move(this->receive_callback_).Run(errors::DataLoss(ToString(err)));
+    std::move(this->receive_callback_)
+        .Run(errors::DataLoss(MessageIoErrorToString(err)));
     return;
   }
 
@@ -185,8 +186,8 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
       receive_buffer_.resize(header_.size());
     } else {
       std::move(this->receive_callback_)
-          .Run(
-              errors::Aborted(ToString(MessageIoError::ERR_NOT_ENOUGH_BUFFER)));
+          .Run(errors::Aborted(
+              MessageIoErrorToString(MessageIoError::ERR_NOT_ENOUGH_BUFFER)));
       return;
     }
   }
@@ -223,13 +224,15 @@ void Channel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
   MessageIoError err = MessageIO<MessageTy>::ParseHeaderFromBuffer(
       receive_buffer_.data(), &header_);
   if (err != MessageIoError::OK) {
-    std::move(this->receive_callback_).Run(errors::DataLoss(ToString(err)));
+    std::move(this->receive_callback_)
+        .Run(errors::DataLoss(MessageIoErrorToString(err)));
     return;
   }
 
   if (receive_buffer_.size() - sizeof(Header) < header_.size()) {
     std::move(this->receive_callback_)
-        .Run(errors::Aborted(ToString(MessageIoError::ERR_NOT_ENOUGH_BUFFER)));
+        .Run(errors::Aborted(
+            MessageIoErrorToString(MessageIoError::ERR_NOT_ENOUGH_BUFFER)));
     return;
   }
 
@@ -254,10 +257,13 @@ EXPORT ChannelSource ToChannelSource(const ::net::IPEndPoint& ip_endpoint,
                                      ChannelDef_Type type);
 
 // Convert ChannelDef |channel_def| to std::string
-EXPORT std::string ToString(const ChannelDef& channel_def);
+EXPORT std::string ChannelDefToString(const ChannelDef& channel_def);
+
+// Convert std::string |str| to ChannelDef
+EXPORT ChannelDef ChannelDefFromString(const std::string& str);
 
 // Convert ChannelDef |channel_source| to std::string
-EXPORT std::string ToString(const ChannelSource& channel_source);
+EXPORT std::string ChannelSourceToString(const ChannelSource& channel_source);
 
 // Randomly pick channel source.
 EXPORT ChannelSource PickRandomChannelSource(ChannelDef_Type type);

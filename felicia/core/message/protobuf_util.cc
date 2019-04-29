@@ -12,13 +12,14 @@ namespace protobuf {
 
 constexpr size_t kMaximumContentLength = 100;
 
-void ToString(const ::google::protobuf::Message& message, int depth,
-              std::string* out);
+void ProtobufMessageToString(const ::google::protobuf::Message& message,
+                             int depth, std::string* out);
 
-void ToString(std::vector<std::string>& entities, int depth,
-              const ::google::protobuf::Reflection* reflection,
-              const ::google::protobuf::Message& message,
-              const ::google::protobuf::FieldDescriptor* field_desc) {
+void ProtobufMessageToString(
+    std::vector<std::string>& entities, int depth,
+    const ::google::protobuf::Reflection* reflection,
+    const ::google::protobuf::Message& message,
+    const ::google::protobuf::FieldDescriptor* field_desc) {
   switch (field_desc->type()) {
     case ::google::protobuf::FieldDescriptor::TYPE_DOUBLE: {
       if (field_desc->is_repeated()) {
@@ -173,7 +174,8 @@ void ToString(std::vector<std::string>& entities, int depth,
     }
     case ::google::protobuf::FieldDescriptor::TYPE_MESSAGE: {
       std::string str;
-      ToString(reflection->GetMessage(message, field_desc), depth + 1, &str);
+      ProtobufMessageToString(reflection->GetMessage(message, field_desc),
+                              depth + 1, &str);
       entities.push_back(::base::StrCat({"{\n", str, "}"}));
       return;
     }
@@ -233,8 +235,8 @@ void ToString(std::vector<std::string>& entities, int depth,
   }
 }
 
-void ToString(const ::google::protobuf::Message& message, int depth,
-              std::string* out) {
+void ProtobufMessageToString(const ::google::protobuf::Message& message,
+                             int depth, std::string* out) {
   const ::google::protobuf::Descriptor* descriptor = message.GetDescriptor();
   const ::google::protobuf::Reflection* reflection = message.GetReflection();
 
@@ -247,16 +249,17 @@ void ToString(const ::google::protobuf::Message& message, int depth,
     for (int j = 0; j < depth; j++) entites.push_back("  ");
     entites.push_back(
         TextStyle::Blue(::base::StrCat({field_desc->name(), ": "})));
-    ToString(entites, depth, reflection, message, field_desc);
+    ProtobufMessageToString(entites, depth, reflection, message, field_desc);
     entites.push_back("\n");
   }
 
   ::base::StrAppend(out, entites);
 }
 
-std::string ToString(const ::google::protobuf::Message& message) {
+std::string ProtobufMessageToString(
+    const ::google::protobuf::Message& message) {
   std::string ret;
-  ToString(message, 0, &ret);
+  ProtobufMessageToString(message, 0, &ret);
   return ret;
 }
 

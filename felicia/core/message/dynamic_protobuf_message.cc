@@ -74,7 +74,7 @@ std::string DynamicProtobufMessage::GetTypeName() const {
 
 std::string DynamicProtobufMessage::ToString() const {
   if (!message_) return ::base::EmptyString();
-  return protobuf::ToString(*message_);
+  return protobuf::ProtobufMessageToString(*message_);
 }
 
 Status DynamicProtobufMessage::MessageToJsonString(std::string* text) const {

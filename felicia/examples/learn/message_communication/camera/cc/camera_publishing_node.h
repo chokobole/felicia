@@ -15,14 +15,9 @@ class CameraPublishingNode : public NodeLifecycle {
                        const CameraDescriptor& camera_descriptor,
                        size_t buffer_size)
       : topic_(topic),
+        channel_def_(ChannelDefFromString(channel_type)),
         camera_descriptor_(camera_descriptor),
-        buffer_size_(buffer_size) {
-    if (channel_type.compare("TCP") == 0) {
-      channel_def_.set_type(ChannelDef::TCP);
-    } else if (channel_type.compare("UDP") == 0) {
-      channel_def_.set_type(ChannelDef::UDP);
-    }
-  }
+        buffer_size_(buffer_size) {}
 
   void OnInit() override {
     std::cout << "CameraPublishingNode::OnInit()" << std::endl;

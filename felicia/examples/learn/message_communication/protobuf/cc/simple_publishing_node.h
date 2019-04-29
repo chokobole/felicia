@@ -17,13 +17,7 @@ class SimplePublishingNode : public NodeLifecycle {
  public:
   SimplePublishingNode(const std::string& topic,
                        const std::string& channel_type)
-      : topic_(topic) {
-    if (channel_type.compare("TCP") == 0) {
-      channel_def_.set_type(ChannelDef::TCP);
-    } else if (channel_type.compare("UDP") == 0) {
-      channel_def_.set_type(ChannelDef::UDP);
-    }
-  }
+      : topic_(topic), channel_def_(ChannelDefFromString(channel_type)) {}
 
   void OnInit() override {
     std::cout << "SimplePublishingNode::OnInit()" << std::endl;
