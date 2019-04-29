@@ -1,5 +1,6 @@
 load(":felicia.bzl", "if_windows")
 load("//third_party/chromium/build/config/win:build.bzl", "default_win_build_config")
+load("@cc//:compiler.bzl", "is_mac")
 
 def define(flags):
     window_defines = ["/D" + flag for flag in flags]
@@ -201,6 +202,9 @@ def fel_objc_library(
         copts = [],
         use_fel_cxxopt = True,
         **kwargs):
+    if not is_mac():
+        return
+
     native.objc_library(
         name = name,
         srcs = srcs,

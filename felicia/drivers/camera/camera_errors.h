@@ -10,8 +10,8 @@
 namespace felicia {
 namespace errors {
 
-inline ::felicia::Status FailedToGetFormat() {
-  return Unavailable("Failed to get format.");
+inline ::felicia::Status FailedToGetCameraFormat() {
+  return Unavailable("Failed to get camera format.");
 }
 
 inline ::felicia::Status FailedToSetFormat(CameraFormat camera_format) {

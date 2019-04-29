@@ -18,7 +18,10 @@ int RealMain(int argc, char* argv[]) {
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   Status s = master_proxy.Start();
-  CHECK(s.ok());
+  if (!s.ok()) {
+    std::cerr << TextStyle::Red("Error: ") << s << std::endl;
+    return 1;
+  }
 
   NodeInfo node_info;
   node_info.set_name(delegate.name());

@@ -12,8 +12,11 @@ class CameraPublishingNode : public NodeLifecycle {
  public:
   CameraPublishingNode(const std::string& topic,
                        const std::string& channel_type,
-                       const std::string& device_id, size_t buffer_size)
-      : topic_(topic), device_id_(device_id), buffer_size_(buffer_size) {
+                       const CameraDescriptor& camera_descriptor,
+                       size_t buffer_size)
+      : topic_(topic),
+        camera_descriptor_(camera_descriptor),
+        buffer_size_(buffer_size) {
     if (channel_type.compare("TCP") == 0) {
       channel_def_.set_type(ChannelDef::TCP);
     } else if (channel_type.compare("UDP") == 0) {
@@ -23,8 +26,7 @@ class CameraPublishingNode : public NodeLifecycle {
 
   void OnInit() override {
     std::cout << "CameraPublishingNode::OnInit()" << std::endl;
-    CameraDescriptor descriptor("simple camera", device_id_);
-    camera_ = CameraFactory::NewCamera(descriptor);
+    camera_ = CameraFactory::NewCamera(camera_descriptor_);
     CHECK(camera_->Init().ok());
   }
 
@@ -100,7 +102,7 @@ class CameraPublishingNode : public NodeLifecycle {
   NodeInfo node_info_;
   std::string topic_;
   ChannelDef channel_def_;
-  std::string device_id_;
+  CameraDescriptor camera_descriptor_;
   size_t buffer_size_;
   Publisher<CameraMessage> publisher_;
   std::unique_ptr<CameraInterface> camera_;

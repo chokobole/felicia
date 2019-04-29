@@ -13,7 +13,6 @@
 
 #include "third_party/chromium/base/win/scoped_com_initializer.h"
 
-#include "felicia/drivers/camera/camera_descriptor.h"
 #include "felicia/drivers/camera/camera_interface.h"
 #include "felicia/drivers/camera/win/sink_filter.h"
 
@@ -43,14 +42,18 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
 
   ~DshowCamera();
 
+  // Needed by CameraFactory
+  static Status GetCameraDescriptors(CameraDescriptors* camera_descriptors);
+
   // CameraInterface methods
   Status Init() override;
   Status Start(CameraFrameCallback camera_frame_callback,
                StatusCallback status_callback) override;
   Status Close() override;
 
-  StatusOr<CameraFormat> GetFormat() override;
-  Status SetFormat(const CameraFormat& format) override;
+  Status GetSupportedCameraFormats(CameraFormats* camera_formats) override;
+  StatusOr<CameraFormat> GetCurrentCameraFormat() override;
+  Status SetCameraFormat(const CameraFormat& format) override;
 
   // SinkFilterObserver methods
   void FrameReceived(const uint8_t* buffer, int length,

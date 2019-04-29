@@ -2,6 +2,7 @@
 #define FELICIA_DRIVERS_CAMERA_CAMERA_FORMAT_H_
 
 #include <string>
+#include <vector>
 
 #include "third_party/chromium/build/build_config.h"
 
@@ -53,6 +54,8 @@ class EXPORT CameraFormat {
   Sizei size_;
   float frame_rate_ = 0;
 };
+
+using CameraFormats = std::vector<CameraFormat>;
 
 }  // namespace felicia
 

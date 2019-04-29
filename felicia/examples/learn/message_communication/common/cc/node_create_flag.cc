@@ -18,7 +18,10 @@ NodeCreateFlag::NodeCreateFlag() {
   }
   {
     StringFlag::Builder builder(MakeValueStore(&name_));
-    auto flag = builder.SetLongName("--name").SetHelp("name for node").Build();
+    auto flag = builder.SetShortName("-n")
+                    .SetLongName("--name")
+                    .SetHelp("name for node")
+                    .Build();
     name_flag_ = std::make_unique<StringFlag>(flag);
   }
   {
@@ -33,7 +36,8 @@ NodeCreateFlag::NodeCreateFlag() {
   {
     StringChoicesFlag::Builder builder(MakeValueStore<std::string>(
         &channel_type_, "TCP", Choices<std::string>{"TCP", "UDP"}));
-    auto flag = builder.SetLongName("--channel_type")
+    auto flag = builder.SetShortName("-c")
+                    .SetLongName("--channel_type")
                     .SetHelp(
                         "protocol to deliver message, it only works for "
                         "publishing node")

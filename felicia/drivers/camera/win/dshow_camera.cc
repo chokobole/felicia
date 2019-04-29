@@ -101,6 +101,12 @@ DshowCamera::~DshowCamera() {
   if (capture_graph_builder_.Get()) capture_graph_builder_.Reset();
 }
 
+// static
+Status DshowCamera::GetCameraDescriptors(
+    CameraDescriptors* camera_descriptors) {
+  return errors::Unimplemented("Not implemented yet.");
+}
+
 Status DshowCamera::Init() {
   HRESULT hr =
       GetDeviceFilter(descriptor_.device_id(), capture_filter_.GetAddressOf());
@@ -138,7 +144,7 @@ Status DshowCamera::Init() {
   hr = graph_builder_->AddFilter(sink_filter_.get(), NULL);
   if (FAILED(hr)) return errors::FailedtoAddSinkFilter(hr);
 
-  StatusOr<CameraFormat> status_or = GetFormat();
+  StatusOr<CameraFormat> status_or = GetCurrentCameraFormat();
   if (!status_or.ok()) return status_or.status();
 
   camera_format_ = status_or.ValueOrDie();
@@ -174,9 +180,15 @@ Status DshowCamera::Start(CameraFrameCallback camera_frame_callback,
   return Status::OK();
 }
 
-Status DshowCamera::Close() { return Status::OK(); }
+Status DshowCamera::Close() {
+  return errors::Unimplemented("Not implemented yet.");
+}
 
-StatusOr<CameraFormat> DshowCamera::GetFormat() {
+Status DshowCamera::GetSupportedCameraFormats(CameraFormats* camera_formats) {
+  return errors::Unimplemented("Not implemented yet.");
+}
+
+StatusOr<CameraFormat> DshowCamera::GetCurrentCameraFormat() {
   ComPtr<IAMStreamConfig> stream_config;
   HRESULT hr = output_capture_pin_.CopyTo(stream_config.GetAddressOf());
   if (FAILED(hr)) {
@@ -210,9 +222,8 @@ StatusOr<CameraFormat> DshowCamera::GetFormat() {
   return camera_format;
 }
 
-Status DshowCamera::SetFormat(const CameraFormat& format) {
-  LOG(ERROR) << "Sorry it's not implemented yet.";
-  return Status::OK();
+Status DshowCamera::SetCameraFormat(const CameraFormat& format) {
+  return errors::Unimplemented("Not implemented yet.");
 }
 
 void DshowCamera::FrameReceived(const uint8_t* buffer, int length,

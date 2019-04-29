@@ -1,9 +1,10 @@
 #ifndef FELICIA_DRIVERS_CAMERA_CAMERA_DESCRIPTOR_H_
 #define FELICIA_DRIVERS_CAMERA_CAMERA_DESCRIPTOR_H_
 
-#include "felicia/core/lib/base/export.h"
-
 #include <string>
+#include <vector>
+
+#include "felicia/core/lib/base/export.h"
 
 namespace felicia {
 
@@ -18,9 +19,13 @@ class EXPORT CameraDescriptor {
   const std::string& display_name() const;
   const std::string& device_id() const;
 
+  std::string ToString() const;
+
   std::string display_name_;
   std::string device_id_;
 };
+
+using CameraDescriptors = std::vector<CameraDescriptor>;
 
 }  // namespace felicia
 

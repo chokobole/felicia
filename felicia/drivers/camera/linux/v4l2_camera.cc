@@ -60,13 +60,18 @@ V4l2Camera::~V4l2Camera() {
   if (thread_.IsRunning()) thread_.Stop();
 }
 
+// static
+Status V4l2Camera::GetCameraDescriptors(CameraDescriptors* camera_descriptors) {
+  return errors::Unimplemented("Not implemented yet.");
+}
+
 Status V4l2Camera::Init() {
   Status s = InitDevice();
   if (!s.ok()) {
     return s;
   }
 
-  StatusOr<CameraFormat> status_or = GetFormat();
+  StatusOr<CameraFormat> status_or = GetCurrentCameraFormat();
   if (!status_or.ok()) {
     return status_or.status();
   }
@@ -110,12 +115,16 @@ Status V4l2Camera::Close() {
   return Status::OK();
 }
 
-StatusOr<CameraFormat> V4l2Camera::GetFormat() {
+Status V4l2Camera::GetSupportedCameraFormats(CameraFormats* camera_formats) {
+  return errors::Unimplemented("Not implemented yet.");
+}
+
+StatusOr<CameraFormat> V4l2Camera::GetCurrentCameraFormat() {
   struct v4l2_format format;
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
   if (DoIoctl(VIDIOC_G_FMT, &format) < 0) {
-    return errors::FailedToGetFormat();
+    return errors::FailedToGetCameraFormat();
   }
 
   return CameraFormat(
@@ -123,7 +132,7 @@ StatusOr<CameraFormat> V4l2Camera::GetFormat() {
       CameraFormat::FromV4l2PixelFormat(format.fmt.pix.pixelformat));
 }
 
-Status V4l2Camera::SetFormat(const CameraFormat& camera_format) {
+Status V4l2Camera::SetCameraFormat(const CameraFormat& camera_format) {
   struct v4l2_format format;
   FillV4L2Format(&format, camera_format.width(), camera_format.height(),
                  camera_format.ToV4l2PixelFormat());

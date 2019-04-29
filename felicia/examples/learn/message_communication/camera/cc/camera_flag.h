@@ -10,19 +10,24 @@ class CameraFlag : public NodeCreateFlag {
   CameraFlag();
   ~CameraFlag();
 
-  const std::string& device_id() const { return device_id_; }
+  bool device_list() const { return device_list_; }
+  size_t device_index() const { return device_index_; }
   size_t buffer_size() const { return buffer_size_; }
 
   bool Parse(FlagParser& parser) override;
 
+  bool Validate() const override;
+
   AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(name_flag_, topic_flag_,
-                                          channel_type_flag_, device_id_flag_,
-                                          buffer_size_flag_)
+                                          channel_type_flag_, device_list_flag_,
+                                          device_index_flag_, buffer_size_flag_)
 
  private:
-  std::string device_id_;
+  bool device_list_;
+  size_t device_index_;
   size_t buffer_size_;
-  std::unique_ptr<StringDefaultFlag> device_id_flag_;
+  std::unique_ptr<BoolFlag> device_list_flag_;
+  std::unique_ptr<Flag<size_t>> device_index_flag_;
   std::unique_ptr<DefaultFlag<size_t>> buffer_size_flag_;
 };
 

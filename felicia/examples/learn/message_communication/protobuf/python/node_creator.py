@@ -39,7 +39,10 @@ def main():
     if not parser.parse(len(sys.argv), sys.argv, delegate):
         sys.exit(1)
 
-    fel.MasterProxy.start()
+    s = fel.MasterProxy.start()
+    if not s.ok():
+        print("{} {}.".format(cli.TextStyle.red("Error:"), s), file=sys.stderr)
+        sys.exit(1)
 
     node_info = NodeInfo()
     node_info.name = delegate.name_flag.value()

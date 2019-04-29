@@ -3,6 +3,7 @@
 
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/statusor.h"
+#include "felicia/drivers/camera/camera_descriptor.h"
 #include "felicia/drivers/camera/camera_format.h"
 #include "felicia/drivers/camera/camera_frame.h"
 
@@ -18,8 +19,9 @@ class EXPORT CameraInterface {
                        StatusCallback status_callback) = 0;
   virtual Status Close() = 0;
 
-  virtual StatusOr<CameraFormat> GetFormat() = 0;
-  virtual Status SetFormat(const CameraFormat& format) = 0;
+  virtual Status GetSupportedCameraFormats(CameraFormats* camera_formats) = 0;
+  virtual StatusOr<CameraFormat> GetCurrentCameraFormat() = 0;
+  virtual Status SetCameraFormat(const CameraFormat& format) = 0;
 
  protected:
   CameraFrameCallback camera_frame_callback_;
