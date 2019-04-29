@@ -11,15 +11,16 @@ namespace felicia {
 
 class EXPORT NodeLifecycle {
  public:
-  constexpr NodeLifecycle() = default;
+  NodeLifecycle();
+  virtual ~NodeLifecycle();
 
   // Life cycle functions
   // It is called before created, each node has to initialize.
-  virtual void OnInit() {}
+  virtual void OnInit();
   // It is called when succeeded to be created.
-  virtual void OnDidCreate(const NodeInfo& node_info) {}
+  virtual void OnDidCreate(const NodeInfo& node_info);
   // It is called when error happens
-  virtual void OnError(const Status& status) {}
+  virtual void OnError(const Status& status);
 
   DISALLOW_COPY_AND_ASSIGN(NodeLifecycle);
 };

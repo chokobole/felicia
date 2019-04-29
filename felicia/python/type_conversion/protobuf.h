@@ -36,7 +36,7 @@
           pybind11::module::import(#Module).attr(#PyType)();               \
       object.attr("ParseFromString")(pybind11::bytes(text));               \
       object.inc_ref();                                                    \
-      return object;                                                       \
+      return std::move(object);                                            \
     }                                                                      \
   };                                                                       \
   }                                                                        \

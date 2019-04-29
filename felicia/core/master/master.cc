@@ -472,10 +472,13 @@ void Master::DoNotifySubscriber(const NodeInfo& subscribing_node_info,
 
   channel->SetSendBufferSize(kTopicInfoBytes);
 
-  auto it = client_map_.find(subscribing_node_info.client_id());
-  if (it == client_map_.end()) return;
-  const ChannelSource& channel_source =
-      it->second->client_info().topic_info_watcher_source();
+  ChannelSource channel_source;
+  {
+    ::base::AutoLock l(lock_);
+    auto it = client_map_.find(subscribing_node_info.client_id());
+    if (it == client_map_.end()) return;
+    channel_source = it->second->client_info().topic_info_watcher_source();
+  }
 
   channel->Connect(channel_source,
                    ::base::BindOnce(&Master::OnConnetToTopicInfoWatcher,
@@ -490,12 +493,9 @@ void Master::NotifySubscriber(const std::string& topic,
   std::vector<::base::WeakPtr<Node>> publishing_nodes = FindNodes(node_filter);
   if (publishing_nodes.size() > 0) {
     ::base::WeakPtr<Node> publishing_node = publishing_nodes[0];
-    {
-      ::base::AutoLock l(lock_);
-      if (publishing_node)
-        DoNotifySubscriber(subscribing_node_info,
-                           publishing_node->GetTopicInfo(topic));
-    }
+    if (publishing_node)
+      DoNotifySubscriber(subscribing_node_info,
+                         publishing_node->GetTopicInfo(topic));
   }
 }
 
@@ -509,7 +509,6 @@ void Master::NotifyAllSubscribers(const TopicInfo& topic_info) {
   subscribing_nodes.insert(subscribing_nodes.end(), watcher_nodes.begin(),
                            watcher_nodes.end());
   {
-    ::base::AutoLock l(lock_);
     for (auto& subscribing_node : subscribing_nodes) {
       if (subscribing_node)
         DoNotifySubscriber(subscribing_node->node_info(), topic_info);
@@ -526,12 +525,9 @@ void Master::NotifyWatcher() {
   std::vector<TopicInfo> topic_infos = FindTopicInfos(topic_filter);
   if (watcher_nodes.size() > 0) {
     ::base::WeakPtr<Node> watcher_node = watcher_nodes[0];
-    {
-      ::base::AutoLock l(lock_);
-      if (watcher_node) {
-        for (TopicInfo& topic_info : topic_infos) {
-          DoNotifySubscriber(watcher_node->node_info(), topic_info);
-        }
+    if (watcher_node) {
+      for (TopicInfo& topic_info : topic_infos) {
+        DoNotifySubscriber(watcher_node->node_info(), topic_info);
       }
     }
   }

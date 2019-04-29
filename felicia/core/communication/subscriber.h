@@ -27,7 +27,7 @@ class Subscriber {
   using OnErrorCallback = ::base::RepeatingCallback<void(const Status& s)>;
 
   Subscriber() { state_.ToUneregistered(); }
-  ~Subscriber() { DCHECK(IsStopped()); }
+  virtual ~Subscriber() { DCHECK(IsStopped()); }
 
   ALWAYS_INLINE bool IsRegistering() const { return state_.IsRegistering(); }
   ALWAYS_INLINE bool IsRegistered() const { return state_.IsRegistered(); }

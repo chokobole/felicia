@@ -15,6 +15,7 @@ fel_cc_library(
 
 fel_cc_library(
     name = "node_lifecycle",
+    srcs = ["node_lifecycle.cc"],
     hdrs = ["node_lifecycle.h"],
     deps = [
         "//felicia/core/lib",

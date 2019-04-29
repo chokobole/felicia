@@ -24,7 +24,7 @@ class Publisher {
  public:
   Publisher() { state_.ToUneregistered(); }
 
-  ~Publisher() { DCHECK(IsUnregistered()); }
+  virtual ~Publisher() { DCHECK(IsUnregistered()); }
 
   ALWAYS_INLINE bool IsRegistering() const { return state_.IsRegistering(); }
   ALWAYS_INLINE bool IsRegistered() const { return state_.IsRegistered(); }

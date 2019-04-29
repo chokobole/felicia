@@ -7,8 +7,7 @@
 
 namespace felicia {
 
-TopicInfoWatcher::TopicInfoWatcher(TaskRunnerInterface* task_runner_interface)
-    : task_runner_interface_(task_runner_interface) {}
+TopicInfoWatcher::TopicInfoWatcher() {}
 
 void TopicInfoWatcher::RegisterCallback(const std::string& topic,
                                         NewTopicInfoCallback callback) {

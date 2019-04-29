@@ -32,7 +32,7 @@ struct type_caster<::felicia::Test2> {
     object.attr("content") = src.content();
     object.inc_ref();
 
-    return object;
+    return std::move(object);
   }
 };
 

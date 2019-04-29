@@ -24,8 +24,7 @@ bool g_on_background = false;
 
 }  // namespace
 
-MasterProxy::MasterProxy()
-    : topic_info_watcher_(this), heart_beat_signaller_(this) {
+MasterProxy::MasterProxy() : heart_beat_signaller_(this) {
   if (g_on_background) {
     thread_ = std::make_unique<::base::Thread>("MasterProxy");
   } else {

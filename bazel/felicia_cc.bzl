@@ -1,6 +1,6 @@
 load(":felicia.bzl", "if_windows")
 load("//third_party/chromium/build/config/win:build.bzl", "default_win_build_config")
-load("@cc//:compiler.bzl", "is_mac")
+load("@cc//:compiler.bzl", "is_clang", "is_mac")
 
 def define(flags):
     window_defines = ["/D" + flag for flag in flags]
@@ -27,7 +27,14 @@ def _fel_win_copts(is_external = False):
 
 def fel_copts(is_external = False):
     """ C options for felicia projet. """
-    return include(["third_party/chromium"]) + if_windows(_fel_win_copts(is_external)) + select({
+    COPTS = []
+    if is_clang():
+        COPTS.extend([
+            "-Werror=thread-safety-analysis",
+            "-Werror=delete-non-virtual-dtor",
+            "-Werror=return-std-move",
+        ])
+    return COPTS + include(["third_party/chromium"]) + if_windows(_fel_win_copts(is_external)) + select({
         "//felicia:windows": [],
         "//conditions:default": ["-Werror=switch"],
     })
