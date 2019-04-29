@@ -18,12 +18,6 @@ inline ::felicia::Status NotAV4l2Device(const std::string& device_id) {
                                        device_id.c_str()));
 }
 
-inline ::felicia::Status NoCapability(const std::string& device_id,
-                                      const std::string& capability) {
-  return NotFound(::base::StringPrintf("The camera %s has no %s.",
-                                       device_id.c_str(), capability.c_str()));
-}
-
 inline ::felicia::Status FailedToRequestMmapBuffers() {
   return Unavailable("Failed to request mmap buffers from V4L2.");
 }

@@ -26,7 +26,7 @@ Status AvfCamera::GetCameraDescriptors(CameraDescriptors* camera_descriptors) {
   for (NSString* key in capture_devices) {
     const std::string device_id = [key UTF8String];
     const std::string display_name = [[[capture_devices valueForKey:key] deviceName] UTF8String];
-    camera_descriptors->push_back({display_name, device_id});
+    camera_descriptors->emplace_back(display_name, device_id);
   }
   return Status::OK();
 }

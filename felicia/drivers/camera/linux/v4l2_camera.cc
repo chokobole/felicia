@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // Modified by Wonyong Kim(chokobole33@gmail.com)
+// Followings are taken and modified from
+// https://github.com/chromium/chromium/blob/5db095c2653f332334d56ad739ae5fe1053308b1/media/capture/video/linux/v4l2_capture_delegate.cc
+// https://github.com/chromium/chromium/blob/5db095c2653f332334d56ad739ae5fe1053308b1/media/capture/video/linux/video_capture_device_factory_linux.cc
 
 #include "felicia/drivers/camera/linux/v4l2_camera.h"
 
@@ -11,8 +14,12 @@
 #include <sys/mman.h>
 
 #include "third_party/chromium/base/bind.h"
+#include "third_party/chromium/base/files/file_enumerator.h"
+#include "third_party/chromium/base/files/file_util.h"
+#include "third_party/chromium/base/files/scoped_file.h"
 #include "third_party/chromium/base/posix/eintr_wrapper.h"
 #include "third_party/chromium/base/stl_util.h"
+#include "third_party/chromium/base/strings/stringprintf.h"
 
 #include "felicia/drivers/camera/camera_errors.h"
 
@@ -51,6 +58,76 @@ void FillV4L2RequestBuffer(v4l2_requestbuffers* requestbuffers, int count) {
   requestbuffers->count = count;
 }
 
+// USB VID and PID are both 4 bytes long.
+const size_t kVidPidSize = 4;
+const size_t kMaxInterfaceNameSize = 256;
+
+// /sys/class/video4linux/video{N}/device is a symlink to the corresponding
+// USB device info directory.
+const char kVidPathTemplate[] = "/sys/class/video4linux/%s/device/../idVendor";
+const char kPidPathTemplate[] = "/sys/class/video4linux/%s/device/../idProduct";
+const char kInterfacePathTemplate[] =
+    "/sys/class/video4linux/%s/device/interface";
+
+bool ReadIdFile(const std::string& path, std::string* id) {
+  char id_buf[kVidPidSize];
+  FILE* file = fopen(path.c_str(), "rb");
+  if (!file) return false;
+  const bool success = fread(id_buf, kVidPidSize, 1, file) == 1;
+  fclose(file);
+  if (!success) return false;
+  id->append(id_buf, kVidPidSize);
+  return true;
+}
+
+std::string ExtractFileNameFromDeviceId(const std::string& device_id) {
+  // |unique_id| is of the form "/dev/video2".  |file_name| is "video2".
+  const char kDevDir[] = "/dev/";
+  DCHECK(base::StartsWith(device_id, kDevDir, base::CompareCase::SENSITIVE));
+  return device_id.substr(strlen(kDevDir), device_id.length());
+}
+
+class DevVideoFilePathsDeviceProvider {
+ public:
+  void GetDeviceIds(std::vector<std::string>* target_container) {
+    const ::base::FilePath path("/dev/");
+    ::base::FileEnumerator enumerator(path, false, base::FileEnumerator::FILES,
+                                      "video*");
+    while (!enumerator.Next().empty()) {
+      const ::base::FileEnumerator::FileInfo info = enumerator.GetInfo();
+      target_container->emplace_back(path.value() + info.GetName().value());
+    }
+  }
+
+  std::string GetDeviceModelId(const std::string& device_id) {
+    const std::string file_name = ExtractFileNameFromDeviceId(device_id);
+    std::string usb_id;
+    const std::string vid_path =
+        ::base::StringPrintf(kVidPathTemplate, file_name.c_str());
+    if (!ReadIdFile(vid_path, &usb_id)) return usb_id;
+
+    usb_id.append(":");
+    const std::string pid_path =
+        base::StringPrintf(kPidPathTemplate, file_name.c_str());
+    if (!ReadIdFile(pid_path, &usb_id)) usb_id.clear();
+
+    return usb_id;
+  }
+
+  std::string GetDeviceDisplayName(const std::string& device_id) {
+    const std::string file_name = ExtractFileNameFromDeviceId(device_id);
+    const std::string interface_path =
+        ::base::StringPrintf(kInterfacePathTemplate, file_name.c_str());
+    std::string display_name;
+    if (!::base::ReadFileToStringWithMaxSize(::base::FilePath(interface_path),
+                                             &display_name,
+                                             kMaxInterfaceNameSize)) {
+      return std::string();
+    }
+    return display_name;
+  }
+};
+
 }  // namespace
 
 V4l2Camera::V4l2Camera(const CameraDescriptor& descriptor)
@@ -62,7 +139,31 @@ V4l2Camera::~V4l2Camera() {
 
 // static
 Status V4l2Camera::GetCameraDescriptors(CameraDescriptors* camera_descriptors) {
-  return errors::Unimplemented("Not implemented yet.");
+  DevVideoFilePathsDeviceProvider device_provider;
+  std::vector<std::string> filepaths;
+  device_provider.GetDeviceIds(&filepaths);
+  for (auto& unique_id : filepaths) {
+    ::base::ScopedFD fd(HANDLE_EINTR(open(unique_id.c_str(), O_RDONLY)));
+    if (!fd.is_valid()) {
+      DLOG(ERROR) << "Couldn't open " << unique_id;
+      continue;
+    }
+
+    v4l2_capability cap;
+    if (!(DoIoctl(fd.get(), VIDIOC_QUERYCAP, &cap) == 0) &&
+        (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) &&
+        !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)) {
+      continue;
+    }
+
+    // const std::string model_id =
+    // device_provider_->GetDeviceModelId(unique_id);
+    std::string display_name = device_provider.GetDeviceDisplayName(unique_id);
+    if (display_name.empty()) display_name = reinterpret_cast<char*>(cap.card);
+    camera_descriptors->emplace_back(display_name, unique_id);
+  }
+
+  return Status::OK();
 }
 
 Status V4l2Camera::Init() {
@@ -87,13 +188,13 @@ Status V4l2Camera::Start(CameraFrameCallback camera_frame_callback,
     v4l2_buffer buffer;
     FillV4L2Buffer(&buffer, i);
 
-    if (DoIoctl(VIDIOC_QBUF, &buffer) < 0) {
+    if (DoIoctl(fd_, VIDIOC_QBUF, &buffer) < 0) {
       return errors::FailedToEnqueueBuffer();
     }
   }
 
   v4l2_buf_type capture_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  if (DoIoctl(VIDIOC_STREAMON, &capture_type) < 0) {
+  if (DoIoctl(fd_, VIDIOC_STREAMON, &capture_type) < 0) {
     return errors::FailedToStream();
   }
 
@@ -123,7 +224,7 @@ StatusOr<CameraFormat> V4l2Camera::GetCurrentCameraFormat() {
   struct v4l2_format format;
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
-  if (DoIoctl(VIDIOC_G_FMT, &format) < 0) {
+  if (DoIoctl(fd_, VIDIOC_G_FMT, &format) < 0) {
     return errors::FailedToGetCameraFormat();
   }
 
@@ -136,7 +237,7 @@ Status V4l2Camera::SetCameraFormat(const CameraFormat& camera_format) {
   struct v4l2_format format;
   FillV4L2Format(&format, camera_format.width(), camera_format.height(),
                  camera_format.ToV4l2PixelFormat());
-  if (DoIoctl(VIDIOC_S_FMT, &format) < 0) {
+  if (DoIoctl(fd_, VIDIOC_S_FMT, &format) < 0) {
     return errors::FailedToSetFormat(camera_format);
   }
   camera_format_ = camera_format;
@@ -150,12 +251,10 @@ Status V4l2Camera::InitDevice() {
     return errors::FailedToOpenCamera(device_id);
 
   v4l2_capability cap;
-  if (DoIoctl(VIDIOC_QUERYCAP, &cap) < 0) {
+  if (!(DoIoctl(fd_, VIDIOC_QUERYCAP, &cap) == 0) &&
+      (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) &&
+      !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)) {
     return errors::NotAV4l2Device(device_id);
-  }
-
-  if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)) {
-    return errors::NoCapability(device_id, "Video Capture Interface");
   }
 
   return Status::OK();
@@ -165,7 +264,7 @@ Status V4l2Camera::InitMmap() {
   v4l2_requestbuffers requestbuffers;
   FillV4L2RequestBuffer(&requestbuffers, kNumVideoBuffers);
 
-  if (DoIoctl(VIDIOC_REQBUFS, &requestbuffers) < 0) {
+  if (DoIoctl(fd_, VIDIOC_REQBUFS, &requestbuffers) < 0) {
     return errors::FailedToRequestMmapBuffers();
   }
 
@@ -173,7 +272,7 @@ Status V4l2Camera::InitMmap() {
     v4l2_buffer buffer;
     FillV4L2Buffer(&buffer, i);
 
-    if (DoIoctl(VIDIOC_QUERYBUF, &buffer) < 0) {
+    if (DoIoctl(fd_, VIDIOC_QUERYBUF, &buffer) < 0) {
       return errors::FailedToRequestMmapBuffers();
     }
 
@@ -193,7 +292,7 @@ void V4l2Camera::DoTakePhoto() {
 
   v4l2_buffer buffer;
   FillV4L2Buffer(&buffer, 0);
-  if (DoIoctl(VIDIOC_DQBUF, &buffer) < 0) {
+  if (DoIoctl(fd_, VIDIOC_DQBUF, &buffer) < 0) {
     status_callback_.Run(errors::FailedToDequeueBuffer());
     return;
   }
@@ -220,7 +319,7 @@ void V4l2Camera::DoTakePhoto() {
     }
   }
 
-  if (DoIoctl(VIDIOC_QBUF, &buffer) < 0) {
+  if (DoIoctl(fd_, VIDIOC_QBUF, &buffer) < 0) {
     status_callback_.Run(errors::FailedToEnqueueBuffer());
     return;
   }
@@ -229,15 +328,17 @@ void V4l2Camera::DoTakePhoto() {
       FROM_HERE, ::base::BindOnce(&V4l2Camera::DoTakePhoto, AsWeakPtr()));
 }
 
-int V4l2Camera::DoIoctl(int request, void* argp) {
-  int ret = HANDLE_EINTR(ioctl(fd_, request, argp));
+// static
+int V4l2Camera::DoIoctl(int fd, int request, void* argp) {
+  int ret = HANDLE_EINTR(ioctl(fd, request, argp));
   DPLOG_IF(ERROR, ret < 0) << "ioctl";
   return ret;
 }
 
-bool V4l2Camera::RunIoctl(int request, void* argp) {
+// static
+bool V4l2Camera::RunIoctl(int fd, int request, void* argp) {
   int num_retries = 0;
-  for (; DoIoctl(request, argp) < 0 && num_retries < kMaxIOCtrlRetries;
+  for (; DoIoctl(fd, request, argp) < 0 && num_retries < kMaxIOCtrlRetries;
        ++num_retries) {
     DPLOG(WARNING) << "ioctl";
   }

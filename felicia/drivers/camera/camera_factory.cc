@@ -28,6 +28,7 @@ std::unique_ptr<CameraInterface> CameraFactory::NewCamera(
 // static
 Status CameraFactory::GetCameraDescriptors(
     CameraDescriptors* camera_descriptors) {
+  DCHECK(camera_descriptors->empty());
   return Camera::GetCameraDescriptors(camera_descriptors);
 }
 
