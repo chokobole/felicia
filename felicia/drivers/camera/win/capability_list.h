@@ -46,6 +46,12 @@ struct Capability {
 
 typedef std::list<Capability> CapabilityList;
 
+// NOTE: Unlike chromium, in felicia, at least |requested|'s |pixel_format|
+// should be equal to the candidate. So if any candidates are not matched,
+// then it can return nullptr.
+const Capability* GetBestMatchedCapability(const CameraFormat& requested,
+                                           const CapabilityList& capabilities);
+
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_WIN_CAPABILITY_LIST_H_

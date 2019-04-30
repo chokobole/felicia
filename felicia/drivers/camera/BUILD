@@ -51,6 +51,7 @@ fel_cc_library(
         "linux/v4l2_camera_format.cc",
     ]) + if_windows([
         "win/capability_list.h",
+        "win/capability_list.cc",
         "win/dshow_camera.cc",
         "win/dshow_camera_format.cc",
         "win/sink_filter_observer.h",

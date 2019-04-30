@@ -209,7 +209,7 @@ Status DshowCamera::Init() {
   if (FAILED(hr)) return errors::FailedToAddCaptureFilter(hr);
 
   hr = graph_builder_->AddFilter(sink_filter_.get(), NULL);
-  if (FAILED(hr)) return errors::FailedtoAddSinkFilter(hr);
+  if (FAILED(hr)) return errors::FailedToAddSinkFilter(hr);
 
   StatusOr<CameraFormat> status_or = GetCurrentCameraFormat();
   if (!status_or.ok()) return status_or.status();
@@ -217,7 +217,7 @@ Status DshowCamera::Init() {
   camera_format_ = status_or.ValueOrDie();
   DLOG(INFO) << "Default Format: " << camera_format_.ToString();
 
-  return Status::OK();
+  return CreateCapabilityMap();
 }
 
 Status DshowCamera::Start(CameraFrameCallback camera_frame_callback,
@@ -261,7 +261,7 @@ StatusOr<CameraFormat> DshowCamera::GetCurrentCameraFormat() {
   DshowCamera::ScopedMediaType media_type;
   hr = stream_config->GetFormat(media_type.Receive());
   if (FAILED(hr)) {
-    return errors::FailedToGetFormatFromIAMStreamConfig(hr);
+    return errors::FailedToGetFormat(hr);
   }
 
   if (!(media_type->majortype == MEDIATYPE_Video &&
@@ -274,28 +274,73 @@ StatusOr<CameraFormat> DshowCamera::GetCurrentCameraFormat() {
       CameraFormat::FromMediaSubtype(media_type->subtype));
   VIDEOINFOHEADER* h = reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
   camera_format.SetSize(h->bmiHeader.biWidth, h->bmiHeader.biHeight);
-
-  // Get interface used for getting the frame rate.
-  // ComPtr<IAMVideoControl> video_control;
-  // hr = capture_filter_.CopyTo(video_control.GetAddressOf());
-  // if (FAILED(hr)) {
-  //   return errors::FailedToGetIAMVideoControl(hr);
-  // }
+  camera_format.set_frame_rate(kSecondsToReferenceTime /
+                               static_cast<float>(h->AvgTimePerFrame));
 
   return camera_format;
 }
 
-Status DshowCamera::SetCameraFormat(const CameraFormat& format) {
-  return errors::Unimplemented("Not implemented yet.");
+Status DshowCamera::SetCameraFormat(const CameraFormat& camera_format) {
+  // Get the camera capability that best match the requested format.
+  const Capability* found_capability =
+      GetBestMatchedCapability(camera_format, capabilities_);
+
+  if (!found_capability) {
+    return errors::FailedToGetBestMatchedCapability();
+  }
+
+  // Reduce the frame rate if the requested frame rate is lower
+  // than the capability.
+  const float frame_rate =
+      std::min(camera_format.frame_rate(),
+               found_capability->supported_format.frame_rate());
+
+  ComPtr<IAMStreamConfig> stream_config;
+  HRESULT hr = output_capture_pin_.CopyTo(stream_config.GetAddressOf());
+  if (FAILED(hr)) {
+    return errors::FailedToGetIAMStreamConfig(hr);
+  }
+
+  int count = 0, size = 0;
+  hr = stream_config->GetNumberOfCapabilities(&count, &size);
+  if (FAILED(hr)) {
+    return errors::FailedToGetNumberOfCapabilities(hr);
+  }
+
+  std::unique_ptr<BYTE[]> caps(new BYTE[size]);
+  ScopedMediaType media_type;
+
+  // Get the windows capability from the capture device.
+  // GetStreamCaps can return S_FALSE which we consider an error. Therefore the
+  // FAILED macro can't be used.
+  hr = stream_config->GetStreamCaps(found_capability->media_type_index,
+                                    media_type.Receive(), caps.get());
+  if (hr != S_OK) {
+    return errors::FailedToGetStreamCaps(hr);
+  }
+
+  // Set the sink filter to request this format.
+  sink_filter_->SetRequestedMediaFormat(camera_format.pixel_format(),
+                                        camera_format.frame_rate(),
+                                        found_capability->info_header);
+  // Order the capture device to use this format.
+  hr = stream_config->SetFormat(media_type.get());
+  if (hr != S_OK) {
+    return errors::FailedToSetFormat(hr);
+  }
+
+  camera_format_ = found_capability->supported_format;
+
+  return Status::OK();
 }
 
 void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
-                                const CameraFormat& format,
+                                const CameraFormat& camera_format,
                                 ::base::TimeDelta timestamp) {
   CameraBuffer camera_buffer(const_cast<uint8_t*>(buffer), length);
   camera_buffer.set_payload(length);
   ::base::Optional<CameraFrame> argb_frame =
-      ConvertToARGB(camera_buffer, format);
+      ConvertToARGB(camera_buffer, camera_format);
   if (argb_frame.has_value()) {
     if (first_ref_time_.is_null()) first_ref_time_ = base::TimeTicks::Now();
 
@@ -312,6 +357,13 @@ void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
 }
 
 void DshowCamera::FrameDropped(const Status& s) { status_callback_.Run(s); }
+
+Status DshowCamera::CreateCapabilityMap() {
+  GetPinCapabilityList(capture_filter_, output_capture_pin_,
+                       true /* query_detailed_frame_rates */, &capabilities_);
+  if (capabilities_.empty()) return errors::FailedToCreateCapabilityMap();
+  return Status::OK();
+}
 
 // static
 HRESULT DshowCamera::EnumerateDirectShowDevices(IEnumMoniker** enum_moniker) {

@@ -2,7 +2,6 @@
 #define FELICIA_DRIVERS_CAMERA_WIN_DSHOW_CAMERA_ERRORS_H_
 
 #include "third_party/chromium/base/logging.h"
-#include "third_party/chromium/base/strings/string_util.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 #include "felicia/core/lib/error/errors.h"
@@ -48,10 +47,14 @@ inline ::felicia::Status FailedToAddCaptureFilter(HRESULT hr) {
                            ::logging::SystemErrorCodeToString(hr).c_str()));
 }
 
-inline ::felicia::Status FailedtoAddSinkFilter(HRESULT hr) {
+inline ::felicia::Status FailedToAddSinkFilter(HRESULT hr) {
   return Unavailable(
       ::base::StringPrintf("Failed to add the sink filter to the graph: %s.",
                            ::logging::SystemErrorCodeToString(hr).c_str()));
+}
+
+inline ::felicia::Status FailedToCreateCapabilityMap() {
+  return FailedPrecondition("Failed to create capability map.");
 }
 
 inline ::felicia::Status FailedToGetIAMStreamConfig(HRESULT hr) {
@@ -60,20 +63,36 @@ inline ::felicia::Status FailedToGetIAMStreamConfig(HRESULT hr) {
                            ::logging::SystemErrorCodeToString(hr).c_str()));
 }
 
-inline ::felicia::Status FailedToGetFormatFromIAMStreamConfig(HRESULT hr) {
+inline ::felicia::Status FailedToGetFormat(HRESULT hr) {
   return Unavailable(
-      ::base::StringPrintf("Failed to get format from IAMStreamConfig: %s.",
+      ::base::StringPrintf("Failed to GetFormat: %s.",
+                           ::logging::SystemErrorCodeToString(hr).c_str()));
+}
+
+inline ::felicia::Status FailedToGetBestMatchedCapability() {
+  return NotFound("Failed to GetBestMatchedCapability.");
+}
+
+inline ::felicia::Status FailedToGetNumberOfCapabilities(HRESULT hr) {
+  return Unavailable(
+      ::base::StringPrintf("Failed to GetNumberOfCapabilities: %s.",
+                           ::logging::SystemErrorCodeToString(hr).c_str()));
+}
+
+inline ::felicia::Status FailedToGetStreamCaps(HRESULT hr) {
+  return Unavailable(
+      ::base::StringPrintf("Failed to GetStreamCaps: %s.",
+                           ::logging::SystemErrorCodeToString(hr).c_str()));
+}
+
+inline ::felicia::Status FailedToSetFormat(HRESULT hr) {
+  return Unavailable(
+      ::base::StringPrintf("Failed to SetFormat: %s.",
                            ::logging::SystemErrorCodeToString(hr).c_str()));
 }
 
 inline ::felicia::Status IsNotAVideoType() {
   return FailedPrecondition("Current video type is not a video type");
-}
-
-inline ::felicia::Status FailedToGetIAMVideoControl(HRESULT hr) {
-  return Unavailable(
-      ::base::StringPrintf("Failed to get IAMVideoControl: %s.",
-                           ::logging::SystemErrorCodeToString(hr).c_str()));
 }
 
 inline ::felicia::Status FailedToConnectTheCaptureGraph(HRESULT hr) {

@@ -23,6 +23,13 @@ class CameraPublishingNode : public NodeLifecycle {
     std::cout << "CameraPublishingNode::OnInit()" << std::endl;
     camera_ = CameraFactory::NewCamera(camera_descriptor_);
     CHECK(camera_->Init().ok());
+    auto status_or = camera_->GetCurrentCameraFormat();
+    if (status_or.ok()) {
+      std::cout << TextStyle::Green("Current Camera Format: ")
+                << status_or.ValueOrDie().ToString() << std::endl;
+    } else {
+      std::cerr << kRedError << status_or.status() << std::endl;
+    }
   }
 
   void OnDidCreate(const NodeInfo& node_info) override {

@@ -66,6 +66,8 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
   void FrameDropped(const Status& s) override;
 
  private:
+  Status CreateCapabilityMap();
+
   static HRESULT EnumerateDirectShowDevices(IEnumMoniker** enum_moniker);
   static HRESULT GetDeviceFilter(const std::string& device_id,
                                  IBaseFilter** filter);
@@ -100,6 +102,9 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
   Microsoft::WRL::ComPtr<IPin> output_capture_pin_;
 
   scoped_refptr<SinkFilter> sink_filter_;
+
+  // Map of all capabilities this device support.
+  CapabilityList capabilities_;
 
   CameraDescriptor camera_descriptor_;
   CameraFormat camera_format_;
