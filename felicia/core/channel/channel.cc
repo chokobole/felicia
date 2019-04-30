@@ -43,7 +43,8 @@ ChannelDef ChannelDefFromString(const std::string& str) {
     channel_def.set_type(ChannelDef::TCP);
   else if (str.compare("UDP") == 0)
     channel_def.set_type(ChannelDef::UDP);
-  LOG(WARNING) << "Unknown String: " << str;
+  else
+    LOG(WARNING) << "Unknown String: " << str;
   return channel_def;
 }
 
