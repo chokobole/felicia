@@ -12,6 +12,7 @@
 #include "third_party/chromium/base/win/scoped_co_mem.h"
 #include "third_party/chromium/base/win/scoped_variant.h"
 
+#include "felicia/drivers/camera/camera_buffer.h"
 #include "felicia/drivers/camera/camera_errors.h"
 #include "felicia/drivers/camera/timestamp_constants.h"
 #include "felicia/drivers/camera/win/sink_input_pin.h"
@@ -278,19 +279,23 @@ Status DshowCamera::SetCameraFormat(const CameraFormat& format) {
 void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
                                 const CameraFormat& format,
                                 ::base::TimeDelta timestamp) {
-  auto new_buffer = std::unique_ptr<uint8_t>(new uint8_t[length]);
-  memcpy(new_buffer.get(), buffer, length);
-  CameraFrame camera_frame(std::move(new_buffer), format);
+  CameraBuffer camera_buffer(const_cast<uint8_t*>(buffer), length);
+  camera_buffer.set_payload(length);
+  ::base::Optional<CameraFrame> argb_frame =
+      ConvertToARGB(camera_buffer, format);
+  if (argb_frame.has_value()) {
+    if (first_ref_time_.is_null()) first_ref_time_ = base::TimeTicks::Now();
 
-  if (first_ref_time_.is_null()) first_ref_time_ = base::TimeTicks::Now();
+    // There is a chance that the platform does not provide us with the
+    // timestamp, in which case, we use reference time to calculate a timestamp.
+    if (timestamp == kNoTimestamp)
+      timestamp = base::TimeTicks::Now() - first_ref_time_;
 
-  // There is a chance that the platform does not provide us with the timestamp,
-  // in which case, we use reference time to calculate a timestamp.
-  if (timestamp == kNoTimestamp)
-    timestamp = base::TimeTicks::Now() - first_ref_time_;
-
-  camera_frame.set_timestamp(timestamp);
-  camera_frame_callback_.Run(std::move(camera_frame));
+    argb_frame.value().set_timestamp(timestamp);
+    camera_frame_callback_.Run(std::move(argb_frame.value()));
+  } else {
+    status_callback_.Run(errors::FailedToConvertToARGB());
+  }
 }
 
 void DshowCamera::FrameDropped(const Status& s) { status_callback_.Run(s); }
