@@ -8,6 +8,8 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+#elif defined(OS_MACOSX)
+typedef uint32_t FourCharCode;
 #endif
 
 #include "felicia/core/lib/base/export.h"
@@ -22,7 +24,6 @@ class EXPORT CameraFormat {
   enum PixelFormat {
 #define PIXEL_FORMAT(format) format,
 #include "felicia/drivers/camera/camera_format_list.h"
-    PIXEL_FORMAT_UNKNOWN,
 #undef PIXEL_FORMAT
   };
 
@@ -50,6 +51,10 @@ class EXPORT CameraFormat {
 #elif defined(OS_WIN)
   const GUID& ToMediaSubtype() const;
   static PixelFormat FromMediaSubtype(const GUID& sub_type);
+#elif defined(OS_MACOSX)
+  FourCharCode ToAVFoundationPixelFormat() const;
+  static PixelFormat FromAVFoundationPixelFormat(
+      const FourCharCode avf_pixel_format);
 #endif
 
  private:

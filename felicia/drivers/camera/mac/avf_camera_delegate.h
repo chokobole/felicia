@@ -13,6 +13,9 @@
 
 #include "third_party/chromium/base/mac/scoped_nsobject.h"
 
+#include "felicia/drivers/camera/camera_descriptor.h"
+#include "felicia/drivers/camera/camera_format.h"
+
 // Small class to bundle device name and connection type into a dictionary.
 @interface DeviceNameAndTransportType : NSObject {
  @private
@@ -33,6 +36,10 @@
 
 // Returns a dictionary of capture devices with friendly name and unique id.
 + (NSDictionary*)deviceNames;
+
+// Retrieve the capture supported formats for a given device |descriptor|.
++ (void)getDevice:(const felicia::CameraDescriptor&)camera_descriptor
+    supportedFormats:(felicia::CameraFormats*)camera_formats;
 
 @end
 

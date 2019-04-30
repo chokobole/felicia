@@ -7,6 +7,10 @@
 
 #import "felicia/drivers/camera/mac/avf_camera_delegate.h"
 
+#import <CoreMedia/CoreMedia.h>
+
+#include "third_party/chromium/base/strings/sys_string_conversions.h"
+
 @implementation DeviceNameAndTransportType
 
 - (id)initWithName:(NSString*)deviceName transportType:(int32_t)transportType {
@@ -56,6 +60,33 @@
   // this might cause instabilities (it did in QTKit), so keep an eye here.
   [self getDeviceNames:deviceNames];
   return deviceNames;
+}
+
++ (void)getDevice:(const felicia::CameraDescriptor&)camera_descriptor
+    supportedFormats:(felicia::CameraFormats*)camera_formats {
+  NSArray* devices = [AVCaptureDevice devices];
+  AVCaptureDevice* device = nil;
+  for (device in devices) {
+    if (base::SysNSStringToUTF8([device uniqueID]) == camera_descriptor.device_id()) break;
+  }
+  if (device == nil) return;
+  for (AVCaptureDeviceFormat* format in device.formats) {
+    // MediaSubType is a CMPixelFormatType but can be used as CVPixelFormatType
+    // as well according to CMFormatDescription.h
+    const felicia::CameraFormat::PixelFormat pixelFormat =
+        felicia::CameraFormat::FromAVFoundationPixelFormat(
+            CMFormatDescriptionGetMediaSubType([format formatDescription]));
+
+    CMVideoDimensions dimensions =
+        CMVideoFormatDescriptionGetDimensions([format formatDescription]);
+
+    for (AVFrameRateRange* frameRate in [format videoSupportedFrameRateRanges]) {
+      felicia::CameraFormat camera_format = felicia::CameraFormat(
+          dimensions.width, dimensions.height, pixelFormat, frameRate.maxFrameRate);
+      camera_formats->push_back(camera_format);
+      DVLOG(2) << camera_descriptor.display_name() << " " << camera_format.ToString();
+    }
+  }
 }
 
 @end

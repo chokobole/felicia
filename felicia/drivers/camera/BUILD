@@ -77,6 +77,7 @@ fel_objc_library(
     non_arc_srcs = if_mac([
         "mac/avf_camera.mm",
         "mac/avf_camera_delegate.mm",
+        "mac/avf_camera_format.mm",
     ]),
     sdk_frameworks = [
         "AVFoundation",

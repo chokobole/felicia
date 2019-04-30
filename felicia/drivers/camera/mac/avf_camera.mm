@@ -40,7 +40,12 @@ Status AvfCamera::GetCameraDescriptors(CameraDescriptors* camera_descriptors) {
 // status
 Status AvfCamera::GetSupportedCameraFormats(const CameraDescriptor& camera_descriptor,
                                             CameraFormats* camera_formats) {
-  return errors::Unimplemented("Not implemented yet.");
+  DCHECK(camera_formats);
+
+  DVLOG(1) << "Enumerating video capture capabilities, AVFoundation";
+  [AvfCameraDelegate getDevice:camera_descriptor supportedFormats:camera_formats];
+
+  return Status::OK();
 }
 
 Status AvfCamera::Init() {

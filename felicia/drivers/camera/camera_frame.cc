@@ -20,6 +20,8 @@ CameraFrame& CameraFrame::operator=(CameraFrame&& other) {
   data_ = std::move(other.data_);
   camera_format_ = other.camera_format_;
   timestamp_ = other.timestamp_;
+
+  return *this;
 }
 
 CameraFrame::~CameraFrame() = default;
