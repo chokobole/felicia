@@ -130,8 +130,8 @@ class DevVideoFilePathsDeviceProvider {
 
 }  // namespace
 
-V4l2Camera::V4l2Camera(const CameraDescriptor& descriptor)
-    : descriptor_(descriptor), thread_("V4l2CameraThread") {}
+V4l2Camera::V4l2Camera(const CameraDescriptor& camera_descriptor)
+    : camera_descriptor_(camera_descriptor), thread_("V4l2CameraThread") {}
 
 V4l2Camera::~V4l2Camera() {
   if (thread_.IsRunning()) thread_.Stop();
@@ -170,11 +170,49 @@ Status V4l2Camera::GetCameraDescriptors(CameraDescriptors* camera_descriptors) {
 // static
 Status V4l2Camera::GetSupportedCameraFormats(
     const CameraDescriptor& camera_descriptor, CameraFormats* camera_formats) {
-  return errors::Unimplemented("Not implemented yet.");
+  DCHECK(camera_formats->empty());
+
+  int fd;
+  Status s = InitDevice(camera_descriptor, &fd);
+  if (!s.ok()) return s;
+
+  v4l2_fmtdesc v4l2_format = {};
+  v4l2_format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  for (; DoIoctl(fd, VIDIOC_ENUM_FMT, &v4l2_format) == 0; ++v4l2_format.index) {
+    CameraFormat camera_format;
+    camera_format.set_pixel_format(
+        CameraFormat::FromV4l2PixelFormat(v4l2_format.pixelformat));
+
+    if (camera_format.pixel_format() == CameraFormat::PIXEL_FORMAT_UNKNOWN)
+      continue;
+
+    v4l2_frmsizeenum frame_size = {};
+    frame_size.pixel_format = v4l2_format.pixelformat;
+    for (; DoIoctl(fd, VIDIOC_ENUM_FRAMESIZES, &frame_size) == 0;
+         ++frame_size.index) {
+      if (frame_size.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
+        camera_format.SetSize(frame_size.discrete.width,
+                              frame_size.discrete.height);
+      } else if (frame_size.type == V4L2_FRMSIZE_TYPE_STEPWISE ||
+                 frame_size.type == V4L2_FRMSIZE_TYPE_CONTINUOUS) {
+        // TODO(mcasas): see http://crbug.com/249953, support these devices.
+        NOTIMPLEMENTED_LOG_ONCE();
+      }
+
+      const std::vector<float> frame_rates = GetFrameRateList(
+          fd, v4l2_format.pixelformat, frame_size.discrete.width,
+          frame_size.discrete.height);
+      for (const auto& frame_rate : frame_rates) {
+        camera_format.set_frame_rate(frame_rate);
+        camera_formats->push_back(camera_format);
+        DVLOG(1) << camera_format.ToString();
+      }
+    }
+  }
 }
 
 Status V4l2Camera::Init() {
-  Status s = InitDevice();
+  Status s = InitDevice(camera_descriptor_, &fd_);
   if (!s.ok()) {
     return s;
   }
@@ -247,19 +285,22 @@ Status V4l2Camera::SetCameraFormat(const CameraFormat& camera_format) {
   return Status::OK();
 }
 
-Status V4l2Camera::InitDevice() {
-  const std::string& device_id = descriptor_.device_id();
-  fd_ = HANDLE_EINTR(open(device_id.c_str(), O_RDWR));
-  if (fd_ == ::base::kInvalidPlatformFile)
+// static
+Status V4l2Camera::InitDevice(const CameraDescriptor& camera_descriptor,
+                              int* fd) {
+  const std::string& device_id = camera_descriptor.device_id();
+  int fd_temp = HANDLE_EINTR(open(device_id.c_str(), O_RDWR));
+  if (fd_temp == ::base::kInvalidPlatformFile)
     return errors::FailedToOpenCamera(device_id);
 
   v4l2_capability cap;
-  if (!(DoIoctl(fd_, VIDIOC_QUERYCAP, &cap) == 0) &&
+  if (!(DoIoctl(fd_temp, VIDIOC_QUERYCAP, &cap) == 0) &&
       (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) &&
       !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)) {
     return errors::NotAV4l2Device(device_id);
   }
 
+  *fd = fd_temp;
   return Status::OK();
 }
 
@@ -347,6 +388,37 @@ bool V4l2Camera::RunIoctl(int fd, int request, void* argp) {
   }
   DPLOG_IF(ERROR, num_retries == kMaxIOCtrlRetries);
   return num_retries != kMaxIOCtrlRetries;
+}
+
+// static
+std::vector<float> V4l2Camera::GetFrameRateList(int fd, uint32_t fourcc,
+                                                uint32_t width,
+                                                uint32_t height) {
+  std::vector<float> frame_rates;
+
+  v4l2_frmivalenum frame_interval = {};
+  frame_interval.pixel_format = fourcc;
+  frame_interval.width = width;
+  frame_interval.height = height;
+  for (; DoIoctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frame_interval) == 0;
+       ++frame_interval.index) {
+    if (frame_interval.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
+      if (frame_interval.discrete.numerator != 0) {
+        frame_rates.push_back(
+            frame_interval.discrete.denominator /
+            static_cast<float>(frame_interval.discrete.numerator));
+      }
+    } else if (frame_interval.type == V4L2_FRMIVAL_TYPE_CONTINUOUS ||
+               frame_interval.type == V4L2_FRMIVAL_TYPE_STEPWISE) {
+      // TODO(mcasas): see http://crbug.com/249953, support these devices.
+      NOTIMPLEMENTED_LOG_ONCE();
+      break;
+    }
+  }
+  // Some devices, e.g. Kinect, do not enumerate any frame rates, see
+  // http://crbug.com/412284. Set their frame_rate to zero.
+  if (frame_rates.empty()) frame_rates.push_back(0);
+  return frame_rates;
 }
 
 }  // namespace felicia

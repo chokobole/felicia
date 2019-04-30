@@ -92,8 +92,8 @@ void DshowCamera::ScopedMediaType::DeleteMediaType(AM_MEDIA_TYPE* mt) {
   }
 }
 
-DshowCamera::DshowCamera(const CameraDescriptor& descriptor)
-    : descriptor_(descriptor) {}
+DshowCamera::DshowCamera(const CameraDescriptor& camera_descriptor)
+    : camera_descriptor_(camera_descriptor) {}
 
 DshowCamera::~DshowCamera() {
   if (media_control_.Get()) media_control_->Stop();
@@ -160,6 +160,8 @@ Status DshowCamera::GetCameraDescriptors(
 // static
 Status DshowCamera::GetSupportedCameraFormats(
     const CameraDescriptor& camera_descriptor, CameraFormats* camera_formats) {
+  DCHECK(camera_formats->empty());
+
   CapabilityList capability_list;
   GetDeviceCapabilityList(camera_descriptor.device_id(), true,
                           &capability_list);
@@ -173,8 +175,8 @@ Status DshowCamera::GetSupportedCameraFormats(
 }
 
 Status DshowCamera::Init() {
-  HRESULT hr =
-      GetDeviceFilter(descriptor_.device_id(), capture_filter_.GetAddressOf());
+  HRESULT hr = GetDeviceFilter(camera_descriptor_.device_id(),
+                               capture_filter_.GetAddressOf());
   if (FAILED(hr)) return errors::FailedToCreateCaptureFilter(hr);
 
   output_capture_pin_ = GetPin(capture_filter_.Get(), PINDIR_OUTPUT,

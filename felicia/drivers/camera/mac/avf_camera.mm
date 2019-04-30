@@ -17,8 +17,8 @@ namespace felicia {
 // In device identifiers, the USB VID and PID are stored in 4 bytes each.
 const size_t kVidPidSize = 4;
 
-AvfCamera::AvfCamera(const CameraDescriptor& descriptor)
-    : descriptor_(descriptor), task_runner_(::base::ThreadTaskRunnerHandle::Get()) {}
+AvfCamera::AvfCamera(const CameraDescriptor& camera_descriptor)
+    : camera_descriptor_(camera_descriptor), task_runner_(::base::ThreadTaskRunnerHandle::Get()) {}
 
 AvfCamera::~AvfCamera() {}
 

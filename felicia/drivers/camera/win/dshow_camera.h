@@ -88,7 +88,7 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
 
   friend class CameraFactory;
 
-  DshowCamera(const CameraDescriptor& descriptor);
+  DshowCamera(const CameraDescriptor& camera_descriptor);
 
   Microsoft::WRL::ComPtr<IBaseFilter> capture_filter_;
 
@@ -101,7 +101,7 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
 
   scoped_refptr<SinkFilter> sink_filter_;
 
-  CameraDescriptor descriptor_;
+  CameraDescriptor camera_descriptor_;
   CameraFormat camera_format_;
 
   ::base::TimeTicks first_ref_time_;

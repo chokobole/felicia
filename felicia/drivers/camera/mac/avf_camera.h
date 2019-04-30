@@ -36,11 +36,11 @@ class AvfCamera : public CameraInterface {
  private:
   friend class CameraFactory;
 
-  AvfCamera(const CameraDescriptor& descriptor);
+  AvfCamera(const CameraDescriptor& camera_descriptor);
 
   static std::string GetDeviceModelId(const std::string& device_id);
 
-  CameraDescriptor descriptor_;
+  CameraDescriptor camera_descriptor_;
   CameraFormat camera_format_;
 
   const scoped_refptr<::base::SingleThreadTaskRunner> task_runner_;

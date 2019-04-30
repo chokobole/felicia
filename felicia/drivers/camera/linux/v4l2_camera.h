@@ -40,16 +40,19 @@ class V4l2Camera : public CameraInterface,
  private:
   friend class CameraFactory;
 
-  V4l2Camera(const CameraDescriptor& descriptor);
+  V4l2Camera(const CameraDescriptor& camera_descriptor);
 
-  Status InitDevice();
+  static Status InitDevice(const CameraDescriptor& camera_descriptor, int* fd);
   Status InitMmap();
   void DoTakePhoto();
 
   static int DoIoctl(int fd, int request, void* argp);
   static bool RunIoctl(int fd, int request, void* argp);
 
-  CameraDescriptor descriptor_;
+  static std::vector<float> GetFrameRateList(int fd, uint32_t fourcc,
+                                             uint32_t width, uint32_t height);
+
+  CameraDescriptor camera_descriptor_;
   CameraFormat camera_format_;
   int fd_ = ::base::kInvalidPlatformFile;
 
