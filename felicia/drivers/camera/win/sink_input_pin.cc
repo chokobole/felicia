@@ -38,7 +38,7 @@ void SinkInputPin::SetRequestedMediaFormat(
   requested_pixel_format_ = pixel_format;
   requested_frame_rate_ = frame_rate;
   requested_info_header_ = info_header;
-  resulting_format_ = CameraFormat(0, 0, CameraFormat::PIXEL_FORMAT_UNKNOWN);
+  resulting_format_ = CameraFormat(0, 0, CameraFormat::PIXEL_FORMAT_UNKNOWN, 0);
 }
 
 bool SinkInputPin::IsMediaTypeValid(const AM_MEDIA_TYPE* media_type) {

@@ -15,6 +15,8 @@
 
 namespace felicia {
 
+const int kFrameRatePrecision = 10000;
+
 class EXPORT CameraFormat {
  public:
   enum PixelFormat {
@@ -25,7 +27,8 @@ class EXPORT CameraFormat {
   };
 
   CameraFormat();
-  CameraFormat(int width, int height, PixelFormat pixel_format);
+  CameraFormat(int width, int height, PixelFormat pixel_format,
+               float frame_rate);
 
   static std::string FourccToString(uint32_t fourcc);
 

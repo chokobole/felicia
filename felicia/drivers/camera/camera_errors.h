@@ -14,9 +14,16 @@ inline ::felicia::Status FailedToGetCameraFormat() {
   return Unavailable("Failed to get camera format.");
 }
 
-inline ::felicia::Status FailedToSetFormat(CameraFormat camera_format) {
-  return InvalidArgument(::base::StringPrintf(
-      "Failed to set format %s.", camera_format.ToString().c_str()));
+inline ::felicia::Status FailedToGetFrameRate() {
+  return Unavailable("Failed to get frame rate.");
+}
+
+inline ::felicia::Status FailedToSetPixelFormat() {
+  return Unavailable("Failed to set pixel format");
+}
+
+inline ::felicia::Status FailedToSetFrameRate() {
+  return Unavailable("Failed to set frame rate.");
 }
 
 inline ::felicia::Status FailedToConvertToARGB() {

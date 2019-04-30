@@ -27,8 +27,7 @@ namespace felicia {
 
 namespace {
 
-constexpr size_t kDefaultWidth = 640;
-constexpr size_t kDefaultHeight = 480;
+constexpr int kTypicalFramerate = 30;
 
 // Maximum number of ioctl retries before giving up trying to reset controls.
 constexpr int kMaxIOCtrlRetries = 5;
@@ -209,6 +208,8 @@ Status V4l2Camera::GetSupportedCameraFormats(
       }
     }
   }
+
+  return Status::OK();
 }
 
 Status V4l2Camera::Init() {
@@ -262,25 +263,54 @@ Status V4l2Camera::Close() {
 }
 
 StatusOr<CameraFormat> V4l2Camera::GetCurrentCameraFormat() {
-  struct v4l2_format format;
+  v4l2_format format;
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
   if (DoIoctl(fd_, VIDIOC_G_FMT, &format) < 0) {
     return errors::FailedToGetCameraFormat();
   }
 
+  v4l2_streamparm streamparm = {};
+  streamparm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  if (DoIoctl(fd_, VIDIOC_G_PARM, &streamparm) < 0) {
+    return errors::FailedToGetFrameRate();
+  }
+
   return CameraFormat(
       format.fmt.pix.width, format.fmt.pix.height,
-      CameraFormat::FromV4l2PixelFormat(format.fmt.pix.pixelformat));
+      CameraFormat::FromV4l2PixelFormat(format.fmt.pix.pixelformat),
+      streamparm.parm.capture.timeperframe.denominator /
+          streamparm.parm.capture.timeperframe.numerator);
 }
 
 Status V4l2Camera::SetCameraFormat(const CameraFormat& camera_format) {
-  struct v4l2_format format;
+  v4l2_format format;
   FillV4L2Format(&format, camera_format.width(), camera_format.height(),
                  camera_format.ToV4l2PixelFormat());
   if (DoIoctl(fd_, VIDIOC_S_FMT, &format) < 0) {
-    return errors::FailedToSetFormat(camera_format);
+    return errors::FailedToSetPixelFormat();
   }
+
+  v4l2_streamparm streamparm = {};
+  streamparm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  if (DoIoctl(fd_, VIDIOC_G_PARM, &streamparm) < 0) {
+    return errors::FailedToGetFrameRate();
+  }
+
+  if (streamparm.parm.capture.capability & V4L2_CAP_TIMEPERFRAME) {
+    streamparm.parm.capture.timeperframe.numerator = kFrameRatePrecision;
+    streamparm.parm.capture.timeperframe.denominator =
+        (camera_format.frame_rate())
+            ? (camera_format.frame_rate() * kFrameRatePrecision)
+            : (kTypicalFramerate * kFrameRatePrecision);
+
+    if (DoIoctl(fd_, VIDIOC_S_PARM, &streamparm) < 0) {
+      return errors::FailedToSetFrameRate();
+    }
+  } else {
+    DVLOG(2) << "No capability to set frame rate";
+  }
+
   camera_format_ = camera_format;
   return Status::OK();
 }

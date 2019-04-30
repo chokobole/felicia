@@ -65,7 +65,8 @@ void CameraFrame::set_timestamp(::base::TimeDelta timestamp) {
     return ::base::nullopt;
 
   CameraFormat rgba_camera_format(camera_format.width(), camera_format.height(),
-                                  CameraFormat::PIXEL_FORMAT_ARGB);
+                                  CameraFormat::PIXEL_FORMAT_ARGB,
+                                  camera_format.frame_rate());
   std::unique_ptr<uint8_t> tmp_argb =
       std::unique_ptr<uint8_t>(new uint8_t[AllocationSize(rgba_camera_format)]);
   if (libyuv::ConvertToARGB(camera_buffer.start(), camera_buffer.payload(),
