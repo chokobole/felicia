@@ -21,6 +21,8 @@ class AvfCamera : public CameraInterface {
 
   // Needed by CameraFactory
   static Status GetCameraDescriptors(CameraDescriptors* camera_descriptors);
+  static Status GetSupportedCameraFormats(
+      const CameraDescriptor& camera_descriptor, CameraFormats* camera_formats);
 
   // CameraInterface methods
   Status Init() override;
@@ -28,7 +30,6 @@ class AvfCamera : public CameraInterface {
                StatusCallback status_callback) override;
   Status Close() override;
 
-  Status GetSupportedCameraFormats(CameraFormats* camera_formats) override;
   StatusOr<CameraFormat> GetCurrentCameraFormat() override;
   Status SetCameraFormat(const CameraFormat& format) override;
 

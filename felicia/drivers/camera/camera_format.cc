@@ -46,8 +46,9 @@ std::string CameraFormat::FourccToString(uint32_t fourcc) {
 }
 
 std::string CameraFormat::ToString() const {
-  return ::base::StringPrintf("%dx%d(%s)", width(), height(),
-                              PixelFormatToString(pixel_format_).c_str());
+  return ::base::StringPrintf("%dx%d(%s) %.2fHz", width(), height(),
+                              PixelFormatToString(pixel_format_).c_str(),
+                              frame_rate_);
 }
 
 // static

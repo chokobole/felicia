@@ -32,4 +32,11 @@ Status CameraFactory::GetCameraDescriptors(
   return Camera::GetCameraDescriptors(camera_descriptors);
 }
 
+// static
+Status CameraFactory::GetSupportedCameraFormats(
+    const CameraDescriptor& camera_descriptor, CameraFormats* camera_formats) {
+  DCHECK(camera_formats->empty());
+  return Camera::GetSupportedCameraFormats(camera_descriptor, camera_formats);
+}
+
 }  // namespace felicia

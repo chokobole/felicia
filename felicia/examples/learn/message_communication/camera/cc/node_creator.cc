@@ -9,11 +9,16 @@ namespace felicia {
 namespace {
 
 void Print(const CameraDescriptors& camera_descriptors) {
-  std::stringstream ss;
   for (size_t i = 0; i < camera_descriptors.size(); ++i) {
-    ss << "[" << i << "] " << camera_descriptors[i].ToString() << std::endl;
+    std::cout << "[" << i << "] " << camera_descriptors[i].ToString()
+              << std::endl;
   }
-  std::cout << ss.str() << std::endl;
+}
+
+void Print(const CameraFormats& camera_formats) {
+  for (size_t i = 0; i < camera_formats.size(); ++i) {
+    std::cout << "[" << i << "] " << camera_formats[i].ToString() << std::endl;
+  }
 }
 
 }  // namespace
@@ -35,8 +40,20 @@ int RealMain(int argc, char* argv[]) {
     return 1;
   }
 
-  if (delegate.device_list()) {
-    Print(camera_descriptors);
+  if (delegate.device_list_flag()->value()) {
+    if (delegate.device_index_flag()->is_set()) {
+      CameraFormats camera_formats;
+      s = CameraFactory::GetSupportedCameraFormats(
+          camera_descriptors[delegate.device_index_flag()->value()],
+          &camera_formats);
+      if (!s.ok()) {
+        std::cerr << kRedError << s << std::endl;
+        return 1;
+      }
+      Print(camera_formats);
+    } else {
+      Print(camera_descriptors);
+    }
     return 0;
   }
 
@@ -48,10 +65,10 @@ int RealMain(int argc, char* argv[]) {
   }
 
   NodeInfo node_info;
-  node_info.set_name(delegate.name());
+  node_info.set_name(delegate.name_flag()->value());
 
-  if (delegate.is_publishing_node()) {
-    if (camera_descriptors.size() <= delegate.device_index()) {
+  if (delegate.is_publishing_node_flag()->value()) {
+    if (camera_descriptors.size() <= delegate.device_index_flag()->value()) {
       std::cerr << kRedError << "Please set device_index among them.."
                 << std::endl;
       Print(camera_descriptors);
@@ -59,11 +76,14 @@ int RealMain(int argc, char* argv[]) {
     }
 
     master_proxy.RequestRegisterNode<CameraPublishingNode>(
-        node_info, delegate.topic(), delegate.channel_type(),
-        camera_descriptors[delegate.device_index()], delegate.buffer_size());
+        node_info, delegate.topic_flag()->value(),
+        delegate.channel_type_flag()->value(),
+        camera_descriptors[delegate.device_index_flag()->value()],
+        delegate.buffer_size_flag()->value());
   } else {
     master_proxy.RequestRegisterNode<CameraSubscribingNode>(
-        node_info, delegate.topic(), delegate.buffer_size());
+        node_info, delegate.topic_flag()->value(),
+        delegate.buffer_size_flag()->value());
   }
 
   master_proxy.Run();

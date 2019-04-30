@@ -15,6 +15,7 @@
 #include <wrl/client.h>
 
 #include "felicia/drivers/camera/camera_interface.h"
+#include "felicia/drivers/camera/win/capability_list.h"
 #include "felicia/drivers/camera/win/sink_filter.h"
 
 namespace felicia {
@@ -45,6 +46,8 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
 
   // Needed by CameraFactory
   static Status GetCameraDescriptors(CameraDescriptors* camera_descriptors);
+  static Status GetSupportedCameraFormats(
+      const CameraDescriptor& camera_descriptor, CameraFormats* camera_formats);
 
   // CameraInterface methods
   Status Init() override;
@@ -52,7 +55,6 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
                StatusCallback status_callback) override;
   Status Close() override;
 
-  Status GetSupportedCameraFormats(CameraFormats* camera_formats) override;
   StatusOr<CameraFormat> GetCurrentCameraFormat() override;
   Status SetCameraFormat(const CameraFormat& format) override;
 
@@ -74,6 +76,15 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
                                              REFGUID major_type);
 
   static std::string GetDeviceModelId(const std::string& device_id);
+
+  static void GetDeviceCapabilityList(const std::string& device_id,
+                                      bool query_detailed_frame_rates,
+                                      CapabilityList* out_capability_list);
+
+  static void GetPinCapabilityList(
+      Microsoft::WRL::ComPtr<IBaseFilter> capture_filter,
+      Microsoft::WRL::ComPtr<IPin> output_capture_pin,
+      bool query_detailed_frame_rates, CapabilityList* out_capability_list);
 
   friend class CameraFactory;
 

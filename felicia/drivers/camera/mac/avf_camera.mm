@@ -37,6 +37,12 @@ Status AvfCamera::GetCameraDescriptors(CameraDescriptors* camera_descriptors) {
   return Status::OK();
 }
 
+// status
+Status AvfCamera::GetSupportedCameraFormats(const CameraDescriptor& camera_descriptor,
+                                            CameraFormats* camera_formats) {
+  return errors::Unimplemented("Not implemented yet.");
+}
+
 Status AvfCamera::Init() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -51,10 +57,6 @@ Status AvfCamera::Start(CameraFrameCallback camera_frame_callback, StatusCallbac
 }
 
 Status AvfCamera::Close() { return errors::Unimplemented("Not implemented yet."); }
-
-Status AvfCamera::GetSupportedCameraFormats(CameraFormats* camera_formats) {
-  return errors::Unimplemented("Not implemented yet.");
-}
 
 StatusOr<CameraFormat> AvfCamera::GetCurrentCameraFormat() {
   return errors::Unimplemented("Not implemented yet.");

@@ -14,10 +14,14 @@ class NodeCreateFlag : public FlagParser::Delegate {
   NodeCreateFlag();
   ~NodeCreateFlag();
 
-  bool is_publishing_node() const { return is_publishing_node_; }
-  const std::string& name() const { return name_; }
-  const std::string& topic() const { return topic_; }
-  const std::string& channel_type() const { return channel_type_; }
+  const BoolFlag* is_publishing_node_flag() const {
+    return is_publishing_node_flag_.get();
+  }
+  const StringFlag* name_flag() const { return name_flag_.get(); }
+  const StringFlag* topic_flag() const { return topic_flag_.get(); }
+  const StringChoicesFlag* channel_type_flag() const {
+    return channel_type_flag_.get();
+  }
 
   bool Parse(FlagParser& parser) override;
 

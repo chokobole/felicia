@@ -10,9 +10,13 @@ class CameraFlag : public NodeCreateFlag {
   CameraFlag();
   ~CameraFlag();
 
-  bool device_list() const { return device_list_; }
-  size_t device_index() const { return device_index_; }
-  size_t buffer_size() const { return buffer_size_; }
+  const BoolFlag* device_list_flag() const { return device_list_flag_.get(); }
+  const Flag<size_t>* device_index_flag() const {
+    return device_index_flag_.get();
+  }
+  const DefaultFlag<size_t>* buffer_size_flag() const {
+    return buffer_size_flag_.get();
+  }
 
   bool Parse(FlagParser& parser) override;
 

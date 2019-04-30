@@ -15,7 +15,9 @@ CameraFlag::CameraFlag() {
 
     auto flag = builder.SetShortName("-l")
                     .SetLongName("--device_list")
-                    .SetHelp("whether shows device list")
+                    .SetHelp(
+                        "whether it shows device list, If you don't know which"
+                        " device index to pass, then try this option!")
                     .Build();
     device_list_flag_ = std::make_unique<BoolFlag>(flag);
   }
@@ -35,7 +37,7 @@ CameraFlag::CameraFlag() {
 
     auto flag = builder.SetShortName("-b")
                     .SetLongName("--buffer_size")
-                    .SetHelp("buffer size for each frame")
+                    .SetHelp("buffer size for each frame, default: 5MB")
                     .Build();
     buffer_size_flag_ = std::make_unique<DefaultFlag<size_t>>(flag);
   }
@@ -51,8 +53,11 @@ bool CameraFlag::Parse(FlagParser& parser) {
 
 bool CameraFlag::Validate() const {
   if (device_list_flag_->is_set()) {
-    std::cout << "device_list is on, it just shows a list of camera devices."
+    std::cout << "device_list is on, it just shows a list of camera devices. "
+                 "If you pass -i(--device_index) with the -l then you can "
+                 "iterate the camera formats the device supports."
               << std::endl;
+
     return true;
   }
 

@@ -167,6 +167,12 @@ Status V4l2Camera::GetCameraDescriptors(CameraDescriptors* camera_descriptors) {
   return Status::OK();
 }
 
+// static
+Status V4l2Camera::GetSupportedCameraFormats(
+    const CameraDescriptor& camera_descriptor, CameraFormats* camera_formats) {
+  return errors::Unimplemented("Not implemented yet.");
+}
+
 Status V4l2Camera::Init() {
   Status s = InitDevice();
   if (!s.ok()) {
@@ -215,10 +221,6 @@ Status V4l2Camera::Start(CameraFrameCallback camera_frame_callback,
 Status V4l2Camera::Close() {
   if (fd_ != ::base::kInvalidPlatformFile) close(fd_);
   return Status::OK();
-}
-
-Status V4l2Camera::GetSupportedCameraFormats(CameraFormats* camera_formats) {
-  return errors::Unimplemented("Not implemented yet.");
 }
 
 StatusOr<CameraFormat> V4l2Camera::GetCurrentCameraFormat() {

@@ -157,6 +157,21 @@ Status DshowCamera::GetCameraDescriptors(
   return Status::OK();
 }
 
+// static
+Status DshowCamera::GetSupportedCameraFormats(
+    const CameraDescriptor& camera_descriptor, CameraFormats* camera_formats) {
+  CapabilityList capability_list;
+  GetDeviceCapabilityList(camera_descriptor.device_id(), true,
+                          &capability_list);
+  for (const auto& entry : capability_list) {
+    camera_formats->emplace_back(entry.supported_format);
+    DVLOG(1) << camera_descriptor.display_name() << " "
+             << entry.supported_format.ToString();
+  }
+
+  return Status::OK();
+}
+
 Status DshowCamera::Init() {
   HRESULT hr =
       GetDeviceFilter(descriptor_.device_id(), capture_filter_.GetAddressOf());
@@ -231,10 +246,6 @@ Status DshowCamera::Start(CameraFrameCallback camera_frame_callback,
 }
 
 Status DshowCamera::Close() {
-  return errors::Unimplemented("Not implemented yet.");
-}
-
-Status DshowCamera::GetSupportedCameraFormats(CameraFormats* camera_formats) {
   return errors::Unimplemented("Not implemented yet.");
 }
 
@@ -414,6 +425,115 @@ std::string DshowCamera::GetDeviceModelId(const std::string& device_id) {
   const std::string id_product =
       device_id.substr(pid_location + pid_prefix_size, kVidPidSize);
   return id_vendor + ":" + id_product;
+}
+
+// static
+void DshowCamera::GetDeviceCapabilityList(const std::string& device_id,
+                                          bool query_detailed_frame_rates,
+                                          CapabilityList* out_capability_list) {
+  ComPtr<IBaseFilter> capture_filter;
+  HRESULT hr = GetDeviceFilter(device_id, capture_filter.GetAddressOf());
+  if (!capture_filter.Get()) {
+    DLOG(ERROR) << "Failed to create capture filter: "
+                << logging::SystemErrorCodeToString(hr);
+    return;
+  }
+
+  ComPtr<IPin> output_capture_pin(GetPin(capture_filter.Get(), PINDIR_OUTPUT,
+                                         PIN_CATEGORY_CAPTURE, GUID_NULL));
+  if (!output_capture_pin.Get()) {
+    DLOG(ERROR) << "Failed to get capture output pin";
+    return;
+  }
+
+  GetPinCapabilityList(capture_filter, output_capture_pin,
+                       query_detailed_frame_rates, out_capability_list);
+}
+
+// static
+void DshowCamera::GetPinCapabilityList(ComPtr<IBaseFilter> capture_filter,
+                                       ComPtr<IPin> output_capture_pin,
+                                       bool query_detailed_frame_rates,
+                                       CapabilityList* out_capability_list) {
+  ComPtr<IAMStreamConfig> stream_config;
+  HRESULT hr = output_capture_pin.CopyTo(stream_config.GetAddressOf());
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to get IAMStreamConfig interface from "
+                   "capture device: "
+                << logging::SystemErrorCodeToString(hr);
+    return;
+  }
+
+  // Get interface used for getting the frame rate.
+  ComPtr<IAMVideoControl> video_control;
+  hr = capture_filter.CopyTo(video_control.GetAddressOf());
+
+  int count = 0, size = 0;
+  hr = stream_config->GetNumberOfCapabilities(&count, &size);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "GetNumberOfCapabilities failed: "
+                << logging::SystemErrorCodeToString(hr);
+    return;
+  }
+
+  std::unique_ptr<BYTE[]> caps(new BYTE[size]);
+  for (int i = 0; i < count; ++i) {
+    DshowCamera::ScopedMediaType media_type;
+    hr = stream_config->GetStreamCaps(i, media_type.Receive(), caps.get());
+    // GetStreamCaps() may return S_FALSE, so don't use FAILED() or SUCCEED()
+    // macros here since they'll trigger incorrectly.
+    if (hr != S_OK || !media_type.get()) {
+      DLOG(ERROR) << "GetStreamCaps failed: "
+                  << logging::SystemErrorCodeToString(hr);
+      return;
+    }
+
+    if (media_type->majortype == MEDIATYPE_Video &&
+        media_type->formattype == FORMAT_VideoInfo) {
+      CameraFormat camera_format;
+      camera_format.set_pixel_format(
+          CameraFormat::FromMediaSubtype(media_type->subtype));
+      if (camera_format.pixel_format() == CameraFormat::PIXEL_FORMAT_UNKNOWN)
+        continue;
+      VIDEOINFOHEADER* h =
+          reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
+      camera_format.SetSize(h->bmiHeader.biWidth, h->bmiHeader.biHeight);
+
+      std::vector<float> frame_rates;
+      if (query_detailed_frame_rates && video_control.Get()) {
+        // Try to get a better |time_per_frame| from IAMVideoControl. If not,
+        // use the value from VIDEOINFOHEADER.
+        ScopedCoMem<LONGLONG> time_per_frame_list;
+        LONG list_size = 0;
+        const SIZE size = {camera_format.width(), camera_format.height()};
+        hr = video_control->GetFrameRateList(output_capture_pin.Get(), i, size,
+                                             &list_size, &time_per_frame_list);
+        // Sometimes |list_size| will be > 0, but time_per_frame_list will be
+        // NULL. Some drivers may return an HRESULT of S_FALSE which
+        // SUCCEEDED() translates into success, so explicitly check S_OK. See
+        // http://crbug.com/306237.
+        if (hr == S_OK && list_size > 0 && time_per_frame_list) {
+          for (int k = 0; k < list_size; k++) {
+            LONGLONG time_per_frame = *(time_per_frame_list.get() + k);
+            if (time_per_frame <= 0) continue;
+            frame_rates.push_back(kSecondsToReferenceTime /
+                                  static_cast<float>(time_per_frame));
+          }
+        }
+      }
+
+      if (frame_rates.empty() && h->AvgTimePerFrame > 0) {
+        frame_rates.push_back(kSecondsToReferenceTime /
+                              static_cast<float>(h->AvgTimePerFrame));
+      }
+      if (frame_rates.empty()) frame_rates.push_back(0.0f);
+
+      for (const auto& frame_rate : frame_rates) {
+        camera_format.set_frame_rate(frame_rate);
+        out_capability_list->emplace_back(i, camera_format, h->bmiHeader);
+      }
+    }
+  }
 }
 
 }  // namespace felicia

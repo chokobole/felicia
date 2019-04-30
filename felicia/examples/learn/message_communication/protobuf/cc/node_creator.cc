@@ -24,14 +24,15 @@ int RealMain(int argc, char* argv[]) {
   }
 
   NodeInfo node_info;
-  node_info.set_name(delegate.name());
+  node_info.set_name(delegate.name_flag()->value());
 
-  if (delegate.is_publishing_node()) {
+  if (delegate.is_publishing_node_flag()->value()) {
     master_proxy.RequestRegisterNode<SimplePublishingNode>(
-        node_info, delegate.topic(), delegate.channel_type());
+        node_info, delegate.topic_flag()->value(),
+        delegate.channel_type_flag()->value());
   } else {
-    master_proxy.RequestRegisterNode<SimpleSubscribingNode>(node_info,
-                                                            delegate.topic());
+    master_proxy.RequestRegisterNode<SimpleSubscribingNode>(
+        node_info, delegate.topic_flag()->value());
   }
 
   master_proxy.Run();

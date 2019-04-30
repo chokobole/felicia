@@ -17,6 +17,9 @@ class EXPORT CameraFactory {
 
   static Status GetCameraDescriptors(CameraDescriptors* camera_descriptors);
 
+  static Status GetSupportedCameraFormats(
+      const CameraDescriptor& camera_descriptor, CameraFormats* camera_formats);
+
   DISALLOW_COPY_AND_ASSIGN(CameraFactory);
 };
 
