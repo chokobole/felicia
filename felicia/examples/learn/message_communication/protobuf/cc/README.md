@@ -209,7 +209,7 @@ struct Settings {
   static constexpr size_t kDefaultMessageSize = Bytes::kMegaBytes;
   static constexpr uint8_t kDefaultQueueSize = 100;
 
-  constexpr Settings() {}
+  Settings() {}
 
   ::base::TimeDelta period = ::base::TimeDelta::FromMilliseconds(
       kDefaultPeriod);  // used only in subscriber
