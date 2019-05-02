@@ -16,6 +16,7 @@
 #include "third_party/chromium/base/stl_util.h"
 
 namespace felicia {
+namespace camera_internal {
 
 namespace {
 
@@ -255,4 +256,5 @@ size_t AllocationSize(CameraFormat camera_format) {
   return total;
 }
 
+}  // namespace camera_internal
 }  // namespace felicia

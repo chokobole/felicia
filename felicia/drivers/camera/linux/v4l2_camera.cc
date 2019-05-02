@@ -134,6 +134,7 @@ V4l2Camera::V4l2Camera(const CameraDescriptor& camera_descriptor)
 
 V4l2Camera::~V4l2Camera() {
   if (thread_.IsRunning()) thread_.Stop();
+  if (fd_ != ::base::kInvalidPlatformFile) close(fd_);
 }
 
 // static
@@ -241,25 +242,35 @@ Status V4l2Camera::Start(CameraFrameCallback camera_frame_callback,
 
   v4l2_buf_type capture_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if (DoIoctl(fd_, VIDIOC_STREAMON, &capture_type) < 0) {
-    return errors::FailedToStream();
+    return errors::FailedToStreamOn();
   }
 
   thread_.Start();
   camera_frame_callback_ = camera_frame_callback;
   status_callback_ = status_callback;
   if (thread_.task_runner()->BelongsToCurrentThread()) {
-    DoTakePhoto();
+    DoCapture();
   } else {
     thread_.task_runner()->PostTask(
-        FROM_HERE, ::base::BindOnce(&V4l2Camera::DoTakePhoto, AsWeakPtr()));
+        FROM_HERE, ::base::BindOnce(&V4l2Camera::DoCapture, AsWeakPtr()));
   }
 
   return Status::OK();
 }
 
-Status V4l2Camera::Close() {
+Status V4l2Camera::Stop() {
+  Status s;
+  if (thread_.task_runner()->BelongsToCurrentThread()) {
+    DoStop(&s);
+  } else {
+    thread_.task_runner()->PostTask(
+        FROM_HERE, ::base::BindOnce(&V4l2Camera::DoStop, AsWeakPtr(), &s));
+  }
+
+  if (thread_.IsRunning()) thread_.Stop();
   if (fd_ != ::base::kInvalidPlatformFile) close(fd_);
-  return Status::OK();
+
+  return s;
 }
 
 StatusOr<CameraFormat> V4l2Camera::GetCurrentCameraFormat() {
@@ -364,7 +375,43 @@ Status V4l2Camera::InitMmap() {
   return Status::OK();
 }
 
-void V4l2Camera::DoTakePhoto() {
+Status V4l2Camera::ClearMmap() {
+  for (auto& buffer : buffers_) {
+    const int result = munmap(buffer.start(), buffer.length());
+    PLOG_IF(ERROR, result < 0) << "Error munmap()ing V4L2 buffer";
+  }
+
+  buffers_.clear();
+
+  return Status::OK();
+}
+
+void V4l2Camera::DoStop(Status* status) {
+  DCHECK(thread_.task_runner()->BelongsToCurrentThread());
+
+  v4l2_buf_type capture_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  if (DoIoctl(fd_, VIDIOC_STREAMOFF, &capture_type) < 0) {
+    *status = errors::FailedToStreamOff();
+    return;
+  }
+
+  Status s = ClearMmap();
+  if (!s.ok()) {
+    *status = s;
+    return;
+  }
+
+  v4l2_requestbuffers requestbuffers;
+  FillV4L2RequestBuffer(&requestbuffers, 0);
+  if (DoIoctl(fd_, VIDIOC_REQBUFS, &requestbuffers) < 0) {
+    *status = errors::FailedToRequestMmapBuffers();
+    return;
+  }
+
+  *status = Status::OK();
+}
+
+void V4l2Camera::DoCapture() {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
 
   v4l2_buffer buffer;
@@ -381,6 +428,9 @@ void V4l2Camera::DoTakePhoto() {
 #endif
   if (buf_error_flag_set) {
     status_callback_.Run(errors::V4l2ErrorFlagWasSet());
+  } else if (buffer.bytesused != camera_format_.AllocationSize()) {
+    buffer.bytesused = 0;
+    status_callback_.Run(errors::InvalidNumberOfBytesInBuffer());
   } else {
     buffers_[buffer.index].set_payload(buffer.bytesused);
     ::base::Optional<CameraFrame> argb_frame =
@@ -402,7 +452,7 @@ void V4l2Camera::DoTakePhoto() {
   }
 
   thread_.task_runner()->PostTask(
-      FROM_HERE, ::base::BindOnce(&V4l2Camera::DoTakePhoto, AsWeakPtr()));
+      FROM_HERE, ::base::BindOnce(&V4l2Camera::DoCapture, AsWeakPtr()));
 }
 
 // static

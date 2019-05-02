@@ -4,6 +4,8 @@
 #include "third_party/chromium/base/strings/string_util.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
+#include "felicia/drivers/camera/camera_frame_util.h"
+
 namespace felicia {
 
 CameraFormat::CameraFormat() = default;
@@ -33,6 +35,10 @@ int CameraFormat::height() const { return size_.height(); }
 void CameraFormat::SetSize(int width, int height) {
   size_.set_width(width);
   size_.set_height(height);
+}
+
+size_t CameraFormat::AllocationSize() const {
+  return camera_internal::AllocationSize(*this);
 }
 
 float CameraFormat::frame_rate() const { return frame_rate_; }

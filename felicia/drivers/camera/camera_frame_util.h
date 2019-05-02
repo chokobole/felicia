@@ -7,9 +7,11 @@
 #include "felicia/core/lib/unit/geometry/size.h"
 
 namespace felicia {
+namespace camera_internal {
 
 EXPORT size_t AllocationSize(CameraFormat camera_format);
 
+}  // namespace camera_internal
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_CAMERA_FRAME_UTIL_H_

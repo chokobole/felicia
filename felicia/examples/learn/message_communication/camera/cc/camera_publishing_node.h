@@ -44,6 +44,13 @@ class CameraPublishingNode : public NodeLifecycle {
     std::cout << "CameraPublishingNode::OnDidCreate()" << std::endl;
     node_info_ = node_info;
     RequestPublish();
+
+    // MasterProxy& master_proxy = MasterProxy::GetInstance();
+    // master_proxy.PostDelayedTask(
+    //     FROM_HERE,
+    //     ::base::BindOnce(&CameraPublishingNode::RequestUnpublish,
+    //                      ::base::Unretained(this)),
+    //     ::base::TimeDelta::FromSeconds(5));
   }
 
   void OnError(const Status& s) override {
@@ -63,11 +70,14 @@ class CameraPublishingNode : public NodeLifecycle {
 
   void OnRequestPublish(const Status& s) {
     std::cout << "CameraPublishingNode::OnRequestPublish()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
-    MasterProxy& master_proxy = MasterProxy::GetInstance();
-    master_proxy.PostTask(FROM_HERE,
-                          ::base::BindOnce(&CameraPublishingNode::StartCamera,
-                                           ::base::Unretained(this)));
+    if (s.ok()) {
+      MasterProxy& master_proxy = MasterProxy::GetInstance();
+      master_proxy.PostTask(FROM_HERE,
+                            ::base::BindOnce(&CameraPublishingNode::StartCamera,
+                                             ::base::Unretained(this)));
+    } else {
+      LOG(ERROR) << s.error_message();
+    }
   }
 
   void StartCamera() {
@@ -81,19 +91,10 @@ class CameraPublishingNode : public NodeLifecycle {
 
   void OnCameraFrame(CameraFrame camera_frame) {
     LOG(INFO) << "CameraPublishingNode::OnCameraFrame" << std::endl;
-    if (last_timestamp_.is_zero()) {
-      last_timestamp_ = camera_frame.timestamp();
-    } else {
-      if (camera_frame.timestamp() - last_timestamp_ <
-          ::base::TimeDelta::FromMilliseconds(100)) {
-        return;
-      } else {
-        last_timestamp_ = camera_frame.timestamp();
-      }
-    }
+    if (publisher_.IsUnregistered()) return;
 
     CameraMessage message;
-    message.set_data(camera_frame.data_ptr(), camera_frame.size());
+    message.set_data(camera_frame.data_ptr(), camera_frame.AllocationSize());
     message.set_timestamp(camera_frame.timestamp().InSecondsF());
     publisher_.Publish(std::move(message),
                        ::base::BindOnce(&CameraPublishingNode::OnPublish,
@@ -110,6 +111,23 @@ class CameraPublishingNode : public NodeLifecycle {
     LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
+  void RequestUnpublish() {
+    publisher_.RequestUnpublish(
+        node_info_, topic_,
+        ::base::BindOnce(&CameraPublishingNode::OnRequestUnpublish,
+                         ::base::Unretained(this)));
+  }
+
+  void OnRequestUnpublish(const Status& s) {
+    std::cout << "CameraPublishingNode::OnRequestUnpublish()" << std::endl;
+    if (s.ok()) {
+      Status s2 = camera_->Stop();
+      LOG_IF(ERROR, !s2.ok()) << s.error_message();
+    } else {
+      LOG(ERROR) << s.error_message();
+    }
+  }
+
  private:
   NodeInfo node_info_;
   std::string topic_;
@@ -118,7 +136,6 @@ class CameraPublishingNode : public NodeLifecycle {
   size_t buffer_size_;
   Publisher<CameraMessage> publisher_;
   std::unique_ptr<CameraInterface> camera_;
-  ::base::TimeDelta last_timestamp_;
 };
 
 }  // namespace felicia

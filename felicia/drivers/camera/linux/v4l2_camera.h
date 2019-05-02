@@ -32,7 +32,7 @@ class V4l2Camera : public CameraInterface,
   Status Init() override;
   Status Start(CameraFrameCallback camera_frame_callback,
                StatusCallback status_callback) override;
-  Status Close() override;
+  Status Stop() override;
 
   StatusOr<CameraFormat> GetCurrentCameraFormat() override;
   Status SetCameraFormat(const CameraFormat& format) override;
@@ -44,7 +44,9 @@ class V4l2Camera : public CameraInterface,
 
   static Status InitDevice(const CameraDescriptor& camera_descriptor, int* fd);
   Status InitMmap();
-  void DoTakePhoto();
+  Status ClearMmap();
+  void DoStop(Status* status);
+  void DoCapture();
 
   static int DoIoctl(int fd, int request, void* argp);
   static bool RunIoctl(int fd, int request, void* argp);

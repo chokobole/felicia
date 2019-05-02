@@ -53,7 +53,7 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
   Status Init() override;
   Status Start(CameraFrameCallback camera_frame_callback,
                StatusCallback status_callback) override;
-  Status Close() override;
+  Status Stop() override;
 
   StatusOr<CameraFormat> GetCurrentCameraFormat() override;
   Status SetCameraFormat(const CameraFormat& format) override;

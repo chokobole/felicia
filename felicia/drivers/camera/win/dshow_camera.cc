@@ -247,7 +247,7 @@ Status DshowCamera::Start(CameraFrameCallback camera_frame_callback,
   return Status::OK();
 }
 
-Status DshowCamera::Close() {
+Status DshowCamera::Stop() {
   return errors::Unimplemented("Not implemented yet.");
 }
 

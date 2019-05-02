@@ -88,7 +88,7 @@ Status AvfCamera::Start(CameraFrameCallback camera_frame_callback, StatusCallbac
   return Status::OK();
 }
 
-Status AvfCamera::Close() { return errors::Unimplemented("Not implemented yet."); }
+Status AvfCamera::Stop() { return errors::Unimplemented("Not implemented yet."); }
 
 StatusOr<CameraFormat> AvfCamera::GetCurrentCameraFormat() {
   CameraFormat camera_format;

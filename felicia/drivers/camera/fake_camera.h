@@ -14,7 +14,7 @@ class FakeCamera : public CameraInterface {
                StatusCallback status_callback) override {
     return Status::OK();
   }
-  Status Close() override { return Status::OK(); }
+  Status Stop() override { return Status::OK(); }
 
   StatusOr<CameraFormat> GetCurrentCameraFormat() override {
     return CameraFormat();

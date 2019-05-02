@@ -34,7 +34,9 @@ size_t CameraFrame::width() const { return camera_format_.width(); }
 
 size_t CameraFrame::height() const { return camera_format_.height(); }
 
-size_t CameraFrame::size() const { return AllocationSize(camera_format_); }
+size_t CameraFrame::AllocationSize() const {
+  return camera_format_.AllocationSize();
+}
 
 CameraFormat::PixelFormat CameraFrame::pixel_format() const {
   return camera_format_.pixel_format();
@@ -69,8 +71,8 @@ void CameraFrame::set_timestamp(::base::TimeDelta timestamp) {
   CameraFormat rgba_camera_format(camera_format.width(), camera_format.height(),
                                   CameraFormat::PIXEL_FORMAT_ARGB,
                                   camera_format.frame_rate());
-  std::unique_ptr<uint8_t> tmp_argb =
-      std::unique_ptr<uint8_t>(new uint8_t[AllocationSize(rgba_camera_format)]);
+  std::unique_ptr<uint8_t> tmp_argb = std::unique_ptr<uint8_t>(
+      new uint8_t[rgba_camera_format.AllocationSize()]);
   if (libyuv::ConvertToARGB(camera_buffer.start(), camera_buffer.payload(),
                             tmp_argb.get(), camera_format.width() * 4,
                             0 /* crop_x_pos */, 0 /* crop_y_pos */,

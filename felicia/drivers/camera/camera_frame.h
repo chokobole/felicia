@@ -27,7 +27,7 @@ class EXPORT CameraFrame {
   size_t width() const;
   size_t height() const;
   size_t area() const;
-  size_t size() const;
+  size_t AllocationSize() const;
   CameraFormat::PixelFormat pixel_format() const;
 
   void set_timestamp(::base::TimeDelta time);

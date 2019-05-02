@@ -34,8 +34,12 @@ inline ::felicia::Status FailedToDequeueBuffer() {
   return Unavailable("Failed to dequeue V4L2 buffer from the driver.");
 }
 
-inline ::felicia::Status FailedToStream() {
-  return Unavailable("Failed to stream.");
+inline ::felicia::Status FailedToStreamOn() {
+  return Unavailable("Failed to stream on.");
+}
+
+inline ::felicia::Status FailedToStreamOff() {
+  return Unavailable("Failed to stream off.");
 }
 
 inline ::felicia::Status V4l2ErrorFlagWasSet() {

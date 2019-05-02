@@ -43,6 +43,7 @@ class EXPORT CameraFormat {
   int width() const;
   int height() const;
   void SetSize(int width, int height);
+  size_t AllocationSize() const;
   float frame_rate() const;
   void set_frame_rate(float frame_rate);
 
