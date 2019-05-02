@@ -68,6 +68,8 @@ Status AvfCamera::Init() {
 }
 
 Status AvfCamera::Start(CameraFrameCallback camera_frame_callback, StatusCallback status_callback) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
   StatusOr<CameraFormat> status_or = GetCurrentCameraFormat();
   if (!status_or.ok()) {
     return status_or.status();
@@ -88,7 +90,20 @@ Status AvfCamera::Start(CameraFrameCallback camera_frame_callback, StatusCallbac
   return Status::OK();
 }
 
-Status AvfCamera::Stop() { return errors::Unimplemented("Not implemented yet."); }
+Status AvfCamera::Stop() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  NSString* errorMessage = nil;
+  if (![capture_device_ setCaptureDevice:nil errorMessage:&errorMessage])
+    LOG(ERROR) << ::base::SysNSStringToUTF8(errorMessage);
+
+  [capture_device_ setFrameReceiver:nil];
+
+  camera_frame_callback_.Reset();
+  status_callback_.Reset();
+
+  return Status::OK();
+}
 
 StatusOr<CameraFormat> AvfCamera::GetCurrentCameraFormat() {
   CameraFormat camera_format;

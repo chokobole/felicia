@@ -44,13 +44,6 @@ class CameraPublishingNode : public NodeLifecycle {
     std::cout << "CameraPublishingNode::OnDidCreate()" << std::endl;
     node_info_ = node_info;
     RequestPublish();
-
-    // MasterProxy& master_proxy = MasterProxy::GetInstance();
-    // master_proxy.PostDelayedTask(
-    //     FROM_HERE,
-    //     ::base::BindOnce(&CameraPublishingNode::RequestUnpublish,
-    //                      ::base::Unretained(this)),
-    //     ::base::TimeDelta::FromSeconds(5));
   }
 
   void OnError(const Status& s) override {
@@ -86,7 +79,16 @@ class CameraPublishingNode : public NodeLifecycle {
                               ::base::Unretained(this)),
         ::base::BindRepeating(&CameraPublishingNode::OnCameraError,
                               ::base::Unretained(this)));
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    if (s.ok()) {
+      // MasterProxy& master_proxy = MasterProxy::GetInstance();
+      // master_proxy.PostDelayedTask(
+      //     FROM_HERE,
+      //     ::base::BindOnce(&CameraPublishingNode::RequestUnpublish,
+      //                      ::base::Unretained(this)),
+      //     ::base::TimeDelta::FromSeconds(5));
+    } else {
+      LOG(ERROR) << s.error_message();
+    }
   }
 
   void OnCameraFrame(CameraFrame camera_frame) {
@@ -121,11 +123,18 @@ class CameraPublishingNode : public NodeLifecycle {
   void OnRequestUnpublish(const Status& s) {
     std::cout << "CameraPublishingNode::OnRequestUnpublish()" << std::endl;
     if (s.ok()) {
-      Status s2 = camera_->Stop();
-      LOG_IF(ERROR, !s2.ok()) << s.error_message();
+      MasterProxy& master_proxy = MasterProxy::GetInstance();
+      master_proxy.PostTask(FROM_HERE,
+                            ::base::BindOnce(&CameraPublishingNode::StopCamera,
+                                             ::base::Unretained(this)));
     } else {
       LOG(ERROR) << s.error_message();
     }
+  }
+
+  void StopCamera() {
+    Status s = camera_->Stop();
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
  private:
