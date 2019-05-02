@@ -23,6 +23,14 @@ class CameraPublishingNode : public NodeLifecycle {
     std::cout << "CameraPublishingNode::OnInit()" << std::endl;
     camera_ = CameraFactory::NewCamera(camera_descriptor_);
     CHECK(camera_->Init().ok());
+    // Temporary code, because some of format such as JPEG is not supported
+    // yet. But depending on Camera framework, it can set default pixel format
+    // to JPEG. So until we support JPEG, we activate this code below.
+    Status s = camera_->SetCameraFormat(
+        CameraFormat(640, 480, CameraFormat::PIXEL_FORMAT_YUY2, 5));
+    if (!s.ok()) {
+      std::cerr << kRedError << s.error_message() << std::endl;
+    }
     auto status_or = camera_->GetCurrentCameraFormat();
     if (status_or.ok()) {
       std::cout << TextStyle::Green("Current Camera Format: ")
@@ -63,10 +71,12 @@ class CameraPublishingNode : public NodeLifecycle {
   }
 
   void StartCamera() {
-    camera_->Start(::base::BindRepeating(&CameraPublishingNode::OnCameraFrame,
-                                         ::base::Unretained(this)),
-                   ::base::BindRepeating(&CameraPublishingNode::OnCameraError,
-                                         ::base::Unretained(this)));
+    Status s = camera_->Start(
+        ::base::BindRepeating(&CameraPublishingNode::OnCameraFrame,
+                              ::base::Unretained(this)),
+        ::base::BindRepeating(&CameraPublishingNode::OnCameraError,
+                              ::base::Unretained(this)));
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
   void OnCameraFrame(CameraFrame camera_frame) {

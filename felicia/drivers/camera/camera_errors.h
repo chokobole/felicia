@@ -18,6 +18,10 @@ inline ::felicia::Status FailedToGetFrameRate() {
   return Unavailable("Failed to get frame rate.");
 }
 
+inline ::felicia::Status FailedToSetCameraFormat() {
+  return Unavailable("Failed to set camera format.");
+}
+
 inline ::felicia::Status FailedToSetPixelFormat() {
   return Unavailable("Failed to set pixel format");
 }
@@ -39,6 +43,8 @@ inline ::felicia::Status FailedToConvertToARGB() {
 #include "felicia/drivers/camera/linux/v4l2_camera_errors.h"
 #elif defined(OS_WIN)
 #include "felicia/drivers/camera/win/dshow_camera_errors.h"
+#elif defined(OS_MACOSX)
+#include "felicia/drivers/camera/mac/avf_camera_errors.h"
 #endif
 
 #endif  // FELICIA_DRIVERS_CAMERA_CAMERA_ERRORS_H_

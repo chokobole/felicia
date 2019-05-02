@@ -8,10 +8,14 @@ namespace felicia {
 
 CameraFormat::CameraFormat() = default;
 
+CameraFormat::CameraFormat(Sizei size, PixelFormat pixel_format,
+                           float frame_rate)
+    : size_(size), pixel_format_(pixel_format), frame_rate_(frame_rate) {}
+
 CameraFormat::CameraFormat(int width, int height, PixelFormat pixel_format,
                            float frame_rate)
-    : pixel_format_(pixel_format),
-      size_(Sizei(width, height)),
+    : size_(Sizei(width, height)),
+      pixel_format_(pixel_format),
       frame_rate_(frame_rate) {}
 
 CameraFormat::PixelFormat CameraFormat::pixel_format() const {

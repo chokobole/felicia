@@ -2,6 +2,7 @@ load(
     "//bazel:felicia.bzl",
     "if_linux",
     "if_mac",
+    "if_not_mac",
     "if_windows",
 )
 load(
@@ -30,10 +31,6 @@ CAMERA_HEADERS = [
 ]) + if_windows([
     "win/dshow_camera_errors.h",
     "win/dshow_camera.h",
-]) + if_mac([
-    "mac/avf_camera_errors.h",
-    "mac/avf_camera_delegate.h",
-    "mac/avf_camera.h",
 ])
 
 fel_cc_library(
@@ -41,8 +38,8 @@ fel_cc_library(
     srcs = [
         "camera_buffer.cc",
         "camera_descriptor.cc",
-        "camera_factory.cc",
         "camera_interface.cc",
+        "camera_factory.cc",
         "camera_format.cc",
         "camera_frame.cc",
         "camera_frame_util.cc",
@@ -73,11 +70,17 @@ fel_cc_library(
 
 fel_objc_library(
     name = "avf_camera",
-    hdrs = CAMERA_HEADERS,
+    hdrs = CAMERA_HEADERS + [
+        "mac/avf_camera_errors.h",
+        "mac/avf_camera_delegate.h",
+        "mac/avf_camera.h",
+        "mac/frame_receiver.h",
+    ],
     non_arc_srcs = if_mac([
         "mac/avf_camera.mm",
         "mac/avf_camera_delegate.mm",
         "mac/avf_camera_format.mm",
+        "mac/avf_camera_factory.mm",
     ]),
     sdk_frameworks = [
         "AVFoundation",

@@ -28,6 +28,7 @@ class EXPORT CameraFormat {
   };
 
   CameraFormat();
+  CameraFormat(Sizei size, PixelFormat pixel_format, float frame_rate);
   CameraFormat(int width, int height, PixelFormat pixel_format,
                float frame_rate);
 
@@ -58,8 +59,8 @@ class EXPORT CameraFormat {
 #endif
 
  private:
-  PixelFormat pixel_format_ = PIXEL_FORMAT_UNKNOWN;
   Sizei size_;
+  PixelFormat pixel_format_ = PIXEL_FORMAT_UNKNOWN;
   float frame_rate_ = 0;
 };
 

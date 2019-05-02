@@ -9,8 +9,9 @@
 
 #include "third_party/chromium/base/threading/thread_task_runner_handle.h"
 
+#include "felicia/drivers/camera/camera_errors.h"
 #import "felicia/drivers/camera/mac/avf_camera_delegate.h"
-#include "felicia/drivers/camera/mac/avf_camera_errors.h"
+#include "felicia/drivers/camera/timestamp_constants.h"
 
 namespace felicia {
 
@@ -18,9 +19,11 @@ namespace felicia {
 const size_t kVidPidSize = 4;
 
 AvfCamera::AvfCamera(const CameraDescriptor& camera_descriptor)
-    : camera_descriptor_(camera_descriptor), task_runner_(::base::ThreadTaskRunnerHandle::Get()) {}
+    : camera_descriptor_(camera_descriptor),
+      task_runner_(::base::ThreadTaskRunnerHandle::Get()),
+      capture_device_(nil) {}
 
-AvfCamera::~AvfCamera() {}
+AvfCamera::~AvfCamera() { DCHECK(task_runner_->BelongsToCurrentThread()); }
 
 // static
 Status AvfCamera::GetCameraDescriptors(CameraDescriptors* camera_descriptors) {
@@ -51,10 +54,34 @@ Status AvfCamera::GetSupportedCameraFormats(const CameraDescriptor& camera_descr
 Status AvfCamera::Init() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
+  capture_device_.reset([[AvfCameraDelegate alloc] initWithFrameReceiver:this]);
+
+  if (!capture_device_) return errors::FailedToInit();
+
+  NSString* deviceId = [NSString stringWithUTF8String:camera_descriptor_.device_id().c_str()];
+  NSString* errorMessage = nil;
+  if (![capture_device_ setCaptureDevice:deviceId errorMessage:&errorMessage]) {
+    return errors::FailedToSetCaptureDevice(errorMessage);
+  }
+
   return Status::OK();
 }
 
 Status AvfCamera::Start(CameraFrameCallback camera_frame_callback, StatusCallback status_callback) {
+  StatusOr<CameraFormat> status_or = GetCurrentCameraFormat();
+  if (!status_or.ok()) {
+    return status_or.status();
+  }
+
+  Status s = SetCameraFormat(status_or.ValueOrDie());
+  if (!s.ok()) {
+    return s;
+  }
+
+  if (![capture_device_ startCapture]) {
+    return errors::FailedtoStartCapture();
+  }
+
   camera_frame_callback_ = camera_frame_callback;
   status_callback_ = status_callback;
 
@@ -64,13 +91,46 @@ Status AvfCamera::Start(CameraFrameCallback camera_frame_callback, StatusCallbac
 Status AvfCamera::Close() { return errors::Unimplemented("Not implemented yet."); }
 
 StatusOr<CameraFormat> AvfCamera::GetCurrentCameraFormat() {
-  return errors::Unimplemented("Not implemented yet.");
+  CameraFormat camera_format;
+  if (![capture_device_ getCameraFormat:&camera_format]) {
+    return errors::FailedToGetCameraFormat();
+  }
+  return camera_format;
 }
 
 Status AvfCamera::SetCameraFormat(const CameraFormat& camera_format) {
+  if (![capture_device_ setCaptureHeight:camera_format.height()
+                                   width:camera_format.width()
+                               frameRate:camera_format.frame_rate()
+                                  fourcc:camera_format.ToAVFoundationPixelFormat()]) {
+    return errors::FailedToSetCameraFormat();
+  }
+
   camera_format_ = camera_format;
   return Status::OK();
 }
+
+void AvfCamera::ReceiveFrame(const uint8_t* video_frame, int video_frame_length,
+                             const CameraFormat& camera_format, int aspect_numerator,
+                             int aspect_denominator, ::base::TimeDelta timestamp) {
+  CameraBuffer camera_buffer(const_cast<uint8_t*>(video_frame), video_frame_length);
+  camera_buffer.set_payload(video_frame_length);
+  ::base::Optional<CameraFrame> argb_frame = ConvertToARGB(camera_buffer, camera_format);
+  if (argb_frame.has_value()) {
+    if (first_ref_time_.is_null()) first_ref_time_ = base::TimeTicks::Now();
+
+    // There is a chance that the platform does not provide us with the
+    // timestamp, in which case, we use reference time to calculate a timestamp.
+    if (timestamp == kNoTimestamp) timestamp = base::TimeTicks::Now() - first_ref_time_;
+
+    argb_frame.value().set_timestamp(timestamp);
+    camera_frame_callback_.Run(std::move(argb_frame.value()));
+  } else {
+    status_callback_.Run(errors::FailedToConvertToARGB());
+  }
+}
+
+void AvfCamera::ReceiveError(const Status& status) { status_callback_.Run(status); }
 
 // static
 std::string AvfCamera::GetDeviceModelId(const std::string& device_id) {

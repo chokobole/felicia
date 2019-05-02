@@ -12,9 +12,12 @@
 #import <Foundation/Foundation.h>
 
 #include "third_party/chromium/base/mac/scoped_nsobject.h"
+#include "third_party/chromium/base/synchronization/lock.h"
+#include "third_party/chromium/base/threading/thread_checker.h"
 
 #include "felicia/drivers/camera/camera_descriptor.h"
 #include "felicia/drivers/camera/camera_format.h"
+#include "felicia/drivers/camera/mac/frame_receiver.h"
 
 // Small class to bundle device name and connection type into a dictionary.
 @interface DeviceNameAndTransportType : NSObject {
@@ -32,6 +35,30 @@
 @end
 
 @interface AvfCameraDelegate : NSObject <AVCaptureVideoDataOutputSampleBufferDelegate> {
+ @private
+  // The following attributes are set via -setCaptureHeight:width:frameRate:fourcc:.
+  int frameWidth_;
+  int frameHeight_;
+  float frameRate_;
+  FourCharCode fourcc_;
+  bool was_set_;
+
+  base::Lock lock_;  // Protects concurrent setting and using |frameReceiver_|.
+  felicia::FrameReceiver* frameReceiver_;  // weak.
+
+  base::scoped_nsobject<AVCaptureSession> captureSession_;
+
+  // |captureDevice_| is an object coming from AVFoundation, used only to be
+  // plugged in |captureDeviceInput_| and to query for session preset support.
+  AVCaptureDevice* captureDevice_;
+  // |captureDeviceInput_| is owned by |captureSession_|.
+  AVCaptureDeviceInput* captureDeviceInput_;
+  base::scoped_nsobject<AVCaptureVideoDataOutput> captureVideoDataOutput_;
+
+  // An AVDataOutput specialized for taking pictures out of |captureSession_|.
+  base::scoped_nsobject<AVCaptureStillImageOutput> stillImageOutput_;
+
+  base::ThreadChecker main_thread_checker_;
 }
 
 // Returns a dictionary of capture devices with friendly name and unique id.
@@ -40,6 +67,41 @@
 // Retrieve the capture supported formats for a given device |descriptor|.
 + (void)getDevice:(const felicia::CameraDescriptor&)camera_descriptor
     supportedFormats:(felicia::CameraFormats*)camera_formats;
+
+// Initializes the instance and the underlying capture session and registers the
+// frame receiver.
+- (id)initWithFrameReceiver:(felicia::FrameReceiver*)frameReceiver;
+
+// Sets the frame receiver.
+- (void)setFrameReceiver:(felicia::FrameReceiver*)frameReceiver;
+
+// Sets which capture device to use by name, retrieved via |deviceNames|. Once
+// the deviceId is known, the library objects are created if needed and
+// connected for the capture, and a by default resolution is set. If deviceId is
+// nil, then the eventual capture is stopped and library objects are
+// disconnected. Returns YES on success, NO otherwise. If the return value is
+// NO, an error message is assigned to |outMessage|. This method should not be
+// called during capture.
+- (BOOL)setCaptureDevice:(NSString*)deviceId errorMessage:(NSString**)outMessage;
+
+// Retrieves the capture properties. Return YES on success, else NO.
+- (BOOL)getCameraFormat:(felicia::CameraFormat*)cameraFormat;
+
+// Configures the capture properties for the capture session and the video data
+// output; this means it MUST be called after setCaptureDevice:. Return YES on
+// success, else NO.
+- (BOOL)setCaptureHeight:(int)height
+                   width:(int)width
+               frameRate:(float)frameRate
+                  fourcc:(FourCharCode)fourcc;
+
+// Starts video capturing and register the notification listeners. Must be
+// called after setCaptureDevice:, and, eventually, also after
+// setCaptureHeight:width:frameRate:. Returns YES on success, NO otherwise.
+- (BOOL)startCapture;
+
+// Stops video capturing and stops listening to notifications.
+- (void)stopCapture;
 
 @end
 

@@ -8,14 +8,17 @@
 #ifndef FELICIA_DRIVERS_CAMERA_MAC_AVF_CAMERA_H_
 #define FELICIA_DRIVERS_CAMERA_MAC_AVF_CAMERA_H_
 
+#include "third_party/chromium/base/mac/scoped_nsobject.h"
 #include "third_party/chromium/base/memory/ref_counted.h"
 #include "third_party/chromium/base/single_thread_task_runner.h"
 
 #include "felicia/drivers/camera/camera_interface.h"
+#include "felicia/drivers/camera/mac/avf_camera_delegate.h"
+#include "felicia/drivers/camera/mac/frame_receiver.h"
 
 namespace felicia {
 
-class AvfCamera : public CameraInterface {
+class AvfCamera : public CameraInterface, public FrameReceiver {
  public:
   ~AvfCamera();
 
@@ -33,6 +36,14 @@ class AvfCamera : public CameraInterface {
   StatusOr<CameraFormat> GetCurrentCameraFormat() override;
   Status SetCameraFormat(const CameraFormat& format) override;
 
+  // FrameReceiver methods
+  void ReceiveFrame(const uint8_t* video_frame, int video_frame_length,
+                    const CameraFormat& camera_format, int aspect_numerator,
+                    int aspect_denominator,
+                    ::base::TimeDelta timestamp) override;
+
+  void ReceiveError(const Status& status) override;
+
  private:
   friend class CameraFactory;
 
@@ -44,6 +55,10 @@ class AvfCamera : public CameraInterface {
   CameraFormat camera_format_;
 
   const scoped_refptr<::base::SingleThreadTaskRunner> task_runner_;
+
+  ::base::scoped_nsobject<AvfCameraDelegate> capture_device_;
+
+  ::base::TimeTicks first_ref_time_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AvfCamera);
 };
