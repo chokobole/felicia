@@ -32,6 +32,8 @@ CAMERA_HEADERS = [
 ]) + if_windows([
     "win/dshow_camera_errors.h",
     "win/dshow_camera.h",
+    "win/mf_camera_errors.h",
+    "win/mf_camera.h",
 ])
 
 fel_cc_library(
@@ -48,21 +50,30 @@ fel_cc_library(
         "linux/v4l2_camera.cc",
         "linux/v4l2_camera_format.cc",
     ]) + if_windows([
+        "win/camera_util.h",
+        "win/camera_util.cc",
         "win/capability_list.h",
         "win/capability_list.cc",
         "win/dshow_camera.cc",
         "win/dshow_camera_format.cc",
-        "win/sink_filter_observer.h",
         "win/filter_base.h",
         "win/filter_base.cc",
+        "win/mf_camera.cc",
+        "win/mf_initializer.h",
+        "win/mf_initializer.cc",
         "win/pin_base.h",
         "win/pin_base.cc",
+        "win/sink_filter_observer.h",
         "win/sink_filter.cc",
         "win/sink_filter.h",
         "win/sink_input_pin.cc",
         "win/sink_input_pin.h",
     ]),
     hdrs = CAMERA_HEADERS,
+    linkopts = if_windows([
+        "Mf.lib",
+        "Mfplat.lib"
+    ]),
     deps = [
         "//felicia/core/lib",
         "@libyuv",

@@ -77,8 +77,6 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
                                              REFGUID category,
                                              REFGUID major_type);
 
-  static std::string GetDeviceModelId(const std::string& device_id);
-
   static void GetDeviceCapabilityList(const std::string& device_id,
                                       bool query_detailed_frame_rates,
                                       CapabilityList* out_capability_list);

@@ -15,6 +15,7 @@
 #include "felicia/drivers/camera/camera_buffer.h"
 #include "felicia/drivers/camera/camera_errors.h"
 #include "felicia/drivers/camera/timestamp_constants.h"
+#include "felicia/drivers/camera/win/camera_util.h"
 #include "felicia/drivers/camera/win/sink_input_pin.h"
 
 using base::win::ScopedCoMem;
@@ -22,12 +23,6 @@ using base::win::ScopedVariant;
 using Microsoft::WRL::ComPtr;
 
 namespace felicia {
-
-// In Windows device identifiers, the USB VID and PID are preceded by the string
-// "vid_" or "pid_".  The identifiers are each 4 bytes long.
-const char kVidPrefix[] = "vid_";  // Also contains '\0'.
-const char kPidPrefix[] = "pid_";  // Also contains '\0'.
-const size_t kVidPidSize = 4;
 
 // Check if a Pin matches a category.
 bool PinMatchesCategory(IPin* pin, REFGUID category) {
@@ -500,27 +495,6 @@ ComPtr<IPin> DshowCamera::GetPin(IBaseFilter* filter, PIN_DIRECTION pin_dir,
 
   DCHECK(!pin.Get());
   return pin;
-}
-
-// static
-std::string DshowCamera::GetDeviceModelId(const std::string& device_id) {
-  const size_t vid_prefix_size = sizeof(kVidPrefix) - 1;
-  const size_t pid_prefix_size = sizeof(kPidPrefix) - 1;
-  const size_t vid_location = device_id.find(kVidPrefix);
-  if (vid_location == std::string::npos ||
-      vid_location + vid_prefix_size + kVidPidSize > device_id.size()) {
-    return std::string();
-  }
-  const size_t pid_location = device_id.find(kPidPrefix);
-  if (pid_location == std::string::npos ||
-      pid_location + pid_prefix_size + kVidPidSize > device_id.size()) {
-    return std::string();
-  }
-  const std::string id_vendor =
-      device_id.substr(vid_location + vid_prefix_size, kVidPidSize);
-  const std::string id_product =
-      device_id.substr(pid_location + pid_prefix_size, kVidPidSize);
-  return id_vendor + ":" + id_product;
 }
 
 // static

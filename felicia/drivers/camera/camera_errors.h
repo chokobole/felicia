@@ -10,6 +10,10 @@
 namespace felicia {
 namespace errors {
 
+inline ::felicia::Status FailedToGetCameraDescriptors() {
+  return Unavailable("Failed to get camera descriptors.");
+}
+
 inline ::felicia::Status FailedToGetCameraFormat() {
   return Unavailable("Failed to get camera format.");
 }
@@ -47,6 +51,7 @@ inline ::felicia::Status FailedToConvertToARGB() {
 #include "felicia/drivers/camera/linux/v4l2_camera_errors.h"
 #elif defined(OS_WIN)
 #include "felicia/drivers/camera/win/dshow_camera_errors.h"
+#include "felicia/drivers/camera/win/mf_camera_errors.h"
 #elif defined(OS_MACOSX)
 #include "felicia/drivers/camera/mac/avf_camera_errors.h"
 #endif
