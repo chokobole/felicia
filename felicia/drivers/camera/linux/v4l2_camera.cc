@@ -130,7 +130,7 @@ class DevVideoFilePathsDeviceProvider {
 }  // namespace
 
 V4l2Camera::V4l2Camera(const CameraDescriptor& camera_descriptor)
-    : camera_descriptor_(camera_descriptor), thread_("V4l2CameraThread") {}
+    : CameraInterface(camera_descriptor), thread_("V4l2CameraThread") {}
 
 V4l2Camera::~V4l2Camera() {
   if (thread_.IsRunning()) thread_.Stop();
@@ -214,10 +214,17 @@ Status V4l2Camera::GetSupportedCameraFormats(
 }
 
 Status V4l2Camera::Init() {
+  if (!camera_state_.IsStopped()) {
+    return camera_state_.InvalidStateError();
+  }
+
   Status s = InitDevice(camera_descriptor_, &fd_);
   if (!s.ok()) {
     return s;
   }
+
+  // This should be before calling GetCurrentCameraFormat()
+  camera_state_.ToInitialized();
 
   StatusOr<CameraFormat> status_or = GetCurrentCameraFormat();
   if (!status_or.ok()) {
@@ -231,6 +238,10 @@ Status V4l2Camera::Init() {
 
 Status V4l2Camera::Start(CameraFrameCallback camera_frame_callback,
                          StatusCallback status_callback) {
+  if (!camera_state_.IsInitialized()) {
+    return camera_state_.InvalidStateError();
+  }
+
   for (size_t i = 0; i < buffers_.size(); ++i) {
     v4l2_buffer buffer;
     FillV4L2Buffer(&buffer, i);
@@ -248,6 +259,8 @@ Status V4l2Camera::Start(CameraFrameCallback camera_frame_callback,
   thread_.Start();
   camera_frame_callback_ = camera_frame_callback;
   status_callback_ = status_callback;
+  camera_state_.ToStarted();
+
   if (thread_.task_runner()->BelongsToCurrentThread()) {
     DoCapture();
   } else {
@@ -259,6 +272,10 @@ Status V4l2Camera::Start(CameraFrameCallback camera_frame_callback,
 }
 
 Status V4l2Camera::Stop() {
+  if (!camera_state_.IsStarted()) {
+    return camera_state_.InvalidStateError();
+  }
+
   Status s;
   if (thread_.task_runner()->BelongsToCurrentThread()) {
     DoStop(&s);
@@ -270,10 +287,18 @@ Status V4l2Camera::Stop() {
   if (thread_.IsRunning()) thread_.Stop();
   if (fd_ != ::base::kInvalidPlatformFile) close(fd_);
 
+  camera_frame_callback_.Reset();
+  status_callback_.Reset();
+  camera_state_.ToStopped();
+
   return s;
 }
 
 StatusOr<CameraFormat> V4l2Camera::GetCurrentCameraFormat() {
+  if (camera_state_.IsStopped()) {
+    return camera_state_.InvalidStateError();
+  }
+
   v4l2_format format;
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 
@@ -295,6 +320,10 @@ StatusOr<CameraFormat> V4l2Camera::GetCurrentCameraFormat() {
 }
 
 Status V4l2Camera::SetCameraFormat(const CameraFormat& camera_format) {
+  if (!camera_state_.IsInitialized()) {
+    return camera_state_.InvalidStateError();
+  }
+
   v4l2_format format;
   FillV4L2Format(&format, camera_format.width(), camera_format.height(),
                  camera_format.ToV4l2PixelFormat());

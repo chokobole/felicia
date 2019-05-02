@@ -10,6 +10,7 @@ namespace felicia {
 
 class EXPORT CameraDescriptor {
  public:
+  CameraDescriptor();
   CameraDescriptor(const std::string& display_name,
                    const std::string& device_id, const std::string& model_id);
   CameraDescriptor(const CameraDescriptor& other);

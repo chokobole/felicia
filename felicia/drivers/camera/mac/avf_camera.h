@@ -51,9 +51,6 @@ class AvfCamera : public CameraInterface, public FrameReceiver {
 
   static std::string GetDeviceModelId(const std::string& device_id);
 
-  CameraDescriptor camera_descriptor_;
-  CameraFormat camera_format_;
-
   const scoped_refptr<::base::SingleThreadTaskRunner> task_runner_;
 
   ::base::scoped_nsobject<AvfCameraDelegate> capture_device_;

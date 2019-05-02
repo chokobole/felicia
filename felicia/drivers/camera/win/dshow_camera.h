@@ -106,10 +106,9 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
   // Map of all capabilities this device support.
   CapabilityList capabilities_;
 
-  CameraDescriptor camera_descriptor_;
-  CameraFormat camera_format_;
-
   ::base::TimeTicks first_ref_time_;
+
+  bool was_set_camera_format_ = false;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DshowCamera);
 };

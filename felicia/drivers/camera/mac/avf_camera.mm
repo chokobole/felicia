@@ -19,7 +19,7 @@ namespace felicia {
 const size_t kVidPidSize = 4;
 
 AvfCamera::AvfCamera(const CameraDescriptor& camera_descriptor)
-    : camera_descriptor_(camera_descriptor),
+    : CameraInterface(camera_descriptor),
       task_runner_(::base::ThreadTaskRunnerHandle::Get()),
       capture_device_(nil) {}
 
@@ -52,6 +52,10 @@ Status AvfCamera::GetSupportedCameraFormats(const CameraDescriptor& camera_descr
 }
 
 Status AvfCamera::Init() {
+  if (!camera_state_.IsStopped()) {
+    return camera_state_.InvalidStateError();
+  }
+
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   capture_device_.reset([[AvfCameraDelegate alloc] initWithFrameReceiver:this]);
@@ -64,11 +68,23 @@ Status AvfCamera::Init() {
     return errors::FailedToSetCaptureDevice(errorMessage);
   }
 
+  // This should be before calling GetCurrentCameraFormat()
+  camera_state_.ToInitialized();
+
+  StatusOr<CameraFormat> status_or = GetCurrentCameraFormat();
+  if (!status_or.ok()) return status_or.status();
+  camera_format_ = status_or.ValueOrDie();
+  DLOG(INFO) << "Default Format: " << camera_format_.ToString();
+
   return Status::OK();
 }
 
 Status AvfCamera::Start(CameraFrameCallback camera_frame_callback, StatusCallback status_callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (!camera_state_.IsInitialized()) {
+    return camera_state_.InvalidStateError();
+  }
 
   StatusOr<CameraFormat> status_or = GetCurrentCameraFormat();
   if (!status_or.ok()) {
@@ -87,11 +103,17 @@ Status AvfCamera::Start(CameraFrameCallback camera_frame_callback, StatusCallbac
   camera_frame_callback_ = camera_frame_callback;
   status_callback_ = status_callback;
 
+  camera_state_.ToStarted();
+
   return Status::OK();
 }
 
 Status AvfCamera::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (!camera_state_.IsStarted()) {
+    return camera_state_.InvalidStateError();
+  }
 
   NSString* errorMessage = nil;
   if (![capture_device_ setCaptureDevice:nil errorMessage:&errorMessage])
@@ -101,11 +123,16 @@ Status AvfCamera::Stop() {
 
   camera_frame_callback_.Reset();
   status_callback_.Reset();
+  camera_state_.ToStopped();
 
   return Status::OK();
 }
 
 StatusOr<CameraFormat> AvfCamera::GetCurrentCameraFormat() {
+  if (camera_state_.IsStopped()) {
+    return camera_state_.InvalidStateError();
+  }
+
   CameraFormat camera_format;
   if (![capture_device_ getCameraFormat:&camera_format]) {
     return errors::FailedToGetCameraFormat();
@@ -114,6 +141,10 @@ StatusOr<CameraFormat> AvfCamera::GetCurrentCameraFormat() {
 }
 
 Status AvfCamera::SetCameraFormat(const CameraFormat& camera_format) {
+  if (!camera_state_.IsInitialized()) {
+    return camera_state_.InvalidStateError();
+  }
+
   if (![capture_device_ setCaptureHeight:camera_format.height()
                                    width:camera_format.width()
                                frameRate:camera_format.frame_rate()

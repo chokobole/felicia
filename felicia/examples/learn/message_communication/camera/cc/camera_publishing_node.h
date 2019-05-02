@@ -92,7 +92,7 @@ class CameraPublishingNode : public NodeLifecycle {
   }
 
   void OnCameraFrame(CameraFrame camera_frame) {
-    LOG(INFO) << "CameraPublishingNode::OnCameraFrame" << std::endl;
+    std::cout << "CameraPublishingNode::OnCameraFrame" << std::endl;
     if (publisher_.IsUnregistered()) return;
 
     CameraMessage message;
@@ -104,7 +104,7 @@ class CameraPublishingNode : public NodeLifecycle {
   }
 
   void OnCameraError(const Status& s) {
-    LOG(INFO) << "CameraPublishingNode::OnCameraError" << std::endl;
+    std::cout << "CameraPublishingNode::OnCameraError" << std::endl;
     LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 

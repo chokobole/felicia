@@ -1,12 +1,11 @@
 #ifndef FELICIA_CC_COMMUNICATION_STATE_H_
 #define FELICIA_CC_COMMUNICATION_STATE_H_
 
-#include "third_party/chromium/base/compiler_specific.h"
-
 #include <stdint.h>
 
 #include <string>
 
+#include "third_party/chromium/base/compiler_specific.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 #include "felicia/core/lib/error/errors.h"

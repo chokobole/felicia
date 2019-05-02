@@ -97,19 +97,25 @@ inline ::felicia::Status IsNotAVideoType() {
 
 inline ::felicia::Status FailedToConnectTheCaptureGraph(HRESULT hr) {
   return Unavailable(
-      ::base::StringPrintf("Failed to connect the Capture graph: %s.",
+      ::base::StringPrintf("Failed to connect the CaptureGraph: %s.",
                            ::logging::SystemErrorCodeToString(hr).c_str()));
 }
 
 inline ::felicia::Status FailedToPause(HRESULT hr) {
   return Unavailable(
-      ::base::StringPrintf("Failed to pause the Capture device: %s.",
+      ::base::StringPrintf("Failed to pause the capture device: %s.",
                            ::logging::SystemErrorCodeToString(hr).c_str()));
 }
 
 inline ::felicia::Status FailedToRun(HRESULT hr) {
   return Unavailable(
-      ::base::StringPrintf("Failed to run the Capture device: %s.",
+      ::base::StringPrintf("Failed to run the capture device: %s.",
+                           ::logging::SystemErrorCodeToString(hr).c_str()));
+}
+
+inline ::felicia::Status FailedToStop(HRESULT hr) {
+  return Unavailable(
+      ::base::StringPrintf("Failed to stop the capture device: %s.",
                            ::logging::SystemErrorCodeToString(hr).c_str()));
 }
 

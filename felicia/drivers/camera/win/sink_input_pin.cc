@@ -206,7 +206,7 @@ HRESULT SinkInputPin::Receive(IMediaSample* sample) {
   const int length = sample->GetActualDataLength();
 
   if (length <= 0 ||
-      static_cast<size_t>(length) < resulting_format_.AllocationSize()) {
+      static_cast<size_t>(length) != resulting_format_.AllocationSize()) {
     DLOG(WARNING) << "Wrong media sample length: " << length;
     observer_->FrameDropped(
         Status(felicia::error::Code::DATA_LOSS,

@@ -23,6 +23,7 @@ CAMERA_HEADERS = [
     "camera_interface.h",
     "camera_frame.h",
     "camera_frame_util.h",
+    "camera_state.h",
     "fake_camera.h",
     "timestamp_constants.h",
 ] + if_linux([

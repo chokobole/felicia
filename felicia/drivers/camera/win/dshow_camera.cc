@@ -93,7 +93,7 @@ void DshowCamera::ScopedMediaType::DeleteMediaType(AM_MEDIA_TYPE* mt) {
 }
 
 DshowCamera::DshowCamera(const CameraDescriptor& camera_descriptor)
-    : camera_descriptor_(camera_descriptor) {}
+    : CameraInterface(camera_descriptor) {}
 
 DshowCamera::~DshowCamera() {
   if (media_control_.Get()) media_control_->Stop();
@@ -175,6 +175,10 @@ Status DshowCamera::GetSupportedCameraFormats(
 }
 
 Status DshowCamera::Init() {
+  if (!camera_state_.IsStopped()) {
+    return camera_state_.InvalidStateError();
+  }
+
   HRESULT hr = GetDeviceFilter(camera_descriptor_.device_id(),
                                capture_filter_.GetAddressOf());
   if (FAILED(hr)) return errors::FailedToCreateCaptureFilter(hr);
@@ -211,9 +215,12 @@ Status DshowCamera::Init() {
   hr = graph_builder_->AddFilter(sink_filter_.get(), NULL);
   if (FAILED(hr)) return errors::FailedToAddSinkFilter(hr);
 
+  was_set_camera_format_ = false;
+  // This should be before calling GetCurrentCameraFormat()
+  camera_state_.ToInitialized();
+
   StatusOr<CameraFormat> status_or = GetCurrentCameraFormat();
   if (!status_or.ok()) return status_or.status();
-
   camera_format_ = status_or.ValueOrDie();
   DLOG(INFO) << "Default Format: " << camera_format_.ToString();
 
@@ -222,8 +229,9 @@ Status DshowCamera::Init() {
 
 Status DshowCamera::Start(CameraFrameCallback camera_frame_callback,
                           StatusCallback status_callback) {
-  camera_frame_callback_ = camera_frame_callback;
-  status_callback_ = status_callback;
+  if (!camera_state_.IsInitialized()) {
+    return camera_state_.InvalidStateError();
+  }
 
   // if (media_type->subtype == kMediaSubTypeHDYC) {
   //   // HDYC pixel format, used by the DeckLink capture card, needs an AVI
@@ -244,14 +252,43 @@ Status DshowCamera::Start(CameraFrameCallback camera_frame_callback,
   hr = media_control_->Run();
   if (FAILED(hr)) return errors::FailedToRun(hr);
 
+  camera_frame_callback_ = camera_frame_callback;
+  status_callback_ = status_callback;
+
+  camera_state_.ToStarted();
+
   return Status::OK();
 }
 
 Status DshowCamera::Stop() {
-  return errors::Unimplemented("Not implemented yet.");
+  if (!camera_state_.IsStarted()) {
+    return camera_state_.InvalidStateError();
+  }
+
+  HRESULT hr = media_control_->Stop();
+  if (FAILED(hr)) {
+    return errors::FailedToStop(hr);
+  }
+
+  graph_builder_->Disconnect(output_capture_pin_.Get());
+  graph_builder_->Disconnect(input_sink_pin_.Get());
+
+  camera_frame_callback_.Reset();
+  status_callback_.Reset();
+  camera_state_.ToStopped();
+
+  return Status::OK();
 }
 
 StatusOr<CameraFormat> DshowCamera::GetCurrentCameraFormat() {
+  if (camera_state_.IsStopped()) {
+    return camera_state_.InvalidStateError();
+  }
+
+  if (was_set_camera_format_) {
+    return camera_format_;
+  }
+
   ComPtr<IAMStreamConfig> stream_config;
   HRESULT hr = output_capture_pin_.CopyTo(stream_config.GetAddressOf());
   if (FAILED(hr)) {
@@ -281,6 +318,10 @@ StatusOr<CameraFormat> DshowCamera::GetCurrentCameraFormat() {
 }
 
 Status DshowCamera::SetCameraFormat(const CameraFormat& camera_format) {
+  if (!camera_state_.IsInitialized()) {
+    return camera_state_.InvalidStateError();
+  }
+
   // Get the camera capability that best match the requested format.
   const Capability* found_capability =
       GetBestMatchedCapability(camera_format, capabilities_);
@@ -330,6 +371,7 @@ Status DshowCamera::SetCameraFormat(const CameraFormat& camera_format) {
   }
 
   camera_format_ = found_capability->supported_format;
+  was_set_camera_format_ = true;
 
   return Status::OK();
 }

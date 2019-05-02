@@ -2,7 +2,8 @@
 
 namespace felicia {
 
-CameraInterface::CameraInterface() = default;
+CameraInterface::CameraInterface(const CameraDescriptor& camera_descriptor)
+    : camera_descriptor_(camera_descriptor) {}
 
 CameraInterface::~CameraInterface() = default;
 
