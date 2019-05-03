@@ -82,6 +82,22 @@ bool CameraDescriptorsContainDeviceId(
                       }) != camera_descriptors.end();
 }
 
+bool CreateVideoCaptureDeviceMediaFoundation(
+    const CameraDescriptor& camera_descriptor, IMFMediaSource** source) {
+  ComPtr<IMFAttributes> attributes;
+  // We allocate kAttributes.size() + 1 (+1 is for sym_link below) elements
+  // in attributes store.
+  if (!PrepareVideoCaptureAttributesMediaFoundation(
+          kAttributes, kAttributes.size() + 1, attributes.GetAddressOf())) {
+    return false;
+  }
+
+  attributes->SetString(
+      MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK,
+      base::SysUTF8ToWide(camera_descriptor.device_id()).c_str());
+  return SUCCEEDED(MFCreateDeviceSource(attributes.Get(), source));
+}
+
 }  // namespace
 
 // Returns true if the current platform supports the Media Foundation API
@@ -144,7 +160,63 @@ Status MfCamera::GetCameraDescriptors(CameraDescriptors* camera_descriptors) {
 Status MfCamera::GetSupportedCameraFormats(
     const CameraDescriptor& camera_descriptor, CameraFormats* camera_formats) {
   DCHECK(camera_formats->empty());
-  return errors::Unimplemented("Not implemented yet.");
+
+  ComPtr<IMFMediaSource> source;
+  if (!CreateVideoCaptureDeviceMediaFoundation(camera_descriptor,
+                                               source.GetAddressOf())) {
+    return errors::FailedToCreateVideoCaptureDevice();
+  }
+
+  ComPtr<IMFSourceReader> reader;
+  HRESULT hr = MFCreateSourceReaderFromMediaSource(source.Get(), NULL,
+                                                   reader.GetAddressOf());
+  if (FAILED(hr)) {
+    return errors::FailedToMFCreateSourceReaderFromMediaSource(hr);
+  }
+
+  DWORD stream_index = 0;
+  ComPtr<IMFMediaType> type;
+  while (SUCCEEDED(hr = reader->GetNativeMediaType(
+                       static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM),
+                       stream_index, type.GetAddressOf()))) {
+    UINT32 width, height;
+    hr = MFGetAttributeSize(type.Get(), MF_MT_FRAME_SIZE, &width, &height);
+    if (FAILED(hr)) {
+      return errors::FailedToMFGetAttributeSize(hr);
+    }
+    CameraFormat camera_format;
+    camera_format.SetSize(width, height);
+
+    UINT32 numerator, denominator;
+    hr = MFGetAttributeRatio(type.Get(), MF_MT_FRAME_RATE, &numerator,
+                             &denominator);
+    if (FAILED(hr)) {
+      return errors::FailedToMFGetAttributeRatio(hr);
+    }
+    camera_format.set_frame_rate(
+        denominator ? static_cast<float>(numerator) / denominator : 0.0f);
+
+    GUID type_guid;
+    hr = type->GetGUID(MF_MT_SUBTYPE, &type_guid);
+    if (FAILED(hr)) {
+      return errors::FailedToGetGUID(hr);
+    }
+    camera_format.set_pixel_format(CameraFormat::FromMfMediaSubtype(type_guid));
+    type.Reset();
+    ++stream_index;
+    if (camera_format.pixel_format() == CameraFormat::PIXEL_FORMAT_UNKNOWN)
+      continue;
+
+    if (std::find(camera_formats->begin(), camera_formats->end(),
+                  camera_format) == camera_formats->end()) {
+      camera_formats->push_back(camera_format);
+    }
+
+    DVLOG(1) << camera_descriptor.display_name() << " "
+             << camera_format.ToString();
+  }
+
+  return Status::OK();
 }
 
 Status MfCamera::Init() {

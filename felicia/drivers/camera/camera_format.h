@@ -51,13 +51,16 @@ class EXPORT CameraFormat {
   uint32_t ToV4l2PixelFormat() const;
   static PixelFormat FromV4l2PixelFormat(uint32_t v4l2_pixel_format);
 #elif defined(OS_WIN)
-  const GUID& ToMediaSubtype() const;
-  static PixelFormat FromMediaSubtype(const GUID& sub_type);
+  const GUID& ToDshowMediaSubtype() const;
+  static PixelFormat FromDshowMediaSubtype(const GUID& sub_type);
+  static PixelFormat FromMfMediaSubtype(const GUID& sub_type);
 #elif defined(OS_MACOSX)
   FourCharCode ToAVFoundationPixelFormat() const;
   static PixelFormat FromAVFoundationPixelFormat(
       const FourCharCode avf_pixel_format);
 #endif
+
+  bool operator==(const CameraFormat& other);
 
  private:
   Sizei size_;

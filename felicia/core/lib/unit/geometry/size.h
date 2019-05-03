@@ -20,6 +20,10 @@ class Size {
 
   constexpr size_t area() const { return CheckedArea().ValueOrDie(); }
 
+  constexpr bool operator==(const Size& other) {
+    return width_ == other.width_ && height_ == other.height_;
+  }
+
  private:
   constexpr ::base::CheckedNumeric<size_t> CheckedArea() const {
     ::base::CheckedNumeric<size_t> checked_area = width();

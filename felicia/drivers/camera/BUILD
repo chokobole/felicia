@@ -58,6 +58,7 @@ fel_cc_library(
         "win/dshow_camera_format.cc",
         "win/filter_base.h",
         "win/filter_base.cc",
+        "win/mf_camera_format.cc",
         "win/mf_camera.cc",
         "win/mf_initializer.h",
         "win/mf_initializer.cc",
@@ -71,8 +72,10 @@ fel_cc_library(
     ]),
     hdrs = CAMERA_HEADERS,
     linkopts = if_windows([
-        "Mf.lib",
-        "Mfplat.lib"
+        "mf.lib",
+        "mfplat.lib",
+        "mfreadwrite.lib",
+        "mfuuid.lib",
     ]),
     deps = [
         "//felicia/core/lib",

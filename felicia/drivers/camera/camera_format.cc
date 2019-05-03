@@ -78,4 +78,9 @@ std::string CameraFormat::PixelFormatToString(PixelFormat pixel_format) {
   }
 }
 
+bool CameraFormat::operator==(const CameraFormat& other) {
+  return size_ == other.size_ && pixel_format_ == other.pixel_format_ &&
+         frame_rate_ == other.frame_rate_;
+}
+
 }  // namespace felicia

@@ -11,6 +11,7 @@
 #include "felicia/drivers/camera/camera_interface.h"
 
 #include <mfidl.h>
+#include <mfreadwrite.h>
 
 namespace felicia {
 

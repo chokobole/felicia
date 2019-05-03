@@ -9,7 +9,7 @@ namespace felicia {
 
 namespace {
 
-static struct {
+struct {
   const GUID& sub_type;
   CameraFormat::PixelFormat pixel_format;
 } const kMediaSubtypeToPixelFormatCorrespondence[] = {
@@ -29,7 +29,7 @@ static struct {
 
 }  // namespace
 
-const GUID& CameraFormat::ToMediaSubtype() const {
+const GUID& CameraFormat::ToDshowMediaSubtype() const {
   for (const auto& pixel_format : kMediaSubtypeToPixelFormatCorrespondence) {
     if (pixel_format_ == pixel_format.pixel_format)
       return pixel_format.sub_type;
@@ -40,7 +40,8 @@ const GUID& CameraFormat::ToMediaSubtype() const {
 }
 
 // static
-CameraFormat::PixelFormat CameraFormat::FromMediaSubtype(const GUID& sub_type) {
+CameraFormat::PixelFormat CameraFormat::FromDshowMediaSubtype(
+    const GUID& sub_type) {
   for (const auto& pixel_format : kMediaSubtypeToPixelFormatCorrespondence) {
     if (sub_type == pixel_format.sub_type) return pixel_format.pixel_format;
   }
