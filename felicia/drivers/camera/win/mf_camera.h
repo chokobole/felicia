@@ -10,10 +10,16 @@
 
 #include "felicia/drivers/camera/camera_interface.h"
 
+#include <mfcaptureengine.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
+#include <wrl/client.h>
+
+#include "third_party/chromium/base/sequence_checker.h"
 
 namespace felicia {
+
+class MFVideoCallback;
 
 class MfCamera : public CameraInterface {
  public:
@@ -34,10 +40,29 @@ class MfCamera : public CameraInterface {
   StatusOr<CameraFormat> GetCurrentCameraFormat() override;
   Status SetCameraFormat(const CameraFormat& format) override;
 
+  // Captured new video data.
+  void OnIncomingCapturedData(const uint8_t* data, int length,
+                              ::base::TimeTicks reference_time,
+                              ::base::TimeDelta timestamp);
+  void OnFrameDropped(const Status& s);
+  void OnEvent(IMFMediaEvent* media_event);
+
  private:
   friend class CameraFactory;
 
   MfCamera(const CameraDescriptor& camera_descriptor);
+
+  scoped_refptr<MFVideoCallback> video_callback_;
+
+  // Guards the below variables from concurrent access between methods running
+  // on |sequence_checker_| and calls to OnIncomingCapturedData() and OnEvent()
+  // made by MediaFoundation on threads outside of our control.
+  base::Lock lock_;
+
+  Microsoft::WRL::ComPtr<IMFCaptureEngine> engine_;
+  const Microsoft::WRL::ComPtr<IMFMediaSource> source_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(MfCamera);
 };

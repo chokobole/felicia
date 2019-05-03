@@ -98,7 +98,102 @@ bool CreateVideoCaptureDeviceMediaFoundation(
   return SUCCEEDED(MFCreateDeviceSource(attributes.Get(), source));
 }
 
+HRESULT CreateCaptureEngine(IMFCaptureEngine** engine) {
+  ComPtr<IMFCaptureEngineClassFactory> capture_engine_class_factory;
+  HRESULT hr = CoCreateInstance(
+      CLSID_MFCaptureEngineClassFactory, NULL, CLSCTX_INPROC_SERVER,
+      IID_PPV_ARGS(capture_engine_class_factory.GetAddressOf()));
+  if (FAILED(hr)) return hr;
+
+  return capture_engine_class_factory->CreateInstance(CLSID_MFCaptureEngine,
+                                                      IID_PPV_ARGS(engine));
+}
+
 }  // namespace
+
+class MFVideoCallback final
+    : public ::base::RefCountedThreadSafe<MFVideoCallback>,
+      public IMFCaptureEngineOnSampleCallback,
+      public IMFCaptureEngineOnEventCallback {
+ public:
+  MFVideoCallback(MfCamera* observer) : observer_(observer) {}
+
+  STDMETHOD(QueryInterface)(REFIID riid, void** object) override {
+    HRESULT hr = E_NOINTERFACE;
+    if (riid == IID_IUnknown) {
+      *object = this;
+      hr = S_OK;
+    } else if (riid == IID_IMFCaptureEngineOnSampleCallback) {
+      *object = static_cast<IMFCaptureEngineOnSampleCallback*>(this);
+      hr = S_OK;
+    } else if (riid == IID_IMFCaptureEngineOnEventCallback) {
+      *object = static_cast<IMFCaptureEngineOnEventCallback*>(this);
+      hr = S_OK;
+    }
+    if (SUCCEEDED(hr)) AddRef();
+
+    return hr;
+  }
+
+  STDMETHOD_(ULONG, AddRef)() override {
+    ::base::RefCountedThreadSafe<MFVideoCallback>::AddRef();
+    return 1U;
+  }
+
+  STDMETHOD_(ULONG, Release)() override {
+    ::base::RefCountedThreadSafe<MFVideoCallback>::Release();
+    return 1U;
+  }
+
+  STDMETHOD(OnEvent)(IMFMediaEvent* media_event) override {
+    observer_->OnEvent(media_event);
+    return S_OK;
+  }
+
+  STDMETHOD(OnSample)(IMFSample* sample) override {
+    if (!sample) {
+      observer_->OnFrameDropped(
+          Status(error::Code::DATA_LOSS, "Received sample is null."));
+      return S_OK;
+    }
+
+    base::TimeTicks reference_time(base::TimeTicks::Now());
+    LONGLONG raw_time_stamp = 0;
+    sample->GetSampleTime(&raw_time_stamp);
+    base::TimeDelta timestamp =
+        base::TimeDelta::FromMicroseconds(raw_time_stamp / 10);
+
+    DWORD count = 0;
+    sample->GetBufferCount(&count);
+
+    for (DWORD i = 0; i < count; ++i) {
+      ComPtr<IMFMediaBuffer> buffer;
+      sample->GetBufferByIndex(i, buffer.GetAddressOf());
+      if (buffer) {
+        DWORD length = 0, max_length = 0;
+        BYTE* data = NULL;
+        buffer->Lock(&data, &max_length, &length);
+        if (data) {
+          observer_->OnIncomingCapturedData(data, length, reference_time,
+                                            timestamp);
+        } else {
+          observer_->OnFrameDropped(Status(
+              error::Code::DATA_LOSS, "Locking buffer delievered nullptr."));
+        }
+        buffer->Unlock();
+      } else {
+        observer_->OnFrameDropped(
+            Status(error::Code::DATA_LOSS, "GetBufferByIndex returned null."));
+      }
+    }
+    return S_OK;
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<MFVideoCallback>;
+  ~MFVideoCallback() {}
+  MfCamera* observer_;
+};
 
 // Returns true if the current platform supports the Media Foundation API
 // and that the DLLs are available.  On Vista this API is an optional download
@@ -112,9 +207,11 @@ bool MfCamera::PlatformSupportsMediaFoundation() {
 }
 
 MfCamera::MfCamera(const CameraDescriptor& camera_descriptor)
-    : CameraInterface(camera_descriptor) {}
+    : CameraInterface(camera_descriptor) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
-MfCamera::~MfCamera() {}
+MfCamera::~MfCamera() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
 
 // static
 Status MfCamera::GetCameraDescriptors(CameraDescriptors* camera_descriptors) {
@@ -220,24 +317,95 @@ Status MfCamera::GetSupportedCameraFormats(
 }
 
 Status MfCamera::Init() {
-  return errors::Unimplemented("Not implemented yet.");
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!camera_state_.IsStopped()) {
+    return camera_state_.InvalidStateError();
+  }
+
+  HRESULT hr = S_OK;
+  if (!engine_) hr = CreateCaptureEngine(engine_.GetAddressOf());
+
+  if (FAILED(hr)) {
+    return errors::FailedToCreateCaptureEngine(hr);
+  }
+
+  ComPtr<IMFAttributes> attributes;
+  MFCreateAttributes(attributes.GetAddressOf(), 1);
+  DCHECK(attributes);
+
+  video_callback_ = new MFVideoCallback(this);
+  hr = engine_->Initialize(video_callback_.get(), attributes.Get(), nullptr,
+                           source_.Get());
+  if (FAILED(hr)) {
+    return errors::FailedToInitialize(hr);
+  }
+
+  camera_state_.ToInitialized();
+
+  return Status::OK();
 }
 
 Status MfCamera::Start(CameraFrameCallback camera_frame_callback,
                        StatusCallback status_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!camera_state_.IsInitialized()) {
+    return camera_state_.InvalidStateError();
+  }
+
   return errors::Unimplemented("Not implemented yet.");
 }
 
 Status MfCamera::Stop() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!camera_state_.IsStarted()) {
+    return camera_state_.InvalidStateError();
+  }
+
   return errors::Unimplemented("Not implemented yet.");
 }
 
 StatusOr<CameraFormat> MfCamera::GetCurrentCameraFormat() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (camera_state_.IsStopped()) {
+    return camera_state_.InvalidStateError();
+  }
+
   return errors::Unimplemented("Not implemented yet.");
 }
 
 Status MfCamera::SetCameraFormat(const CameraFormat& camera_format) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!camera_state_.IsInitialized()) {
+    return camera_state_.InvalidStateError();
+  }
+
   return errors::Unimplemented("Not implemented yet.");
+}
+
+void MfCamera::OnIncomingCapturedData(const uint8_t* data, int length,
+                                      ::base::TimeTicks reference_time,
+                                      ::base::TimeDelta timestamp) {
+  ::base::AutoLock lock(lock_);
+  std::cout << "OnIncomingCapturedData" << std::endl;
+}
+
+void MfCamera::OnFrameDropped(const Status& s) {
+  ::base::AutoLock lock(lock_);
+  status_callback_.Run(s);
+}
+
+void MfCamera::OnEvent(IMFMediaEvent* media_event) {
+  ::base::AutoLock lock(lock_);
+
+  HRESULT hr;
+  media_event->GetStatus(&hr);
+
+  if (FAILED(hr)) status_callback_.Run(errors::MediaEventStatusFailed(hr));
 }
 
 }  // namespace felicia

@@ -38,6 +38,24 @@ inline ::felicia::Status FailedToGetGUID(HRESULT hr) {
                            ::logging::SystemErrorCodeToString(hr).c_str()));
 }
 
+inline ::felicia::Status FailedToCreateCaptureEngine(HRESULT hr) {
+  return Unavailable(
+      ::base::StringPrintf("Failed to create CaptureEngine: %s.",
+                           ::logging::SystemErrorCodeToString(hr).c_str()));
+}
+
+inline ::felicia::Status FailedToInitialize(HRESULT hr) {
+  return Unavailable(
+      ::base::StringPrintf("Failed to Initialize: %s.",
+                           ::logging::SystemErrorCodeToString(hr).c_str()));
+}
+
+inline ::felicia::Status MediaEventStatusFailed(HRESULT hr) {
+  return Unavailable(
+      ::base::StringPrintf("MediaEventStatusFailed: %s.",
+                           ::logging::SystemErrorCodeToString(hr).c_str()));
+}
+
 }  // namespace errors
 }  // namespace felicia
 
