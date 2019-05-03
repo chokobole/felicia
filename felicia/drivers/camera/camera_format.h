@@ -53,6 +53,7 @@ class EXPORT CameraFormat {
 #elif defined(OS_WIN)
   const GUID& ToDshowMediaSubtype() const;
   static PixelFormat FromDshowMediaSubtype(const GUID& sub_type);
+  static bool ToMfSinkMediaSubtype(const GUID& sub_type, GUID* sink_type);
   static PixelFormat FromMfMediaSubtype(const GUID& sub_type);
 #elif defined(OS_MACOSX)
   FourCharCode ToAVFoundationPixelFormat() const;

@@ -398,7 +398,7 @@ void DshowCamera::FrameDropped(const Status& s) { status_callback_.Run(s); }
 Status DshowCamera::CreateCapabilityMap() {
   GetPinCapabilityList(capture_filter_, output_capture_pin_,
                        true /* query_detailed_frame_rates */, &capabilities_);
-  if (capabilities_.empty()) return errors::FailedToCreateCapabilityMap();
+  if (capabilities_.empty()) return errors::NoVideoCapbility();
   return Status::OK();
 }
 

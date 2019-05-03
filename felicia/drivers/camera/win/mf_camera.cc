@@ -9,8 +9,7 @@
 #include "felicia/drivers/camera/win/mf_camera.h"
 
 #include <mfapi.h>
-#include <wrl.h>
-#include <wrl/client.h>
+#include <mferror.h>
 
 #include "third_party/chromium/base/strings/sys_string_conversions.h"
 #include "third_party/chromium/base/win/scoped_co_mem.h"
@@ -107,6 +106,64 @@ HRESULT CreateCaptureEngine(IMFCaptureEngine** engine) {
 
   return capture_engine_class_factory->CreateInstance(CLSID_MFCaptureEngine,
                                                       IID_PPV_ARGS(engine));
+}
+
+// Calculate sink subtype based on source subtype. |passthrough| is set when
+// sink and source are the same and means that there should be no transcoding
+// done by IMFCaptureEngine.
+HRESULT GetMFSinkMediaSubtype(IMFMediaType* source_media_type,
+                              GUID* mf_sink_media_subtype, bool* passthrough) {
+  GUID source_subtype;
+  HRESULT hr = source_media_type->GetGUID(MF_MT_SUBTYPE, &source_subtype);
+  if (FAILED(hr)) return hr;
+
+  if (!CameraFormat::ToMfSinkMediaSubtype(source_subtype,
+                                          mf_sink_media_subtype))
+    return E_FAIL;
+  *passthrough = (*mf_sink_media_subtype == source_subtype);
+  return S_OK;
+}
+
+HRESULT CopyAttribute(IMFAttributes* source_attributes,
+                      IMFAttributes* destination_attributes, const GUID& key) {
+  PROPVARIANT var;
+  PropVariantInit(&var);
+  HRESULT hr = source_attributes->GetItem(key, &var);
+  if (FAILED(hr)) return hr;
+
+  hr = destination_attributes->SetItem(key, var);
+  PropVariantClear(&var);
+  return hr;
+}
+
+HRESULT ConvertToVideoSinkMediaType(IMFMediaType* source_media_type,
+                                    IMFMediaType* sink_media_type) {
+  HRESULT hr = sink_media_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
+  if (FAILED(hr)) return hr;
+
+  bool passthrough = false;
+  GUID mf_sink_media_subtype;
+  hr = GetMFSinkMediaSubtype(source_media_type, &mf_sink_media_subtype,
+                             &passthrough);
+  if (FAILED(hr)) return hr;
+
+  hr = sink_media_type->SetGUID(MF_MT_SUBTYPE, mf_sink_media_subtype);
+  // Copying attribute values for passthrough mode is redundant, since the
+  // format is kept unchanged, and causes AddStream error MF_E_INVALIDMEDIATYPE.
+  if (FAILED(hr) || passthrough) return hr;
+
+  hr = CopyAttribute(source_media_type, sink_media_type, MF_MT_FRAME_SIZE);
+  if (FAILED(hr)) return hr;
+
+  hr = CopyAttribute(source_media_type, sink_media_type, MF_MT_FRAME_RATE);
+  if (FAILED(hr)) return hr;
+
+  hr = CopyAttribute(source_media_type, sink_media_type,
+                     MF_MT_PIXEL_ASPECT_RATIO);
+  if (FAILED(hr)) return hr;
+
+  return CopyAttribute(source_media_type, sink_media_type,
+                       MF_MT_INTERLACE_MODE);
 }
 
 }  // namespace
@@ -207,7 +264,9 @@ bool MfCamera::PlatformSupportsMediaFoundation() {
 }
 
 MfCamera::MfCamera(const CameraDescriptor& camera_descriptor)
-    : CameraInterface(camera_descriptor) {
+    : CameraInterface(camera_descriptor),
+      max_retry_count_(200),
+      retry_delay_in_ms_(50) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -276,31 +335,14 @@ Status MfCamera::GetSupportedCameraFormats(
   while (SUCCEEDED(hr = reader->GetNativeMediaType(
                        static_cast<DWORD>(MF_SOURCE_READER_FIRST_VIDEO_STREAM),
                        stream_index, type.GetAddressOf()))) {
-    UINT32 width, height;
-    hr = MFGetAttributeSize(type.Get(), MF_MT_FRAME_SIZE, &width, &height);
-    if (FAILED(hr)) {
-      return errors::FailedToMFGetAttributeSize(hr);
-    }
     CameraFormat camera_format;
-    camera_format.SetSize(width, height);
+    Status s = MfCamera::GetCameraFormatFromSourceMediaType(type.Get(), false,
+                                                            &camera_format);
+    if (!s.ok()) return s;
 
-    UINT32 numerator, denominator;
-    hr = MFGetAttributeRatio(type.Get(), MF_MT_FRAME_RATE, &numerator,
-                             &denominator);
-    if (FAILED(hr)) {
-      return errors::FailedToMFGetAttributeRatio(hr);
-    }
-    camera_format.set_frame_rate(
-        denominator ? static_cast<float>(numerator) / denominator : 0.0f);
-
-    GUID type_guid;
-    hr = type->GetGUID(MF_MT_SUBTYPE, &type_guid);
-    if (FAILED(hr)) {
-      return errors::FailedToGetGUID(hr);
-    }
-    camera_format.set_pixel_format(CameraFormat::FromMfMediaSubtype(type_guid));
     type.Reset();
     ++stream_index;
+
     if (camera_format.pixel_format() == CameraFormat::PIXEL_FORMAT_UNKNOWN)
       continue;
 
@@ -341,7 +383,17 @@ Status MfCamera::Init() {
     return errors::FailedToInitialize(hr);
   }
 
+  CapabilityList video_capabilities;
+  Status s = CreateCapabilityList(&video_capabilities);
+  if (!s.ok()) return s;
+
+  selected_video_capability_.reset(new Capability(*video_capabilities.begin()));
+  camera_format_ = selected_video_capability_->supported_format;
+  SetCameraFormat(camera_format_);
+
   camera_state_.ToInitialized();
+
+  DLOG(INFO) << "Default Format: " << camera_format_.ToString();
 
   return Status::OK();
 }
@@ -354,7 +406,76 @@ Status MfCamera::Start(CameraFrameCallback camera_frame_callback,
     return camera_state_.InvalidStateError();
   }
 
-  return errors::Unimplemented("Not implemented yet.");
+  ComPtr<IMFCaptureSource> source;
+  HRESULT hr = engine_->GetSource(source.GetAddressOf());
+  if (FAILED(hr)) {
+    return errors::FailedToGetSource(hr);
+  }
+
+  ComPtr<IMFMediaType> source_video_media_type;
+  hr = GetAvailableDeviceMediaType(source.Get(),
+                                   selected_video_capability_->stream_index,
+                                   selected_video_capability_->media_type_index,
+                                   source_video_media_type.GetAddressOf());
+  if (FAILED(hr)) {
+    return errors::FailedToGetAvailableDeviceMediaType(hr);
+  }
+
+  ComPtr<IMFCaptureSink> sink;
+  hr = engine_->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW,
+                        sink.GetAddressOf());
+  if (FAILED(hr)) {
+    return errors::FailedToGetSink(hr);
+  }
+
+  ComPtr<IMFCapturePreviewSink> preview_sink;
+  hr = sink->QueryInterface(IID_PPV_ARGS(preview_sink.GetAddressOf()));
+  if (FAILED(hr)) {
+    return errors::FailedToQueryCapturePreviewSinkInterface(hr);
+  }
+
+  hr = preview_sink->RemoveAllStreams();
+  if (FAILED(hr)) {
+    return errors::FailedToRemoveAllStreams(hr);
+  }
+
+  ComPtr<IMFMediaType> sink_video_media_type;
+  hr = MFCreateMediaType(sink_video_media_type.GetAddressOf());
+  if (FAILED(hr)) {
+    return errors::FailedToCreateSinkVideoMediaType(hr);
+  }
+
+  hr = ConvertToVideoSinkMediaType(source_video_media_type.Get(),
+                                   sink_video_media_type.Get());
+  if (FAILED(hr)) {
+    return errors::FailedToConvertToVideoSinkMediaType(hr);
+  }
+
+  DWORD dw_sink_stream_index = 0;
+  hr = preview_sink->AddStream(selected_video_capability_->stream_index,
+                               sink_video_media_type.Get(), NULL,
+                               &dw_sink_stream_index);
+  if (FAILED(hr)) {
+    return errors::FailedToAddStream(hr);
+  }
+
+  hr = preview_sink->SetSampleCallback(dw_sink_stream_index,
+                                       video_callback_.get());
+  if (FAILED(hr)) {
+    return errors::FailedToSetSampleCallback(hr);
+  }
+
+  hr = engine_->StartPreview();
+  if (FAILED(hr)) {
+    return errors::FailedToStartPreview(hr);
+  }
+
+  camera_frame_callback_ = camera_frame_callback;
+  status_callback_ = status_callback;
+
+  camera_state_.ToStarted();
+
+  return Status::OK();
 }
 
 Status MfCamera::Stop() {
@@ -374,7 +495,7 @@ StatusOr<CameraFormat> MfCamera::GetCurrentCameraFormat() {
     return camera_state_.InvalidStateError();
   }
 
-  return errors::Unimplemented("Not implemented yet.");
+  return camera_format_;
 }
 
 Status MfCamera::SetCameraFormat(const CameraFormat& camera_format) {
@@ -384,7 +505,41 @@ Status MfCamera::SetCameraFormat(const CameraFormat& camera_format) {
     return camera_state_.InvalidStateError();
   }
 
-  return errors::Unimplemented("Not implemented yet.");
+  CapabilityList video_capabilities;
+  Status s = CreateCapabilityList(&video_capabilities);
+  if (!s.ok()) return s;
+
+  const Capability* found_capability =
+      GetBestMatchedCapability(camera_format, video_capabilities);
+
+  if (!found_capability) {
+    return errors::FailedToGetBestMatchedCapability();
+  }
+
+  ComPtr<IMFCaptureSource> source;
+  HRESULT hr = engine_->GetSource(source.GetAddressOf());
+  if (FAILED(hr)) {
+    return errors::FailedToGetSource(hr);
+  }
+
+  ComPtr<IMFMediaType> source_video_media_type;
+  hr = GetAvailableDeviceMediaType(source.Get(), found_capability->stream_index,
+                                   found_capability->media_type_index,
+                                   source_video_media_type.GetAddressOf());
+  if (FAILED(hr)) {
+    return errors::FailedToGetAvailableDeviceMediaType(hr);
+  }
+
+  hr = source->SetCurrentDeviceMediaType(found_capability->stream_index,
+                                         source_video_media_type.Get());
+  if (FAILED(hr)) {
+    return errors::FailedToSetCurrentDeviceMediaType(hr);
+  }
+
+  selected_video_capability_.reset(new Capability(*found_capability));
+  camera_format_ = found_capability->supported_format;
+
+  return Status::OK();
 }
 
 void MfCamera::OnIncomingCapturedData(const uint8_t* data, int length,
@@ -406,6 +561,174 @@ void MfCamera::OnEvent(IMFMediaEvent* media_event) {
   media_event->GetStatus(&hr);
 
   if (FAILED(hr)) status_callback_.Run(errors::MediaEventStatusFailed(hr));
+}
+
+HRESULT MfCamera::ExecuteHresultCallbackWithRetries(
+    ::base::RepeatingCallback<HRESULT()> callback) {
+  // Retry callback execution on MF_E_INVALIDREQUEST.
+  // MF_E_INVALIDREQUEST is not documented in MediaFoundation documentation.
+  // It could mean that MediaFoundation or the underlying device can be in a
+  // state that reject these calls. Since MediaFoundation gives no intel about
+  // that state beginning and ending (i.e. via some kind of event), we retry the
+  // call until it succeed.
+  HRESULT hr;
+  int retry_count = 0;
+  do {
+    hr = callback.Run();
+    if (FAILED(hr))
+      ::base::PlatformThread::Sleep(
+          ::base::TimeDelta::FromMilliseconds(retry_delay_in_ms_));
+
+    // Give up after some amount of time
+  } while (hr == MF_E_INVALIDREQUEST && retry_count++ < max_retry_count_);
+
+  return hr;
+}
+
+HRESULT MfCamera::GetDeviceStreamCount(IMFCaptureSource* source, DWORD* count) {
+  // Sometimes, GetDeviceStreamCount returns an
+  // undocumented MF_E_INVALIDREQUEST. Retrying solves the issue.
+  return ExecuteHresultCallbackWithRetries(::base::BindRepeating(
+      [](IMFCaptureSource* source, DWORD* count) {
+        return source->GetDeviceStreamCount(count);
+      },
+      ::base::Unretained(source), count));
+}
+
+HRESULT MfCamera::GetDeviceStreamCategory(
+    IMFCaptureSource* source, DWORD stream_index,
+    MF_CAPTURE_ENGINE_STREAM_CATEGORY* stream_category) {
+  // We believe that GetDeviceStreamCategory could be affected by the same
+  // behaviour of GetDeviceStreamCount and GetAvailableDeviceMediaType
+  return ExecuteHresultCallbackWithRetries(::base::BindRepeating(
+      [](IMFCaptureSource* source, DWORD stream_index,
+         MF_CAPTURE_ENGINE_STREAM_CATEGORY* stream_category) {
+        return source->GetDeviceStreamCategory(stream_index, stream_category);
+      },
+      ::base::Unretained(source), stream_index, stream_category));
+}
+
+HRESULT MfCamera::GetAvailableDeviceMediaType(IMFCaptureSource* source,
+                                              DWORD stream_index,
+                                              DWORD media_type_index,
+                                              IMFMediaType** type) {
+  // Rarely, for some unknown reason, GetAvailableDeviceMediaType returns an
+  // undocumented MF_E_INVALIDREQUEST. Retrying solves the issue.
+  return ExecuteHresultCallbackWithRetries(::base::BindRepeating(
+      [](IMFCaptureSource* source, DWORD stream_index, DWORD media_type_index,
+         IMFMediaType** type) {
+        return source->GetAvailableDeviceMediaType(stream_index,
+                                                   media_type_index, type);
+      },
+      ::base::Unretained(source), stream_index, media_type_index, type));
+}
+
+Status MfCamera::CreateCapabilityList(CapabilityList* capabilities) {
+  ComPtr<IMFCaptureSource> source;
+  HRESULT hr = engine_->GetSource(source.GetAddressOf());
+  if (FAILED(hr)) {
+    return errors::FailedToGetSource(hr);
+  }
+
+  hr = FillCapabilities(source.Get(), false, capabilities);
+  if (FAILED(hr)) {
+    return errors::FailedToFillVideoCapabilities(hr);
+  }
+
+  if (capabilities->empty()) {
+    return errors::NoVideoCapbility();
+  }
+
+  return Status::OK();
+}
+
+HRESULT MfCamera::FillCapabilities(IMFCaptureSource* source, bool photo,
+                                   CapabilityList* capabilities) {
+  DWORD stream_count = 0;
+  HRESULT hr = GetDeviceStreamCount(source, &stream_count);
+  if (FAILED(hr)) return hr;
+
+  for (DWORD stream_index = 0; stream_index < stream_count; stream_index++) {
+    MF_CAPTURE_ENGINE_STREAM_CATEGORY stream_category;
+    hr = GetDeviceStreamCategory(source, stream_index, &stream_category);
+    if (FAILED(hr)) return hr;
+
+    if ((photo && stream_category !=
+                      MF_CAPTURE_ENGINE_STREAM_CATEGORY_PHOTO_INDEPENDENT) ||
+        (!photo &&
+         stream_category != MF_CAPTURE_ENGINE_STREAM_CATEGORY_VIDEO_PREVIEW &&
+         stream_category != MF_CAPTURE_ENGINE_STREAM_CATEGORY_VIDEO_CAPTURE)) {
+      continue;
+    }
+
+    DWORD media_type_index = 0;
+    ComPtr<IMFMediaType> type;
+    while (SUCCEEDED(hr = GetAvailableDeviceMediaType(source, stream_index,
+                                                      media_type_index,
+                                                      type.GetAddressOf()))) {
+      CameraFormat camera_format;
+      Status s =
+          GetCameraFormatFromSourceMediaType(type.Get(), photo, &camera_format);
+
+      type.Reset();
+      ++media_type_index;
+
+      if (!s.ok()) continue;
+
+      if (camera_format.pixel_format() == CameraFormat::PIXEL_FORMAT_UNKNOWN)
+        continue;
+
+      capabilities->emplace_back(media_type_index, camera_format, stream_index);
+    }
+    if (hr == MF_E_NO_MORE_TYPES) {
+      hr = S_OK;
+    }
+    if (FAILED(hr)) {
+      return hr;
+    }
+  }
+
+  return hr;
+}
+
+// static
+Status MfCamera::GetCameraFormatFromSourceMediaType(
+    IMFMediaType* source_media_type, bool photo, CameraFormat* camera_format) {
+  GUID major_type_guid;
+  HRESULT hr = source_media_type->GetGUID(MF_MT_MAJOR_TYPE, &major_type_guid);
+  if (FAILED(hr)) {
+    return errors::FailedToGetGUID(hr);
+  }
+
+  if (major_type_guid != MFMediaType_Image) {
+    if (photo) return errors::MediaTypeNotMatched();
+    UINT32 numerator, denominator;
+    hr = MFGetAttributeRatio(source_media_type, MF_MT_FRAME_RATE, &numerator,
+                             &denominator);
+    if (FAILED(hr)) {
+      return errors::FailedToMFGetAttributeRatio(hr);
+    }
+    camera_format->set_frame_rate(
+        denominator ? static_cast<float>(numerator) / denominator : 0.0f);
+  }
+
+  GUID sub_type_guid;
+  hr = source_media_type->GetGUID(MF_MT_SUBTYPE, &sub_type_guid);
+  if (FAILED(hr)) {
+    return errors::FailedToGetGUID(hr);
+  }
+
+  camera_format->set_pixel_format(
+      CameraFormat::FromMfMediaSubtype(sub_type_guid));
+
+  UINT32 width, height;
+  hr = MFGetAttributeSize(source_media_type, MF_MT_FRAME_SIZE, &width, &height);
+  if (FAILED(hr)) {
+    return errors::FailedToMFGetAttributeSize(hr);
+  }
+  camera_format->SetSize(width, height);
+
+  return Status::OK();
 }
 
 }  // namespace felicia

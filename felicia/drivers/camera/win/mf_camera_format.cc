@@ -34,6 +34,18 @@ struct {
 }  // namespace
 
 // static
+bool CameraFormat::ToMfSinkMediaSubtype(const GUID& sub_type, GUID* sink_type) {
+  for (const auto& kMediaFormatConfiguration : kMediaFormatConfigurationMap) {
+    if (kMediaFormatConfiguration.mf_source_media_subtype == sub_type) {
+      *sink_type = kMediaFormatConfiguration.mf_sink_media_subtype;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// static
 CameraFormat::PixelFormat CameraFormat::FromMfMediaSubtype(
     const GUID& sub_type) {
   for (const auto& kMediaFormatConfiguration : kMediaFormatConfigurationMap) {

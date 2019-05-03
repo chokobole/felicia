@@ -15,7 +15,10 @@
 #include <mfreadwrite.h>
 #include <wrl/client.h>
 
+#include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/sequence_checker.h"
+
+#include "felicia/drivers/camera/win/capability_list.h"
 
 namespace felicia {
 
@@ -47,20 +50,49 @@ class MfCamera : public CameraInterface {
   void OnFrameDropped(const Status& s);
   void OnEvent(IMFMediaEvent* media_event);
 
+  void set_max_retry_count_for_testing(int max_retry_count) {
+    max_retry_count_ = max_retry_count;
+  }
+
+  void set_retry_delay_in_ms_for_testing(int retry_delay_in_ms) {
+    retry_delay_in_ms_ = retry_delay_in_ms;
+  }
+
  private:
   friend class CameraFactory;
+
+  HRESULT ExecuteHresultCallbackWithRetries(
+      base::RepeatingCallback<HRESULT()> callback);
+  HRESULT GetDeviceStreamCount(IMFCaptureSource* source, DWORD* count);
+  HRESULT GetDeviceStreamCategory(
+      IMFCaptureSource* source, DWORD stream_index,
+      MF_CAPTURE_ENGINE_STREAM_CATEGORY* stream_category);
+  HRESULT GetAvailableDeviceMediaType(IMFCaptureSource* source,
+                                      DWORD stream_index,
+                                      DWORD media_type_index,
+                                      IMFMediaType** type);
+
+  Status CreateCapabilityList(CapabilityList* capabilities);
+  HRESULT FillCapabilities(IMFCaptureSource* source, bool photo,
+                           CapabilityList* capabilities);
+
+  static Status GetCameraFormatFromSourceMediaType(
+      IMFMediaType* source_media_type, bool photo, CameraFormat* camera_format);
 
   MfCamera(const CameraDescriptor& camera_descriptor);
 
   scoped_refptr<MFVideoCallback> video_callback_;
+  int max_retry_count_;
+  int retry_delay_in_ms_;
 
   // Guards the below variables from concurrent access between methods running
   // on |sequence_checker_| and calls to OnIncomingCapturedData() and OnEvent()
   // made by MediaFoundation on threads outside of our control.
   base::Lock lock_;
 
-  Microsoft::WRL::ComPtr<IMFCaptureEngine> engine_;
   const Microsoft::WRL::ComPtr<IMFMediaSource> source_;
+  Microsoft::WRL::ComPtr<IMFCaptureEngine> engine_;
+  std::unique_ptr<Capability> selected_video_capability_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

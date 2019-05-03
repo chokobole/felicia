@@ -10,6 +10,10 @@
 namespace felicia {
 namespace errors {
 
+inline ::felicia::Status NoVideoCapbility() {
+  return NotFound("No video capability.");
+}
+
 inline ::felicia::Status FailedToGetCameraDescriptors() {
   return Unavailable("Failed to get camera descriptors.");
 }

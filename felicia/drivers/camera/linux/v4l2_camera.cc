@@ -370,7 +370,7 @@ Status V4l2Camera::InitDevice(const CameraDescriptor& camera_descriptor,
   if (!(DoIoctl(fd_temp, VIDIOC_QUERYCAP, &cap) == 0) &&
       (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) &&
       !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)) {
-    return errors::NotAV4l2Device(device_id);
+    return errors::NoVideoCapbility();
   }
 
   *fd = fd_temp;

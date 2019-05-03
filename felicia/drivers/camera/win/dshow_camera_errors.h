@@ -53,10 +53,6 @@ inline ::felicia::Status FailedToAddSinkFilter(HRESULT hr) {
                            ::logging::SystemErrorCodeToString(hr).c_str()));
 }
 
-inline ::felicia::Status FailedToCreateCapabilityMap() {
-  return FailedPrecondition("Failed to create capability map.");
-}
-
 inline ::felicia::Status FailedToGetIAMStreamConfig(HRESULT hr) {
   return Unavailable(
       ::base::StringPrintf("Failed to get IAMStreamConfig: %s.",

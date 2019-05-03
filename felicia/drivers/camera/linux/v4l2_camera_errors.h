@@ -13,11 +13,6 @@ inline ::felicia::Status FailedToOpenCamera(const std::string& device_id) {
       ::base::StringPrintf("Failed to open %s.", device_id.c_str()));
 }
 
-inline ::felicia::Status NotAV4l2Device(const std::string& device_id) {
-  return NotFound(::base::StringPrintf("The camera %s is not a type of V4L2.",
-                                       device_id.c_str()));
-}
-
 inline ::felicia::Status FailedToRequestMmapBuffers() {
   return Unavailable("Failed to request mmap buffers from V4L2.");
 }

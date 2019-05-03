@@ -34,6 +34,13 @@ struct Capability {
         info_header(info_header),
         stream_index(0) {}
 
+  // Used by MfCamera.
+  Capability(int media_type_index, const CameraFormat& format, int stream_index)
+      : media_type_index(media_type_index),
+        supported_format(format),
+        info_header(),
+        stream_index(stream_index) {}
+
   const int media_type_index;
   const CameraFormat supported_format;
 
