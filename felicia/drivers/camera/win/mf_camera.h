@@ -84,13 +84,14 @@ class MfCamera : public CameraInterface {
   scoped_refptr<MFVideoCallback> video_callback_;
   int max_retry_count_;
   int retry_delay_in_ms_;
+  ::base::TimeTicks first_ref_time_;
 
   // Guards the below variables from concurrent access between methods running
   // on |sequence_checker_| and calls to OnIncomingCapturedData() and OnEvent()
   // made by MediaFoundation on threads outside of our control.
   base::Lock lock_;
 
-  const Microsoft::WRL::ComPtr<IMFMediaSource> source_;
+  Microsoft::WRL::ComPtr<IMFMediaSource> source_;
   Microsoft::WRL::ComPtr<IMFCaptureEngine> engine_;
   std::unique_ptr<Capability> selected_video_capability_;
 

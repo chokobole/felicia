@@ -15,6 +15,7 @@
 #include "third_party/chromium/base/win/scoped_co_mem.h"
 
 #include "felicia/drivers/camera/camera_errors.h"
+#include "felicia/drivers/camera/timestamp_constants.h"
 #include "felicia/drivers/camera/win/camera_util.h"
 #include "felicia/drivers/camera/win/mf_initializer.h"
 
@@ -376,6 +377,11 @@ Status MfCamera::Init() {
   MFCreateAttributes(attributes.GetAddressOf(), 1);
   DCHECK(attributes);
 
+  if (!CreateVideoCaptureDeviceMediaFoundation(camera_descriptor_,
+                                               source_.GetAddressOf())) {
+    return errors::FailedToCreateVideoCaptureDevice();
+  }
+
   video_callback_ = new MFVideoCallback(this);
   hr = engine_->Initialize(video_callback_.get(), attributes.Get(), nullptr,
                            source_.Get());
@@ -387,11 +393,15 @@ Status MfCamera::Init() {
   Status s = CreateCapabilityList(&video_capabilities);
   if (!s.ok()) return s;
 
-  selected_video_capability_.reset(new Capability(*video_capabilities.begin()));
-  camera_format_ = selected_video_capability_->supported_format;
-  SetCameraFormat(camera_format_);
-
+  // This should be before calling SetCameraFormat()
   camera_state_.ToInitialized();
+
+  Capability capability = *video_capabilities.begin();
+  s = SetCameraFormat(capability.supported_format);
+  if (!s.ok()) return s;
+
+  selected_video_capability_.reset(new Capability(capability));
+  camera_format_ = selected_video_capability_->supported_format;
 
   DLOG(INFO) << "Default Format: " << camera_format_.ToString();
 
@@ -546,7 +556,29 @@ void MfCamera::OnIncomingCapturedData(const uint8_t* data, int length,
                                       ::base::TimeTicks reference_time,
                                       ::base::TimeDelta timestamp) {
   ::base::AutoLock lock(lock_);
-  std::cout << "OnIncomingCapturedData" << std::endl;
+
+  if (camera_format_.AllocationSize() != length) {
+    status_callback_.Run(errors::InvalidNumberOfBytesInBuffer());
+    return;
+  }
+
+  CameraBuffer camera_buffer(const_cast<uint8_t*>(data), length);
+  camera_buffer.set_payload(length);
+  ::base::Optional<CameraFrame> argb_frame =
+      ConvertToARGB(camera_buffer, camera_format_);
+  if (argb_frame.has_value()) {
+    if (first_ref_time_.is_null()) first_ref_time_ = base::TimeTicks::Now();
+
+    // There is a chance that the platform does not provide us with the
+    // timestamp, in which case, we use reference time to calculate a timestamp.
+    if (timestamp == kNoTimestamp)
+      timestamp = base::TimeTicks::Now() - first_ref_time_;
+
+    argb_frame.value().set_timestamp(timestamp);
+    camera_frame_callback_.Run(std::move(argb_frame.value()));
+  } else {
+    status_callback_.Run(errors::FailedToConvertToARGB());
+  }
 }
 
 void MfCamera::OnFrameDropped(const Status& s) {
@@ -670,15 +702,14 @@ HRESULT MfCamera::FillCapabilities(IMFCaptureSource* source, bool photo,
       Status s =
           GetCameraFormatFromSourceMediaType(type.Get(), photo, &camera_format);
 
+      if (s.ok() &&
+          camera_format.pixel_format() != CameraFormat::PIXEL_FORMAT_UNKNOWN) {
+        capabilities->emplace_back(media_type_index, camera_format,
+                                   stream_index);
+      }
+
       type.Reset();
       ++media_type_index;
-
-      if (!s.ok()) continue;
-
-      if (camera_format.pixel_format() == CameraFormat::PIXEL_FORMAT_UNKNOWN)
-        continue;
-
-      capabilities->emplace_back(media_type_index, camera_format, stream_index);
     }
     if (hr == MF_E_NO_MORE_TYPES) {
       hr = S_OK;
