@@ -3,6 +3,7 @@ load(
     "if_linux",
     "if_mac",
     "if_not_mac",
+    "if_not_travis",
     "if_windows",
 )
 load(
@@ -24,7 +25,6 @@ CAMERA_HEADERS = [
     "camera_frame.h",
     "camera_frame_util.h",
     "camera_state.h",
-    "fake_camera.h",
     "timestamp_constants.h",
 ] + if_linux([
     "linux/v4l2_camera_errors.h",
@@ -32,9 +32,10 @@ CAMERA_HEADERS = [
 ]) + if_windows([
     "win/dshow_camera_errors.h",
     "win/dshow_camera.h",
+] + if_not_travis([
     "win/mf_camera_errors.h",
     "win/mf_camera.h",
-])
+]))
 
 fel_cc_library(
     name = "camera",
@@ -58,10 +59,6 @@ fel_cc_library(
         "win/dshow_camera_format.cc",
         "win/filter_base.h",
         "win/filter_base.cc",
-        "win/mf_camera_format.cc",
-        "win/mf_camera.cc",
-        "win/mf_initializer.h",
-        "win/mf_initializer.cc",
         "win/pin_base.h",
         "win/pin_base.cc",
         "win/sink_filter_observer.h",
@@ -69,14 +66,19 @@ fel_cc_library(
         "win/sink_filter.h",
         "win/sink_input_pin.cc",
         "win/sink_input_pin.h",
-    ]),
+    ] + if_not_travis([
+        "win/mf_camera_format.cc",
+        "win/mf_camera.cc",
+        "win/mf_initializer.h",
+        "win/mf_initializer.cc",
+    ])),
     hdrs = CAMERA_HEADERS,
-    linkopts = if_windows([
+    linkopts = if_windows(if_not_travis([
         "mf.lib",
         "mfplat.lib",
         "mfreadwrite.lib",
         "mfuuid.lib",
-    ]),
+    ])),
     deps = [
         "//felicia/core/lib",
         "@libyuv",

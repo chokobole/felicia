@@ -54,8 +54,11 @@ inline ::felicia::Status FailedToConvertToARGB() {
 #if defined(OS_LINUX)
 #include "felicia/drivers/camera/linux/v4l2_camera_errors.h"
 #elif defined(OS_WIN)
+#include "felicia/core/lib/felicia_env.h"
 #include "felicia/drivers/camera/win/dshow_camera_errors.h"
+#if !BUILDFLAG(TRAVIS)
 #include "felicia/drivers/camera/win/mf_camera_errors.h"
+#endif
 #elif defined(OS_MACOSX)
 #include "felicia/drivers/camera/mac/avf_camera_errors.h"
 #endif

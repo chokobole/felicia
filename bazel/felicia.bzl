@@ -1,3 +1,5 @@
+load("@env//:env.bzl", "TRAVIS")
+
 def if_x86_32(a):
     return select({
         "//felicia:x86_32": a,
@@ -120,6 +122,16 @@ def if_static(extra_deps, otherwise = []):
         "//felicia:framework_shared_object": otherwise,
         "//conditions:default": extra_deps,
     })
+
+def if_travis(a):
+    if TRAVIS == "True":
+        return a
+    return []
+
+def if_not_travis(a):
+    if TRAVIS == "False":
+        return a
+    return []
 
 def fel_additional_deps():
     return [

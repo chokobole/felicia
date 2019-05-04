@@ -4,15 +4,19 @@
 #include "third_party/chromium/build/build_config.h"
 
 #if !defined(OS_MACOSX)
+#include "felicia/core/lib/felicia_env.h"
 #if defined(OS_LINUX)
 #include "felicia/drivers/camera/linux/v4l2_camera.h"
 using Camera = felicia::V4l2Camera;
 #elif defined(OS_WIN)
 #include "felicia/drivers/camera/win/dshow_camera.h"
+#if !BUILDFLAG(TRAVIS)
 #include "felicia/drivers/camera/win/mf_camera.h"
 #else
-#include "felicia/drivers/camera/fake_camera.h"
-using Camera = felicia::FakeCamera;
+using Camera = ::felicia::DshowCamera;
+#endif  // !BUILDFLAG(TRAVIS)
+#else
+#error Not supported platform!
 #endif
 
 namespace felicia {
@@ -20,7 +24,7 @@ namespace felicia {
 // static
 std::unique_ptr<CameraInterface> CameraFactory::NewCamera(
     const CameraDescriptor& descriptor) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !BUILDFLAG(TRAVIS)
   if (MfCamera::PlatformSupportsMediaFoundation()) {
     return ::base::WrapUnique(new MfCamera(descriptor));
   } else {
@@ -35,7 +39,7 @@ std::unique_ptr<CameraInterface> CameraFactory::NewCamera(
 Status CameraFactory::GetCameraDescriptors(
     CameraDescriptors* camera_descriptors) {
   DCHECK(camera_descriptors->empty());
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !BUILDFLAG(TRAVIS)
   if (MfCamera::PlatformSupportsMediaFoundation()) {
     return MfCamera::GetCameraDescriptors(camera_descriptors);
   } else {
@@ -50,7 +54,7 @@ Status CameraFactory::GetCameraDescriptors(
 Status CameraFactory::GetSupportedCameraFormats(
     const CameraDescriptor& camera_descriptor, CameraFormats* camera_formats) {
   DCHECK(camera_formats->empty());
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !BUILDFLAG(TRAVIS)
   if (MfCamera::PlatformSupportsMediaFoundation()) {
     return MfCamera::GetSupportedCameraFormats(camera_descriptor,
                                                camera_formats);
