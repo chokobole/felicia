@@ -366,9 +366,7 @@ Status MfCamera::Init() {
     return camera_state_.InvalidStateError();
   }
 
-  HRESULT hr = S_OK;
-  if (!engine_) hr = CreateCaptureEngine(engine_.GetAddressOf());
-
+  HRESULT hr = CreateCaptureEngine(engine_.GetAddressOf());
   if (FAILED(hr)) {
     return errors::FailedToCreateCaptureEngine(hr);
   }
@@ -411,6 +409,8 @@ Status MfCamera::Init() {
 Status MfCamera::Start(CameraFrameCallback camera_frame_callback,
                        StatusCallback status_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  ::base::AutoLock lock(lock_);
 
   if (!camera_state_.IsInitialized()) {
     return camera_state_.InvalidStateError();
@@ -491,15 +491,29 @@ Status MfCamera::Start(CameraFrameCallback camera_frame_callback,
 Status MfCamera::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  ::base::AutoLock lock(lock_);
+
   if (!camera_state_.IsStarted()) {
     return camera_state_.InvalidStateError();
   }
 
-  return errors::Unimplemented("Not implemented yet.");
+  HRESULT hr = engine_->StopPreview();
+  if (FAILED(hr)) {
+    return errors::FailedToStopPreview(hr);
+  }
+
+  camera_frame_callback_.Reset();
+  status_callback_.Reset();
+
+  camera_state_.ToStopped();
+
+  return Status::OK();
 }
 
 StatusOr<CameraFormat> MfCamera::GetCurrentCameraFormat() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  ::base::AutoLock lock(lock_);
 
   if (camera_state_.IsStopped()) {
     return camera_state_.InvalidStateError();
@@ -510,6 +524,8 @@ StatusOr<CameraFormat> MfCamera::GetCurrentCameraFormat() {
 
 Status MfCamera::SetCameraFormat(const CameraFormat& camera_format) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  ::base::AutoLock lock(lock_);
 
   if (!camera_state_.IsInitialized()) {
     return camera_state_.InvalidStateError();

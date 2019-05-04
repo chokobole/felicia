@@ -108,6 +108,12 @@ inline ::felicia::Status FailedToStartPreview(HRESULT hr) {
                            ::logging::SystemErrorCodeToString(hr).c_str()));
 }
 
+inline ::felicia::Status FailedToStopPreview(HRESULT hr) {
+  return Unavailable(
+      ::base::StringPrintf("Failed to StopPreview: %s.",
+                           ::logging::SystemErrorCodeToString(hr).c_str()));
+}
+
 inline ::felicia::Status FailedToFillVideoCapabilities(HRESULT hr) {
   return Unavailable(
       ::base::StringPrintf("Failed to FillVideoCapabilities: %s.",
