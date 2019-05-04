@@ -24,7 +24,13 @@ bool g_on_background = false;
 
 }  // namespace
 
-MasterProxy::MasterProxy() : heart_beat_signaller_(this) {
+MasterProxy::MasterProxy()
+    : heart_beat_signaller_(this)
+#if defined(OS_WIN)
+      ,
+      scoped_com_initializer_(::base::win::ScopedCOMInitializer::kMTA)
+#endif
+{
   if (g_on_background) {
     thread_ = std::make_unique<::base::Thread>("MasterProxy");
   } else {
