@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Frontend for felicia-viz",
   "dependencies": {
+    "@streetscape.gl/monochrome": "^1.0.0-alpha.0",
     "mobx": "^5.9.0",
     "mobx-react": "^5.4.3",
     "prop-types": "^15.7.2",
@@ -11,7 +12,8 @@
     "react-hot-loader": "^4.8.2",
     "react-router": "^5.0.0",
     "react-router-dom": "^5.0.0",
-    "styled-components": "^4.2.0"
+    "styled-components": "^4.2.0",
+    "streetscape.gl": "^1.0.0-beta.8"
   },
   "devDependencies": {
     "@hot-loader/react-dom": "^16.8.6",

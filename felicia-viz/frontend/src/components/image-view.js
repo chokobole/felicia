@@ -2,35 +2,27 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
 /* eslint import/no-unresolved: "off" */
-import { ResizeDetector } from '@felicia-viz/ui';
+// import { ResizeDetector } from '@felicia-viz/ui';
 import { CameraFrame } from 'store/camera';
 import Worker from 'util/webworker.js';
 
 export default class ImageView extends PureComponent {
   static propTypes = {
-    width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-    height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
+    canvasWidth: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    canvasHeight: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
     src: PropTypes.string,
     frame: PropTypes.instanceOf(CameraFrame),
   };
 
   static defaultProps = {
-    width: '100%',
-    height: 'auto',
+    canvasWidth: '100%',
+    canvasHeight: 'auto',
     src: '',
     frame: null,
   };
 
   constructor(props) {
     super(props);
-
-    this.state = {
-      width: 0,
-      height: 0,
-      image: null,
-      imageData: null,
-    };
 
     this._context = null;
   }
@@ -39,18 +31,17 @@ export default class ImageView extends PureComponent {
     this.worker = new Worker();
 
     this.worker.onmessage = event => {
-      this.setState({
-        imageData: event.data,
-      });
+      this._drawImageOrImageData(event.data);
     };
   }
 
   componentWillUpdate(nextProps) {
     const { src, frame } = this.props;
+
     if (src !== nextProps.src) {
-      this._loadImage();
+      this._loadImage(nextProps.src);
     } else if (frame !== nextProps.frame) {
-      this._loadImageData();
+      this._loadImageData(nextProps.frame);
     }
   }
 
@@ -66,34 +57,30 @@ export default class ImageView extends PureComponent {
     }
   };
 
-  _onResize = entry => {
-    this.setState({ width: entry.contentRect.width, height: entry.contentRect.height });
-  };
+  // For later,
+  // onResize = entry => {
+  //  this.setState({ width: entry.contentRect.width, height: entry.contentRect.height });
+  // };
 
-  _loadImage() {
-    const { src } = this.props;
-
+  _loadImage(src) {
     if (src) {
       const image = new Image();
       image.src = src;
       image.addEventListener(
         'load',
         () => {
-          this.setState({
-            image,
-          });
+          this._drawImageOrImageData(image);
         },
         false
       );
     }
   }
 
-  _loadImageData() {
-    if (!this._context) {
+  _loadImageData(frame) {
+    if (!this._canvas) {
       return;
     }
 
-    const { frame } = this.props;
     if (!frame) return;
 
     const { width, height } = frame;
@@ -107,46 +94,49 @@ export default class ImageView extends PureComponent {
     });
   }
 
-  _drawImageOrImageData() {
-    if (!this._context) {
+  _drawImageOrImageData(image) {
+    if (!this._canvas) {
       return;
     }
 
-    const { width, height, image, imageData } = this.state;
-    if (!width) {
-      return;
-    }
+    const { canvasWidth, canvasHeight } = this.props;
 
     if (image) {
-      this._canvas.width = width;
-      let finalHeight = height;
-      if (height === 'auto') {
-        finalHeight = (width / image.width) * image.height;
+      const proxyCanvus = document.querySelector('#display-none-canvas');
+      proxyCanvus.width = image.width;
+      proxyCanvus.height = image.height;
+      if (image instanceof Image) {
+        proxyCanvus.getContext('2d').drawImage(image, 0, 0);
+      } else {
+        proxyCanvus.getContext('2d').putImageData(image, 0, 0);
+      }
+
+      this._canvas.width = canvasWidth;
+      let finalHeight = canvasHeight;
+      if (canvasHeight === 'auto') {
+        finalHeight = (canvasWidth / image.width) * image.height;
       }
       this._canvas.height = finalHeight;
-      this._context.drawImage(image, 0, 0, width, finalHeight);
-    } else if (imageData) {
-      this._canvas.width = imageData.width;
-      this._canvas.height = imageData.height;
-      this._context.putImageData(imageData, 0, 0);
+      // resize
+      this._context.drawImage(proxyCanvus, 0, 0, this._canvas.width, this._canvas.height);
     } else {
-      this._context.clearRect(0, 0, width, height);
+      this._context.clearRect(0, 0, this.width, this.height);
     }
   }
 
   render() {
-    const { width, height } = this.props;
-    const style = {
+    // For later, <ResizeDetector onResize={this._onResize} />
+    const { canvasWidth, canvasHeight, frame } = this.props;
+
+    this.style = frame && {
       position: 'relative',
-      width,
-      height,
+      width: canvasWidth,
+      height: canvasHeight,
     };
 
-    this._drawImageOrImageData();
-
     return (
-      <div style={style}>
-        <ResizeDetector onResize={this._onResize} />
+      <div style={this.style}>
+        <canvas id='display-none-canvas' style={{ display: 'none' }} ref={this._onCanvasLoad} />
         <canvas ref={this._onCanvasLoad} />
       </div>
     );

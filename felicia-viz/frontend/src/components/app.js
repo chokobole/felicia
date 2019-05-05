@@ -6,7 +6,6 @@ import CameraPanel from 'components/camera-panel';
 import TYPES from 'common/connection-type';
 import Subscriber from 'util/subscriber';
 import Worker from 'util/webworker';
-import STORE from 'store';
 
 @inject('store')
 @observer
@@ -18,16 +17,6 @@ export default class App extends Component {
   };
 
   componentDidMount() {
-    this.cameraSubscriber = new Subscriber();
-    this.cameraSubscriber.initialize(TYPES.Camera.name, event => {
-      STORE.update({
-        frame: {
-          width: 640,
-          height: 480,
-          data: event.data,
-        },
-      });
-    });
     this.generalSubscriber = new Subscriber();
     this.worker = new Worker();
     this.generalSubscriber.initialize(TYPES.General.name, event => {
@@ -44,10 +33,6 @@ export default class App extends Component {
   }
 
   componentWillUnmount() {
-    if (this.cameraSubscriber) {
-      this.cameraSubscriber.close();
-    }
-
     if (this.generalSubscriber) {
       this.generalSubscriber.close();
     }
@@ -55,8 +40,8 @@ export default class App extends Component {
 
   render() {
     const { store } = this.props;
-    const { currentTime, camera } = store;
+    const { currentTime } = store;
 
-    return <CameraPanel currentTime={currentTime} frame={camera.frame} />;
+    return <CameraPanel currentTime={currentTime} />;
   }
 }

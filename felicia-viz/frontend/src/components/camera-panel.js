@@ -1,29 +1,95 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { inject, observer } from 'mobx-react';
+
+import { FloatPanel } from '@streetscape.gl/monochrome';
 
 import ImageView from 'components/image-view';
-import { CameraFrame } from 'store/camera';
+import Subscriber from 'util/subscriber';
+import TYPES from 'common/connection-type';
+import STORE from 'store';
+import { FLOAT_PANEL_STYLE } from './custom-styles';
 
-export default class CameraPanel extends PureComponent {
+const TITLE_HEIGHT = 28;
+
+@inject('store')
+@observer
+export default class CameraPanel extends Component {
   static propTypes = {
     // User configuration
-    width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-    height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-
     currentTime: PropTypes.number,
-    frame: PropTypes.instanceOf(CameraFrame),
   };
 
   static defaultProps = {
-    width: '100%',
-    height: 'auto',
-
     currentTime: 0,
-    frame: null,
+  };
+
+  constructor(props) {
+    super(props);
+
+    this.floatPanelSettings = {
+      movable: true,
+      minimizable: false,
+      resizable: true,
+    };
+
+    this.state = {
+      panelState: {
+        x: window.innerWidth - 660,
+        y: 20,
+        width: 640, // constant for a while. This should be modified in the future.
+        height: 480, // constant for a while. This should be modified in the future.
+      },
+    };
+  }
+
+  componentWillMount() {
+    this.cameraSubscriber = new Subscriber();
+    this.cameraSubscriber.initialize(TYPES.Camera.name, event => {
+      // TODO: receive width, height information from websocket (@util/connection.js)
+      const [width, height] = [640, 480];
+
+      STORE.update({
+        frame: {
+          width,
+          height,
+          data: event.data,
+        },
+      });
+    });
+  }
+
+  componentWillUnmount() {
+    if (this.cameraSubscriber) {
+      this.cameraSubscriber.close();
+    }
+  }
+
+  _onUpdate = panelState => {
+    // The constant videoAspectRatio should be provided from the external configuration
+    // For now, let this value be constant.
+    const videoAspectRatio = 1.333333;
+    this.setState({
+      panelState: {
+        ...panelState,
+        height: panelState.width / videoAspectRatio + TITLE_HEIGHT,
+      },
+    });
   };
 
   render() {
-    const { frame, width, height } = this.props;
-    return <ImageView width={width} height={height} frame={frame} />;
+    const { camera } = STORE;
+    const { panelState } = this.state;
+    const { width, height } = panelState;
+
+    return (
+      <FloatPanel
+        {...panelState}
+        {...this.floatPanelSettings}
+        onUpdate={this._onUpdate}
+        style={FLOAT_PANEL_STYLE}>
+        <ImageView frame={camera.frame} canvasWidth={width} canvasHeight={height} />
+      </FloatPanel>
+    );
   }
 }
