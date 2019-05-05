@@ -4,7 +4,6 @@
 #include "felicia/core/communication/publisher.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/drivers/camera/camera_factory.h"
-#include "felicia/examples/learn/message_communication/camera/camera_message.pb.h"
 
 namespace felicia {
 
@@ -15,9 +14,12 @@ class CameraPublishingNode : public NodeLifecycle {
                        const CameraDescriptor& camera_descriptor,
                        size_t buffer_size)
       : topic_(topic),
-        channel_def_(ChannelDefFromString(channel_type)),
         camera_descriptor_(camera_descriptor),
-        buffer_size_(buffer_size) {}
+        buffer_size_(buffer_size) {
+    ChannelDef_Type type;
+    ChannelDef_Type_Parse(channel_type, &type);
+    channel_def_.set_type(type);
+  }
 
   void OnInit() override {
     std::cout << "CameraPublishingNode::OnInit()" << std::endl;
@@ -26,8 +28,8 @@ class CameraPublishingNode : public NodeLifecycle {
     // Temporary code, because some of format such as JPEG is not supported
     // yet. But depending on Camera framework, it can set default pixel format
     // to JPEG. So until we support JPEG, we activate this code below.
-    Status s = camera_->SetCameraFormat(
-        CameraFormat(640, 480, CameraFormat::PIXEL_FORMAT_YUY2, 5));
+    Status s =
+        camera_->SetCameraFormat(CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 5));
     if (!s.ok()) {
       std::cerr << kRedError << s.error_message() << std::endl;
     }
@@ -95,10 +97,7 @@ class CameraPublishingNode : public NodeLifecycle {
     std::cout << "CameraPublishingNode::OnCameraFrame" << std::endl;
     if (publisher_.IsUnregistered()) return;
 
-    CameraMessage message;
-    message.set_data(camera_frame.data_ptr(), camera_frame.AllocationSize());
-    message.set_timestamp(camera_frame.timestamp().InSecondsF());
-    publisher_.Publish(std::move(message),
+    publisher_.Publish(camera_frame.ToCameraFrameMessage(),
                        ::base::BindOnce(&CameraPublishingNode::OnPublish,
                                         ::base::Unretained(this)));
   }
@@ -143,7 +142,7 @@ class CameraPublishingNode : public NodeLifecycle {
   ChannelDef channel_def_;
   CameraDescriptor camera_descriptor_;
   size_t buffer_size_;
-  Publisher<CameraMessage> publisher_;
+  Publisher<CameraFrameMessage> publisher_;
   std::unique_ptr<CameraInterface> camera_;
 };
 

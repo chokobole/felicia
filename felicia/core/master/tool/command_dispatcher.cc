@@ -311,8 +311,8 @@ void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
       writer.SetElement(row, 0, topic_info.topic());
       writer.SetElement(row, 1, topic_info.type_name());
       const ChannelSource& channel_source = topic_info.topic_source();
-      writer.SetElement(row, 2,
-                        ChannelDefToString(channel_source.channel_def()));
+      writer.SetElement(
+          row, 2, ChannelDef_Type_Name(channel_source.channel_def().type()));
       writer.SetElement(row, 3, ChannelSourceToString(channel_source));
       row++;
     }
@@ -335,7 +335,8 @@ void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
                      "END_POINT: %s\n",
                      topic_info.type_name().c_str(),
                      message->GetDescriptor()->DebugString().c_str(),
-                     ChannelDefToString(channel_source.channel_def()).c_str(),
+                     ChannelDef_Type_Name(channel_source.channel_def().type())
+                         .c_str(),
                      ChannelSourceToString(channel_source).c_str())
               << std::endl;
   }

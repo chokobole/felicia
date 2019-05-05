@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "felicia/drivers/camera/camera_format_message.proto";
+
+package felicia;
+
+message CameraFrameMessage {
+  bytes data = 1;
+  CameraFormatMessage camera_format = 2;
+  double timestamp = 3;
+}

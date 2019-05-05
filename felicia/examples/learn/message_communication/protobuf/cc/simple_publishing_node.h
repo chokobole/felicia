@@ -17,7 +17,11 @@ class SimplePublishingNode : public NodeLifecycle {
  public:
   SimplePublishingNode(const std::string& topic,
                        const std::string& channel_type)
-      : topic_(topic), channel_def_(ChannelDefFromString(channel_type)) {}
+      : topic_(topic) {
+    ChannelDef_Type type;
+    ChannelDef_Type_Parse(channel_type, &type);
+    channel_def_.set_type(type);
+  }
 
   void OnInit() override {
     std::cout << "SimplePublishingNode::OnInit()" << std::endl;

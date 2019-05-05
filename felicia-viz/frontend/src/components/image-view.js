@@ -83,13 +83,15 @@ export default class ImageView extends PureComponent {
 
     if (!frame) return;
 
-    const { width, height } = frame;
+    const { width, height, data } = frame;
 
     this.worker.postMessage({
       source: 'imageView',
       data: {
         imageData: this._context.getImageData(0, 0, width, height),
-        frame,
+        width,
+        height,
+        data,
       },
     });
   }

@@ -4,7 +4,6 @@
 #include "felicia/core/communication/subscriber.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/drivers/camera/camera_factory.h"
-#include "felicia/examples/learn/message_communication/camera/camera_message.pb.h"
 
 namespace felicia {
 
@@ -44,7 +43,7 @@ class CameraSubscribingNode : public NodeLifecycle {
                          ::base::Unretained(this)));
   }
 
-  void OnMessage(CameraMessage&& message) {
+  void OnMessage(CameraFrameMessage&& message) {
     std::cout << "CameraSubscribingNode::OnMessage()" << std::endl;
 
     // static int frame_number = 0;
@@ -85,7 +84,7 @@ class CameraSubscribingNode : public NodeLifecycle {
   NodeInfo node_info_;
   std::string topic_;
   size_t buffer_size_;
-  Subscriber<CameraMessage> subscriber_;
+  Subscriber<CameraFrameMessage> subscriber_;
 };
 
 }  // namespace felicia

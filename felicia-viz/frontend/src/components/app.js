@@ -6,6 +6,7 @@ import CameraPanel from 'components/camera-panel';
 import TYPES from 'common/connection-type';
 import Subscriber from 'util/subscriber';
 import Worker from 'util/webworker';
+import STORE from 'store';
 
 @inject('store')
 @observer
@@ -21,14 +22,13 @@ export default class App extends Component {
     this.worker = new Worker();
     this.generalSubscriber.initialize(TYPES.General.name, event => {
       this.worker.postMessage({
-        source: 'subscriber',
+        source: 'subscribeGeneral',
         data: event.data,
       });
     });
 
     this.worker.onmessage = event => {
-      console.log(event.data);
-      // STORE.update(event.data);
+      STORE.update(event.data);
     };
   }
 

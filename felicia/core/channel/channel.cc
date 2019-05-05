@@ -29,25 +29,6 @@ ChannelSource ToChannelSource(const ::net::IPEndPoint& ip_endpoint,
   return channel_source;
 }
 
-std::string ChannelDefToString(const ChannelDef& channel_def) {
-  if (channel_def.type() == ChannelDef::TCP)
-    return "TCP";
-  else if (channel_def.type() == ChannelDef::UDP)
-    return "UDP";
-  NOTREACHED();
-}
-
-ChannelDef ChannelDefFromString(const std::string& str) {
-  ChannelDef channel_def;
-  if (str.compare("TCP") == 0)
-    channel_def.set_type(ChannelDef::TCP);
-  else if (str.compare("UDP") == 0)
-    channel_def.set_type(ChannelDef::UDP);
-  else
-    LOG(WARNING) << "Unknown String: " << str;
-  return channel_def;
-}
-
 std::string ChannelSourceToString(const ChannelSource& channel_source) {
   if (channel_source.has_ip_endpoint()) {
     ::net::IPEndPoint ip_endpoint;

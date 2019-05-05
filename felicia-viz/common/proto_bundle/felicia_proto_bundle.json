@@ -1,0 +1,60 @@
+{
+  "nested": {
+    "felicia": {
+      "nested": {
+        "CameraFrameMessage": {
+          "fields": {
+            "data": {
+              "type": "bytes",
+              "id": 1
+            },
+            "cameraFormat": {
+              "type": "CameraFormatMessage",
+              "id": 2
+            },
+            "timestamp": {
+              "type": "double",
+              "id": 3
+            }
+          }
+        },
+        "PixelFormat": {
+          "values": {
+            "PIXEL_FORMAT_UNKNOWN": 0,
+            "PIXEL_FORMAT_I420": 1,
+            "PIXEL_FORMAT_YV12": 2,
+            "PIXEL_FORMAT_NV12": 3,
+            "PIXEL_FORMAT_NV21": 4,
+            "PIXEL_FORMAT_UYVY": 5,
+            "PIXEL_FORMAT_YUY2": 6,
+            "PIXEL_FORMAT_RGB24": 7,
+            "PIXEL_FORMAT_RGB32": 8,
+            "PIXEL_FORMAT_ARGB": 9,
+            "PIXEL_FORMAT_MJPEG": 10,
+            "PIXEL_FORMAT_Y16": 11
+          }
+        },
+        "CameraFormatMessage": {
+          "fields": {
+            "width": {
+              "type": "int32",
+              "id": 1
+            },
+            "height": {
+              "type": "int32",
+              "id": 2
+            },
+            "pixelFormat": {
+              "type": "PixelFormat",
+              "id": 3
+            },
+            "frameRate": {
+              "type": "float",
+              "id": 4
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -99,9 +99,8 @@ void ExtractBaseAddressAndLength(char** base_address, size_t* length,
   for (AVCaptureDeviceFormat* format in device.formats) {
     // MediaSubType is a CMPixelFormatType but can be used as CVPixelFormatType
     // as well according to CMFormatDescription.h
-    const felicia::CameraFormat::PixelFormat pixelFormat =
-        felicia::CameraFormat::FromAVFoundationPixelFormat(
-            CMFormatDescriptionGetMediaSubType([format formatDescription]));
+    const felicia::PixelFormat pixelFormat = felicia::CameraFormat::FromAVFoundationPixelFormat(
+        CMFormatDescriptionGetMediaSubType([format formatDescription]));
 
     CMVideoDimensions dimensions =
         CMVideoFormatDescriptionGetDimensions([format formatDescription]);

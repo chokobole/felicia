@@ -30,15 +30,15 @@ std::unique_ptr<uint8_t> CameraFrame::data() { return std::move(data_); }
 
 const uint8_t* CameraFrame::data_ptr() const { return data_.get(); }
 
-size_t CameraFrame::width() const { return camera_format_.width(); }
+int CameraFrame::width() const { return camera_format_.width(); }
 
-size_t CameraFrame::height() const { return camera_format_.height(); }
+int CameraFrame::height() const { return camera_format_.height(); }
 
 size_t CameraFrame::AllocationSize() const {
   return camera_format_.AllocationSize();
 }
 
-CameraFormat::PixelFormat CameraFrame::pixel_format() const {
+PixelFormat CameraFrame::pixel_format() const {
   return camera_format_.pixel_format();
 }
 
@@ -48,28 +48,38 @@ void CameraFrame::set_timestamp(::base::TimeDelta timestamp) {
 
 ::base::TimeDelta CameraFrame::timestamp() const { return timestamp_; }
 
+CameraFrameMessage CameraFrame::ToCameraFrameMessage() const {
+  CameraFrameMessage message;
+
+  message.set_data(data_ptr(), AllocationSize());
+  *message.mutable_camera_format() = camera_format_.ToCameraFormatMessage();
+  message.set_timestamp(timestamp_.InSecondsF());
+
+  return std::move(message);
+}
+
 ::base::Optional<CameraFrame> ConvertToARGB(CameraBuffer camera_buffer,
                                             CameraFormat camera_format) {
-  CameraFormat::PixelFormat pixel_format = camera_format.pixel_format();
+  PixelFormat pixel_format = camera_format.pixel_format();
   uint32_t src_format;
 
-  if (pixel_format == CameraFormat::PIXEL_FORMAT_MJPEG) {
+  if (pixel_format == PIXEL_FORMAT_MJPEG) {
     NOTIMPLEMENTED();
   }
 
-  if (pixel_format == CameraFormat::PIXEL_FORMAT_UYVY)
+  if (pixel_format == PIXEL_FORMAT_UYVY)
     src_format = libyuv::FOURCC_UYVY;
-  else if (pixel_format == CameraFormat::PIXEL_FORMAT_YUY2)
+  else if (pixel_format == PIXEL_FORMAT_YUY2)
     src_format = libyuv::FOURCC_YUY2;
-  else if (pixel_format == CameraFormat::PIXEL_FORMAT_I420)
+  else if (pixel_format == PIXEL_FORMAT_I420)
     src_format = libyuv::FOURCC_I420;
-  else if (pixel_format == CameraFormat::PIXEL_FORMAT_RGB24)
+  else if (pixel_format == PIXEL_FORMAT_RGB24)
     src_format = libyuv::FOURCC_24BG;
   else
     return ::base::nullopt;
 
   CameraFormat rgba_camera_format(camera_format.width(), camera_format.height(),
-                                  CameraFormat::PIXEL_FORMAT_ARGB,
+                                  PIXEL_FORMAT_ARGB,
                                   camera_format.frame_rate());
   std::unique_ptr<uint8_t> tmp_argb = std::unique_ptr<uint8_t>(
       new uint8_t[rgba_camera_format.AllocationSize()]);

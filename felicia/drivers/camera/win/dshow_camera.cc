@@ -563,8 +563,7 @@ void DshowCamera::GetPinCapabilityList(ComPtr<IBaseFilter> capture_filter,
       CameraFormat camera_format;
       camera_format.set_pixel_format(
           CameraFormat::FromDshowMediaSubtype(media_type->subtype));
-      if (camera_format.pixel_format() == CameraFormat::PIXEL_FORMAT_UNKNOWN)
-        continue;
+      if (camera_format.pixel_format() == PIXEL_FORMAT_UNKNOWN) continue;
       VIDEOINFOHEADER* h =
           reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
       camera_format.SetSize(h->bmiHeader.biWidth, h->bmiHeader.biHeight);

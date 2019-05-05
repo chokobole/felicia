@@ -11,9 +11,11 @@ class FeliciaVizStore {
     this.currentTime = newCurrentTime;
   }
 
-  update(world) {
-    this.updateCurrentTime(world.currentTime);
-    this.camera.update(world);
+  update(message) {
+    // this.updateCurrentTime(message.currentTime);
+    if (message.type === 'Camera') {
+      this.camera.update(message);
+    }
   }
 }
 

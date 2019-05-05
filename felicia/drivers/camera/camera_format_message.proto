@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package felicia;
+
+enum PixelFormat {
+  PIXEL_FORMAT_UNKNOWN = 0; // Default
+  PIXEL_FORMAT_I420 = 1;
+  PIXEL_FORMAT_YV12 = 2;
+  PIXEL_FORMAT_NV12 = 3;
+  PIXEL_FORMAT_NV21 = 4;
+  PIXEL_FORMAT_UYVY = 5;
+  PIXEL_FORMAT_YUY2 = 6;
+  PIXEL_FORMAT_RGB24 = 7;
+  PIXEL_FORMAT_RGB32 = 8;
+  PIXEL_FORMAT_ARGB = 9;
+  PIXEL_FORMAT_MJPEG = 10;
+  PIXEL_FORMAT_Y16 = 11;
+}
+
+message CameraFormatMessage {
+  int32 width = 1;
+  int32 height = 2;
+  PixelFormat pixel_format = 3;
+  float frame_rate = 4;
+}

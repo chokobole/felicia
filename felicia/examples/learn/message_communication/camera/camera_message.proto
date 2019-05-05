@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package felicia;
-
-message CameraMessage {
-  bytes data = 1;
-  double timestamp = 2;
-}

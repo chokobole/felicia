@@ -12,6 +12,7 @@
 #include "felicia/core/lib/unit/geometry/size.h"
 #include "felicia/drivers/camera/camera_buffer.h"
 #include "felicia/drivers/camera/camera_format.h"
+#include "felicia/drivers/camera/camera_frame_message.pb.h"
 
 namespace felicia {
 
@@ -24,14 +25,15 @@ class EXPORT CameraFrame {
 
   std::unique_ptr<uint8_t> data();
   const uint8_t* data_ptr() const;
-  size_t width() const;
-  size_t height() const;
-  size_t area() const;
+  int width() const;
+  int height() const;
   size_t AllocationSize() const;
-  CameraFormat::PixelFormat pixel_format() const;
+  PixelFormat pixel_format() const;
 
   void set_timestamp(::base::TimeDelta time);
   ::base::TimeDelta timestamp() const;
+
+  CameraFrameMessage ToCameraFrameMessage() const;
 
  private:
   std::unique_ptr<uint8_t> data_;

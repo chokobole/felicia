@@ -11,20 +11,20 @@ namespace {
 
 struct {
   const GUID& sub_type;
-  CameraFormat::PixelFormat pixel_format;
+  PixelFormat pixel_format;
 } const kMediaSubtypeToPixelFormatCorrespondence[] = {
-    {kMediaSubTypeI420, CameraFormat::PIXEL_FORMAT_I420},
-    {MEDIASUBTYPE_IYUV, CameraFormat::PIXEL_FORMAT_I420},
-    {MEDIASUBTYPE_RGB24, CameraFormat::PIXEL_FORMAT_RGB24},
-    {MEDIASUBTYPE_RGB32, CameraFormat::PIXEL_FORMAT_RGB32},
-    {MEDIASUBTYPE_YUY2, CameraFormat::PIXEL_FORMAT_YUY2},
-    {MEDIASUBTYPE_MJPG, CameraFormat::PIXEL_FORMAT_MJPEG},
-    {MEDIASUBTYPE_UYVY, CameraFormat::PIXEL_FORMAT_UYVY},
-    {MEDIASUBTYPE_ARGB32, CameraFormat::PIXEL_FORMAT_ARGB},
-    {kMediaSubTypeHDYC, CameraFormat::PIXEL_FORMAT_UYVY},
-    {kMediaSubTypeY16, CameraFormat::PIXEL_FORMAT_Y16},
-    {kMediaSubTypeZ16, CameraFormat::PIXEL_FORMAT_Y16},
-    {kMediaSubTypeINVZ, CameraFormat::PIXEL_FORMAT_Y16},
+    {kMediaSubTypeI420, PIXEL_FORMAT_I420},
+    {MEDIASUBTYPE_IYUV, PIXEL_FORMAT_I420},
+    {MEDIASUBTYPE_RGB24, PIXEL_FORMAT_RGB24},
+    {MEDIASUBTYPE_RGB32, PIXEL_FORMAT_RGB32},
+    {MEDIASUBTYPE_YUY2, PIXEL_FORMAT_YUY2},
+    {MEDIASUBTYPE_MJPG, PIXEL_FORMAT_MJPEG},
+    {MEDIASUBTYPE_UYVY, PIXEL_FORMAT_UYVY},
+    {MEDIASUBTYPE_ARGB32, PIXEL_FORMAT_ARGB},
+    {kMediaSubTypeHDYC, PIXEL_FORMAT_UYVY},
+    {kMediaSubTypeY16, PIXEL_FORMAT_Y16},
+    {kMediaSubTypeZ16, PIXEL_FORMAT_Y16},
+    {kMediaSubTypeINVZ, PIXEL_FORMAT_Y16},
 };
 
 }  // namespace
@@ -40,8 +40,7 @@ const GUID& CameraFormat::ToDshowMediaSubtype() const {
 }
 
 // static
-CameraFormat::PixelFormat CameraFormat::FromDshowMediaSubtype(
-    const GUID& sub_type) {
+PixelFormat CameraFormat::FromDshowMediaSubtype(const GUID& sub_type) {
   for (const auto& pixel_format : kMediaSubtypeToPixelFormatCorrespondence) {
     if (sub_type == pixel_format.sub_type) return pixel_format.pixel_format;
   }

@@ -33,7 +33,8 @@ void TypeConvertor<::google::protobuf::Message>::ToNativeValue(
   for (int i = 0; i < descriptor->field_count(); ++i) {
     const ::google::protobuf::FieldDescriptor* field_desc =
         descriptor->field(i);
-    obj[field_desc->name()] = ToJSValue(env, reflection, value, field_desc);
+    obj[field_desc->json_name()] =
+        ToJSValue(env, reflection, value, field_desc);
   }
 
   return obj;
@@ -175,16 +176,19 @@ void TypeConvertor<::google::protobuf::Message>::ToNativeValue(
             ::Napi::Array::New(env, repeated_field_ref.size());
         for (int i = 0; i < repeated_field_ref.size(); ++i) {
           std::string data = repeated_field_ref.Get(i);
-          array[i] = ::Napi::ArrayBuffer::New(
+          ::Napi::ArrayBuffer arrayBuffer = ::Napi::ArrayBuffer::New(
               env, const_cast<char*>(data.data()), data.length());
+          array[i] =
+              ::Napi::Uint8Array::New(env, data.length(), arrayBuffer, 0);
         }
         return array;
       }
       std::string scratch;
       const std::string& data =
           reflection->GetStringReference(message, field_desc, &scratch);
-      return ::Napi::ArrayBuffer::New(env, const_cast<char*>(data.data()),
-                                      data.length());
+      ::Napi::ArrayBuffer arrayBuffer = ::Napi::ArrayBuffer::New(
+          env, const_cast<char*>(data.data()), data.length());
+      return ::Napi::Uint8Array::New(env, data.length(), arrayBuffer, 0);
     }
     case ::google::protobuf::FieldDescriptor::TYPE_ENUM: {
       if (field_desc->is_repeated()) {

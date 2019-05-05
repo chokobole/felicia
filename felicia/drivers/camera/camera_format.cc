@@ -20,9 +20,7 @@ CameraFormat::CameraFormat(int width, int height, PixelFormat pixel_format,
       pixel_format_(pixel_format),
       frame_rate_(frame_rate) {}
 
-CameraFormat::PixelFormat CameraFormat::pixel_format() const {
-  return pixel_format_;
-}
+PixelFormat CameraFormat::pixel_format() const { return pixel_format_; }
 
 void CameraFormat::set_pixel_format(PixelFormat pixel_format) {
   pixel_format_ = pixel_format;
@@ -65,17 +63,18 @@ std::string CameraFormat::ToString() const {
 }
 
 // static
-std::string CameraFormat::PixelFormatToString(PixelFormat pixel_format) {
-  switch (pixel_format) {
-#define PIXEL_FORMAT(format) \
-  case format:               \
-    return #format;
-#include "felicia/drivers/camera/camera_format_list.h"
-#undef PIXEL_FORMAT
-    default:
-      NOTREACHED();
-      return ::base::EmptyString();
-  }
+const std::string& CameraFormat::PixelFormatToString(PixelFormat pixel_format) {
+  return PixelFormat_Name(pixel_format);
+}
+
+CameraFormatMessage CameraFormat::ToCameraFormatMessage() const {
+  CameraFormatMessage message;
+  message.set_width(size_.width());
+  message.set_height(size_.height());
+  message.set_pixel_format(pixel_format_);
+  message.set_frame_rate(frame_rate_);
+
+  return std::move(message);
 }
 
 bool CameraFormat::operator==(const CameraFormat& other) {

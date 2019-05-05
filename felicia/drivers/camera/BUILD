@@ -11,15 +11,25 @@ load(
     "fel_cc_library",
     "fel_objc_library",
 )
+load("//bazel:felicia_proto.bzl", "fel_proto_library")
 
 package(default_visibility = ["//felicia:internal"])
+
+fel_proto_library(
+    name = "camera_proto",
+    srcs = [
+        "camera_format_message.proto",
+        "camera_frame_message.proto",
+    ],
+    default_header = True,
+    visibility = ["//visibility:public"],
+)
 
 CAMERA_HEADERS = [
     "camera_buffer.h",
     "camera_descriptor.h",
     "camera_errors.h",
     "camera_format.h",
-    "camera_format_list.h",
     "camera_factory.h",
     "camera_interface.h",
     "camera_frame.h",

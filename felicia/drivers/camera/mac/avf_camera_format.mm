@@ -11,11 +11,11 @@ namespace {
 
 constexpr struct {
   FourCharCode avf_pixel_format;
-  CameraFormat::PixelFormat pixel_format;
+  PixelFormat pixel_format;
 } const kAVFoundationPixelFormatToPixelFormat[] = {
-    {kCVPixelFormatType_422YpCbCr8, CameraFormat::PIXEL_FORMAT_UYVY},
-    {kCMPixelFormat_422YpCbCr8_yuvs, CameraFormat::PIXEL_FORMAT_YUY2},
-    {kCMVideoCodecType_JPEG_OpenDML, CameraFormat::PIXEL_FORMAT_MJPEG},
+    {kCVPixelFormatType_422YpCbCr8, PIXEL_FORMAT_UYVY},
+    {kCMPixelFormat_422YpCbCr8_yuvs, PIXEL_FORMAT_YUY2},
+    {kCMVideoCodecType_JPEG_OpenDML, PIXEL_FORMAT_MJPEG},
 };
 
 }  // namespace
@@ -30,8 +30,7 @@ FourCharCode CameraFormat::ToAVFoundationPixelFormat() const {
 }
 
 // static
-CameraFormat::PixelFormat CameraFormat::FromAVFoundationPixelFormat(
-    const FourCharCode avf_pixel_format) {
+PixelFormat CameraFormat::FromAVFoundationPixelFormat(const FourCharCode avf_pixel_format) {
   for (const auto& pixel_format : kAVFoundationPixelFormatToPixelFormat) {
     if (avf_pixel_format == pixel_format.avf_pixel_format) return pixel_format.pixel_format;
   }

@@ -27,8 +27,7 @@ class SinkInputPin : public PinBase {
  public:
   SinkInputPin(IBaseFilter* filter, SinkFilterObserver* observer);
 
-  void SetRequestedMediaFormat(CameraFormat::PixelFormat pixel_format,
-                               float frame_rate,
+  void SetRequestedMediaFormat(PixelFormat pixel_format, float frame_rate,
                                const BITMAPINFOHEADER& info_header);
 
   // Implement PinBase.
@@ -40,7 +39,7 @@ class SinkInputPin : public PinBase {
  private:
   ~SinkInputPin() override;
 
-  CameraFormat::PixelFormat requested_pixel_format_;
+  PixelFormat requested_pixel_format_;
   float requested_frame_rate_;
   BITMAPINFOHEADER requested_info_header_;
   CameraFormat resulting_format_;

@@ -6,6 +6,7 @@ import { FloatPanel } from '@streetscape.gl/monochrome';
 
 import ImageView from 'components/image-view';
 import Subscriber from 'util/subscriber';
+import Worker from 'util/webworker';
 import TYPES from 'common/connection-type';
 import STORE from 'store';
 import { FLOAT_PANEL_STYLE } from './custom-styles';
@@ -43,20 +44,19 @@ export default class CameraPanel extends Component {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.cameraSubscriber = new Subscriber();
+    this.worker = new Worker();
     this.cameraSubscriber.initialize(TYPES.Camera.name, event => {
-      // TODO: receive width, height information from websocket (@util/connection.js)
-      const [width, height] = [640, 480];
-
-      STORE.update({
-        frame: {
-          width,
-          height,
-          data: event.data,
-        },
+      this.worker.postMessage({
+        source: 'subscribeCamera',
+        data: event.data,
       });
     });
+
+    this.worker.onmessage = event => {
+      STORE.update(event.data);
+    };
   }
 
   componentWillUnmount() {

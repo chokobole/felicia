@@ -34,39 +34,41 @@ enum {
 // If it is required to allocate aligned to multiple-of-two size overall for the
 // frame of pixel |camera_format|.
 bool RequiresEvenSizeAllocation(CameraFormat camera_format) {
-  CameraFormat::PixelFormat pixel_format = camera_format.pixel_format();
+  PixelFormat pixel_format = camera_format.pixel_format();
   switch (pixel_format) {
-    case CameraFormat::PIXEL_FORMAT_ARGB:
-    // case CameraFormat::PIXEL_FORMAT_XRGB:
-    case CameraFormat::PIXEL_FORMAT_RGB24:
-    case CameraFormat::PIXEL_FORMAT_RGB32:
-    case CameraFormat::PIXEL_FORMAT_Y16:
-      // case CameraFormat::PIXEL_FORMAT_ABGR:
-      // case CameraFormat::PIXEL_FORMAT_XBGR:
+    case PIXEL_FORMAT_ARGB:
+    // case PIXEL_FORMAT_XRGB:
+    case PIXEL_FORMAT_RGB24:
+    case PIXEL_FORMAT_RGB32:
+    case PIXEL_FORMAT_Y16:
+      // case PIXEL_FORMAT_ABGR:
+      // case PIXEL_FORMAT_XBGR:
       return false;
-    case CameraFormat::PIXEL_FORMAT_NV12:
-    case CameraFormat::PIXEL_FORMAT_NV21:
-    // case CameraFormat::PIXEL_FORMAT_MT21:
-    case CameraFormat::PIXEL_FORMAT_I420:
-    case CameraFormat::PIXEL_FORMAT_MJPEG:
-    case CameraFormat::PIXEL_FORMAT_YUY2:
-    case CameraFormat::PIXEL_FORMAT_YV12:
-    // case CameraFormat::PIXEL_FORMAT_I422:
-    // case CameraFormat::PIXEL_FORMAT_I444:
-    // case CameraFormat::PIXEL_FORMAT_YUV420P9:
-    // case CameraFormat::PIXEL_FORMAT_YUV422P9:
-    // case CameraFormat::PIXEL_FORMAT_YUV444P9:
-    // case CameraFormat::PIXEL_FORMAT_YUV420P10:
-    // case CameraFormat::PIXEL_FORMAT_YUV422P10:
-    // case CameraFormat::PIXEL_FORMAT_YUV444P10:
-    // case CameraFormat::PIXEL_FORMAT_YUV420P12:
-    // case CameraFormat::PIXEL_FORMAT_YUV422P12:
-    // case CameraFormat::PIXEL_FORMAT_YUV444P12:
-    // case CameraFormat::PIXEL_FORMAT_I420A:
-    case CameraFormat::PIXEL_FORMAT_UYVY:
-      // case CameraFormat::PIXEL_FORMAT_P016LE:
+    case PIXEL_FORMAT_NV12:
+    case PIXEL_FORMAT_NV21:
+    // case PIXEL_FORMAT_MT21:
+    case PIXEL_FORMAT_I420:
+    case PIXEL_FORMAT_MJPEG:
+    case PIXEL_FORMAT_YUY2:
+    case PIXEL_FORMAT_YV12:
+    // case PIXEL_FORMAT_I422:
+    // case PIXEL_FORMAT_I444:
+    // case PIXEL_FORMAT_YUV420P9:
+    // case PIXEL_FORMAT_YUV422P9:
+    // case PIXEL_FORMAT_YUV444P9:
+    // case PIXEL_FORMAT_YUV420P10:
+    // case PIXEL_FORMAT_YUV422P10:
+    // case PIXEL_FORMAT_YUV444P10:
+    // case PIXEL_FORMAT_YUV420P12:
+    // case PIXEL_FORMAT_YUV422P12:
+    // case PIXEL_FORMAT_YUV444P12:
+    // case PIXEL_FORMAT_I420A:
+    case PIXEL_FORMAT_UYVY:
+      // case PIXEL_FORMAT_P016LE:
       return true;
-    case CameraFormat::PIXEL_FORMAT_UNKNOWN:
+    case PIXEL_FORMAT_UNKNOWN:
+    case PixelFormat_INT_MIN_SENTINEL_DO_NOT_USE_:
+    case PixelFormat_INT_MAX_SENTINEL_DO_NOT_USE_:
       break;
   }
   NOTREACHED() << "Unsupported video frame format: " << pixel_format;
@@ -75,41 +77,43 @@ bool RequiresEvenSizeAllocation(CameraFormat camera_format) {
 
 // static
 size_t NumPlanes(CameraFormat camera_format) {
-  CameraFormat::PixelFormat pixel_format = camera_format.pixel_format();
+  PixelFormat pixel_format = camera_format.pixel_format();
   switch (pixel_format) {
-    case CameraFormat::PIXEL_FORMAT_UYVY:
-    case CameraFormat::PIXEL_FORMAT_YUY2:
-    case CameraFormat::PIXEL_FORMAT_ARGB:
-    // case CameraFormat::PIXEL_FORMAT_XRGB:
-    case CameraFormat::PIXEL_FORMAT_RGB24:
-    case CameraFormat::PIXEL_FORMAT_RGB32:
-    case CameraFormat::PIXEL_FORMAT_MJPEG:
-    case CameraFormat::PIXEL_FORMAT_Y16:
-      // case CameraFormat::PIXEL_FORMAT_ABGR:
-      // case CameraFormat::PIXEL_FORMAT_XBGR:
+    case PIXEL_FORMAT_UYVY:
+    case PIXEL_FORMAT_YUY2:
+    case PIXEL_FORMAT_ARGB:
+    // case PIXEL_FORMAT_XRGB:
+    case PIXEL_FORMAT_RGB24:
+    case PIXEL_FORMAT_RGB32:
+    case PIXEL_FORMAT_MJPEG:
+    case PIXEL_FORMAT_Y16:
+      // case PIXEL_FORMAT_ABGR:
+      // case PIXEL_FORMAT_XBGR:
       return 1;
-    case CameraFormat::PIXEL_FORMAT_NV12:
-    case CameraFormat::PIXEL_FORMAT_NV21:
-      // case CameraFormat::PIXEL_FORMAT_MT21:
-      // case CameraFormat::PIXEL_FORMAT_P016LE:
+    case PIXEL_FORMAT_NV12:
+    case PIXEL_FORMAT_NV21:
+      // case PIXEL_FORMAT_MT21:
+      // case PIXEL_FORMAT_P016LE:
       return 2;
-    case CameraFormat::PIXEL_FORMAT_I420:
-    case CameraFormat::PIXEL_FORMAT_YV12:
-      // case CameraFormat::PIXEL_FORMAT_I422:
-      // case CameraFormat::PIXEL_FORMAT_I444:
-      // case CameraFormat::PIXEL_FORMAT_YUV420P9:
-      // case CameraFormat::PIXEL_FORMAT_YUV422P9:
-      // case CameraFormat::PIXEL_FORMAT_YUV444P9:
-      // case CameraFormat::PIXEL_FORMAT_YUV420P10:
-      // case CameraFormat::PIXEL_FORMAT_YUV422P10:
-      // case CameraFormat::PIXEL_FORMAT_YUV444P10:
-      // case CameraFormat::PIXEL_FORMAT_YUV420P12:
-      // case CameraFormat::PIXEL_FORMAT_YUV422P12:
-      // case CameraFormat::PIXEL_FORMAT_YUV444P12:
+    case PIXEL_FORMAT_I420:
+    case PIXEL_FORMAT_YV12:
+      // case PIXEL_FORMAT_I422:
+      // case PIXEL_FORMAT_I444:
+      // case PIXEL_FORMAT_YUV420P9:
+      // case PIXEL_FORMAT_YUV422P9:
+      // case PIXEL_FORMAT_YUV444P9:
+      // case PIXEL_FORMAT_YUV420P10:
+      // case PIXEL_FORMAT_YUV422P10:
+      // case PIXEL_FORMAT_YUV444P10:
+      // case PIXEL_FORMAT_YUV420P12:
+      // case PIXEL_FORMAT_YUV422P12:
+      // case PIXEL_FORMAT_YUV444P12:
       return 3;
-    // case CameraFormat::PIXEL_FORMAT_I420A:
+    // case PIXEL_FORMAT_I420A:
     //   return 4;
-    case CameraFormat::PIXEL_FORMAT_UNKNOWN:
+    case PIXEL_FORMAT_UNKNOWN:
+    case PixelFormat_INT_MIN_SENTINEL_DO_NOT_USE_:
+    case PixelFormat_INT_MAX_SENTINEL_DO_NOT_USE_:
       // Note: PIXEL_FORMAT_UNKNOWN is used for end-of-stream frame.
       // Set its NumPlanes() to zero to avoid NOTREACHED().
       return 0;
@@ -125,7 +129,7 @@ bool IsValidPlane(size_t plane, CameraFormat camera_format) {
 
 Sizei SampleSize(CameraFormat camera_format, size_t plane) {
   DCHECK(IsValidPlane(plane, camera_format));
-  CameraFormat::PixelFormat pixel_format = camera_format.pixel_format();
+  PixelFormat pixel_format = camera_format.pixel_format();
 
   switch (plane) {
     case kYPlane:  // and kARGBPlane:
@@ -135,41 +139,43 @@ Sizei SampleSize(CameraFormat camera_format, size_t plane) {
     case kUPlane:  // and kUVPlane:
     case kVPlane:
       switch (pixel_format) {
-          // case CameraFormat::PIXEL_FORMAT_I444:
-          // case CameraFormat::PIXEL_FORMAT_YUV444P9:
-          // case CameraFormat::PIXEL_FORMAT_YUV444P10:
-          // case CameraFormat::PIXEL_FORMAT_YUV444P12:
-        case CameraFormat::PIXEL_FORMAT_Y16:
+          // case PIXEL_FORMAT_I444:
+          // case PIXEL_FORMAT_YUV444P9:
+          // case PIXEL_FORMAT_YUV444P10:
+          // case PIXEL_FORMAT_YUV444P12:
+        case PIXEL_FORMAT_Y16:
           return Sizei(1, 1);
 
-          // case CameraFormat::PIXEL_FORMAT_I422:
-          // case CameraFormat::PIXEL_FORMAT_YUV422P9:
-          // case CameraFormat::PIXEL_FORMAT_YUV422P10:
-          // case CameraFormat::PIXEL_FORMAT_YUV422P12:
+          // case PIXEL_FORMAT_I422:
+          // case PIXEL_FORMAT_YUV422P9:
+          // case PIXEL_FORMAT_YUV422P10:
+          // case PIXEL_FORMAT_YUV422P12:
           //   return gfx::Size(2, 1);
 
-        case CameraFormat::PIXEL_FORMAT_YV12:
-        case CameraFormat::PIXEL_FORMAT_I420:
-        // case CameraFormat::PIXEL_FORMAT_I420A:
-        case CameraFormat::PIXEL_FORMAT_NV12:
-        case CameraFormat::PIXEL_FORMAT_NV21:
-          // case CameraFormat::PIXEL_FORMAT_MT21:
-          // case CameraFormat::PIXEL_FORMAT_YUV420P9:
-          // case CameraFormat::PIXEL_FORMAT_YUV420P10:
-          // case CameraFormat::PIXEL_FORMAT_YUV420P12:
-          // case CameraFormat::PIXEL_FORMAT_P016LE:
+        case PIXEL_FORMAT_YV12:
+        case PIXEL_FORMAT_I420:
+        // case PIXEL_FORMAT_I420A:
+        case PIXEL_FORMAT_NV12:
+        case PIXEL_FORMAT_NV21:
+          // case PIXEL_FORMAT_MT21:
+          // case PIXEL_FORMAT_YUV420P9:
+          // case PIXEL_FORMAT_YUV420P10:
+          // case PIXEL_FORMAT_YUV420P12:
+          // case PIXEL_FORMAT_P016LE:
           return Sizei(2, 2);
 
-        case CameraFormat::PIXEL_FORMAT_UNKNOWN:
-        case CameraFormat::PIXEL_FORMAT_UYVY:
-        case CameraFormat::PIXEL_FORMAT_YUY2:
-        case CameraFormat::PIXEL_FORMAT_ARGB:
-        // case CameraFormat::PIXEL_FORMAT_XRGB:
-        case CameraFormat::PIXEL_FORMAT_RGB24:
-        case CameraFormat::PIXEL_FORMAT_RGB32:
-        case CameraFormat::PIXEL_FORMAT_MJPEG:
-          // case CameraFormat::PIXEL_FORMAT_ABGR:
-          // case CameraFormat::PIXEL_FORMAT_XBGR:
+        case PIXEL_FORMAT_UNKNOWN:
+        case PixelFormat_INT_MIN_SENTINEL_DO_NOT_USE_:
+        case PixelFormat_INT_MAX_SENTINEL_DO_NOT_USE_:
+        case PIXEL_FORMAT_UYVY:
+        case PIXEL_FORMAT_YUY2:
+        case PIXEL_FORMAT_ARGB:
+        // case PIXEL_FORMAT_XRGB:
+        case PIXEL_FORMAT_RGB24:
+        case PIXEL_FORMAT_RGB32:
+        case PIXEL_FORMAT_MJPEG:
+          // case PIXEL_FORMAT_ABGR:
+          // case PIXEL_FORMAT_XBGR:
           break;
       }
   }
@@ -180,46 +186,48 @@ Sizei SampleSize(CameraFormat camera_format, size_t plane) {
 int BytesPerElement(CameraFormat camera_format, size_t plane) {
   DCHECK(IsValidPlane(plane, camera_format));
 
-  CameraFormat::PixelFormat pixel_format = camera_format.pixel_format();
+  PixelFormat pixel_format = camera_format.pixel_format();
   switch (pixel_format) {
-    case CameraFormat::PIXEL_FORMAT_ARGB:
-    // case CameraFormat::PIXEL_FORMAT_XRGB:
-    case CameraFormat::PIXEL_FORMAT_RGB32:
-      // case CameraFormat::PIXEL_FORMAT_ABGR:
-      // case CameraFormat::PIXEL_FORMAT_XBGR:
+    case PIXEL_FORMAT_ARGB:
+    // case PIXEL_FORMAT_XRGB:
+    case PIXEL_FORMAT_RGB32:
+      // case PIXEL_FORMAT_ABGR:
+      // case PIXEL_FORMAT_XBGR:
       return 4;
-    case CameraFormat::PIXEL_FORMAT_RGB24:
+    case PIXEL_FORMAT_RGB24:
       return 3;
-    case CameraFormat::PIXEL_FORMAT_Y16:
-    case CameraFormat::PIXEL_FORMAT_UYVY:
-    case CameraFormat::PIXEL_FORMAT_YUY2:
-      // case CameraFormat::PIXEL_FORMAT_YUV420P9:
-      // case CameraFormat::PIXEL_FORMAT_YUV422P9:
-      // case CameraFormat::PIXEL_FORMAT_YUV444P9:
-      // case CameraFormat::PIXEL_FORMAT_YUV420P10:
-      // case CameraFormat::PIXEL_FORMAT_YUV422P10:
-      // case CameraFormat::PIXEL_FORMAT_YUV444P10:
-      // case CameraFormat::PIXEL_FORMAT_YUV420P12:
-      // case CameraFormat::PIXEL_FORMAT_YUV422P12:
-      // case CameraFormat::PIXEL_FORMAT_YUV444P12:
-      // case CameraFormat::PIXEL_FORMAT_P016LE:
+    case PIXEL_FORMAT_Y16:
+    case PIXEL_FORMAT_UYVY:
+    case PIXEL_FORMAT_YUY2:
+      // case PIXEL_FORMAT_YUV420P9:
+      // case PIXEL_FORMAT_YUV422P9:
+      // case PIXEL_FORMAT_YUV444P9:
+      // case PIXEL_FORMAT_YUV420P10:
+      // case PIXEL_FORMAT_YUV422P10:
+      // case PIXEL_FORMAT_YUV444P10:
+      // case PIXEL_FORMAT_YUV420P12:
+      // case PIXEL_FORMAT_YUV422P12:
+      // case PIXEL_FORMAT_YUV444P12:
+      // case PIXEL_FORMAT_P016LE:
       return 2;
-    case CameraFormat::PIXEL_FORMAT_NV12:
-    case CameraFormat::PIXEL_FORMAT_NV21: {
-      // case CameraFormat::PIXEL_FORMAT_MT21: {
+    case PIXEL_FORMAT_NV12:
+    case PIXEL_FORMAT_NV21: {
+      // case PIXEL_FORMAT_MT21: {
       static const int bytes_per_element[] = {1, 2};
       DCHECK_LT(plane, base::size(bytes_per_element));
       return bytes_per_element[plane];
     }
-    case CameraFormat::PIXEL_FORMAT_YV12:
-    case CameraFormat::PIXEL_FORMAT_I420:
-      // case CameraFormat::PIXEL_FORMAT_I422:
-      // case CameraFormat::PIXEL_FORMAT_I420A:
-      // case CameraFormat::PIXEL_FORMAT_I444:
+    case PIXEL_FORMAT_YV12:
+    case PIXEL_FORMAT_I420:
+      // case PIXEL_FORMAT_I422:
+      // case PIXEL_FORMAT_I420A:
+      // case PIXEL_FORMAT_I444:
       return 1;
-    case CameraFormat::PIXEL_FORMAT_MJPEG:
+    case PIXEL_FORMAT_MJPEG:
       return 0;
-    case CameraFormat::PIXEL_FORMAT_UNKNOWN:
+    case PIXEL_FORMAT_UNKNOWN:
+    case PixelFormat_INT_MIN_SENTINEL_DO_NOT_USE_:
+    case PixelFormat_INT_MAX_SENTINEL_DO_NOT_USE_:
       break;
   }
   NOTREACHED();

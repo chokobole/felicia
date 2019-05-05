@@ -256,12 +256,6 @@ EXPORT bool ToNetIPEndPoint(const ChannelSource& channel_source,
 EXPORT ChannelSource ToChannelSource(const ::net::IPEndPoint& ip_endpoint,
                                      ChannelDef_Type type);
 
-// Convert ChannelDef |channel_def| to std::string
-EXPORT std::string ChannelDefToString(const ChannelDef& channel_def);
-
-// Convert std::string |str| to ChannelDef
-EXPORT ChannelDef ChannelDefFromString(const std::string& str);
-
 // Convert ChannelDef |channel_source| to std::string
 EXPORT std::string ChannelSourceToString(const ChannelSource& channel_source);
 

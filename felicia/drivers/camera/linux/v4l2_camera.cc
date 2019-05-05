@@ -183,8 +183,7 @@ Status V4l2Camera::GetSupportedCameraFormats(
     camera_format.set_pixel_format(
         CameraFormat::FromV4l2PixelFormat(v4l2_format.pixelformat));
 
-    if (camera_format.pixel_format() == CameraFormat::PIXEL_FORMAT_UNKNOWN)
-      continue;
+    if (camera_format.pixel_format() == PIXEL_FORMAT_UNKNOWN) continue;
 
     v4l2_frmsizeenum frame_size = {};
     frame_size.pixel_format = v4l2_format.pixelformat;

@@ -12,7 +12,7 @@ namespace {
 struct {
   GUID mf_source_media_subtype;
   GUID mf_sink_media_subtype;
-  CameraFormat::PixelFormat pixel_format;
+  PixelFormat pixel_format;
 } const kMediaFormatConfigurationMap[] = {
     // IMFCaptureEngine inevitably performs the video frame decoding itself.
     // This means that the sink must always be set to an uncompressed video
@@ -20,15 +20,15 @@ struct {
 
     // Since chromium uses I420 at the other end of the pipe, MF known video
     // output formats are always set to I420.
-    {MFVideoFormat_I420, MFVideoFormat_I420, CameraFormat::PIXEL_FORMAT_I420},
-    {MFVideoFormat_YUY2, MFVideoFormat_I420, CameraFormat::PIXEL_FORMAT_I420},
-    {MFVideoFormat_UYVY, MFVideoFormat_I420, CameraFormat::PIXEL_FORMAT_I420},
-    {MFVideoFormat_RGB24, MFVideoFormat_I420, CameraFormat::PIXEL_FORMAT_I420},
-    {MFVideoFormat_RGB32, MFVideoFormat_I420, CameraFormat::PIXEL_FORMAT_I420},
-    {MFVideoFormat_ARGB32, MFVideoFormat_I420, CameraFormat::PIXEL_FORMAT_I420},
-    {MFVideoFormat_MJPG, MFVideoFormat_I420, CameraFormat::PIXEL_FORMAT_I420},
-    {MFVideoFormat_NV12, MFVideoFormat_I420, CameraFormat::PIXEL_FORMAT_I420},
-    {MFVideoFormat_YV12, MFVideoFormat_I420, CameraFormat::PIXEL_FORMAT_I420},
+    {MFVideoFormat_I420, MFVideoFormat_I420, PIXEL_FORMAT_I420},
+    {MFVideoFormat_YUY2, MFVideoFormat_I420, PIXEL_FORMAT_I420},
+    {MFVideoFormat_UYVY, MFVideoFormat_I420, PIXEL_FORMAT_I420},
+    {MFVideoFormat_RGB24, MFVideoFormat_I420, PIXEL_FORMAT_I420},
+    {MFVideoFormat_RGB32, MFVideoFormat_I420, PIXEL_FORMAT_I420},
+    {MFVideoFormat_ARGB32, MFVideoFormat_I420, PIXEL_FORMAT_I420},
+    {MFVideoFormat_MJPG, MFVideoFormat_I420, PIXEL_FORMAT_I420},
+    {MFVideoFormat_NV12, MFVideoFormat_I420, PIXEL_FORMAT_I420},
+    {MFVideoFormat_YV12, MFVideoFormat_I420, PIXEL_FORMAT_I420},
 };
 
 }  // namespace
@@ -46,8 +46,7 @@ bool CameraFormat::ToMfSinkMediaSubtype(const GUID& sub_type, GUID* sink_type) {
 }
 
 // static
-CameraFormat::PixelFormat CameraFormat::FromMfMediaSubtype(
-    const GUID& sub_type) {
+PixelFormat CameraFormat::FromMfMediaSubtype(const GUID& sub_type) {
   for (const auto& kMediaFormatConfiguration : kMediaFormatConfigurationMap) {
     if (kMediaFormatConfiguration.mf_source_media_subtype == sub_type) {
       return kMediaFormatConfiguration.pixel_format;

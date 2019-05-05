@@ -344,8 +344,7 @@ Status MfCamera::GetSupportedCameraFormats(
     type.Reset();
     ++stream_index;
 
-    if (camera_format.pixel_format() == CameraFormat::PIXEL_FORMAT_UNKNOWN)
-      continue;
+    if (camera_format.pixel_format() == PIXEL_FORMAT_UNKNOWN) continue;
 
     if (std::find(camera_formats->begin(), camera_formats->end(),
                   camera_format) == camera_formats->end()) {
@@ -718,8 +717,7 @@ HRESULT MfCamera::FillCapabilities(IMFCaptureSource* source, bool photo,
       Status s =
           GetCameraFormatFromSourceMediaType(type.Get(), photo, &camera_format);
 
-      if (s.ok() &&
-          camera_format.pixel_format() != CameraFormat::PIXEL_FORMAT_UNKNOWN) {
+      if (s.ok() && camera_format.pixel_format() != PIXEL_FORMAT_UNKNOWN) {
         capabilities->emplace_back(media_type_index, camera_format,
                                    stream_index);
       }

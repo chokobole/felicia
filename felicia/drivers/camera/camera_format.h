@@ -14,6 +14,7 @@ typedef uint32_t FourCharCode;
 
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/unit/geometry/size.h"
+#include "felicia/drivers/camera/camera_format_message.pb.h"
 
 namespace felicia {
 
@@ -21,12 +22,6 @@ const int kFrameRatePrecision = 10000;
 
 class EXPORT CameraFormat {
  public:
-  enum PixelFormat {
-#define PIXEL_FORMAT(format) format,
-#include "felicia/drivers/camera/camera_format_list.h"
-#undef PIXEL_FORMAT
-  };
-
   CameraFormat();
   CameraFormat(Sizei size, PixelFormat pixel_format, float frame_rate);
   CameraFormat(int width, int height, PixelFormat pixel_format,
@@ -36,7 +31,7 @@ class EXPORT CameraFormat {
 
   std::string ToString() const;
 
-  static std::string PixelFormatToString(PixelFormat pixel_format);
+  static const std::string& PixelFormatToString(PixelFormat pixel_format);
 
   PixelFormat pixel_format() const;
   void set_pixel_format(PixelFormat pixel_format);
@@ -60,6 +55,8 @@ class EXPORT CameraFormat {
   static PixelFormat FromAVFoundationPixelFormat(
       const FourCharCode avf_pixel_format);
 #endif
+
+  CameraFormatMessage ToCameraFormatMessage() const;
 
   bool operator==(const CameraFormat& other);
 
