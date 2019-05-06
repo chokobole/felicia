@@ -6,7 +6,7 @@ import { FloatPanel } from '@streetscape.gl/monochrome';
 
 import ImageView from 'components/image-view';
 import Subscriber from 'util/subscriber';
-import Worker from 'util/webworker';
+import Worker from 'util/subscriber-webworker';
 import TYPES from 'common/connection-type';
 import STORE from 'store';
 import { FLOAT_PANEL_STYLE } from './custom-styles';

@@ -4,7 +4,10 @@ import PropTypes from 'prop-types';
 /* eslint import/no-unresolved: "off" */
 // import { ResizeDetector } from '@felicia-viz/ui';
 import { CameraFrame } from 'store/camera';
-import Worker from 'util/webworker.js';
+import Worker from 'util/image-view-webworker.js';
+
+const PROXY = 'proxy';
+const MAIN = 'main';
 
 export default class ImageView extends PureComponent {
   static propTypes = {
@@ -49,13 +52,21 @@ export default class ImageView extends PureComponent {
     this.worker.terminate();
   }
 
-  _onCanvasLoad = ref => {
-    this._canvas = ref;
+  _onCanvasLoad(tag, ref) {
+    if (!this._canvas) {
+      this._canvas = {};
+    }
+
+    this._canvas[tag] = ref;
+
+    if (!this._context) {
+      this._context = {};
+    }
 
     if (ref) {
-      this._context = ref.getContext('2d');
+      this._context[tag] = ref.getContext('2d');
     }
-  };
+  }
 
   // For later,
   // onResize = entry => {
@@ -88,7 +99,7 @@ export default class ImageView extends PureComponent {
     this.worker.postMessage({
       source: 'imageView',
       data: {
-        imageData: this._context.getImageData(0, 0, width, height),
+        imageData: this._context[PROXY].getImageData(0, 0, width, height),
         width,
         height,
         data,
@@ -103,26 +114,31 @@ export default class ImageView extends PureComponent {
 
     const { canvasWidth, canvasHeight } = this.props;
 
+    const mainCanvas = this._canvas[MAIN];
+    const mainContext = this._context[MAIN];
+    const proxyCanvas = this._canvas[PROXY];
+    const proxyContext = this._context[PROXY];
+
     if (image) {
-      const proxyCanvus = document.querySelector('#display-none-canvas');
-      proxyCanvus.width = image.width;
-      proxyCanvus.height = image.height;
+      proxyCanvas.width = image.width;
+      proxyCanvas.height = image.height;
+
       if (image instanceof Image) {
-        proxyCanvus.getContext('2d').drawImage(image, 0, 0);
+        proxyContext.drawImage(image, 0, 0);
       } else {
-        proxyCanvus.getContext('2d').putImageData(image, 0, 0);
+        proxyContext.putImageData(image, 0, 0);
       }
 
-      this._canvas.width = canvasWidth;
+      mainCanvas.width = canvasWidth;
       let finalHeight = canvasHeight;
       if (canvasHeight === 'auto') {
         finalHeight = (canvasWidth / image.width) * image.height;
       }
-      this._canvas.height = finalHeight;
+      mainCanvas.height = finalHeight;
       // resize
-      this._context.drawImage(proxyCanvus, 0, 0, this._canvas.width, this._canvas.height);
+      mainContext.drawImage(proxyCanvas, 0, 0, mainCanvas.width, mainCanvas.height);
     } else {
-      this._context.clearRect(0, 0, this.width, this.height);
+      mainContext.clearRect(0, 0, this.width, this.height);
     }
   }
 
@@ -138,8 +154,8 @@ export default class ImageView extends PureComponent {
 
     return (
       <div style={this.style}>
-        <canvas id='display-none-canvas' style={{ display: 'none' }} ref={this._onCanvasLoad} />
-        <canvas ref={this._onCanvasLoad} />
+        <canvas ref={this._onCanvasLoad.bind(this, PROXY)} style={{ display: 'none' }} />
+        <canvas ref={this._onCanvasLoad.bind(this, MAIN)} />
       </div>
     );
   }

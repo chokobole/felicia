@@ -5,7 +5,7 @@ import { inject, observer } from 'mobx-react';
 import CameraPanel from 'components/camera-panel';
 import TYPES from 'common/connection-type';
 import Subscriber from 'util/subscriber';
-import Worker from 'util/webworker';
+import Worker from 'util/subscriber-webworker';
 import STORE from 'store';
 
 @inject('store')
