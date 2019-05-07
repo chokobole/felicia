@@ -40,9 +40,11 @@ bool RequiresEvenSizeAllocation(CameraFormat camera_format) {
     // case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_RGB24:
     case PIXEL_FORMAT_RGB32:
+    case PIXEL_FORMAT_Y8:
     case PIXEL_FORMAT_Y16:
-      // case PIXEL_FORMAT_ABGR:
-      // case PIXEL_FORMAT_XBGR:
+    case PIXEL_FORMAT_Z16:
+    case PIXEL_FORMAT_ABGR:
+    case PIXEL_FORMAT_XBGR:
       return false;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
@@ -86,9 +88,11 @@ size_t NumPlanes(CameraFormat camera_format) {
     case PIXEL_FORMAT_RGB24:
     case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_MJPEG:
+    case PIXEL_FORMAT_Y8:
     case PIXEL_FORMAT_Y16:
-      // case PIXEL_FORMAT_ABGR:
-      // case PIXEL_FORMAT_XBGR:
+    case PIXEL_FORMAT_Z16:
+    case PIXEL_FORMAT_ABGR:
+    case PIXEL_FORMAT_XBGR:
       return 1;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
@@ -143,7 +147,9 @@ Sizei SampleSize(CameraFormat camera_format, size_t plane) {
           // case PIXEL_FORMAT_YUV444P9:
           // case PIXEL_FORMAT_YUV444P10:
           // case PIXEL_FORMAT_YUV444P12:
+        case PIXEL_FORMAT_Y8:
         case PIXEL_FORMAT_Y16:
+        case PIXEL_FORMAT_Z16:
           return Sizei(1, 1);
 
           // case PIXEL_FORMAT_I422:
@@ -174,8 +180,8 @@ Sizei SampleSize(CameraFormat camera_format, size_t plane) {
         case PIXEL_FORMAT_RGB24:
         case PIXEL_FORMAT_RGB32:
         case PIXEL_FORMAT_MJPEG:
-          // case PIXEL_FORMAT_ABGR:
-          // case PIXEL_FORMAT_XBGR:
+        case PIXEL_FORMAT_ABGR:
+        case PIXEL_FORMAT_XBGR:
           break;
       }
   }
@@ -191,12 +197,13 @@ int BytesPerElement(CameraFormat camera_format, size_t plane) {
     case PIXEL_FORMAT_ARGB:
     // case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_RGB32:
-      // case PIXEL_FORMAT_ABGR:
-      // case PIXEL_FORMAT_XBGR:
+    case PIXEL_FORMAT_ABGR:
+    case PIXEL_FORMAT_XBGR:
       return 4;
     case PIXEL_FORMAT_RGB24:
       return 3;
     case PIXEL_FORMAT_Y16:
+    case PIXEL_FORMAT_Z16:
     case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_YUY2:
       // case PIXEL_FORMAT_YUV420P9:
@@ -217,6 +224,7 @@ int BytesPerElement(CameraFormat camera_format, size_t plane) {
       DCHECK_LT(plane, base::size(bytes_per_element));
       return bytes_per_element[plane];
     }
+    case PIXEL_FORMAT_Y8:
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I420:
       // case PIXEL_FORMAT_I422:

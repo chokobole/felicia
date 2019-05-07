@@ -9,7 +9,10 @@ load(
 
 package(default_visibility = [":internal"])
 
-exports_files(["empty.cc"])
+exports_files([
+    "empty.cc",
+    "only_main.cc",
+])
 
 # This is config settings from https://github.com/bazelbuild/bazel/blob/0.20.0/tools/platforms/BUILD
 
@@ -148,6 +151,14 @@ config_setting(
     constraint_values = ["@bazel_tools//platforms:windows"],
     define_values = {
         "win_no_grpc": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "has_realsense",
+    define_values = {
+        "has_realsense": "true",
     },
     visibility = ["//visibility:public"],
 )

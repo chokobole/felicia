@@ -133,6 +133,12 @@ def if_not_travis(a):
         return a
     return []
 
+def if_has_realsense(a):
+    return select({
+        "//felicia:has_realsense": a,
+        "//conditions:default": [],
+    })
+
 def fel_additional_deps():
     return [
         "//felicia/core/protobuf:protos_all_cc_impl",

@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_DRIVERS_CAMERA_CAMERA_INTERFACE_H_
-#define FELICIA_CORE_DRIVERS_CAMERA_CAMERA_INTERFACE_H_
+#ifndef FELICIA_DRIVERS_CAMERA_CAMERA_INTERFACE_H_
+#define FELICIA_DRIVERS_CAMERA_CAMERA_INTERFACE_H_
 
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/statusor.h"
@@ -34,4 +34,4 @@ class EXPORT CameraInterface {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_DRIVERS_CAMERA_CAMERA_INTERFACE_H_
+#endif  // FELICIA_DRIVERS_CAMERA_CAMERA_INTERFACE_H_

@@ -1,9 +1,11 @@
 load(
     "//bazel:felicia.bzl",
+    "if_has_realsense",
     "if_linux",
     "if_mac",
     "if_not_mac",
     "if_not_travis",
+    "if_not_windows",
     "if_windows",
 )
 load(
@@ -35,16 +37,14 @@ CAMERA_HEADERS = [
     "camera_frame.h",
     "camera_frame_util.h",
     "camera_state.h",
+    "depth_camera_interface.h",
     "timestamp_constants.h",
 ] + if_linux([
     "linux/v4l2_camera_errors.h",
-    "linux/v4l2_camera.h",
 ]) + if_windows([
     "win/dshow_camera_errors.h",
-    "win/dshow_camera.h",
 ] + if_not_travis([
     "win/mf_camera_errors.h",
-    "win/mf_camera.h",
 ]))
 
 fel_cc_library(
@@ -57,9 +57,11 @@ fel_cc_library(
         "camera_format.cc",
         "camera_frame.cc",
         "camera_frame_util.cc",
+        "depth_camera_interface.cc",
     ] + if_linux([
         "linux/v4l2_camera.cc",
         "linux/v4l2_camera_format.cc",
+        "linux/v4l2_camera.h",
     ]) + if_windows([
         "win/camera_util.h",
         "win/camera_util.cc",
@@ -76,11 +78,13 @@ fel_cc_library(
         "win/sink_filter.h",
         "win/sink_input_pin.cc",
         "win/sink_input_pin.h",
+        "win/dshow_camera.h",
     ] + if_not_travis([
         "win/mf_camera_format.cc",
         "win/mf_camera.cc",
         "win/mf_initializer.h",
         "win/mf_initializer.cc",
+        "win/mf_camera.h",
     ])),
     hdrs = CAMERA_HEADERS,
     linkopts = if_windows(if_not_travis([
@@ -112,5 +116,25 @@ fel_objc_library(
     sdk_frameworks = [
         "AVFoundation",
     ],
+    deps = ["//felicia/core/lib"],
+)
+
+# TODO: Should we move below to different repository maybe?
+fel_cc_library(
+    name = "rs_camera",
+    srcs = if_has_realsense([
+        "realsense/rs_camera.cc",
+        "realsense/rs_camera.h",
+        "realsense/rs_camera_factory.cc",
+        "realsense/rs_pixel_format.cc",
+        "realsense/rs_pixel_format.h",
+    ]),
+    hdrs = CAMERA_HEADERS + [
+        "realsense/rs_camera_factory.h",
+        "realsense/rs_stream_info.h",
+    ],
+    linkopts = if_has_realsense([
+        "-lrealsense2",
+    ]),
     deps = ["//felicia/core/lib"],
 )
