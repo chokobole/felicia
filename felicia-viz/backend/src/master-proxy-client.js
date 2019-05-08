@@ -8,7 +8,6 @@ export default class MasterProxyClient {
     const packageDefinition = loadSync(
       path.resolve(FELICIA_ROOT, 'felicia/core/master/rpc/master_service.proto'),
       {
-        keepCase: true,
         longs: String,
         enums: String,
         defaults: true,
