@@ -17,11 +17,7 @@ class RsCameraFactory {
 
   static Status GetSupportedCameraFormats(
       const CameraDescriptor& camera_descriptor,
-      RsCameraFormatMap* rs_camera_format_map);
-
- private:
-  static Status CreateDevice(const CameraDescriptor& camera_descriptor,
-                             ::rs2::device* device);
+      RsCapabilityMap* rs_capability_map);
 
   DISALLOW_COPY_AND_ASSIGN(RsCameraFactory);
 };

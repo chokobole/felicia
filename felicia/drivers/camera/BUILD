@@ -126,11 +126,13 @@ fel_cc_library(
         "realsense/rs_camera.cc",
         "realsense/rs_camera.h",
         "realsense/rs_camera_factory.cc",
+        "realsense/rs_capability.cc",
         "realsense/rs_pixel_format.cc",
         "realsense/rs_pixel_format.h",
     ]),
     hdrs = CAMERA_HEADERS + [
         "realsense/rs_camera_factory.h",
+        "realsense/rs_capability.h",
         "realsense/rs_stream_info.h",
     ],
     linkopts = if_has_realsense([

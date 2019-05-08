@@ -318,18 +318,14 @@ Status DshowCamera::SetCameraFormat(const CameraFormat& camera_format) {
   }
 
   // Get the camera capability that best match the requested format.
-  const Capability* found_capability =
+  const Capability& found_capability =
       GetBestMatchedCapability(camera_format, capabilities_);
-
-  if (!found_capability) {
-    return errors::FailedToGetBestMatchedCapability();
-  }
 
   // Reduce the frame rate if the requested frame rate is lower
   // than the capability.
   const float frame_rate =
       std::min(camera_format.frame_rate(),
-               found_capability->supported_format.frame_rate());
+               found_capability.supported_format.frame_rate());
 
   ComPtr<IAMStreamConfig> stream_config;
   HRESULT hr = output_capture_pin_.CopyTo(stream_config.GetAddressOf());
@@ -349,7 +345,7 @@ Status DshowCamera::SetCameraFormat(const CameraFormat& camera_format) {
   // Get the windows capability from the capture device.
   // GetStreamCaps can return S_FALSE which we consider an error. Therefore the
   // FAILED macro can't be used.
-  hr = stream_config->GetStreamCaps(found_capability->media_type_index,
+  hr = stream_config->GetStreamCaps(found_capability.media_type_index,
                                     media_type.Receive(), caps.get());
   if (hr != S_OK) {
     return errors::FailedToGetStreamCaps(hr);
@@ -358,14 +354,14 @@ Status DshowCamera::SetCameraFormat(const CameraFormat& camera_format) {
   // Set the sink filter to request this format.
   sink_filter_->SetRequestedMediaFormat(camera_format.pixel_format(),
                                         camera_format.frame_rate(),
-                                        found_capability->info_header);
+                                        found_capability.info_header);
   // Order the capture device to use this format.
   hr = stream_config->SetFormat(media_type.get());
   if (hr != S_OK) {
     return errors::FailedToSetFormat(hr);
   }
 
-  camera_format_ = found_capability->supported_format;
+  camera_format_ = found_capability.supported_format;
   was_set_camera_format_ = true;
 
   return Status::OK();

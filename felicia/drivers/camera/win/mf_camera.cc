@@ -534,12 +534,8 @@ Status MfCamera::SetCameraFormat(const CameraFormat& camera_format) {
   Status s = CreateCapabilityList(&video_capabilities);
   if (!s.ok()) return s;
 
-  const Capability* found_capability =
+  const Capability& found_capability =
       GetBestMatchedCapability(camera_format, video_capabilities);
-
-  if (!found_capability) {
-    return errors::FailedToGetBestMatchedCapability();
-  }
 
   ComPtr<IMFCaptureSource> source;
   HRESULT hr = engine_->GetSource(source.GetAddressOf());
@@ -548,21 +544,21 @@ Status MfCamera::SetCameraFormat(const CameraFormat& camera_format) {
   }
 
   ComPtr<IMFMediaType> source_video_media_type;
-  hr = GetAvailableDeviceMediaType(source.Get(), found_capability->stream_index,
-                                   found_capability->media_type_index,
+  hr = GetAvailableDeviceMediaType(source.Get(), found_capability.stream_index,
+                                   found_capability.media_type_index,
                                    source_video_media_type.GetAddressOf());
   if (FAILED(hr)) {
     return errors::FailedToGetAvailableDeviceMediaType(hr);
   }
 
-  hr = source->SetCurrentDeviceMediaType(found_capability->stream_index,
+  hr = source->SetCurrentDeviceMediaType(found_capability.stream_index,
                                          source_video_media_type.Get());
   if (FAILED(hr)) {
     return errors::FailedToSetCurrentDeviceMediaType(hr);
   }
 
   selected_video_capability_.reset(new Capability(*found_capability));
-  camera_format_ = found_capability->supported_format;
+  camera_format_ = found_capability.supported_format;
 
   return Status::OK();
 }

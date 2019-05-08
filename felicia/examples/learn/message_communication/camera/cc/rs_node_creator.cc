@@ -8,8 +8,17 @@ namespace felicia {
 
 namespace {
 
-void Print(const RsCameraFormatMap& rs_camera_format_map) {
-  for (auto& v : rs_camera_format_map) {
+void Print(const RsCapabilityList& rs_capabilities) {
+  size_t i = 0;
+  for (auto& rs_capability : rs_capabilities) {
+    std::cout << "[" << i << "] " << rs_capability.supported_format.ToString()
+              << std::endl;
+    i++;
+  }
+}
+
+void Print(const RsCapabilityMap& rs_capability_map) {
+  for (auto& v : rs_capability_map) {
     std::cout << v.first.stream_type << "(" << v.first.stream_index << ")"
               << std::endl;
     Print(v.second);
@@ -37,15 +46,15 @@ int RealMain(int argc, char* argv[]) {
 
   if (delegate.device_list_flag()->value()) {
     if (delegate.device_index_flag()->is_set()) {
-      RsCameraFormatMap rs_camera_format_map;
+      RsCapabilityMap rs_capability_map;
       s = RsCameraFactory::GetSupportedCameraFormats(
           camera_descriptors[delegate.device_index_flag()->value()],
-          &rs_camera_format_map);
+          &rs_capability_map);
       if (!s.ok()) {
         std::cerr << kRedError << s << std::endl;
         return 1;
       }
-      Print(rs_camera_format_map);
+      Print(rs_capability_map);
     } else {
       Print(camera_descriptors);
     }
@@ -70,13 +79,13 @@ int RealMain(int argc, char* argv[]) {
   //     return 1;
   //   }
 
-  //   master_proxy.RequestRegisterNode<CameraPublishingNode>(
+  //   master_proxy.RequestRegisterNode<RsCameraPublishingNode>(
   //       node_info, delegate.topic_flag()->value(),
   //       delegate.channel_type_flag()->value(),
   //       camera_descriptors[delegate.device_index_flag()->value()],
   //       delegate.buffer_size_flag()->value());
   // } else {
-  //   master_proxy.RequestRegisterNode<CameraSubscribingNode>(
+  //   master_proxy.RequestRegisterNode<RsCameraSubscribingNode>(
   //       node_info, delegate.topic_flag()->value(),
   //       delegate.buffer_size_flag()->value());
   // }

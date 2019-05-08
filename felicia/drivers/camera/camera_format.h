@@ -68,6 +68,13 @@ class EXPORT CameraFormat {
 
 using CameraFormats = std::vector<CameraFormat>;
 
+bool ComparePixelFormatPreference(PixelFormat lhs, PixelFormat rhs);
+
+// Compares the priority of the capture formats. Returns true if |lhs| is the
+// preferred capture format in comparison with |rhs|. Returns false otherwise.
+bool CompareCapability(const CameraFormat& requested, const CameraFormat& lhs,
+                       const CameraFormat& rhs);
+
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_CAMERA_FORMAT_H_

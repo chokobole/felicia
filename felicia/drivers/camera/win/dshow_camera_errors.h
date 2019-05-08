@@ -65,10 +65,6 @@ inline ::felicia::Status FailedToGetFormat(HRESULT hr) {
                            ::logging::SystemErrorCodeToString(hr).c_str()));
 }
 
-inline ::felicia::Status FailedToGetBestMatchedCapability() {
-  return NotFound("Failed to GetBestMatchedCapability.");
-}
-
 inline ::felicia::Status FailedToGetNumberOfCapabilities(HRESULT hr) {
   return Unavailable(
       ::base::StringPrintf("Failed to GetNumberOfCapabilities: %s.",

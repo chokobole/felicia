@@ -16,19 +16,19 @@ class EXPORT DepthCameraInterface {
   virtual ~DepthCameraInterface();
 
   virtual Status Init() = 0;
-  // virtual Status Start(CameraFrameCallback camera_frame_callback,
-  //                      StatusCallback status_callback) = 0;
-  // virtual Status Stop() = 0;
-
-  // virtual StatusOr<CameraFormat> GetCurrentCameraFormat() = 0;
-  // virtual Status SetCameraFormat(const CameraFormat& format) = 0;
-
-  // virtual StatusOr<CameraFormat> GetCurrentDepthFormat() = 0;
-  // virtual Status SetDepthFormat(const CameraFormat& format) = 0;
+  virtual Status Start(const CameraFormat& requested_color_format,
+                       const CameraFormat& requested_depth_format,
+                       CameraFrameCallback color_frame_callback,
+                       CameraFrameCallback depth_frame_callback,
+                       StatusCallback status_callback) = 0;
+  virtual Status Start(const CameraFormat& requested_color_format,
+                       const CameraFormat& requested_depth_format,
+                       CameraFrameCallback synched_frame_callback,
+                       StatusCallback status_callback) = 0;
+  virtual Status Stop() = 0;
 
  protected:
   CameraDescriptor camera_descriptor_;
-  CameraFormat camera_format_;
   CameraState camera_state_;
 
   CameraFrameCallback camera_frame_callback_;

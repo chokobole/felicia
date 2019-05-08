@@ -82,4 +82,52 @@ bool CameraFormat::operator==(const CameraFormat& other) {
          frame_rate_ == other.frame_rate_;
 }
 
+// This list is ordered by precedence of use.
+static PixelFormat const kSupportedCapturePixelFormats[] = {
+    PIXEL_FORMAT_I420,  PIXEL_FORMAT_YV12,  PIXEL_FORMAT_NV12,
+    PIXEL_FORMAT_NV21,  PIXEL_FORMAT_UYVY,  PIXEL_FORMAT_YUY2,
+    PIXEL_FORMAT_RGB24, PIXEL_FORMAT_RGB32, PIXEL_FORMAT_ARGB,
+    PIXEL_FORMAT_MJPEG,
+};
+
+bool ComparePixelFormatPreference(PixelFormat lhs, PixelFormat rhs) {
+  auto* format_lhs = std::find(
+      kSupportedCapturePixelFormats,
+      kSupportedCapturePixelFormats + base::size(kSupportedCapturePixelFormats),
+      lhs);
+  auto* format_rhs = std::find(
+      kSupportedCapturePixelFormats,
+      kSupportedCapturePixelFormats + base::size(kSupportedCapturePixelFormats),
+      rhs);
+  return format_lhs < format_rhs;
+}
+
+bool CompareCapability(const CameraFormat& requested, const CameraFormat& lhs,
+                       const CameraFormat& rhs) {
+  if (lhs.pixel_format() == requested.pixel_format() &&
+      rhs.pixel_format() != requested.pixel_format()) {
+    return true;
+  } else if (lhs.pixel_format() != requested.pixel_format() &&
+             lhs.pixel_format() == requested.pixel_format()) {
+    return false;
+  }
+
+  const int diff_height_lhs = std::abs(lhs.height() - requested.height());
+  const int diff_height_rhs = std::abs(rhs.height() - requested.height());
+  if (diff_height_lhs != diff_height_rhs)
+    return diff_height_lhs < diff_height_rhs;
+
+  const int diff_width_lhs = std::abs(lhs.width() - requested.width());
+  const int diff_width_rhs = std::abs(rhs.width() - requested.width());
+  if (diff_width_lhs != diff_width_rhs) return diff_width_lhs < diff_width_rhs;
+
+  const float diff_fps_lhs =
+      std::fabs(lhs.frame_rate() - requested.frame_rate());
+  const float diff_fps_rhs =
+      std::fabs(rhs.frame_rate() - requested.frame_rate());
+  if (diff_fps_lhs != diff_fps_rhs) return diff_fps_lhs < diff_fps_rhs;
+
+  return ComparePixelFormatPreference(lhs.pixel_format(), rhs.pixel_format());
+}
+
 }  // namespace felicia
