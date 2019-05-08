@@ -10,10 +10,7 @@ class SimplePublishigNode(NodeLifecycle):
         super().__init__()
         self.topic = topic
         self.channel_def = ChannelDef()
-        if channel_type == 'TCP':
-            self.channel_def.type = ChannelDef.TCP
-        elif channel_type == 'UDP':
-            self.channel_def.type = ChannelDef.UDP
+        self.channel_def.type = ChannelDef.Type.Value(channel_type)
         self.publisher = fel.Publisher()
         self.message_id = 0
 
