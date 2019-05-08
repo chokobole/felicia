@@ -29,12 +29,10 @@ class AvfCamera : public CameraInterface, public FrameReceiver {
 
   // CameraInterface methods
   Status Init() override;
-  Status Start(CameraFrameCallback camera_frame_callback,
+  Status Start(const CameraFormat& requested_camera_format,
+               CameraFrameCallback camera_frame_callback,
                StatusCallback status_callback) override;
   Status Stop() override;
-
-  StatusOr<CameraFormat> GetCurrentCameraFormat() override;
-  Status SetCameraFormat(const CameraFormat& format) override;
 
   // FrameReceiver methods
   void ReceiveFrame(const uint8_t* video_frame, int video_frame_length,
@@ -48,6 +46,8 @@ class AvfCamera : public CameraInterface, public FrameReceiver {
   friend class CameraFactory;
 
   AvfCamera(const CameraDescriptor& camera_descriptor);
+
+  Status SetCameraFormat(const CameraFormat& camera_format);
 
   static std::string GetDeviceModelId(const std::string& device_id);
 

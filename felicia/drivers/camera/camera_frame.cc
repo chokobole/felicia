@@ -55,7 +55,7 @@ CameraFrameMessage CameraFrame::ToCameraFrameMessage() const {
   *message.mutable_camera_format() = camera_format_.ToCameraFormatMessage();
   message.set_timestamp(timestamp_.InSecondsF());
 
-  return std::move(message);
+  return message;
 }
 
 ::base::Optional<CameraFrame> ConvertToARGB(CameraBuffer camera_buffer,

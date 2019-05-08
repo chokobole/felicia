@@ -75,6 +75,9 @@ bool ComparePixelFormatPreference(PixelFormat lhs, PixelFormat rhs);
 bool CompareCapability(const CameraFormat& requested, const CameraFormat& lhs,
                        const CameraFormat& rhs);
 
+const CameraFormat& GetBestMatchedCameraFormat(
+    const CameraFormat& requested, const CameraFormats& camera_formats);
+
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_CAMERA_FORMAT_H_

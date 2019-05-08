@@ -36,12 +36,10 @@ class MfCamera : public CameraInterface {
 
   // CameraInterface methods
   Status Init() override;
-  Status Start(CameraFrameCallback camera_frame_callback,
+  Status Start(const CameraFormat& requested_camera_format,
+               CameraFrameCallback camera_frame_callback,
                StatusCallback status_callback) override;
   Status Stop() override;
-
-  StatusOr<CameraFormat> GetCurrentCameraFormat() override;
-  Status SetCameraFormat(const CameraFormat& format) override;
 
   // Captured new video data.
   void OnIncomingCapturedData(const uint8_t* data, int length,
@@ -72,7 +70,6 @@ class MfCamera : public CameraInterface {
                                       DWORD media_type_index,
                                       IMFMediaType** type);
 
-  Status CreateCapabilityList(CapabilityList* capabilities);
   HRESULT FillCapabilities(IMFCaptureSource* source, bool photo,
                            CapabilityList* capabilities);
 
@@ -93,7 +90,6 @@ class MfCamera : public CameraInterface {
 
   Microsoft::WRL::ComPtr<IMFMediaSource> source_;
   Microsoft::WRL::ComPtr<IMFCaptureEngine> engine_;
-  std::unique_ptr<Capability> selected_video_capability_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

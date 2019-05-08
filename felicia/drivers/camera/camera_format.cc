@@ -74,7 +74,7 @@ CameraFormatMessage CameraFormat::ToCameraFormatMessage() const {
   message.set_pixel_format(pixel_format_);
   message.set_frame_rate(frame_rate_);
 
-  return std::move(message);
+  return message;
 }
 
 bool CameraFormat::operator==(const CameraFormat& other) {
@@ -128,6 +128,18 @@ bool CompareCapability(const CameraFormat& requested, const CameraFormat& lhs,
   if (diff_fps_lhs != diff_fps_rhs) return diff_fps_lhs < diff_fps_rhs;
 
   return ComparePixelFormatPreference(lhs.pixel_format(), rhs.pixel_format());
+}
+
+const CameraFormat& GetBestMatchedCameraFormat(
+    const CameraFormat& requested, const CameraFormats& camera_formats) {
+  DCHECK(!camera_formats.empty());
+  const CameraFormat* best_match = &(*camera_formats.begin());
+  for (const CameraFormat& camera_format : camera_formats) {
+    if (CompareCapability(requested, camera_format, *best_match)) {
+      best_match = &camera_format;
+    }
+  }
+  return *best_match;
 }
 
 }  // namespace felicia

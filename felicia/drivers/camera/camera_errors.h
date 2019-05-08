@@ -18,10 +18,6 @@ inline ::felicia::Status FailedToGetCameraDescriptors() {
   return Unavailable("Failed to get camera descriptors.");
 }
 
-inline ::felicia::Status FailedToGetCameraFormat() {
-  return Unavailable("Failed to get camera format.");
-}
-
 inline ::felicia::Status FailedToGetFrameRate() {
   return Unavailable("Failed to get frame rate.");
 }

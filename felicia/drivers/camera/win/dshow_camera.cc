@@ -210,33 +210,79 @@ Status DshowCamera::Init() {
   hr = graph_builder_->AddFilter(sink_filter_.get(), NULL);
   if (FAILED(hr)) return errors::FailedToAddSinkFilter(hr);
 
-  was_set_camera_format_ = false;
-  // This should be before calling GetCurrentCameraFormat()
   camera_state_.ToInitialized();
 
-  StatusOr<CameraFormat> status_or = GetCurrentCameraFormat();
-  if (!status_or.ok()) return status_or.status();
-  camera_format_ = status_or.ValueOrDie();
-  DLOG(INFO) << "Default Format: " << camera_format_.ToString();
-
-  return CreateCapabilityMap();
+  return Status::OK();
 }
 
-Status DshowCamera::Start(CameraFrameCallback camera_frame_callback,
+Status DshowCamera::Start(const CameraFormat& requested_camera_format,
+                          CameraFrameCallback camera_frame_callback,
                           StatusCallback status_callback) {
   if (!camera_state_.IsInitialized()) {
     return camera_state_.InvalidStateError();
   }
 
-  // if (media_type->subtype == kMediaSubTypeHDYC) {
-  //   // HDYC pixel format, used by the DeckLink capture card, needs an AVI
-  //   // decompressor filter after source, let |graph_builder_| add it.
-  //   hr = graph_builder_->Connect(output_capture_pin_.Get(),
-  //                                input_sink_pin_.Get());
-  // } else {
-  HRESULT hr = graph_builder_->ConnectDirect(output_capture_pin_.Get(),
-                                             input_sink_pin_.Get(), NULL);
-  // }
+  CapabilityList capabilities;
+  GetPinCapabilityList(capture_filter_, output_capture_pin_,
+                       true /* query_detailed_frame_rates */, &capabilities);
+  if (capabilities.empty()) return errors::NoVideoCapbility();
+
+  // Get the camera capability that best match the requested format.
+  const Capability& found_capability =
+      GetBestMatchedCapability(requested_camera_format, capabilities);
+
+  // Reduce the frame rate if the requested frame rate is lower
+  // than the capability.
+  const float frame_rate =
+      std::min(requested_camera_format.frame_rate(),
+               found_capability.supported_format.frame_rate());
+
+  ComPtr<IAMStreamConfig> stream_config;
+  HRESULT hr = output_capture_pin_.CopyTo(stream_config.GetAddressOf());
+  if (FAILED(hr)) {
+    return errors::FailedToGetIAMStreamConfig(hr);
+  }
+
+  int count = 0, size = 0;
+  hr = stream_config->GetNumberOfCapabilities(&count, &size);
+  if (FAILED(hr)) {
+    return errors::FailedToGetNumberOfCapabilities(hr);
+  }
+
+  std::unique_ptr<BYTE[]> caps(new BYTE[size]);
+  ScopedMediaType media_type;
+
+  // Get the windows capability from the capture device.
+  // GetStreamCaps can return S_FALSE which we consider an error. Therefore the
+  // FAILED macro can't be used.
+  hr = stream_config->GetStreamCaps(found_capability.media_type_index,
+                                    media_type.Receive(), caps.get());
+  if (hr != S_OK) {
+    return errors::FailedToGetStreamCaps(hr);
+  }
+
+  // Set the sink filter to request this format.
+  sink_filter_->SetRequestedMediaFormat(
+      found_capability.supported_format.pixel_format(), frame_rate,
+      found_capability.info_header);
+  // Order the capture device to use this format.
+  hr = stream_config->SetFormat(media_type.get());
+  if (hr != S_OK) {
+    return errors::FailedToSetFormat(hr);
+  }
+
+  camera_format_ = found_capability.supported_format;
+  camera_format_.set_frame_rate(frame_rate);
+
+  if (media_type->subtype == kMediaSubTypeHDYC) {
+    // HDYC pixel format, used by the DeckLink capture card, needs an AVI
+    // decompressor filter after source, let |graph_builder_| add it.
+    hr = graph_builder_->Connect(output_capture_pin_.Get(),
+                                 input_sink_pin_.Get());
+  } else {
+    hr = graph_builder_->ConnectDirect(output_capture_pin_.Get(),
+                                       input_sink_pin_.Get(), NULL);
+  }
 
   if (FAILED(hr)) return errors::FailedToConnectTheCaptureGraph(hr);
 
@@ -275,98 +321,6 @@ Status DshowCamera::Stop() {
   return Status::OK();
 }
 
-StatusOr<CameraFormat> DshowCamera::GetCurrentCameraFormat() {
-  if (camera_state_.IsStopped()) {
-    return camera_state_.InvalidStateError();
-  }
-
-  if (was_set_camera_format_) {
-    return camera_format_;
-  }
-
-  ComPtr<IAMStreamConfig> stream_config;
-  HRESULT hr = output_capture_pin_.CopyTo(stream_config.GetAddressOf());
-  if (FAILED(hr)) {
-    return errors::FailedToGetIAMStreamConfig(hr);
-  }
-
-  DshowCamera::ScopedMediaType media_type;
-  hr = stream_config->GetFormat(media_type.Receive());
-  if (FAILED(hr)) {
-    return errors::FailedToGetFormat(hr);
-  }
-
-  if (!(media_type->majortype == MEDIATYPE_Video &&
-        media_type->formattype == FORMAT_VideoInfo)) {
-    return errors::IsNotAVideoType();
-  }
-
-  CameraFormat camera_format;
-  camera_format.set_pixel_format(
-      CameraFormat::FromDshowMediaSubtype(media_type->subtype));
-  VIDEOINFOHEADER* h = reinterpret_cast<VIDEOINFOHEADER*>(media_type->pbFormat);
-  camera_format.SetSize(h->bmiHeader.biWidth, h->bmiHeader.biHeight);
-  camera_format.set_frame_rate(kSecondsToReferenceTime /
-                               static_cast<float>(h->AvgTimePerFrame));
-
-  return camera_format;
-}
-
-Status DshowCamera::SetCameraFormat(const CameraFormat& camera_format) {
-  if (!camera_state_.IsInitialized()) {
-    return camera_state_.InvalidStateError();
-  }
-
-  // Get the camera capability that best match the requested format.
-  const Capability& found_capability =
-      GetBestMatchedCapability(camera_format, capabilities_);
-
-  // Reduce the frame rate if the requested frame rate is lower
-  // than the capability.
-  const float frame_rate =
-      std::min(camera_format.frame_rate(),
-               found_capability.supported_format.frame_rate());
-
-  ComPtr<IAMStreamConfig> stream_config;
-  HRESULT hr = output_capture_pin_.CopyTo(stream_config.GetAddressOf());
-  if (FAILED(hr)) {
-    return errors::FailedToGetIAMStreamConfig(hr);
-  }
-
-  int count = 0, size = 0;
-  hr = stream_config->GetNumberOfCapabilities(&count, &size);
-  if (FAILED(hr)) {
-    return errors::FailedToGetNumberOfCapabilities(hr);
-  }
-
-  std::unique_ptr<BYTE[]> caps(new BYTE[size]);
-  ScopedMediaType media_type;
-
-  // Get the windows capability from the capture device.
-  // GetStreamCaps can return S_FALSE which we consider an error. Therefore the
-  // FAILED macro can't be used.
-  hr = stream_config->GetStreamCaps(found_capability.media_type_index,
-                                    media_type.Receive(), caps.get());
-  if (hr != S_OK) {
-    return errors::FailedToGetStreamCaps(hr);
-  }
-
-  // Set the sink filter to request this format.
-  sink_filter_->SetRequestedMediaFormat(camera_format.pixel_format(),
-                                        camera_format.frame_rate(),
-                                        found_capability.info_header);
-  // Order the capture device to use this format.
-  hr = stream_config->SetFormat(media_type.get());
-  if (hr != S_OK) {
-    return errors::FailedToSetFormat(hr);
-  }
-
-  camera_format_ = found_capability.supported_format;
-  was_set_camera_format_ = true;
-
-  return Status::OK();
-}
-
 void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
                                 const CameraFormat& camera_format,
                                 ::base::TimeDelta timestamp) {
@@ -390,13 +344,6 @@ void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
 }
 
 void DshowCamera::FrameDropped(const Status& s) { status_callback_.Run(s); }
-
-Status DshowCamera::CreateCapabilityMap() {
-  GetPinCapabilityList(capture_filter_, output_capture_pin_,
-                       true /* query_detailed_frame_rates */, &capabilities_);
-  if (capabilities_.empty()) return errors::NoVideoCapbility();
-  return Status::OK();
-}
 
 // static
 HRESULT DshowCamera::EnumerateDirectShowDevices(IEnumMoniker** enum_moniker) {

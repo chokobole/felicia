@@ -30,27 +30,26 @@ class V4l2Camera : public CameraInterface,
 
   // CameraInterface methods
   Status Init() override;
-  Status Start(CameraFrameCallback camera_frame_callback,
+  Status Start(const CameraFormat& requested_camera_format,
+               CameraFrameCallback camera_frame_callback,
                StatusCallback status_callback) override;
   Status Stop() override;
-
-  StatusOr<CameraFormat> GetCurrentCameraFormat() override;
-  Status SetCameraFormat(const CameraFormat& format) override;
 
  private:
   friend class CameraFactory;
 
   V4l2Camera(const CameraDescriptor& camera_descriptor);
 
-  static Status InitDevice(const CameraDescriptor& camera_descriptor, int* fd);
   Status InitMmap();
   Status ClearMmap();
+  Status SetCameraFormat(const CameraFormat& camera_format);
   void DoStop(Status* status);
   void DoCapture();
 
   static int DoIoctl(int fd, int request, void* argp);
   static bool RunIoctl(int fd, int request, void* argp);
 
+  static Status InitDevice(const CameraDescriptor& camera_descriptor, int* fd);
   static std::vector<float> GetFrameRateList(int fd, uint32_t fourcc,
                                              uint32_t width, uint32_t height);
 

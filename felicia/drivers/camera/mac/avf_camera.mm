@@ -68,33 +68,27 @@ Status AvfCamera::Init() {
     return errors::FailedToSetCaptureDevice(errorMessage);
   }
 
-  // This should be before calling GetCurrentCameraFormat()
   camera_state_.ToInitialized();
-
-  StatusOr<CameraFormat> status_or = GetCurrentCameraFormat();
-  if (!status_or.ok()) return status_or.status();
-  camera_format_ = status_or.ValueOrDie();
-  DLOG(INFO) << "Default Format: " << camera_format_.ToString();
 
   return Status::OK();
 }
 
-Status AvfCamera::Start(CameraFrameCallback camera_frame_callback, StatusCallback status_callback) {
+Status AvfCamera::Start(const CameraFormat& requested_camera_format,
+                        CameraFrameCallback camera_frame_callback, StatusCallback status_callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!camera_state_.IsInitialized()) {
     return camera_state_.InvalidStateError();
   }
 
-  StatusOr<CameraFormat> status_or = GetCurrentCameraFormat();
-  if (!status_or.ok()) {
-    return status_or.status();
-  }
+  CameraFormats camera_formats;
+  Status s = GetSupportedCameraFormats(camera_descriptor_, &camera_formats);
+  if (!s.ok()) return s;
 
-  Status s = SetCameraFormat(status_or.ValueOrDie());
-  if (!s.ok()) {
-    return s;
-  }
+  const CameraFormat& final_camera_format =
+      GetBestMatchedCameraFormat(requested_camera_format, camera_formats);
+  s = SetCameraFormat(final_camera_format);
+  if (!s.ok()) return s;
 
   if (![capture_device_ startCapture]) {
     return errors::FailedtoStartCapture();
@@ -128,23 +122,7 @@ Status AvfCamera::Stop() {
   return Status::OK();
 }
 
-StatusOr<CameraFormat> AvfCamera::GetCurrentCameraFormat() {
-  if (camera_state_.IsStopped()) {
-    return camera_state_.InvalidStateError();
-  }
-
-  CameraFormat camera_format;
-  if (![capture_device_ getCameraFormat:&camera_format]) {
-    return errors::FailedToGetCameraFormat();
-  }
-  return camera_format;
-}
-
 Status AvfCamera::SetCameraFormat(const CameraFormat& camera_format) {
-  if (!camera_state_.IsInitialized()) {
-    return camera_state_.InvalidStateError();
-  }
-
   if (![capture_device_ setCaptureHeight:camera_format.height()
                                    width:camera_format.width()
                                frameRate:camera_format.frame_rate()
@@ -153,6 +131,8 @@ Status AvfCamera::SetCameraFormat(const CameraFormat& camera_format) {
   }
 
   camera_format_ = camera_format;
+  DVLOG(0) << "Set CameraFormat to " << camera_format_.ToString();
+
   return Status::OK();
 }
 

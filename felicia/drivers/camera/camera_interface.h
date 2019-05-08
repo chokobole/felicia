@@ -16,12 +16,10 @@ class EXPORT CameraInterface {
   virtual ~CameraInterface();
 
   virtual Status Init() = 0;
-  virtual Status Start(CameraFrameCallback camera_frame_callback,
+  virtual Status Start(const CameraFormat& requested_camera_format,
+                       CameraFrameCallback camera_frame_callback,
                        StatusCallback status_callback) = 0;
   virtual Status Stop() = 0;
-
-  virtual StatusOr<CameraFormat> GetCurrentCameraFormat() = 0;
-  virtual Status SetCameraFormat(const CameraFormat& format) = 0;
 
  protected:
   CameraDescriptor camera_descriptor_;

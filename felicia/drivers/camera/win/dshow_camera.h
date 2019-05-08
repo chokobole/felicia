@@ -51,12 +51,10 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
 
   // CameraInterface methods
   Status Init() override;
-  Status Start(CameraFrameCallback camera_frame_callback,
+  Status Start(const CameraFormat& requested_camera_format,
+               CameraFrameCallback camera_frame_callback,
                StatusCallback status_callback) override;
   Status Stop() override;
-
-  StatusOr<CameraFormat> GetCurrentCameraFormat() override;
-  Status SetCameraFormat(const CameraFormat& format) override;
 
   // SinkFilterObserver methods
   void FrameReceived(const uint8_t* buffer, int length,
@@ -66,8 +64,6 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
   void FrameDropped(const Status& s) override;
 
  private:
-  Status CreateCapabilityMap();
-
   static HRESULT EnumerateDirectShowDevices(IEnumMoniker** enum_moniker);
   static HRESULT GetDeviceFilter(const std::string& device_id,
                                  IBaseFilter** filter);
@@ -101,12 +97,7 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
 
   scoped_refptr<SinkFilter> sink_filter_;
 
-  // Map of all capabilities this device support.
-  CapabilityList capabilities_;
-
   ::base::TimeTicks first_ref_time_;
-
-  bool was_set_camera_format_ = false;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DshowCamera);
 };

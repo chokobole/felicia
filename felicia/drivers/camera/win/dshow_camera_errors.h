@@ -59,12 +59,6 @@ inline ::felicia::Status FailedToGetIAMStreamConfig(HRESULT hr) {
                            ::logging::SystemErrorCodeToString(hr).c_str()));
 }
 
-inline ::felicia::Status FailedToGetFormat(HRESULT hr) {
-  return Unavailable(
-      ::base::StringPrintf("Failed to GetFormat: %s.",
-                           ::logging::SystemErrorCodeToString(hr).c_str()));
-}
-
 inline ::felicia::Status FailedToGetNumberOfCapabilities(HRESULT hr) {
   return Unavailable(
       ::base::StringPrintf("Failed to GetNumberOfCapabilities: %s.",
