@@ -1,4 +1,4 @@
-#include "felicia/examples/learn/message_communication/camera/cc/camera_util.h"
+#include "felicia/examples/learn/message_communication/common/cc/camera_util.h"
 
 namespace felicia {
 

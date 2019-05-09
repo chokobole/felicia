@@ -47,6 +47,8 @@ EXPORT ::base::Optional<CameraFrame> ConvertToARGB(CameraBuffer camera_buffer,
                                                    CameraFormat camera_format);
 
 typedef ::base::RepeatingCallback<void(CameraFrame)> CameraFrameCallback;
+typedef ::base::RepeatingCallback<void(CameraFrame, CameraFrame)>
+    DepthCameraFrameCallback;
 
 }  // namespace felicia
 

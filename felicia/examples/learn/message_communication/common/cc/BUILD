@@ -7,3 +7,19 @@ fel_cc_library(
     visibility = ["//felicia/examples/learn/message_communication:internal"],
     deps = ["//felicia/core/util:command_line_interface"],
 )
+
+fel_cc_library(
+    name = "camera_flag",
+    srcs = ["camera_flag.cc"],
+    hdrs = ["camera_flag.h"],
+    visibility = ["//felicia/examples/learn/message_communication:internal"],
+    deps = [":node_create_flag"],
+)
+
+fel_cc_library(
+    name = "camera_util",
+    srcs = ["camera_util.cc"],
+    hdrs = ["camera_util.h"],
+    visibility = ["//felicia/examples/learn/message_communication:internal"],
+    deps = ["//felicia/drivers/camera"],
+)

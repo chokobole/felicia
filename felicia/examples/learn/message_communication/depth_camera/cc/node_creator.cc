@@ -1,11 +1,14 @@
 #include "felicia/core/felicia_init.h"
 #include "felicia/core/master/master_proxy.h"
-#include "felicia/examples/learn/message_communication/camera/cc/camera_publishing_node.h"
-#include "felicia/examples/learn/message_communication/camera/cc/camera_subscribing_node.h"
 #include "felicia/examples/learn/message_communication/common/cc/camera_flag.h"
 #include "felicia/examples/learn/message_communication/common/cc/camera_util.h"
+#include "felicia/examples/learn/message_communication/depth_camera/cc/depth_camera_publishing_node.h"
 
 namespace felicia {
+
+extern Status GetCameraDescriptors(CameraDescriptors* camera_descriptors);
+extern bool PrintSupportCameraFormats(
+    const CameraDescriptors& camera_descriptors, const CameraFlag& delegate);
 
 int RealMain(int argc, char* argv[]) {
   FeliciaInit();
@@ -18,7 +21,7 @@ int RealMain(int argc, char* argv[]) {
   }
 
   CameraDescriptors camera_descriptors;
-  Status s = CameraFactory::GetCameraDescriptors(&camera_descriptors);
+  Status s = GetCameraDescriptors(&camera_descriptors);
   if (!s.ok()) {
     std::cerr << kRedError << s << std::endl;
     return 1;
@@ -26,15 +29,7 @@ int RealMain(int argc, char* argv[]) {
 
   if (delegate.device_list_flag()->value()) {
     if (delegate.device_index_flag()->is_set()) {
-      CameraFormats camera_formats;
-      s = CameraFactory::GetSupportedCameraFormats(
-          camera_descriptors[delegate.device_index_flag()->value()],
-          &camera_formats);
-      if (!s.ok()) {
-        std::cerr << kRedError << s << std::endl;
-        return 1;
-      }
-      Print(camera_formats);
+      if (!PrintSupportCameraFormats(camera_descriptors, delegate)) return 1;
     } else {
       Print(camera_descriptors);
     }
@@ -59,15 +54,16 @@ int RealMain(int argc, char* argv[]) {
       return 1;
     }
 
-    master_proxy.RequestRegisterNode<CameraPublishingNode>(
+    master_proxy.RequestRegisterNode<DepthCameraPublishingNode>(
         node_info, delegate.topic_flag()->value(),
         delegate.channel_type_flag()->value(),
         camera_descriptors[delegate.device_index_flag()->value()],
         delegate.buffer_size_flag()->value());
   } else {
-    master_proxy.RequestRegisterNode<CameraSubscribingNode>(
-        node_info, delegate.topic_flag()->value(),
-        delegate.buffer_size_flag()->value());
+    std::cerr << kRedError
+              << "Please make a subscribing node from camera example."
+              << std::endl;
+    return 1;
   }
 
   master_proxy.Run();

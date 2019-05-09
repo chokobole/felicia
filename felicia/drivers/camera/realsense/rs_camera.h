@@ -27,7 +27,7 @@ class RsCamera : public DepthCameraInterface {
                StatusCallback status_callback) override;
   Status Start(const CameraFormat& requested_color_format,
                const CameraFormat& requested_depth_format,
-               CameraFrameCallback synched_frame_callback,
+               DepthCameraFrameCallback depth_camera_frame_callback,
                StatusCallback status_callback) override;
   Status Stop();
 
@@ -49,6 +49,8 @@ class RsCamera : public DepthCameraInterface {
 
   ::base::flat_map<RsStreamInfo, ::rs2::sensor> sensors_;
   RsCapabilityMap capability_map_;
+
+  ::base::TimeTicks first_ref_time_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(RsCamera);
 };

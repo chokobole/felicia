@@ -23,15 +23,19 @@ class EXPORT DepthCameraInterface {
                        StatusCallback status_callback) = 0;
   virtual Status Start(const CameraFormat& requested_color_format,
                        const CameraFormat& requested_depth_format,
-                       CameraFrameCallback synched_frame_callback,
+                       DepthCameraFrameCallback depth_camera_frame_callback,
                        StatusCallback status_callback) = 0;
   virtual Status Stop() = 0;
 
  protected:
   CameraDescriptor camera_descriptor_;
+  CameraFormat color_format_;
+  CameraFormat depth_format_;
   CameraState camera_state_;
 
-  CameraFrameCallback camera_frame_callback_;
+  CameraFrameCallback color_frame_callback_;
+  CameraFrameCallback depth_frame_callback_;
+  DepthCameraFrameCallback depth_camera_frame_callback_;
   StatusCallback status_callback_;
 };
 

@@ -56,7 +56,7 @@ Status RsCamera::Init() {
 
 Status RsCamera::Start(const CameraFormat& requested_color_format,
                        const CameraFormat& requested_depth_format,
-                       CameraFrameCallback camera_frame_callback,
+                       CameraFrameCallback color_frame_callback,
                        CameraFrameCallback depth_frame_callback,
                        StatusCallback status_callback) {
   if (!camera_state_.IsInitialized()) {
@@ -71,6 +71,11 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
       if (sensor.first == COLOR || sensor.first == DEPTH) {
         const RsCapability& found_capability = GetBestMatchedCapability(
             requested_color_format, capability_map_[sensor.first]);
+        if (sensor.first == COLOR) {
+          color_format_ = found_capability.supported_format;
+        } else {
+          depth_format_ = found_capability.supported_format;
+        }
         sensor.second.open(
             sensor.second.get_stream_profiles()[found_capability.stream_index]);
         sensor.second.start(frame_callback_function);
@@ -80,6 +85,9 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
     }
   }
 
+  color_frame_callback_ = color_frame_callback;
+  depth_frame_callback_ = depth_frame_callback;
+
   camera_state_.ToStarted();
 
   return Status::OK();
@@ -87,7 +95,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
 
 Status RsCamera::Start(const CameraFormat& requested_color_format,
                        const CameraFormat& requested_depth_format,
-                       CameraFrameCallback synched_frame_callback,
+                       DepthCameraFrameCallback depth_camera_frame_callback,
                        StatusCallback status_callback) {
   if (!camera_state_.IsInitialized()) {
     return camera_state_.InvalidStateError();
@@ -102,6 +110,11 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
       if (sensor.first == COLOR || sensor.first == DEPTH) {
         const RsCapability& found_capability = GetBestMatchedCapability(
             requested_color_format, capability_map_[sensor.first]);
+        if (sensor.first == COLOR) {
+          color_format_ = found_capability.supported_format;
+        } else {
+          depth_format_ = found_capability.supported_format;
+        }
         sensor.second.open(
             sensor.second.get_stream_profiles()[found_capability.stream_index]);
         sensor.second.start(frame_callback_function);
@@ -110,6 +123,8 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
       return Status(error::UNAVAILABLE, e.what());
     }
   }
+
+  depth_camera_frame_callback_ = depth_camera_frame_callback;
 
   camera_state_.ToStarted();
 
@@ -128,10 +143,47 @@ Status RsCamera::Stop() {
     }
   }
 
+  color_frame_callback_.Reset();
+  depth_frame_callback_.Reset();
+  depth_camera_frame_callback_.Reset();
+
   return Status::OK();
 }
 
-void RsCamera::OnFrame(::rs2::frame frame) { LOG(INFO) << "OnFrame"; }
+void RsCamera::OnFrame(::rs2::frame frame) {
+  if (frame.is<::rs2::video_frame>()) {
+    auto image = frame.as<::rs2::video_frame>();
+
+    if (frame.is<::rs2::depth_frame>()) {
+      if (first_ref_time_.is_null()) first_ref_time_ = base::TimeTicks::Now();
+
+      ::base::TimeDelta timestamp = base::TimeTicks::Now() - first_ref_time_;
+      std::unique_ptr<uint8_t> depth_frame =
+          std::unique_ptr<uint8_t>(new uint8_t[depth_format_.AllocationSize()]);
+      CameraFrame camera_frame(std::move(depth_frame), depth_format_);
+      camera_frame.set_timestamp(timestamp);
+      depth_frame_callback_.Run(std::move(camera_frame));
+      return;
+    }
+
+    size_t length = color_format_.AllocationSize();
+    CameraBuffer camera_buffer(
+        reinterpret_cast<uint8_t*>(const_cast<void*>(image.get_data())),
+        length);
+    camera_buffer.set_payload(length);
+    ::base::Optional<CameraFrame> argb_frame =
+        ConvertToARGB(camera_buffer, color_format_);
+    if (argb_frame.has_value()) {
+      if (first_ref_time_.is_null()) first_ref_time_ = base::TimeTicks::Now();
+
+      ::base::TimeDelta timestamp = base::TimeTicks::Now() - first_ref_time_;
+      argb_frame.value().set_timestamp(timestamp);
+      color_frame_callback_.Run(std::move(argb_frame.value()));
+    } else {
+      status_callback_.Run(errors::FailedToConvertToARGB());
+    }
+  }
+}
 
 // static
 Status RsCamera::CreateDevice(const CameraDescriptor& camera_descriptor,
