@@ -66,6 +66,10 @@ class EXPORT CameraFormat {
   float frame_rate_ = 0;
 };
 
+// Prints a human-readable representation of |camera_format| to |os|.
+EXPORT std::ostream& operator<<(std::ostream& os,
+                                const CameraFormat& camera_format);
+
 using CameraFormats = std::vector<CameraFormat>;
 
 bool ComparePixelFormatPreference(PixelFormat lhs, PixelFormat rhs);

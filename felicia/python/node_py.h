@@ -15,29 +15,18 @@ class PyNodeLifecycle : public NodeLifecycle {
   using NodeLifecycle::NodeLifecycle;
 
   void OnInit() override {
-    PYBIND11_OVERLOAD_PURE(
-        void,          /* Return type */
-        NodeLifecycle, /* Parent class */
-        OnInit,        /* Name of function in C++ (must match Python name) */
-    );
+    PYBIND11_OVERLOAD_INT(void, NodeLifecycle, "on_init");
+    return NodeLifecycle::OnInit();
   }
 
   void OnDidCreate(const NodeInfo& node_info) override {
-    PYBIND11_OVERLOAD(
-        void,          /* Return type */
-        NodeLifecycle, /* Parent class */
-        OnDidCreate,   /* Name of function in C++ (must match Python name) */
-        node_info      /* Argument(s) */
-    );
+    PYBIND11_OVERLOAD_INT(void, NodeLifecycle, "on_did_create", node_info);
+    return NodeLifecycle::OnDidCreate(node_info);
   }
 
   void OnError(const Status& status) override {
-    PYBIND11_OVERLOAD(
-        void,          /* Return type */
-        NodeLifecycle, /* Parent class */
-        OnError,       /* Name of function in C++ (must match Python name) */
-        status         /* Argument(s) */
-    );
+    PYBIND11_OVERLOAD_INT(void, NodeLifecycle, "on_error", status);
+    return NodeLifecycle::OnError(status);
   }
 };
 

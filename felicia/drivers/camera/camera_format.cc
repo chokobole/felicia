@@ -82,6 +82,11 @@ bool CameraFormat::operator==(const CameraFormat& other) {
          frame_rate_ == other.frame_rate_;
 }
 
+std::ostream& operator<<(std::ostream& os, const CameraFormat& camera_format) {
+  os << camera_format.ToString();
+  return os;
+}
+
 // This list is ordered by precedence of use.
 static PixelFormat const kSupportedCapturePixelFormats[] = {
     PIXEL_FORMAT_I420,  PIXEL_FORMAT_YV12,  PIXEL_FORMAT_NV12,

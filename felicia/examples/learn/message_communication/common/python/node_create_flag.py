@@ -1,3 +1,5 @@
+import sys
+
 from felicia.python.command_line_interface.flag_parser_delegate import FlagParserDelegate
 import felicia_py.command_line_interface as cli
 

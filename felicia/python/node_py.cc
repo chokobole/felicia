@@ -7,13 +7,13 @@ SUPPORT_PROTOBUF_TYPE_CAST(::felicia::NodeInfo, NodeInfo,
 namespace felicia {
 
 void AddNodeLifecycle(py::module& m) {
-  py::class_<NodeLifecycle, PyNodeLifecycle>(m, "_NodeLifecycle")
+  py::class_<NodeLifecycle, PyNodeLifecycle>(m, "NodeLifecycle")
       .def(py::init<>())
-      .def("OnInit", &NodeLifecycle::OnInit,
+      .def("on_init", &NodeLifecycle::OnInit,
            "It is called before created, each node has to initialize.")
-      .def("OnDidCreate", &NodeLifecycle::OnDidCreate,
+      .def("on_did_create", &NodeLifecycle::OnDidCreate,
            "It is called when succeeded to be created.")
-      .def("OnError", &NodeLifecycle::OnError,
+      .def("on_error", &NodeLifecycle::OnError,
            "It is called when error happens");
 }
 

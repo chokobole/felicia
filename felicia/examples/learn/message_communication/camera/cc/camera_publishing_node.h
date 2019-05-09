@@ -35,7 +35,7 @@ class CameraPublishingNode : public NodeLifecycle {
 
   void OnError(const Status& s) override {
     std::cout << "CameraPublishingNode::OnError()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    LOG(ERROR) << s.error_message();
   }
 
   void RequestPublish() {
@@ -74,7 +74,7 @@ class CameraPublishingNode : public NodeLifecycle {
       //     FROM_HERE,
       //     ::base::BindOnce(&CameraPublishingNode::RequestUnpublish,
       //                      ::base::Unretained(this)),
-      //     ::base::TimeDelta::FromSeconds(5));
+      //     ::base::TimeDelta::FromSeconds(10));
     } else {
       LOG(ERROR) << s.error_message();
     }
@@ -91,7 +91,7 @@ class CameraPublishingNode : public NodeLifecycle {
 
   void OnCameraError(const Status& s) {
     std::cout << "CameraPublishingNode::OnCameraError" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    LOG(ERROR) << s.error_message();
   }
 
   void OnPublish(const Status& s) {

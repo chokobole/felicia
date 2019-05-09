@@ -42,7 +42,7 @@ class SimplePublishingNode : public NodeLifecycle {
 
   void OnError(const Status& s) override {
     std::cout << "SimplePublishingNode::OnError()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    LOG(ERROR) << s.error_message();
   }
 
   void RequestPublish() {

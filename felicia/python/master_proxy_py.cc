@@ -114,14 +114,21 @@ void AddMasterProxy(py::module& m) {
       .def_static("stop", &PyMasterProxy::Stop)
       .def_static("run", &PyMasterProxy::Run)
       .def_static("request_register_node", &PyMasterProxy::RequestRegisterNode)
+      .def_static("post_task",
+                  [](py::function callback) {
+                    MasterProxy& master_proxy = MasterProxy::GetInstance();
+                    master_proxy.PostTask(
+                        FROM_HERE, ::base::BindOnce(
+                                       &PyClosure::Invoke,
+                                       ::base::Owned(new PyClosure(callback))));
+                  })
       .def_static("post_delayed_task", [](py::function callback,
                                           ::base::TimeDelta delay) {
-        callback.inc_ref();
         MasterProxy& master_proxy = MasterProxy::GetInstance();
         master_proxy.PostDelayedTask(
             FROM_HERE,
-            ::base::BindOnce(&PyOnceClosure::Invoke,
-                             ::base::Owned(new PyOnceClosure(callback))),
+            ::base::BindOnce(&PyClosure::Invoke,
+                             ::base::Owned(new PyClosure(callback))),
             delay);
       });
 }

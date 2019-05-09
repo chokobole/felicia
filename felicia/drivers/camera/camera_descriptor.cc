@@ -30,4 +30,10 @@ std::string CameraDescriptor::ToString() const {
                          " device_id: ", device_id_, " model_id: ", model_id_});
 }
 
+std::ostream& operator<<(std::ostream& os,
+                         const CameraDescriptor& camera_descriptor) {
+  os << camera_descriptor.ToString();
+  return os;
+}
+
 }  // namespace felicia

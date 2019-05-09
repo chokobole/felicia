@@ -7,6 +7,7 @@
 #include "felicia/core/communication/settings.h"
 #include "felicia/core/felicia_init.h"
 #include "felicia/python/command_line_interface/flag_py.h"
+#include "felicia/python/drivers/camera_py.h"
 #include "felicia/python/master_proxy_py.h"
 #include "felicia/python/node_py.h"
 
@@ -173,6 +174,7 @@ void AddGlobalObject(py::module& m) {
       .def_static("from_mega_bytes_d", &Bytes::FromMegaBytesD)
       .def_static("from_giga_bytes", &Bytes::FromGigaBytes)
       .def_static("from_giga_bytes_d", &Bytes::FromGigaBytesD)
+      .def("bytes", &Bytes::bytes)
       .def(py::self + py::self)
       .def(py::self - py::self)
       .def(py::self += py::self)
@@ -212,6 +214,7 @@ PYBIND11_MODULE(felicia_py, m) {
   AddMasterProxy(m);
   AddNodeLifecycle(m);
   AddCommunication(m);
+  AddCamera(m);
 
   py::module command_line_interface = m.def_submodule("command_line_interface");
   AddFlag(command_line_interface);

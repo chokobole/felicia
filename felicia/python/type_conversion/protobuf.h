@@ -3,6 +3,28 @@
 
 #include "pybind11/pybind11.h"
 
+#define SUPPORT_PROTOBUF_ENUM_TYPE_CAST(CcType, PyType, Module)      \
+  namespace pybind11 {                                               \
+  namespace detail {                                                 \
+  template <>                                                        \
+  struct type_caster<CcType> {                                       \
+   public:                                                           \
+    PYBIND11_TYPE_CASTER(CcType, _(#CcType));                        \
+                                                                     \
+    bool load(handle src, bool convert) {                            \
+      PyObject *source = src.ptr();                                  \
+      value = static_cast<CcType>(PyLong_AsLong(source));            \
+      return true;                                                   \
+    }                                                                \
+                                                                     \
+    static handle cast(CcType src, return_value_policy /* policy */, \
+                       handle /* parent */) {                        \
+      return PyLong_FromLong(src);                                   \
+    }                                                                \
+  };                                                                 \
+  }                                                                  \
+  }
+
 #define SUPPORT_PROTOBUF_TYPE_CAST(CcType, PyType, Module)                 \
   namespace pybind11 {                                                     \
   namespace detail {                                                       \

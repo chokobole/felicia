@@ -1,11 +1,10 @@
 import felicia_py as fel
 from felicia.core.protobuf.channel_pb2 import ChannelDef
-from felicia.python.node_lifecycle import NodeLifecycle
 
 from felicia.examples.learn.message_communication.protobuf.message_spec_pb2 import MessageSpec
 
 
-class SimplePublishigNode(NodeLifecycle):
+class SimplePublishingNode(fel.NodeLifecycle):
     def __init__(self, topic, channel_type):
         super().__init__()
         self.topic = topic
@@ -15,7 +14,7 @@ class SimplePublishigNode(NodeLifecycle):
         self.message_id = 0
 
     def on_init(self):
-        print("SimpePublishingNode.on_init()")
+        print("SimplePublishingNode.on_init()")
 
     def on_did_create(self, node_info):
         print("SimplePublishingNode.on_did_create()")
@@ -27,14 +26,15 @@ class SimplePublishigNode(NodeLifecycle):
 
     def on_error(self, status):
         print("SimplePublishingNode.on_error()")
-        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
+        fel.log(fel.ERROR, status.error_message())
 
     def request_publish(self):
         settings = fel.Settings()
         settings.buffer_size = fel.Bytes.from_bytes(512)
 
         self.publisher.request_publish(
-            self.node_info, self.topic, self.channel_def, settings, self.on_request_publish)
+            self.node_info, self.topic, self.channel_def, settings,
+            self.on_request_publish)
 
     def on_request_publish(self, status):
         print("SimplePublishingNode.on_request_publish()")

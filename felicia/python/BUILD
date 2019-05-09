@@ -22,15 +22,16 @@ fel_cc_library(
         "//felicia/core/node:node_lifecycle",
         "//felicia/python/type_conversion",
         "//felicia/python/command_line_interface:flag_py",
+        "//felicia/python/drivers:camera_py",
         "@pybind11",
     ] + fel_additional_deps(),
 )
 
 py_library(
     name = "basic_felicia_py_py",
-    srcs = ["node_lifecycle.py"],
     deps = [
         "//felicia/core/protobuf:protos_all_proto_py",
+        "//felicia/drivers/camera:camera_proto_py",
         "//felicia/python/command_line_interface:flag_parser_delegate",
     ],
 )

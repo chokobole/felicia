@@ -57,7 +57,7 @@ Now register Node. It depends on whether you pass the `-p` flag.
 ```python
 if delegate.is_publshing_node_flag.value():
       fel.MasterProxy.request_register_node(
-          SimplePublishigNode, node_info, delegate.topic_flag.value(), delegate.channel_type_flag.value())
+          SimplePublishingNode, node_info, delegate.topic_flag.value(), delegate.channel_type_flag.value())
 else:
     fel.MasterProxy.request_register_node(
         SimpleSubscribingNode, node_info, delegate.topic_flag.value())
@@ -72,8 +72,9 @@ fel.MasterProxy.run()
 Now look into the [simple_publishing_node.py](simple_publishing_node.py). Because `felicia` is designed with life cycle model, while registering 3 callbacks would be called. Maybe 2, if an error doens't happen.
 
 ```python
+import felicia_py as fel
 
-class SimplePublishigNode(NodeLifecycle):
+class SimplePublishingNode(fel.NodeLifecycle):
     def __init__(self, topic, channel_type):
         super().__init__()
         self.topic = topic

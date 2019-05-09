@@ -30,6 +30,9 @@ class EXPORT CameraDescriptor {
 
 using CameraDescriptors = std::vector<CameraDescriptor>;
 
+EXPORT std::ostream& operator<<(std::ostream& os,
+                                const CameraDescriptor& camera_descriptor);
+
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_CAMERA_DESCRIPTOR_H_

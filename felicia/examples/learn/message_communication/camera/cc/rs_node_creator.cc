@@ -11,7 +11,7 @@ namespace {
 void Print(const RsCapabilityList& rs_capabilities) {
   size_t i = 0;
   for (auto& rs_capability : rs_capabilities) {
-    std::cout << "[" << i << "] " << rs_capability.supported_format.ToString()
+    std::cout << "[" << i << "] " << rs_capability.supported_format
               << std::endl;
     i++;
   }
