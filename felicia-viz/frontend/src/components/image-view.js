@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
 /* eslint import/no-unresolved: "off" */
-// import { ResizeDetector } from '@felicia-viz/ui';
+import { ResizeDetector } from '@felicia-viz/ui';
 import { CameraFrame } from 'store/camera';
 import Worker from 'util/image-view-webworker.js';
 
@@ -11,15 +11,15 @@ const MAIN = 'main';
 
 export default class ImageView extends PureComponent {
   static propTypes = {
-    canvasWidth: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-    canvasHeight: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
     src: PropTypes.string,
     frame: PropTypes.instanceOf(CameraFrame),
   };
 
   static defaultProps = {
-    canvasWidth: '100%',
-    canvasHeight: 'auto',
+    width: '100%',
+    height: 'auto',
     src: '',
     frame: null,
   };
@@ -52,6 +52,10 @@ export default class ImageView extends PureComponent {
     this.worker.terminate();
   }
 
+  _onResize = entry => {
+    this.setState({ width: entry.contentRect.width, height: entry.contentRect.height });
+  };
+
   _onCanvasLoad(tag, ref) {
     if (!this._canvas) {
       this._canvas = {};
@@ -67,11 +71,6 @@ export default class ImageView extends PureComponent {
       this._context[tag] = ref.getContext('2d');
     }
   }
-
-  // For later,
-  // onResize = entry => {
-  //  this.setState({ width: entry.contentRect.width, height: entry.contentRect.height });
-  // };
 
   _loadImage(src) {
     if (src) {
@@ -113,8 +112,6 @@ export default class ImageView extends PureComponent {
       return;
     }
 
-    const { canvasWidth, canvasHeight } = this.props;
-
     const mainCanvas = this._canvas[MAIN];
     const mainContext = this._context[MAIN];
     const proxyCanvas = this._canvas[PROXY];
@@ -130,10 +127,12 @@ export default class ImageView extends PureComponent {
         proxyContext.putImageData(image, 0, 0);
       }
 
-      mainCanvas.width = canvasWidth;
-      let finalHeight = canvasHeight;
-      if (canvasHeight === 'auto') {
-        finalHeight = (canvasWidth / image.width) * image.height;
+      const { width, height } = this.state;
+
+      mainCanvas.width = width;
+      let finalHeight = height;
+      if (this.props.height === 'auto') {
+        finalHeight = (width / image.width) * image.height;
       }
       mainCanvas.height = finalHeight;
       // resize
@@ -144,17 +143,16 @@ export default class ImageView extends PureComponent {
   }
 
   render() {
-    // For later, <ResizeDetector onResize={this._onResize} />
-    const { canvasWidth, canvasHeight, frame } = this.props;
+    const { width, height } = this.props;
 
-    this.style = frame && {
-      position: 'relative',
-      width: canvasWidth,
-      height: canvasHeight,
+    const style = {
+      width,
+      height,
     };
 
     return (
-      <div style={this.style}>
+      <div style={style}>
+        <ResizeDetector onResize={this._onResize} />
         <canvas ref={this._onCanvasLoad.bind(this, PROXY)} style={{ display: 'none' }} />
         <canvas ref={this._onCanvasLoad.bind(this, MAIN)} />
       </div>

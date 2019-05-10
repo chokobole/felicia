@@ -9,8 +9,17 @@ export default class Subscriber {
     this.connection = new Connection(serverAddrUsed);
   }
 
-  initialize(type, onMessage) {
-    this.connection.initialize(type, onMessage);
+  initialize(onMessage) {
+    this.connection.initialize(onMessage);
+  }
+
+  requestTopic(type, topic) {
+    console.log(`request Topic ${type} ${topic}`);
+    const data = JSON.stringify({
+      type,
+      topic,
+    });
+    this.connection.ws.send(data);
   }
 
   close() {

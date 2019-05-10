@@ -20,9 +20,9 @@ export default () => {
   }, HEARTBEAT_INTERVAL);
 
   return {
-    broadcast: (data, type) => {
+    broadcast: (topic, data, type) => {
       connections.forEach(connection => {
-        connection.send(data, type);
+        connection.send(topic, data, type);
       });
     },
   };

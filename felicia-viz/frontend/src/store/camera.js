@@ -1,8 +1,9 @@
 import { observable, action } from 'mobx';
 
 export class CameraFrame {
-  constructor(frame) {
-    this.frame = frame;
+  constructor(message) {
+    const { data } = message;
+    this.frame = data;
   }
 
   get data() {

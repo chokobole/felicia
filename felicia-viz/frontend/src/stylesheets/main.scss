@@ -1,0 +1,25 @@
+@import 'theme';
+
+body {
+  user-select: none;
+  background: $background;
+  font-family: $font-family;
+}
+
+#container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow:hidden;
+}
+
+#toolbar {
+  position: fixed;
+  top: calc(50vh - 74px);
+  right: 0;
+  transform: translateY(-50%);
+}
+
+@import 'toolbar';

@@ -10,10 +10,19 @@ export default class Connection {
     this.type = TYPES.General;
 
     this.ws.on('message', message => {
-      if (message === TYPES.General.name) {
+      let data;
+      try {
+        data = JSON.parse(message);
+      } catch (e) {
+        console.error(e);
+        return;
+      }
+      const { type, topic } = data;
+      if (type === TYPES.General.name) {
         this.type = TYPES.General;
-      } else if (message === TYPES.Camera.name) {
+      } else if (type === TYPES.Camera.name) {
         this.type = TYPES.Camera;
+        this.topic = topic;
       }
     });
 
@@ -25,13 +34,14 @@ export default class Connection {
     this.checkHeartbeat();
   }
 
-  send(data, type) {
+  send(topic, data, type) {
     if (this.ws.readyState === WebSocket.OPEN && type === this.type) {
       if (this.type === TYPES.Camera) {
         if (!(data instanceof Buffer)) {
           console.error(`Data should be Buffer but got ${typeof data}`);
           return;
         }
+        if (this.topic !== topic) return;
       }
       this.ws.send(data);
     }

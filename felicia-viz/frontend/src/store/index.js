@@ -1,11 +1,11 @@
 import { observable, action } from 'mobx';
 
-import Camera from 'store/camera';
+import { UIState } from 'store/ui-state';
 
 class FeliciaVizStore {
   @observable currentTime = 0;
 
-  @observable camera = new Camera();
+  @observable uiState = new UIState();
 
   @action updateCurrentTime(newCurrentTime) {
     this.currentTime = newCurrentTime;
@@ -13,9 +13,7 @@ class FeliciaVizStore {
 
   update(message) {
     // this.updateCurrentTime(message.currentTime);
-    if (message.type === 'Camera') {
-      this.camera.update(message);
-    }
+    this.uiState.update(message);
   }
 }
 

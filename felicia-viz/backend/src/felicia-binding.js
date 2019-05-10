@@ -38,9 +38,10 @@ export default () => {
         console.log(`[TOPIC]: ${topic}`);
         if (message.type === CAMERA_FRAME_MESSAGE) {
           const buffer = CameraFrameMessage.encode(message.message).finish();
-          ws.broadcast(buffer, TYPES.Camera);
+          ws.broadcast(topic, buffer, TYPES.Camera);
         } else {
           ws.broadcast(
+            topic,
             JSON.stringify({
               type: message.type,
               data: message.message,

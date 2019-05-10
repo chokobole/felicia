@@ -3,7 +3,7 @@ export default class Connection {
     this.serverAddr = serverAddr;
   }
 
-  initialize(type, onMessage) {
+  initialize(onMessage) {
     try {
       this.ws = new WebSocket(this.serverAddr);
       this.ws.binaryType = 'arraybuffer';
@@ -15,9 +15,6 @@ export default class Connection {
       return;
     }
 
-    this.ws.onopen = () => {
-      this.ws.send(type);
-    };
     this.ws.onmessage = onMessage;
     this.ws.onclose = () => {
       this.initialize();
