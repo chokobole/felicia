@@ -216,7 +216,8 @@ void ProtobufMessageToString(
             reflection->GetRepeatedFieldRef<int>(message, field_desc);
         entities.push_back("[ ");
         for (int i = 0; i < repeated_field_ref.size(); ++i) {
-          entities.push_back(::base::NumberToString(repeated_field_ref.Get(i)));
+          entities.push_back(
+              reflection->GetRepeatedEnum(message, field_desc, i)->name());
           if (i != repeated_field_ref.size() - 1) {
             entities.push_back(", ");
           }
@@ -226,7 +227,7 @@ void ProtobufMessageToString(
       }
       const ::google::protobuf::EnumValueDescriptor* enum_value_desc =
           reflection->GetEnum(message, field_desc);
-      entities.push_back(::base::NumberToString(enum_value_desc->number()));
+      entities.push_back(enum_value_desc->name());
       return;
     }
     default:
