@@ -94,7 +94,7 @@ export default class ImageView extends PureComponent {
 
     if (!frame) return;
 
-    const { width, height, data } = frame;
+    const { width, height, data, pixelFormat } = frame;
 
     this.worker.postMessage({
       source: 'imageView',
@@ -103,6 +103,7 @@ export default class ImageView extends PureComponent {
         width,
         height,
         data,
+        pixelFormat,
       },
     });
   }
