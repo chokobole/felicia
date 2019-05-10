@@ -28,8 +28,8 @@ export default class Connection {
   send(data, type) {
     if (this.ws.readyState === WebSocket.OPEN && type === this.type) {
       if (this.type === TYPES.Camera) {
-        if (!(data instanceof ArrayBuffer)) {
-          console.error(`Data should be ArrayBuffer but got ${typeof data}`);
+        if (!(data instanceof Buffer)) {
+          console.error(`Data should be Buffer but got ${typeof data}`);
           return;
         }
       }

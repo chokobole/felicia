@@ -11,15 +11,6 @@ const FeliciaProtoRoot = protobuf.Root.fromJSON(feliciaProtobufJson);
 const CAMERA_FRAME_MESSAGE = 'felicia.CameraFrameMessage';
 const CameraFrameMessage = FeliciaProtoRoot.lookupType(CAMERA_FRAME_MESSAGE);
 
-function toArrayBuffer(buf) {
-  const ab = new ArrayBuffer(buf.length);
-  const view = new Uint8Array(ab);
-  for (let i = 0; i < buf.length; i += 1) {
-    view[i] = buf[i];
-  }
-  return ab;
-}
-
 export default () => {
   const ws = websocket();
   feliciaJs.MasterProxy.setBackground();
@@ -47,7 +38,7 @@ export default () => {
         console.log(`[TOPIC]: ${topic}`);
         if (message.type === CAMERA_FRAME_MESSAGE) {
           const buffer = CameraFrameMessage.encode(message.message).finish();
-          ws.broadcast(toArrayBuffer(buffer), TYPES.Camera);
+          ws.broadcast(buffer, TYPES.Camera);
         } else {
           ws.broadcast(
             JSON.stringify({
