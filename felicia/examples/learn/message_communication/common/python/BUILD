@@ -9,3 +9,10 @@ py_library(
     srcs = ["import_order_resolver.py"],
     visibility = ["//felicia/examples/learn/message_communication:internal"],
 )
+
+py_library(
+    name = "camera_flag",
+    srcs = ["camera_flag.py"],
+    visibility = ["//felicia/examples/learn/message_communication:internal"],
+    deps = [":node_create_flag"],
+)

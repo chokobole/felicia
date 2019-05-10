@@ -23,7 +23,11 @@ fel_cc_library(
 
 fel_cc_binary(
     name = "node_creator",
-    srcs = ["node_creator.cc"] + select({
+    srcs = [
+        "node_creator.cc",
+        "depth_camera_flag.cc",
+        "depth_camera_flag.h",
+    ] + select({
         "//felicia:has_realsense": [
             "rs_camera_helper.cc",
             "rs_camera_publishing_node.cc",
@@ -31,7 +35,7 @@ fel_cc_binary(
         "//conditions:default": [
             "fake_camera_helper.cc",
             "fake_camera_publishing_node.cc",
-        ]
+        ],
     }),
     deps = fel_shared_library() + [
         "//felicia/examples/learn/message_communication/common/cc:camera_flag",

@@ -10,16 +10,8 @@ namespace felicia {
 class CameraPublishingNode : public NodeLifecycle {
  public:
   CameraPublishingNode(const std::string& topic,
-                       const std::string& channel_type,
-                       const CameraDescriptor& camera_descriptor,
-                       size_t buffer_size)
-      : topic_(topic),
-        camera_descriptor_(camera_descriptor),
-        buffer_size_(buffer_size) {
-    ChannelDef_Type type;
-    ChannelDef_Type_Parse(channel_type, &type);
-    channel_def_.set_type(type);
-  }
+                       const CameraDescriptor& camera_descriptor)
+      : topic_(topic), camera_descriptor_(camera_descriptor) {}
 
   void OnInit() override {
     std::cout << "CameraPublishingNode::OnInit()" << std::endl;
@@ -39,11 +31,13 @@ class CameraPublishingNode : public NodeLifecycle {
   }
 
   void RequestPublish() {
+    ChannelDef channel_def;
+
     communication::Settings settings;
-    settings.buffer_size = Bytes::FromBytes(buffer_size_);
+    settings.is_dynamic_buffer = true;
 
     publisher_.RequestPublish(
-        node_info_, topic_, channel_def_, settings,
+        node_info_, topic_, channel_def, settings,
         ::base::BindOnce(&CameraPublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
   }
@@ -126,9 +120,7 @@ class CameraPublishingNode : public NodeLifecycle {
  private:
   NodeInfo node_info_;
   std::string topic_;
-  ChannelDef channel_def_;
   CameraDescriptor camera_descriptor_;
-  size_t buffer_size_;
   Publisher<CameraFrameMessage> publisher_;
   std::unique_ptr<CameraInterface> camera_;
 };

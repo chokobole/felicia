@@ -2,10 +2,9 @@ import felicia_py as fel
 
 
 class CameraSubscribingNode(fel.NodeLifecycle):
-    def __init__(self, topic, buffer_size):
+    def __init__(self, topic):
         super().__init__()
         self.topic = topic
-        self.buffer_size = buffer_size
         self.subscriber = fel.Subscriber()
 
     def on_init(self):
@@ -23,7 +22,7 @@ class CameraSubscribingNode(fel.NodeLifecycle):
     def request_subscribe(self):
         settings = fel.Settings()
         settings.period = fel.TimeDelta.from_milliseconds(100)
-        settings.buffer_size = fel.Bytes.from_bytes(self.buffer_size)
+        settings.is_dynamic_buffer = True
 
         self.subscriber.request_subscribe(self.node_info, self.topic, self.on_message,
                                           self.on_subscription_error, settings,

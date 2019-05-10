@@ -30,34 +30,19 @@ CameraFlag::CameraFlag() {
                     .Build();
     device_index_flag_ = std::make_unique<Flag<size_t>>(flag);
   }
-
-  {
-    DefaultFlag<size_t>::Builder builder(
-        MakeValueStore(&buffer_size_, Bytes::kMegaBytes * 5));
-
-    auto flag = builder.SetShortName("-b")
-                    .SetLongName("--buffer_size")
-                    .SetHelp("buffer size for each frame, default: 5MB")
-                    .Build();
-    buffer_size_flag_ = std::make_unique<DefaultFlag<size_t>>(flag);
-  }
 }
 
 CameraFlag::~CameraFlag() = default;
 
 bool CameraFlag::Parse(FlagParser& parser) {
-  return NodeCreateFlag::Parse(parser) ||
-         PARSE_OPTIONAL_FLAG(parser, device_list_flag_, device_index_flag_,
-                             buffer_size_flag_);
+  return PARSE_OPTIONAL_FLAG(parser, is_publishing_node_flag_, name_flag_,
+                             topic_flag_, device_list_flag_,
+                             device_index_flag_);
 }
 
 bool CameraFlag::Validate() const {
   if (device_list_flag_->is_set()) {
-    std::cout << "device_list is on, it just shows a list of camera devices. "
-                 "If you pass -i(--device_index) with the -l then you can "
-                 "iterate the camera formats the device supports."
-              << std::endl;
-
+    PrintDeviceListFlagHelp();
     return true;
   }
 
@@ -68,6 +53,13 @@ bool CameraFlag::Validate() const {
   }
 
   return true;
+}
+
+void CameraFlag::PrintDeviceListFlagHelp() const {
+  std::cout << "device_list is on, it just shows a list of camera devices. "
+               "If you pass -i(--device_index) with the -l then you can "
+               "iterate the camera formats the device supports."
+            << std::endl;
 }
 
 }  // namespace felicia

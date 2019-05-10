@@ -6,13 +6,13 @@ import felicia_py as fel
 class CameraFlag(NodeCreateFlag):
     def __init__(self):
         super().__init__()
+        self.channel_type_flag.release()
+        self.channel_type_flag = None
+
         self.device_list_flag = cli.BoolFlagBuilder().set_short_name("-l").set_long_name("--device_list").set_help(
             "whether it shows device list, If you don't know which device index to pass, then try this option!").build()
         self.device_index_flag = cli.IntFlagBuilder().set_short_name("-i").set_long_name("--device_index").set_help(
             "device index for camera").build()
-        default_buffer_size = fel.Bytes.from_mega_bytes(1) * 5
-        self.buffer_size_flag = cli.IntDefaultFlagBuilder(default_buffer_size.bytes()).set_short_name("-b").set_long_name("--buffer_size").set_help(
-            "buffer size for each frame, default: 5MB").build()
 
     def parse(self, flag_parser):
         return self.parse_optional_flags(flag_parser)

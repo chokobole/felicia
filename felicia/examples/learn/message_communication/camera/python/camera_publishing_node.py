@@ -8,13 +8,10 @@ from felicia.drivers.camera.camera_format_message_pb2 import PIXEL_FORMAT_YUY2
 
 
 class CameraPublishingNode(fel.NodeLifecycle):
-    def __init__(self, topic, channel_type, camera_descriptor, buffer_size):
+    def __init__(self, topic, camera_descriptor):
         super().__init__()
         self.topic = topic
-        self.channel_def = ChannelDef()
-        self.channel_def.type = ChannelDef.Type.Value(channel_type)
         self.camera_descriptor = camera_descriptor
-        self.buffer_size = buffer_size
         self.publisher = fel.Publisher()
 
     def on_init(self):
@@ -32,11 +29,13 @@ class CameraPublishingNode(fel.NodeLifecycle):
         fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
     def request_publish(self):
+        channel_def = ChannelDef()
+
         settings = fel.Settings()
-        settings.buffer_size = fel.Bytes.from_bytes(self.buffer_size)
+        settings.is_dynamic_buffer = True
 
         self.publisher.request_publish(
-            self.node_info, self.topic, self.channel_def, settings, self.on_request_publish)
+            self.node_info, self.topic, channel_def, settings, self.on_request_publish)
 
     def on_request_publish(self, status):
         print("CameraPublishingNode.on_request_publish()")
@@ -82,4 +81,4 @@ class CameraPublishingNode(fel.NodeLifecycle):
 
     def stop_camera(self):
         s = self.camera.stop()
-        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
+        fel.log_if(fel.ERROR, not s.ok(), s.error_message())

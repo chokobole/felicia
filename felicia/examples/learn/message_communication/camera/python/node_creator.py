@@ -6,7 +6,7 @@ import felicia_py as fel
 from felicia.core.protobuf.master_data_pb2 import NodeInfo
 import felicia_py.command_line_interface as cli
 
-from felicia.examples.learn.message_communication.camera.python.camera_flag import CameraFlag
+from felicia.examples.learn.message_communication.common.python.camera_flag import CameraFlag
 from camera_publishing_node import CameraPublishingNode
 from camera_subscribing_node import CameraSubscribingNode
 
@@ -54,14 +54,11 @@ def main():
         fel.MasterProxy.request_register_node(
             CameraPublishingNode, node_info,
             delegate.topic_flag.value(),
-            delegate.channel_type_flag.value(),
-            camera_descriptors[delegate.device_index_flag.value()],
-            delegate.buffer_size_flag.value())
+            camera_descriptors[delegate.device_index_flag.value()])
     else:
         fel.MasterProxy.request_register_node(
             CameraSubscribingNode, node_info,
-            delegate.topic_flag.value(),
-            delegate.buffer_size_flag.value())
+            delegate.topic_flag.value())
 
     fel.MasterProxy.run()
 

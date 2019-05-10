@@ -12,18 +12,12 @@ extern std::unique_ptr<DepthCameraInterface> MakeNewDepthCamera(
 
 class DepthCameraPublishingNode : public NodeLifecycle {
  public:
-  DepthCameraPublishingNode(const std::string& topic,
-                            const std::string& channel_type,
-                            const CameraDescriptor& camera_descriptor,
-                            size_t buffer_size)
-      : topic_(topic),
-        camera_descriptor_(camera_descriptor),
-        buffer_size_(buffer_size) {
-    ChannelDef_Type type;
-    ChannelDef_Type_Parse(channel_type, &type);
-    channel_def_.set_type(type);
-    std::cout << "DepthCameraPublishingNode()" << std::endl;
-  }
+  DepthCameraPublishingNode(const std::string& color_topic,
+                            const std::string& depth_topic,
+                            const CameraDescriptor& camera_descriptor)
+      : color_topic_(color_topic),
+        depth_topic_(depth_topic),
+        camera_descriptor_(camera_descriptor) {}
 
   void OnInit() override {
     std::cout << "DepthCameraPublishingNode::OnInit()" << std::endl;
@@ -43,11 +37,18 @@ class DepthCameraPublishingNode : public NodeLifecycle {
   }
 
   void RequestPublish() {
-    communication::Settings settings;
-    settings.buffer_size = Bytes::FromBytes(buffer_size_);
+    ChannelDef channel_def;
 
-    publisher_.RequestPublish(
-        node_info_, topic_, channel_def_, settings,
+    communication::Settings settings;
+    settings.is_dynamic_buffer = true;
+
+    color_publisher_.RequestPublish(
+        node_info_, color_topic_, channel_def, settings,
+        ::base::BindOnce(&DepthCameraPublishingNode::OnRequestPublish,
+                         ::base::Unretained(this)));
+
+    depth_publisher_.RequestPublish(
+        node_info_, depth_topic_, channel_def, settings,
         ::base::BindOnce(&DepthCameraPublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
   }
@@ -55,6 +56,9 @@ class DepthCameraPublishingNode : public NodeLifecycle {
   void OnRequestPublish(const Status& s) {
     std::cout << "DepthCameraPublishingNode::OnRequestPublish()" << std::endl;
     if (s.ok()) {
+      if (!(color_publisher_.IsRegistered() && depth_publisher_.IsRegistered()))
+        return;
+
       MasterProxy& master_proxy = MasterProxy::GetInstance();
       master_proxy.PostTask(
           FROM_HERE, ::base::BindOnce(&DepthCameraPublishingNode::StartCamera,
@@ -88,20 +92,22 @@ class DepthCameraPublishingNode : public NodeLifecycle {
 
   void OnColorFrame(CameraFrame camera_frame) {
     std::cout << "DepthCameraPublishingNode::OnColorFrame" << std::endl;
-    if (publisher_.IsUnregistered()) return;
+    if (color_publisher_.IsUnregistered()) return;
 
-    publisher_.Publish(camera_frame.ToCameraFrameMessage(),
-                       ::base::BindOnce(&DepthCameraPublishingNode::OnPublish,
-                                        ::base::Unretained(this)));
+    color_publisher_.Publish(
+        camera_frame.ToCameraFrameMessage(),
+        ::base::BindOnce(&DepthCameraPublishingNode::OnPublishColor,
+                         ::base::Unretained(this)));
   }
 
   void OnDepthFrame(CameraFrame camera_frame) {
     std::cout << "DepthCameraPublishingNode::OnDepthFrame" << std::endl;
-    if (publisher_.IsUnregistered()) return;
+    if (depth_publisher_.IsUnregistered()) return;
 
-    publisher_.Publish(camera_frame.ToCameraFrameMessage(),
-                       ::base::BindOnce(&DepthCameraPublishingNode::OnPublish,
-                                        ::base::Unretained(this)));
+    depth_publisher_.Publish(
+        camera_frame.ToCameraFrameMessage(),
+        ::base::BindOnce(&DepthCameraPublishingNode::OnPublishDepth,
+                         ::base::Unretained(this)));
   }
 
   void OnCameraError(const Status& s) {
@@ -109,14 +115,24 @@ class DepthCameraPublishingNode : public NodeLifecycle {
     LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
-  void OnPublish(const Status& s) {
-    std::cout << "DepthCameraPublishingNode::OnPublish()" << std::endl;
+  void OnPublishColor(const Status& s) {
+    std::cout << "DepthCameraPublishingNode::OnPublishColor()" << std::endl;
+    LOG_IF(ERROR, !s.ok()) << s.error_message();
+  }
+
+  void OnPublishDepth(const Status& s) {
+    std::cout << "DepthCameraPublishingNode::OnPublishDepth()" << std::endl;
     LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
   void RequestUnpublish() {
-    publisher_.RequestUnpublish(
-        node_info_, topic_,
+    color_publisher_.RequestUnpublish(
+        node_info_, color_topic_,
+        ::base::BindOnce(&DepthCameraPublishingNode::OnRequestUnpublish,
+                         ::base::Unretained(this)));
+
+    depth_publisher_.RequestUnpublish(
+        node_info_, depth_topic_,
         ::base::BindOnce(&DepthCameraPublishingNode::OnRequestUnpublish,
                          ::base::Unretained(this)));
   }
@@ -124,6 +140,10 @@ class DepthCameraPublishingNode : public NodeLifecycle {
   void OnRequestUnpublish(const Status& s) {
     std::cout << "DepthCameraPublishingNode::OnRequestUnpublish()" << std::endl;
     if (s.ok()) {
+      if (!(color_publisher_.IsUnregistered() &&
+            depth_publisher_.IsUnregistered()))
+        return;
+
       MasterProxy& master_proxy = MasterProxy::GetInstance();
       master_proxy.PostTask(
           FROM_HERE, ::base::BindOnce(&DepthCameraPublishingNode::StopCamera,
@@ -140,11 +160,11 @@ class DepthCameraPublishingNode : public NodeLifecycle {
 
  private:
   NodeInfo node_info_;
-  std::string topic_;
-  ChannelDef channel_def_;
+  std::string color_topic_;
+  std::string depth_topic_;
   CameraDescriptor camera_descriptor_;
-  size_t buffer_size_;
-  Publisher<CameraFrameMessage> publisher_;
+  Publisher<CameraFrameMessage> color_publisher_;
+  Publisher<CameraFrameMessage> depth_publisher_;
   std::unique_ptr<DepthCameraInterface> camera_;
 };
 
