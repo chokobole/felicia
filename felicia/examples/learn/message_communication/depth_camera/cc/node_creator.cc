@@ -56,7 +56,8 @@ int RealMain(int argc, char* argv[]) {
   master_proxy.RequestRegisterNode<DepthCameraPublishingNode>(
       node_info, delegate.color_topic_flag()->value(),
       delegate.depth_topic_flag()->value(),
-      camera_descriptors[delegate.device_index_flag()->value()]);
+      camera_descriptors[delegate.device_index_flag()->value()],
+      delegate.synched_flag()->value());
 
   master_proxy.Run();
 

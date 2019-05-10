@@ -38,6 +38,10 @@ class RsCamera : public DepthCameraInterface {
 
   void OnFrame(::rs2::frame frame);
 
+  ::base::Optional<CameraFrame> FromRsColorFrame(
+      ::rs2::video_frame color_frame);
+  CameraFrame FromRsDepthFrame(::rs2::depth_frame depth_frame);
+
   static Status CreateDevice(const CameraDescriptor& camera_descriptor,
                              ::rs2::device* device);
 

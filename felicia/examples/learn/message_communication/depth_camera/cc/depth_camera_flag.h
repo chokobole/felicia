@@ -16,6 +16,7 @@ class DepthCameraFlag : public CameraFlag {
   const StringDefaultFlag* depth_topic_flag() const {
     return depth_topic_flag_.get();
   }
+  const BoolFlag* synched_flag() const { return synched_flag_.get(); }
 
   bool Parse(FlagParser& parser) override;
 
@@ -23,13 +24,15 @@ class DepthCameraFlag : public CameraFlag {
 
   AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(name_flag_, device_list_flag_,
                                           device_index_flag_, color_topic_flag_,
-                                          depth_topic_flag_)
+                                          depth_topic_flag_, synched_flag_)
 
  private:
   std::string color_topic_;
   std::string depth_topic_;
+  bool synched_;
   std::unique_ptr<StringDefaultFlag> color_topic_flag_;
   std::unique_ptr<StringDefaultFlag> depth_topic_flag_;
+  std::unique_ptr<BoolFlag> synched_flag_;
 };
 
 }  // namespace felicia

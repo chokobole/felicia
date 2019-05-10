@@ -151,38 +151,63 @@ Status RsCamera::Stop() {
 }
 
 void RsCamera::OnFrame(::rs2::frame frame) {
-  if (frame.is<::rs2::video_frame>()) {
-    auto image = frame.as<::rs2::video_frame>();
+  if (frame.is<::rs2::frameset>()) {
+    auto frameset = frame.as<rs2::frameset>();
+    auto color_frame = FromRsColorFrame(frameset.get_color_frame());
+    CameraFrame depth_frame = FromRsDepthFrame(frameset.get_depth_frame());
 
-    if (frame.is<::rs2::depth_frame>()) {
-      if (first_ref_time_.is_null()) first_ref_time_ = base::TimeTicks::Now();
-
-      ::base::TimeDelta timestamp = base::TimeTicks::Now() - first_ref_time_;
-      std::unique_ptr<uint8_t> depth_frame =
-          std::unique_ptr<uint8_t>(new uint8_t[depth_format_.AllocationSize()]);
-      CameraFrame camera_frame(std::move(depth_frame), depth_format_);
-      camera_frame.set_timestamp(timestamp);
-      depth_frame_callback_.Run(std::move(camera_frame));
-      return;
-    }
-
-    size_t length = color_format_.AllocationSize();
-    CameraBuffer camera_buffer(
-        reinterpret_cast<uint8_t*>(const_cast<void*>(image.get_data())),
-        length);
-    camera_buffer.set_payload(length);
-    ::base::Optional<CameraFrame> argb_frame =
-        ConvertToARGB(camera_buffer, color_format_);
-    if (argb_frame.has_value()) {
-      if (first_ref_time_.is_null()) first_ref_time_ = base::TimeTicks::Now();
-
-      ::base::TimeDelta timestamp = base::TimeTicks::Now() - first_ref_time_;
-      argb_frame.value().set_timestamp(timestamp);
-      color_frame_callback_.Run(std::move(argb_frame.value()));
+    if (color_frame.has_value()) {
+      depth_camera_frame_callback_.Run(std::move(color_frame.value()),
+                                       std::move(depth_frame));
     } else {
       status_callback_.Run(errors::FailedToConvertToARGB());
     }
+  } else if (frame.is<::rs2::video_frame>()) {
+    if (frame.is<::rs2::depth_frame>()) {
+      depth_frame_callback_.Run(
+          FromRsDepthFrame(frame.as<::rs2::depth_frame>()));
+      return;
+    } else {
+      auto argb_frame = FromRsColorFrame(frame.as<::rs2::video_frame>());
+      if (argb_frame.has_value()) {
+        color_frame_callback_.Run(std::move(argb_frame.value()));
+      } else {
+        status_callback_.Run(errors::FailedToConvertToARGB());
+      }
+    }
   }
+}
+
+::base::Optional<CameraFrame> RsCamera::FromRsColorFrame(
+    ::rs2::video_frame color_frame) {
+  size_t length = color_format_.AllocationSize();
+  CameraBuffer camera_buffer(
+      reinterpret_cast<uint8_t*>(const_cast<void*>(color_frame.get_data())),
+      length);
+  camera_buffer.set_payload(length);
+  ::base::Optional<CameraFrame> argb_frame =
+      ConvertToARGB(camera_buffer, color_format_);
+  if (argb_frame.has_value()) {
+    if (first_ref_time_.is_null()) first_ref_time_ = base::TimeTicks::Now();
+
+    ::base::TimeDelta timestamp = base::TimeTicks::Now() - first_ref_time_;
+    argb_frame.value().set_timestamp(timestamp);
+  }
+
+  return argb_frame;
+}
+
+CameraFrame RsCamera::FromRsDepthFrame(::rs2::depth_frame depth_frame) {
+  if (first_ref_time_.is_null()) first_ref_time_ = base::TimeTicks::Now();
+
+  ::base::TimeDelta timestamp = base::TimeTicks::Now() - first_ref_time_;
+  size_t length = depth_format_.AllocationSize();
+  std::unique_ptr<uint8_t> new_depth_frame =
+      std::unique_ptr<uint8_t>(new uint8_t[length]);
+  memcpy(new_depth_frame.get(), depth_frame.get_data(), length);
+  CameraFrame camera_frame(std::move(new_depth_frame), depth_format_);
+  camera_frame.set_timestamp(timestamp);
+  return camera_frame;
 }
 
 // static
