@@ -1,13 +1,13 @@
 import WebSocket from 'ws';
 
-import TYPES from 'common/connection-type';
+import CONNECTION_TYPES from 'common/connection-type';
 
 function noop() {}
 
 export default class Connection {
   constructor(ws) {
     this.ws = ws;
-    this.type = TYPES.General;
+    this.type = CONNECTION_TYPES.General;
 
     this.ws.on('message', message => {
       let data;
@@ -18,10 +18,10 @@ export default class Connection {
         return;
       }
       const { type, topic } = data;
-      if (type === TYPES.General.name) {
-        this.type = TYPES.General;
-      } else if (type === TYPES.Camera.name) {
-        this.type = TYPES.Camera;
+      if (type === CONNECTION_TYPES.General.name) {
+        this.type = CONNECTION_TYPES.General;
+      } else if (type === CONNECTION_TYPES.Camera.name) {
+        this.type = CONNECTION_TYPES.Camera;
         this.topic = topic;
       }
     });
@@ -36,7 +36,7 @@ export default class Connection {
 
   send(topic, data, type) {
     if (this.ws.readyState === WebSocket.OPEN && type === this.type) {
-      if (this.type === TYPES.Camera) {
+      if (this.type === CONNECTION_TYPES.Camera) {
         if (!(data instanceof Buffer)) {
           console.error(`Data should be Buffer but got ${typeof data}`);
           return;

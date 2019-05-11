@@ -15,6 +15,13 @@ body {
   overflow:hidden;
 }
 
+#control-panel {
+  position: fixed;
+  width: 348px;
+  height: 100vh;
+  border-bottom: solid 1px #000;
+}
+
 #toolbar {
   position: fixed;
   top: calc(50vh - 74px);
@@ -23,3 +30,4 @@ body {
 }
 
 @import 'toolbar';
+@import 'control-panel';

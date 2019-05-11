@@ -10,26 +10,30 @@ const CameraFrameMessage = FeliciaProtoRoot.lookupType('felicia.CameraFrameMessa
 
 self.onmessage = event => {
   let message = null;
-  const { data } = event.data;
-  switch (event.data.source) {
-    case 'subscribeCamera': {
+  const { data, type, destinations } = event.data;
+  switch (type) {
+    case TYPES.Camera.name: {
       const decoded = CameraFrameMessage.decode(new Uint8Array(data));
       message = {
         data: CameraFrameMessage.toObject(decoded, { enums: String }),
         type: TYPES.Camera.name,
-        id: event.data.id,
+        destinations,
       };
       break;
     }
-    case 'subscribeGeneral': {
+    case TYPES.General.name: {
+      let parsed = null;
       try {
-        message = JSON.parse(data);
+        parsed = JSON.parse(data);
       } catch (e) {
         console.error(e);
         break;
       }
-      message.type = TYPES.General.name;
-      message.id = data.id;
+      message = {
+        data: parsed,
+        type: TYPES.General.name,
+        destinations,
+      };
       break;
     }
     default:

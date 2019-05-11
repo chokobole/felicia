@@ -2,7 +2,7 @@ import { observable, action } from 'mobx';
 
 import { UIState } from 'store/ui-state';
 
-class FeliciaVizStore {
+export class FeliciaVizStore {
   @observable currentTime = 0;
 
   @observable uiState = new UIState();

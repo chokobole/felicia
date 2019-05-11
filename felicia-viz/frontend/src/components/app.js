@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 
 import CameraPanel from 'components/camera-panel';
+import ControlPanel from 'components/control-panel';
 import ToolBar from 'components/tool-bar';
 
 import 'stylesheets/main.scss';
@@ -27,7 +28,7 @@ export default class App extends Component {
           return (
             <CameraPanel
               key={cameraPanelState.id}
-              instance={cameraPanelState}
+              id={cameraPanelState.id}
               currentTime={currentTime}
             />
           );
@@ -39,6 +40,7 @@ export default class App extends Component {
   render() {
     return (
       <div id='container'>
+        <ControlPanel />
         {this._renderCameraPanels()}
         <ToolBar />
       </div>

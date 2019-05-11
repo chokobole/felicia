@@ -15,6 +15,7 @@ export default class ImageView extends PureComponent {
     height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
     src: PropTypes.string,
     frame: PropTypes.instanceOf(CameraFrame),
+    filter: PropTypes.string,
   };
 
   static defaultProps = {
@@ -22,6 +23,7 @@ export default class ImageView extends PureComponent {
     height: 'auto',
     src: '',
     frame: null,
+    filter: '',
   };
 
   constructor(props) {
@@ -94,6 +96,7 @@ export default class ImageView extends PureComponent {
     if (!frame) return;
 
     const { width, height, data, pixelFormat } = frame;
+    const { filter } = this.props;
 
     this.worker.postMessage({
       source: 'imageView',
@@ -103,6 +106,7 @@ export default class ImageView extends PureComponent {
         height,
         data,
         pixelFormat,
+        filter,
       },
     });
   }

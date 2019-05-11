@@ -1,0 +1,27 @@
+#control-panel {
+  display: flex;
+  flex-direction: column;
+  background: $background;
+  color: #F8F8F9;
+  opacity: 0.9;
+
+  header, footer {
+    flex: 0 0 auto;
+    text-align: center;
+  }
+
+  main {
+    flex: 1 1 auto;
+    padding: $spacing-normal;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+      background: none;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: $background-alt;
+    }
+  }
+}

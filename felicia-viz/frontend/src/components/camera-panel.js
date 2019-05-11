@@ -1,16 +1,13 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
+import { FloatPanel } from '@streetscape.gl/monochrome';
 
-import { Dropdown, FloatPanel, Label } from '@streetscape.gl/monochrome';
-
+import Activatable from 'components/activatable';
 import ImageView from 'components/image-view';
-import Subscriber from 'util/subscriber';
-import Worker from 'util/subscriber-webworker';
-import TYPES from 'common/connection-type';
-import STORE from 'store';
-import { CameraPanelState } from 'store/ui-state';
 import { FLOAT_PANEL_STYLE } from 'custom-styles';
+import { FeliciaVizStore } from 'store';
+import { TYPES } from 'store/ui-state';
 
 const TITLE_HEIGHT = 28;
 
@@ -18,8 +15,9 @@ const TITLE_HEIGHT = 28;
 @observer
 export default class CameraPanel extends Component {
   static propTypes = {
-    instance: PropTypes.instanceOf(CameraPanelState).isRequired,
+    id: PropTypes.number.isRequired,
     currentTime: PropTypes.number,
+    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
   };
 
   static defaultProps = {
@@ -37,37 +35,12 @@ export default class CameraPanel extends Component {
 
     this.state = {
       panelState: {
-        x: window.innerWidth - 660,
+        x: window.innerWidth - 500,
         y: 20,
-        width: 640, // constant for a while. This should be modified in the future.
-        height: 480, // constant for a while. This should be modified in the future.
+        width: 480, // constant for a while. This should be modified in the future.
+        height: 320, // constant for a while. This should be modified in the future.
       },
     };
-  }
-
-  componentDidMount() {
-    this.cameraSubscriber = new Subscriber();
-    this.worker = new Worker();
-
-    const { instance } = this.props;
-
-    this.cameraSubscriber.initialize(event => {
-      this.worker.postMessage({
-        source: 'subscribeCamera',
-        id: instance.id,
-        data: event.data,
-      });
-    });
-
-    this.worker.onmessage = event => {
-      STORE.update(event.data);
-    };
-  }
-
-  componentWillUnmount() {
-    if (this.cameraSubscriber) {
-      this.cameraSubscriber.close();
-    }
   }
 
   _onUpdate = panelState => {
@@ -82,20 +55,12 @@ export default class CameraPanel extends Component {
     });
   };
 
-  _onChange = value => {
-    const { instance } = this.props;
-
-    instance.selectTopic(value);
-    this.cameraSubscriber.requestTopic(TYPES.Camera.name, value);
-  };
-
   render() {
     const { panelState } = this.state;
-    const { instance } = this.props;
+    const { id, store } = this.props;
     const { height } = panelState;
-    const { uiState } = STORE;
-    const cameraPanelState = uiState.findCameraPanel(instance.id);
-    const { camera } = cameraPanelState;
+    const cameraPanelState = store.uiState.findCameraPanel(id);
+    const { camera, filter } = cameraPanelState;
 
     return (
       <FloatPanel
@@ -103,26 +68,9 @@ export default class CameraPanel extends Component {
         {...this.floatPanelSettings}
         onUpdate={this._onUpdate}
         style={FLOAT_PANEL_STYLE}>
-        <div
-          style={{
-            height: `${height}px`,
-          }}>
-          <ImageView frame={camera.frame} height={`${height - 120}px`} />
-          <Dropdown
-            value={instance.topic}
-            data={{
-              color: 'color',
-              depth: 'depth',
-            }}
-            onChange={this._onChange}
-          />
-          <div style={{ height: '90px', padding: '5px' }}>
-            <Label>width: {camera.frame ? camera.frame.width : ''}</Label>
-            <Label>height: {camera.frame ? camera.frame.height : ''}</Label>
-            <Label>frameRate: {camera.frame ? camera.frame.frameRate : ''}</Label>
-            <Label>pixelFormat: {camera.frame ? camera.frame.pixelFormat : ''}</Label>
-          </div>
-        </div>
+        <Activatable id={id} type={TYPES.CameraPanel.name}>
+          <ImageView frame={camera.frame} height={`${height}px`} filter={filter} />
+        </Activatable>
       </FloatPanel>
     );
   }
