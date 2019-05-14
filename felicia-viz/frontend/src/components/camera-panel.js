@@ -7,7 +7,7 @@ import Activatable from 'components/activatable';
 import ImageView from 'components/image-view';
 import { FLOAT_PANEL_STYLE } from 'custom-styles';
 import { FeliciaVizStore } from 'store';
-import { TYPES } from 'store/ui-state';
+import { UI_TYPES } from 'store/ui-state';
 
 const TITLE_HEIGHT = 28;
 
@@ -68,7 +68,7 @@ export default class CameraPanel extends Component {
         {...this.floatPanelSettings}
         onUpdate={this._onUpdate}
         style={FLOAT_PANEL_STYLE}>
-        <Activatable id={id} type={TYPES.CameraPanel.name}>
+        <Activatable id={id} type={UI_TYPES.CameraPanel.name}>
           <ImageView frame={camera.frame} height={`${height}px`} filter={filter} />
         </Activatable>
       </FloatPanel>

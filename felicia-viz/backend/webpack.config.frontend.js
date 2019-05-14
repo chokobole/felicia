@@ -12,7 +12,7 @@ module.exports = env => {
   if (env.build) {
     rootPath = '..';
   } else {
-    /* eslint prefer-destructuring: "off" */
+    // eslint-disable-next-line prefer-destructuring
     rootPath = env.rootPath;
   }
 

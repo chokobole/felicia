@@ -26,6 +26,8 @@ filegroup(
         "felicia_js.cc",
         "master_proxy_js.cc",
         "master_proxy_js.h",
+        "settings_js.cc",
+        "settings_js.h",
         "status_js.cc",
         "status_js.h",
     ],
@@ -36,10 +38,12 @@ filegroup(
     srcs = select({
         "//felicia:win_no_grpc": [
             "felicia_js.cc",
-            "status_js.cc",
             "master_proxy_js.cc",
-            "status_js.h",
             "master_proxy_js.h",
+            "settings_js.cc",
+            "settings_js.h",
+            "status_js.cc",
+            "status_js.h",
             "grpc_master_client.cc",
             "grpc_master_client.h",
         ],

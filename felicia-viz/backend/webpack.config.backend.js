@@ -31,6 +31,8 @@ module.exports = env => {
     'felicia_js.node': resolve(ROOT_PATH, '../bazel-bin/felicia/js/felicia_js.node'),
   };
 
+  config.resolve.modules = config.resolve.modules.concat(resolve('src'), resolve('node_modules'));
+
   config.module.rules = config.module.rules.concat({
     test: /\.node$/,
     use: 'node-loader',

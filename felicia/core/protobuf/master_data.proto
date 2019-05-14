@@ -22,9 +22,15 @@ message ClientInfo {
 }
 
 message TopicInfo {
+  enum Status {
+    REGISTERED = 0;
+    UNREGISTERED = 1;
+  }
+
   string topic = 1;
   string type_name = 2;
   ChannelSource topic_source = 3;
+  Status status = 4;
 }
 
 // Element inside NodeFilter are mutually exclusive.

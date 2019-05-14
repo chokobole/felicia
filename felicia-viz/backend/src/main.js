@@ -1,9 +1,9 @@
 import express from 'express';
 import morgan from 'morgan';
 
-import feliciaBinding from './felicia-binding';
-import devMiddleware from './lib/dev-middleware';
-import { isDevelopment } from './lib/environment';
+import feliciaBinding from 'felicia-binding';
+import devMiddleware from 'lib/dev-middleware';
+import { isDevelopment } from 'lib/environment';
 import packagejson from '../package.json';
 
 const app = express();

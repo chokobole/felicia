@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
-/* eslint import/no-unresolved: "off" */
+/* eslint import/no-unresolved: ["error", { ignore: ['@felicia-viz/ui'] }] */
 import { ResizeDetector } from '@felicia-viz/ui';
 import { CameraFrame } from 'store/camera';
 import Worker from 'util/image-view-webworker.js';
@@ -135,6 +135,7 @@ export default class ImageView extends PureComponent {
 
       mainCanvas.width = width;
       let finalHeight = height;
+      // eslint-disable-next-line react/destructuring-assignment
       if (this.props.height === 'auto') {
         finalHeight = (width / image.width) * image.height;
       }

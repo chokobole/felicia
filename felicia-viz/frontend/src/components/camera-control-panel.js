@@ -5,6 +5,7 @@ import { Form, Label } from '@streetscape.gl/monochrome';
 
 import PanelItemContainer from 'components/panel-item-container';
 import ColormapDropdown from 'components/colormap-dropdown';
+import { CAMERA_FRAME_MESSAGE } from 'common/felicia-proto';
 import TopicDropdown from 'components/topic-dropdown';
 import { FeliciaVizStore } from 'store';
 
@@ -50,7 +51,7 @@ export default class CameraControlPanel extends Component {
           type: 'custom',
           title: 'topic',
           render: self => {
-            return <TopicDropdown {...self} />;
+            return <TopicDropdown {...self} typeName={CAMERA_FRAME_MESSAGE} />;
           },
         },
         filter: {
@@ -65,7 +66,7 @@ export default class CameraControlPanel extends Component {
     },
   };
 
-  _onChange = values => {};
+  _onChange = values => {};  // eslint-disable-line no-unused-vars
 
   _fetchValues() {
     const { store } = this.props;

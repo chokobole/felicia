@@ -33,7 +33,7 @@ namespace js {
 template <>
 class TypeConvertor<Status> {
  public:
-  static Status ToNativeValue(::Napi::Value value) {
+  static const Status& ToNativeValue(::Napi::Value value) {
     return ::Napi::ObjectWrap<JsStatus>::Unwrap(value.As<::Napi::Object>())
         ->status();
   }

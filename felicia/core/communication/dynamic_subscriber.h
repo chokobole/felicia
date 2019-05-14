@@ -13,7 +13,7 @@ class DynamicSubscriber : public Subscriber<DynamicProtobufMessage> {
   ~DynamicSubscriber();
 
   void Subscribe(OnMessageCallback on_message_callback,
-                 OnErrorCallback on_error_callback,
+                 StatusCallback on_error_callback,
                  const communication::Settings& settings);
 
   void OnFindPublisher(const TopicInfo& topic_info);

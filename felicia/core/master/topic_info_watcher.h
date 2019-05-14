@@ -27,9 +27,11 @@ class TopicInfoWatcher {
   void RegisterCallback(const std::string& topic,
                         NewTopicInfoCallback callback);
 
+  void UnregisterCallback(const std::string& topic);
+
   void RegisterAllTopicCallback(NewTopicInfoCallback callback);
 
-  void UnregisterCallback(const std::string& topic);
+  void UnregisterAllTopicCallback();
 
   void Start();
 

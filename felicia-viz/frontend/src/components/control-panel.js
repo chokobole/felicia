@@ -5,7 +5,7 @@ import styled from 'styled-components';
 
 import CameraControlPanel from 'components/camera-control-panel';
 import { FeliciaVizStore } from 'store';
-import { TYPES } from 'store/ui-state';
+import { UI_TYPES } from 'store/ui-state';
 
 const Title = styled.h3`
   padding-left: 15px;
@@ -26,7 +26,7 @@ export default class ControlPanel extends Component {
     if (id === null) return null;
 
     switch (type) {
-      case TYPES.CameraPanel.name: {
+      case UI_TYPES.CameraPanel.name: {
         return <CameraControlPanel />;
       }
       default:

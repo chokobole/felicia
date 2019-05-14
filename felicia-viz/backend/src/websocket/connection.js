@@ -1,29 +1,16 @@
 import WebSocket from 'ws';
 
-import CONNECTION_TYPES from 'common/connection-type';
+import MESSAGE_TYPES from 'common/message-type';
 
 function noop() {}
 
 export default class Connection {
-  constructor(ws) {
+  constructor(ws, onmessage) {
     this.ws = ws;
-    this.type = CONNECTION_TYPES.General;
+    this.type = null;
 
     this.ws.on('message', message => {
-      let data;
-      try {
-        data = JSON.parse(message);
-      } catch (e) {
-        console.error(e);
-        return;
-      }
-      const { type, topic } = data;
-      if (type === CONNECTION_TYPES.General.name) {
-        this.type = CONNECTION_TYPES.General;
-      } else if (type === CONNECTION_TYPES.Camera.name) {
-        this.type = CONNECTION_TYPES.Camera;
-        this.topic = topic;
-      }
+      onmessage(this, message);
     });
 
     this.ws.on('pong', () => {
@@ -35,13 +22,12 @@ export default class Connection {
   }
 
   send(topic, data, type) {
-    if (this.ws.readyState === WebSocket.OPEN && type === this.type) {
-      if (this.type === CONNECTION_TYPES.Camera) {
+    if (this.ws.readyState === WebSocket.OPEN && type === this.type && topic === this.topic) {
+      if (this.type === MESSAGE_TYPES.Camera) {
         if (!(data instanceof Buffer)) {
           console.error(`Data should be Buffer but got ${typeof data}`);
           return;
         }
-        if (this.topic !== topic) return;
       }
       this.ws.send(data);
     }

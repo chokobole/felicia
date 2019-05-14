@@ -47,11 +47,6 @@ class CommandDispatcher {
 
   void OnPublish(const Status& s) const;
 
-  void OnNewMessage(const std::string& topic,
-                    DynamicProtobufMessage&& message) const;
-
-  void OnSubscriptionError(const std::string& topic, const Status& s) const;
-
   mutable std::unique_ptr<ProtobufLoader> protobuf_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandDispatcher);

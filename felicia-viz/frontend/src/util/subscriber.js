@@ -12,8 +12,8 @@ class Subscriber {
     this.listeners = [];
   }
 
-  initialize(onMessage) {
-    this.connection.initialize(onMessage);
+  initialize(onmessage) {
+    this.connection.initialize(onmessage);
   }
 
   requestTopic(type, topic) {

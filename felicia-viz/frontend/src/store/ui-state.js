@@ -1,10 +1,10 @@
 import { observable, action } from 'mobx';
 
-import CONNECTION_TYPES from 'common/connection-type';
+import MESSAGE_TYPES from 'common/message-type';
 import Camera from 'store/camera';
 import SUBSCRIBER from 'util/subscriber';
 
-export const TYPES = {
+export const UI_TYPES = {
   CameraPanel: { name: 'CameraPanel' },
 };
 
@@ -25,7 +25,7 @@ class CameraPanelState {
 
   @action selectTopic(newTopic) {
     this.topic = newTopic;
-    SUBSCRIBER.subscribeTopic(this.id, CONNECTION_TYPES.Camera.name, newTopic);
+    SUBSCRIBER.subscribeTopic(this.id, MESSAGE_TYPES.Camera.name, newTopic);
   }
 
   @action selectFilter(newFilter) {
@@ -55,7 +55,7 @@ class Window {
   getState() {
     if (this.type === null) return null;
 
-    if (this.type === TYPES.CameraPanel.name) {
+    if (this.type === UI_TYPES.CameraPanel.name) {
       return this.uiState.findCameraPanel(this.id);
     }
 
@@ -63,7 +63,7 @@ class Window {
   }
 }
 
-export class UIState {
+export default class UIState {
   @observable cameraPanelStates = [];
 
   @observable activeWindow = new Window(this);
@@ -72,7 +72,7 @@ export class UIState {
 
   @action addCameraPanel() {
     this.cameraPanelStates.push(new CameraPanelState(this.id));
-    this.activeWindow.activate(this.id, TYPES.CameraPanel.name);
+    this.activeWindow.activate(this.id, UI_TYPES.CameraPanel.name);
     this.id += 1;
   }
 
@@ -90,7 +90,7 @@ export class UIState {
   }
 
   update(message) {
-    if (message.type === CONNECTION_TYPES.Camera.name) {
+    if (message.type === MESSAGE_TYPES.Camera.name) {
       this.cameraPanelStates.forEach(cameraPanelState => {
         if (cameraPanelState.id === message.id) {
           cameraPanelState.update(message);

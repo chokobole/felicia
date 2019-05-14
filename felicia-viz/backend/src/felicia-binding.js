@@ -1,18 +1,14 @@
-import protobuf from 'protobufjs/light';
-
 import feliciaJs from 'felicia_js.node';
-import TYPES from 'common/connection-type';
-import feliciaProtobufJson from 'common/proto_bundle/felicia_proto_bundle.json';
-import MasterProxyClient from './master-proxy-client';
-import websocket from './websocket';
-import { isWin } from './lib/environment';
-
-const FeliciaProtoRoot = protobuf.Root.fromJSON(feliciaProtobufJson);
-const CAMERA_FRAME_MESSAGE = 'felicia.CameraFrameMessage';
-const CameraFrameMessage = FeliciaProtoRoot.lookupType(CAMERA_FRAME_MESSAGE);
+import { isWin } from 'lib/environment';
+import MasterProxyClient from 'master-proxy-client';
+import handleMessage from 'message';
+import TOPIC_MAP from 'topic-map';
+import websocket from 'websocket';
 
 export default () => {
-  const ws = websocket();
+  const ws = websocket((connection, message) => {
+    handleMessage(connection, ws, message);
+  });
   feliciaJs.MasterProxy.setBackground();
 
   if (isWin) {
@@ -22,46 +18,32 @@ export default () => {
 
   const s = feliciaJs.MasterProxy.start();
   if (!s.ok()) {
+    console.error(s.errorMessage());
     process.exit(1);
   }
 
-  function requestRegisterDynamicSubscribingNode() {
+  function requestRegisterTopicInfoWatcherNode() {
     if (isWin) {
       if (!feliciaJs.MasterProxy.isClientInfoSet()) {
-        setTimeout(requestRegisterDynamicSubscribingNode, 1000);
+        setTimeout(requestRegisterTopicInfoWatcherNode, 1000);
         return;
       }
     }
 
-    feliciaJs.MasterProxy.requestRegisterDynamicSubscribingNode(
-      (topic, message) => {
-        console.log(`[TOPIC]: ${topic}`);
-        if (message.type === CAMERA_FRAME_MESSAGE) {
-          const buffer = CameraFrameMessage.encode(message.message).finish();
-          ws.broadcast(topic, buffer, TYPES.Camera);
-        } else {
-          ws.broadcast(
-            topic,
-            JSON.stringify({
-              type: message.type,
-              data: message.message,
-            }),
-            TYPES.General
-          );
-        }
+    feliciaJs.MasterProxy.requestRegisterTopicInfoWatcherNode(
+      message => {
+        console.log(`[TOPIC] : ${JSON.stringify(message.message)}`);
+        const topicInfo = message.message;
+        TOPIC_MAP.set(topicInfo.topic, topicInfo);
       },
-      (topic, status) => {
-        console.log(`[TOPIC]: ${topic}`);
-        console.error(status.errorMessage());
-      },
-      {
-        period: 100,
-        queue_size: 1,
+      s => {  // eslint-disable-line no-shadow
+        console.error(s.errorMessage());
+        process.exit(1);
       }
     );
   }
 
-  requestRegisterDynamicSubscribingNode();
+  requestRegisterTopicInfoWatcherNode();
 
   feliciaJs.MasterProxy.run();
 };

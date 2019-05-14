@@ -1,5 +1,5 @@
 /* global self */
-/* eslint no-restricted-globals: ["off", "self"] */
+/* eslint no-restricted-globals: ["off"] */
 import colormap from 'colormap';
 
 let histogram;

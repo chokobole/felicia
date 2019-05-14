@@ -1,4 +1,4 @@
 export default {
-  General: { name: 'General' },
+  MetaInfo: { name: 'MetaInfo' },
   Camera: { name: 'Camera' },
 };

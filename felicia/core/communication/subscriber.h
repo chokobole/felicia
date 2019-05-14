@@ -24,7 +24,6 @@ template <typename MessageTy>
 class Subscriber {
  public:
   using OnMessageCallback = ::base::RepeatingCallback<void(MessageTy&&)>;
-  using OnErrorCallback = ::base::RepeatingCallback<void(const Status& s)>;
 
   Subscriber() { state_.ToUneregistered(); }
   virtual ~Subscriber() { DCHECK(IsStopped()); }
@@ -40,7 +39,7 @@ class Subscriber {
 
   void RequestSubscribe(const NodeInfo& node_info, const std::string& topic,
                         OnMessageCallback on_message_callback,
-                        OnErrorCallback on_error_callback,
+                        StatusCallback on_error_callback,
                         const communication::Settings& settings,
                         StatusOnceCallback callback);
 
@@ -79,7 +78,7 @@ class Subscriber {
   TopicInfo topic_info_;
   std::unique_ptr<Channel<MessageTy>> channel_;
   OnMessageCallback on_message_callback_;
-  OnErrorCallback on_error_callback_;
+  StatusCallback on_error_callback_;
 
   communication::State last_state_;
   communication::State state_;
@@ -94,7 +93,7 @@ class Subscriber {
 template <typename MessageTy>
 void Subscriber<MessageTy>::RequestSubscribe(
     const NodeInfo& node_info, const std::string& topic,
-    OnMessageCallback on_message_callback, OnErrorCallback on_error_callback,
+    OnMessageCallback on_message_callback, StatusCallback on_error_callback,
     const communication::Settings& settings, StatusOnceCallback callback) {
   if (!(IsUnregistered() || IsStopped())) {
     std::move(callback).Run(state_.InvalidStateError());

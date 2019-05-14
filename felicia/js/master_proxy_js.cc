@@ -1,8 +1,14 @@
 #include "felicia/js/master_proxy_js.h"
 
+#include "third_party/chromium/base/containers/queue.h"
+#include "third_party/chromium/base/synchronization/waitable_event.h"
+
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/felicia_env.h"
+#include "felicia/core/node/dynamic_subscribing_node.h"
+#include "felicia/core/node/topic_info_watcher_node.h"
 #include "felicia/js/protobuf_type_convertor.h"
+#include "felicia/js/settings_js.h"
 #include "felicia/js/status_js.h"
 #include "felicia/js/typed_call.h"
 
@@ -10,43 +16,230 @@ namespace felicia {
 
 ::Napi::FunctionReference JsMasterProxy::constructor_;
 
-::Napi::FunctionReference JsMasterProxy::on_new_message_;
-::Napi::FunctionReference JsMasterProxy::on_subscription_error_;
-
 namespace {
-
-std::unique_ptr<ProtobufLoader> g_protobuf_loader;
-
-uv_async_t g_handle;
-
-::base::Lock g_lock;
 
 struct TopicData {
   std::string topic;
-  DynamicProtobufMessage message;
-  Status status;
+  StatusOr<DynamicProtobufMessage> status_or;
 
   TopicData() = default;
 
-  TopicData(const std::string& topic, const DynamicProtobufMessage& message)
-      : topic(topic), message(message), is_message_data(true) {}
-
   TopicData(const std::string& topic, DynamicProtobufMessage&& message)
-      : topic(topic), message(std::move(message)), is_message_data(true) {}
+      : topic(topic), status_or(std::move(message)), is_message_data(true) {}
 
   TopicData(const std::string& topic, const Status& status)
-      : topic(topic), status(status), is_message_data(false) {}
+      : topic(topic), status_or(status), is_message_data(false) {}
 
-  bool IsMessageData() const { return is_message_data; }
-  bool IsSubscriptionError() const { return !is_message_data; }
-
- private:
   bool is_message_data;
 };
 
-Pool<TopicData, uint8_t>* g_message_queue;
-
 napi_env g_current_env;
+
+class TopicInfoWatcherDelegate;
+class MultiTopicSubscriberDelegate;
+
+TopicInfoWatcherDelegate* g_topic_info_watcher_delegate = nullptr;
+MultiTopicSubscriberDelegate* g_multi_topic_subscriber_delegate = nullptr;
+
+class TopicInfoWatcherDelegate : public TopicInfoWatcherNode::Delegate {
+ public:
+  TopicInfoWatcherDelegate(::Napi::FunctionReference on_new_topic_info_callback,
+                           ::Napi::FunctionReference on_error_callback)
+      : on_new_topic_info_callback_(std::move(on_new_topic_info_callback)),
+        on_error_callback_(std::move(on_error_callback)) {
+    uv_async_init(uv_default_loop(), &handle_,
+                  &TopicInfoWatcherDelegate::OnAsync);
+    g_topic_info_watcher_delegate = this;
+  }
+
+  ~TopicInfoWatcherDelegate() {
+    on_new_topic_info_callback_.Reset();
+    on_error_callback_.Reset();
+
+    uv_close(reinterpret_cast<uv_handle_t*>(&handle_), OnClose);
+    g_topic_info_watcher_delegate = nullptr;
+  }
+
+  void OnError(const Status& s) override {
+    {
+      ::base::AutoLock l(lock_);
+      topic_info_queue_.push(s);
+    }
+
+    uv_async_send(&handle_);
+  }
+
+  void OnNewTopicInfo(const TopicInfo& topic_info) override {
+    {
+      ::base::AutoLock l(lock_);
+      topic_info_queue_.push(topic_info);
+    }
+
+    uv_async_send(&handle_);
+  }
+
+  static void OnAsync(uv_async_t* handle) {
+    StatusOr<TopicInfo> status_or;
+    {
+      ::base::AutoLock l(g_topic_info_watcher_delegate->lock_);
+      status_or = g_topic_info_watcher_delegate->topic_info_queue_.front();
+      g_topic_info_watcher_delegate->topic_info_queue_.pop();
+    }
+
+    ::Napi::Env env =
+        g_topic_info_watcher_delegate->on_new_topic_info_callback_.Env();
+    ::Napi::HandleScope scope(env);
+
+    if (status_or.ok()) {
+      ::Napi::Value value =
+          js::TypeConvertor<::google::protobuf::Message>::ToJSValue(
+              env, status_or.ValueOrDie());
+
+      g_topic_info_watcher_delegate->on_new_topic_info_callback_.Call(
+          env.Global(), {value});
+    } else {
+      g_topic_info_watcher_delegate->on_error_callback_.Call(
+          env.Global(), {JsStatus::New(env, status_or.status())});
+    }
+  }
+
+  static void OnClose(uv_handle_t* handle) {
+    LOG(INFO) << "Closed: TopicInfoWathced handle";
+    free(handle);
+  }
+
+ private:
+  friend void OnNewTopicInfoCallback(uv_async_t*);
+
+  ::Napi::FunctionReference on_new_topic_info_callback_;
+  ::Napi::FunctionReference on_error_callback_;
+
+  uv_async_t handle_;
+  ::base::Lock lock_;
+  ::base::queue<StatusOr<TopicInfo>> topic_info_queue_ GUARDED_BY(lock_);
+};
+
+class MultiTopicSubscriberDelegate
+    : public DynamicSubscribingNode::MultiTopicDelegate {
+ public:
+  struct CallbackInfo {
+    CallbackInfo() = default;
+    CallbackInfo(::Napi::FunctionReference on_message_callback,
+                 ::Napi::FunctionReference on_subscription_error_callback)
+        : on_message_callback(std::move(on_message_callback)),
+          on_subscription_error_callback(
+              std::move(on_subscription_error_callback)) {}
+    CallbackInfo(CallbackInfo&& other) = default;
+    CallbackInfo& operator=(CallbackInfo&& other) = default;
+
+    ::Napi::FunctionReference on_message_callback;
+    ::Napi::FunctionReference on_subscription_error_callback;
+
+    DISALLOW_COPY_AND_ASSIGN(CallbackInfo);
+  };
+
+  MultiTopicSubscriberDelegate(::base::WaitableEvent* event) : event_(event) {
+    protobuf_loader_ = ProtobufLoader::Load(
+        ::base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
+
+    topic_data_queue_.set_capacity(20);
+
+    uv_async_init(uv_default_loop(), &handle_,
+                  &MultiTopicSubscriberDelegate::OnAsync);
+    g_multi_topic_subscriber_delegate = this;
+  }
+
+  ~MultiTopicSubscriberDelegate() {
+    for (auto& x : callback_infos_) {
+      x.second.on_message_callback.Reset();
+      x.second.on_subscription_error_callback.Reset();
+    }
+
+    uv_close(reinterpret_cast<uv_handle_t*>(&handle_), OnClose);
+    g_multi_topic_subscriber_delegate = nullptr;
+  }
+
+  ProtobufLoader* protobuf_loader() { return protobuf_loader_.get(); }
+
+  void OnDidCreate(DynamicSubscribingNode* node) override {
+    node_ = node;
+    event_->Signal();
+  }
+
+  void OnError(const Status& s) override { NOTREACHED() << s; }
+
+  void OnNewMessage(const std::string& topic,
+                    DynamicProtobufMessage&& message) override {
+    {
+      ::base::AutoLock l(lock_);
+      topic_data_queue_.push({topic, std::move(message)});
+    }
+
+    uv_async_send(&handle_);
+  }
+
+  void OnSubscriptionError(const std::string& topic, const Status& s) override {
+    {
+      ::base::AutoLock l(lock_);
+      topic_data_queue_.push({topic, s});
+    }
+
+    uv_async_send(&handle_);
+  }
+
+  void HandleTopicInfo(
+      const TopicInfo& topic_info, const communication::Settings& settings,
+      ::Napi::FunctionReference on_message_callback,
+      ::Napi::FunctionReference on_subscription_error_callback) {
+    // TODO: Should implement unsubscribe
+    node_->Subscribe(topic_info, settings);
+    callback_infos_[topic_info.topic()] =
+        CallbackInfo(std::move(on_message_callback),
+                     std::move(on_subscription_error_callback));
+  }
+
+  static void OnAsync(uv_async_t* handle) {
+    TopicData topic_data;
+    {
+      ::base::AutoLock l(g_multi_topic_subscriber_delegate->lock_);
+      topic_data = std::move(
+          g_multi_topic_subscriber_delegate->topic_data_queue_.front());
+      g_multi_topic_subscriber_delegate->topic_data_queue_.pop();
+    }
+
+    auto it = g_multi_topic_subscriber_delegate->callback_infos_.find(
+        topic_data.topic);
+    if (it == g_multi_topic_subscriber_delegate->callback_infos_.end()) return;
+
+    ::Napi::Env env = it->second.on_message_callback.Env();
+    ::Napi::HandleScope scope(env);
+
+    if (topic_data.is_message_data) {
+      ::Napi::Value value =
+          js::TypeConvertor<::google::protobuf::Message>::ToJSValue(
+              env, *topic_data.status_or.ValueOrDie().message());
+      it->second.on_message_callback.Call(env.Global(), {value});
+    } else {
+      it->second.on_subscription_error_callback.Call(
+          env.Global(), {JsStatus::New(env, topic_data.status_or.status())});
+    }
+  }
+
+  static void OnClose(uv_handle_t* handle) {
+    LOG(INFO) << "Closed: MultiTopicSubscriberNode handle";
+    free(handle);
+  }
+
+ private:
+  std::unique_ptr<ProtobufLoader> protobuf_loader_;
+  ::base::WaitableEvent* event_;
+  DynamicSubscribingNode* node_;  // not owned
+  ::base::flat_map<std::string, CallbackInfo> callback_infos_;
+
+  uv_async_t handle_;
+  ::base::Lock lock_;
+  Pool<TopicData, uint8_t> topic_data_queue_ GUARDED_BY(lock_);
+};
 
 }  // namespace
 
@@ -71,8 +264,9 @@ void JsMasterProxy::Init(::Napi::Env env, ::Napi::Object exports) {
         StaticMethod("start", &JsMasterProxy::Start),
         StaticMethod("stop", &JsMasterProxy::Stop),
         StaticMethod("run", &JsMasterProxy::Run),
-        StaticMethod("requestRegisterDynamicSubscribingNode",
-                     &JsMasterProxy::RequestRegisterDynamicSubscribingNode),
+        StaticMethod("requestRegisterTopicInfoWatcherNode",
+                     &JsMasterProxy::RequestRegisterTopicInfoWatcherNode),
+        StaticMethod("subscribeTopic", &JsMasterProxy::SubscribeTopic),
   });
 
   constructor_ = ::Napi::Persistent(func);
@@ -145,11 +339,8 @@ void JsMasterProxy::SetBackground(const ::Napi::CallbackInfo& info) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   Status s = master_proxy.Stop();
 
-  g_protobuf_loader.reset();
-  delete g_message_queue;
-  g_message_queue = nullptr;
-  on_new_message_.Reset();
-  on_subscription_error_.Reset();
+  // TODO: Delete |g_topic_info_watcher_delegate|,
+  // |g_multi_topic_subscriber_delegate| and remove from MasterProxy.
 
   ::Napi::Object obj = JsStatus::New(env, s);
 
@@ -166,96 +357,108 @@ void JsMasterProxy::Run(const ::Napi::CallbackInfo& info) {
   master_proxy.Run();
 }
 
-void OnCallback(uv_async_t* handle) {
-  TopicData topic_data;
-  {
-    ::base::AutoLock l(g_lock);
-    topic_data = std::move(g_message_queue->front());
-    g_message_queue->pop();
-  }
-
-  ::Napi::Env env = JsMasterProxy::on_new_message_.Env();
-  ::Napi::HandleScope scope(env);
-
-  if (topic_data.IsMessageData()) {
-    ::Napi::Value value =
-        js::TypeConvertor<::google::protobuf::Message>::ToJSValue(
-            env, *topic_data.message.message());
-    JsMasterProxy::on_new_message_.Call(
-        env.Global(), {::Napi::String::New(env, topic_data.topic), value});
-  } else {
-    JsMasterProxy::on_subscription_error_.Call(
-        env.Global(), {::Napi::String::New(env, topic_data.topic),
-                       JsStatus::New(env, topic_data.status)});
-  }
-}
-
-void JsMasterProxy::OnNewMessage(const std::string& topic,
-                                 DynamicProtobufMessage&& message) {
-  {
-    ::base::AutoLock l(g_lock);
-    g_message_queue->push({topic, std::move(message)});
-  }
-
-  uv_async_send(&g_handle);
-}
-
-void JsMasterProxy::OnSubscriptionError(const std::string& topic,
-                                        const Status& s) {
-  {
-    ::base::AutoLock l(g_lock);
-    g_message_queue->push({topic, s});
-  }
-
-  uv_async_send(&g_handle);
-}
-
 // static
-void JsMasterProxy::RequestRegisterDynamicSubscribingNode(
+void JsMasterProxy::RequestRegisterTopicInfoWatcherNode(
     const ::Napi::CallbackInfo& info) {
   ::Napi::Env env = info.Env();
   ScopedEnvSetter scoped_env_setter(env);
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
 
-  communication::Settings settings;
-  settings.is_dynamic_buffer = true;
-  if (info.Length() >= 3) {
-    on_new_message_ = ::Napi::Persistent(info[0].As<::Napi::Function>());
-    on_subscription_error_ = ::Napi::Persistent(info[1].As<::Napi::Function>());
-    ::Napi::Object settings_arg = info[2].As<::Napi::Object>();
-    ::Napi::Value period = settings_arg["period"];
-    if (!period.IsUndefined()) {
-      settings.period = ::base::TimeDelta::FromMilliseconds(
-          period.As<::Napi::Number>().Uint32Value());
-    }
-    ::Napi::Value queue_size = settings_arg["queue_size"];
-    if (!queue_size.IsUndefined()) {
-      settings.queue_size =
-          static_cast<uint8_t>(period.As<::Napi::Number>().Uint32Value());
-    }
-  } else if (info.Length() >= 2) {
-    on_new_message_ = ::Napi::Persistent(info[0].As<::Napi::Function>());
-    on_subscription_error_ = ::Napi::Persistent(info[1].As<::Napi::Function>());
+  ::Napi::FunctionReference on_new_topic_info_callback;
+  ::Napi::FunctionReference on_error_callback;
+  if (info.Length() == 2) {
+    on_new_topic_info_callback =
+        ::Napi::Persistent(info[0].As<::Napi::Function>());
+    on_error_callback = ::Napi::Persistent(info[1].As<::Napi::Function>());
   } else {
     THROW_JS_WRONG_NUMBER_OF_ARGUMENTS(env);
     return;
   }
 
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  if (g_topic_info_watcher_delegate) {
+    ::Napi::TypeError::New(env, "There is already TopicInfoWatcherNode")
+        .ThrowAsJavaScriptException();
+    return;
+  }
 
   NodeInfo node_info;
   node_info.set_watcher(true);
 
-  g_protobuf_loader = ProtobufLoader::Load(
-      ::base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
+  master_proxy.RequestRegisterNode<TopicInfoWatcherNode>(
+      node_info,
+      std::make_unique<TopicInfoWatcherDelegate>(
+          std::move(on_new_topic_info_callback), std::move(on_error_callback)));
+}
 
-  uv_async_init(uv_default_loop(), &g_handle, OnCallback);
+// static
+void JsMasterProxy::SubscribeTopic(const ::Napi::CallbackInfo& info) {
+  ::Napi::Env env = info.Env();
+  ScopedEnvSetter scoped_env_setter(env);
 
-  g_message_queue = new Pool<TopicData, uint8_t>(10);
+  TopicInfo topic_info;
+  ::Napi::FunctionReference on_new_message;
+  ::Napi::FunctionReference on_subscription_error;
+  communication::Settings settings;
+  if (info.Length() == 3 || info.Length() == 4) {
+    ::Napi::Object obj = info[0].As<::Napi::Object>();
+    topic_info.set_topic(static_cast<::Napi::Value>(obj["topic"])
+                             .As<::Napi::String>()
+                             .Utf8Value());
+    topic_info.set_type_name(static_cast<::Napi::Value>(obj["typeName"])
+                                 .As<::Napi::String>()
+                                 .Utf8Value());
 
-  master_proxy.RequestRegisterNode<DynamicSubscribingNode>(
-      node_info, g_protobuf_loader.get(),
-      ::base::BindRepeating(&JsMasterProxy::OnNewMessage),
-      ::base::BindRepeating(&JsMasterProxy::OnSubscriptionError), settings);
+    ::Napi::Object topicSource =
+        static_cast<::Napi::Value>(obj["topicSource"]).As<::Napi::Object>();
+    ChannelSource* channel_source = topic_info.mutable_topic_source();
+    ::Napi::Object channelDef =
+        static_cast<::Napi::Value>(topicSource["channelDef"])
+            .As<::Napi::Object>();
+    channel_source->mutable_channel_def()->set_type(
+        static_cast<ChannelDef_Type>(
+            static_cast<::Napi::Value>(channelDef["type"])
+                .As<::Napi::Number>()
+                .Int32Value()));
+
+    ::Napi::Object ipEndpoint =
+        static_cast<::Napi::Value>(topicSource["ipEndpoint"])
+            .As<::Napi::Object>();
+    IPEndPoint* ip_endpoint = channel_source->mutable_ip_endpoint();
+    ip_endpoint->set_ip(static_cast<::Napi::Value>(ipEndpoint["ip"])
+                            .As<::Napi::String>()
+                            .Utf8Value());
+    ip_endpoint->set_port(static_cast<::Napi::Value>(ipEndpoint["port"])
+                              .As<::Napi::Number>()
+                              .Uint32Value());
+
+    on_new_message = ::Napi::Persistent(info[1].As<::Napi::Function>());
+    on_subscription_error = ::Napi::Persistent(info[2].As<::Napi::Function>());
+    if (info.Length() == 4) {
+      settings =
+          js::TypeConvertor<communication::Settings>::ToNativeValue(info[3]);
+    }
+  } else {
+    THROW_JS_WRONG_NUMBER_OF_ARGUMENTS(env);
+    return;
+  }
+
+  if (!g_multi_topic_subscriber_delegate) {
+    ::base::WaitableEvent* event = new ::base::WaitableEvent;
+
+    auto delegate = std::make_unique<MultiTopicSubscriberDelegate>(event);
+
+    MasterProxy& master_proxy = MasterProxy::GetInstance();
+    NodeInfo node_info;
+    master_proxy.RequestRegisterNode<DynamicSubscribingNode>(
+        node_info, delegate->protobuf_loader(), std::move(delegate));
+
+    event->Wait();
+    delete event;
+  }
+
+  g_multi_topic_subscriber_delegate->HandleTopicInfo(
+      topic_info, settings, std::move(on_new_message),
+      std::move(on_subscription_error));
 }
 
 }  // namespace felicia

@@ -10,7 +10,8 @@
   "rules": {
     "react/jsx-filename-extension": ["error", { "extensions": [".js", ".jsx"] }],
     "no-underscore-dangle": "off",
-    "import/no-unresolved": ["error", {"ignore": ["felicia_js.node"]}]
+    "import/no-unresolved": ["error", {"ignore": ["felicia_js.node"]}],
+    "no-console": "off"
   },
   "globals": {
     "document": "readonly",
@@ -27,7 +28,7 @@
   "settings": {
     "import/resolver": {
       "node": {
-        "paths": [".", "frontend/src"],
+        "paths": [".", "frontend/src", "backend/src"]
       }
     }
 

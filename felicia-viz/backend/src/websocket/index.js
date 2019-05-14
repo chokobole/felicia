@@ -1,14 +1,14 @@
 import WebSocket from 'ws';
 
-import Connection from './connection';
+import Connection from 'websocket/connection';
 
 const connections = [];
 
-export default () => {
+export default onmessage => {
   const wss = new WebSocket.Server({ port: WEBSOCKET_PORT });
 
   wss.on('connection', ws => {
-    connections.push(new Connection(ws));
+    connections.push(new Connection(ws, onmessage));
   });
 
   setInterval(() => {

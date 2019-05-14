@@ -1,27 +1,22 @@
 /* global self */
-/* eslint no-restricted-globals: ["off", "self"] */
-import protobuf from 'protobufjs/light';
-
-import feliciaProtobufJson from 'common/proto_bundle/felicia_proto_bundle.json';
-import TYPES from 'common/connection-type';
-
-const FeliciaProtoRoot = protobuf.Root.fromJSON(feliciaProtobufJson);
-const CameraFrameMessage = FeliciaProtoRoot.lookupType('felicia.CameraFrameMessage');
+/* eslint no-restricted-globals: ["off"] */
+import MESSAGE_TYPES from 'common/message-type';
+import { CameraFrameMessage } from 'common/felicia-proto';
 
 self.onmessage = event => {
   let message = null;
   const { data, type, destinations } = event.data;
   switch (type) {
-    case TYPES.Camera.name: {
+    case MESSAGE_TYPES.Camera.name: {
       const decoded = CameraFrameMessage.decode(new Uint8Array(data));
       message = {
         data: CameraFrameMessage.toObject(decoded, { enums: String }),
-        type: TYPES.Camera.name,
+        type: MESSAGE_TYPES.Camera.name,
         destinations,
       };
       break;
     }
-    case TYPES.General.name: {
+    case MESSAGE_TYPES.MetaInfo.name: {
       let parsed = null;
       try {
         parsed = JSON.parse(data);
@@ -29,10 +24,11 @@ self.onmessage = event => {
         console.error(e);
         break;
       }
+      const { queryType } = parsed;
       message = {
-        data: parsed,
-        type: TYPES.General.name,
-        destinations,
+        data: parsed.data,
+        queryType,
+        type: MESSAGE_TYPES.MetaInfo.name,
       };
       break;
     }

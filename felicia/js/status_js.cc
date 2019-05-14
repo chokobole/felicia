@@ -1,8 +1,5 @@
 #include "felicia/js/status_js.h"
 
-#include "third_party/chromium/base/logging.h"
-
-#include "felicia/core/lib/error/errors.h"
 #include "felicia/js/typed_call.h"
 
 namespace felicia {

@@ -22,6 +22,10 @@ void TopicInfoWatcher::RegisterAllTopicCallback(NewTopicInfoCallback callback) {
   all_topic_callback_ = callback;
 }
 
+void TopicInfoWatcher::UnregisterAllTopicCallback() {
+  all_topic_callback_.Reset();
+}
+
 void TopicInfoWatcher::Start() {
   DCHECK(!channel_);
   ChannelDef channel_def;

@@ -9,7 +9,6 @@
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/containers/flat_map.h"
 #include "third_party/chromium/base/macros.h"
-#include "third_party/chromium/base/memory/scoped_refptr.h"
 #include "third_party/chromium/base/message_loop/message_loop.h"
 #include "third_party/chromium/base/no_destructor.h"
 #include "third_party/chromium/base/run_loop.h"
@@ -94,7 +93,7 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
  private:
   friend class ::base::NoDestructor<MasterProxy>;
   friend class PyMasterProxy;
-  friend class DynamicSubscribingNode;
+  friend class TopicInfoWatcherNode;
   MasterProxy();
   ~MasterProxy();
 
