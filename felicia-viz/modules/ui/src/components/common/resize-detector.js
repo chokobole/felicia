@@ -21,6 +21,7 @@ export default class ResizeDetector extends PureComponent {
   }
 
   _onDivLoad = ref => {
+    if (!ref) return;
     this.watchable = ref.parentNode;
     this.resizeObserver.observe(this.watchable);
   };

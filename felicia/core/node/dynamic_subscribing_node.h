@@ -57,7 +57,7 @@ class DynamicSubscribingNode : public NodeLifecycle {
   void Subscribe(const TopicInfo& topic_info,
                  const communication::Settings& settings);
 
-  void Unsubscribe(const TopicInfo& topic_info);
+  void Unsubscribe(const std::string& topic, StatusOnceCallback callback);
 
  private:
   void OnRequestSubscribe(const std::string& topic, const Status& s);

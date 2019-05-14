@@ -30,7 +30,7 @@ export default function handleCameraMessage(topic, ws) {
       }
     },
     status => {
-      console.log(`[TOPIC]: ${topic}`);
+      console.error(`[OnSubscriptionError] for ${topic}`);
       console.error(status.errorMessage());
     },
     new feliciaJs.Settings({
@@ -39,4 +39,15 @@ export default function handleCameraMessage(topic, ws) {
       isDynamicBuffer: true,
     })
   );
+}
+
+export function handleCameraClose(topic) {
+  feliciaJs.MasterProxy.unsubscribeTopic(topic, status => {
+    console.log(`[OnUnsubscribeTopic] for ${topic}`);
+    if (!status.ok()) {
+      console.error(status.errorMessage());
+    } else {
+      console.log('Succesfully closed');
+    }
+  });
 }

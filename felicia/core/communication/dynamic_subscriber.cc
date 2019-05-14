@@ -21,6 +21,27 @@ void DynamicSubscriber::OnFindPublisher(const TopicInfo& topic_info) {
   Subscriber<DynamicProtobufMessage>::OnFindPublisher(topic_info);
 }
 
+void DynamicSubscriber::UnSubscribe(const std::string& topic,
+                                    StatusOnceCallback callback) {
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  if (!master_proxy.IsBoundToCurrentThread()) {
+    master_proxy.PostTask(
+        FROM_HERE,
+        ::base::BindOnce(&DynamicSubscriber::UnSubscribe,
+                         ::base::Unretained(this), topic, std::move(callback)));
+    return;
+  }
+
+  on_message_callback_.Reset();
+  on_error_callback_.Reset();
+
+  channel_.reset();
+  message_queue_.clear();
+
+  state_.ToStopped();
+  std::move(callback).Run(Status::OK());
+}
+
 void DynamicSubscriber::ResetMessage(const TopicInfo& topic_info) {
   message_.Reset(loader_->NewMessage(topic_info.type_name())->New());
 }

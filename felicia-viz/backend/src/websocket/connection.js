@@ -5,12 +5,16 @@ import MESSAGE_TYPES from 'common/message-type';
 function noop() {}
 
 export default class Connection {
-  constructor(ws, onmessage) {
+  constructor(ws, onmessage, onclose) {
     this.ws = ws;
     this.type = null;
 
     this.ws.on('message', message => {
       onmessage(this, message);
+    });
+
+    this.ws.on('close', () => {
+      onclose(this);
     });
 
     this.ws.on('pong', () => {

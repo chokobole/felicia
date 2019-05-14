@@ -1,14 +1,19 @@
 import feliciaJs from 'felicia_js.node';
 import { isWin } from 'lib/environment';
 import MasterProxyClient from 'master-proxy-client';
-import handleMessage from 'message';
+import handleMessage, { handleClose } from 'message';
 import TOPIC_MAP from 'topic-map';
 import websocket from 'websocket';
 
 export default () => {
-  const ws = websocket((connection, message) => {
-    handleMessage(connection, ws, message);
-  });
+  const ws = websocket(
+    (connection, message) => {
+      handleMessage(connection, ws, message);
+    },
+    connection => {
+      handleClose(connection);
+    }
+  );
   feliciaJs.MasterProxy.setBackground();
 
   if (isWin) {
@@ -36,7 +41,8 @@ export default () => {
         const topicInfo = message.message;
         TOPIC_MAP.set(topicInfo.topic, topicInfo);
       },
-      s => {  // eslint-disable-line no-shadow
+      // eslint-disable-next-line no-shadow
+      s => {
         console.error(s.errorMessage());
         process.exit(1);
       }

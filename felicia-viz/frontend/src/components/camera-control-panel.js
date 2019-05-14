@@ -66,7 +66,7 @@ export default class CameraControlPanel extends Component {
     },
   };
 
-  _onChange = values => {};  // eslint-disable-line no-unused-vars
+  _onChange = values => {}; // eslint-disable-line no-unused-vars
 
   _fetchValues() {
     const { store } = this.props;

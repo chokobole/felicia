@@ -21,7 +21,7 @@ export default class Activatable extends PureComponent {
     const { children } = this.props;
 
     return (
-      <div id='asdf' onMouseDown={this._onClick} role='none'>
+      <div onMouseDown={this._onClick} role='none'>
         {children}
       </div>
     );

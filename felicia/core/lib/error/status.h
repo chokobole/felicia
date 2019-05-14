@@ -38,6 +38,8 @@ class EXPORT Status {
 
   Status(const Status& status);
   Status& operator=(const Status& status);
+  Status(Status&& status);
+  Status& operator=(Status&& status);
   ~Status();
 
   // Accessor

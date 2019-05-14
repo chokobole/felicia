@@ -119,8 +119,12 @@ void DynamicSubscribingNode::Subscribe(
   subscribers_[topic] = std::move(subscriber);
 }
 
-void DynamicSubscribingNode::Unsubscribe(const TopicInfo& topic_info) {
-  subscribers_.erase(topic_info.topic());
+void DynamicSubscribingNode::Unsubscribe(const std::string& topic,
+                                         StatusOnceCallback callback) {
+  auto it = subscribers_.find(topic);
+  if (it == subscribers_.end()) return;
+
+  it->second->UnSubscribe(topic, std::move(callback));
 }
 
 }  // namespace felicia

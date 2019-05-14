@@ -4,6 +4,7 @@
 #include "third_party/chromium/base/synchronization/waitable_event.h"
 
 #include "felicia/core/lib/containers/pool.h"
+#include "felicia/core/lib/error/errors.h"
 #include "felicia/core/lib/felicia_env.h"
 #include "felicia/core/node/dynamic_subscribing_node.h"
 #include "felicia/core/node/topic_info_watcher_node.h"
@@ -21,16 +22,26 @@ namespace {
 struct TopicData {
   std::string topic;
   StatusOr<DynamicProtobufMessage> status_or;
+  Status on_unsubscribe_status;
+  bool is_message_data = false;
+  bool is_subscription_error = false;
 
   TopicData() = default;
 
   TopicData(const std::string& topic, DynamicProtobufMessage&& message)
       : topic(topic), status_or(std::move(message)), is_message_data(true) {}
 
-  TopicData(const std::string& topic, const Status& status)
-      : topic(topic), status_or(status), is_message_data(false) {}
+  TopicData(const std::string& topic, const Status& status,
+            bool is_subscription_error)
+      : topic(topic),
+        status_or(status),
+        is_subscription_error(is_subscription_error) {}
 
-  bool is_message_data;
+  TopicData(TopicData&& other) = default;
+
+  TopicData& operator=(TopicData&& other) = default;
+
+  DISALLOW_COPY_AND_ASSIGN(TopicData);
 };
 
 napi_env g_current_env;
@@ -138,6 +149,7 @@ class MultiTopicSubscriberDelegate
 
     ::Napi::FunctionReference on_message_callback;
     ::Napi::FunctionReference on_subscription_error_callback;
+    ::Napi::FunctionReference on_unsubscribe_callback;
 
     DISALLOW_COPY_AND_ASSIGN(CallbackInfo);
   };
@@ -185,7 +197,7 @@ class MultiTopicSubscriberDelegate
   void OnSubscriptionError(const std::string& topic, const Status& s) override {
     {
       ::base::AutoLock l(lock_);
-      topic_data_queue_.push({topic, s});
+      topic_data_queue_.push({topic, s, true /* subscription error */});
     }
 
     uv_async_send(&handle_);
@@ -197,27 +209,61 @@ class MultiTopicSubscriberDelegate
       ::Napi::FunctionReference on_subscription_error_callback) {
     // TODO: Should implement unsubscribe
     node_->Subscribe(topic_info, settings);
-    callback_infos_[topic_info.topic()] =
-        CallbackInfo(std::move(on_message_callback),
-                     std::move(on_subscription_error_callback));
+    {
+      ::base::AutoLock l(lock_);
+      callback_infos_[topic_info.topic()] =
+          CallbackInfo(std::move(on_message_callback),
+                       std::move(on_subscription_error_callback));
+    }
+  }
+
+  void UnsubscribeTopic(const std::string& topic,
+                        ::Napi::FunctionReference callback) {
+    {
+      ::base::AutoLock l(lock_);
+      auto it = callback_infos_.find(topic);
+      if (it == callback_infos_.end()) {
+        ::Napi::Env env = callback.Env();
+        callback.Call(
+            env.Global(),
+            {JsStatus::New(env,
+                           errors::NotFound("Failed to find callback info."))});
+        return;
+      }
+
+      it->second.on_unsubscribe_callback = std::move(callback);
+    }
+    node_->Unsubscribe(
+        topic,
+        ::base::BindOnce(&MultiTopicSubscriberDelegate::OnUnsubscribeTopic,
+                         ::base::Unretained(this), topic));
+  }
+
+  void OnUnsubscribeTopic(const std::string& topic, const Status& s) {
+    {
+      ::base::AutoLock l(lock_);
+      topic_data_queue_.push({topic, s, false /* unsubscription status */});
+    }
+    uv_async_send(&handle_);
   }
 
   static void OnAsync(uv_async_t* handle) {
     bool is_empty = false;
     while (!is_empty) {
       TopicData topic_data;
+      ::base::flat_map<std::string, CallbackInfo>::iterator it;
       {
         ::base::AutoLock l(g_multi_topic_subscriber_delegate->lock_);
         topic_data = std::move(
             g_multi_topic_subscriber_delegate->topic_data_queue_.front());
         g_multi_topic_subscriber_delegate->topic_data_queue_.pop();
         is_empty = g_multi_topic_subscriber_delegate->topic_data_queue_.empty();
-      }
 
-      auto it = g_multi_topic_subscriber_delegate->callback_infos_.find(
-          topic_data.topic);
-      if (it == g_multi_topic_subscriber_delegate->callback_infos_.end())
-        return;
+        it = g_multi_topic_subscriber_delegate->callback_infos_.find(
+            topic_data.topic);
+        if (it == g_multi_topic_subscriber_delegate->callback_infos_.end())
+          continue;
+      }
 
       ::Napi::Env env = it->second.on_message_callback.Env();
       ::Napi::HandleScope scope(env);
@@ -227,9 +273,13 @@ class MultiTopicSubscriberDelegate
             js::TypeConvertor<::google::protobuf::Message>::ToJSValue(
                 env, *topic_data.status_or.ValueOrDie().message());
         it->second.on_message_callback.Call(env.Global(), {value});
-      } else {
+      } else if (topic_data.is_subscription_error) {
         it->second.on_subscription_error_callback.Call(
             env.Global(), {JsStatus::New(env, topic_data.status_or.status())});
+      } else {
+        it->second.on_unsubscribe_callback.Call(
+            env.Global(),
+            {JsStatus::New(env, topic_data.on_unsubscribe_status)});
       }
     }
   }
@@ -243,11 +293,11 @@ class MultiTopicSubscriberDelegate
   std::unique_ptr<ProtobufLoader> protobuf_loader_;
   ::base::WaitableEvent* event_;
   DynamicSubscribingNode* node_;  // not owned
-  ::base::flat_map<std::string, CallbackInfo> callback_infos_;
 
   uv_async_t handle_;
   ::base::Lock lock_;
   Pool<TopicData, uint8_t> topic_data_queue_ GUARDED_BY(lock_);
+  ::base::flat_map<std::string, CallbackInfo> callback_infos_ GUARDED_BY(lock_);
 };
 
 }  // namespace
@@ -276,6 +326,7 @@ void JsMasterProxy::Init(::Napi::Env env, ::Napi::Object exports) {
         StaticMethod("requestRegisterTopicInfoWatcherNode",
                      &JsMasterProxy::RequestRegisterTopicInfoWatcherNode),
         StaticMethod("subscribeTopic", &JsMasterProxy::SubscribeTopic),
+        StaticMethod("unsubscribeTopic", &JsMasterProxy::UnsubscribeTopic),
   });
 
   constructor_ = ::Napi::Persistent(func);
@@ -468,6 +519,32 @@ void JsMasterProxy::SubscribeTopic(const ::Napi::CallbackInfo& info) {
   g_multi_topic_subscriber_delegate->HandleTopicInfo(
       topic_info, settings, std::move(on_new_message),
       std::move(on_subscription_error));
+}
+
+// static
+void JsMasterProxy::UnsubscribeTopic(const ::Napi::CallbackInfo& info) {
+  ::Napi::Env env = info.Env();
+  ScopedEnvSetter scoped_env_setter(env);
+
+  std::string topic;
+  ::Napi::FunctionReference callback;
+  if (info.Length() == 2) {
+    topic = info[0].As<::Napi::String>().Utf8Value();
+    callback = ::Napi::Persistent(info[1].As<::Napi::Function>());
+  } else {
+    THROW_JS_WRONG_NUMBER_OF_ARGUMENTS(env);
+    return;
+  }
+
+  if (!g_multi_topic_subscriber_delegate) {
+    callback.Call(
+        env.Global(),
+        {JsStatus::New(env, errors::Aborted("No subscriber exists."))});
+    callback.Reset();
+  }
+
+  g_multi_topic_subscriber_delegate->UnsubscribeTopic(topic,
+                                                      std::move(callback));
 }
 
 }  // namespace felicia

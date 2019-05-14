@@ -17,6 +17,27 @@ export default class App extends Component {
     }).isRequired,
   };
 
+  componentDidMount() {
+    document.addEventListener('keydown', this._onKeyDown);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this._onKeyDown);
+  }
+
+  _onKeyDown = e => {
+    switch (e.keyCode) {
+      case 46: {
+        // Delete
+        const { store } = this.props;
+        store.uiState.activeWindow.deactivate();
+        break;
+      }
+      default:
+        break;
+    }
+  };
+
   _renderCameraPanels() {
     const { store } = this.props;
     const { currentTime, uiState } = store;

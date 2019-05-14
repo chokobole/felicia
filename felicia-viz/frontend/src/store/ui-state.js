@@ -42,14 +42,30 @@ class Window {
     this.uiState = uiState;
   }
 
+  @action reset() {
+    this.id = null;
+    this.type = null;
+  }
+
   @action activate(id, type) {
     this.id = id;
     this.type = type;
   }
 
-  @action deacitvate() {
-    this.id = null;
-    this.type = null;
+  @action deactivate() {
+    const { type, id, uiState } = this;
+    if (type === null) return;
+
+    if (type === UI_TYPES.CameraPanel.name) {
+      const cameraPanel = uiState.findCameraPanel(id);
+      const { topic } = cameraPanel;
+      if (topic !== '') {
+        SUBSCRIBER.unsubscribeTopic(id, topic);
+      }
+      uiState.removeCameraPanel(id);
+    }
+
+    this.reset();
   }
 
   getState() {

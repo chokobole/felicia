@@ -32,6 +32,7 @@ class JsMasterProxy : public ::Napi::ObjectWrap<JsMasterProxy> {
       const ::Napi::CallbackInfo& info);
 
   static void SubscribeTopic(const ::Napi::CallbackInfo& info);
+  static void UnsubscribeTopic(const ::Napi::CallbackInfo& info);
 
  private:
   static ::Napi::FunctionReference constructor_;

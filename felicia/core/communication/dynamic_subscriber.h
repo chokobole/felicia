@@ -18,6 +18,8 @@ class DynamicSubscriber : public Subscriber<DynamicProtobufMessage> {
 
   void OnFindPublisher(const TopicInfo& topic_info);
 
+  void UnSubscribe(const std::string& topic, StatusOnceCallback callback);
+
  private:
   void ResetMessage(const TopicInfo& topic_info) override;
 

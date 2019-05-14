@@ -29,6 +29,8 @@ Status::Status(felicia::error::Code error_code,
 
 Status::Status(const Status& status) = default;
 Status& Status::operator=(const Status& status) = default;
+Status::Status(Status&& status) = default;
+Status& Status::operator=(Status&& status) = default;
 
 Status::~Status() = default;
 

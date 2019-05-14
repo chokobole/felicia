@@ -78,8 +78,11 @@ class SubscriberPool {
     this.subscribers.forEach((subscriber, topicKey, map) => {
       if (topicKey !== topic) {
         if (subscriber.removeListener(id)) {
+          console.log(`${id} stop listening ${topic}`);
           if (subscriber.listeners.length === 0) {
+            subscriber.close();
             map.delete(topicKey);
+            console.log(`unsubscribe ${topicKey}`);
           }
         }
       }
@@ -94,6 +97,21 @@ class SubscriberPool {
       subscriber = this.subscribers.get(topic);
     }
     subscriber.addListener(id);
+  }
+
+  unsubscribeTopic(id, topic) {
+    this.subscribers.forEach((subscriber, topicKey, map) => {
+      if (topicKey === topic) {
+        if (subscriber.removeListener(id)) {
+          console.log(`${id} stop listening ${topic}`);
+          if (subscriber.listeners.length === 0) {
+            subscriber.close();
+            map.delete(topicKey);
+            console.log(`unsubscribe ${topicKey}`);
+          }
+        }
+      }
+    });
   }
 }
 

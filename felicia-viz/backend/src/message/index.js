@@ -1,7 +1,7 @@
 import MESSAGE_TYPES from 'common/message-type';
 
 import handleMetaInfoMessage from 'message/meta-info-handler';
-import handleCameraMessage from 'message/camera-handler';
+import handleCameraMessage, { handleCameraClose } from 'message/camera-handler';
 
 export default function handleMessage(connection, ws, message) {
   /* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["connection"] }] */
@@ -27,7 +27,21 @@ export default function handleMessage(connection, ws, message) {
       break;
     }
     default: {
-      console.error(`Don't know how to handle the message type ${type}.`);
+      console.error(`[OnMessage] Don't know how to handle the message type ${type}.`);
+      break;
+    }
+  }
+}
+
+export function handleClose(connection) {
+  const { type, topic } = connection;
+  switch (type) {
+    case MESSAGE_TYPES.Camera: {
+      handleCameraClose(topic);
+      break;
+    }
+    default: {
+      console.error(`[OnClose] Don't know how to handle the message type ${type}.`);
       break;
     }
   }
