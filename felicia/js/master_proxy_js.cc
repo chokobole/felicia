@@ -79,27 +79,31 @@ class TopicInfoWatcherDelegate : public TopicInfoWatcherNode::Delegate {
   }
 
   static void OnAsync(uv_async_t* handle) {
-    StatusOr<TopicInfo> status_or;
-    {
-      ::base::AutoLock l(g_topic_info_watcher_delegate->lock_);
-      status_or = g_topic_info_watcher_delegate->topic_info_queue_.front();
-      g_topic_info_watcher_delegate->topic_info_queue_.pop();
-    }
+    bool is_empty = false;
+    while (!is_empty) {
+      StatusOr<TopicInfo> status_or;
+      {
+        ::base::AutoLock l(g_topic_info_watcher_delegate->lock_);
+        status_or = g_topic_info_watcher_delegate->topic_info_queue_.front();
+        g_topic_info_watcher_delegate->topic_info_queue_.pop();
+        is_empty = g_topic_info_watcher_delegate->topic_info_queue_.empty();
+      }
 
-    ::Napi::Env env =
-        g_topic_info_watcher_delegate->on_new_topic_info_callback_.Env();
-    ::Napi::HandleScope scope(env);
+      ::Napi::Env env =
+          g_topic_info_watcher_delegate->on_new_topic_info_callback_.Env();
+      ::Napi::HandleScope scope(env);
 
-    if (status_or.ok()) {
-      ::Napi::Value value =
-          js::TypeConvertor<::google::protobuf::Message>::ToJSValue(
-              env, status_or.ValueOrDie());
+      if (status_or.ok()) {
+        ::Napi::Value value =
+            js::TypeConvertor<::google::protobuf::Message>::ToJSValue(
+                env, status_or.ValueOrDie());
 
-      g_topic_info_watcher_delegate->on_new_topic_info_callback_.Call(
-          env.Global(), {value});
-    } else {
-      g_topic_info_watcher_delegate->on_error_callback_.Call(
-          env.Global(), {JsStatus::New(env, status_or.status())});
+        g_topic_info_watcher_delegate->on_new_topic_info_callback_.Call(
+            env.Global(), {value});
+      } else {
+        g_topic_info_watcher_delegate->on_error_callback_.Call(
+            env.Global(), {JsStatus::New(env, status_or.status())});
+      }
     }
   }
 
@@ -199,29 +203,34 @@ class MultiTopicSubscriberDelegate
   }
 
   static void OnAsync(uv_async_t* handle) {
-    TopicData topic_data;
-    {
-      ::base::AutoLock l(g_multi_topic_subscriber_delegate->lock_);
-      topic_data = std::move(
-          g_multi_topic_subscriber_delegate->topic_data_queue_.front());
-      g_multi_topic_subscriber_delegate->topic_data_queue_.pop();
-    }
+    bool is_empty = false;
+    while (!is_empty) {
+      TopicData topic_data;
+      {
+        ::base::AutoLock l(g_multi_topic_subscriber_delegate->lock_);
+        topic_data = std::move(
+            g_multi_topic_subscriber_delegate->topic_data_queue_.front());
+        g_multi_topic_subscriber_delegate->topic_data_queue_.pop();
+        is_empty = g_multi_topic_subscriber_delegate->topic_data_queue_.empty();
+      }
 
-    auto it = g_multi_topic_subscriber_delegate->callback_infos_.find(
-        topic_data.topic);
-    if (it == g_multi_topic_subscriber_delegate->callback_infos_.end()) return;
+      auto it = g_multi_topic_subscriber_delegate->callback_infos_.find(
+          topic_data.topic);
+      if (it == g_multi_topic_subscriber_delegate->callback_infos_.end())
+        return;
 
-    ::Napi::Env env = it->second.on_message_callback.Env();
-    ::Napi::HandleScope scope(env);
+      ::Napi::Env env = it->second.on_message_callback.Env();
+      ::Napi::HandleScope scope(env);
 
-    if (topic_data.is_message_data) {
-      ::Napi::Value value =
-          js::TypeConvertor<::google::protobuf::Message>::ToJSValue(
-              env, *topic_data.status_or.ValueOrDie().message());
-      it->second.on_message_callback.Call(env.Global(), {value});
-    } else {
-      it->second.on_subscription_error_callback.Call(
-          env.Global(), {JsStatus::New(env, topic_data.status_or.status())});
+      if (topic_data.is_message_data) {
+        ::Napi::Value value =
+            js::TypeConvertor<::google::protobuf::Message>::ToJSValue(
+                env, *topic_data.status_or.ValueOrDie().message());
+        it->second.on_message_callback.Call(env.Global(), {value});
+      } else {
+        it->second.on_subscription_error_callback.Call(
+            env.Global(), {JsStatus::New(env, topic_data.status_or.status())});
+      }
     }
   }
 
