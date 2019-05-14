@@ -12,31 +12,29 @@ class Subscriber {
     this.listeners = [];
   }
 
-  initialize(onmessage) {
-    this.connection.initialize(onmessage);
+  initialize(worker, type, topic) {
+    this.connection.initialize(this.requestTopic.bind(this, type, topic), event => {
+      worker.postMessage({
+        type,
+        destinations: this.listeners,
+        data: event.data,
+      });
+    });
   }
 
   requestTopic(type, topic) {
-    if (this.connection.ws.readyState !== WebSocket.OPEN) {
-      this.timeout = setTimeout(this.requestTopic.bind(this), 100, type, topic);
-      return;
-    }
     console.log(`request Topic ${type} ${topic}`);
     const data = JSON.stringify({
       type,
       topic,
     });
 
-    this.timeout = null;
     this.connection.ws.send(data);
   }
 
   close() {
     this.connection.markClose();
     this.connection.ws.close();
-    if (this.timeout) {
-      clearTimeout(this.timeout);
-    }
   }
 
   addListener(id) {
@@ -60,7 +58,7 @@ class Subscriber {
 }
 
 class SubscriberPool {
-  subscribers = {};
+  subscribers = new Map();
 
   constructor() {
     this.worker = new Worker();
@@ -77,30 +75,25 @@ class SubscriberPool {
   }
 
   subscribeTopic(id, type, topic) {
-    Object.entries(this.subscribers).forEach(([topicKey, subscriber]) => {
+    this.subscribers.forEach((subscriber, topicKey, map) => {
       if (topicKey !== topic) {
         if (subscriber.removeListener(id)) {
           if (subscriber.listeners.length === 0) {
-            this.subscribers[topicKey] = undefined;
+            map.delete(topicKey);
           }
         }
       }
     });
 
-    let subscriber = this.subscribers[topic];
-    if (!subscriber) {
+    let subscriber;
+    if (!this.subscribers.has(topic)) {
       subscriber = new Subscriber();
-      this.subscribers[topic] = subscriber;
+      subscriber.initialize(this.worker, type, topic);
+      this.subscribers.set(topic, subscriber);
+    } else {
+      subscriber = this.subscribers.get(topic);
     }
     subscriber.addListener(id);
-    subscriber.initialize(event => {
-      this.worker.postMessage({
-        type,
-        destinations: subscriber.listeners,
-        data: event.data,
-      });
-    });
-    this.subscribers[topic].requestTopic(type, topic);
   }
 }
 

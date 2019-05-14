@@ -22,7 +22,7 @@ class MetaInfoSubscriber {
   }
 
   initialize() {
-    this.connection.initialize(event => {
+    this.connection.initialize(null, event => {
       this.worker.postMessage({
         type: MESSAGE_TYPES.MetaInfo.name,
         data: event.data,
