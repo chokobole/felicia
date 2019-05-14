@@ -8,6 +8,7 @@ export default class Connection {
   constructor(ws, onmessage, onclose) {
     this.ws = ws;
     this.type = null;
+    this.topic = null;
 
     this.ws.on('message', message => {
       onmessage(this, message);

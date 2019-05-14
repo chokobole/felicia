@@ -1,4 +1,5 @@
 import MESSAGE_TYPES from 'common/message-type';
+import QUERY_TYPES from 'common/query-type';
 import STORE from 'store';
 import Connection from 'util/connection';
 import Worker from 'util/subscriber-webworker';
@@ -22,38 +23,31 @@ class MetaInfoSubscriber {
   }
 
   initialize() {
-    this.connection.initialize(null, event => {
-      this.worker.postMessage({
-        type: MESSAGE_TYPES.MetaInfo.name,
-        data: event.data,
-      });
-    });
-  }
+    this.connection.initialize(
+      () => {
+        const content = JSON.stringify({
+          type: MESSAGE_TYPES.MetaInfo.name,
+          queryType: QUERY_TYPES.Topics.name,
+        });
 
-  request(queryType) {
-    if (this.connection.ws.readyState !== WebSocket.OPEN) {
-      this.timeout = setTimeout(this.request.bind(this), 100, queryType);
-      return;
-    }
-    const content = JSON.stringify({
-      type: MESSAGE_TYPES.MetaInfo.name,
-      queryType,
-    });
-
-    this.connection.ws.send(content);
+        this.connection.ws.send(content);
+      },
+      event => {
+        this.worker.postMessage({
+          type: MESSAGE_TYPES.MetaInfo.name,
+          data: event.data,
+        });
+      }
+    );
   }
 
   close() {
     this.worker.terminate();
     this.connection.markClose();
     this.connection.ws.close();
-    if (this.timeout) {
-      clearTimeout(this.timeout);
-    }
   }
 }
 
 const META_INFO_SUBSCRIBER = new MetaInfoSubscriber();
-META_INFO_SUBSCRIBER.initialize();
 
 export default META_INFO_SUBSCRIBER;

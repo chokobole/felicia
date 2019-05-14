@@ -7,8 +7,6 @@ import { Dropdown, Label } from '@streetscape.gl/monochrome';
 import PanelItemContainer from 'components/panel-item-container';
 import { FeliciaVizStore } from 'store';
 import { failedToFindActiveState } from 'util/error';
-import META_INFO_SUBSCRIBER from 'util/meta-info-subscriber';
-import QUERY_TYPE from 'common/query-type';
 
 @inject('store')
 @observer
@@ -18,10 +16,6 @@ export default class TopicDropdown extends Component {
     typeName: PropTypes.string.isRequired,
     store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
   };
-
-  componentDidMount() {
-    META_INFO_SUBSCRIBER.request(QUERY_TYPE.Topics.name);
-  }
 
   _onTopicChange = value => {
     const { store } = this.props;

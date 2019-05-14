@@ -5,6 +5,7 @@ import { inject, observer } from 'mobx-react';
 import CameraPanel from 'components/camera-panel';
 import ControlPanel from 'components/control-panel';
 import ToolBar from 'components/tool-bar';
+import META_INFO_SUBSCRIBER from 'util/meta-info-subscriber';
 
 import 'stylesheets/main.scss';
 
@@ -19,10 +20,12 @@ export default class App extends Component {
 
   componentDidMount() {
     document.addEventListener('keydown', this._onKeyDown);
+    META_INFO_SUBSCRIBER.initialize();
   }
 
   componentWillUnmount() {
     document.removeEventListener('keydown', this._onKeyDown);
+    META_INFO_SUBSCRIBER.close();
   }
 
   _onKeyDown = e => {
