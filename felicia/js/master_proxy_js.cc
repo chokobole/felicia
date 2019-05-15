@@ -187,7 +187,7 @@ class MultiTopicSubscriberDelegate
   void OnNewMessage(const std::string& topic,
                     DynamicProtobufMessage&& message) override {
     {
-      ::base::AutoLock l(lock_);
+      ::base::AutoLock l(topic_data_queue_lock_);
       topic_data_queue_.push({topic, std::move(message)});
     }
 
@@ -196,7 +196,7 @@ class MultiTopicSubscriberDelegate
 
   void OnSubscriptionError(const std::string& topic, const Status& s) override {
     {
-      ::base::AutoLock l(lock_);
+      ::base::AutoLock l(topic_data_queue_lock_);
       topic_data_queue_.push({topic, s, true /* subscription error */});
     }
 
@@ -210,7 +210,7 @@ class MultiTopicSubscriberDelegate
     // TODO: Should implement unsubscribe
     node_->Subscribe(topic_info, settings);
     {
-      ::base::AutoLock l(lock_);
+      ::base::AutoLock l(callback_infos_lock_);
       callback_infos_[topic_info.topic()] =
           CallbackInfo(std::move(on_message_callback),
                        std::move(on_subscription_error_callback));
@@ -220,7 +220,7 @@ class MultiTopicSubscriberDelegate
   void UnsubscribeTopic(const std::string& topic,
                         ::Napi::FunctionReference callback) {
     {
-      ::base::AutoLock l(lock_);
+      ::base::AutoLock l(callback_infos_lock_);
       auto it = callback_infos_.find(topic);
       if (it == callback_infos_.end()) {
         ::Napi::Env env = callback.Env();
@@ -241,7 +241,7 @@ class MultiTopicSubscriberDelegate
 
   void OnUnsubscribeTopic(const std::string& topic, const Status& s) {
     {
-      ::base::AutoLock l(lock_);
+      ::base::AutoLock l(topic_data_queue_lock_);
       topic_data_queue_.push({topic, s, false /* unsubscription status */});
     }
     uv_async_send(&handle_);
@@ -251,19 +251,21 @@ class MultiTopicSubscriberDelegate
     bool is_empty = false;
     while (!is_empty) {
       TopicData topic_data;
-      ::base::flat_map<std::string, CallbackInfo>::iterator it;
       {
-        ::base::AutoLock l(g_multi_topic_subscriber_delegate->lock_);
+        ::base::AutoLock l(
+            g_multi_topic_subscriber_delegate->topic_data_queue_lock_);
         topic_data = std::move(
             g_multi_topic_subscriber_delegate->topic_data_queue_.front());
         g_multi_topic_subscriber_delegate->topic_data_queue_.pop();
         is_empty = g_multi_topic_subscriber_delegate->topic_data_queue_.empty();
-
-        it = g_multi_topic_subscriber_delegate->callback_infos_.find(
-            topic_data.topic);
-        if (it == g_multi_topic_subscriber_delegate->callback_infos_.end())
-          continue;
       }
+
+      ::base::AutoLock l(
+          g_multi_topic_subscriber_delegate->callback_infos_lock_);
+      auto it = g_multi_topic_subscriber_delegate->callback_infos_.find(
+          topic_data.topic);
+      if (it == g_multi_topic_subscriber_delegate->callback_infos_.end())
+        continue;
 
       ::Napi::Env env = it->second.on_message_callback.Env();
       ::Napi::HandleScope scope(env);
@@ -280,6 +282,10 @@ class MultiTopicSubscriberDelegate
         it->second.on_unsubscribe_callback.Call(
             env.Global(),
             {JsStatus::New(env, topic_data.on_unsubscribe_status)});
+        it->second.on_message_callback.Reset();
+        it->second.on_subscription_error_callback.Reset();
+        it->second.on_unsubscribe_callback.Reset();
+        g_multi_topic_subscriber_delegate->callback_infos_.erase(it);
       }
     }
   }
@@ -295,9 +301,13 @@ class MultiTopicSubscriberDelegate
   DynamicSubscribingNode* node_;  // not owned
 
   uv_async_t handle_;
-  ::base::Lock lock_;
-  Pool<TopicData, uint8_t> topic_data_queue_ GUARDED_BY(lock_);
-  ::base::flat_map<std::string, CallbackInfo> callback_infos_ GUARDED_BY(lock_);
+  ::base::Lock topic_data_queue_lock_;
+  ::base::Lock callback_infos_lock_;
+  // NOTE: Maybe happen data starvation if one is queued so slow and the others
+  // are queued so fast.
+  Pool<TopicData, uint8_t> topic_data_queue_ GUARDED_BY(topic_data_queue_lock_);
+  ::base::flat_map<std::string, CallbackInfo> callback_infos_
+      GUARDED_BY(callback_infos_lock_);
 };
 
 }  // namespace
