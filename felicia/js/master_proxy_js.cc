@@ -32,9 +32,13 @@ struct TopicData {
 
   TopicData(const std::string& topic, const Status& status,
             bool is_subscription_error)
-      : topic(topic),
-        status_or(status),
-        is_subscription_error(is_subscription_error) {}
+      : topic(topic), is_subscription_error(is_subscription_error) {
+    if (is_subscription_error) {
+      status_or = status;
+    } else {
+      on_unsubscribe_status = status;
+    }
+  }
 
   TopicData(TopicData&& other) = default;
 
