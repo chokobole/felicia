@@ -19,10 +19,6 @@ function renderText(self) {
   );
 }
 
-function isDepthCamera() {
-  return true;
-}
-
 @inject('store')
 @observer
 export default class CameraControlPanel extends Component {
@@ -60,7 +56,6 @@ export default class CameraControlPanel extends Component {
           render: self => {
             return <ColormapDropdown {...self} />;
           },
-          visible: isDepthCamera,
         },
       },
     },
