@@ -119,12 +119,34 @@ void DynamicSubscribingNode::Subscribe(
   subscribers_[topic] = std::move(subscriber);
 }
 
+void DynamicSubscribingNode::UpdateTopicInfo(const TopicInfo& topic_info) {
+  auto it = subscribers_.find(topic_info.topic());
+  if (it == subscribers_.end()) return;
+
+  const TopicInfo& cur_topic_info = it->second->topic_info();
+  if (cur_topic_info.type_name() == topic_info.type_name()) {
+    it->second->OnFindPublisher(topic_info);
+  }
+}
+
 void DynamicSubscribingNode::Unsubscribe(const std::string& topic,
                                          StatusOnceCallback callback) {
   auto it = subscribers_.find(topic);
   if (it == subscribers_.end()) return;
 
-  it->second->UnSubscribe(topic, std::move(callback));
+  it->second->UnSubscribe(
+      topic,
+      ::base::BindOnce(&DynamicSubscribingNode::OnUnsubscribe,
+                       ::base::Unretained(this), topic, std::move(callback)));
+}
+
+void DynamicSubscribingNode::OnUnsubscribe(const std::string& topic,
+                                           StatusOnceCallback callback,
+                                           const Status& s) {
+  auto it = subscribers_.find(topic);
+  subscribers_.erase(it);
+
+  std::move(callback).Run(s);
 }
 
 }  // namespace felicia

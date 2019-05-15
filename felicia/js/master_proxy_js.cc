@@ -80,14 +80,7 @@ class TopicInfoWatcherDelegate : public TopicInfoWatcherNode::Delegate {
     uv_async_send(&handle_);
   }
 
-  void OnNewTopicInfo(const TopicInfo& topic_info) override {
-    {
-      ::base::AutoLock l(lock_);
-      topic_info_queue_.push(topic_info);
-    }
-
-    uv_async_send(&handle_);
-  }
+  void OnNewTopicInfo(const TopicInfo& topic_info) override;
 
   static void OnAsync(uv_async_t* handle) {
     bool is_empty = false;
@@ -203,11 +196,16 @@ class MultiTopicSubscriberDelegate
     uv_async_send(&handle_);
   }
 
+  // This is called from TopicInfoWatcherDelegate, if TopicInfo is updated.
+  void HandleTopicInfo(const TopicInfo& topic_info) {
+    node_->UpdateTopicInfo(topic_info);
+  }
+
+  // // This is called from JsMasterProxy::SubscribeTopic from the js side.
   void HandleTopicInfo(
       const TopicInfo& topic_info, const communication::Settings& settings,
       ::Napi::FunctionReference on_message_callback,
       ::Napi::FunctionReference on_subscription_error_callback) {
-    // TODO: Should implement unsubscribe
     node_->Subscribe(topic_info, settings);
     {
       ::base::AutoLock l(callback_infos_lock_);
@@ -309,6 +307,18 @@ class MultiTopicSubscriberDelegate
   ::base::flat_map<std::string, CallbackInfo> callback_infos_
       GUARDED_BY(callback_infos_lock_);
 };
+
+void TopicInfoWatcherDelegate::OnNewTopicInfo(const TopicInfo& topic_info) {
+  {
+    ::base::AutoLock l(lock_);
+    topic_info_queue_.push(topic_info);
+  }
+
+  if (g_multi_topic_subscriber_delegate) {
+    g_multi_topic_subscriber_delegate->HandleTopicInfo(topic_info);
+  }
+  uv_async_send(&handle_);
+}
 
 }  // namespace
 

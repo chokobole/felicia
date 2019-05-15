@@ -10,6 +10,11 @@
 
 namespace felicia {
 
+// The Difference between OneTopicDelegate and MultiTopicDelegate is
+// OneTopicDelegate: it really requests to subscribe topic to the Master.
+// MultiTopicDelegate: it needs a TopicInfoWatcher, which tells it if any
+// updates on the topic, and it only subscribes. So Master dones't know
+// if the node really subscribe any topics.
 class DynamicSubscribingNode : public NodeLifecycle {
  public:
   class OneTopicDelegate {
@@ -49,20 +54,29 @@ class DynamicSubscribingNode : public NodeLifecycle {
 
   void OnError(const Status& s) override;
 
+  // For OneTopicDelegate
   void RequestSubscribe(const std::string& topic,
                         const communication::Settings& settings);
 
   void RequestUnubscribe(const std::string& topic);
 
+  // For MultiTopicDelegate
   void Subscribe(const TopicInfo& topic_info,
                  const communication::Settings& settings);
+
+  void UpdateTopicInfo(const TopicInfo& topic_info);
 
   void Unsubscribe(const std::string& topic, StatusOnceCallback callback);
 
  private:
+  // For OneTopicDelegate
   void OnRequestSubscribe(const std::string& topic, const Status& s);
 
   void OnRequestUnsubscribe(const std::string& topic, const Status& s);
+
+  // For MultiTopicDelegate
+  void OnUnsubscribe(const std::string& topic, StatusOnceCallback callback,
+                     const Status& s);
 
   ProtobufLoader* loader_;  // not owned;
   std::unique_ptr<OneTopicDelegate> one_topic_delegate_;
