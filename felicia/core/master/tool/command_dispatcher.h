@@ -6,6 +6,8 @@
 #include "felicia/core/communication/dynamic_publisher.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/tool/cli_flag.h"
+#include "felicia/core/master/tool/topic_publish_command_dispatcher.h"
+#include "felicia/core/master/tool/topic_subscribe_command_dispatcher.h"
 #include "felicia/core/message/dynamic_protobuf_message.h"
 #include "felicia/core/message/protobuf_loader.h"
 #include "felicia/core/protobuf/master.pb.h"
@@ -42,10 +44,8 @@ class CommandDispatcher {
   void OnListTopicsAsync(ListTopicsRequest* request,
                          ListTopicsResponse* response, const Status& s) const;
 
-  void PublishMessageFromJSON(const std::string& message, int64_t delay,
-                              DynamicPublisher* publisher) const;
-
-  void OnPublish(const Status& s) const;
+  TopicPublishCommandDispatcher topic_publish_command_dispatcher_;
+  TopicSubscribeCommandDispatcher topic_subscribe_command_dispatcher_;
 
   mutable std::unique_ptr<ProtobufLoader> protobuf_loader_;
 

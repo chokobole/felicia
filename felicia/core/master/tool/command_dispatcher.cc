@@ -10,9 +10,6 @@
 #include "felicia/core/channel/channel.h"
 #include "felicia/core/lib/felicia_env.h"
 #include "felicia/core/master/master_proxy.h"
-#include "felicia/core/node/dynamic_publishing_node.h"
-#include "felicia/core/node/dynamic_subscribing_node.h"
-#include "felicia/core/node/topic_info_watcher_node.h"
 #include "felicia/core/util/command_line_interface/table_writer.h"
 
 namespace felicia {
@@ -35,106 +32,9 @@ class ScopedMasterProxyStopper {
   }
 };
 
-class OneTopicSubscriberDelegate
-    : public DynamicSubscribingNode::OneTopicDelegate {
- public:
-  OneTopicSubscriberDelegate(const std::string& topic,
-                             const communication::Settings& settings)
-      : topic_(topic), settings_(settings) {}
-
-  void OnDidCreate(DynamicSubscribingNode* node) override {
-    node->RequestSubscribe(topic_, settings_);
-  }
-
-  void OnError(const Status& s) override { NOTREACHED() << s; }
-
-  void OnNewMessage(DynamicProtobufMessage&& message) override {
-    std::cout << message.ToString() << std::endl;
-  }
-
-  void OnSubscriptionError(const Status& s) override {
-    std::cerr << kRedError << "Subscription error: " << s << std::endl;
-  }
-
-  void OnRequestSubscribe(const Status& s) override {
-    if (!s.ok()) {
-      NOTREACHED() << s;
-    }
-  }
-
-  void OnRequestUnsubscribe(const Status& s) override {
-    if (!s.ok()) {
-      NOTREACHED() << s;
-    }
-  }
-
- private:
-  std::string topic_;
-  communication::Settings settings_;
-};
-
-class MultiTopicSubscriberDelegate
-    : public DynamicSubscribingNode::MultiTopicDelegate {
- public:
-  MultiTopicSubscriberDelegate(const communication::Settings& settings)
-      : settings_(settings) {}
-
-  void OnDidCreate(DynamicSubscribingNode* node) override;
-
-  void OnError(const Status& s) override { NOTREACHED() << s; }
-
-  void OnNewMessage(const std::string& topic,
-                    DynamicProtobufMessage&& message) override {
-    std::cout << TextStyle::Green(
-                     ::base::StringPrintf("[TOPIC] %s", topic.c_str()))
-              << std::endl;
-    std::cout << message.ToString() << std::endl;
-  }
-
-  void OnSubscriptionError(const std::string& topic, const Status& s) override {
-    std::cout << TextStyle::Red(
-                     ::base::StringPrintf("[TOPIC] %s", topic.c_str()))
-              << std::endl;
-    std::cerr << kRedError << "Subscription error: " << s << std::endl;
-  }
-
-  void HandleTopicInfo(const TopicInfo& topic_info) {
-    // TODO: Should implement unsubscribe
-    node_->Subscribe(topic_info, settings_);
-  }
-
- private:
-  DynamicSubscribingNode* node_ = nullptr;  // not owned
-  communication::Settings settings_;
-};
-
-class TopicInfoWatcherDelegate : public TopicInfoWatcherNode::Delegate {
- public:
-  TopicInfoWatcherDelegate(MultiTopicSubscriberDelegate* delegate)
-      : delegate_(delegate) {}
-
-  void OnError(const Status& s) override { NOTREACHED() << s; }
-
-  void OnNewTopicInfo(const TopicInfo& topic_info) override {
-    delegate_->HandleTopicInfo(topic_info);
-  }
-
- private:
-  MultiTopicSubscriberDelegate* delegate_;  // not owned
-};
-
-void MultiTopicSubscriberDelegate::OnDidCreate(DynamicSubscribingNode* node) {
-  node_ = node;
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  NodeInfo node_info;
-  node_info.set_watcher(true);
-  master_proxy.RequestRegisterNode<TopicInfoWatcherNode>(
-      node_info, std::make_unique<TopicInfoWatcherDelegate>(this));
-}
-
 }  // namespace
 
-CommandDispatcher::CommandDispatcher() {}
+CommandDispatcher::CommandDispatcher() = default;
 
 void CommandDispatcher::Dispatch(const CliFlag& delegate) const {
   auto command = delegate.command();
@@ -302,6 +202,9 @@ void CommandDispatcher::OnListNodesAsync(ListNodesRequest* request,
 }
 
 void CommandDispatcher::Dispatch(const TopicFlag& delegate) const {
+  protobuf_loader_ = ProtobufLoader::Load(
+      ::base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
+
   auto command = delegate.command();
   switch (command) {
     case TopicFlag::Command::COMMAND_SELF:
@@ -340,48 +243,12 @@ void CommandDispatcher::Dispatch(const TopicListFlag& delegate) const {
 }
 
 void CommandDispatcher::Dispatch(const TopicPublishFlag& delegate) const {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-
-  NodeInfo node_info;
-
-  protobuf_loader_ = ProtobufLoader::Load(
-      ::base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
-
-  ChannelDef channel_def;
-  channel_def.set_type(ChannelDef::TCP);
-
-  master_proxy.RequestRegisterNode<DynamicPublishingNode>(
-      node_info, protobuf_loader_.get(), delegate.topic_flag()->value(),
-      delegate.type_flag()->value(), channel_def,
-      ::base::BindOnce(
-          &CommandDispatcher::PublishMessageFromJSON, ::base::Unretained(this),
-          delegate.message_flag()->value(), delegate.interval_flag()->value()));
+  topic_publish_command_dispatcher_.Dispatch(protobuf_loader_.get(), delegate);
 }
 
 void CommandDispatcher::Dispatch(const TopicSubscribeFlag& delegate) const {
-  protobuf_loader_ = ProtobufLoader::Load(
-      ::base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
-
-  communication::Settings settings;
-  if (delegate.period_flag()->is_set())
-    settings.period =
-        ::base::TimeDelta::FromMilliseconds(delegate.period_flag()->value());
-  if (delegate.queue_size_flag()->is_set())
-    settings.queue_size = delegate.queue_size_flag()->value();
-  settings.is_dynamic_buffer = true;
-
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  NodeInfo node_info;
-  if (delegate.all_flag()->value()) {
-    master_proxy.RequestRegisterNode<DynamicSubscribingNode>(
-        node_info, protobuf_loader_.get(),
-        std::make_unique<MultiTopicSubscriberDelegate>(settings));
-  } else {
-    master_proxy.RequestRegisterNode<DynamicSubscribingNode>(
-        node_info, protobuf_loader_.get(),
-        std::make_unique<OneTopicSubscriberDelegate>(
-            delegate.topic_flag()->value(), settings));
-  }
+  topic_subscribe_command_dispatcher_.Dispatch(protobuf_loader_.get(),
+                                               delegate);
 }
 
 void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
@@ -421,9 +288,6 @@ void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
     auto topic_info = topic_infos[0];
     const ChannelSource& channel_source = topic_info.topic_source();
 
-    protobuf_loader_ = ProtobufLoader::Load(
-        ::base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
-
     const ::google::protobuf::Message* message =
         protobuf_loader_->NewMessage(topic_info.type_name());
 
@@ -439,34 +303,6 @@ void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
                      ChannelSourceToString(channel_source).c_str())
               << std::endl;
   }
-}
-
-void CommandDispatcher::PublishMessageFromJSON(
-    const std::string& message, int64_t delay,
-    DynamicPublisher* publisher) const {
-  if (publisher) {
-    publisher->Publish(message, ::base::BindOnce(&CommandDispatcher::OnPublish,
-                                                 ::base::Unretained(this)));
-    if (!publisher->IsUnregistered()) {
-      if (delay > 0) {
-        MasterProxy& master_proxy = MasterProxy::GetInstance();
-        master_proxy.PostDelayedTask(
-            FROM_HERE,
-            ::base::BindOnce(&CommandDispatcher::PublishMessageFromJSON,
-                             ::base::Unretained(this), message, delay,
-                             ::base::Unretained(publisher)),
-            ::base::TimeDelta::FromMilliseconds(delay));
-      }
-    }
-
-  } else {
-    LOG(ERROR) << "Failed to request publish or memory was corrupted while "
-                  "publishing message.";
-  }
-}
-
-void CommandDispatcher::OnPublish(const Status& s) const {
-  LOG_IF(ERROR, !s.ok()) << s.error_message();
 }
 
 }  // namespace felicia

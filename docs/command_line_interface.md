@@ -46,6 +46,7 @@ bazel-bin/felicia/core/master/tool/grpc_master_client_cli node ls -a
 | publish   | topic                   | Content to publish                                        |
 |           | type                    | Type of message                                           |
 |           | message                 | Content of message, in JSON format                        |
+|           | -c, --channel           | Protocol to deliver message                               |
 |           | -i, --interval          | Interval between messages, in milliseconds, default: 1000 |
 | subscribe | -a, -all                | Subscribe all the topics                                  |
 |           | -t, --topic             | Topic to subscribe                                        |

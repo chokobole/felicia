@@ -94,8 +94,16 @@ fel_cc_library(
 
 fel_cc_library(
     name = "command_disptacher",
-    srcs = ["command_dispatcher.cc"],
-    hdrs = ["command_dispatcher.h"],
+    srcs = [
+        "command_dispatcher.cc",
+        "topic_publish_command_dispatcher.cc",
+        "topic_subscribe_command_dispatcher.cc",
+    ],
+    hdrs = [
+        "command_dispatcher.h",
+        "topic_publish_command_dispatcher.h",
+        "topic_subscribe_command_dispatcher.h",
+    ],
     deps = [
         ":cli_flag",
         "//felicia/core/channel",

@@ -12,41 +12,46 @@ namespace felicia {
 
 class DynamicPublishingNode : public NodeLifecycle {
  public:
-  using PublisherCallback = ::base::OnceCallback<void(DynamicPublisher*)>;
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
 
-  DynamicPublishingNode(ProtobufLoader* loader, const std::string& topic,
-                        const std::string& message_type,
-                        const ChannelDef& channel_def,
-                        PublisherCallback publisher_callback);
+    virtual void OnDidCreate(DynamicPublishingNode* node) = 0;
+    virtual void OnError(const Status& s) = 0;
+
+    virtual void OnRequestPublish(const Status& s) = 0;
+    virtual void OnRequestUnpublish(const Status& s) = 0;
+
+    virtual void OnPublish(const Status& s) = 0;
+  };
+
+  DynamicPublishingNode(ProtobufLoader* loader,
+                        std::unique_ptr<Delegate> delegate);
 
   ~DynamicPublishingNode();
-
-  void OnInit() override;
 
   void OnDidCreate(const NodeInfo& node_info) override;
 
   void OnError(const Status& s) override;
 
-  const std::string& topic() const { return topic_; }
-  const std::string& message_type() const { return message_type_; }
-  const ChannelDef& channel_def() const { return channel_def_; }
+  void RequestPublish(const std::string& topic_type, const std::string& topic,
+                      const ChannelDef& channel_def,
+                      const communication::Settings& settings);
 
-  void PublishMessageFromJSON(const std::string& json_message,
-                              StatusOnceCallback callback);
+  void RequestUnpublish(const std::string& topic);
+
+  void PublishMessageFromJson(const std::string& json_message);
 
  private:
-  void RequestPublish();
-
   void OnRequestPublish(const Status& s);
 
-  ProtobufLoader* loader_;  // not owned;
-  NodeInfo node_info_;
-  std::string topic_;
-  std::string message_type_;
-  ChannelDef channel_def_;
-  std::unique_ptr<DynamicPublisher> publisher_;
+  void OnRequestUnpublish(const Status& s);
 
-  PublisherCallback publisher_callback_;
+  ProtobufLoader* loader_;  // not owned;
+  std::unique_ptr<Delegate> delegate_;
+  NodeInfo node_info_;
+
+  std::unique_ptr<DynamicPublisher> publisher_;
 };
 
 }  // namespace felicia
