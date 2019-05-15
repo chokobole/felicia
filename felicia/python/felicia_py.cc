@@ -7,6 +7,7 @@
 #include "felicia/core/communication/settings.h"
 #include "felicia/core/felicia_init.h"
 #include "felicia/python/command_line_interface/flag_py.h"
+#include "felicia/python/communication_py.h"
 #include "felicia/python/drivers/camera_py.h"
 #include "felicia/python/master_proxy_py.h"
 #include "felicia/python/node_py.h"
@@ -14,8 +15,6 @@
 namespace py = pybind11;
 
 namespace felicia {
-
-extern void AddCommunication(py::module& m);
 
 void AddGlobalFunctions(py::module& m) {
   m.def("felicia_init", &FeliciaInit);

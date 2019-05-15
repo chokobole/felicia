@@ -4,6 +4,7 @@
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 #include "felicia/core/channel/channel_factory.h"
+#include "felicia/core/lib/felicia_env.h"
 #include "felicia/core/lib/net/net_util.h"
 #include "felicia/core/lib/strings/str_util.h"
 
@@ -38,6 +39,9 @@ MasterProxy::MasterProxy()
         std::make_unique<::base::MessageLoop>(::base::MessageLoop::TYPE_IO);
     run_loop_ = std::make_unique<::base::RunLoop>();
   }
+
+  protobuf_loader_ = ProtobufLoader::Load(
+      ::base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
 }
 
 MasterProxy::~MasterProxy() = default;
@@ -51,6 +55,10 @@ MasterProxy& MasterProxy::GetInstance() {
   return *master_proxy;
 }
 
+ProtobufLoader* MasterProxy::protobuf_loader() {
+  return protobuf_loader_.get();
+}
+
 bool MasterProxy::IsBoundToCurrentThread() const {
   if (g_on_background) {
     return thread_->task_runner()->BelongsToCurrentThread();
@@ -59,7 +67,6 @@ bool MasterProxy::IsBoundToCurrentThread() const {
   }
 }
 
-// TaskRunnerInterface methods
 bool MasterProxy::PostTask(const ::base::Location& from_here,
                            ::base::OnceClosure callback) {
   if (g_on_background) {

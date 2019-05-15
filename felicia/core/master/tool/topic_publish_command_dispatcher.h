@@ -2,7 +2,6 @@
 #define FELICIA_CORE_MASTER_TOOL_TOPIC_PUBLISH_COMMAND_DISPATCHER_H_
 
 #include "felicia/core/master/tool/cli_flag.h"
-#include "felicia/core/message/protobuf_loader.h"
 
 namespace felicia {
 
@@ -10,8 +9,7 @@ class TopicPublishCommandDispatcher {
  public:
   TopicPublishCommandDispatcher();
 
-  void Dispatch(ProtobufLoader* protobuf_loader,
-                const TopicPublishFlag& delegate) const;
+  void Dispatch(const TopicPublishFlag& delegate) const;
 };
 
 }  // namespace felicia

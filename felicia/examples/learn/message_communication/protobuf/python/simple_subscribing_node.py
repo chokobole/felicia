@@ -1,5 +1,6 @@
 import felicia_py as fel
 
+from felicia.examples.learn.message_communication.protobuf.message_spec_pb2 import MessageSpec
 
 class SimpleSubscribingNode(fel.NodeLifecycle):
     def __init__(self, topic):
@@ -23,9 +24,9 @@ class SimpleSubscribingNode(fel.NodeLifecycle):
         settings = fel.Settings()
         settings.buffer_size = fel.Bytes.from_bytes(512)
 
-        self.subscriber.request_subscribe(self.node_info, self.topic, self.on_message,
-                                          self.on_subscription_error, settings,
-                                          self.on_request_subscribe)
+        self.subscriber.request_subscribe(self.node_info, self.topic, MessageSpec,
+                                          self.on_message, self.on_subscription_error,
+                                          settings, self.on_request_subscribe)
 
         # fel.MasterProxy.post_delayed_task(
         #         self.request_unsubscribe, fel.from_seconds(10))

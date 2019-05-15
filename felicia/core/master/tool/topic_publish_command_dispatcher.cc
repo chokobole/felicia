@@ -9,11 +9,11 @@ namespace {
 
 class DynamicPublisherDelegate : public DynamicPublishingNode::Delegate {
  public:
-  DynamicPublisherDelegate(const std::string& topic_type,
+  DynamicPublisherDelegate(const std::string& message_type,
                            const std::string& topic,
                            const std::string& channel_type,
                            const std::string& message, int64_t interval)
-      : topic_type_(topic_type),
+      : message_type_(message_type),
         topic_(topic),
         message_(message),
         delay_(::base::TimeDelta::FromMilliseconds(interval)) {
@@ -28,7 +28,7 @@ class DynamicPublisherDelegate : public DynamicPublishingNode::Delegate {
     communication::Settings settings;
     settings.is_dynamic_buffer = true;
 
-    node_->RequestPublish(topic_type_, topic_, channel_def_, settings);
+    node_->RequestPublish(message_type_, topic_, channel_def_, settings);
   }
 
   void OnError(const Status& s) override { NOTREACHED() << s; }
@@ -55,7 +55,7 @@ class DynamicPublisherDelegate : public DynamicPublishingNode::Delegate {
   }
 
  private:
-  std::string topic_type_;
+  std::string message_type_;
   std::string topic_;
   ChannelDef channel_def_;
   std::string message_;
@@ -68,18 +68,18 @@ class DynamicPublisherDelegate : public DynamicPublishingNode::Delegate {
 TopicPublishCommandDispatcher::TopicPublishCommandDispatcher() = default;
 
 void TopicPublishCommandDispatcher::Dispatch(
-    ProtobufLoader* protobuf_loader, const TopicPublishFlag& delegate) const {
+    const TopicPublishFlag& delegate) const {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
 
   auto dynamic_publisher_delegate = std::make_unique<DynamicPublisherDelegate>(
-      delegate.topic_type_flag()->value(), delegate.topic_flag()->value(),
+      delegate.message_type_flag()->value(), delegate.topic_flag()->value(),
       delegate.channel_type_flag()->value(), delegate.message_flag()->value(),
       delegate.interval_flag()->value());
 
   NodeInfo node_info;
 
   master_proxy.RequestRegisterNode<DynamicPublishingNode>(
-      node_info, protobuf_loader, std::move(dynamic_publisher_delegate));
+      node_info, std::move(dynamic_publisher_delegate));
 }
 
 }  // namespace felicia

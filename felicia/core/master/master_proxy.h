@@ -23,6 +23,7 @@
 #include "felicia/core/master/heart_beat_signaller.h"
 #include "felicia/core/master/master_client_interface.h"
 #include "felicia/core/master/topic_info_watcher.h"
+#include "felicia/core/message/protobuf_loader.h"
 #include "felicia/core/node/node_lifecycle.h"
 
 namespace felicia {
@@ -35,9 +36,11 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
   static void SetBackground();
   static MasterProxy& GetInstance();
 
-  bool IsBoundToCurrentThread() const override;
+  ProtobufLoader* protobuf_loader();
 
   // TaskRunnerInterface methods
+  bool IsBoundToCurrentThread() const override;
+
   bool PostTask(const ::base::Location& from_here,
                 ::base::OnceClosure callback) override;
 
@@ -120,6 +123,8 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
   HeartBeatSignaller heart_beat_signaller_;
 
   std::vector<std::unique_ptr<NodeLifecycle>> nodes_;
+
+  std::unique_ptr<ProtobufLoader> protobuf_loader_;
 
 #if defined(OS_WIN)
   ::base::win::ScopedCOMInitializer scoped_com_initializer_;

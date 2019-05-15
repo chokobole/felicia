@@ -9,7 +9,6 @@
 #include "felicia/core/master/tool/topic_publish_command_dispatcher.h"
 #include "felicia/core/master/tool/topic_subscribe_command_dispatcher.h"
 #include "felicia/core/message/dynamic_protobuf_message.h"
-#include "felicia/core/message/protobuf_loader.h"
 #include "felicia/core/protobuf/master.pb.h"
 
 namespace felicia {
@@ -46,8 +45,6 @@ class CommandDispatcher {
 
   TopicPublishCommandDispatcher topic_publish_command_dispatcher_;
   TopicSubscribeCommandDispatcher topic_subscribe_command_dispatcher_;
-
-  mutable std::unique_ptr<ProtobufLoader> protobuf_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandDispatcher);
 };

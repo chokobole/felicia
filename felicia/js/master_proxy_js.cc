@@ -5,7 +5,6 @@
 
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/error/errors.h"
-#include "felicia/core/lib/felicia_env.h"
 #include "felicia/core/node/dynamic_subscribing_node.h"
 #include "felicia/core/node/topic_info_watcher_node.h"
 #include "felicia/js/protobuf_type_convertor.h"
@@ -148,9 +147,6 @@ class MultiTopicSubscriberDelegate
   };
 
   MultiTopicSubscriberDelegate(::base::WaitableEvent* event) : event_(event) {
-    protobuf_loader_ = ProtobufLoader::Load(
-        ::base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
-
     topic_data_queue_.set_capacity(20);
 
     uv_async_init(uv_default_loop(), &handle_,
@@ -167,8 +163,6 @@ class MultiTopicSubscriberDelegate
     uv_close(reinterpret_cast<uv_handle_t*>(&handle_), OnClose);
     g_multi_topic_subscriber_delegate = nullptr;
   }
-
-  ProtobufLoader* protobuf_loader() { return protobuf_loader_.get(); }
 
   void OnDidCreate(DynamicSubscribingNode* node) override {
     node_ = node;
@@ -294,7 +288,6 @@ class MultiTopicSubscriberDelegate
   }
 
  private:
-  std::unique_ptr<ProtobufLoader> protobuf_loader_;
   ::base::WaitableEvent* event_;
   DynamicSubscribingNode* node_;  // not owned
 
@@ -530,7 +523,7 @@ void JsMasterProxy::SubscribeTopic(const ::Napi::CallbackInfo& info) {
     MasterProxy& master_proxy = MasterProxy::GetInstance();
     NodeInfo node_info;
     master_proxy.RequestRegisterNode<DynamicSubscribingNode>(
-        node_info, delegate->protobuf_loader(), std::move(delegate));
+        node_info, std::move(delegate));
 
     event->Wait();
     delete event;

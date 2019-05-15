@@ -39,8 +39,7 @@
         return false;                                                      \
       }                                                                    \
                                                                            \
-      bool ret = value.ParseFromString(text);                              \
-      return ret;                                                          \
+      return value.ParseFromString(text);                                  \
     }                                                                      \
                                                                            \
     static handle cast(CcType src, return_value_policy /* policy */,       \

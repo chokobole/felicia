@@ -33,8 +33,8 @@ class SimplePublishingNode(fel.NodeLifecycle):
         settings.buffer_size = fel.Bytes.from_bytes(512)
 
         self.publisher.request_publish(
-            self.node_info, self.topic, self.channel_def, settings,
-            self.on_request_publish)
+            self.node_info, self.topic, MessageSpec.DESCRIPTOR.full_name,
+            self.channel_def, settings, self.on_request_publish)
 
     def on_request_publish(self, status):
         print("SimplePublishingNode.on_request_publish()")

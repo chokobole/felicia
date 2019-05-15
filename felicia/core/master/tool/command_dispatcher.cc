@@ -8,7 +8,6 @@
 #include "third_party/chromium/base/strings/string_number_conversions.h"
 
 #include "felicia/core/channel/channel.h"
-#include "felicia/core/lib/felicia_env.h"
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/core/util/command_line_interface/table_writer.h"
 
@@ -202,9 +201,6 @@ void CommandDispatcher::OnListNodesAsync(ListNodesRequest* request,
 }
 
 void CommandDispatcher::Dispatch(const TopicFlag& delegate) const {
-  protobuf_loader_ = ProtobufLoader::Load(
-      ::base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
-
   auto command = delegate.command();
   switch (command) {
     case TopicFlag::Command::COMMAND_SELF:
@@ -243,12 +239,11 @@ void CommandDispatcher::Dispatch(const TopicListFlag& delegate) const {
 }
 
 void CommandDispatcher::Dispatch(const TopicPublishFlag& delegate) const {
-  topic_publish_command_dispatcher_.Dispatch(protobuf_loader_.get(), delegate);
+  topic_publish_command_dispatcher_.Dispatch(delegate);
 }
 
 void CommandDispatcher::Dispatch(const TopicSubscribeFlag& delegate) const {
-  topic_subscribe_command_dispatcher_.Dispatch(protobuf_loader_.get(),
-                                               delegate);
+  topic_subscribe_command_dispatcher_.Dispatch(delegate);
 }
 
 void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
@@ -288,8 +283,10 @@ void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
     auto topic_info = topic_infos[0];
     const ChannelSource& channel_source = topic_info.topic_source();
 
+    MasterProxy& master_proxy = MasterProxy::GetInstance();
+
     const ::google::protobuf::Message* message =
-        protobuf_loader_->NewMessage(topic_info.type_name());
+        master_proxy.protobuf_loader()->NewMessage(topic_info.type_name());
 
     std::cout << ::base::StringPrintf(
                      "TYPE: %s\n"

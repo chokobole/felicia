@@ -110,7 +110,7 @@ void MultiTopicSubscriberDelegate::OnDidCreate(DynamicSubscribingNode* node) {
 TopicSubscribeCommandDispatcher::TopicSubscribeCommandDispatcher() = default;
 
 void TopicSubscribeCommandDispatcher::Dispatch(
-    ProtobufLoader* protobuf_loader, const TopicSubscribeFlag& delegate) const {
+    const TopicSubscribeFlag& delegate) const {
   communication::Settings settings;
   if (delegate.period_flag()->is_set())
     settings.period =
@@ -123,13 +123,11 @@ void TopicSubscribeCommandDispatcher::Dispatch(
   NodeInfo node_info;
   if (delegate.all_flag()->value()) {
     master_proxy.RequestRegisterNode<DynamicSubscribingNode>(
-        node_info, protobuf_loader,
-        std::make_unique<MultiTopicSubscriberDelegate>(settings));
+        node_info, std::make_unique<MultiTopicSubscriberDelegate>(settings));
   } else {
     master_proxy.RequestRegisterNode<DynamicSubscribingNode>(
-        node_info, protobuf_loader,
-        std::make_unique<OneTopicSubscriberDelegate>(
-            delegate.topic_flag()->value(), settings));
+        node_info, std::make_unique<OneTopicSubscriberDelegate>(
+                       delegate.topic_flag()->value(), settings));
   }
 }
 

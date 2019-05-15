@@ -43,10 +43,8 @@ class DynamicSubscribingNode : public NodeLifecycle {
                                      const Status& s) = 0;
   };
 
-  DynamicSubscribingNode(ProtobufLoader* loader,
-                         std::unique_ptr<OneTopicDelegate> delegate);
-  DynamicSubscribingNode(ProtobufLoader* loader,
-                         std::unique_ptr<MultiTopicDelegate> delegate);
+  explicit DynamicSubscribingNode(std::unique_ptr<OneTopicDelegate> delegate);
+  explicit DynamicSubscribingNode(std::unique_ptr<MultiTopicDelegate> delegate);
 
   ~DynamicSubscribingNode();
 
@@ -78,7 +76,6 @@ class DynamicSubscribingNode : public NodeLifecycle {
   void OnUnsubscribe(const std::string& topic, StatusOnceCallback callback,
                      const Status& s);
 
-  ProtobufLoader* loader_;  // not owned;
   std::unique_ptr<OneTopicDelegate> one_topic_delegate_;
   std::unique_ptr<MultiTopicDelegate> multi_topic_delegate_;
   NodeInfo node_info_;

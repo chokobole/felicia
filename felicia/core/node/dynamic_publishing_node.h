@@ -25,8 +25,7 @@ class DynamicPublishingNode : public NodeLifecycle {
     virtual void OnPublish(const Status& s) = 0;
   };
 
-  DynamicPublishingNode(ProtobufLoader* loader,
-                        std::unique_ptr<Delegate> delegate);
+  explicit DynamicPublishingNode(std::unique_ptr<Delegate> delegate);
 
   ~DynamicPublishingNode();
 
@@ -47,7 +46,6 @@ class DynamicPublishingNode : public NodeLifecycle {
 
   void OnRequestUnpublish(const Status& s);
 
-  ProtobufLoader* loader_;  // not owned;
   std::unique_ptr<Delegate> delegate_;
   NodeInfo node_info_;
 

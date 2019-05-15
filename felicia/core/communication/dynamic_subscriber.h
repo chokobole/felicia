@@ -9,7 +9,7 @@ namespace felicia {
 
 class DynamicSubscriber : public Subscriber<DynamicProtobufMessage> {
  public:
-  explicit DynamicSubscriber(ProtobufLoader* loader);
+  DynamicSubscriber();
   ~DynamicSubscriber();
 
   void Subscribe(OnMessageCallback on_message_callback,
@@ -24,8 +24,6 @@ class DynamicSubscriber : public Subscriber<DynamicProtobufMessage> {
 
  private:
   void ResetMessage(const TopicInfo& topic_info) override;
-
-  ProtobufLoader* loader_;  // not owned;
 
   DISALLOW_COPY_AND_ASSIGN(DynamicSubscriber);
 };

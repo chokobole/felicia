@@ -9,17 +9,19 @@ namespace felicia {
 
 class DynamicPublisher : public Publisher<DynamicProtobufMessage> {
  public:
-  explicit DynamicPublisher(ProtobufLoader* loader);
+  DynamicPublisher();
   ~DynamicPublisher();
 
   void ResetMessage(const std::string& message_type);
 
-  void Publish(const std::string& json_message, StatusOnceCallback callback);
+  void PublishFromJson(const std::string& json_message,
+                       StatusOnceCallback callback);
+
+  void PublishFromSerialized(const std::string& serialized,
+                             StatusOnceCallback callback);
 
  private:
   std::string GetMessageTypeName() const override;
-
-  ProtobufLoader* loader_;  // not owned;
 
   DynamicProtobufMessage message_prototype_;
 

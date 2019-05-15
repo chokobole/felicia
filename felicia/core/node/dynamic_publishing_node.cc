@@ -2,9 +2,8 @@
 
 namespace felicia {
 
-DynamicPublishingNode::DynamicPublishingNode(ProtobufLoader* loader,
-                                             std::unique_ptr<Delegate> delegate)
-    : loader_(loader), delegate_(std::move(delegate)) {}
+DynamicPublishingNode::DynamicPublishingNode(std::unique_ptr<Delegate> delegate)
+    : delegate_(std::move(delegate)) {}
 
 DynamicPublishingNode::~DynamicPublishingNode() = default;
 
@@ -20,7 +19,7 @@ void DynamicPublishingNode::OnError(const Status& s) {
 void DynamicPublishingNode::RequestPublish(
     const std::string& message_type, const std::string& topic,
     const ChannelDef& channel_def, const communication::Settings& settings) {
-  publisher_ = std::make_unique<DynamicPublisher>(loader_);
+  publisher_ = std::make_unique<DynamicPublisher>();
   publisher_->ResetMessage(message_type);
 
   publisher_->RequestPublish(
@@ -38,7 +37,7 @@ void DynamicPublishingNode::RequestUnpublish(const std::string& topic) {
 
 void DynamicPublishingNode::PublishMessageFromJson(
     const std::string& json_message) {
-  publisher_->Publish(
+  publisher_->PublishFromJson(
       json_message,
       ::base::BindOnce(&DynamicPublishingNode::Delegate::OnPublish,
                        ::base::Unretained(delegate_.get())));

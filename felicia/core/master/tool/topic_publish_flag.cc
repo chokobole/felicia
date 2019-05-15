@@ -11,9 +11,10 @@ TopicPublishFlag::TopicPublishFlag() {
     topic_flag_ = std::make_unique<StringFlag>(flag);
   }
   {
-    StringFlag::Builder builder(MakeValueStore(&topic_type_));
-    auto flag = builder.SetName("type").SetHelp("Type of message").Build();
-    topic_type_flag_ = std::make_unique<StringFlag>(flag);
+    StringFlag::Builder builder(MakeValueStore(&message_type_));
+    auto flag =
+        builder.SetName("message_type").SetHelp("Type of message").Build();
+    message_type_flag_ = std::make_unique<StringFlag>(flag);
   }
   {
     StringFlag::Builder builder(MakeValueStore(&message_));
@@ -47,14 +48,14 @@ TopicPublishFlag::TopicPublishFlag() {
 TopicPublishFlag::~TopicPublishFlag() = default;
 
 bool TopicPublishFlag::Parse(FlagParser& parser) {
-  PARSE_POSITIONAL_FLAG(parser, 3, topic_flag_, topic_type_flag_,
+  PARSE_POSITIONAL_FLAG(parser, 3, topic_flag_, message_type_flag_,
                         message_flag_);
   return PARSE_OPTIONAL_FLAG(parser, channel_type_flag_, interval_flag_);
 }
 
 bool TopicPublishFlag::Validate() const {
   bool ret = CheckIfFlagWasSet(topic_flag_) &&
-             CheckIfFlagWasSet(topic_type_flag_) &&
+             CheckIfFlagWasSet(message_type_flag_) &&
              CheckIfFlagWasSet(message_flag_);
 
   if (!ret) return ret;
@@ -79,7 +80,7 @@ std::vector<NamedHelpType> TopicPublishFlag::CollectNamedHelps() const {
       std::make_pair(TextStyle::Blue("Positions:"),
                      std::vector<std::string>{
                          topic_flag_->help(),
-                         topic_type_flag_->help(),
+                         message_type_flag_->help(),
                          message_flag_->help(),
                      }),
       std::make_pair(kYellowOptions,

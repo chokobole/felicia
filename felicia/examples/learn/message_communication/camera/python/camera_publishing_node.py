@@ -35,7 +35,8 @@ class CameraPublishingNode(fel.NodeLifecycle):
         settings.is_dynamic_buffer = True
 
         self.publisher.request_publish(
-            self.node_info, self.topic, channel_def, settings, self.on_request_publish)
+            self.node_info, self.topic, CameraFrameMessage.DESCRIPTOR.full_name,
+            channel_def, settings, self.on_request_publish)
 
     def on_request_publish(self, status):
         print("CameraPublishingNode.on_request_publish()")

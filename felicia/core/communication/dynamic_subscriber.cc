@@ -2,8 +2,7 @@
 
 namespace felicia {
 
-DynamicSubscriber::DynamicSubscriber(ProtobufLoader* loader)
-    : loader_(loader) {}
+DynamicSubscriber::DynamicSubscriber() = default;
 
 DynamicSubscriber::~DynamicSubscriber() = default;
 
@@ -43,7 +42,10 @@ void DynamicSubscriber::UnSubscribe(const std::string& topic,
 }
 
 void DynamicSubscriber::ResetMessage(const TopicInfo& topic_info) {
-  message_.Reset(loader_->NewMessage(topic_info.type_name())->New());
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  message_.Reset(master_proxy.protobuf_loader()
+                     ->NewMessage(topic_info.type_name())
+                     ->New());
 }
 
 }  // namespace felicia

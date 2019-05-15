@@ -4,16 +4,18 @@
 
 namespace felicia {
 
-DynamicPublisher::DynamicPublisher(ProtobufLoader* loader) : loader_(loader) {}
+DynamicPublisher::DynamicPublisher() = default;
 
 DynamicPublisher::~DynamicPublisher() = default;
 
 void DynamicPublisher::ResetMessage(const std::string& message_type) {
-  message_prototype_.Reset(loader_->NewMessage(message_type)->New());
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  message_prototype_.Reset(
+      master_proxy.protobuf_loader()->NewMessage(message_type)->New());
 }
 
-void DynamicPublisher::Publish(const std::string& json_message,
-                               StatusOnceCallback callback) {
+void DynamicPublisher::PublishFromJson(const std::string& json_message,
+                                       StatusOnceCallback callback) {
   DCHECK(message_prototype_.message());
 
   ::google::protobuf::util::Status status =
@@ -23,6 +25,21 @@ void DynamicPublisher::Publish(const std::string& json_message,
     std::move(callback).Run(
         Status(static_cast<felicia::error::Code>(status.error_code()),
                status.error_message().ToString()));
+    return;
+  }
+
+  Publisher<DynamicProtobufMessage>::Publish(message_prototype_,
+                                             std::move(callback));
+}
+
+void DynamicPublisher::PublishFromSerialized(const std::string& serialized,
+                                             StatusOnceCallback callback) {
+  DCHECK(message_prototype_.message());
+
+  if (!message_prototype_.ParseFromArray(serialized.data(),
+                                         serialized.length())) {
+    std::move(callback).Run(errors::InvalidArgument(
+        MessageIoErrorToString(MessageIoError::ERR_FAILED_TO_PARSE)));
     return;
   }
 

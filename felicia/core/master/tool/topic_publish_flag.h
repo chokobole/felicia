@@ -15,7 +15,9 @@ class TopicPublishFlag : public FlagParser::Delegate {
   ~TopicPublishFlag();
 
   const StringFlag* topic_flag() const { return topic_flag_.get(); }
-  const StringFlag* topic_type_flag() const { return topic_type_flag_.get(); }
+  const StringFlag* message_type_flag() const {
+    return message_type_flag_.get();
+  }
   const StringFlag* message_flag() const { return message_flag_.get(); }
   const StringChoicesFlag* channel_type_flag() const {
     return channel_type_flag_.get();
@@ -34,12 +36,12 @@ class TopicPublishFlag : public FlagParser::Delegate {
 
  private:
   std::string topic_;
-  std::string topic_type_;
+  std::string message_type_;
   std::string message_;
   std::string channel_type_;
   int64_t interval_;
   std::unique_ptr<StringFlag> topic_flag_;
-  std::unique_ptr<StringFlag> topic_type_flag_;
+  std::unique_ptr<StringFlag> message_type_flag_;
   std::unique_ptr<StringFlag> message_flag_;
   std::unique_ptr<StringChoicesFlag> channel_type_flag_;
   std::unique_ptr<DefaultFlag<int64_t>> interval_flag_;

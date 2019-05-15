@@ -1,23 +1,25 @@
 load("//bazel:felicia.bzl", "fel_additional_deps")
 load("//bazel:felicia_cc.bzl", "fel_cc_library")
+load("//bazel:felicia_pybind.bzl", "fel_pybind_py_library")
 
 package(default_visibility = ["//felicia:internal"])
 
 fel_cc_library(
-    name = "basic_felicia_py_cc",
+    name = "felicia_py_cc",
     srcs = [
-        "felicia_py.cc",
+        "communication_py.cc",
         "master_proxy_py.cc",
-        "master_proxy_py.h",
         "node_py.cc",
-        "node_py.h",
     ],
     hdrs = [
-        "communication_py_helper.h",
+        "communication_py.h",
+        "master_proxy_py.h",
+        "node_py.h",
     ],
     deps = [
         "//felicia/core:felicia_init",
-        "//felicia/core/communication",
+        "//felicia/core/communication:dynamic_publisher",
+        "//felicia/core/communication:dynamic_subscriber",
         "//felicia/core/master:master_proxy",
         "//felicia/core/node:node_lifecycle",
         "//felicia/python/type_conversion",
@@ -28,10 +30,17 @@ fel_cc_library(
 )
 
 py_library(
-    name = "basic_felicia_py_py",
+    name = "felicia_py_py",
     deps = [
         "//felicia/core/protobuf:protos_all_proto_py",
         "//felicia/drivers/camera:camera_proto_py",
         "//felicia/python/command_line_interface:flag_parser_delegate",
     ],
+)
+
+fel_pybind_py_library(
+    name = "felicia_py",
+    cc_deps = ["//felicia/python:felicia_py_cc"],
+    cc_srcs = ["felicia_py.cc"],
+    py_deps = ["//felicia/python:felicia_py_py"],
 )

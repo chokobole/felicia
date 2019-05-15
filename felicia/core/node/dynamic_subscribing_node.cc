@@ -8,14 +8,12 @@
 namespace felicia {
 
 DynamicSubscribingNode::DynamicSubscribingNode(
-    ProtobufLoader* loader,
     std::unique_ptr<DynamicSubscribingNode::OneTopicDelegate> delegate)
-    : loader_(loader), one_topic_delegate_(std::move(delegate)) {}
+    : one_topic_delegate_(std::move(delegate)) {}
 
 DynamicSubscribingNode::DynamicSubscribingNode(
-    ProtobufLoader* loader,
     std::unique_ptr<DynamicSubscribingNode::MultiTopicDelegate> delegate)
-    : loader_(loader), multi_topic_delegate_(std::move(delegate)) {}
+    : multi_topic_delegate_(std::move(delegate)) {}
 
 DynamicSubscribingNode::~DynamicSubscribingNode() = default;
 
@@ -44,8 +42,7 @@ void DynamicSubscribingNode::RequestSubscribe(
     return;
   }
 
-  std::unique_ptr<DynamicSubscriber> subscriber =
-      std::make_unique<DynamicSubscriber>(loader_);
+  auto subscriber = std::make_unique<DynamicSubscriber>();
 
   subscriber->RequestSubscribe(
       node_info_, topic,
@@ -103,8 +100,7 @@ void DynamicSubscribingNode::Subscribe(
 
   const std::string& topic = topic_info.topic();
 
-  std::unique_ptr<DynamicSubscriber> subscriber =
-      std::make_unique<DynamicSubscriber>(loader_);
+  auto subscriber = std::make_unique<DynamicSubscriber>();
 
   subscriber->Subscribe(
       ::base::BindRepeating(
