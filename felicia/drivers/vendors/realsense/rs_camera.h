@@ -1,12 +1,12 @@
-#ifndef FELICIA_DRIVERS_CAMERA_REALSENSE_RS_CAMERA_H_
-#define FELICIA_DRIVERS_CAMERA_REALSENSE_RS_CAMERA_H_
+#ifndef FELICIA_DRIVERS_VENDORS_REALSENSE_RS_CAMERA_H_
+#define FELICIA_DRIVERS_VENDORS_REALSENSE_RS_CAMERA_H_
 
 #include <librealsense2/rs.hpp>
 
 #include "third_party/chromium/base/containers/flat_map.h"
 
 #include "felicia/drivers/camera/depth_camera_interface.h"
-#include "felicia/drivers/camera/realsense/rs_capability.h"
+#include "felicia/drivers/vendors/realsense/rs_capability.h"
 
 namespace felicia {
 
@@ -19,6 +19,7 @@ class RsCamera : public DepthCameraInterface {
  public:
   ~RsCamera();
 
+  // DepthCameraInterface methods
   Status Init() override;
   Status Start(const CameraFormat& requested_color_format,
                const CameraFormat& requested_depth_format,
@@ -61,4 +62,4 @@ class RsCamera : public DepthCameraInterface {
 
 }  // namespace felicia
 
-#endif  // FELICIA_DRIVERS_CAMERA_REALSENSE_RS_CAMERA_H_
+#endif  // FELICIA_DRIVERS_VENDORS_REALSENSE_RS_CAMERA_H_

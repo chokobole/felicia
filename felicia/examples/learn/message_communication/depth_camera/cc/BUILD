@@ -43,6 +43,6 @@ fel_cc_binary(
         "//felicia/core:felicia_init",
         ":depth_camera_publishing_node",
     ] + if_has_realsense([
-        "//felicia/drivers/camera:rs_camera",
+        "//felicia/drivers/vendors/realsense",
     ]),
 )

@@ -1,9 +1,9 @@
-#include "felicia/drivers/camera/realsense/rs_camera.h"
+#include "felicia/drivers/vendors/realsense/rs_camera.h"
 
 #include "third_party/chromium/base/strings/strcat.h"
 
 #include "felicia/drivers/camera/camera_errors.h"
-#include "felicia/drivers/camera/realsense/rs_pixel_format.h"
+#include "felicia/drivers/vendors/realsense/rs_pixel_format.h"
 
 namespace felicia {
 
@@ -87,6 +87,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
 
   color_frame_callback_ = color_frame_callback;
   depth_frame_callback_ = depth_frame_callback;
+  status_callback_ = status_callback;
 
   camera_state_.ToStarted();
 
@@ -125,6 +126,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
   }
 
   depth_camera_frame_callback_ = depth_camera_frame_callback;
+  status_callback_ = status_callback;
 
   camera_state_.ToStarted();
 

@@ -1,6 +1,5 @@
 load(
     "//bazel:felicia.bzl",
-    "if_has_realsense",
     "if_linux",
     "if_mac",
     "if_not_mac",
@@ -116,27 +115,5 @@ fel_objc_library(
     sdk_frameworks = [
         "AVFoundation",
     ],
-    deps = ["//felicia/core/lib"],
-)
-
-# TODO: Should we move below to different repository maybe?
-fel_cc_library(
-    name = "rs_camera",
-    srcs = if_has_realsense([
-        "realsense/rs_camera.cc",
-        "realsense/rs_camera.h",
-        "realsense/rs_camera_factory.cc",
-        "realsense/rs_capability.cc",
-        "realsense/rs_pixel_format.cc",
-        "realsense/rs_pixel_format.h",
-    ]),
-    hdrs = CAMERA_HEADERS + [
-        "realsense/rs_camera_factory.h",
-        "realsense/rs_capability.h",
-        "realsense/rs_stream_info.h",
-    ],
-    linkopts = if_has_realsense([
-        "-lrealsense2",
-    ]),
     deps = ["//felicia/core/lib"],
 )

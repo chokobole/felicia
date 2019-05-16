@@ -1,4 +1,4 @@
-#include "felicia/drivers/camera/realsense/rs_camera_factory.h"
+#include "felicia/drivers/vendors/realsense/rs_camera_factory.h"
 
 namespace felicia {
 

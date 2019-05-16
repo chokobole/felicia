@@ -1,4 +1,4 @@
-#include "felicia/drivers/camera/realsense/rs_camera_factory.h"
+#include "felicia/drivers/vendors/realsense/rs_camera_factory.h"
 
 #include "third_party/chromium/base/memory/ptr_util.h"
 #include "third_party/chromium/base/strings/strcat.h"

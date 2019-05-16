@@ -1,10 +1,10 @@
-#ifndef FELICIA_DRIVERS_CAMERA_REALSENSE_RS_CAMERA_FACTORY_H_
-#define FELICIA_DRIVERS_CAMERA_REALSENSE_RS_CAMERA_FACTORY_H_
+#ifndef FELICIA_DRIVERS_VENDORS_REALSENSE_RS_CAMERA_FACTORY_H_
+#define FELICIA_DRIVERS_VENDORS_REALSENSE_RS_CAMERA_FACTORY_H_
 
 #include "third_party/chromium/base/macros.h"
 
-#include "felicia/drivers/camera/realsense/rs_camera.h"
-#include "felicia/drivers/camera/realsense/rs_stream_info.h"
+#include "felicia/drivers/vendors/realsense/rs_camera.h"
+#include "felicia/drivers/vendors/realsense/rs_stream_info.h"
 
 namespace felicia {
 
@@ -24,4 +24,4 @@ class RsCameraFactory {
 
 }  // namespace felicia
 
-#endif  // FELICIA_DRIVERS_CAMERA_REALSENSE_RS_CAMERA_FACTORY_H_
+#endif  // FELICIA_DRIVERS_VENDORS_REALSENSE_RS_CAMERA_FACTORY_H_

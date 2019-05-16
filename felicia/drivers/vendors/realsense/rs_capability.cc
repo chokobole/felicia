@@ -1,4 +1,4 @@
-#include "felicia/drivers/camera/realsense/rs_capability.h"
+#include "felicia/drivers/vendors/realsense/rs_capability.h"
 
 #include "third_party/chromium/base/logging.h"
 
