@@ -2,19 +2,358 @@
   "nested": {
     "felicia": {
       "nested": {
-        "CameraFrameMessage": {
+        "ChannelDef": {
           "fields": {
-            "data": {
-              "type": "bytes",
+            "type": {
+              "type": "Type",
+              "id": 1
+            }
+          },
+          "nested": {
+            "Type": {
+              "values": {
+                "TCP": 0,
+                "UDP": 1
+              }
+            }
+          }
+        },
+        "IPEndPoint": {
+          "fields": {
+            "ip": {
+              "type": "string",
               "id": 1
             },
-            "cameraFormat": {
-              "type": "CameraFormatMessage",
+            "port": {
+              "type": "uint32",
+              "id": 2
+            }
+          }
+        },
+        "ChannelSource": {
+          "fields": {
+            "channelDef": {
+              "type": "ChannelDef",
+              "id": 1
+            },
+            "ipEndpoint": {
+              "type": "IPEndPoint",
+              "id": 2
+            }
+          }
+        },
+        "error": {
+          "nested": {
+            "Code": {
+              "values": {
+                "OK": 0,
+                "CANCELLED": 1,
+                "UNKNOWN": 2,
+                "INVALID_ARGUMENT": 3,
+                "DEADLINE_EXCEEDED": 4,
+                "NOT_FOUND": 5,
+                "ALREADY_EXISTS": 6,
+                "PERMISSION_DENIED": 7,
+                "UNAUTHENTICATED": 16,
+                "RESOURCE_EXHAUSTED": 8,
+                "FAILED_PRECONDITION": 9,
+                "ABORTED": 10,
+                "OUT_OF_RANGE": 11,
+                "UNIMPLEMENTED": 12,
+                "INTERNAL": 13,
+                "UNAVAILABLE": 14,
+                "DATA_LOSS": 15,
+                "DO_NOT_USE_RESERVED_FOR_FUTURE_EXPANSION_USE_DEFAULT_IN_SWITCH_INSTEAD_": 25,
+                "NETWORK_ERROR": 26
+              }
+            }
+          }
+        },
+        "NodeInfo": {
+          "fields": {
+            "name": {
+              "type": "string",
+              "id": 1
+            },
+            "clientId": {
+              "type": "uint32",
               "id": 2
             },
-            "timestamp": {
-              "type": "double",
+            "watcher": {
+              "type": "bool",
               "id": 3
+            }
+          }
+        },
+        "PubSubTopics": {
+          "fields": {
+            "publishingTopics": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 2
+            },
+            "subscribingTopics": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 3
+            }
+          }
+        },
+        "ClientInfo": {
+          "fields": {
+            "id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "heartBeatSignallerSource": {
+              "type": "ChannelSource",
+              "id": 2
+            },
+            "topicInfoWatcherSource": {
+              "type": "ChannelSource",
+              "id": 3
+            }
+          }
+        },
+        "TopicInfo": {
+          "fields": {
+            "topic": {
+              "type": "string",
+              "id": 1
+            },
+            "typeName": {
+              "type": "string",
+              "id": 2
+            },
+            "topicSource": {
+              "type": "ChannelSource",
+              "id": 3
+            },
+            "status": {
+              "type": "Status",
+              "id": 4
+            }
+          },
+          "nested": {
+            "Status": {
+              "values": {
+                "REGISTERED": 0,
+                "UNREGISTERED": 1
+              }
+            }
+          }
+        },
+        "ClientFilter": {
+          "fields": {
+            "all": {
+              "type": "bool",
+              "id": 1
+            },
+            "id": {
+              "type": "uint32",
+              "id": 2
+            }
+          }
+        },
+        "NodeFilter": {
+          "fields": {
+            "all": {
+              "type": "bool",
+              "id": 1
+            },
+            "publishingTopic": {
+              "type": "string",
+              "id": 2
+            },
+            "subscribingTopic": {
+              "type": "string",
+              "id": 3
+            },
+            "name": {
+              "type": "string",
+              "id": 4
+            },
+            "watcher": {
+              "type": "bool",
+              "id": 5
+            }
+          }
+        },
+        "TopicFilter": {
+          "fields": {
+            "all": {
+              "type": "bool",
+              "id": 1
+            },
+            "topic": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "HeartBeat": {
+          "fields": {
+            "ok": {
+              "type": "bool",
+              "id": 1
+            }
+          }
+        },
+        "RegisterClientRequest": {
+          "fields": {
+            "clientInfo": {
+              "type": "ClientInfo",
+              "id": 1
+            }
+          }
+        },
+        "RegisterClientResponse": {
+          "fields": {
+            "id": {
+              "type": "uint32",
+              "id": 1
+            }
+          }
+        },
+        "ListClientsRequest": {
+          "fields": {
+            "clientFilter": {
+              "type": "ClientFilter",
+              "id": 1
+            }
+          }
+        },
+        "ListClientsResponse": {
+          "fields": {
+            "clientInfos": {
+              "rule": "repeated",
+              "type": "ClientInfo",
+              "id": 1
+            }
+          }
+        },
+        "RegisterNodeRequest": {
+          "fields": {
+            "nodeInfo": {
+              "type": "NodeInfo",
+              "id": 1
+            }
+          }
+        },
+        "RegisterNodeResponse": {
+          "fields": {
+            "nodeInfo": {
+              "type": "NodeInfo",
+              "id": 1
+            }
+          }
+        },
+        "UnregisterNodeRequest": {
+          "fields": {
+            "nodeInfo": {
+              "type": "NodeInfo",
+              "id": 1
+            }
+          }
+        },
+        "UnregisterNodeResponse": {
+          "fields": {}
+        },
+        "ListNodesRequest": {
+          "fields": {
+            "nodeFilter": {
+              "type": "NodeFilter",
+              "id": 1
+            }
+          }
+        },
+        "ListNodesResponse": {
+          "fields": {
+            "nodeInfos": {
+              "rule": "repeated",
+              "type": "NodeInfo",
+              "id": 1
+            },
+            "pubSubTopics": {
+              "type": "PubSubTopics",
+              "id": 2
+            }
+          }
+        },
+        "PublishTopicRequest": {
+          "fields": {
+            "nodeInfo": {
+              "type": "NodeInfo",
+              "id": 1
+            },
+            "topicInfo": {
+              "type": "TopicInfo",
+              "id": 2
+            }
+          }
+        },
+        "PublishTopicResponse": {
+          "fields": {}
+        },
+        "UnpublishTopicRequest": {
+          "fields": {
+            "nodeInfo": {
+              "type": "NodeInfo",
+              "id": 1
+            },
+            "topic": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "UnpublishTopicResponse": {
+          "fields": {}
+        },
+        "SubscribeTopicRequest": {
+          "fields": {
+            "nodeInfo": {
+              "type": "NodeInfo",
+              "id": 1
+            },
+            "topic": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "SubscribeTopicResponse": {
+          "fields": {}
+        },
+        "UnsubscribeTopicRequest": {
+          "fields": {
+            "nodeInfo": {
+              "type": "NodeInfo",
+              "id": 1
+            },
+            "topic": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "UnsubscribeTopicResponse": {
+          "fields": {}
+        },
+        "ListTopicsRequest": {
+          "fields": {
+            "topicFilter": {
+              "type": "TopicFilter",
+              "id": 1
+            }
+          }
+        },
+        "ListTopicsResponse": {
+          "fields": {
+            "topicInfos": {
+              "rule": "repeated",
+              "type": "TopicInfo",
+              "id": 1
             }
           }
         },
@@ -55,6 +394,22 @@
             "frameRate": {
               "type": "float",
               "id": 4
+            }
+          }
+        },
+        "CameraFrameMessage": {
+          "fields": {
+            "data": {
+              "type": "bytes",
+              "id": 1
+            },
+            "cameraFormat": {
+              "type": "CameraFormatMessage",
+              "id": 2
+            },
+            "timestamp": {
+              "type": "double",
+              "id": 3
             }
           }
         }

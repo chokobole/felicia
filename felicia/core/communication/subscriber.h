@@ -12,8 +12,9 @@
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/channel/channel_factory.h"
+#include "felicia/core/communication/register_state.h"
 #include "felicia/core/communication/settings.h"
-#include "felicia/core/communication/state.h"
+#include "felicia/core/communication/subscriber_state.h"
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/master_proxy.h"
@@ -25,17 +26,26 @@ class Subscriber {
  public:
   using OnMessageCallback = ::base::RepeatingCallback<void(MessageTy&&)>;
 
-  Subscriber() { state_.ToUneregistered(); }
+  Subscriber() = default;
   virtual ~Subscriber() { DCHECK(IsStopped()); }
 
-  ALWAYS_INLINE bool IsRegistering() const { return state_.IsRegistering(); }
-  ALWAYS_INLINE bool IsRegistered() const { return state_.IsRegistered(); }
-  ALWAYS_INLINE bool IsUnregistering() const {
-    return state_.IsUnregistering();
+  ALWAYS_INLINE bool IsRegistering() const {
+    return register_state_.IsRegistering();
   }
-  ALWAYS_INLINE bool IsUnregistered() const { return state_.IsUnregistered(); }
-  ALWAYS_INLINE bool IsStarted() const { return state_.IsStarted(); }
-  ALWAYS_INLINE bool IsStopped() const { return state_.IsStopped(); }
+  ALWAYS_INLINE bool IsRegistered() const {
+    return register_state_.IsRegistered();
+  }
+  ALWAYS_INLINE bool IsUnregistering() const {
+    return register_state_.IsUnregistering();
+  }
+  ALWAYS_INLINE bool IsUnregistered() const {
+    return register_state_.IsUnregistered();
+  }
+  ALWAYS_INLINE bool IsStarted() const { return subscriber_state_.IsStarted(); }
+  ALWAYS_INLINE bool IsStopping() const {
+    return subscriber_state_.IsStopping();
+  }
+  ALWAYS_INLINE bool IsStopped() const { return subscriber_state_.IsStopped(); }
 
   void RequestSubscribe(const NodeInfo& node_info, const std::string& topic,
                         OnMessageCallback on_message_callback,
@@ -49,10 +59,10 @@ class Subscriber {
  protected:
   void OnSubscribeTopicAsync(SubscribeTopicRequest* request,
                              SubscribeTopicResponse* response,
-                             StatusOnceCallback callback,
                              OnMessageCallback on_message_callback,
+                             StatusCallback on_error_callback,
                              const communication::Settings& settings,
-                             const Status& s);
+                             StatusOnceCallback callback, const Status& s);
   void OnUnubscribeTopicAsync(UnsubscribeTopicRequest* request,
                               UnsubscribeTopicResponse* response,
                               StatusOnceCallback callback, const Status& s);
@@ -80,8 +90,8 @@ class Subscriber {
   OnMessageCallback on_message_callback_;
   StatusCallback on_error_callback_;
 
-  communication::State last_state_;
-  communication::State state_;
+  communication::RegisterState register_state_;
+  communication::SubscriberState subscriber_state_;
   communication::Settings settings_;
   uint8_t receive_message_failed_cnt_ = 0;
 
@@ -95,15 +105,12 @@ void Subscriber<MessageTy>::RequestSubscribe(
     const NodeInfo& node_info, const std::string& topic,
     OnMessageCallback on_message_callback, StatusCallback on_error_callback,
     const communication::Settings& settings, StatusOnceCallback callback) {
-  if (!(IsUnregistered() || IsStopped())) {
-    std::move(callback).Run(state_.InvalidStateError());
+  if (!IsUnregistered()) {
+    std::move(callback).Run(register_state_.InvalidStateError());
     return;
   }
 
-  on_error_callback_ = on_error_callback;
-
-  last_state_ = state_;
-  state_.ToRegistering();
+  register_state_.ToRegistering();
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   SubscribeTopicRequest* request = new SubscribeTopicRequest();
@@ -115,8 +122,8 @@ void Subscriber<MessageTy>::RequestSubscribe(
       request, response,
       ::base::BindOnce(&Subscriber<MessageTy>::OnSubscribeTopicAsync,
                        ::base::Unretained(this), ::base::Owned(request),
-                       ::base::Owned(response), std::move(callback),
-                       on_message_callback, settings),
+                       ::base::Owned(response), on_message_callback,
+                       on_error_callback, settings, std::move(callback)),
       ::base::BindRepeating(&Subscriber<MessageTy>::OnFindPublisher,
                             ::base::Unretained(this)));
 }
@@ -125,13 +132,12 @@ template <typename MessageTy>
 void Subscriber<MessageTy>::RequestUnsubscribe(const NodeInfo& node_info,
                                                const std::string& topic,
                                                StatusOnceCallback callback) {
-  if (!(IsRegistered() || IsStarted())) {
-    std::move(callback).Run(state_.InvalidStateError());
+  if (!IsRegistered()) {
+    std::move(callback).Run(register_state_.InvalidStateError());
     return;
   }
 
-  last_state_ = state_;
-  state_.ToUnregistering();
+  register_state_.ToUnregistering();
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
 
@@ -150,24 +156,25 @@ void Subscriber<MessageTy>::RequestUnsubscribe(const NodeInfo& node_info,
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnSubscribeTopicAsync(
     SubscribeTopicRequest* request, SubscribeTopicResponse* response,
-    StatusOnceCallback callback, OnMessageCallback on_message_callback,
-    const communication::Settings& settings, const Status& s) {
+    OnMessageCallback on_message_callback, StatusCallback on_error_callback,
+    const communication::Settings& settings, StatusOnceCallback callback,
+    const Status& s) {
   if (!IsRegistering()) {
-    on_error_callback_.Run(state_.InvalidStateError());
+    std::move(callback).Run(register_state_.InvalidStateError());
     return;
   }
 
   if (!s.ok()) {
-    state_ = last_state_;
-    last_state_.ToUnknown();
+    register_state_.ToUnregistered();
     std::move(callback).Run(s);
     return;
   }
 
   on_message_callback_ = on_message_callback;
+  on_error_callback_ = on_error_callback;
   settings_ = settings;
 
-  state_.ToRegistered();
+  register_state_.ToRegistered();
   std::move(callback).Run(s);
 }
 
@@ -176,47 +183,56 @@ void Subscriber<MessageTy>::OnUnubscribeTopicAsync(
     UnsubscribeTopicRequest* request, UnsubscribeTopicResponse* response,
     StatusOnceCallback callback, const Status& s) {
   if (!IsUnregistering()) {
-    on_error_callback_.Run(state_.InvalidStateError());
+    std::move(callback).Run(register_state_.InvalidStateError());
     return;
   }
 
   if (!s.ok()) {
-    state_ = last_state_;
-    last_state_.ToUnknown();
+    register_state_.ToRegistered();
     std::move(callback).Run(s);
     return;
   }
 
-  state_.ToUneregistered();
+  register_state_.ToUnregistered();
   StopMessageLoop();
   std::move(callback).Run(s);
 }
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnFindPublisher(const TopicInfo& topic_info) {
-#if DCHECK_IS_ON()
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   DCHECK(master_proxy.IsBoundToCurrentThread());
-#endif
-  if (IsStarted()) {
-    // UDP Channel can't detect closed connection. So it might be called
-    // at |IsStarted()| state. In this case, we have to forcely stop the
-    // mesasge loop and try it again.
-    DCHECK(channel_->IsUDPChannel());
-    StopMessageLoop();
-#if !DCHECK_IS_ON()
-    MasterProxy& master_proxy = MasterProxy::GetInstance();
-#endif
+  if (IsRegistering() || IsUnregistering() || IsStopping()) {
     master_proxy.PostTask(
         FROM_HERE, ::base::BindOnce(&Subscriber<MessageTy>::OnFindPublisher,
                                     ::base::Unretained(this), topic_info));
     return;
   }
 
-  if (!(IsRegistered() || IsStopped())) {
-    on_error_callback_.Run(state_.InvalidStateError());
+  if (IsUnregistered()) return;
+
+  DCHECK(IsRegistered());
+
+  if (topic_info.status() == TopicInfo::UNREGISTERED) {
+    if (IsStarted()) {
+      StopMessageLoop();
+    }
     return;
   }
+
+  if (IsStarted()) {
+    // UDP Channel can't detect closed connection. So it might be called
+    // at |IsStarted()| state. In this case, we have to forcely stop the
+    // mesasge loop and try it again.
+    DCHECK(channel_->IsUDPChannel());
+    StopMessageLoop();
+    master_proxy.PostTask(
+        FROM_HERE, ::base::BindOnce(&Subscriber<MessageTy>::OnFindPublisher,
+                                    ::base::Unretained(this), topic_info));
+    return;
+  }
+
+  DCHECK(IsStopped());
 
   // If MesageTy is DynamicProtobufMessage, in other words, this class is
   // a instance of DynamicSubscriber, then subscriber resolves its type
@@ -269,17 +285,18 @@ void Subscriber<MessageTy>::StartMessageLoop() {
     return;
   }
 
-  if (IsStarted()) return;
-
-  if (!(IsRegistered() || IsStopped())) {
-    Status s = state_.InvalidStateError();
-    on_error_callback_.Run(Status{
-        s.error_code(), ::base::StringPrintf("Failed to start mesasge loop: %s",
-                                             s.error_message().c_str())});
+  if (IsStopping()) {
+    master_proxy.PostDelayedTask(
+        FROM_HERE,
+        ::base::BindOnce(&Subscriber<MessageTy>::StartMessageLoop,
+                         ::base::Unretained(this)),
+        settings_.period);
     return;
   }
 
-  state_.ToStarted();
+  if (IsStarted()) return;
+
+  subscriber_state_.ToStarted();
   message_queue_.set_capacity(settings_.queue_size);
   ReceiveMessageLoop();
   NotifyMessageLoop();
@@ -287,24 +304,26 @@ void Subscriber<MessageTy>::StartMessageLoop() {
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::StopMessageLoop() {
-  if (IsStopped()) return;
-
-  if (!(IsUnregistered() || IsStarted())) {
-    Status s = state_.InvalidStateError();
-    Status new_status = Status{
-        s.error_code(), ::base::StringPrintf("Failed to stop mesasge loop: %s",
-                                             s.error_message().c_str())};
-    on_error_callback_.Run(new_status);
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  if (!master_proxy.IsBoundToCurrentThread()) {
+    master_proxy.PostTask(
+        FROM_HERE, ::base::BindOnce(&Subscriber<MessageTy>::StopMessageLoop,
+                                    ::base::Unretained(this)));
     return;
   }
 
-  Release();
-  state_.ToStopped();
+  if (IsStopping() || IsStopped()) return;
+
+  subscriber_state_.ToStopping();
+  master_proxy.PostDelayedTask(FROM_HERE,
+                               ::base::BindOnce(&Subscriber<MessageTy>::Release,
+                                                ::base::Unretained(this)),
+                               settings_.period * 2);
 }
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::ReceiveMessageLoop() {
-  if (IsStopped()) return;
+  if (IsStopping() || IsStopped()) return;
 
   channel_->ReceiveMessage(
       &message_, ::base::BindOnce(&Subscriber<MessageTy>::OnReceiveMessage,
@@ -313,7 +332,7 @@ void Subscriber<MessageTy>::ReceiveMessageLoop() {
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
-  if (IsStopped()) return;
+  if (IsStopping() || IsStopped()) return;
 
   if (s.ok()) {
     receive_message_failed_cnt_ = 0;
@@ -340,7 +359,7 @@ void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::NotifyMessageLoop() {
-  if (IsStopped()) return;
+  if (IsStopping() || IsStopped()) return;
 
   if (!message_queue_.empty()) {
     MessageTy message = std::move(message_queue_.front());
@@ -356,18 +375,27 @@ void Subscriber<MessageTy>::NotifyMessageLoop() {
       settings_.period);
 }
 
+// Should carefully release the resources.
+// |channel_| should be released on MasterProxy thread,
+// if you release |message_queue_|, |on_message_callback_| and
+// |on_error_callback_| too early, then it might be crashed on
+// |NotifyMessageLoop|, which loops every |settings_.period|.
 template <typename MessageTy>
 void Subscriber<MessageTy>::Release() {
+#if DCHECK_IS_ON()
   MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(FROM_HERE,
-                          ::base::BindOnce(&Subscriber<MessageTy>::Release,
-                                           ::base::Unretained(this)));
-    return;
+  DCHECK(master_proxy.IsBoundToCurrentThread());
+#endif
+
+  if (IsUnregistered()) {
+    channel_.reset();
+    message_queue_.clear();
+
+    on_message_callback_.Reset();
+    on_error_callback_.Reset();
   }
 
-  channel_.reset();
-  message_queue_.clear();
+  subscriber_state_.ToStopped();
 }
 
 }  // namespace felicia

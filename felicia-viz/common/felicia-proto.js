@@ -6,3 +6,5 @@ import feliciaProtobufJson from 'common/proto_bundle/felicia_proto_bundle.json';
 const FeliciaProtoRoot = protobuf.Root.fromJSON(feliciaProtobufJson);
 export const CAMERA_FRAME_MESSAGE = 'felicia.CameraFrameMessage';
 export const CameraFrameMessage = FeliciaProtoRoot.lookupType(CAMERA_FRAME_MESSAGE);
+export const TOPIC_INFO = 'felicia.TopicInfo';
+export const TopicInfo = FeliciaProtoRoot.lookupType(TOPIC_INFO);

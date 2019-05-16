@@ -89,16 +89,18 @@ void DynamicSubscribingNode::OnRequestUnsubscribe(const std::string& topic,
 
 void DynamicSubscribingNode::Subscribe(
     const TopicInfo& topic_info, const communication::Settings& settings) {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(
-        FROM_HERE,
-        ::base::BindOnce(&DynamicSubscribingNode::Subscribe,
-                         ::base::Unretained(this), topic_info, settings));
-    return;
-  }
-
   const std::string& topic = topic_info.topic();
+  auto it = subscribers_.find(topic);
+  if (it != subscribers_.end()) {
+    if (it->second->IsStopping()) {
+      MasterProxy& master_proxy = MasterProxy::GetInstance();
+      master_proxy.PostTask(
+          FROM_HERE,
+          ::base::BindOnce(&DynamicSubscribingNode::Subscribe,
+                           ::base::Unretained(this), topic_info, settings));
+      return;
+    }
+  }
 
   auto subscriber = std::make_unique<DynamicSubscriber>();
 

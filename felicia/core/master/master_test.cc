@@ -107,12 +107,6 @@ class MasterTest : public ::testing::Test {
     master_->AddNode(std::move(sub_node));
   }
 
-  void TearDown() override {
-    ClientInfo client_info;
-    client_info.set_id(client_id_);
-    master_->RemoveClient(client_info);
-  }
-
   void RegisterClientForTesting(uint32_t* id) {
     ClientInfo client_info;
     std::unique_ptr<Client> client = Client::NewClient(client_info);
@@ -364,8 +358,10 @@ TEST_F(MasterTest, UnpublishTopic) {
 
   request->set_topic(topic_);
 
-  master_->UnpublishTopic(request.get(), response.get(),
-                          ::base::BindOnce(&ExpectOK));
+  EXPECT_DEATH_IF_SUPPORTED(
+      master_->UnpublishTopic(request.get(), response.get(),
+                              ::base::BindOnce(&ExpectOK)),
+      "");
 }
 
 TEST_F(MasterTest, SubscribeTopic) {

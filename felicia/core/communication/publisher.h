@@ -11,8 +11,8 @@
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 #include "felicia/core/channel/channel_factory.h"
+#include "felicia/core/communication/register_state.h"
 #include "felicia/core/communication/settings.h"
-#include "felicia/core/communication/state.h"
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/master_proxy.h"
@@ -22,16 +22,21 @@ namespace felicia {
 template <typename MessageTy>
 class Publisher {
  public:
-  Publisher() { state_.ToUneregistered(); }
-
+  Publisher() = default;
   virtual ~Publisher() { DCHECK(IsUnregistered()); }
 
-  ALWAYS_INLINE bool IsRegistering() const { return state_.IsRegistering(); }
-  ALWAYS_INLINE bool IsRegistered() const { return state_.IsRegistered(); }
-  ALWAYS_INLINE bool IsUnregistering() const {
-    return state_.IsUnregistering();
+  ALWAYS_INLINE bool IsRegistering() const {
+    return register_state_.IsRegistering();
   }
-  ALWAYS_INLINE bool IsUnregistered() const { return state_.IsUnregistered(); }
+  ALWAYS_INLINE bool IsRegistered() const {
+    return register_state_.IsRegistered();
+  }
+  ALWAYS_INLINE bool IsUnregistering() const {
+    return register_state_.IsUnregistering();
+  }
+  ALWAYS_INLINE bool IsUnregistered() const {
+    return register_state_.IsUnregistered();
+  }
 
   void RequestPublish(const NodeInfo& node_info, const std::string& topic,
                       const ChannelDef& channel_def,
@@ -72,7 +77,7 @@ class Publisher {
   Pool<MessageTy, uint8_t> message_queue_;
   std::unique_ptr<Channel<MessageTy>> channel_;
 
-  communication::State state_;
+  communication::RegisterState register_state_;
 
   DISALLOW_COPY_AND_ASSIGN(Publisher);
 };
@@ -93,11 +98,11 @@ void Publisher<MessageTy>::RequestPublish(
   }
 
   if (!IsUnregistered()) {
-    std::move(callback).Run(state_.InvalidStateError());
+    std::move(callback).Run(register_state_.InvalidStateError());
     return;
   }
 
-  state_.ToRegistering();
+  register_state_.ToRegistering();
 
   StatusOr<ChannelSource> status_or = Setup(channel_def);
   if (!status_or.ok()) {
@@ -125,7 +130,7 @@ template <typename MessageTy>
 void Publisher<MessageTy>::Publish(const MessageTy& message,
                                    StatusOnceCallback callback) {
   if (!IsRegistered()) {
-    std::move(callback).Run(state_.InvalidStateError());
+    std::move(callback).Run(register_state_.InvalidStateError());
     return;
   }
 
@@ -138,7 +143,7 @@ template <typename MessageTy>
 void Publisher<MessageTy>::Publish(MessageTy&& message,
                                    StatusOnceCallback callback) {
   if (!IsRegistered()) {
-    std::move(callback).Run(state_.InvalidStateError());
+    std::move(callback).Run(register_state_.InvalidStateError());
     return;
   }
 
@@ -152,11 +157,11 @@ void Publisher<MessageTy>::RequestUnpublish(const NodeInfo& node_info,
                                             const std::string& topic,
                                             StatusOnceCallback callback) {
   if (!IsRegistered()) {
-    std::move(callback).Run(state_.InvalidStateError());
+    std::move(callback).Run(register_state_.InvalidStateError());
     return;
   }
 
-  state_.ToUnregistering();
+  register_state_.ToUnregistering();
 
   UnpublishTopicRequest* request = new UnpublishTopicRequest();
   *request->mutable_node_info() = node_info;
@@ -194,12 +199,12 @@ void Publisher<MessageTy>::OnPublishTopicAsync(
     const communication::Settings& settings, StatusOnceCallback callback,
     const Status& s) {
   if (!IsRegistering()) {
-    std::move(callback).Run(state_.InvalidStateError());
+    std::move(callback).Run(register_state_.InvalidStateError());
     return;
   }
 
   if (!s.ok()) {
-    state_.ToUneregistered();
+    register_state_.ToUnregistered();
     std::move(callback).Run(s);
     return;
   }
@@ -211,7 +216,7 @@ void Publisher<MessageTy>::OnPublishTopicAsync(
     channel_->SetSendBufferSize(settings.buffer_size);
   }
 
-  state_.ToRegistered();
+  register_state_.ToRegistered();
   std::move(callback).Run(s);
 }
 
@@ -220,18 +225,18 @@ void Publisher<MessageTy>::OnUnpublishTopicAsync(
     UnpublishTopicRequest* request, UnpublishTopicResponse* response,
     StatusOnceCallback callback, const Status& s) {
   if (!IsUnregistering()) {
-    std::move(callback).Run(state_.InvalidStateError());
+    std::move(callback).Run(register_state_.InvalidStateError());
     return;
   }
 
   if (!s.ok()) {
-    state_.ToRegistered();
+    register_state_.ToRegistered();
     std::move(callback).Run(s);
     return;
   }
 
   Release();
-  state_.ToUneregistered();
+  register_state_.ToUnregistered();
 
   std::move(callback).Run(s);
 }

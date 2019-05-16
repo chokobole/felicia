@@ -235,6 +235,7 @@ void Master::UnpublishTopic(const UnpublishTopicRequest* arg,
 
   const std::string& topic = arg->topic();
   ::base::WeakPtr<Node> node = FindNode(node_info);
+  TopicInfo topic_info;
   Reason reason;
   {
     ::base::AutoLock l(lock_);
@@ -242,6 +243,7 @@ void Master::UnpublishTopic(const UnpublishTopicRequest* arg,
       if (!node->IsPublishingTopic(topic)) {
         reason = Reason::TopicNotPublishingOnNode;
       } else {
+        topic_info = node->GetTopicInfo(topic);  // intend to copy
         node->UnregisterPublishingTopic(topic);
         reason = Reason::None;
       }
@@ -257,9 +259,16 @@ void Master::UnpublishTopic(const UnpublishTopicRequest* arg,
                                        node_info.name().c_str());
   } else if (reason == Reason::TopicNotPublishingOnNode) {
     std::move(callback).Run(errors::TopicNotPublishingOnNode(node_info, topic));
+    return;
   } else if (reason == Reason::UnknownFailed) {
     std::move(callback).Run(errors::FailedToUnpublish(topic));
+    return;
   }
+
+  topic_info.set_status(TopicInfo::UNREGISTERED);
+  thread_->task_runner()->PostTask(
+      FROM_HERE, ::base::Bind(&Master::NotifyAllSubscribers,
+                              ::base::Unretained(this), topic_info));
 }
 
 void Master::SubscribeTopic(const SubscribeTopicRequest* arg,
@@ -421,10 +430,23 @@ void Master::AddClient(uint32_t id, std::unique_ptr<Client> client) {
 
 void Master::RemoveClient(const ClientInfo& client_info) {
   uint32_t id = client_info.id();
+
+  std::vector<TopicInfo> topic_infos;
   {
     ::base::AutoLock l(lock_);
-    client_map_.erase(client_map_.find(id));
+    auto it = client_map_.find(id);
+    TopicFilter topic_filter;
+    topic_filter.set_all(true);
+    topic_infos = it->second->FindTopicInfos(topic_filter);
+    client_map_.erase(it);
     DLOG(INFO) << "Master::RemoveClient() " << id;
+  }
+
+  for (auto& topic_info : topic_infos) {
+    topic_info.set_status(TopicInfo::UNREGISTERED);
+    thread_->task_runner()->PostTask(
+        FROM_HERE, ::base::Bind(&Master::NotifyAllSubscribers,
+                                ::base::Unretained(this), topic_info));
   }
 }
 

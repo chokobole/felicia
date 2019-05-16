@@ -72,9 +72,17 @@ class MultiTopicSubscriberDelegate
   }
 
   void HandleTopicInfo(const TopicInfo& topic_info) {
-    // TODO: Should implement unsubscribe
-    node_->Subscribe(topic_info, settings_);
+    if (topic_info.status() == TopicInfo::REGISTERED) {
+      node_->Subscribe(topic_info, settings_);
+    } else {
+      node_->Unsubscribe(
+          topic_info.topic(),
+          ::base::BindOnce(&MultiTopicSubscriberDelegate::OnUnsubscribe,
+                           ::base::Unretained(this)));
+    }
   }
+
+  void OnUnsubscribe(const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }
 
  private:
   DynamicSubscribingNode* node_ = nullptr;  // not owned

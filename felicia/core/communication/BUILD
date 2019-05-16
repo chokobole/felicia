@@ -4,10 +4,13 @@ package(default_visibility = ["//felicia:internal"])
 
 fel_cc_library(
     name = "communication",
+    srcs = [
+        "register_state.h",
+        "subscriber_state.h",
+    ],
     hdrs = [
         "publisher.h",
         "settings.h",
-        "state.h",
         "subscriber.h",
     ],
     deps = [

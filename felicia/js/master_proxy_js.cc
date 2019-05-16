@@ -196,7 +196,14 @@ class MultiTopicSubscriberDelegate
 
   // This is called from TopicInfoWatcherDelegate, if TopicInfo is updated.
   void HandleTopicInfo(const TopicInfo& topic_info) {
-    node_->UpdateTopicInfo(topic_info);
+    if (topic_info.status() == TopicInfo::REGISTERED) {
+      node_->UpdateTopicInfo(topic_info);
+    } else {
+      node_->Unsubscribe(
+          topic_info.topic(),
+          ::base::BindOnce(&MultiTopicSubscriberDelegate::OnUnsubscribeTopic,
+                           ::base::Unretained(this), topic_info.topic()));
+    }
   }
 
   // // This is called from JsMasterProxy::SubscribeTopic from the js side.
@@ -275,12 +282,14 @@ class MultiTopicSubscriberDelegate
         it->second.on_subscription_error_callback.Call(
             env.Global(), {JsStatus::New(env, topic_data.status_or.status())});
       } else {
-        it->second.on_unsubscribe_callback.Call(
-            env.Global(),
-            {JsStatus::New(env, topic_data.on_unsubscribe_status)});
+        if (it->second.on_unsubscribe_callback) {
+          it->second.on_unsubscribe_callback.Call(
+              env.Global(),
+              {JsStatus::New(env, topic_data.on_unsubscribe_status)});
+          it->second.on_unsubscribe_callback.Reset();
+        }
         it->second.on_message_callback.Reset();
         it->second.on_subscription_error_callback.Reset();
-        it->second.on_unsubscribe_callback.Reset();
         g_multi_topic_subscriber_delegate->callback_infos_.erase(it);
       }
     }
