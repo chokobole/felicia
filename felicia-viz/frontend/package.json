@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "description": "Frontend for felicia-viz",
   "dependencies": {
+    "@babylonjs/core": "^4.0.3",
+    "@babylonjs/materials": "^4.0.3",
     "@streetscape.gl/monochrome": "^1.0.0-beta.3",
     "colormap": "^2.3.1",
     "mobx": "^5.9.0",

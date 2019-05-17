@@ -4,6 +4,7 @@ import { inject, observer } from 'mobx-react';
 
 import CameraPanel from 'components/camera-panel';
 import ControlPanel from 'components/control-panel';
+import MainScene from 'components/main-scene';
 import ToolBar from 'components/tool-bar';
 import META_INFO_SUBSCRIBER from 'util/meta-info-subscriber';
 
@@ -65,6 +66,7 @@ export default class App extends Component {
     return (
       <div id='container'>
         <ControlPanel />
+        <MainScene />
         {this._renderCameraPanels()}
         <ToolBar />
       </div>

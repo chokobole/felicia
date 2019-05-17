@@ -11,8 +11,8 @@ const MAIN = 'main';
 
 export default class ImageView extends PureComponent {
   static propTypes = {
-    width: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-    height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    width: PropTypes.string,
+    height: PropTypes.string,
     src: PropTypes.string,
     frame: PropTypes.instanceOf(CameraFrame),
     filter: PropTypes.string,
