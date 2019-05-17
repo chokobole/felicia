@@ -25,5 +25,6 @@ fel_cc_library(
     deps = [
         "//felicia/core/lib",
         "//felicia/drivers/camera",
+        "//felicia/drivers/imu",
     ],
 )

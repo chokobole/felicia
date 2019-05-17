@@ -21,7 +21,6 @@ enum PixelFormat {
   PIXEL_FORMAT_Z16 = 29;  // single 16bpp plane.
 }
 
-
 message CameraFormatMessage {
   int32 width = 1;
   int32 height = 2;

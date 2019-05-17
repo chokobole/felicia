@@ -24,24 +24,23 @@ fel_cc_library(
 fel_cc_binary(
     name = "node_creator",
     srcs = [
-        "node_creator.cc",
         "depth_camera_flag.cc",
         "depth_camera_flag.h",
     ] + select({
         "//felicia:has_realsense": [
-            "rs_camera_helper.cc",
-            "rs_camera_publishing_node.cc",
+            "realsense/rs_camera_flag.cc",
+            "realsense/rs_camera_flag.h",
+            "realsense/rs_camera_publishing_node.h",
+            "realsense/rs_node_creator.cc",
         ],
         "//conditions:default": [
-            "fake_camera_helper.cc",
-            "fake_camera_publishing_node.cc",
+            "//felicia:only_main.cc",
         ],
     }),
     deps = fel_shared_library() + [
         "//felicia/examples/learn/message_communication/common/cc:camera_flag",
         "//felicia/examples/learn/message_communication/common/cc:camera_util",
         "//felicia/core:felicia_init",
-        ":depth_camera_publishing_node",
     ] + if_has_realsense([
         "//felicia/drivers/vendors/realsense",
     ]),

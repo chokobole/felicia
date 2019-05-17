@@ -8,7 +8,7 @@
 namespace felicia {
 
 // static
-std::unique_ptr<DepthCameraInterface> RsCameraFactory::NewDepthCamera(
+std::unique_ptr<RsCamera> RsCameraFactory::NewDepthCamera(
     const CameraDescriptor& descriptor) {
   return ::base::WrapUnique(new RsCamera(descriptor));
 }

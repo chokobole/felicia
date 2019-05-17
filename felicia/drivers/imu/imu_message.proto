@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package felicia;
+
+message Vec3fMessage {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+message ImuMessage {
+  Vec3fMessage orientation = 1;
+  Vec3fMessage angular_velocity = 2;
+  Vec3fMessage linear_acceleration = 3;
+}

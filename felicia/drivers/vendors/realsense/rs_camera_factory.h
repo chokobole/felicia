@@ -10,7 +10,7 @@ namespace felicia {
 
 class RsCameraFactory {
  public:
-  static std::unique_ptr<DepthCameraInterface> NewDepthCamera(
+  static std::unique_ptr<RsCamera> NewDepthCamera(
       const CameraDescriptor& descriptor);
 
   static Status GetCameraDescriptors(CameraDescriptors* camera_descriptors);

@@ -21,6 +21,7 @@ fel_proto_library(
     protodeps = [
         ":protos_all_proto",
         "//felicia/drivers/camera:camera_proto",
+        "//felicia/drivers/imu:imu_proto",
     ],
     visibility = ["//visibility:public"],
 )

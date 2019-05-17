@@ -14,7 +14,7 @@ DepthCameraFlag::DepthCameraFlag() {
   {
     StringDefaultFlag::Builder builder(
         MakeValueStore<std::string>(&depth_topic_, "depth"));
-    auto flag = builder.SetLongName("--topic")
+    auto flag = builder.SetLongName("--depth_topic")
                     .SetHelp("topic to publish for depth frame, default: depth")
                     .Build();
     depth_topic_flag_ = std::make_unique<StringDefaultFlag>(flag);
@@ -22,7 +22,7 @@ DepthCameraFlag::DepthCameraFlag() {
   {
     BoolFlag::Builder builder(MakeValueStore(&synched_));
     auto flag = builder.SetLongName("--synched")
-                    .SetHelp("whether to read camera frame synchronously")
+                    .SetHelp("whether to read sensor data synchronously")
                     .Build();
     synched_flag_ = std::make_unique<BoolFlag>(flag);
   }

@@ -1,12 +1,15 @@
 #ifndef FELICIA_DRIVERS_VENDORS_REALSENSE_RS_CAMERA_H_
 #define FELICIA_DRIVERS_VENDORS_REALSENSE_RS_CAMERA_H_
 
+#include <atomic>
+
 #include <librealsense2/rs.hpp>
 
 #include "third_party/chromium/base/containers/flat_map.h"
 
 #include "felicia/drivers/camera/depth_camera_interface.h"
 #include "felicia/drivers/vendors/realsense/rs_capability.h"
+#include "felicia/drivers/imu/imu.h"
 
 namespace felicia {
 
@@ -32,12 +35,38 @@ class RsCamera : public DepthCameraInterface {
                StatusCallback status_callback) override;
   Status Stop();
 
+  Status Start(const CameraFormat& requested_color_format,
+               const CameraFormat& requested_depth_format,
+               const ImuFormat& requested_gyro_format,
+               const ImuFormat& requested_accel_format,
+               CameraFrameCallback color_frame_callback,
+               CameraFrameCallback depth_frame_callback,
+               ImuCallback imu_callback,
+               StatusCallback status_callback);
+  Status Start(const CameraFormat& requested_color_format,
+               const CameraFormat& requested_depth_format,
+               const ImuFormat& requested_gyro_format,
+               const ImuFormat& requested_accel_format,
+               DepthCameraFrameCallback depth_camera_frame_callback,
+               ImuCallback imu_callback,
+               StatusCallback status_callback);
+
  private:
   friend class RsCameraFactory;
 
   RsCamera(const CameraDescriptor& camera_descriptor);
 
+  Status Start(const CameraFormat& requested_color_format,
+               const CameraFormat& requested_depth_format,
+               const ImuFormat& requested_gyro_format,
+               const ImuFormat& requested_accel_format,
+               bool imu,
+               bool synched);
+
   void OnFrame(::rs2::frame frame);
+  void OnImu(::rs2::frame frame);
+
+  void SetFirstRefTime();
 
   ::base::Optional<CameraFrame> FromRsColorFrame(
       ::rs2::video_frame color_frame);
@@ -55,6 +84,11 @@ class RsCamera : public DepthCameraInterface {
   ::base::flat_map<RsStreamInfo, ::rs2::sensor> sensors_;
   RsCapabilityMap capability_map_;
 
+  ImuFormat gyro_format_;
+  ImuFormat accel_format_;
+  ImuCallback imu_callback_;
+
+  std::atomic_bool is_first_ref_time_init_;
   ::base::TimeTicks first_ref_time_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(RsCamera);

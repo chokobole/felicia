@@ -1,7 +1,6 @@
 #ifndef FELICIA_DRIVERS_CAMERA_CAMERA_FORMAT_H_
 #define FELICIA_DRIVERS_CAMERA_CAMERA_FORMAT_H_
 
-#include <string>
 #include <vector>
 
 #include "third_party/chromium/build/build_config.h"
@@ -26,6 +25,8 @@ class EXPORT CameraFormat {
   CameraFormat(Sizei size, PixelFormat pixel_format, float frame_rate);
   CameraFormat(int width, int height, PixelFormat pixel_format,
                float frame_rate);
+  CameraFormat(const CameraFormat& camera_format);
+  CameraFormat& operator=(const CameraFormat& camera_format);
 
   static std::string FourccToString(uint32_t fourcc);
 
@@ -74,8 +75,8 @@ using CameraFormats = std::vector<CameraFormat>;
 
 bool ComparePixelFormatPreference(PixelFormat lhs, PixelFormat rhs);
 
-// Compares the priority of the capture formats. Returns true if |lhs| is the
-// preferred capture format in comparison with |rhs|. Returns false otherwise.
+// Compares the priority of the camera formats. Returns true if |lhs| is the
+// preferred camera format in comparison with |rhs|. Returns false otherwise.
 bool CompareCapability(const CameraFormat& requested, const CameraFormat& lhs,
                        const CameraFormat& rhs);
 

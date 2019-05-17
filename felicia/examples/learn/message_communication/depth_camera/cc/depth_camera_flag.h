@@ -26,7 +26,7 @@ class DepthCameraFlag : public CameraFlag {
                                           device_index_flag_, color_topic_flag_,
                                           depth_topic_flag_, synched_flag_)
 
- private:
+ protected:
   std::string color_topic_;
   std::string depth_topic_;
   bool synched_;

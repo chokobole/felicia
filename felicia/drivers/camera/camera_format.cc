@@ -20,6 +20,10 @@ CameraFormat::CameraFormat(int width, int height, PixelFormat pixel_format,
       pixel_format_(pixel_format),
       frame_rate_(frame_rate) {}
 
+CameraFormat::CameraFormat(const CameraFormat& camera_format) = default;
+
+CameraFormat& CameraFormat::operator=(const CameraFormat& camera_format) = default;
+
 PixelFormat CameraFormat::pixel_format() const { return pixel_format_; }
 
 void CameraFormat::set_pixel_format(PixelFormat pixel_format) {

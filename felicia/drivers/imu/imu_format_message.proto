@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package felicia;
+
+message ImuFormatMessage {
+  float frame_rate = 1;
+}
