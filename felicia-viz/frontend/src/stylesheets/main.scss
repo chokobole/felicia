@@ -20,6 +20,15 @@ body {
   width: 348px;
   height: 100vh;
   border-bottom: solid 1px #000;
+
+  main {
+    transform: translateX(-348px);
+    transition: transform .7s;
+
+    &.is-opened {
+      transform: translateX(0px);
+    }
+  }
 }
 
 #toolbar {
