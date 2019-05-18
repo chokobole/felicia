@@ -73,7 +73,7 @@ module.exports = env => {
       ],
     },
     {
-      test: /\.(svg|ico|gif|jpe?g|png)$/,
+      test: /\.(svg|ico|gif|jpe?g|png|eot|svg|ttf|woff2?)$/,
       loader: 'file-loader?name=[name].[ext]',
     }
   );

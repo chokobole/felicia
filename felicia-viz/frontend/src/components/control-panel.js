@@ -3,9 +3,8 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import styled from 'styled-components';
 
-import CameraControlPanel from 'components/camera-control-panel';
 import { FeliciaVizStore } from 'store';
-import { UI_TYPES } from 'store/ui-state';
+import UI_TYPES from 'store/ui/ui-types';
 
 const Title = styled.h3`
   padding-left: 15px;
@@ -20,18 +19,13 @@ export default class ControlPanel extends Component {
   };
 
   _renderContent = type => {
-    switch (type) {
-      case UI_TYPES.CameraPanel.name: {
-        return <CameraControlPanel />;
-      }
-      default:
-        return null;
-    }
+    if (type === null) return null;
+    return UI_TYPES[type].renderControlView();
   };
 
   render() {
     const { store } = this.props;
-    const { id, type } = store.uiState.activeWindow;
+    const { id, type } = store.uiState.activeViewState;
 
     let className = '';
     if (id !== null) {

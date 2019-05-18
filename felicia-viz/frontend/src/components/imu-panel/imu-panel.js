@@ -4,24 +4,15 @@ import { inject, observer } from 'mobx-react';
 import { FloatPanel } from '@streetscape.gl/monochrome';
 
 import Activatable from 'components/activatable';
-import ImageView from 'components/image-view';
 import { FLOAT_PANEL_STYLE } from 'custom-styles';
-import { FeliciaVizStore } from 'store';
-import { UI_TYPES } from 'store/ui-state';
-
-const TITLE_HEIGHT = 28;
+import UI_TYPES from 'store/ui/ui-types';
 
 @inject('store')
 @observer
-export default class CameraPanel extends Component {
+export default class ImuPanel extends Component {
   static propTypes = {
     id: PropTypes.number.isRequired,
-    currentTime: PropTypes.number,
-    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
-  };
-
-  static defaultProps = {
-    currentTime: 0,
+    store: PropTypes.object.isRequired,
   };
 
   constructor(props) {
@@ -44,23 +35,16 @@ export default class CameraPanel extends Component {
   }
 
   _onUpdate = panelState => {
-    // The constant videoAspectRatio should be provided from the external configuration
-    // For now, let this value be constant.
-    const videoAspectRatio = 1.333333;
     this.setState({
       panelState: {
         ...panelState,
-        height: panelState.width / videoAspectRatio + TITLE_HEIGHT,
       },
     });
   };
 
   render() {
     const { panelState } = this.state;
-    const { id, store } = this.props;
-    const { height } = panelState;
-    const cameraPanelState = store.uiState.findCameraPanel(id);
-    const { camera, filter } = cameraPanelState;
+    const { id } = this.props;
 
     return (
       <FloatPanel
@@ -68,9 +52,7 @@ export default class CameraPanel extends Component {
         {...this.floatPanelSettings}
         onUpdate={this._onUpdate}
         style={FLOAT_PANEL_STYLE}>
-        <Activatable id={id} type={UI_TYPES.CameraPanel.name}>
-          <ImageView frame={camera.frame} height={`${height}px`} filter={filter} />
-        </Activatable>
+        <Activatable id={id} type={UI_TYPES.ImuPanel.name} />
       </FloatPanel>
     );
   }

@@ -14,7 +14,7 @@ export default class Activatable extends PureComponent {
     const { id, type } = this.props;
 
     console.log(`${id} is activated.`);
-    STORE.uiState.activeWindow.activate(id, type);
+    STORE.uiState.activeViewState.set(id, type);
   };
 
   render() {

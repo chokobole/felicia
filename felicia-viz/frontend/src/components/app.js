@@ -2,12 +2,13 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 
-import CameraPanel from 'components/camera-panel';
 import ControlPanel from 'components/control-panel';
 import MainScene from 'components/main-scene';
 import ToolBar from 'components/tool-bar';
 import META_INFO_SUBSCRIBER from 'util/meta-info-subscriber';
+import UI_TYPES from 'store/ui/ui-types';
 
+import 'fonts/felicia-icons.css';
 import 'stylesheets/main.scss';
 
 @inject('store')
@@ -34,7 +35,7 @@ export default class App extends Component {
       case 46: {
         // Delete
         const { store } = this.props;
-        store.uiState.activeWindow.deactivate();
+        store.uiState.activeViewState.unset();
         break;
       }
       default:
@@ -42,21 +43,14 @@ export default class App extends Component {
     }
   };
 
-  _renderCameraPanels() {
+  _renderViews() {
     const { store } = this.props;
-    const { currentTime, uiState } = store;
-    const { cameraPanelStates } = uiState;
 
     return (
       <React.Fragment>
-        {cameraPanelStates.map(cameraPanelState => {
-          return (
-            <CameraPanel
-              key={cameraPanelState.id}
-              id={cameraPanelState.id}
-              currentTime={currentTime}
-            />
-          );
+        {store.uiState.viewStates.map(viewState => {
+          const uiType = UI_TYPES[viewState.type()];
+          return uiType.renderView(viewState.id);
         })}
       </React.Fragment>
     );
@@ -67,7 +61,7 @@ export default class App extends Component {
       <div id='container'>
         <ControlPanel />
         <MainScene />
-        {this._renderCameraPanels()}
+        {this._renderViews()}
         <ToolBar />
       </div>
     );

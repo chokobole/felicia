@@ -4,8 +4,7 @@ import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import { Dropdown, Label } from '@streetscape.gl/monochrome';
 
-import PanelItemContainer from 'components/panel-item-container';
-import { FeliciaVizStore } from 'store';
+import PanelItemContainer from 'components/common/panel-item-container';
 import { failedToFindActiveState } from 'util/error';
 
 @inject('store')
@@ -14,12 +13,12 @@ export default class TopicDropdown extends Component {
   static propTypes = {
     title: PropTypes.string.isRequired,
     typeName: PropTypes.string.isRequired,
-    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
+    store: PropTypes.object.isRequired,
   };
 
   _onTopicChange = value => {
     const { store } = this.props;
-    const state = store.uiState.activeWindow.getState();
+    const state = store.uiState.activeViewState.getState();
     if (state) {
       state.selectTopic(value);
     } else {
@@ -29,7 +28,7 @@ export default class TopicDropdown extends Component {
 
   render() {
     const { title, typeName, store } = this.props;
-    const state = store.uiState.activeWindow.getState();
+    const state = store.uiState.activeViewState.getState();
     let value = '';
     if (state) {
       value = state.topic;

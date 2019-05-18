@@ -1,5 +1,8 @@
 import { observable, action } from 'mobx';
 
+import MESSAGE_TYPES from 'common/message-type';
+import SUBSCRIBER from 'util/subscriber';
+
 export class CameraFrame {
   constructor(message) {
     const { data } = message;
@@ -31,14 +34,31 @@ export class CameraFrame {
   }
 }
 
-export default class Camera {
+export default class CameraPanelState {
+  @observable topic = '';
+
+  @observable filter = 'jet';
+
   @observable frame = null;
 
-  @action updateFrame(message) {
+  constructor(id) {
+    this.id = id;
+  }
+
+  @action update(message) {
     this.frame = new CameraFrame(message);
   }
 
-  update(message) {
-    this.updateFrame(message);
+  @action selectTopic(newTopic) {
+    this.topic = newTopic;
+    SUBSCRIBER.subscribeTopic(this.id, MESSAGE_TYPES.Camera.name, newTopic);
   }
+
+  @action selectFilter(newFilter) {
+    this.filter = newFilter;
+  }
+
+  type = () => {
+    return 'CameraPanel';
+  };
 }

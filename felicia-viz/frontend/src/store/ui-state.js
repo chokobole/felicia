@@ -1,39 +1,9 @@
 import { observable, action } from 'mobx';
 
-import MESSAGE_TYPES from 'common/message-type';
-import Camera from 'store/camera';
+import UI_TYPES from 'store/ui/ui-types';
 import SUBSCRIBER from 'util/subscriber';
 
-export const UI_TYPES = {
-  CameraPanel: { name: 'CameraPanel' },
-};
-
-class CameraPanelState {
-  @observable topic = '';
-
-  @observable filter = 'jet';
-
-  @observable camera = new Camera();
-
-  constructor(id) {
-    this.id = id;
-  }
-
-  @action update(message) {
-    this.camera.updateFrame(message);
-  }
-
-  @action selectTopic(newTopic) {
-    this.topic = newTopic;
-    SUBSCRIBER.subscribeTopic(this.id, MESSAGE_TYPES.Camera.name, newTopic);
-  }
-
-  @action selectFilter(newFilter) {
-    this.filter = newFilter;
-  }
-}
-
-class Window {
+class ViewState {
   @observable id = null;
 
   @observable type = null;
@@ -47,23 +17,21 @@ class Window {
     this.type = null;
   }
 
-  @action activate(id, type) {
+  @action set(id, type) {
     this.id = id;
     this.type = type;
   }
 
-  @action deactivate() {
+  @action unset() {
     const { type, id, uiState } = this;
     if (type === null) return;
 
-    if (type === UI_TYPES.CameraPanel.name) {
-      const cameraPanel = uiState.findCameraPanel(id);
-      const { topic } = cameraPanel;
-      if (topic !== '') {
-        SUBSCRIBER.unsubscribeTopic(id, topic);
-      }
-      uiState.removeCameraPanel(id);
+    const viewState = uiState.findView(id);
+    const { topic } = viewState;
+    if (topic && topic !== '') {
+      SUBSCRIBER.unsubscribeTopic(id, topic);
     }
+    uiState.removeView(id);
 
     this.reset();
   }
@@ -71,47 +39,49 @@ class Window {
   getState() {
     if (this.type === null) return null;
 
-    if (this.type === UI_TYPES.CameraPanel.name) {
-      return this.uiState.findCameraPanel(this.id);
-    }
-
-    return null;
+    return this.uiState.findView(this.id);
   }
 }
 
 export default class UIState {
-  @observable cameraPanelStates = [];
+  @observable viewStates = [];
 
-  @observable activeWindow = new Window(this);
+  @observable activeViewState = new ViewState(this);
 
   id = 0;
 
-  @action addCameraPanel() {
-    this.cameraPanelStates.push(new CameraPanelState(this.id));
-    this.activeWindow.activate(this.id, UI_TYPES.CameraPanel.name);
-    this.id += 1;
+  @action addView(type) {
+    const values = Object.values(UI_TYPES);
+    // eslint-disable-next-line no-restricted-syntax
+    for (const value of values) {
+      if (type === value.name) {
+        // eslint-disable-next-line new-cap
+        this.viewStates.push(new value.state(this.id));
+        this.activeViewState.set(this.id, type);
+        this.id += 1;
+        break;
+      }
+    }
   }
 
-  @action removeCameraPanel(id) {
-    const idx = this.cameraPanelStates.findIndex(cameraPanelState => {
-      return cameraPanelState.id === id;
+  @action removeView(id) {
+    const idx = this.viewStates.findIndex(viewState => {
+      return viewState.id === id;
     });
-    if (idx > -1) this.cameraPanelStates.splice(idx, 1);
+    if (idx > -1) this.viewStates.splice(idx, 1);
   }
 
-  findCameraPanel(id) {
-    return this.cameraPanelStates.find(cameraPanelState => {
-      return cameraPanelState.id === id;
+  findView(id) {
+    return this.viewStates.find(viewState => {
+      return viewState.id === id;
     });
   }
 
   update(message) {
-    if (message.type === MESSAGE_TYPES.Camera.name) {
-      this.cameraPanelStates.forEach(cameraPanelState => {
-        if (cameraPanelState.id === message.id) {
-          cameraPanelState.update(message);
-        }
-      });
-    }
+    this.viewStates.forEach(viewState => {
+      if (viewState.id === message.id) {
+        viewState.update(message);
+      }
+    });
   }
 }

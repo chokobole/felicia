@@ -3,9 +3,8 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import { Dropdown, Label } from '@streetscape.gl/monochrome';
 
-import PanelItemContainer from 'components/panel-item-container';
+import PanelItemContainer from 'components/common/panel-item-container';
 import { failedToFindActiveState } from 'util/error';
-import { FeliciaVizStore } from 'store';
 
 const COLORMAPS = [
   'jet',
@@ -59,7 +58,7 @@ const COLORMAPS = [
 export default class ColormapDropdown extends Component {
   static propTypes = {
     title: PropTypes.string.isRequired,
-    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
+    store: PropTypes.object.isRequired,
   };
 
   constructor(props) {
@@ -73,7 +72,7 @@ export default class ColormapDropdown extends Component {
 
   _onFilterChange = value => {
     const { store } = this.props;
-    const state = store.uiState.activeWindow.getState();
+    const state = store.uiState.activeViewState.getState();
     if (state) {
       state.selectFilter(value);
     } else {
@@ -83,13 +82,13 @@ export default class ColormapDropdown extends Component {
 
   render() {
     const { title, store } = this.props;
-    const state = store.uiState.activeWindow.getState();
+    const state = store.uiState.activeViewState.getState();
     let value = '';
     let isEnabled = false;
     if (state) {
       value = state.filter;
-      if (state.camera.frame) {
-        isEnabled = state.camera.frame.pixelFormat === 'PIXEL_FORMAT_Z16';
+      if (state.frame) {
+        isEnabled = state.frame.pixelFormat === 'PIXEL_FORMAT_Z16';
       }
     } else {
       failedToFindActiveState();

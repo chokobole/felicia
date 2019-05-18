@@ -8,10 +8,11 @@
   "plugins": ["react"],
   "extends": ["airbnb", "prettier", "prettier/react"],
   "rules": {
-    "react/jsx-filename-extension": ["error", { "extensions": [".js", ".jsx"] }],
-    "no-underscore-dangle": "off",
     "import/no-unresolved": ["error", {"ignore": ["felicia_js.node"]}],
-    "no-console": "off"
+    "no-underscore-dangle": "off",
+    "no-console": "off",
+    "react/forbid-prop-types": ["error", {"forbid": ["any", "array"]}],
+    "react/jsx-filename-extension": ["error", { "extensions": [".js", ".jsx"] }]
   },
   "globals": {
     "document": "readonly",

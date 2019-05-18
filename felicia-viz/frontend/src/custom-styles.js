@@ -1,3 +1,5 @@
+/* eslint import/prefer-default-export: "off" */
+
 export const UI_THEME = {
   extends: 'dark',
   background: 'rgba(51,51,51,0.9)',
@@ -46,4 +48,11 @@ export const TOOLBAR_BUTTON_STYLE = {
   }),
 };
 
-export { FLOAT_PANEL_STYLE as default };
+export const TOOLBAR_MENU_STYLE = {
+  arrowSize: 0,
+  borderWidth: 0,
+  body: {
+    left: 56,
+    boxShadow: 'none',
+  },
+};

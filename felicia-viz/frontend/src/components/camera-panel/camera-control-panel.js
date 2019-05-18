@@ -1,29 +1,19 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
-import { Form, Label } from '@streetscape.gl/monochrome';
+import { Form } from '@streetscape.gl/monochrome';
 
-import PanelItemContainer from 'components/panel-item-container';
-import ColormapDropdown from 'components/colormap-dropdown';
 import { CAMERA_FRAME_MESSAGE } from 'common/felicia-proto';
-import TopicDropdown from 'components/topic-dropdown';
-import { FeliciaVizStore } from 'store';
+import TopicDropdown from 'components/common/topic-dropdown';
+import { renderText } from 'components/common/util';
 
-function renderText(self) {
-  const { title, value } = self;
-  return (
-    <PanelItemContainer>
-      <Label>{title}</Label>
-      <Label>{value}</Label>
-    </PanelItemContainer>
-  );
-}
+import ColormapDropdown from './colormap-dropdown';
 
 @inject('store')
 @observer
 export default class CameraControlPanel extends Component {
   static propTypes = {
-    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
+    store: PropTypes.object.isRequired,
   };
 
   SETTINGS = {
@@ -66,15 +56,25 @@ export default class CameraControlPanel extends Component {
   _fetchValues() {
     const { store } = this.props;
     const { uiState } = store;
-    const cameraPanelState = uiState.findCameraPanel(uiState.activeWindow.id);
-    const { camera, topic, filter } = cameraPanelState;
-    const { frame } = camera;
+    const viewState = uiState.findView(uiState.activeViewState.id);
+    const { frame, topic, filter } = viewState;
 
+    if (frame) {
+      const { width, height, frameRate, pixelFormat } = frame;
+      return {
+        width,
+        height,
+        frameRate,
+        pixelFormat,
+        topic,
+        filter,
+      };
+    }
     return {
-      width: frame ? frame.width : '',
-      height: frame ? frame.height : '',
-      frameRate: frame ? frame.frameRate : '',
-      pixelFormat: frame ? frame.pixelFormat : '',
+      width: '',
+      height: '',
+      frameRate: '',
+      pixelFormat: '',
       topic,
       filter,
     };

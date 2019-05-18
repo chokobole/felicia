@@ -21,7 +21,8 @@
   },
   "devDependencies": {
     "@hot-loader/react-dom": "^16.8.6",
-    "mobx-react-devtools": "^6.1.1"
+    "mobx-react-devtools": "^6.1.1",
+    "webfonts-generator": "^0.4.0"
   },
   "repository": {
     "type": "git",

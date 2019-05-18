@@ -1,0 +1,21 @@
+<?xml version="1.0" standalone="no"?> 
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" >
+<svg xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <font id="felicia-icons" horiz-adv-x="24">
+    <font-face font-family="felicia-icons"
+      units-per-em="24" ascent="24"
+      descent="0" />
+    <missing-glyph horiz-adv-x="0" />
+    <glyph glyph-name="camera-panel"
+      unicode="&#xF101;"
+      horiz-adv-x="24" d=" M4 20H7L9 22H15L17 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20M12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17M12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15z" />
+    <glyph glyph-name="imu-panel"
+      unicode="&#xF102;"
+      horiz-adv-x="24" d=" M12 22L16 18H13V10.15L19.53 6.39L21 8.97L22.5 3.5L17 2.04L18.53 4.65L12 8.42L5.47 4.65L7 2.04L1.5 3.5L3 8.97L4.47 6.39L11 10.15V18H8L12 22z" />
+    <glyph glyph-name="plus"
+      unicode="&#xF103;"
+      horiz-adv-x="24" d=" M19 11H13V5H11V11H5V13H11V19H13V13H19V11z" />
+  </font>
+</defs>
+</svg>

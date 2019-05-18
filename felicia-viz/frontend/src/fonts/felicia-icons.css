@@ -1,0 +1,27 @@
+@font-face {
+	font-family: "felicia-icons";
+	src: url("felicia-icons.eot?20361e9b2bd0c7ac4ad4733b23344761?#iefix") format("embedded-opentype"),
+url("felicia-icons.woff2?20361e9b2bd0c7ac4ad4733b23344761") format("woff2"),
+url("felicia-icons.woff?20361e9b2bd0c7ac4ad4733b23344761") format("woff");
+}
+
+.felicia-icons {
+	line-height: 1;
+}
+
+.felicia-icons:before {
+	font-family: felicia-icons !important;
+	font-style: normal;
+	font-weight: normal !important;
+	vertical-align: top;
+}
+
+.felicia-icons-camera-panel:before {
+	content: "\f101";
+}
+.felicia-icons-imu-panel:before {
+	content: "\f102";
+}
+.felicia-icons-plus:before {
+	content: "\f103";
+}

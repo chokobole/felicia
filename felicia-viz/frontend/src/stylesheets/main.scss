@@ -38,5 +38,9 @@ body {
   transform: translateY(-50%);
 }
 
+.felicia-icons {
+  line-height: unset;
+}
+
 @import 'toolbar';
 @import 'control-panel';
