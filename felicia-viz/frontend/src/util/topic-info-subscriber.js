@@ -1,10 +1,10 @@
-import MESSAGE_TYPES from 'common/message-type';
-import QUERY_TYPES from 'common/query-type';
+import { TOPIC_INFO } from '@felicia-viz/communication';
+
 import STORE from 'store';
 import Connection from 'util/connection';
 import Worker from 'util/subscriber-webworker';
 
-class MetaInfoSubscriber {
+class TopicInfoSubscriber {
   constructor(serverAddr) {
     let serverAddrUsed = serverAddr;
     if (!serverAddrUsed) {
@@ -13,10 +13,9 @@ class MetaInfoSubscriber {
     this.connection = new Connection(serverAddrUsed);
     this.worker = new Worker();
     this.worker.onmessage = event => {
-      const { type, queryType, data } = event.data;
+      const { type, data } = event.data;
       STORE.update({
         type,
-        queryType,
         data,
       });
     };
@@ -26,15 +25,14 @@ class MetaInfoSubscriber {
     this.connection.initialize(
       () => {
         const content = JSON.stringify({
-          type: MESSAGE_TYPES.MetaInfo.name,
-          queryType: QUERY_TYPES.Topics.name,
+          type: TOPIC_INFO,
         });
 
         this.connection.ws.send(content);
       },
       event => {
         this.worker.postMessage({
-          type: MESSAGE_TYPES.MetaInfo.name,
+          type: TOPIC_INFO,
           data: event.data,
         });
       }
@@ -48,6 +46,6 @@ class MetaInfoSubscriber {
   }
 }
 
-const META_INFO_SUBSCRIBER = new MetaInfoSubscriber();
+const TOPIC_INFO_SUBSCRIBER = new TopicInfoSubscriber();
 
-export default META_INFO_SUBSCRIBER;
+export default TOPIC_INFO_SUBSCRIBER;

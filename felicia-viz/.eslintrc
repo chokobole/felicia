@@ -8,7 +8,7 @@
   "plugins": ["react"],
   "extends": ["airbnb", "prettier", "prettier/react"],
   "rules": {
-    "import/no-unresolved": ["error", {"ignore": ["felicia_js.node"]}],
+    "import/no-unresolved": ["error", {"ignore": ["felicia_js.node", "@felicia-viz/ui", "@felicia-viz/communication"]}],
     "no-underscore-dangle": "off",
     "no-console": "off",
     "react/forbid-prop-types": ["error", {"forbid": ["any", "array"]}],

@@ -1,7 +1,6 @@
+import PROTO_TYPES, { TOPIC_INFO } from '@felicia-viz/communication';
+
 import feliciaJs from 'felicia_js.node';
-import MESSAGE_TYPES from 'common/message-type';
-import QUERY_TYPES from 'common/query-type';
-import { TopicInfo } from 'common/felicia-proto';
 import { isWin } from 'lib/environment';
 import MasterProxyClient from 'master-proxy-client';
 import handleMessage, { handleClose } from 'message';
@@ -42,7 +41,7 @@ export default () => {
       message => {
         console.log(`[TOPIC] : ${JSON.stringify(message.message)}`);
         const topicInfo = message.message;
-        if (topicInfo.status === TopicInfo.Status.REGISTERED) {
+        if (topicInfo.status === PROTO_TYPES[TOPIC_INFO].Status.REGISTERED) {
           TOPIC_MAP.set(topicInfo.topic, topicInfo);
         } else {
           TOPIC_MAP.delete(topicInfo.topic);
@@ -59,10 +58,10 @@ export default () => {
         ws.broadcast(
           null,
           JSON.stringify({
-            queryType: QUERY_TYPES.Topics.name,
+            type: TOPIC_INFO,
             data: topics,
           }),
-          MESSAGE_TYPES.MetaInfo
+          TOPIC_INFO
         );
       },
       // eslint-disable-next-line no-shadow

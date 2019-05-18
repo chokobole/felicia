@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 
-import MESSAGE_TYPES from 'common/message-type';
+import { CAMERA_FRAME_MESSAGE } from '@felicia-viz/communication';
 
 function noop() {}
 
@@ -28,7 +28,7 @@ export default class Connection {
 
   send(topic, data, type) {
     if (this.ws.readyState === WebSocket.OPEN && type === this.type && topic === this.topic) {
-      if (this.type === MESSAGE_TYPES.Camera) {
+      if (this.type === CAMERA_FRAME_MESSAGE) {
         if (!(data instanceof Buffer)) {
           console.error(`Data should be Buffer but got ${typeof data}`);
           return;

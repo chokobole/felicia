@@ -1,7 +1,6 @@
 import { action, observable } from 'mobx';
 
-import MESSAGE_TYPES from 'common/message-type';
-import QUERY_TYPES from 'common/query-type';
+import { TOPIC_INFO } from '@felicia-viz/communication';
 
 // TODO: Maybe we need loadash?
 function arraysEqual(a, b) {
@@ -15,7 +14,7 @@ function arraysEqual(a, b) {
   return true;
 }
 
-export default class MetaInfo {
+export default class TopicInfo {
   @observable topics = [];
 
   @action updateTopics(newTopics) {
@@ -24,9 +23,7 @@ export default class MetaInfo {
   }
 
   update(message) {
-    if (MESSAGE_TYPES.MetaInfo.name !== message.type) return;
-
-    if (QUERY_TYPES.Topics.name !== message.queryType) return;
+    if (TOPIC_INFO !== message.type) return;
 
     const newTopics = message.data;
 

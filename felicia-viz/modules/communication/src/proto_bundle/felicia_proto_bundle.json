@@ -412,6 +412,71 @@
               "id": 3
             }
           }
+        },
+        "ImuFormatMessage": {
+          "fields": {
+            "frameRate": {
+              "type": "float",
+              "id": 1
+            }
+          }
+        },
+        "Vec3fMessage": {
+          "fields": {
+            "x": {
+              "type": "float",
+              "id": 1
+            },
+            "y": {
+              "type": "float",
+              "id": 2
+            },
+            "z": {
+              "type": "float",
+              "id": 3
+            }
+          }
+        },
+        "ImuMessage": {
+          "fields": {
+            "orientation": {
+              "type": "Vec3fMessage",
+              "id": 1
+            },
+            "angularVelocity": {
+              "type": "Vec3fMessage",
+              "id": 2
+            },
+            "linearAcceleration": {
+              "type": "Vec3fMessage",
+              "id": 3
+            }
+          }
+        },
+        "Point3fMessage": {
+          "fields": {
+            "x": {
+              "type": "float",
+              "id": 1
+            },
+            "y": {
+              "type": "float",
+              "id": 2
+            },
+            "z": {
+              "type": "float",
+              "id": 3
+            }
+          }
+        },
+        "Point3fsMessage": {
+          "fields": {
+            "points": {
+              "rule": "repeated",
+              "type": "Point3fMessage",
+              "id": 1
+            }
+          }
         }
       }
     }

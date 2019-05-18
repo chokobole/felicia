@@ -10,7 +10,6 @@
     "mobx": "^5.9.0",
     "mobx-react": "^5.4.3",
     "prop-types": "^15.7.2",
-    "protobufjs": "^6.8.8",
     "react": "^16.8.5",
     "react-dom": "^16.8.5",
     "react-hot-loader": "^4.8.2",

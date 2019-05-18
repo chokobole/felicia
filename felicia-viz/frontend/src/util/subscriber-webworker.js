@@ -1,39 +1,36 @@
 /* global self */
 /* eslint no-restricted-globals: ["off"] */
-import MESSAGE_TYPES from 'common/message-type';
-import { CameraFrameMessage } from 'common/felicia-proto';
+import PROTO_TYPES, { TOPIC_INFO } from '@felicia-viz/communication';
 
 self.onmessage = event => {
   let message = null;
   const { data, type, destinations } = event.data;
-  switch (type) {
-    case MESSAGE_TYPES.Camera.name: {
-      const decoded = CameraFrameMessage.decode(new Uint8Array(data));
-      message = {
-        data: CameraFrameMessage.toObject(decoded, { enums: String }),
-        type: MESSAGE_TYPES.Camera.name,
-        destinations,
-      };
-      break;
+  if (type === TOPIC_INFO) {
+    let parsed = null;
+    try {
+      parsed = JSON.parse(data);
+    } catch (e) {
+      console.error(e);
+      return;
     }
-    case MESSAGE_TYPES.MetaInfo.name: {
-      let parsed = null;
-      try {
-        parsed = JSON.parse(data);
-      } catch (e) {
-        console.error(e);
-        break;
-      }
-      const { queryType } = parsed;
-      message = {
-        data: parsed.data,
-        queryType,
-        type: MESSAGE_TYPES.MetaInfo.name,
-      };
-      break;
+
+    message = {
+      data: parsed.data,
+      type,
+    };
+  } else {
+    const protoType = PROTO_TYPES[type];
+    if (!protoType) {
+      console.error(`Don't know how to handle the message type ${type}`);
+      return;
     }
-    default:
-      break;
+
+    const decoded = protoType.decode(new Uint8Array(data));
+    message = {
+      data: protoType.toObject(decoded, { enums: String }),
+      type,
+      destinations,
+    };
   }
 
   if (message) {

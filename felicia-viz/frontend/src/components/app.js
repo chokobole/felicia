@@ -5,7 +5,7 @@ import { inject, observer } from 'mobx-react';
 import ControlPanel from 'components/control-panel';
 import MainScene from 'components/main-scene';
 import ToolBar from 'components/tool-bar';
-import META_INFO_SUBSCRIBER from 'util/meta-info-subscriber';
+import TOPIC_INFO_SUBSCRIBER from 'util/topic-info-subscriber';
 import UI_TYPES from 'store/ui/ui-types';
 
 import 'fonts/felicia-icons.css';
@@ -22,12 +22,12 @@ export default class App extends Component {
 
   componentDidMount() {
     document.addEventListener('keydown', this._onKeyDown);
-    META_INFO_SUBSCRIBER.initialize();
+    TOPIC_INFO_SUBSCRIBER.initialize();
   }
 
   componentWillUnmount() {
     document.removeEventListener('keydown', this._onKeyDown);
-    META_INFO_SUBSCRIBER.close();
+    TOPIC_INFO_SUBSCRIBER.close();
   }
 
   _onKeyDown = e => {

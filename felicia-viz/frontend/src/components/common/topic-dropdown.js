@@ -36,7 +36,7 @@ export default class TopicDropdown extends Component {
       failedToFindActiveState();
     }
 
-    const topics = toJS(store.metaInfo.topics);
+    const topics = toJS(store.topicInfo.topics);
     const data = topics.reduce((obj, v) => {
       const { topic } = v;
       if (typeName === v.typeName) {

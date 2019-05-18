@@ -1,6 +1,7 @@
 import { observable, action } from 'mobx';
 
-import MESSAGE_TYPES from 'common/message-type';
+import { CAMERA_FRAME_MESSAGE } from '@felicia-viz/communication';
+
 import SUBSCRIBER from 'util/subscriber';
 
 export class CameraFrame {
@@ -51,7 +52,7 @@ export default class CameraPanelState {
 
   @action selectTopic(newTopic) {
     this.topic = newTopic;
-    SUBSCRIBER.subscribeTopic(this.id, MESSAGE_TYPES.Camera.name, newTopic);
+    SUBSCRIBER.subscribeTopic(this.id, CAMERA_FRAME_MESSAGE, newTopic);
   }
 
   @action selectFilter(newFilter) {

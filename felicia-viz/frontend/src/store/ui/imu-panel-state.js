@@ -1,6 +1,7 @@
 import { observable, action } from 'mobx';
 
-import MESSAGE_TYPES from 'common/message-type';
+import { IMU_MESSAGE } from '@felicia-viz/communication';
+
 import SUBSCRIBER from 'util/subscriber';
 
 export class Imu {}
@@ -20,7 +21,7 @@ export default class ImuPanelState {
 
   @action selectTopic(newTopic) {
     this.topic = newTopic;
-    SUBSCRIBER.subscribeTopic(this.id, MESSAGE_TYPES.Imu.name, newTopic);
+    SUBSCRIBER.subscribeTopic(this.id, IMU_MESSAGE, newTopic);
   }
 
   type = () => {

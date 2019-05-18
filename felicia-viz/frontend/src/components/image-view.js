@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
-/* eslint import/no-unresolved: ["error", { ignore: ['@felicia-viz/ui'] }] */
 import { ResizeDetector } from '@felicia-viz/ui';
 import { CameraFrame } from 'store/ui/camera-panel-state';
 import Worker from 'util/image-view-webworker.js';

@@ -81,6 +81,7 @@ module.exports = env => {
   // Should move under development once published
   config.resolve.alias = {
     '@felicia-viz/ui': resolve(rootPath, 'modules/ui/src'),
+    '@felicia-viz/communication': resolve(rootPath, 'modules/communication/src'),
   };
 
   if (env.production) {
