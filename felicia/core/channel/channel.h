@@ -99,7 +99,6 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
   MessageIoError err =
       MessageIO<MessageTy>::SerializeToBuffer(&message, send_buffer_, &to_send);
   if (err == MessageIoError::OK) {
-    DLOG(INFO) << "SendMessage() write bytes: " << to_send;
     this->send_callback_ = std::move(callback);
     channel_->Write(send_buffer_.data(), to_send,
                     ::base::BindOnce(&Channel<MessageTy>::OnSendMessage,

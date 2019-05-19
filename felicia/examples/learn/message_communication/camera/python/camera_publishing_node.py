@@ -57,7 +57,6 @@ class CameraPublishingNode(fel.NodeLifecycle):
             fel.log(fel.ERROR, s.error_message())
 
     def on_camera_frame(self, camera_frame):
-        print("CameraPublishingNode.on_camera_frame")
         if self.publisher.is_unregistered():
             return
 
@@ -65,11 +64,9 @@ class CameraPublishingNode(fel.NodeLifecycle):
                                self.on_publish)
 
     def on_camera_error(self, status):
-        print("CameraPublishingNode.on_camera_error")
         fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
     def on_publish(self, status):
-        print("CameraPublishingNode.on_publish()")
         fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
     def request_unpublish(self):

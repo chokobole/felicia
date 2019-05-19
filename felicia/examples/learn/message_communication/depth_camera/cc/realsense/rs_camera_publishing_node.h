@@ -118,7 +118,6 @@ class RsCameraPublishingNode : public NodeLifecycle {
   }
 
   void OnDepthCameraFrame(CameraFrame color_frame, CameraFrame depth_frame) {
-    std::cout << "RsCameraPublishingNode::OnDepthCameraFrame" << std::endl;
     if (!color_publisher_.IsUnregistered()) {
       color_publisher_.Publish(
           color_frame.ToCameraFrameMessage(),
@@ -134,7 +133,6 @@ class RsCameraPublishingNode : public NodeLifecycle {
   }
 
   void OnColorFrame(CameraFrame camera_frame) {
-    std::cout << "RsCameraPublishingNode::OnColorFrame" << std::endl;
     if (color_publisher_.IsUnregistered()) return;
 
     color_publisher_.Publish(
@@ -144,7 +142,6 @@ class RsCameraPublishingNode : public NodeLifecycle {
   }
 
   void OnDepthFrame(CameraFrame camera_frame) {
-    std::cout << "RsCameraPublishingNode::OnDepthFrame" << std::endl;
     if (depth_publisher_.IsUnregistered()) return;
 
     depth_publisher_.Publish(
@@ -154,7 +151,6 @@ class RsCameraPublishingNode : public NodeLifecycle {
   }
 
   void OnImu(const Imu& imu) {
-    std::cout << "RsCameraPublishingNode::OnImu" << std::endl;
     if (imu_publisher_.IsUnregistered()) return;
 
     imu_publisher_.Publish(
@@ -164,22 +160,18 @@ class RsCameraPublishingNode : public NodeLifecycle {
   }
 
   void OnCameraError(const Status& s) {
-    std::cout << "RsCameraPublishingNode::OnCameraError" << std::endl;
     LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
   void OnPublishColor(const Status& s) {
-    std::cout << "RsCameraPublishingNode::OnPublishColor()" << std::endl;
     LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
   void OnPublishDepth(const Status& s) {
-    std::cout << "RsCameraPublishingNode::OnPublishDepth()" << std::endl;
     LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
   void OnPublishImu(const Status& s) {
-    std::cout << "RsCameraPublishingNode::OnPublishImu()" << std::endl;
     LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
