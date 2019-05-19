@@ -4,8 +4,8 @@ import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import { Dropdown, Label } from '@streetscape.gl/monochrome';
 
-import PanelItemContainer from 'components/common/panel-item-container';
-import { failedToFindActiveState } from 'util/error';
+import { PanelItemContainer } from './panel-item';
+import { failedToFindActiveState } from '../../util/error';
 
 @inject('store')
 @observer

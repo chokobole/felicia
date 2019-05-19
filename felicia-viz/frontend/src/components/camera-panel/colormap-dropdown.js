@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import { Dropdown, Label } from '@streetscape.gl/monochrome';
 
-import PanelItemContainer from 'components/common/panel-item-container';
-import { failedToFindActiveState } from 'util/error';
+import { PanelItemContainer, failedToFindActiveState } from '@felicia-viz/ui';
 
 const COLORMAPS = [
   'jet',

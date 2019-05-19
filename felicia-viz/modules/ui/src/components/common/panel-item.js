@@ -1,9 +1,15 @@
 /* eslint import/prefer-default-export: "off" */
-import React from 'react';
 
+import React from 'react';
+import styled from 'styled-components';
 import { Label } from '@streetscape.gl/monochrome';
 
-import PanelItemContainer from './panel-item-container';
+export const PanelItemContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: space-between;
+`;
 
 export function renderText(self) {
   const { title, value } = self;

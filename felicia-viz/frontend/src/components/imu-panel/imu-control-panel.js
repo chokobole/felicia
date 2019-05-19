@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import { Form } from '@streetscape.gl/monochrome';
 
-import TopicDropdown from 'components/common/topic-dropdown';
+import { TopicDropdown } from '@felicia-viz/ui';
 
 @inject('store')
 @observer

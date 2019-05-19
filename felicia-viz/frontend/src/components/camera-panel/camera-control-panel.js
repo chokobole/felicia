@@ -4,9 +4,7 @@ import { inject, observer } from 'mobx-react';
 import { Form } from '@streetscape.gl/monochrome';
 
 import { CAMERA_FRAME_MESSAGE } from '@felicia-viz/communication';
-
-import TopicDropdown from 'components/common/topic-dropdown';
-import { renderText } from 'components/common/util';
+import { TopicDropdown, renderText } from '@felicia-viz/ui';
 
 import ColormapDropdown from './colormap-dropdown';
 

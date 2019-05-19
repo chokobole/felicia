@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import { FloatPanel } from '@streetscape.gl/monochrome';
 
-import Activatable from 'components/activatable';
+import { Activatable } from '@felicia-viz/ui';
+
 import { FLOAT_PANEL_STYLE } from 'custom-styles';
 import UI_TYPES from 'store/ui/ui-types';
 
@@ -44,7 +45,7 @@ export default class ImuPanel extends Component {
 
   render() {
     const { panelState } = this.state;
-    const { id } = this.props;
+    const { id, store } = this.props;
 
     return (
       <FloatPanel
@@ -52,7 +53,7 @@ export default class ImuPanel extends Component {
         {...this.floatPanelSettings}
         onUpdate={this._onUpdate}
         style={FLOAT_PANEL_STYLE}>
-        <Activatable id={id} type={UI_TYPES.ImuPanel.name} />
+        <Activatable id={id} type={UI_TYPES.ImuPanel.name} uiState={store.uiState} />
       </FloatPanel>
     );
   }
