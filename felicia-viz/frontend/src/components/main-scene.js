@@ -7,10 +7,7 @@ import { Vector3, Color3 } from '@babylonjs/core/Maths/math';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
-
 import { GridMaterial } from '@babylonjs/materials/grid';
-import '@babylonjs/core/Materials/standardMaterial';
-
 import '@babylonjs/core/Meshes/meshBuilder';
 
 @inject('store')
@@ -41,14 +38,11 @@ export default class MainScene extends Component {
     const light = new HemisphericLight('light', new Vector3(0, 0, 1), scene);
     light.intensity = 0.7;
 
-    const sphere = Mesh.CreateSphere('sphere', 16, 1, scene);
-    sphere.position.z = 2;
-
     const material = new GridMaterial('grid', scene);
     material.mainColor = backgroundColor;
+    material.opacity = 0.8;
 
-    // const ground = Mesh.CreateGround('ground', 12, 12, 2, scene);
-    const plane = Mesh.CreatePlane('plane', 10, scene, false, Mesh.DOUBLESIDE);
+    const plane = Mesh.CreatePlane('plane', 10, scene, true, Mesh.DOUBLESIDE);
     plane.material = material;
 
     engine.runRenderLoop(() => {
