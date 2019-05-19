@@ -1,4 +1,4 @@
-import PROTO_TYPES, { TOPIC_INFO } from '@felicia-viz/communication';
+import { PROTO_TYPES, TOPIC_INFO } from '@felicia-viz/communication';
 
 import feliciaJs from 'felicia_js.node';
 import TOPIC_MAP from 'topic-map';

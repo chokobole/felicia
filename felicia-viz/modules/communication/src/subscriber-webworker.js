@@ -1,6 +1,6 @@
 /* global self */
 /* eslint no-restricted-globals: ["off"] */
-import PROTO_TYPES, { TOPIC_INFO } from '@felicia-viz/communication';
+import PROTO_TYPES, { TOPIC_INFO } from './proto-types';
 
 self.onmessage = event => {
   let message = null;

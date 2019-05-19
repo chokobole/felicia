@@ -2,10 +2,11 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 
+import { TopicInfoSubscriber } from '@felicia-viz/communication';
+
 import ControlPanel from 'components/control-panel';
 import MainScene from 'components/main-scene';
 import ToolBar from 'components/tool-bar';
-import TOPIC_INFO_SUBSCRIBER from 'util/topic-info-subscriber';
 import UI_TYPES from 'store/ui/ui-types';
 
 import 'fonts/felicia-icons.css';
@@ -15,19 +16,28 @@ import 'stylesheets/main.scss';
 @observer
 export default class App extends Component {
   static propTypes = {
-    store: PropTypes.shape({
-      currentTime: PropTypes.number,
-    }).isRequired,
+    store: PropTypes.object.isRequired,
   };
 
   componentDidMount() {
+    const { store } = this.props;
+
+    this.topicInfoSubscriber = new TopicInfoSubscriber(null, event => {
+      const { type, data } = event.data;
+      store.update({
+        type,
+        data,
+      });
+    });
+    this.topicInfoSubscriber.initialize();
+
     document.addEventListener('keydown', this._onKeyDown);
-    TOPIC_INFO_SUBSCRIBER.initialize();
   }
 
   componentWillUnmount() {
+    this.topicInfoSubscriber.close();
+
     document.removeEventListener('keydown', this._onKeyDown);
-    TOPIC_INFO_SUBSCRIBER.close();
   }
 
   _onKeyDown = e => {
