@@ -94,6 +94,7 @@ fel_cc_library(
     ])),
     deps = [
         "//felicia/core/lib",
+        "//felicia/core/util",
         "@libyuv",
     ] + if_mac([":avf_camera"]),
 )
@@ -115,5 +116,8 @@ fel_objc_library(
     sdk_frameworks = [
         "AVFoundation",
     ],
-    deps = ["//felicia/core/lib"],
+    deps = [
+        "//felicia/core/lib",
+        "//felicia/core/util",
+    ],
 )

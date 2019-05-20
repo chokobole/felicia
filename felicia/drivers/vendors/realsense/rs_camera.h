@@ -7,9 +7,10 @@
 
 #include "third_party/chromium/base/containers/flat_map.h"
 
+#include "felicia/core/util/timestamp/timestamper.h"
 #include "felicia/drivers/camera/depth_camera_interface.h"
-#include "felicia/drivers/vendors/realsense/rs_capability.h"
 #include "felicia/drivers/imu/imu.h"
+#include "felicia/drivers/vendors/realsense/rs_capability.h"
 
 namespace felicia {
 
@@ -41,15 +42,13 @@ class RsCamera : public DepthCameraInterface {
                const ImuFormat& requested_accel_format,
                CameraFrameCallback color_frame_callback,
                CameraFrameCallback depth_frame_callback,
-               ImuCallback imu_callback,
-               StatusCallback status_callback);
+               ImuCallback imu_callback, StatusCallback status_callback);
   Status Start(const CameraFormat& requested_color_format,
                const CameraFormat& requested_depth_format,
                const ImuFormat& requested_gyro_format,
                const ImuFormat& requested_accel_format,
                DepthCameraFrameCallback depth_camera_frame_callback,
-               ImuCallback imu_callback,
-               StatusCallback status_callback);
+               ImuCallback imu_callback, StatusCallback status_callback);
 
  private:
   friend class RsCameraFactory;
@@ -59,9 +58,7 @@ class RsCamera : public DepthCameraInterface {
   Status Start(const CameraFormat& requested_color_format,
                const CameraFormat& requested_depth_format,
                const ImuFormat& requested_gyro_format,
-               const ImuFormat& requested_accel_format,
-               bool imu,
-               bool synched);
+               const ImuFormat& requested_accel_format, bool imu, bool synched);
 
   void OnFrame(::rs2::frame frame);
   void OnImu(::rs2::frame frame);
@@ -88,8 +85,7 @@ class RsCamera : public DepthCameraInterface {
   ImuFormat accel_format_;
   ImuCallback imu_callback_;
 
-  std::atomic_bool is_first_ref_time_init_;
-  ::base::TimeTicks first_ref_time_;
+  ThreadSafeTimestamper timestamper_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(RsCamera);
 };

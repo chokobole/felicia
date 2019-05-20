@@ -14,6 +14,7 @@
 #include <dshow.h>
 #include <wrl/client.h>
 
+#include "felicia/core/util/timestamp/timestamper.h"
 #include "felicia/drivers/camera/camera_interface.h"
 #include "felicia/drivers/camera/win/capability_list.h"
 #include "felicia/drivers/camera/win/sink_filter.h"
@@ -97,7 +98,7 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
 
   scoped_refptr<SinkFilter> sink_filter_;
 
-  ::base::TimeTicks first_ref_time_;
+  Timestamper timestamper_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DshowCamera);
 };

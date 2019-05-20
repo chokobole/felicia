@@ -6,8 +6,7 @@ namespace felicia {
 
 ImuFormat::ImuFormat() = default;
 
-ImuFormat::ImuFormat(float frame_rate)
-    : frame_rate_(frame_rate) {}
+ImuFormat::ImuFormat(float frame_rate) : frame_rate_(frame_rate) {}
 
 ImuFormat::ImuFormat(const ImuFormat& other) = default;
 
@@ -19,9 +18,7 @@ std::string ImuFormat::ToString() const {
 
 float ImuFormat::frame_rate() const { return frame_rate_; }
 
-void ImuFormat::set_frame_rate(float frame_rate) {
-  frame_rate_ = frame_rate;
-}
+void ImuFormat::set_frame_rate(float frame_rate) { frame_rate_ = frame_rate; }
 
 ImuFormatMessage ImuFormat::ToImuFormatMessage() const {
   ImuFormatMessage message;

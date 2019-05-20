@@ -60,7 +60,8 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
                        CameraFrameCallback color_frame_callback,
                        CameraFrameCallback depth_frame_callback,
                        StatusCallback status_callback) {
-  Status s = Start(requested_color_format, requested_depth_format, ImuFormat{}, ImuFormat{}, false /* imu */, false /* synched */);
+  Status s = Start(requested_color_format, requested_depth_format, ImuFormat{},
+                   ImuFormat{}, false /* imu */, false /* synched */);
   if (!s.ok()) return s;
 
   color_frame_callback_ = color_frame_callback;
@@ -76,7 +77,8 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
                        const CameraFormat& requested_depth_format,
                        DepthCameraFrameCallback depth_camera_frame_callback,
                        StatusCallback status_callback) {
-  Status s = Start(requested_color_format, requested_depth_format, ImuFormat{}, ImuFormat{}, false /* imu */, true /* synched */);
+  Status s = Start(requested_color_format, requested_depth_format, ImuFormat{},
+                   ImuFormat{}, false /* imu */, true /* synched */);
   if (!s.ok()) return s;
 
   depth_camera_frame_callback_ = depth_camera_frame_callback;
@@ -88,14 +90,16 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
 }
 
 Status RsCamera::Start(const CameraFormat& requested_color_format,
-               const CameraFormat& requested_depth_format,
-               const ImuFormat& requested_gyro_format,
-               const ImuFormat& requested_accel_format,
-               CameraFrameCallback color_frame_callback,
-               CameraFrameCallback depth_frame_callback,
-               ImuCallback imu_callback,
-               StatusCallback status_callback) {
-  Status s = Start(requested_color_format, requested_depth_format, requested_gyro_format, requested_accel_format, true /* imu */, false /* synched */);
+                       const CameraFormat& requested_depth_format,
+                       const ImuFormat& requested_gyro_format,
+                       const ImuFormat& requested_accel_format,
+                       CameraFrameCallback color_frame_callback,
+                       CameraFrameCallback depth_frame_callback,
+                       ImuCallback imu_callback,
+                       StatusCallback status_callback) {
+  Status s = Start(requested_color_format, requested_depth_format,
+                   requested_gyro_format, requested_accel_format,
+                   true /* imu */, false /* synched */);
   if (!s.ok()) return s;
 
   color_frame_callback_ = color_frame_callback;
@@ -109,13 +113,15 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
 }
 
 Status RsCamera::Start(const CameraFormat& requested_color_format,
-               const CameraFormat& requested_depth_format,
-               const ImuFormat& requested_gyro_format,
-               const ImuFormat& requested_accel_format,
-               DepthCameraFrameCallback depth_camera_frame_callback,
-               ImuCallback imu_callback,
-               StatusCallback status_callback) {
-  Status s = Start(requested_color_format, requested_depth_format, requested_gyro_format, requested_accel_format, true /* imu */, true /* synched */);
+                       const CameraFormat& requested_depth_format,
+                       const ImuFormat& requested_gyro_format,
+                       const ImuFormat& requested_accel_format,
+                       DepthCameraFrameCallback depth_camera_frame_callback,
+                       ImuCallback imu_callback,
+                       StatusCallback status_callback) {
+  Status s = Start(requested_color_format, requested_depth_format,
+                   requested_gyro_format, requested_accel_format,
+                   true /* imu */, true /* synched */);
   if (!s.ok()) return s;
 
   depth_camera_frame_callback_ = depth_camera_frame_callback;
@@ -126,11 +132,10 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
 }
 
 Status RsCamera::Start(const CameraFormat& requested_color_format,
-                      const CameraFormat& requested_depth_format,
-                      const ImuFormat& requested_gyro_format,
-                      const ImuFormat& requested_accel_format,
-                      bool imu,
-                      bool synched) {
+                       const CameraFormat& requested_depth_format,
+                       const ImuFormat& requested_gyro_format,
+                       const ImuFormat& requested_accel_format, bool imu,
+                       bool synched) {
   if (!camera_state_.IsInitialized()) {
     return camera_state_.InvalidStateError();
   }
@@ -159,15 +164,17 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
         if (!found_capability) return errors::NoVideoCapbility();
         color_format_ = found_capability->format.camera_format;
         sensor.second.open(
-            sensor.second.get_stream_profiles()[found_capability->stream_index]);
+            sensor.second
+                .get_stream_profiles()[found_capability->stream_index]);
         sensor.second.start(frame_callback_function);
-      } else if(sensor.first == DEPTH) {
+      } else if (sensor.first == DEPTH) {
         const RsCapability* found_capability = GetBestMatchedCapability(
             requested_depth_format, capability_map_[sensor.first]);
         if (!found_capability) return errors::NoVideoCapbility();
         depth_format_ = found_capability->format.camera_format;
         sensor.second.open(
-            sensor.second.get_stream_profiles()[found_capability->stream_index]);
+            sensor.second
+                .get_stream_profiles()[found_capability->stream_index]);
         sensor.second.start(frame_callback_function);
       } else if (sensor.first == GYRO || sensor.first == ACCEL) {
         if (!imu) continue;
@@ -181,9 +188,11 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
             requested_accel_format, capability_map_[ACCEL]);
         if (!found_accel_capability) return errors::NoImuCapability();
         accel_format_ = found_accel_capability->format.imu_format;
-        sensor.second.open({
-          sensor.second.get_stream_profiles()[found_accel_capability->stream_index],
-          sensor.second.get_stream_profiles()[found_gyro_capability->stream_index]});
+        sensor.second.open(
+            {sensor.second
+                 .get_stream_profiles()[found_accel_capability->stream_index],
+             sensor.second
+                 .get_stream_profiles()[found_gyro_capability->stream_index]});
         sensor.second.start(imu_callback_function);
       }
     } catch (::rs2::error e) {
@@ -242,19 +251,17 @@ void RsCamera::OnFrame(::rs2::frame frame) {
 }
 
 void RsCamera::OnImu(::rs2::frame frame) {
-  bool placeholder_false = false;
-  if (is_first_ref_time_init_.compare_exchange_strong(placeholder_false, true) ) {
-    first_ref_time_ = base::TimeTicks::Now();
-  }
-
+  auto motion = frame.as<rs2::motion_frame>();
   auto stream = frame.get_profile().stream_type();
   Imu imu;
 
+  rs2_vector vector = motion.get_motion_data();
   if (stream == GYRO.stream_type) {
-    imu.set_angulary_veilocity(reinterpret_cast<const float*>(frame.get_data()));
+    imu.set_angulary_veilocity(vector.x, vector.y, vector.z);
   } else {
-    imu.set_linear_accelration(reinterpret_cast<const float*>(frame.get_data()));
+    imu.set_linear_accelration(vector.x, vector.y, vector.z);
   }
+  imu.set_timestamp(timestamper_.timestamp());
 
   imu_callback_.Run(imu);
 }
@@ -269,28 +276,19 @@ void RsCamera::OnImu(::rs2::frame frame) {
   ::base::Optional<CameraFrame> argb_frame =
       ConvertToARGB(camera_buffer, color_format_);
   if (argb_frame.has_value()) {
-    bool placeholder_false = false;
-    if (is_first_ref_time_init_.compare_exchange_strong(placeholder_false, true) ) {
-      first_ref_time_ = base::TimeTicks::Now();
-    }
-
-    ::base::TimeDelta timestamp = base::TimeTicks::Now() - first_ref_time_;
-    argb_frame.value().set_timestamp(timestamp);
+    argb_frame.value().set_timestamp(timestamper_.timestamp());
   }
 
   return argb_frame;
 }
 
 CameraFrame RsCamera::FromRsDepthFrame(::rs2::depth_frame depth_frame) {
-  if (first_ref_time_.is_null()) first_ref_time_ = base::TimeTicks::Now();
-
-  ::base::TimeDelta timestamp = base::TimeTicks::Now() - first_ref_time_;
   size_t length = depth_format_.AllocationSize();
   std::unique_ptr<uint8_t> new_depth_frame =
       std::unique_ptr<uint8_t>(new uint8_t[length]);
   memcpy(new_depth_frame.get(), depth_frame.get_data(), length);
   CameraFrame camera_frame(std::move(new_depth_frame), depth_format_);
-  camera_frame.set_timestamp(timestamp);
+  camera_frame.set_timestamp(timestamper_.timestamp());
   return camera_frame;
 }
 
@@ -344,7 +342,7 @@ Status RsCamera::CreateCapabilityMap(::rs2::device device,
         auto motion_profile = profile.as<::rs2::motion_stream_profile>();
 
         if (motion_profile.stream_type() == RS2_STREAM_POSE) {
-           LOG(ERROR) << "Not supported yet for the stream type : "
+          LOG(ERROR) << "Not supported yet for the stream type : "
                      << rs2_stream_to_string(motion_profile.stream_type());
           continue;
         }
@@ -355,7 +353,8 @@ Status RsCamera::CreateCapabilityMap(::rs2::device device,
           (*rs_capability_map)[steram_info] = RsCapabilityList{};
         }
 
-        (*rs_capability_map)[steram_info].emplace_back(i, ImuFormat{motion_profile.fps()});
+        (*rs_capability_map)[steram_info].emplace_back(
+            i, ImuFormat{motion_profile.fps()});
       }
     }
   }

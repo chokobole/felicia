@@ -10,7 +10,9 @@ class RsCameraFlag : public DepthCameraFlag {
   RsCameraFlag();
   ~RsCameraFlag();
 
-  const StringDefaultFlag* imu_topic_flag() const { return imu_topic_flag_.get(); }
+  const StringDefaultFlag* imu_topic_flag() const {
+    return imu_topic_flag_.get();
+  }
 
   bool Parse(FlagParser& parser) override;
 

@@ -18,8 +18,7 @@ RsCameraFlag::~RsCameraFlag() = default;
 bool RsCameraFlag::Parse(FlagParser& parser) {
   return PARSE_OPTIONAL_FLAG(parser, name_flag_, device_list_flag_,
                              device_index_flag_, color_topic_flag_,
-                             depth_topic_flag_, imu_topic_flag_,
-                             synched_flag_);
+                             depth_topic_flag_, imu_topic_flag_, synched_flag_);
 }
 
 }  // namespace felicia

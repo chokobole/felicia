@@ -50,15 +50,15 @@ int RealMain(int argc, char* argv[]) {
 
   if (delegate.device_list_flag()->value()) {
     if (delegate.device_index_flag()->is_set()) {
-        RsCapabilityMap rs_capability_map;
-        Status s = RsCameraFactory::GetSupportedCameraFormats(
-            camera_descriptors[delegate.device_index_flag()->value()],
-            &rs_capability_map);
-        if (!s.ok()) {
-          std::cerr << kRedError << s << std::endl;
-          return 1;
-        }
-        Print(rs_capability_map);
+      RsCapabilityMap rs_capability_map;
+      Status s = RsCameraFactory::GetSupportedCameraFormats(
+          camera_descriptors[delegate.device_index_flag()->value()],
+          &rs_capability_map);
+      if (!s.ok()) {
+        std::cerr << kRedError << s << std::endl;
+        return 1;
+      }
+      Print(rs_capability_map);
     } else {
       Print(camera_descriptors);
     }
@@ -84,8 +84,7 @@ int RealMain(int argc, char* argv[]) {
 
   master_proxy.RequestRegisterNode<RsCameraPublishingNode>(
       node_info, delegate.color_topic_flag()->value(),
-      delegate.depth_topic_flag()->value(),
-      delegate.imu_topic_flag()->value(),
+      delegate.depth_topic_flag()->value(), delegate.imu_topic_flag()->value(),
       camera_descriptors[delegate.device_index_flag()->value()],
       delegate.synched_flag()->value());
 

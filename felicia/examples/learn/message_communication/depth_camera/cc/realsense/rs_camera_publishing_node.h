@@ -78,8 +78,10 @@ class RsCameraPublishingNode : public NodeLifecycle {
     Status s;
     if (synched_) {
       s = camera_->Start(
-          CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 5), /* requested camera format */
-          CameraFormat(640, 480, PIXEL_FORMAT_Z16, 5),  /* requested depth format */
+          CameraFormat(640, 480, PIXEL_FORMAT_YUY2,
+                       5), /* requested camera format */
+          CameraFormat(640, 480, PIXEL_FORMAT_Z16,
+                       5), /* requested depth format */
           ImuFormat(200),  /* requested gyro format */
           ImuFormat(63),   /* requested accel format */
           ::base::BindRepeating(&RsCameraPublishingNode::OnDepthCameraFrame,

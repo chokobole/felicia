@@ -6,6 +6,7 @@
 #include "felicia/core/communication/publisher.h"
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/core/node/node_lifecycle.h"
+#include "felicia/core/util/timestamp/timestamper.h"
 #include "felicia/examples/learn/message_communication/protobuf/message_spec.pb.h"
 
 namespace felicia {
@@ -80,9 +81,10 @@ class SimplePublishingNode : public NodeLifecycle {
 
   MessageSpec GenerateMessage() {
     static int id = 0;
+    ::base::TimeDelta timestamp = timestamper_.timestamp();
     MessageSpec message_spec;
     message_spec.set_id(id++);
-    message_spec.set_timestamp(::base::Time::Now().ToDoubleT());
+    message_spec.set_timestamp(timestamp.InMicroseconds());
     message_spec.set_content("hello world");
     return message_spec;
   }
@@ -104,6 +106,7 @@ class SimplePublishingNode : public NodeLifecycle {
   std::string topic_;
   ChannelDef channel_def_;
   Publisher<MessageSpec> publisher_;
+  Timestamper timestamper_;
 };
 
 }  // namespace felicia

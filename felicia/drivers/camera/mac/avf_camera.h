@@ -55,8 +55,6 @@ class AvfCamera : public CameraInterface, public FrameReceiver {
 
   ::base::scoped_nsobject<AvfCameraDelegate> capture_device_;
 
-  ::base::TimeTicks first_ref_time_;
-
   DISALLOW_IMPLICIT_CONSTRUCTORS(AvfCamera);
 };
 

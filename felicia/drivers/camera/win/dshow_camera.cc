@@ -329,12 +329,9 @@ void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
   ::base::Optional<CameraFrame> argb_frame =
       ConvertToARGB(camera_buffer, camera_format);
   if (argb_frame.has_value()) {
-    if (first_ref_time_.is_null()) first_ref_time_ = base::TimeTicks::Now();
-
     // There is a chance that the platform does not provide us with the
     // timestamp, in which case, we use reference time to calculate a timestamp.
-    if (timestamp == kNoTimestamp)
-      timestamp = base::TimeTicks::Now() - first_ref_time_;
+    if (timestamp == kNoTimestamp) timestamp = timestamper_.timestamp();
 
     argb_frame.value().set_timestamp(timestamp);
     camera_frame_callback_.Run(std::move(argb_frame.value()));

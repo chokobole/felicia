@@ -14,6 +14,7 @@
 #include "third_party/chromium/base/memory/weak_ptr.h"
 #include "third_party/chromium/base/threading/thread.h"
 
+#include "felicia/core/util/timestamp/timestamper.h"
 #include "felicia/drivers/camera/camera_interface.h"
 
 namespace felicia {
@@ -58,7 +59,7 @@ class V4l2Camera : public CameraInterface,
   std::vector<CameraBuffer> buffers_;
   ::base::Thread thread_;
 
-  ::base::TimeTicks first_ref_time_;
+  Timestamper timestamper_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(V4l2Camera);
 };

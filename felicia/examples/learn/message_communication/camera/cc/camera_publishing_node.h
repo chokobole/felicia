@@ -82,9 +82,7 @@ class CameraPublishingNode : public NodeLifecycle {
                                         ::base::Unretained(this)));
   }
 
-  void OnCameraError(const Status& s) {
-    LOG(ERROR) << s.error_message();
-  }
+  void OnCameraError(const Status& s) { LOG(ERROR) << s.error_message(); }
 
   void OnPublish(const Status& s) {
     LOG_IF(ERROR, !s.ok()) << s.error_message();

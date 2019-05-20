@@ -13,7 +13,26 @@ ImuMessage Imu::ToImuMessage() const {
   *message.mutable_orientation() = ToVec3fMessage(orientation_);
   *message.mutable_angular_velocity() = ToVec3fMessage(angular_velocity_);
   *message.mutable_linear_acceleration() = ToVec3fMessage(linear_acceleration_);
+  message.set_timestamp(timestamp_.InMicroseconds());
   return message;
+}
+
+void Imu::set_orientation(float x, float y, float z) {
+  orientation_(0) = x;
+  orientation_(1) = y;
+  orientation_(2) = z;
+}
+
+void Imu::set_angulary_veilocity(float x, float y, float z) {
+  angular_velocity_(0) = x;
+  angular_velocity_(1) = y;
+  angular_velocity_(2) = z;
+}
+
+void Imu::set_linear_accelration(float x, float y, float z) {
+  linear_acceleration_(0) = x;
+  linear_acceleration_(1) = y;
+  linear_acceleration_(2) = z;
 }
 
 void Imu::set_orientation(const float* data) {
@@ -34,9 +53,7 @@ void Imu::set_linear_accelration(const float* data) {
   linear_acceleration_(2) = data[2];
 }
 
-const ::Eigen::Vector3f& Imu::orientation() const {
-  return orientation_;
-}
+const ::Eigen::Vector3f& Imu::orientation() const { return orientation_; }
 
 const ::Eigen::Vector3f& Imu::angular_velocity() const {
   return angular_velocity_;
@@ -45,6 +62,10 @@ const ::Eigen::Vector3f& Imu::angular_velocity() const {
 const ::Eigen::Vector3f& Imu::linear_acceleration() const {
   return linear_acceleration_;
 }
+
+void Imu::set_timestamp(::base::TimeDelta timestamp) { timestamp_ = timestamp; }
+
+::base::TimeDelta Imu::timestamp() const { return timestamp_; }
 
 // static
 Vec3fMessage Imu::ToVec3fMessage(const ::Eigen::Vector3f& vec) {

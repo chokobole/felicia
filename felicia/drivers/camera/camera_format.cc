@@ -22,7 +22,8 @@ CameraFormat::CameraFormat(int width, int height, PixelFormat pixel_format,
 
 CameraFormat::CameraFormat(const CameraFormat& camera_format) = default;
 
-CameraFormat& CameraFormat::operator=(const CameraFormat& camera_format) = default;
+CameraFormat& CameraFormat::operator=(const CameraFormat& camera_format) =
+    default;
 
 PixelFormat CameraFormat::pixel_format() const { return pixel_format_; }
 

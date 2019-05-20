@@ -37,9 +37,17 @@ fel_cc_library(
 )
 
 fel_cc_library(
+    name = "timestamp",
+    srcs = ["timestamp/timestamper.cc"],
+    hdrs = ["timestamp/timestamper.h"],
+    deps = ["//felicia/core/lib"],
+)
+
+fel_cc_library(
     name = "util",
     deps = [
         ":command_line_interface",
+        ":timestamp",
         ":uuid",
     ],
 )

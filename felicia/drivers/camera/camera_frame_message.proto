@@ -7,5 +7,5 @@ package felicia;
 message CameraFrameMessage {
   bytes data = 1;
   CameraFormatMessage camera_format = 2;
-  double timestamp = 3;
+  int64 timestamp = 3;
 }

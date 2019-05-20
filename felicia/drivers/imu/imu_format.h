@@ -9,7 +9,7 @@
 namespace felicia {
 
 class EXPORT ImuFormat {
-public:
+ public:
   ImuFormat();
   ImuFormat(float frame_rate);
 

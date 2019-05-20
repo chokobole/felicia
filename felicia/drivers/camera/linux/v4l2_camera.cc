@@ -420,10 +420,7 @@ void V4l2Camera::DoCapture() {
     ::base::Optional<CameraFrame> argb_frame =
         ConvertToARGB(buffers_[buffer.index], camera_format_);
     if (argb_frame.has_value()) {
-      const base::TimeTicks now = base::TimeTicks::Now();
-      if (first_ref_time_.is_null()) first_ref_time_ = now;
-      const base::TimeDelta timestamp = now - first_ref_time_;
-      argb_frame.value().set_timestamp(timestamp);
+      argb_frame.value().set_timestamp(timestamper_.timestamp());
       camera_frame_callback_.Run(std::move(argb_frame.value()));
     } else {
       status_callback_.Run(errors::FailedToConvertToARGB());

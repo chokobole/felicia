@@ -53,7 +53,7 @@ CameraFrameMessage CameraFrame::ToCameraFrameMessage() const {
 
   message.set_data(data_ptr(), AllocationSize());
   *message.mutable_camera_format() = camera_format_.ToCameraFormatMessage();
-  message.set_timestamp(timestamp_.InSecondsF());
+  message.set_timestamp(timestamp_.InMicroseconds());
 
   return message;
 }
