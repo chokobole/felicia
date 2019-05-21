@@ -1,7 +1,8 @@
 #ifndef FELICIA_DRIVERS_IMU_IMU_H_
 #define FELICIA_DRIVERS_IMU_IMU_H_
 
-#include "Eigen/Dense"
+#include "Eigen/Core"
+#include "Eigen/Geometry"
 #include "third_party/chromium/base/callback.h"
 
 #include "felicia/core/lib/base/export.h"
@@ -13,15 +14,15 @@ class EXPORT Imu {
  public:
   Imu();
 
-  void set_orientation(float x, float y, float z);
+  void set_orientation(float w, float x, float y, float z);
   void set_angulary_veilocity(float x, float y, float z);
-  void set_linear_accelration(float x, float y, float z);
+  void set_linear_acceleration(float x, float y, float z);
 
-  void set_orientation(const float* data);
-  void set_angulary_veilocity(const float* data);
-  void set_linear_accelration(const float* data);
+  void set_orientation(const ::Eigen::Quaternionf& orientation);
+  void set_angulary_veilocity(const ::Eigen::Vector3f& angular_velocity);
+  void set_linear_acceleration(const ::Eigen::Vector3f& linear_acceleration);
 
-  const ::Eigen::Vector3f& orientation() const;
+  const ::Eigen::Quaternionf& orientation() const;
   const ::Eigen::Vector3f& angular_velocity() const;
   const ::Eigen::Vector3f& linear_acceleration() const;
 
@@ -30,10 +31,10 @@ class EXPORT Imu {
 
   ImuMessage ToImuMessage() const;
 
- private:
-  static Vec3fMessage ToVec3fMessage(const ::Eigen::Vector3f& vec);
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  ::Eigen::Vector3f orientation_;
+ private:
+  ::Eigen::Quaternionf orientation_;
   ::Eigen::Vector3f angular_velocity_;
   ::Eigen::Vector3f linear_acceleration_;
   ::base::TimeDelta timestamp_;

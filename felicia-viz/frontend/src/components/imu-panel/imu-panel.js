@@ -7,6 +7,7 @@ import { Activatable } from '@felicia-viz/ui';
 
 import { FLOAT_PANEL_STYLE } from 'custom-styles';
 import UI_TYPES from 'store/ui/ui-types';
+import ImuView from './imu-view';
 
 @inject('store')
 @observer
@@ -46,6 +47,9 @@ export default class ImuPanel extends Component {
   render() {
     const { panelState } = this.state;
     const { id, store } = this.props;
+    const { width, height } = panelState;
+    const viewState = store.uiState.findView(id);
+    const { imu } = viewState;
 
     return (
       <FloatPanel
@@ -53,7 +57,9 @@ export default class ImuPanel extends Component {
         {...this.floatPanelSettings}
         onUpdate={this._onUpdate}
         style={FLOAT_PANEL_STYLE}>
-        <Activatable id={id} type={UI_TYPES.ImuPanel.name} uiState={store.uiState} />
+        <Activatable id={id} type={UI_TYPES.ImuPanel.name} uiState={store.uiState}>
+          <ImuView imu={imu} width={`${width}px`} height={`${height}px`} />
+        </Activatable>
       </FloatPanel>
     );
   }

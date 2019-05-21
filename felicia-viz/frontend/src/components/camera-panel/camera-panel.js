@@ -5,9 +5,9 @@ import { FloatPanel } from '@streetscape.gl/monochrome';
 
 import { Activatable } from '@felicia-viz/ui';
 
-import ImageView from 'components/image-view';
 import { FLOAT_PANEL_STYLE } from 'custom-styles';
 import UI_TYPES from 'store/ui/ui-types';
+import ImageView from './image-view';
 
 @inject('store')
 @observer

@@ -1,9 +1,68 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
-import { Form } from '@streetscape.gl/monochrome';
+import { Form, MetricCard, MetricChart } from '@streetscape.gl/monochrome';
 
-import { TopicDropdown } from '@felicia-viz/ui';
+import { IMU_MESSAGE } from '@felicia-viz/communication';
+import { TopicDropdown, PanelItemContainer } from '@felicia-viz/ui';
+
+import { METRIC_CARD_STYLE } from 'custom-styles';
+
+function renderImuGraph(self) {
+  const { title, value } = self;
+  return (
+    <PanelItemContainer>
+      <MetricCard title={title} className='metric-container' style={METRIC_CARD_STYLE}>
+        <MetricChart
+          data={value}
+          height={200}
+          xTicks={0}
+          getColor={{
+            x: 'red',
+            y: 'green',
+            z: 'blue',
+          }}
+        />
+      </MetricCard>
+    </PanelItemContainer>
+  );
+}
+
+class ImuHistory {
+  constructor(size) {
+    this.size = size;
+    this.data = {
+      x: [{ x: 0, y: 0 }],
+      y: [{ x: 0, y: 0 }],
+      z: [{ x: 0, y: 0 }],
+    };
+  }
+
+  push(vec, timestamp) {
+    const { x, y, z } = vec;
+
+    if (x === 0 && y === 0 && z === 0) return;
+
+    if (this.data.x.length === this.size) {
+      this.data.x.shift();
+      this.data.y.shift();
+      this.data.z.shift();
+    }
+
+    this.data.x.push({ x: timestamp, y: x });
+    this.data.y.push({ x: timestamp, y });
+    this.data.z.push({ x: timestamp, y: z });
+  }
+
+  history() {
+    const { x, y, z } = this.data;
+    return {
+      x,
+      y,
+      z,
+    };
+  }
+}
 
 @inject('store')
 @observer
@@ -12,13 +71,20 @@ export default class ImuControlPanel extends Component {
     store: PropTypes.object.isRequired,
   };
 
+  angularVelocities = new ImuHistory(100);
+
+  linearAccelerations = new ImuHistory(100);
+
   SETTINGS = {
     userHeader: { type: 'header', title: 'Imu Control' },
     sectionSeperator: { type: 'separator' },
     cameraInfo: {
       type: 'header',
       title: 'Info',
-      children: {},
+      children: {
+        angularVelocity: { type: 'custom', title: 'angularVelocity', render: renderImuGraph },
+        linearAcceleration: { type: 'custom', title: 'linearAcceleration', render: renderImuGraph },
+      },
     },
     caemraControl: {
       type: 'header',
@@ -28,7 +94,7 @@ export default class ImuControlPanel extends Component {
           type: 'custom',
           title: 'topic',
           render: self => {
-            return <TopicDropdown {...self} typeName='' />;
+            return <TopicDropdown {...self} typeName={IMU_MESSAGE} />;
           },
         },
       },
@@ -41,10 +107,18 @@ export default class ImuControlPanel extends Component {
     const { store } = this.props;
     const { uiState } = store;
     const viewState = uiState.findView(uiState.activeViewState.id);
-    const { topic } = viewState;
+    const { topic, imu } = viewState;
+
+    if (imu) {
+      const { angularVelocity, linearAcceleration, timestamp } = imu;
+      this.angularVelocities.push(angularVelocity, timestamp);
+      this.linearAccelerations.push(linearAcceleration, timestamp);
+    }
 
     return {
       topic,
+      angularVelocity: this.angularVelocities.history(),
+      linearAcceleration: this.linearAccelerations.history(),
     };
   }
 

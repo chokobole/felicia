@@ -86,14 +86,13 @@ class TopicInfoWatcherDelegate : public TopicInfoWatcherNode::Delegate {
   void OnNewTopicInfo(const TopicInfo& topic_info) override;
 
   static void OnAsync(uv_async_t* handle) {
-    bool is_empty = false;
-    while (!is_empty) {
+    do {
       StatusOr<TopicInfo> status_or;
       {
         ::base::AutoLock l(g_topic_info_watcher_delegate->lock_);
+        if (g_topic_info_watcher_delegate->topic_info_queue_.empty()) return;
         status_or = g_topic_info_watcher_delegate->topic_info_queue_.front();
         g_topic_info_watcher_delegate->topic_info_queue_.pop();
-        is_empty = g_topic_info_watcher_delegate->topic_info_queue_.empty();
       }
 
       ::Napi::Env env =
@@ -111,7 +110,7 @@ class TopicInfoWatcherDelegate : public TopicInfoWatcherNode::Delegate {
         g_topic_info_watcher_delegate->on_error_callback_.Call(
             env.Global(), {JsStatus::New(env, status_or.status())});
       }
-    }
+    } while (true);
   }
 
   static void OnClose(uv_handle_t* handle) {

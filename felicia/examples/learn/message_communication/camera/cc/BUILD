@@ -1,8 +1,4 @@
-load(
-    "//bazel:felicia.bzl",
-    "fel_shared_library",
-    "if_has_realsense",
-)
+load("//bazel:felicia.bzl", "fel_shared_library")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_binary",

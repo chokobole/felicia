@@ -69,6 +69,42 @@
             }
           }
         },
+        "QuarternionMessage": {
+          "fields": {
+            "w": {
+              "type": "float",
+              "id": 1
+            },
+            "x": {
+              "type": "float",
+              "id": 2
+            },
+            "y": {
+              "type": "float",
+              "id": 3
+            },
+            "z": {
+              "type": "float",
+              "id": 4
+            }
+          }
+        },
+        "Vec3fMessage": {
+          "fields": {
+            "x": {
+              "type": "float",
+              "id": 1
+            },
+            "y": {
+              "type": "float",
+              "id": 2
+            },
+            "z": {
+              "type": "float",
+              "id": 3
+            }
+          }
+        },
         "NodeInfo": {
           "fields": {
             "name": {
@@ -357,6 +393,14 @@
             }
           }
         },
+        "TransformMessage": {
+          "fields": {
+            "orientation": {
+              "type": "QuarternionMessage",
+              "id": 1
+            }
+          }
+        },
         "PixelFormat": {
           "values": {
             "PIXEL_FORMAT_UNKNOWN": 0,
@@ -408,7 +452,7 @@
               "id": 2
             },
             "timestamp": {
-              "type": "double",
+              "type": "int64",
               "id": 3
             }
           }
@@ -421,26 +465,10 @@
             }
           }
         },
-        "Vec3fMessage": {
-          "fields": {
-            "x": {
-              "type": "float",
-              "id": 1
-            },
-            "y": {
-              "type": "float",
-              "id": 2
-            },
-            "z": {
-              "type": "float",
-              "id": 3
-            }
-          }
-        },
         "ImuMessage": {
           "fields": {
             "orientation": {
-              "type": "Vec3fMessage",
+              "type": "QuarternionMessage",
               "id": 1
             },
             "angularVelocity": {
@@ -450,6 +478,10 @@
             "linearAcceleration": {
               "type": "Vec3fMessage",
               "id": 3
+            },
+            "timestamp": {
+              "type": "int64",
+              "id": 4
             }
           }
         },

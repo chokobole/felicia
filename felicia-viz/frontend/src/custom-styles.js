@@ -56,3 +56,9 @@ export const TOOLBAR_MENU_STYLE = {
     boxShadow: 'none',
   },
 };
+
+export const METRIC_CARD_STYLE = {
+  title: {
+    fontSize: 12,
+  },
+};

@@ -21,6 +21,7 @@ fel_cc_library(
         "net/net_util.cc",
         "strings/str_util.cc",
         "unit/bytes.cc",
+        "unit/geometry/geometry_util.cc",
     ],
     hdrs = [
         "base/choices.h",
@@ -36,6 +37,7 @@ fel_cc_library(
         "net/net_util.h",
         "strings/str_util.h",
         "unit/geometry/size.h",
+        "unit/geometry/geometry_util.h",
         "unit/bytes.h",
     ] + [":felicia_env"],
     deps = [
@@ -43,6 +45,7 @@ fel_cc_library(
         "//third_party/chromium/base",
         "//third_party/chromium/net",
         "@com_google_googletest//:gtest",
+        "@eigen",
     ],
 )
 

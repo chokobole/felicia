@@ -10,6 +10,7 @@
 #include "felicia/core/util/timestamp/timestamper.h"
 #include "felicia/drivers/camera/depth_camera_interface.h"
 #include "felicia/drivers/imu/imu.h"
+#include "felicia/drivers/imu/imu_filter_interface.h"
 #include "felicia/drivers/vendors/realsense/rs_capability.h"
 
 namespace felicia {
@@ -83,6 +84,7 @@ class RsCamera : public DepthCameraInterface {
 
   ImuFormat gyro_format_;
   ImuFormat accel_format_;
+  std::unique_ptr<ImuFilterInterface> imu_filter_;
   ImuCallback imu_callback_;
 
   ThreadSafeTimestamper timestamper_;

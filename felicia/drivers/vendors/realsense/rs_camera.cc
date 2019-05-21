@@ -4,6 +4,7 @@
 
 #include "felicia/drivers/camera/camera_errors.h"
 #include "felicia/drivers/imu/imu_errors.h"
+#include "felicia/drivers/imu/imu_filter_factory.h"
 #include "felicia/drivers/vendors/realsense/rs_pixel_format.h"
 
 namespace felicia {
@@ -153,6 +154,8 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
 
   if (imu) {
     imu_callback_function = [this](::rs2::frame frame) { OnImu(frame); };
+    imu_filter_ = ImuFilterFactory::NewImuFilter(
+        ImuFilterFactory::ComplementaryFilterKind);
   }
 
   bool imu_started = false;
@@ -256,12 +259,16 @@ void RsCamera::OnImu(::rs2::frame frame) {
   Imu imu;
 
   rs2_vector vector = motion.get_motion_data();
+  ::base::TimeDelta timestamp = timestamper_.timestamp();
   if (stream == GYRO.stream_type) {
     imu.set_angulary_veilocity(vector.x, vector.y, vector.z);
+    imu_filter_->UpdateAngularVelocity(vector.x, vector.y, vector.z, timestamp);
   } else {
-    imu.set_linear_accelration(vector.x, vector.y, vector.z);
+    imu.set_linear_acceleration(vector.x, vector.y, vector.z);
+    imu_filter_->UpdateLinearAcceleration(vector.x, vector.y, vector.z);
   }
-  imu.set_timestamp(timestamper_.timestamp());
+  imu.set_timestamp(timestamp);
+  imu.set_orientation(imu_filter_->orientation());
 
   imu_callback_.Run(imu);
 }
@@ -354,7 +361,7 @@ Status RsCamera::CreateCapabilityMap(::rs2::device device,
         }
 
         (*rs_capability_map)[steram_info].emplace_back(
-            i, ImuFormat{motion_profile.fps()});
+            i, ImuFormat{static_cast<float>(motion_profile.fps())});
       }
     }
   }

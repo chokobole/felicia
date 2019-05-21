@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package felicia;
+
+message QuarternionMessage {
+  float w = 1;
+  float x = 2;
+  float y = 3;
+  float z = 4;
+}
+
+message Vec3fMessage {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}

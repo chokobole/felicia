@@ -1,3 +1,4 @@
+
 load("//bazel:felicia_proto.bzl", "fel_proto_library")
 
 package(default_visibility = ["//felicia:internal"])
@@ -7,6 +8,7 @@ fel_proto_library(
     srcs = [
         "channel.proto",
         "error_codes.proto",
+        "geometry.proto",
         "master.proto",
         "master_data.proto",
     ],

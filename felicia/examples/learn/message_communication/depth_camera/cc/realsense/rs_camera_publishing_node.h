@@ -155,10 +155,18 @@ class RsCameraPublishingNode : public NodeLifecycle {
   void OnImu(const Imu& imu) {
     if (imu_publisher_.IsUnregistered()) return;
 
+    // FIXME: If imu published too fast, it dies sometimes due to memory
+    // problem.
+    if (imu.timestamp() - last_timestamp_ <
+        ::base::TimeDelta::FromMilliseconds(100))
+      return;
+
     imu_publisher_.Publish(
         imu.ToImuMessage(),
         ::base::BindOnce(&RsCameraPublishingNode::OnPublishImu,
                          ::base::Unretained(this)));
+
+    last_timestamp_ = imu.timestamp();
   }
 
   void OnCameraError(const Status& s) {
@@ -222,6 +230,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
   Publisher<CameraFrameMessage> depth_publisher_;
   Publisher<ImuMessage> imu_publisher_;
   std::unique_ptr<RsCamera> camera_;
+  ::base::TimeDelta last_timestamp_;
 };
 
 }  // namespace felicia
