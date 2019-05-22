@@ -157,8 +157,6 @@ class RsCameraPublishingNode : public NodeLifecycle {
   void OnImu(const Imu& imu) {
     if (imu_publisher_.IsUnregistered()) return;
 
-    // FIXME: If imu published too fast, it dies sometimes due to memory
-    // problem.
     if (imu.timestamp() - last_timestamp_ <
         ::base::TimeDelta::FromMilliseconds(100))
       return;

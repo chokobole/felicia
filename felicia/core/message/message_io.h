@@ -36,8 +36,7 @@ class MessageIO<T, std::enable_if_t<
     // this |size| to reallocate buffer.
     *size = sizeof(Header) + text.length();
 
-    if (buffer.size() < text.length())
-      return MessageIoError::ERR_NOT_ENOUGH_BUFFER;
+    if (buffer.size() < *size) return MessageIoError::ERR_NOT_ENOUGH_BUFFER;
 
     Header header;
     header.set_size(text.length());

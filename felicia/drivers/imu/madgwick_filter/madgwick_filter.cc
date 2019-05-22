@@ -6,8 +6,7 @@ namespace {
 
 // Fast inverse square-root
 // See: http://en.wikipedia.org/wiki/Fast_inverse_square_root
-
-float InvSqrt(float x) {
+__attribute__((no_sanitize_address)) float InvSqrt(float x) {
   float halfx = 0.5f * x;
   float y = x;
   long i = *(long*)&y;

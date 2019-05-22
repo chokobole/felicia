@@ -37,6 +37,9 @@ def fel_copts(is_external = False):
     return COPTS + include(["third_party/chromium"]) + if_windows(_fel_win_copts(is_external)) + select({
         "//felicia:windows": [],
         "//conditions:default": ["-Werror=switch"],
+    }) + select({
+        "//felicia:asan": ["-fsanitize=address"],
+        "//conditions:default": [],
     })
 
 def fel_cxxopts(is_external = False):
@@ -234,12 +237,17 @@ def fel_cc_binary(
         deps = [],
         copts = [],
         use_fel_cxxopt = True,
+        linkopts = [],
         **kwargs):
     native.cc_binary(
         name = name,
         srcs = srcs,
         deps = deps,
         copts = copts + (fel_cxxopts() if use_fel_cxxopt else []),
+        linkopts = linkopts + select({
+            "//felicia:asan": ["-fsanitize=address"],
+            "//conditions:default": [],
+        }),
         **kwargs
     )
 
@@ -260,6 +268,7 @@ def fel_cc_test(
         copts = [],
         use_fel_cxxopt = True,
         linkstatic = 1,
+        linkopts = [],
         **kwargs):
     native.cc_test(
         name = name,
@@ -267,6 +276,10 @@ def fel_cc_test(
         deps = deps,
         copts = copts + (fel_cxxopts() if use_fel_cxxopt else []),
         linkstatic = linkstatic,
+        linkopts = linkopts + select({
+            "//felicia:asan": ["-fsanitize=address"],
+            "//conditions:default": [],
+        }),
         **kwargs
     )
 

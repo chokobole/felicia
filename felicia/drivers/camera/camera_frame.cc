@@ -7,7 +7,7 @@
 
 namespace felicia {
 
-CameraFrame::CameraFrame(std::unique_ptr<uint8_t> data,
+CameraFrame::CameraFrame(std::unique_ptr<uint8_t[]> data,
                          CameraFormat camera_format)
     : data_(std::move(data)), camera_format_(camera_format) {}
 
@@ -26,7 +26,7 @@ CameraFrame& CameraFrame::operator=(CameraFrame&& other) {
 
 CameraFrame::~CameraFrame() = default;
 
-std::unique_ptr<uint8_t> CameraFrame::data() { return std::move(data_); }
+std::unique_ptr<uint8_t[]> CameraFrame::data() { return std::move(data_); }
 
 const uint8_t* CameraFrame::data_ptr() const { return data_.get(); }
 
@@ -81,7 +81,7 @@ CameraFrameMessage CameraFrame::ToCameraFrameMessage() const {
   CameraFormat rgba_camera_format(camera_format.width(), camera_format.height(),
                                   PIXEL_FORMAT_ARGB,
                                   camera_format.frame_rate());
-  std::unique_ptr<uint8_t> tmp_argb = std::unique_ptr<uint8_t>(
+  std::unique_ptr<uint8_t[]> tmp_argb(
       new uint8_t[rgba_camera_format.AllocationSize()]);
   if (libyuv::ConvertToARGB(camera_buffer.start(), camera_buffer.payload(),
                             tmp_argb.get(), camera_format.width() * 4,

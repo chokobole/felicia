@@ -163,6 +163,14 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
+config_setting(
+    name = "asan",
+    define_values = {
+        "asan": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
 package_group(
     name = "internal",
     packages = [

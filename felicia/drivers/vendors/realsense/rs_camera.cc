@@ -294,8 +294,7 @@ void RsCamera::OnImu(::rs2::frame frame) {
 
 CameraFrame RsCamera::FromRsDepthFrame(::rs2::depth_frame depth_frame) {
   size_t length = depth_format_.AllocationSize();
-  std::unique_ptr<uint8_t> new_depth_frame =
-      std::unique_ptr<uint8_t>(new uint8_t[length]);
+  std::unique_ptr<uint8_t[]> new_depth_frame(new uint8_t[length]);
   memcpy(new_depth_frame.get(), depth_frame.get_data(), length);
   CameraFrame camera_frame(std::move(new_depth_frame), depth_format_);
   camera_frame.set_timestamp(timestamper_.timestamp());
