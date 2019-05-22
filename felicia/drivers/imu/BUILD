@@ -9,27 +9,29 @@ fel_proto_library(
         "imu_format_message.proto",
         "imu_message.proto",
     ],
-    protodeps = ["//felicia/core/protobuf:protos_all_proto"],
     default_header = True,
+    protodeps = ["//felicia/core/protobuf:protos_all_proto"],
     visibility = ["//visibility:public"],
 )
 
 fel_cc_library(
     name = "imu",
     srcs = [
-        "imu.cc",
-        "imu_format.cc",
-        "imu_filter_factory.cc",
-        "imu_filter_interface.cc",
         "complementary_filter/complementary_filter.cc",
         "complementary_filter/complementary_filter.h",
+        "imu.cc",
+        "imu_filter_factory.cc",
+        "imu_filter_interface.cc",
+        "imu_format.cc",
+        "madgwick_filter/madgwick_filter.cc",
+        "madgwick_filter/madgwick_filter.h",
     ],
     hdrs = [
         "imu.h",
         "imu_errors.h",
-        "imu_format.h",
         "imu_filter_factory.h",
         "imu_filter_interface.h",
+        "imu_format.h",
     ],
     deps = [
         "//felicia/core/lib",

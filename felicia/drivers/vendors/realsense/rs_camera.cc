@@ -4,7 +4,6 @@
 
 #include "felicia/drivers/camera/camera_errors.h"
 #include "felicia/drivers/imu/imu_errors.h"
-#include "felicia/drivers/imu/imu_filter_factory.h"
 #include "felicia/drivers/vendors/realsense/rs_pixel_format.h"
 
 namespace felicia {
@@ -94,6 +93,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
                        const CameraFormat& requested_depth_format,
                        const ImuFormat& requested_gyro_format,
                        const ImuFormat& requested_accel_format,
+                       ImuFilterFactory::ImuFilterKind kind,
                        CameraFrameCallback color_frame_callback,
                        CameraFrameCallback depth_frame_callback,
                        ImuCallback imu_callback,
@@ -108,6 +108,8 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
   imu_callback_ = imu_callback;
   status_callback_ = status_callback;
 
+  imu_filter_ = ImuFilterFactory::NewImuFilter(kind);
+
   camera_state_.ToStarted();
 
   return Status::OK();
@@ -117,6 +119,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
                        const CameraFormat& requested_depth_format,
                        const ImuFormat& requested_gyro_format,
                        const ImuFormat& requested_accel_format,
+                       ImuFilterFactory::ImuFilterKind kind,
                        DepthCameraFrameCallback depth_camera_frame_callback,
                        ImuCallback imu_callback,
                        StatusCallback status_callback) {
@@ -128,6 +131,8 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
   depth_camera_frame_callback_ = depth_camera_frame_callback;
   imu_callback_ = imu_callback;
   status_callback_ = status_callback;
+
+  imu_filter_ = ImuFilterFactory::NewImuFilter(kind);
 
   camera_state_.ToStarted();
 }
@@ -154,8 +159,6 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
 
   if (imu) {
     imu_callback_function = [this](::rs2::frame frame) { OnImu(frame); };
-    imu_filter_ = ImuFilterFactory::NewImuFilter(
-        ImuFilterFactory::ComplementaryFilterKind);
   }
 
   bool imu_started = false;

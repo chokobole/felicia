@@ -3,6 +3,7 @@
 #include "third_party/chromium/base/memory/ptr_util.h"
 
 #include "felicia/drivers/imu/complementary_filter/complementary_filter.h"
+#include "felicia/drivers/imu/madgwick_filter/madgwick_filter.h"
 
 namespace felicia {
 
@@ -10,6 +11,8 @@ std::unique_ptr<ImuFilterInterface> ImuFilterFactory::NewImuFilter(
     ImuFilterKind kind) {
   if (kind == ComplementaryFilterKind) {
     return ::base::WrapUnique(new ComplementaryFilter());
+  } else if (kind == MadgwickFilterKind) {
+    return ::base::WrapUnique(new MadgwickFilter());
   }
 
   return nullptr;

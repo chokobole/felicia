@@ -10,6 +10,7 @@
 #include "felicia/core/util/timestamp/timestamper.h"
 #include "felicia/drivers/camera/depth_camera_interface.h"
 #include "felicia/drivers/imu/imu.h"
+#include "felicia/drivers/imu/imu_filter_factory.h"
 #include "felicia/drivers/imu/imu_filter_interface.h"
 #include "felicia/drivers/vendors/realsense/rs_capability.h"
 
@@ -41,6 +42,7 @@ class RsCamera : public DepthCameraInterface {
                const CameraFormat& requested_depth_format,
                const ImuFormat& requested_gyro_format,
                const ImuFormat& requested_accel_format,
+               ImuFilterFactory::ImuFilterKind kind,
                CameraFrameCallback color_frame_callback,
                CameraFrameCallback depth_frame_callback,
                ImuCallback imu_callback, StatusCallback status_callback);
@@ -48,6 +50,7 @@ class RsCamera : public DepthCameraInterface {
                const CameraFormat& requested_depth_format,
                const ImuFormat& requested_gyro_format,
                const ImuFormat& requested_accel_format,
+               ImuFilterFactory::ImuFilterKind kind,
                DepthCameraFrameCallback depth_camera_frame_callback,
                ImuCallback imu_callback, StatusCallback status_callback);
 

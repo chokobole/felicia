@@ -84,6 +84,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
                        5), /* requested depth format */
           ImuFormat(200),  /* requested gyro format */
           ImuFormat(63),   /* requested accel format */
+          ImuFilterFactory::MadgwickFilterKind,
           ::base::BindRepeating(&RsCameraPublishingNode::OnDepthCameraFrame,
                                 ::base::Unretained(this)),
           ::base::BindRepeating(&RsCameraPublishingNode::OnImu,
@@ -98,6 +99,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
                        5), /* requested depth format */
           ImuFormat(200),  /* requested gyro format */
           ImuFormat(63),   /* requested accel format */
+          ImuFilterFactory::MadgwickFilterKind,
           ::base::BindRepeating(&RsCameraPublishingNode::OnColorFrame,
                                 ::base::Unretained(this)),
           ::base::BindRepeating(&RsCameraPublishingNode::OnDepthFrame,

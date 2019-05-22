@@ -11,6 +11,7 @@ class ImuFilterFactory {
  public:
   enum ImuFilterKind {
     ComplementaryFilterKind,
+    MadgwickFilterKind,
   };
 
   static std::unique_ptr<ImuFilterInterface> NewImuFilter(ImuFilterKind kind);
