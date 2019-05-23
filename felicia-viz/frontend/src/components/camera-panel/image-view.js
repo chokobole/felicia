@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import { ResizeDetector } from '@felicia-viz/ui';
@@ -9,7 +9,7 @@ import Worker from 'util/image-view-webworker.js';
 const PROXY = 'proxy';
 const MAIN = 'main';
 
-export default class ImageView extends PureComponent {
+export default class ImageView extends Component {
   static propTypes = {
     width: PropTypes.string,
     height: PropTypes.string,
@@ -40,14 +40,25 @@ export default class ImageView extends PureComponent {
     };
   }
 
-  componentWillUpdate(nextProps) {
+  shouldComponentUpdate(nextProps, nextState) {
     const { src, frame } = this.props;
 
     if (src !== nextProps.src) {
       this._loadImage(nextProps.src);
-    } else if (frame !== nextProps.frame) {
-      this._loadImageData(nextProps.frame);
+      return true;
     }
+
+    if (frame !== nextProps.frame) {
+      this._loadImageData(nextProps.frame);
+      return true;
+    }
+
+    if (this.state) {
+      const { width, height } = this.state;
+      if (width !== nextState.width || height !== nextState.height) return true;
+    }
+
+    return false;
   }
 
   componentWillUnmount() {
@@ -89,9 +100,7 @@ export default class ImageView extends PureComponent {
   }
 
   _loadImageData(frame) {
-    if (!this._canvas) {
-      return;
-    }
+    if (!this._canvas) return;
 
     if (!frame) return;
 
