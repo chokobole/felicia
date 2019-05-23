@@ -77,37 +77,63 @@ class RsCameraPublishingNode : public NodeLifecycle {
   void StartCamera() {
     Status s;
     if (synched_) {
-      s = camera_->Start(
-          CameraFormat(640, 480, PIXEL_FORMAT_YUY2,
-                       5), /* requested camera format */
-          CameraFormat(640, 480, PIXEL_FORMAT_Z16,
-                       5), /* requested depth format */
-          ImuFormat(200),  /* requested gyro format */
-          ImuFormat(63),   /* requested accel format */
-          ImuFilterFactory::MadgwickFilterKind,
-          ::base::BindRepeating(&RsCameraPublishingNode::OnDepthCameraFrame,
-                                ::base::Unretained(this)),
-          ::base::BindRepeating(&RsCameraPublishingNode::OnImu,
-                                ::base::Unretained(this)),
-          ::base::BindRepeating(&RsCameraPublishingNode::OnCameraError,
-                                ::base::Unretained(this)));
+      if (imu_topic_.empty()) {
+        s = camera_->Start(
+            CameraFormat(640, 480, PIXEL_FORMAT_YUY2,
+                         5), /* requested camera format */
+            CameraFormat(640, 480, PIXEL_FORMAT_Z16,
+                         5), /* requested depth format */
+            ::base::BindRepeating(&RsCameraPublishingNode::OnDepthCameraFrame,
+                                  ::base::Unretained(this)),
+            ::base::BindRepeating(&RsCameraPublishingNode::OnCameraError,
+                                  ::base::Unretained(this)));
+      } else {
+        s = camera_->Start(
+            CameraFormat(640, 480, PIXEL_FORMAT_YUY2,
+                         5), /* requested camera format */
+            CameraFormat(640, 480, PIXEL_FORMAT_Z16,
+                         5), /* requested depth format */
+            ImuFormat(200),  /* requested gyro format */
+            ImuFormat(63),   /* requested accel format */
+            ImuFilterFactory::MadgwickFilterKind,
+            ::base::BindRepeating(&RsCameraPublishingNode::OnDepthCameraFrame,
+                                  ::base::Unretained(this)),
+            ::base::BindRepeating(&RsCameraPublishingNode::OnImu,
+                                  ::base::Unretained(this)),
+            ::base::BindRepeating(&RsCameraPublishingNode::OnCameraError,
+                                  ::base::Unretained(this)));
+      }
     } else {
-      s = camera_->Start(
-          CameraFormat(640, 480, PIXEL_FORMAT_YUY2,
-                       5), /* requested camera format */
-          CameraFormat(640, 480, PIXEL_FORMAT_Z16,
-                       5), /* requested depth format */
-          ImuFormat(200),  /* requested gyro format */
-          ImuFormat(63),   /* requested accel format */
-          ImuFilterFactory::MadgwickFilterKind,
-          ::base::BindRepeating(&RsCameraPublishingNode::OnColorFrame,
-                                ::base::Unretained(this)),
-          ::base::BindRepeating(&RsCameraPublishingNode::OnDepthFrame,
-                                ::base::Unretained(this)),
-          ::base::BindRepeating(&RsCameraPublishingNode::OnImu,
-                                ::base::Unretained(this)),
-          ::base::BindRepeating(&RsCameraPublishingNode::OnCameraError,
-                                ::base::Unretained(this)));
+      if (imu_topic_.empty()) {
+        s = camera_->Start(
+            CameraFormat(640, 480, PIXEL_FORMAT_YUY2,
+                         5), /* requested camera format */
+            CameraFormat(640, 480, PIXEL_FORMAT_Z16,
+                         5), /* requested depth format */
+            ::base::BindRepeating(&RsCameraPublishingNode::OnColorFrame,
+                                  ::base::Unretained(this)),
+            ::base::BindRepeating(&RsCameraPublishingNode::OnDepthFrame,
+                                  ::base::Unretained(this)),
+            ::base::BindRepeating(&RsCameraPublishingNode::OnCameraError,
+                                  ::base::Unretained(this)));
+      } else {
+        s = camera_->Start(
+            CameraFormat(640, 480, PIXEL_FORMAT_YUY2,
+                         5), /* requested camera format */
+            CameraFormat(640, 480, PIXEL_FORMAT_Z16,
+                         5), /* requested depth format */
+            ImuFormat(200),  /* requested gyro format */
+            ImuFormat(63),   /* requested accel format */
+            ImuFilterFactory::MadgwickFilterKind,
+            ::base::BindRepeating(&RsCameraPublishingNode::OnColorFrame,
+                                  ::base::Unretained(this)),
+            ::base::BindRepeating(&RsCameraPublishingNode::OnDepthFrame,
+                                  ::base::Unretained(this)),
+            ::base::BindRepeating(&RsCameraPublishingNode::OnImu,
+                                  ::base::Unretained(this)),
+            ::base::BindRepeating(&RsCameraPublishingNode::OnCameraError,
+                                  ::base::Unretained(this)));
+      }
     }
     if (s.ok()) {
       // MasterProxy& master_proxy = MasterProxy::GetInstance();

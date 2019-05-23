@@ -10,9 +10,7 @@ class RsCameraFlag : public DepthCameraFlag {
   RsCameraFlag();
   ~RsCameraFlag();
 
-  const StringDefaultFlag* imu_topic_flag() const {
-    return imu_topic_flag_.get();
-  }
+  const StringFlag* imu_topic_flag() const { return imu_topic_flag_.get(); }
 
   bool Parse(FlagParser& parser) override;
 
@@ -23,7 +21,7 @@ class RsCameraFlag : public DepthCameraFlag {
 
  private:
   std::string imu_topic_;
-  std::unique_ptr<StringDefaultFlag> imu_topic_flag_;
+  std::unique_ptr<StringFlag> imu_topic_flag_;
 };
 
 }  // namespace felicia

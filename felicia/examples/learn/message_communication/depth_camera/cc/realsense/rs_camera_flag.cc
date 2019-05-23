@@ -4,12 +4,11 @@ namespace felicia {
 
 RsCameraFlag::RsCameraFlag() {
   {
-    StringDefaultFlag::Builder builder(
-        MakeValueStore<std::string>(&imu_topic_, "imu"));
+    StringFlag::Builder builder(MakeValueStore<std::string>(&imu_topic_));
     auto flag = builder.SetLongName("--imu_topic")
-                    .SetHelp("topic to publish for imu, default: imu")
+                    .SetHelp("topic to publish for imu")
                     .Build();
-    imu_topic_flag_ = std::make_unique<StringDefaultFlag>(flag);
+    imu_topic_flag_ = std::make_unique<StringFlag>(flag);
   }
 }
 
