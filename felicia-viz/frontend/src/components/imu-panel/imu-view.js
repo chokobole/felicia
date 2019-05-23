@@ -6,6 +6,7 @@ import { Vector3, Color3, Quaternion } from '@babylonjs/core/Maths/math';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import '@babylonjs/core/Meshes/meshBuilder';
 
@@ -80,8 +81,7 @@ export default class ImuView extends PureComponent {
     const zChar = ImuView.makeTextPlane('Z', 'blue', size / 10, scene);
     zChar.position = new Vector3(0, 0.05 * size, 0.9 * size);
 
-    const localOrigin = Mesh.CreateBox('local_origin', 1, scene);
-    localOrigin.isVisible = false;
+    const localOrigin = new TransformNode('local_origin');
     axisX.parent = localOrigin;
     axisY.parent = localOrigin;
     axisZ.parent = localOrigin;
