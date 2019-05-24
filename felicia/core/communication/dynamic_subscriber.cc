@@ -59,14 +59,23 @@ void DynamicSubscriber::UnSubscribe(const std::string& topic,
   subscriber_state_.ToStopping();
   master_proxy.PostDelayedTask(
       FROM_HERE,
-      ::base::BindOnce(&DynamicSubscriber::Release, ::base::Unretained(this),
-                       std::move(callback)),
-      settings_.period * 2);
+      ::base::BindOnce(&DynamicSubscriber::CheckIfStoppedAndCallback,
+                       ::base::Unretained(this), std::move(callback)),
+      settings_.period);
 }
 
-void DynamicSubscriber::Release(StatusOnceCallback callback) {
-  Subscriber<DynamicProtobufMessage>::Release();
-  std::move(callback).Run(Status::OK());
+void DynamicSubscriber::CheckIfStoppedAndCallback(StatusOnceCallback callback) {
+  if (IsStopped()) {
+    std::move(callback).Run(Status::OK());
+    return;
+  }
+
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  master_proxy.PostDelayedTask(
+      FROM_HERE,
+      ::base::BindOnce(&DynamicSubscriber::CheckIfStoppedAndCallback,
+                       ::base::Unretained(this), std::move(callback)),
+      settings_.period);
 }
 
 void DynamicSubscriber::ResetMessage(const TopicInfo& topic_info) {

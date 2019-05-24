@@ -315,10 +315,6 @@ void Subscriber<MessageTy>::StopMessageLoop() {
   if (IsStopping() || IsStopped()) return;
 
   subscriber_state_.ToStopping();
-  master_proxy.PostDelayedTask(FROM_HERE,
-                               ::base::BindOnce(&Subscriber<MessageTy>::Release,
-                                                ::base::Unretained(this)),
-                               settings_.period * 2);
 }
 
 template <typename MessageTy>
@@ -359,7 +355,7 @@ void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::NotifyMessageLoop() {
-  if (IsStopping() || IsStopped()) return;
+  if (IsStopped()) return;
 
   if (!message_queue_.empty()) {
     MessageTy message = std::move(message_queue_.front());
@@ -368,11 +364,20 @@ void Subscriber<MessageTy>::NotifyMessageLoop() {
   }
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
-  master_proxy.PostDelayedTask(
-      FROM_HERE,
-      ::base::BindOnce(&Subscriber<MessageTy>::NotifyMessageLoop,
-                       ::base::Unretained(this)),
-      settings_.period);
+  if (IsStopping() && message_queue_.empty()) {
+    master_proxy.PostDelayedTask(
+        FROM_HERE,
+        ::base::BindOnce(&Subscriber<MessageTy>::Release,
+                         ::base::Unretained(this)),
+        settings_.period + ::base::TimeDelta::FromMilliseconds(
+                               100));  // Add some offset for safe close.
+  } else {
+    master_proxy.PostDelayedTask(
+        FROM_HERE,
+        ::base::BindOnce(&Subscriber<MessageTy>::NotifyMessageLoop,
+                         ::base::Unretained(this)),
+        settings_.period);
+  }
 }
 
 // Should carefully release the resources.
