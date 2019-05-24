@@ -27,10 +27,9 @@ class ViewState {
     if (type === null) return;
 
     const viewState = uiState.findView(id);
-    const { topic } = viewState;
-    if (topic && topic !== '') {
+    viewState.topics.forEach(topic => {
       SUBSCRIBER.unsubscribeTopic(id, topic);
-    }
+    });
     uiState.removeView(id);
 
     this.reset();

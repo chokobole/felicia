@@ -22,6 +22,7 @@ export default class PointcloudView extends Component {
     height: PropTypes.string,
     frame: PropTypes.instanceOf(CameraFrame),
     filter: PropTypes.string,
+    frameToAlign: PropTypes.instanceOf(CameraFrame),
   };
 
   static defaultProps = {
@@ -29,6 +30,7 @@ export default class PointcloudView extends Component {
     height: '100%',
     frame: null,
     filter: '',
+    frameToAlign: null,
   };
 
   meshInfo = {};
@@ -163,7 +165,7 @@ export default class PointcloudView extends Component {
   _updatePointcloud(frame) {
     const { width, height, data, pixelFormat, scale } = frame;
     const { mesh } = this.meshInfo;
-    const { filter } = this.props;
+    const { filter, frameToAlign } = this.props;
 
     const colors = mesh.getVerticesData(VertexBuffer.ColorKind);
     const positions = mesh.getVerticesData(VertexBuffer.PositionKind);
@@ -180,6 +182,7 @@ export default class PointcloudView extends Component {
         pixelFormat,
         scale,
         filter,
+        frameToAlign,
       },
     });
   }

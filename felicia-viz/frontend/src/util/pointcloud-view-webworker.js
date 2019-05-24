@@ -17,6 +17,7 @@ self.onmessage = event => {
         pixelFormat,
         scale,
         filter,
+        frameToAlign,
       } = event.data.data;
       switch (pixelFormat) {
         case 'PIXEL_FORMAT_Z16': {
@@ -34,7 +35,8 @@ self.onmessage = event => {
             width,
             height,
             scale,
-            filter
+            filter,
+            frameToAlign
           );
           break;
         }

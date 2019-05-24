@@ -105,8 +105,7 @@ export default class ImuControlPanel extends Component {
 
   _fetchValues() {
     const { store } = this.props;
-    const { uiState } = store;
-    const viewState = uiState.findView(uiState.activeViewState.id);
+    const viewState = store.uiState.activeViewState.getState();
     const { topic, imu } = viewState;
 
     if (imu) {

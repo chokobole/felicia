@@ -5,7 +5,6 @@ import { inject, observer } from 'mobx-react';
 import { Dropdown, Label } from '@streetscape.gl/monochrome';
 
 import { PanelItemContainer } from './panel-item';
-import { failedToFindActiveState } from '../../util/error';
 
 @inject('store')
 @observer
@@ -14,26 +13,21 @@ export default class TopicDropdown extends Component {
     title: PropTypes.string.isRequired,
     typeName: PropTypes.string.isRequired,
     store: PropTypes.object.isRequired,
+    isEnabled: PropTypes.bool.isRequired,
   };
 
   _onTopicChange = value => {
     const { typeName, store } = this.props;
-    const state = store.uiState.activeViewState.getState();
-    if (state) {
-      state.selectTopic(typeName, value);
-    } else {
-      failedToFindActiveState();
-    }
+    const viewState = store.uiState.activeViewState.getState();
+    viewState.setTopic(typeName, value);
   };
 
   render() {
-    const { title, typeName, store } = this.props;
-    const state = store.uiState.activeViewState.getState();
+    const { title, typeName, store, isEnabled } = this.props;
+    const viewState = store.uiState.activeViewState.getState();
     let value = '';
-    if (state) {
-      value = state.topic;
-    } else {
-      failedToFindActiveState();
+    if (viewState.topics.has(typeName)) {
+      value = viewState.topics.get(typeName);
     }
 
     const topics = toJS(store.topicInfo.topics);
@@ -51,7 +45,7 @@ export default class TopicDropdown extends Component {
     return (
       <PanelItemContainer>
         <Label>{title}</Label>
-        <Dropdown value={value} data={data} onChange={this._onTopicChange} />
+        <Dropdown value={value} data={data} onChange={this._onTopicChange} isEnabled={isEnabled} />
       </PanelItemContainer>
     );
   }

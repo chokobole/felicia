@@ -9,7 +9,7 @@ self.onmessage = event => {
   const { data } = event.data;
   switch (event.data.source) {
     case 'imageView': {
-      const { imageData, width, height, pixelFormat, filter } = data;
+      const { imageData, width, height, pixelFormat, filter, frameToAlign } = data;
       const pixels = imageData.data;
       switch (pixelFormat) {
         case 'PIXEL_FORMAT_Z16': {
@@ -20,7 +20,14 @@ self.onmessage = event => {
           const { buffer, byteOffset, byteLength } = data.data;
           const pixelData = new Uint16Array(buffer, byteOffset, byteLength / 2);
           histogram.make(pixelData, width, height);
-          histogram.fillImageDataWithColormap(pixels, pixelData, width, height, filter);
+          histogram.fillImageDataWithColormap(
+            pixels,
+            pixelData,
+            width,
+            height,
+            filter,
+            frameToAlign
+          );
           break;
         }
         case 'PIXEL_FORMAT_ARGB': {

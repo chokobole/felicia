@@ -16,11 +16,11 @@ export default class TopicInfoSubscriber {
   initialize() {
     this.connection.initialize(
       () => {
-        const content = JSON.stringify({
+        const data = JSON.stringify({
           type: TOPIC_INFO,
         });
 
-        this.connection.ws.send(content);
+        this.connection.ws.send(data);
       },
       event => {
         this.worker.postMessage({

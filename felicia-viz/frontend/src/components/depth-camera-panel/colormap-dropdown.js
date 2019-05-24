@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import { Dropdown, Label } from '@streetscape.gl/monochrome';
 
-import { PanelItemContainer, failedToFindActiveState } from '@felicia-viz/ui';
+import { PanelItemContainer } from '@felicia-viz/ui';
 
 const COLORMAPS = [
   'jet',
@@ -71,28 +71,18 @@ export default class ColormapDropdown extends Component {
 
   _onFilterChange = value => {
     const { store } = this.props;
-    const state = store.uiState.activeViewState.getState();
-    if (state) {
-      state.selectFilter(value);
-    } else {
-      failedToFindActiveState();
-    }
+    const viewState = store.uiState.activeViewState.getState();
+    viewState.setFilter(value);
   };
 
   render() {
     const { title, store } = this.props;
-    const state = store.uiState.activeViewState.getState();
-    let value = '';
-    if (state) {
-      value = state.filter;
-    } else {
-      failedToFindActiveState();
-    }
+    const viewState = store.uiState.activeViewState.getState();
 
     return (
       <PanelItemContainer>
         <Label>{title}</Label>
-        <Dropdown value={value} data={this.data} onChange={this._onFilterChange} />
+        <Dropdown value={viewState.filter} data={this.data} onChange={this._onFilterChange} />
       </PanelItemContainer>
     );
   }

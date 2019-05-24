@@ -16,6 +16,7 @@ export default class ImageView extends Component {
     src: PropTypes.string,
     frame: PropTypes.instanceOf(CameraFrame),
     filter: PropTypes.string,
+    frameToAlign: PropTypes.instanceOf(CameraFrame),
   };
 
   static defaultProps = {
@@ -24,6 +25,7 @@ export default class ImageView extends Component {
     src: '',
     frame: null,
     filter: '',
+    frameToAlign: null,
   };
 
   constructor(props) {
@@ -105,7 +107,7 @@ export default class ImageView extends Component {
     if (!frame) return;
 
     const { width, height, data, pixelFormat } = frame;
-    const { filter } = this.props;
+    const { filter, frameToAlign } = this.props; // for depth-camera
 
     this.worker.postMessage({
       source: 'imageView',
@@ -116,6 +118,7 @@ export default class ImageView extends Component {
         data,
         pixelFormat,
         filter,
+        frameToAlign,
       },
     });
   }

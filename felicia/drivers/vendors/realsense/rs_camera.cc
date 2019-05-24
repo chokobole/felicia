@@ -79,6 +79,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
 
 Status RsCamera::Start(const CameraFormat& requested_color_format,
                        const CameraFormat& requested_depth_format,
+                       AlignDirection align_direction,
                        SynchedDepthCameraFrameCallback synched_frame_callback,
                        StatusCallback status_callback) {
   Status s = Start(requested_color_format, requested_depth_format, ImuFormat{},
@@ -87,6 +88,8 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
 
   synched_frame_callback_ = synched_frame_callback;
   status_callback_ = status_callback;
+
+  SetRsAlignFromDirection(align_direction);
 
   camera_state_.ToStarted();
 
@@ -121,6 +124,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
 
 Status RsCamera::Start(const CameraFormat& requested_color_format,
                        const CameraFormat& requested_depth_format,
+                       AlignDirection align_direction,
                        const ImuFormat& requested_gyro_format,
                        const ImuFormat& requested_accel_format,
                        ImuFilterFactory::ImuFilterKind kind,
@@ -136,6 +140,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
   imu_callback_ = imu_callback;
   status_callback_ = status_callback;
 
+  SetRsAlignFromDirection(align_direction);
   imu_filter_ = ImuFilterFactory::NewImuFilter(kind);
 
   camera_state_.ToStarted();
@@ -234,11 +239,24 @@ Status RsCamera::Stop() {
   return Status::OK();
 }
 
+void RsCamera::SetRsAlignFromDirection(AlignDirection align_direction) {
+  if (align_direction == AlignDirection::AlignToColor) {
+    align_ = std::make_unique<::rs2::align>(RS2_STREAM_COLOR);
+  } else if (align_direction == AlignDirection::AlignToDepth) {
+    align_ = std::make_unique<::rs2::align>(RS2_STREAM_DEPTH);
+  }
+}
+
 void RsCamera::OnFrame(::rs2::frame frame) {
   if (frame.is<::rs2::frameset>()) {
     auto frameset = frame.as<::rs2::frameset>();
+    if (align_) {
+      frameset = align_->process(frameset);
+    }
+
     ::rs2::video_frame rs_color_frame = frameset.get_color_frame();
     ::rs2::depth_frame rs_depth_frame = frameset.get_depth_frame();
+
     auto color_frame = FromRsColorFrame(rs_color_frame);
     DepthCameraFrame depth_frame = FromRsDepthFrame(rs_depth_frame);
 

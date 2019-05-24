@@ -3,14 +3,14 @@ import { observable, action } from 'mobx';
 import SUBSCRIBER from 'util/subscriber';
 
 export default class PanelState {
-  @observable topic = '';
+  @observable topics = new Map();
 
   constructor(id) {
     this.id = id;
   }
 
-  @action selectTopic(typeName, newTopic) {
-    this.topic = newTopic;
+  @action setTopic(typeName, newTopic) {
+    this.topics.set(typeName, newTopic);
     SUBSCRIBER.subscribeTopic(this.id, typeName, newTopic);
   }
 }

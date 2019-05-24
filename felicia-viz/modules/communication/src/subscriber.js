@@ -12,23 +12,25 @@ class Subscriber {
   }
 
   initialize(worker, type, topic) {
-    this.connection.initialize(this.requestTopic.bind(this, type, topic), event => {
-      worker.postMessage({
-        type,
-        destinations: this.listeners,
-        data: event.data,
-      });
-    });
-  }
+    this.type = type;
+    this.connection.initialize(
+      () => {
+        console.log(`request Topic ${type} ${topic}`);
+        const data = JSON.stringify({
+          type,
+          topic,
+        });
 
-  requestTopic(type, topic) {
-    console.log(`request Topic ${type} ${topic}`);
-    const data = JSON.stringify({
-      type,
-      topic,
-    });
-
-    this.connection.ws.send(data);
+        this.connection.ws.send(data);
+      },
+      event => {
+        worker.postMessage({
+          type,
+          destinations: this.listeners,
+          data: event.data,
+        });
+      }
+    );
   }
 
   close() {
@@ -66,7 +68,7 @@ export default class SubscriberPool {
 
   subscribeTopic(id, type, topic) {
     this.subscribers.forEach((subscriber, topicKey, map) => {
-      if (topicKey !== topic) {
+      if (subscriber.type === type) {
         if (subscriber.removeListener(id)) {
           console.log(`${id} stop listening ${topic}`);
           if (subscriber.listeners.length === 0) {

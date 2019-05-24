@@ -54,7 +54,7 @@ export default class DepthCameraPanel extends Component {
     const { id, store } = this.props;
     const { width, height } = panelState;
     const viewState = store.uiState.findView(id);
-    const { frame, filter, pointcloudView } = viewState;
+    const { frame, filter, pointcloudView, frameToAlign } = viewState;
 
     return (
       <FloatPanel
@@ -69,9 +69,15 @@ export default class DepthCameraPanel extends Component {
               width={`${width}px`}
               height={`${height}px`}
               filter={filter}
+              frameToAlign={frameToAlign}
             />
           ) : (
-            <ImageView frame={frame} height={`${height}px`} filter={filter} />
+            <ImageView
+              frame={frame}
+              height={`${height}px`}
+              filter={filter}
+              frameToAlign={frameToAlign}
+            />
           )}
         </Activatable>
       </FloatPanel>

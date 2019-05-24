@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import { Form } from '@streetscape.gl/monochrome';
 
-import { DEPTH_CAMERA_FRAME_MESSAGE } from '@felicia-viz/communication';
+import { CAMERA_FRAME_MESSAGE, DEPTH_CAMERA_FRAME_MESSAGE } from '@felicia-viz/communication';
 import { TopicDropdown, renderText } from '@felicia-viz/ui';
 
 import { FORM_STYLE } from 'custom-styles';
@@ -52,6 +52,13 @@ export default class DepthCameraControlPanel extends Component {
           type: 'toggle',
           title: 'pointcloudView',
         },
+        topicToAlign: {
+          type: 'custom',
+          title: 'topicToAlign',
+          render: self => {
+            return <TopicDropdown {...self} typeName={CAMERA_FRAME_MESSAGE} />;
+          },
+        },
       },
     },
   };
@@ -61,14 +68,13 @@ export default class DepthCameraControlPanel extends Component {
     const viewState = store.uiState.activeViewState.getState();
 
     if (viewState.pointcloudView !== values.pointcloudView) {
-      viewState.switchPointcloudView(values.pointcloudView);
+      viewState.setPointcloudView(values.pointcloudView);
     }
   };
 
   _fetchValues() {
     const { store } = this.props;
-    const { uiState } = store;
-    const viewState = uiState.findView(uiState.activeViewState.id);
+    const viewState = store.uiState.activeViewState.getState();
     const { frame, topic, filter, pointcloudView } = viewState;
 
     if (frame) {

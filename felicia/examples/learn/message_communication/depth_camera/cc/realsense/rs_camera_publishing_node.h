@@ -21,6 +21,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
         synched_(synched),
         requested_color_format_(CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 5)),
         requested_depth_format_(CameraFormat(640, 480, PIXEL_FORMAT_Z16, 5)),
+        align_direction_(AlignDirection::AlignToColor),
         requested_gyro_format_(ImuFormat(200)),
         requested_accel_format_(ImuFormat(63)),
         filter_kind_(ImuFilterFactory::MadgwickFilterKind) {}
@@ -91,14 +92,14 @@ class RsCameraPublishingNode : public NodeLifecycle {
     if (synched_) {
       if (imu_topic_.empty()) {
         s = camera_->Start(
-            requested_color_format_, requested_depth_format_,
+            requested_color_format_, requested_depth_format_, align_direction_,
             ::base::BindRepeating(&RsCameraPublishingNode::OnSynchedCameraFrame,
                                   ::base::Unretained(this)),
             ::base::BindRepeating(&RsCameraPublishingNode::OnCameraError,
                                   ::base::Unretained(this)));
       } else {
         s = camera_->Start(
-            requested_color_format_, requested_depth_format_,
+            requested_color_format_, requested_depth_format_, align_direction_,
             requested_gyro_format_, requested_accel_format_, filter_kind_,
             ::base::BindRepeating(&RsCameraPublishingNode::OnSynchedCameraFrame,
                                   ::base::Unretained(this)),
@@ -251,6 +252,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
   bool synched_;
   CameraFormat requested_color_format_;
   CameraFormat requested_depth_format_;
+  AlignDirection align_direction_;
   ImuFormat requested_gyro_format_;
   ImuFormat requested_accel_format_;
   ImuFilterFactory::ImuFilterKind filter_kind_;

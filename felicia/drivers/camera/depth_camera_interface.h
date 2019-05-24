@@ -9,6 +9,12 @@
 
 namespace felicia {
 
+enum AlignDirection {
+  None,
+  AlignToDepth,
+  AlignToColor,
+};
+
 class EXPORT DepthCameraInterface {
  public:
   DepthCameraInterface(const CameraDescriptor& camera_descriptor);
@@ -22,6 +28,7 @@ class EXPORT DepthCameraInterface {
                        StatusCallback status_callback) = 0;
   virtual Status Start(const CameraFormat& requested_color_format,
                        const CameraFormat& requested_depth_format,
+                       AlignDirection align_direction,
                        SynchedDepthCameraFrameCallback synched_frame_callback,
                        StatusCallback status_callback) = 0;
   virtual Status Stop() = 0;

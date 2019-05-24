@@ -34,6 +34,7 @@ class RsCamera : public DepthCameraInterface {
                StatusCallback status_callback) override;
   Status Start(const CameraFormat& requested_color_format,
                const CameraFormat& requested_depth_format,
+               AlignDirection align_direction,
                SynchedDepthCameraFrameCallback synched_frame_callback,
                StatusCallback status_callback) override;
   Status Stop();
@@ -48,6 +49,7 @@ class RsCamera : public DepthCameraInterface {
                ImuCallback imu_callback, StatusCallback status_callback);
   Status Start(const CameraFormat& requested_color_format,
                const CameraFormat& requested_depth_format,
+               AlignDirection align_direction,
                const ImuFormat& requested_gyro_format,
                const ImuFormat& requested_accel_format,
                ImuFilterFactory::ImuFilterKind kind,
@@ -63,6 +65,8 @@ class RsCamera : public DepthCameraInterface {
                const CameraFormat& requested_depth_format,
                const ImuFormat& requested_gyro_format,
                const ImuFormat& requested_accel_format, bool imu, bool synched);
+
+  void SetRsAlignFromDirection(AlignDirection align_direction);
 
   void OnFrame(::rs2::frame frame);
   void OnImu(::rs2::frame frame);
@@ -81,6 +85,7 @@ class RsCamera : public DepthCameraInterface {
 
   ::rs2::device device_;
   PipelineSyncer syncer_;
+  std::unique_ptr<::rs2::align> align_;
 
   float depth_scale_;
 

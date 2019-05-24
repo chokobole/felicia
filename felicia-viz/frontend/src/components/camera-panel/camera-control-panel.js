@@ -47,8 +47,7 @@ export default class CameraControlPanel extends Component {
 
   _fetchValues() {
     const { store } = this.props;
-    const { uiState } = store;
-    const viewState = uiState.findView(uiState.activeViewState.id);
+    const viewState = store.uiState.activeViewState.getState();
     const { frame, topic } = viewState;
 
     if (frame) {

@@ -22,7 +22,7 @@ export default class Histogram {
   }
 
   /* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["pixels", "colors", "positions"] }] */
-  fillImageDataWithColormap(pixels, pixelData, width, height, filter) {
+  fillImageDataWithColormap(pixels, pixelData, width, height, filter, frameToAlign) {
     const cm = colormap({
       colormap: filter,
       nshades: 256,
@@ -41,9 +41,50 @@ export default class Histogram {
         pixels[index + 3] = 255;
       }
     }
+
+    if (!frameToAlign) return;
+
+    const { cameraFormat, data } = frameToAlign.frame;
+    const { pixelFormat } = cameraFormat;
+
+    if (cameraFormat.width !== width || cameraFormat.height !== height) {
+      console.error(
+        `Resolution mismatched, Depth: (${width}, ${height}) Color: (${cameraFormat.width}, ${
+          cameraFormat.height
+        })`
+      );
+      return;
+    }
+
+    switch (pixelFormat) {
+      case 'PIXEL_FORMAT_ARGB': {
+        const pixelData2 = new Uint8ClampedArray(data);
+        for (let i = 0; i < height; i += 1) {
+          for (let j = 0; j < width; j += 1) {
+            const index = 4 * width * i + j * 4;
+            pixels[index] = (pixels[index] + pixelData2[index + 2]) / 2;
+            pixels[index + 1] = (pixels[index + 1] + pixelData2[index + 1]) / 2;
+            pixels[index + 2] = (pixels[index + 2] + pixelData2[index]) / 2;
+            pixels[index + 3] = (pixels[index + 3] + pixelData2[index + 3]) / 2;
+          }
+        }
+        break;
+      }
+      default:
+        console.error(`Not implemented yet for this format: ${pixelFormat}`);
+    }
   }
 
-  fillVerticesWithColormap(colors, positions, pixelData, width, height, scale, filter) {
+  fillVerticesWithColormap(
+    colors,
+    positions,
+    pixelData,
+    width,
+    height,
+    scale,
+    filter,
+    frameToAlign
+  ) {
     const cm = colormap({
       colormap: filter,
       nshades: 256,
@@ -67,6 +108,38 @@ export default class Histogram {
         colors[colorIdx + 1] = (g + 1) / 256;
         colors[colorIdx + 2] = (b + 1) / 256;
       }
+    }
+
+    if (!frameToAlign) return;
+
+    const { cameraFormat, data } = frameToAlign.frame;
+    const { pixelFormat } = cameraFormat;
+
+    if (cameraFormat.width !== width || cameraFormat.height !== height) {
+      console.error(
+        `Resolution mismatched, Depth: (${width}, ${height}) Color: (${cameraFormat.width}, ${
+          cameraFormat.height
+        })`
+      );
+      return;
+    }
+
+    switch (pixelFormat) {
+      case 'PIXEL_FORMAT_ARGB': {
+        const pixelData2 = new Uint8ClampedArray(data);
+        for (let i = 0; i < height; i += 1) {
+          for (let j = 0; j < width; j += 1) {
+            const index = 4 * width * i + j * 4;
+            colors[index] = (colors[index] + pixelData2[index + 2] / 256) / 2;
+            colors[index + 1] = (colors[index + 1] + pixelData2[index + 1] / 256) / 2;
+            colors[index + 2] = (colors[index + 2] + pixelData2[index] / 256) / 2;
+            colors[index + 3] = (colors[index + 3] + pixelData2[index + 3] / 256) / 2;
+          }
+        }
+        break;
+      }
+      default:
+        console.error(`Not implemented yet for this format: ${pixelFormat}`);
     }
   }
 }
