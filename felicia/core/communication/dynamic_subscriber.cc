@@ -52,7 +52,8 @@ void DynamicSubscriber::UnSubscribe(const std::string& topic,
     return;
   }
 
-  DCHECK(register_state_.IsRegistered());
+  // FIXME: Sometimes died here?
+  DCHECK(register_state_.IsRegistered()) << register_state_.ToString();
 
   register_state_.ToUnregistered();
 
