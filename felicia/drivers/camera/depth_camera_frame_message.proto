@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+import "felicia/drivers/camera/camera_frame_message.proto";
+
+package felicia;
+
+message DepthCameraFrameMessage {
+  CameraFrameMessage frame = 1;
+  float scale = 2;
+}

@@ -18,7 +18,12 @@ class RsCameraPublishingNode : public NodeLifecycle {
         depth_topic_(depth_topic),
         imu_topic_(imu_topic),
         camera_descriptor_(camera_descriptor),
-        synched_(synched) {}
+        synched_(synched),
+        requested_color_format_(CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 5)),
+        requested_depth_format_(CameraFormat(640, 480, PIXEL_FORMAT_Z16, 5)),
+        requested_gyro_format_(ImuFormat(200)),
+        requested_accel_format_(ImuFormat(63)),
+        filter_kind_(ImuFilterFactory::MadgwickFilterKind) {}
 
   void OnInit() override {
     std::cout << "RsCameraPublishingNode::OnInit()" << std::endl;
@@ -79,24 +84,16 @@ class RsCameraPublishingNode : public NodeLifecycle {
     if (synched_) {
       if (imu_topic_.empty()) {
         s = camera_->Start(
-            CameraFormat(640, 480, PIXEL_FORMAT_YUY2,
-                         5), /* requested camera format */
-            CameraFormat(640, 480, PIXEL_FORMAT_Z16,
-                         5), /* requested depth format */
-            ::base::BindRepeating(&RsCameraPublishingNode::OnDepthCameraFrame,
+            requested_color_format_, requested_depth_format_,
+            ::base::BindRepeating(&RsCameraPublishingNode::OnSynchedCameraFrame,
                                   ::base::Unretained(this)),
             ::base::BindRepeating(&RsCameraPublishingNode::OnCameraError,
                                   ::base::Unretained(this)));
       } else {
         s = camera_->Start(
-            CameraFormat(640, 480, PIXEL_FORMAT_YUY2,
-                         5), /* requested camera format */
-            CameraFormat(640, 480, PIXEL_FORMAT_Z16,
-                         5), /* requested depth format */
-            ImuFormat(200),  /* requested gyro format */
-            ImuFormat(63),   /* requested accel format */
-            ImuFilterFactory::MadgwickFilterKind,
-            ::base::BindRepeating(&RsCameraPublishingNode::OnDepthCameraFrame,
+            requested_color_format_, requested_depth_format_,
+            requested_gyro_format_, requested_accel_format_, filter_kind_,
+            ::base::BindRepeating(&RsCameraPublishingNode::OnSynchedCameraFrame,
                                   ::base::Unretained(this)),
             ::base::BindRepeating(&RsCameraPublishingNode::OnImu,
                                   ::base::Unretained(this)),
@@ -106,10 +103,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
     } else {
       if (imu_topic_.empty()) {
         s = camera_->Start(
-            CameraFormat(640, 480, PIXEL_FORMAT_YUY2,
-                         5), /* requested camera format */
-            CameraFormat(640, 480, PIXEL_FORMAT_Z16,
-                         5), /* requested depth format */
+            requested_color_format_, requested_depth_format_,
             ::base::BindRepeating(&RsCameraPublishingNode::OnColorFrame,
                                   ::base::Unretained(this)),
             ::base::BindRepeating(&RsCameraPublishingNode::OnDepthFrame,
@@ -118,13 +112,8 @@ class RsCameraPublishingNode : public NodeLifecycle {
                                   ::base::Unretained(this)));
       } else {
         s = camera_->Start(
-            CameraFormat(640, 480, PIXEL_FORMAT_YUY2,
-                         5), /* requested camera format */
-            CameraFormat(640, 480, PIXEL_FORMAT_Z16,
-                         5), /* requested depth format */
-            ImuFormat(200),  /* requested gyro format */
-            ImuFormat(63),   /* requested accel format */
-            ImuFilterFactory::MadgwickFilterKind,
+            requested_color_format_, requested_depth_format_,
+            requested_gyro_format_, requested_accel_format_, filter_kind_,
             ::base::BindRepeating(&RsCameraPublishingNode::OnColorFrame,
                                   ::base::Unretained(this)),
             ::base::BindRepeating(&RsCameraPublishingNode::OnDepthFrame,
@@ -147,7 +136,8 @@ class RsCameraPublishingNode : public NodeLifecycle {
     }
   }
 
-  void OnDepthCameraFrame(CameraFrame color_frame, CameraFrame depth_frame) {
+  void OnSynchedCameraFrame(CameraFrame color_frame,
+                            DepthCameraFrame depth_frame) {
     if (!color_publisher_.IsUnregistered()) {
       color_publisher_.Publish(
           color_frame.ToCameraFrameMessage(),
@@ -156,26 +146,26 @@ class RsCameraPublishingNode : public NodeLifecycle {
     }
     if (!depth_publisher_.IsUnregistered()) {
       depth_publisher_.Publish(
-          depth_frame.ToCameraFrameMessage(),
+          depth_frame.ToDepthCameraFrameMessage(),
           ::base::BindOnce(&RsCameraPublishingNode::OnPublishDepth,
                            ::base::Unretained(this)));
     }
   }
 
-  void OnColorFrame(CameraFrame camera_frame) {
+  void OnColorFrame(CameraFrame color_frame) {
     if (color_publisher_.IsUnregistered()) return;
 
     color_publisher_.Publish(
-        camera_frame.ToCameraFrameMessage(),
+        color_frame.ToCameraFrameMessage(),
         ::base::BindOnce(&RsCameraPublishingNode::OnPublishColor,
                          ::base::Unretained(this)));
   }
 
-  void OnDepthFrame(CameraFrame camera_frame) {
+  void OnDepthFrame(DepthCameraFrame depth_frame) {
     if (depth_publisher_.IsUnregistered()) return;
 
     depth_publisher_.Publish(
-        camera_frame.ToCameraFrameMessage(),
+        depth_frame.ToDepthCameraFrameMessage(),
         ::base::BindOnce(&RsCameraPublishingNode::OnPublishDepth,
                          ::base::Unretained(this)));
   }
@@ -252,8 +242,13 @@ class RsCameraPublishingNode : public NodeLifecycle {
   std::string imu_topic_;
   CameraDescriptor camera_descriptor_;
   bool synched_;
+  CameraFormat requested_color_format_;
+  CameraFormat requested_depth_format_;
+  ImuFormat requested_gyro_format_;
+  ImuFormat requested_accel_format_;
+  ImuFilterFactory::ImuFilterKind filter_kind_;
   Publisher<CameraFrameMessage> color_publisher_;
-  Publisher<CameraFrameMessage> depth_publisher_;
+  Publisher<DepthCameraFrameMessage> depth_publisher_;
   Publisher<ImuMessage> imu_publisher_;
   std::unique_ptr<RsCamera> camera_;
   ::base::TimeDelta last_timestamp_;

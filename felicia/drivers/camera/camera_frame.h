@@ -35,7 +35,7 @@ class EXPORT CameraFrame {
 
   CameraFrameMessage ToCameraFrameMessage() const;
 
- private:
+ protected:
   std::unique_ptr<uint8_t[]> data_;
   CameraFormat camera_format_;
   ::base::TimeDelta timestamp_;
@@ -47,8 +47,6 @@ EXPORT ::base::Optional<CameraFrame> ConvertToARGB(CameraBuffer camera_buffer,
                                                    CameraFormat camera_format);
 
 typedef ::base::RepeatingCallback<void(CameraFrame)> CameraFrameCallback;
-typedef ::base::RepeatingCallback<void(CameraFrame, CameraFrame)>
-    DepthCameraFrameCallback;
 
 }  // namespace felicia
 

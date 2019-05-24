@@ -21,6 +21,7 @@ fel_proto_library(
     srcs = [
         "camera_format_message.proto",
         "camera_frame_message.proto",
+        "depth_camera_frame_message.proto",
     ],
     default_header = True,
     visibility = ["//visibility:public"],
@@ -36,6 +37,7 @@ CAMERA_HEADERS = [
     "camera_frame.h",
     "camera_frame_util.h",
     "camera_state.h",
+    "depth_camera_frame.h",
     "depth_camera_interface.h",
     "timestamp_constants.h",
 ] + if_linux([
@@ -56,6 +58,7 @@ fel_cc_library(
         "camera_format.cc",
         "camera_frame.cc",
         "camera_frame_util.cc",
+        "depth_camera_frame.cc",
         "depth_camera_interface.cc",
     ] + if_linux([
         "linux/v4l2_camera.cc",

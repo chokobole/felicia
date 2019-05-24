@@ -4,9 +4,8 @@
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/statusor.h"
 #include "felicia/drivers/camera/camera_descriptor.h"
-#include "felicia/drivers/camera/camera_format.h"
-#include "felicia/drivers/camera/camera_frame.h"
 #include "felicia/drivers/camera/camera_state.h"
+#include "felicia/drivers/camera/depth_camera_frame.h"
 
 namespace felicia {
 
@@ -19,11 +18,11 @@ class EXPORT DepthCameraInterface {
   virtual Status Start(const CameraFormat& requested_color_format,
                        const CameraFormat& requested_depth_format,
                        CameraFrameCallback color_frame_callback,
-                       CameraFrameCallback depth_frame_callback,
+                       DepthCameraFrameCallback depth_frame_callback,
                        StatusCallback status_callback) = 0;
   virtual Status Start(const CameraFormat& requested_color_format,
                        const CameraFormat& requested_depth_format,
-                       DepthCameraFrameCallback depth_camera_frame_callback,
+                       SynchedDepthCameraFrameCallback synched_frame_callback,
                        StatusCallback status_callback) = 0;
   virtual Status Stop() = 0;
 
@@ -34,8 +33,8 @@ class EXPORT DepthCameraInterface {
   CameraState camera_state_;
 
   CameraFrameCallback color_frame_callback_;
-  CameraFrameCallback depth_frame_callback_;
-  DepthCameraFrameCallback depth_camera_frame_callback_;
+  DepthCameraFrameCallback depth_frame_callback_;
+  SynchedDepthCameraFrameCallback synched_frame_callback_;
   StatusCallback status_callback_;
 };
 

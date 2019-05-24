@@ -30,11 +30,11 @@ class RsCamera : public DepthCameraInterface {
   Status Start(const CameraFormat& requested_color_format,
                const CameraFormat& requested_depth_format,
                CameraFrameCallback color_frame_callback,
-               CameraFrameCallback depth_frame_callback,
+               DepthCameraFrameCallback depth_frame_callback,
                StatusCallback status_callback) override;
   Status Start(const CameraFormat& requested_color_format,
                const CameraFormat& requested_depth_format,
-               DepthCameraFrameCallback depth_camera_frame_callback,
+               SynchedDepthCameraFrameCallback synched_frame_callback,
                StatusCallback status_callback) override;
   Status Stop();
 
@@ -44,14 +44,14 @@ class RsCamera : public DepthCameraInterface {
                const ImuFormat& requested_accel_format,
                ImuFilterFactory::ImuFilterKind kind,
                CameraFrameCallback color_frame_callback,
-               CameraFrameCallback depth_frame_callback,
+               DepthCameraFrameCallback depth_frame_callback,
                ImuCallback imu_callback, StatusCallback status_callback);
   Status Start(const CameraFormat& requested_color_format,
                const CameraFormat& requested_depth_format,
                const ImuFormat& requested_gyro_format,
                const ImuFormat& requested_accel_format,
                ImuFilterFactory::ImuFilterKind kind,
-               DepthCameraFrameCallback depth_camera_frame_callback,
+               SynchedDepthCameraFrameCallback synched_frame_callback,
                ImuCallback imu_callback, StatusCallback status_callback);
 
  private:
@@ -71,7 +71,7 @@ class RsCamera : public DepthCameraInterface {
 
   ::base::Optional<CameraFrame> FromRsColorFrame(
       ::rs2::video_frame color_frame);
-  CameraFrame FromRsDepthFrame(::rs2::depth_frame depth_frame);
+  DepthCameraFrame FromRsDepthFrame(::rs2::depth_frame depth_frame);
 
   static Status CreateDevice(const CameraDescriptor& camera_descriptor,
                              ::rs2::device* device);
@@ -81,6 +81,8 @@ class RsCamera : public DepthCameraInterface {
 
   ::rs2::device device_;
   PipelineSyncer syncer_;
+
+  float depth_scale_;
 
   ::base::flat_map<RsStreamInfo, ::rs2::sensor> sensors_;
   RsCapabilityMap capability_map_;

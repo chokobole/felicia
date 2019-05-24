@@ -28,9 +28,13 @@ Status RsCamera::Init() {
       sensors_[DEPTH] = sensor;
       sensors_[INFRA1] = sensor;
       sensors_[INFRA2] = sensor;
+
+      depth_scale_ = sensor.as<::rs2::depth_sensor>().get_depth_scale();
     } else if ("Coded-Light Depth Sensor" == module_name) {
       sensors_[DEPTH] = sensor;
       sensors_[INFRA1] = sensor;
+
+      depth_scale_ = sensor.as<::rs2::depth_sensor>().get_depth_scale();
       LOG(ERROR) << "Not Implemented yet for module : " << module_name;
     } else if ("RGB Camera" == module_name) {
       sensors_[COLOR] = sensor;
@@ -58,7 +62,7 @@ Status RsCamera::Init() {
 Status RsCamera::Start(const CameraFormat& requested_color_format,
                        const CameraFormat& requested_depth_format,
                        CameraFrameCallback color_frame_callback,
-                       CameraFrameCallback depth_frame_callback,
+                       DepthCameraFrameCallback depth_frame_callback,
                        StatusCallback status_callback) {
   Status s = Start(requested_color_format, requested_depth_format, ImuFormat{},
                    ImuFormat{}, false /* imu */, false /* synched */);
@@ -75,13 +79,13 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
 
 Status RsCamera::Start(const CameraFormat& requested_color_format,
                        const CameraFormat& requested_depth_format,
-                       DepthCameraFrameCallback depth_camera_frame_callback,
+                       SynchedDepthCameraFrameCallback synched_frame_callback,
                        StatusCallback status_callback) {
   Status s = Start(requested_color_format, requested_depth_format, ImuFormat{},
                    ImuFormat{}, false /* imu */, true /* synched */);
   if (!s.ok()) return s;
 
-  depth_camera_frame_callback_ = depth_camera_frame_callback;
+  synched_frame_callback_ = synched_frame_callback;
   status_callback_ = status_callback;
 
   camera_state_.ToStarted();
@@ -95,7 +99,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
                        const ImuFormat& requested_accel_format,
                        ImuFilterFactory::ImuFilterKind kind,
                        CameraFrameCallback color_frame_callback,
-                       CameraFrameCallback depth_frame_callback,
+                       DepthCameraFrameCallback depth_frame_callback,
                        ImuCallback imu_callback,
                        StatusCallback status_callback) {
   Status s = Start(requested_color_format, requested_depth_format,
@@ -120,7 +124,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
                        const ImuFormat& requested_gyro_format,
                        const ImuFormat& requested_accel_format,
                        ImuFilterFactory::ImuFilterKind kind,
-                       DepthCameraFrameCallback depth_camera_frame_callback,
+                       SynchedDepthCameraFrameCallback synched_frame_callback,
                        ImuCallback imu_callback,
                        StatusCallback status_callback) {
   Status s = Start(requested_color_format, requested_depth_format,
@@ -128,7 +132,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
                    true /* imu */, true /* synched */);
   if (!s.ok()) return s;
 
-  depth_camera_frame_callback_ = depth_camera_frame_callback;
+  synched_frame_callback_ = synched_frame_callback;
   imu_callback_ = imu_callback;
   status_callback_ = status_callback;
 
@@ -223,20 +227,22 @@ Status RsCamera::Stop() {
 
   color_frame_callback_.Reset();
   depth_frame_callback_.Reset();
-  depth_camera_frame_callback_.Reset();
+  synched_frame_callback_.Reset();
 
   return Status::OK();
 }
 
 void RsCamera::OnFrame(::rs2::frame frame) {
   if (frame.is<::rs2::frameset>()) {
-    auto frameset = frame.as<rs2::frameset>();
-    auto color_frame = FromRsColorFrame(frameset.get_color_frame());
-    CameraFrame depth_frame = FromRsDepthFrame(frameset.get_depth_frame());
+    auto frameset = frame.as<::rs2::frameset>();
+    ::rs2::video_frame rs_color_frame = frameset.get_color_frame();
+    ::rs2::depth_frame rs_depth_frame = frameset.get_depth_frame();
+    auto color_frame = FromRsColorFrame(rs_color_frame);
+    DepthCameraFrame depth_frame = FromRsDepthFrame(rs_depth_frame);
 
     if (color_frame.has_value()) {
-      depth_camera_frame_callback_.Run(std::move(color_frame.value()),
-                                       std::move(depth_frame));
+      synched_frame_callback_.Run(std::move(color_frame.value()),
+                                  std::move(depth_frame));
     } else {
       status_callback_.Run(errors::FailedToConvertToARGB());
     }
@@ -292,13 +298,14 @@ void RsCamera::OnImu(::rs2::frame frame) {
   return argb_frame;
 }
 
-CameraFrame RsCamera::FromRsDepthFrame(::rs2::depth_frame depth_frame) {
+DepthCameraFrame RsCamera::FromRsDepthFrame(::rs2::depth_frame depth_frame) {
   size_t length = depth_format_.AllocationSize();
   std::unique_ptr<uint8_t[]> new_depth_frame(new uint8_t[length]);
   memcpy(new_depth_frame.get(), depth_frame.get_data(), length);
-  CameraFrame camera_frame(std::move(new_depth_frame), depth_format_);
-  camera_frame.set_timestamp(timestamper_.timestamp());
-  return camera_frame;
+  DepthCameraFrame depth_camera_frame(std::move(new_depth_frame), depth_format_,
+                                      depth_scale_);
+  depth_camera_frame.set_timestamp(timestamper_.timestamp());
+  return depth_camera_frame;
 }
 
 // static
