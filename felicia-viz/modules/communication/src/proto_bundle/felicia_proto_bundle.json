@@ -393,14 +393,6 @@
             }
           }
         },
-        "TransformMessage": {
-          "fields": {
-            "orientation": {
-              "type": "QuarternionMessage",
-              "id": 1
-            }
-          }
-        },
         "PixelFormat": {
           "values": {
             "PIXEL_FORMAT_UNKNOWN": 0,
@@ -457,6 +449,18 @@
             }
           }
         },
+        "DepthCameraFrameMessage": {
+          "fields": {
+            "frame": {
+              "type": "CameraFrameMessage",
+              "id": 1
+            },
+            "scale": {
+              "type": "float",
+              "id": 2
+            }
+          }
+        },
         "ImuFormatMessage": {
           "fields": {
             "frameRate": {
@@ -485,27 +489,11 @@
             }
           }
         },
-        "Point3fMessage": {
-          "fields": {
-            "x": {
-              "type": "float",
-              "id": 1
-            },
-            "y": {
-              "type": "float",
-              "id": 2
-            },
-            "z": {
-              "type": "float",
-              "id": 3
-            }
-          }
-        },
-        "Point3fsMessage": {
+        "PointcloudMessage": {
           "fields": {
             "points": {
               "rule": "repeated",
-              "type": "Point3fMessage",
+              "type": "Vec3fMessage",
               "id": 1
             }
           }

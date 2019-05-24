@@ -1,19 +1,7 @@
 import { observable, action } from 'mobx';
-import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math';
 
-import { IMU_MESSAGE } from '@felicia-viz/communication';
-
-import SUBSCRIBER from 'util/subscriber';
-
-function makeVector3(v) {
-  const { x, y, z } = v;
-  return new Vector3(x, y, z);
-}
-
-function makeQuarternion(q) {
-  const { x, y, z, w } = q;
-  return new Quaternion(x, y, z, w);
-}
+import { makeVector3, makeQuarternion } from 'util/babylon-util';
+import PanelState from './panel-state';
 
 export class Imu {
   constructor(message) {
@@ -26,22 +14,11 @@ export class Imu {
   }
 }
 
-export default class ImuPanelState {
-  @observable topic = '';
-
+export default class ImuPanelState extends PanelState {
   @observable imu = null;
-
-  constructor(id) {
-    this.id = id;
-  }
 
   @action update(message) {
     this.imu = new Imu(message);
-  }
-
-  @action selectTopic(newTopic) {
-    this.topic = newTopic;
-    SUBSCRIBER.subscribeTopic(this.id, IMU_MESSAGE, newTopic);
   }
 
   type = () => {

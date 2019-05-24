@@ -1,8 +1,6 @@
 import { observable, action } from 'mobx';
 
-import { CAMERA_FRAME_MESSAGE } from '@felicia-viz/communication';
-
-import SUBSCRIBER from 'util/subscriber';
+import PanelState from './panel-state';
 
 export class CameraFrame {
   constructor(message) {
@@ -35,28 +33,11 @@ export class CameraFrame {
   }
 }
 
-export default class CameraPanelState {
-  @observable topic = '';
-
-  @observable filter = 'jet';
-
+export default class CameraPanelState extends PanelState {
   @observable frame = null;
-
-  constructor(id) {
-    this.id = id;
-  }
 
   @action update(message) {
     this.frame = new CameraFrame(message);
-  }
-
-  @action selectTopic(newTopic) {
-    this.topic = newTopic;
-    SUBSCRIBER.subscribeTopic(this.id, CAMERA_FRAME_MESSAGE, newTopic);
-  }
-
-  @action selectFilter(newFilter) {
-    this.filter = newFilter;
   }
 
   type = () => {

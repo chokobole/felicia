@@ -4,13 +4,10 @@ import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
 import { Vector3, Color3, Quaternion } from '@babylonjs/core/Maths/math';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
-import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
-import { Mesh } from '@babylonjs/core/Meshes/mesh';
-import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import '@babylonjs/core/Meshes/meshBuilder';
 
 import { Imu } from 'store/ui/imu-panel-state';
+import { drawAxis } from 'util/babylon-util';
 
 export default class ImuView extends PureComponent {
   static propTypes = {
@@ -25,73 +22,6 @@ export default class ImuView extends PureComponent {
     imu: null,
   };
 
-  static makeTextPlane(text, color, size, scene) {
-    const dynamicTexture = new DynamicTexture('DynamicTexture', 50, scene, true);
-    dynamicTexture.hasAlpha = true;
-    dynamicTexture.drawText(text, 5, 40, 'bold 36px Arial', color, 'transparent', true);
-    const plane = new Mesh.CreatePlane('TextPlane', size, scene, true);
-    plane.material = new StandardMaterial('TextPlaneMaterial', scene);
-    plane.material.backFaceCulling = false;
-    plane.material.specularColor = new Color3(0, 0, 0);
-    plane.material.diffuseTexture = dynamicTexture;
-    return plane;
-  }
-
-  static drawAxis(size, scene) {
-    const axisX = Mesh.CreateLines(
-      'axisX',
-      [
-        new Vector3.Zero(),
-        new Vector3(size, 0, 0),
-        new Vector3(size * 0.95, 0.05 * size, 0),
-        new Vector3(size, 0, 0),
-        new Vector3(size * 0.95, -0.05 * size, 0),
-      ],
-      scene
-    );
-    axisX.color = new Color3(1, 0, 0);
-    const xChar = ImuView.makeTextPlane('X', 'red', size / 10, scene);
-    xChar.position = new Vector3(0.9 * size, -0.05 * size, 0);
-    const axisY = Mesh.CreateLines(
-      'axisY',
-      [
-        new Vector3.Zero(),
-        new Vector3(0, size, 0),
-        new Vector3(-0.05 * size, size * 0.95, 0),
-        new Vector3(0, size, 0),
-        new Vector3(0.05 * size, size * 0.95, 0),
-      ],
-      scene
-    );
-    axisY.color = new Color3(0, 1, 0);
-    const yChar = ImuView.makeTextPlane('Y', 'green', size / 10, scene);
-    yChar.position = new Vector3(0, 0.9 * size, -0.05 * size);
-    const axisZ = Mesh.CreateLines(
-      'axisZ',
-      [
-        new Vector3.Zero(),
-        new Vector3(0, 0, size),
-        new Vector3(0, -0.05 * size, size * 0.95),
-        new Vector3(0, 0, size),
-        new Vector3(0, 0.05 * size, size * 0.95),
-      ],
-      scene
-    );
-    axisZ.color = new Color3(0, 0, 1);
-    const zChar = ImuView.makeTextPlane('Z', 'blue', size / 10, scene);
-    zChar.position = new Vector3(0, 0.05 * size, 0.9 * size);
-
-    const localOrigin = new TransformNode('local_origin');
-    axisX.parent = localOrigin;
-    axisY.parent = localOrigin;
-    axisZ.parent = localOrigin;
-    xChar.parent = localOrigin;
-    yChar.parent = localOrigin;
-    zChar.parent = localOrigin;
-
-    return localOrigin;
-  }
-
   componentDidMount() {
     const engine = new Engine(this.canvas);
 
@@ -104,7 +34,7 @@ export default class ImuView extends PureComponent {
     camera.setTarget(Vector3.Zero());
     camera.attachControl(this.canvas, true);
 
-    const localOrigin = ImuView.drawAxis(10, scene);
+    const localOrigin = drawAxis(10, scene);
 
     engine.runRenderLoop(() => {
       const { imu } = this.props;

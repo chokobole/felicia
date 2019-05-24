@@ -17,10 +17,10 @@ export default class TopicDropdown extends Component {
   };
 
   _onTopicChange = value => {
-    const { store } = this.props;
+    const { typeName, store } = this.props;
     const state = store.uiState.activeViewState.getState();
     if (state) {
-      state.selectTopic(value);
+      state.selectTopic(typeName, value);
     } else {
       failedToFindActiveState();
     }

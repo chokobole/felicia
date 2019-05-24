@@ -62,3 +62,9 @@ export const METRIC_CARD_STYLE = {
     fontSize: 12,
   },
 };
+
+export const FORM_STYLE = {
+  wrapper: {
+    padding: 12,
+  },
+};

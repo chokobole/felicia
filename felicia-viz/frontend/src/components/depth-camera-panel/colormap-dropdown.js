@@ -83,12 +83,8 @@ export default class ColormapDropdown extends Component {
     const { title, store } = this.props;
     const state = store.uiState.activeViewState.getState();
     let value = '';
-    let isEnabled = false;
     if (state) {
       value = state.filter;
-      if (state.frame) {
-        isEnabled = state.frame.pixelFormat === 'PIXEL_FORMAT_Z16';
-      }
     } else {
       failedToFindActiveState();
     }
@@ -96,12 +92,7 @@ export default class ColormapDropdown extends Component {
     return (
       <PanelItemContainer>
         <Label>{title}</Label>
-        <Dropdown
-          value={value}
-          data={this.data}
-          onChange={this._onFilterChange}
-          isEnabled={isEnabled}
-        />
+        <Dropdown value={value} data={this.data} onChange={this._onFilterChange} />
       </PanelItemContainer>
     );
   }

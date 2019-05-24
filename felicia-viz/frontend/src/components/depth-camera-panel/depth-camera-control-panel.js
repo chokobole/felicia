@@ -3,14 +3,15 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import { Form } from '@streetscape.gl/monochrome';
 
-import { CAMERA_FRAME_MESSAGE } from '@felicia-viz/communication';
+import { DEPTH_CAMERA_FRAME_MESSAGE } from '@felicia-viz/communication';
 import { TopicDropdown, renderText } from '@felicia-viz/ui';
 
 import { FORM_STYLE } from 'custom-styles';
+import ColormapDropdown from './colormap-dropdown';
 
 @inject('store')
 @observer
-export default class CameraControlPanel extends Component {
+export default class DepthCameraControlPanel extends Component {
   static propTypes = {
     store: PropTypes.object.isRequired,
   };
@@ -26,6 +27,7 @@ export default class CameraControlPanel extends Component {
         height: { type: 'custom', title: 'height', render: renderText },
         frameRate: { type: 'custom', title: 'frameRate', render: renderText },
         pixelFormat: { type: 'custom', title: 'pixelFormat', render: renderText },
+        scale: { type: 'custom', title: 'scale', render: renderText },
       },
     },
     caemraControl: {
@@ -36,29 +38,50 @@ export default class CameraControlPanel extends Component {
           type: 'custom',
           title: 'topic',
           render: self => {
-            return <TopicDropdown {...self} typeName={CAMERA_FRAME_MESSAGE} />;
+            return <TopicDropdown {...self} typeName={DEPTH_CAMERA_FRAME_MESSAGE} />;
           },
+        },
+        filter: {
+          type: 'custom',
+          title: 'filter',
+          render: self => {
+            return <ColormapDropdown {...self} />;
+          },
+        },
+        pointcloudView: {
+          type: 'toggle',
+          title: 'pointcloudView',
         },
       },
     },
   };
 
-  _onChange = values => {}; // eslint-disable-line no-unused-vars
+  _onChange = values => {
+    const { store } = this.props;
+    const viewState = store.uiState.activeViewState.getState();
+
+    if (viewState.pointcloudView !== values.pointcloudView) {
+      viewState.switchPointcloudView(values.pointcloudView);
+    }
+  };
 
   _fetchValues() {
     const { store } = this.props;
     const { uiState } = store;
     const viewState = uiState.findView(uiState.activeViewState.id);
-    const { frame, topic } = viewState;
+    const { frame, topic, filter, pointcloudView } = viewState;
 
     if (frame) {
-      const { width, height, frameRate, pixelFormat } = frame;
+      const { width, height, frameRate, pixelFormat, scale } = frame;
       return {
         width,
         height,
         frameRate,
         pixelFormat,
+        scale,
         topic,
+        filter,
+        pointcloudView,
       };
     }
     return {
@@ -66,7 +89,10 @@ export default class CameraControlPanel extends Component {
       height: '',
       frameRate: '',
       pixelFormat: '',
+      scale: '',
       topic,
+      filter,
+      pointcloudView,
     };
   }
 

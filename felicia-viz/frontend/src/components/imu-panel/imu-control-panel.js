@@ -6,7 +6,7 @@ import { Form, MetricCard, MetricChart } from '@streetscape.gl/monochrome';
 import { IMU_MESSAGE } from '@felicia-viz/communication';
 import { TopicDropdown, PanelItemContainer } from '@felicia-viz/ui';
 
-import { METRIC_CARD_STYLE } from 'custom-styles';
+import { FORM_STYLE, METRIC_CARD_STYLE } from 'custom-styles';
 
 function renderImuGraph(self) {
   const { title, value } = self;
@@ -127,11 +127,7 @@ export default class ImuControlPanel extends Component {
       <Form
         data={this.SETTINGS}
         values={this._fetchValues()}
-        style={{
-          wrapper: {
-            padding: 12,
-          },
-        }}
+        style={FORM_STYLE}
         onChange={this._onChange}
       />
     );

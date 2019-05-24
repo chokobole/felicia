@@ -1,8 +1,10 @@
 import React from 'react';
 
 import CameraPanel, { CameraControlPanel } from 'components/camera-panel';
+import DepthCameraPanel, { DepthCameraControlPanel } from 'components/depth-camera-panel';
 import ImuPanel, { ImuControlPanel } from 'components/imu-panel';
 import CameraPanelState from 'store/ui/camera-panel-state';
+import DepthCameraPanelState from 'store/ui/depth-camera-panel-state';
 import ImuPanelState from 'store/ui/imu-panel-state';
 
 const UI_TYPES = {};
@@ -20,6 +22,20 @@ export const CameraPanelType = {
 };
 
 UI_TYPES[CameraPanelType.name] = CameraPanelType;
+
+export const DepthCameraPanelType = {
+  name: 'DepthCameraPanel',
+  className: 'depth-camera-panel',
+  state: DepthCameraPanelState,
+  renderView: id => {
+    return <DepthCameraPanel key={id} id={id} />;
+  },
+  renderControlView: () => {
+    return <DepthCameraControlPanel />;
+  },
+};
+
+UI_TYPES[DepthCameraPanelType.name] = DepthCameraPanelType;
 
 export const ImuPanelType = {
   name: 'ImuPanel',

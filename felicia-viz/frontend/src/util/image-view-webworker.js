@@ -17,7 +17,8 @@ self.onmessage = event => {
             histogram = new Histogram();
           }
 
-          const pixelData = new Uint16Array(data.data.buffer);
+          const { buffer, byteOffset, byteLength } = data.data;
+          const pixelData = new Uint16Array(buffer, byteOffset, byteLength / 2);
           histogram.make(pixelData, width, height);
           histogram.fillImageDataWithColormap(pixels, pixelData, width, height, filter);
           break;
