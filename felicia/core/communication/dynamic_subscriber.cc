@@ -52,6 +52,11 @@ void DynamicSubscriber::UnSubscribe(const std::string& topic,
     return;
   }
 
+  // TODO(chokobole): This line below is a temporary related to below check
+  // statement. I have to figure out why called |Unsubscribe| while the
+  // subscriber is at unregistered state.
+  if (register_state_.IsUnregistered()) return;
+
   // FIXME: Sometimes died here?
   DCHECK(register_state_.IsRegistered()) << register_state_.ToString();
 
