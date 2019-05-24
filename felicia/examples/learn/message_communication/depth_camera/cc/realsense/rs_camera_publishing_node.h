@@ -58,10 +58,12 @@ class RsCameraPublishingNode : public NodeLifecycle {
         ::base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
 
-    imu_publisher_.RequestPublish(
-        node_info_, imu_topic_, channel_def, settings,
-        ::base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
-                         ::base::Unretained(this)));
+    if (!imu_topic_.empty()) {
+      imu_publisher_.RequestPublish(
+          node_info_, imu_topic_, channel_def, settings,
+          ::base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
+                           ::base::Unretained(this)));
+    }
   }
 
   void OnRequestPublish(const Status& s) {
@@ -69,6 +71,8 @@ class RsCameraPublishingNode : public NodeLifecycle {
     if (s.ok()) {
       if (!(color_publisher_.IsRegistered() && depth_publisher_.IsRegistered()))
         return;
+
+      if (!imu_topic_.empty() && !imu_publisher_.IsRegistered()) return;
 
       MasterProxy& master_proxy = MasterProxy::GetInstance();
       master_proxy.PostTask(
@@ -80,6 +84,8 @@ class RsCameraPublishingNode : public NodeLifecycle {
   }
 
   void StartCamera() {
+    if (camera_->IsStarted()) return;
+
     Status s;
     if (synched_) {
       if (imu_topic_.empty()) {

@@ -8,4 +8,16 @@ DepthCameraInterface::DepthCameraInterface(
 
 DepthCameraInterface::~DepthCameraInterface() = default;
 
+bool DepthCameraInterface::IsInitialized() const {
+  return camera_state_.IsInitialized();
+}
+
+bool DepthCameraInterface::IsStarted() const {
+  return camera_state_.IsStarted();
+}
+
+bool DepthCameraInterface::IsStopped() const {
+  return camera_state_.IsStopped();
+}
+
 }  // namespace felicia

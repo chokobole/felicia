@@ -139,6 +139,8 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
   imu_filter_ = ImuFilterFactory::NewImuFilter(kind);
 
   camera_state_.ToStarted();
+
+  return Status::OK();
 }
 
 Status RsCamera::Start(const CameraFormat& requested_color_format,

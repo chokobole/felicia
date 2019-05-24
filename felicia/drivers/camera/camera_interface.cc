@@ -7,4 +7,12 @@ CameraInterface::CameraInterface(const CameraDescriptor& camera_descriptor)
 
 CameraInterface::~CameraInterface() = default;
 
+bool CameraInterface::IsInitialized() const {
+  return camera_state_.IsInitialized();
+}
+
+bool CameraInterface::IsStarted() const { return camera_state_.IsStarted(); }
+
+bool CameraInterface::IsStopped() const { return camera_state_.IsStopped(); }
+
 }  // namespace felicia

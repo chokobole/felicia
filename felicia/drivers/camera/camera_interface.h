@@ -21,6 +21,10 @@ class EXPORT CameraInterface {
                        StatusCallback status_callback) = 0;
   virtual Status Stop() = 0;
 
+  bool IsInitialized() const;
+  bool IsStarted() const;
+  bool IsStopped() const;
+
  protected:
   CameraDescriptor camera_descriptor_;
   CameraFormat camera_format_;

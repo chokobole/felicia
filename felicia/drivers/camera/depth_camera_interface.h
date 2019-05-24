@@ -26,6 +26,10 @@ class EXPORT DepthCameraInterface {
                        StatusCallback status_callback) = 0;
   virtual Status Stop() = 0;
 
+  bool IsInitialized() const;
+  bool IsStarted() const;
+  bool IsStopped() const;
+
  protected:
   CameraDescriptor camera_descriptor_;
   CameraFormat color_format_;
