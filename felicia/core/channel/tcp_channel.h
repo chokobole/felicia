@@ -22,6 +22,8 @@ class TCPChannel : public Channel<MessageTy> {
 
   bool IsTCPChannel() const override { return true; }
 
+  bool HasReceivers() const override;
+
   bool IsConnected() const {
     DCHECK(this->channel_);
     return this->channel_->ToTCPChannelBase()->IsConnected();
@@ -45,6 +47,14 @@ TCPChannel<MessageTy>::TCPChannel() {}
 
 template <typename MessageTy>
 TCPChannel<MessageTy>::~TCPChannel() = default;
+
+template <typename MessageTy>
+bool TCPChannel<MessageTy>::HasReceivers() const {
+  DCHECK(this->channel_);
+  TCPServerChannel* server_channel =
+      this->channel_->ToTCPChannelBase()->ToTCPServerChannel();
+  return server_channel->accepted_sockets().size() > 0;
+}
 
 template <typename MessageTy>
 StatusOr<ChannelSource> TCPChannel<MessageTy>::Listen() {

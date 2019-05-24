@@ -31,6 +31,8 @@ class Channel {
   virtual bool IsTCPChannel() const { return false; }
   virtual bool IsUDPChannel() const { return false; }
 
+  virtual bool HasReceivers() const { return true; }
+
   bool IsSendingMessage() const { return !send_callback_.is_null(); }
   bool IsReceivingMessage() const { return !receive_callback_.is_null(); }
 

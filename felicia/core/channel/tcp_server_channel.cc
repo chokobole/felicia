@@ -15,6 +15,11 @@ namespace felicia {
 TCPServerChannel::TCPServerChannel() = default;
 TCPServerChannel::~TCPServerChannel() = default;
 
+const std::vector<std::unique_ptr<::net::TCPSocket>>&
+TCPServerChannel::accepted_sockets() const {
+  return accepted_sockets_;
+}
+
 bool TCPServerChannel::IsServer() const { return true; }
 
 bool TCPServerChannel::IsConnected() const {

@@ -23,6 +23,9 @@ class EXPORT TCPServerChannel : public TCPChannelBase {
   TCPServerChannel();
   ~TCPServerChannel();
 
+  const std::vector<std::unique_ptr<::net::TCPSocket>>& accepted_sockets()
+      const;
+
   bool IsServer() const override;
 
   bool IsConnected() const override;
