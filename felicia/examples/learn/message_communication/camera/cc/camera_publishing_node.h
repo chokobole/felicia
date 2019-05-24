@@ -34,6 +34,7 @@ class CameraPublishingNode : public NodeLifecycle {
     ChannelDef channel_def;
 
     communication::Settings settings;
+    settings.queue_size = 1;
     settings.is_dynamic_buffer = true;
 
     publisher_.RequestPublish(

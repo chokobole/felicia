@@ -46,6 +46,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
     ChannelDef channel_def;
 
     communication::Settings settings;
+    settings.queue_size = 1;
     settings.is_dynamic_buffer = true;
 
     color_publisher_.RequestPublish(

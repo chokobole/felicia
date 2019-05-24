@@ -32,6 +32,7 @@ class CameraPublishingNode(fel.NodeLifecycle):
         channel_def = ChannelDef()
 
         settings = fel.Settings()
+        settings.queue_size = 1
         settings.is_dynamic_buffer = True
 
         self.publisher.request_publish(
