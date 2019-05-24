@@ -244,9 +244,10 @@ void Publisher<MessageTy>::OnUnpublishTopicAsync(
 template <typename MessageTy>
 void Publisher<MessageTy>::SendMesasge(StatusOnceCallback callback) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!channel_->IsSendingMessage() && channel_->HasReceivers() &&
-      master_proxy.IsBoundToCurrentThread()) {
+  if (!channel_->IsSendingMessage() && master_proxy.IsBoundToCurrentThread()) {
     if (!message_queue_.empty()) {
+      if (!channel_->HasReceivers()) return;
+
       MessageTy message = std::move(message_queue_.front());
       message_queue_.pop();
       channel_->SendMessage(message, std::move(callback));
