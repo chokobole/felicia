@@ -27,7 +27,7 @@ class Subscriber {
   using OnMessageCallback = ::base::RepeatingCallback<void(MessageTy&&)>;
 
   Subscriber() = default;
-  virtual ~Subscriber() { DCHECK(IsStopped()); }
+  virtual ~Subscriber() { DCHECK(IsStopped()) << subscriber_state_.ToString(); }
 
   ALWAYS_INLINE bool IsRegistering() const {
     return register_state_.IsRegistering();
@@ -211,7 +211,7 @@ void Subscriber<MessageTy>::OnFindPublisher(const TopicInfo& topic_info) {
 
   if (IsUnregistered()) return;
 
-  DCHECK(IsRegistered());
+  DCHECK(IsRegistered()) << register_state_.ToString();
 
   if (topic_info.status() == TopicInfo::UNREGISTERED) {
     if (IsStarted()) {
@@ -232,7 +232,7 @@ void Subscriber<MessageTy>::OnFindPublisher(const TopicInfo& topic_info) {
     return;
   }
 
-  DCHECK(IsStopped());
+  DCHECK(IsStopped()) << subscriber_state_.ToString();
 
   // If MesageTy is DynamicProtobufMessage, in other words, this class is
   // a instance of DynamicSubscriber, then subscriber resolves its type

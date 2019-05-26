@@ -132,7 +132,7 @@ void DynamicSubscribingNode::Unsubscribe(const std::string& topic,
   auto it = subscribers_.find(topic);
   if (it == subscribers_.end()) return;
 
-  it->second->UnSubscribe(
+  it->second->Unsubscribe(
       topic,
       ::base::BindOnce(&DynamicSubscribingNode::OnUnsubscribe,
                        ::base::Unretained(this), topic, std::move(callback)));
@@ -141,8 +141,10 @@ void DynamicSubscribingNode::Unsubscribe(const std::string& topic,
 void DynamicSubscribingNode::OnUnsubscribe(const std::string& topic,
                                            StatusOnceCallback callback,
                                            const Status& s) {
-  auto it = subscribers_.find(topic);
-  subscribers_.erase(it);
+  if (s.ok()) {
+    auto it = subscribers_.find(topic);
+    subscribers_.erase(it);
+  }
 
   std::move(callback).Run(s);
 }

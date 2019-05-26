@@ -23,7 +23,9 @@ template <typename MessageTy>
 class Publisher {
  public:
   Publisher() = default;
-  virtual ~Publisher() { DCHECK(IsUnregistered()); }
+  virtual ~Publisher() {
+    DCHECK(IsUnregistered()) << register_state_.ToString();
+  }
 
   ALWAYS_INLINE bool IsRegistering() const {
     return register_state_.IsRegistering();

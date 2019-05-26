@@ -18,7 +18,7 @@ void DynamicSubscriber::Subscribe(OnMessageCallback on_message_callback,
     return;
   }
 
-  DCHECK(register_state_.IsUnregistered());
+  DCHECK(IsUnregistered()) << register_state_.ToString();
 
   register_state_.ToRegistered();
 
@@ -41,24 +41,27 @@ void DynamicSubscriber::OnFindPublisher(const TopicInfo& topic_info) {
   Subscriber<DynamicProtobufMessage>::OnFindPublisher(topic_info);
 }
 
-void DynamicSubscriber::UnSubscribe(const std::string& topic,
+void DynamicSubscriber::Unsubscribe(const std::string& topic,
                                     StatusOnceCallback callback) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(
         FROM_HERE,
-        ::base::BindOnce(&DynamicSubscriber::UnSubscribe,
+        ::base::BindOnce(&DynamicSubscriber::Unsubscribe,
                          ::base::Unretained(this), topic, std::move(callback)));
     return;
   }
 
-  // TODO(chokobole): This line below is a temporary related to below check
-  // statement. I have to figure out why called |Unsubscribe| while the
-  // subscriber is at unregistered state.
-  if (register_state_.IsUnregistered()) return;
+  // Unsubscribe function can be called either when topic info is updated to
+  // UNREGISTERED state or manually unregistration from the js side. If both
+  // cases happens almost same time, one of them should be ignored.
+  if (IsUnregistered()) {
+    DCHECK(IsStopping() || IsStopped()) << subscriber_state_.ToString();
+    std::move(callback).Run(errors::Aborted("Already unsubscribed"));
+    return;
+  }
 
-  // FIXME: Sometimes died here?
-  DCHECK(register_state_.IsRegistered()) << register_state_.ToString();
+  DCHECK(IsRegistered()) << register_state_.ToString();
 
   register_state_.ToUnregistered();
 

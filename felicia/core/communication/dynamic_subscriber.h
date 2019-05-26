@@ -18,7 +18,7 @@ class DynamicSubscriber : public Subscriber<DynamicProtobufMessage> {
 
   void OnFindPublisher(const TopicInfo& topic_info);
 
-  void UnSubscribe(const std::string& topic, StatusOnceCallback callback);
+  void Unsubscribe(const std::string& topic, StatusOnceCallback callback);
 
   void CheckIfStoppedAndCallback(StatusOnceCallback callback);
 
