@@ -1,39 +1,20 @@
 #ifndef FELICIA_DRIVERS_CAMERA_CAMERA_STATE_H_
 #define FELICIA_DRIVERS_CAMERA_CAMERA_STATE_H_
 
-#include "third_party/chromium/base/compiler_specific.h"
-#include "third_party/chromium/base/logging.h"
-#include "third_party/chromium/base/strings/string_util.h"
-#include "third_party/chromium/base/strings/stringprintf.h"
-
-#include "felicia/core/lib/error/errors.h"
+#include "felicia/core/lib/base/state.h"
 
 namespace felicia {
 
-class CameraState {
- private:
+class CameraStateTraits {
+ public:
   static constexpr uint8_t kStopped = 0;
   static constexpr uint8_t kInitialized = 1;
   static constexpr uint8_t kStarted = 2;
 
- public:
-  // Construct with |kStopped|.
-  constexpr CameraState() {}
-  CameraState(const CameraState& other) : state_(other.state_) {}
-  void operator=(const CameraState& other) { state_ = other.state_; }
+  static constexpr uint8_t InitialState = kStopped;
 
-  ALWAYS_INLINE bool IsStopped() const { return state_ == kStopped; }
-  ALWAYS_INLINE bool IsInitialized() const { return state_ == kInitialized; }
-  ALWAYS_INLINE bool IsStarted() const { return state_ == kStarted; }
-
-  ALWAYS_INLINE void ToStopped() { set_state(kStopped); }
-  ALWAYS_INLINE void ToInitialized() { set_state(kInitialized); }
-  ALWAYS_INLINE void ToStarted() { set_state(kStarted); }
-
-  ALWAYS_INLINE void set_state(uint8_t state) { state_ = state; }
-
-  std::string ToString() const {
-    switch (state_) {
+  static std::string ToString(uint8_t state) {
+    switch (state) {
       case kStopped:
         return "Stopped";
       case kInitialized:
@@ -44,15 +25,27 @@ class CameraState {
     NOTREACHED();
     return ::base::EmptyString();
   }
+};
 
-  ALWAYS_INLINE Status InvalidStateError() const {
-    std::string text = ToString();
-    return errors::Aborted(
-        ::base::StringPrintf("Invalid state(%s)", text.c_str()));
+class CameraState : public State<uint8_t, CameraStateTraits> {
+ public:
+  using State<uint8_t, CameraStateTraits>::State;
+
+  ALWAYS_INLINE bool IsStopped() const {
+    return state_ == CameraStateTraits::kStopped;
+  }
+  ALWAYS_INLINE bool IsInitialized() const {
+    return state_ == CameraStateTraits::kInitialized;
+  }
+  ALWAYS_INLINE bool IsStarted() const {
+    return state_ == CameraStateTraits::kStarted;
   }
 
- private:
-  uint8_t state_ = kStopped;
+  ALWAYS_INLINE void ToStopped() { set_state(CameraStateTraits::kStopped); }
+  ALWAYS_INLINE void ToInitialized() {
+    set_state(CameraStateTraits::kInitialized);
+  }
+  ALWAYS_INLINE void ToStarted() { set_state(CameraStateTraits::kStarted); }
 };
 
 }  // namespace felicia

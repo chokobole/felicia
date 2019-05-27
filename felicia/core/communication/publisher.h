@@ -104,7 +104,7 @@ void Publisher<MessageTy>::RequestPublish(
     return;
   }
 
-  register_state_.ToRegistering();
+  register_state_.ToRegistering(FROM_HERE);
 
   StatusOr<ChannelSource> status_or = Setup(channel_def);
   if (!status_or.ok()) {
@@ -163,7 +163,7 @@ void Publisher<MessageTy>::RequestUnpublish(const NodeInfo& node_info,
     return;
   }
 
-  register_state_.ToUnregistering();
+  register_state_.ToUnregistering(FROM_HERE);
 
   UnpublishTopicRequest* request = new UnpublishTopicRequest();
   *request->mutable_node_info() = node_info;
@@ -206,7 +206,7 @@ void Publisher<MessageTy>::OnPublishTopicAsync(
   }
 
   if (!s.ok()) {
-    register_state_.ToUnregistered();
+    register_state_.ToUnregistered(FROM_HERE);
     std::move(callback).Run(s);
     return;
   }
@@ -218,7 +218,7 @@ void Publisher<MessageTy>::OnPublishTopicAsync(
     channel_->SetSendBufferSize(settings.buffer_size);
   }
 
-  register_state_.ToRegistered();
+  register_state_.ToRegistered(FROM_HERE);
   std::move(callback).Run(s);
 }
 
@@ -232,13 +232,13 @@ void Publisher<MessageTy>::OnUnpublishTopicAsync(
   }
 
   if (!s.ok()) {
-    register_state_.ToRegistered();
+    register_state_.ToRegistered(FROM_HERE);
     std::move(callback).Run(s);
     return;
   }
 
   Release();
-  register_state_.ToUnregistered();
+  register_state_.ToUnregistered(FROM_HERE);
 
   std::move(callback).Run(s);
 }

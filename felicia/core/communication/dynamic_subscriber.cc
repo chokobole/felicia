@@ -9,49 +9,38 @@ DynamicSubscriber::~DynamicSubscriber() = default;
 void DynamicSubscriber::Subscribe(OnMessageCallback on_message_callback,
                                   StatusCallback on_error_callback,
                                   const communication::Settings& settings) {
+#if DCHECK_IS_ON()
   MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(
-        FROM_HERE, ::base::BindOnce(
-                       &DynamicSubscriber::Subscribe, ::base::Unretained(this),
-                       on_message_callback, on_error_callback, settings));
-    return;
-  }
-
+  DCHECK(master_proxy.IsBoundToCurrentThread());
+#endif
+  DLOG(INFO) << FROM_HERE.ToString();
   DCHECK(IsUnregistered()) << register_state_.ToString();
 
-  register_state_.ToRegistered();
+  register_state_.ToRegistered(FROM_HERE);
 
   on_message_callback_ = on_message_callback;
   on_error_callback_ = on_error_callback;
   settings_ = settings;
 
-  subscriber_state_.ToStopped();
+  subscriber_state_.ToStopped(FROM_HERE);
 }
 
 void DynamicSubscriber::OnFindPublisher(const TopicInfo& topic_info) {
+#if DCHECK_IS_ON()
   MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(
-        FROM_HERE, ::base::BindOnce(&DynamicSubscriber::OnFindPublisher,
-                                    ::base::Unretained(this), topic_info));
-    return;
-  }
-
+  DCHECK(master_proxy.IsBoundToCurrentThread());
+#endif
+  DLOG(INFO) << FROM_HERE.ToString();
   Subscriber<DynamicProtobufMessage>::OnFindPublisher(topic_info);
 }
 
 void DynamicSubscriber::Unsubscribe(const std::string& topic,
                                     StatusOnceCallback callback) {
+#if DCHECK_IS_ON()
   MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(
-        FROM_HERE,
-        ::base::BindOnce(&DynamicSubscriber::Unsubscribe,
-                         ::base::Unretained(this), topic, std::move(callback)));
-    return;
-  }
-
+  DCHECK(master_proxy.IsBoundToCurrentThread());
+#endif
+  DLOG(INFO) << FROM_HERE.ToString();
   // Unsubscribe function can be called either when topic info is updated to
   // UNREGISTERED state or manually unregistration from the js side. If both
   // cases happens almost same time, one of them should be ignored.
@@ -63,28 +52,9 @@ void DynamicSubscriber::Unsubscribe(const std::string& topic,
 
   DCHECK(IsRegistered()) << register_state_.ToString();
 
-  register_state_.ToUnregistered();
+  register_state_.ToUnregistered(FROM_HERE);
 
-  subscriber_state_.ToStopping();
-  master_proxy.PostDelayedTask(
-      FROM_HERE,
-      ::base::BindOnce(&DynamicSubscriber::CheckIfStoppedAndCallback,
-                       ::base::Unretained(this), std::move(callback)),
-      settings_.period);
-}
-
-void DynamicSubscriber::CheckIfStoppedAndCallback(StatusOnceCallback callback) {
-  if (IsStopped()) {
-    std::move(callback).Run(Status::OK());
-    return;
-  }
-
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  master_proxy.PostDelayedTask(
-      FROM_HERE,
-      ::base::BindOnce(&DynamicSubscriber::CheckIfStoppedAndCallback,
-                       ::base::Unretained(this), std::move(callback)),
-      settings_.period);
+  StopMessageLoop(std::move(callback));
 }
 
 void DynamicSubscriber::ResetMessage(const TopicInfo& topic_info) {

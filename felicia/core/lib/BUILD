@@ -27,6 +27,7 @@ fel_cc_library(
         "base/choices.h",
         "base/export.h",
         "base/range.h",
+        "base/state.h",
         "base/task_runner_interface.h",
         "base/template_util.h",
         "containers/pool.h",

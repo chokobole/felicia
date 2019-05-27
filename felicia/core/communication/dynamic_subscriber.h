@@ -20,8 +20,6 @@ class DynamicSubscriber : public Subscriber<DynamicProtobufMessage> {
 
   void Unsubscribe(const std::string& topic, StatusOnceCallback callback);
 
-  void CheckIfStoppedAndCallback(StatusOnceCallback callback);
-
   const TopicInfo& topic_info() const { return topic_info_; }
 
  private:
