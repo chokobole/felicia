@@ -6,6 +6,7 @@
 
 #include "felicia/core/communication/settings.h"
 #include "felicia/core/felicia_init.h"
+#include "felicia/core/util/timestamp/timestamper.h"
 #include "felicia/python/command_line_interface/flag_py.h"
 #include "felicia/python/communication_py.h"
 #include "felicia/python/drivers/camera_py.h"
@@ -203,6 +204,14 @@ void AddGlobalObject(py::module& m) {
       .def_readwrite("is_dynamic_buffer",
                      &communication::Settings::is_dynamic_buffer)
       .def_readwrite("queue_size", &communication::Settings::queue_size);
+
+  py::class_<Timestamper>(m, "Timestamper")
+      .def(py::init<>())
+      .def("timestamp", &Timestamper::timestamp);
+
+  py::class_<ThreadSafeTimestamper>(m, "ThreadSafeTimestamper")
+      .def(py::init<>())
+      .def("timestamp", &ThreadSafeTimestamper::timestamp);
 }
 
 PYBIND11_MODULE(felicia_py, m) {

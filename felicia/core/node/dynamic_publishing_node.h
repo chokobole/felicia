@@ -34,7 +34,7 @@ class DynamicPublishingNode : public NodeLifecycle {
   void OnError(const Status& s) override;
 
   void RequestPublish(const std::string& topic_type, const std::string& topic,
-                      const ChannelDef& channel_def,
+                      int channel_defs,
                       const communication::Settings& settings);
 
   void RequestUnpublish(const std::string& topic);

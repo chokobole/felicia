@@ -17,7 +17,7 @@ UDPServerChannel::~UDPServerChannel() = default;
 
 bool UDPServerChannel::IsServer() const { return true; }
 
-StatusOr<ChannelSource> UDPServerChannel::Bind() {
+StatusOr<ChannelDef> UDPServerChannel::Bind() {
   auto server_socket = std::make_unique<::net::UDPSocket>(
       ::net::DatagramSocket::BindType::DEFAULT_BIND);
 
@@ -53,7 +53,7 @@ StatusOr<ChannelSource> UDPServerChannel::Bind() {
   multicast_ip_endpoint_ =
       ::net::IPEndPoint(multicast_address, net::PickRandomPort(false));
 
-  return ToChannelSource(multicast_ip_endpoint_, ChannelDef::UDP);
+  return ToChannelDef(multicast_ip_endpoint_, ChannelDef::UDP);
 }
 
 void UDPServerChannel::Write(char* buffer, int size,

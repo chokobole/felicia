@@ -29,13 +29,13 @@ class TCPChannel : public Channel<MessageTy> {
     return this->channel_->ToTCPChannelBase()->IsConnected();
   }
 
-  StatusOr<ChannelSource> Listen();
+  StatusOr<ChannelDef> Listen();
 
   void DoAcceptLoop(TCPServerChannel::AcceptCallback accept_callback);
 
   void AcceptOnce(TCPServerChannel::AcceptOnceCallback accept_once_callback);
 
-  void Connect(const ChannelSource& channel_source,
+  void Connect(const ChannelDef& channel_def,
                StatusOnceCallback callback) override;
 
  private:
@@ -57,7 +57,7 @@ bool TCPChannel<MessageTy>::HasReceivers() const {
 }
 
 template <typename MessageTy>
-StatusOr<ChannelSource> TCPChannel<MessageTy>::Listen() {
+StatusOr<ChannelDef> TCPChannel<MessageTy>::Listen() {
   DCHECK(!this->channel_);
   this->channel_ = std::make_unique<TCPServerChannel>();
   TCPServerChannel* server_channel =
@@ -84,12 +84,12 @@ void TCPChannel<MessageTy>::AcceptOnce(
 }
 
 template <typename MessageTy>
-void TCPChannel<MessageTy>::Connect(const ChannelSource& channel_source,
+void TCPChannel<MessageTy>::Connect(const ChannelDef& channel_def,
                                     StatusOnceCallback callback) {
   DCHECK(!this->channel_);
   DCHECK(!callback.is_null());
   ::net::IPEndPoint ip_endpoint;
-  bool ret = ToNetIPEndPoint(channel_source, &ip_endpoint);
+  bool ret = ToNetIPEndPoint(channel_def, &ip_endpoint);
   DCHECK(ret);
   this->channel_ = std::make_unique<TCPClientChannel>();
   this->channel_->ToTCPChannelBase()->ToTCPClientChannel()->Connect(

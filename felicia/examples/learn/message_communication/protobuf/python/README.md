@@ -78,8 +78,7 @@ class SimplePublishingNode(fel.NodeLifecycle):
     def __init__(self, topic, channel_type):
         super().__init__()
         self.topic = topic
-        self.channel_def = ChannelDef()
-        self.channel_def.type = ChannelDef.Type.Value(channel_type)
+        self.channel_def_type = ChannelDef.Type.Value(channel_type)
         ...
 
     def on_init(self):
@@ -107,9 +106,9 @@ def request_publish(self):
     settings = fel.Settings()
     settings.buffer_size = fel.Bytes.from_bytes(512)
 
-    self.publisher.request_publish(
-            self.node_info, self.topic, MessageSpec.DESCRIPTOR.full_name,
-            self.channel_def, settings, self.on_request_publish)
+    self.publisher.request_publish(self.node_info, self.topic, self.channel_def_type,
+                                   MessageSpec.DESCRIPTOR.full_name,
+                                   settings, self.on_request_publish)
 ```
 
 If request is successfully delivered to the server, then callback `on_request_publish(status)` will be called. Here simply we call `Publish` api every 1 second. But you can publish a topic whenever you want to.
@@ -155,7 +154,8 @@ def request_subscribe(self):
     settings = fel.Settings()
     settings.buffer_size = fel.Bytes.from_bytes(512)
 
-    self.subscriber.request_subscribe(self.node_info, self.topic, MessageSpec,
+    self.subscriber.request_subscribe(self.node_info, self.topic,
+                                      ChannelDef.TCP | ChannelDef.UDP, MessageSpec,
                                       self.on_message, self.on_subscription_error,
                                       settings, self.on_request_subscribe)
 ```

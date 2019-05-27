@@ -48,6 +48,7 @@ class Subscriber {
   ALWAYS_INLINE bool IsStopped() const { return subscriber_state_.IsStopped(); }
 
   void RequestSubscribe(const NodeInfo& node_info, const std::string& topic,
+                        int channel_types,
                         OnMessageCallback on_message_callback,
                         StatusCallback on_error_callback,
                         const communication::Settings& settings,
@@ -59,6 +60,7 @@ class Subscriber {
  protected:
   void OnSubscribeTopicAsync(SubscribeTopicRequest* request,
                              SubscribeTopicResponse* response,
+                             int channel_types,
                              OnMessageCallback on_message_callback,
                              StatusCallback on_error_callback,
                              const communication::Settings& settings,
@@ -87,7 +89,9 @@ class Subscriber {
   Pool<MessageTy, uint8_t> message_queue_;
   TopicInfo topic_info_;
   ::base::Optional<TopicInfo> topic_info_to_update_;
+  int channel_types_;
   std::unique_ptr<Channel<MessageTy>> channel_;
+  int channel_type_ = 0;
   OnMessageCallback on_message_callback_;
   StatusCallback on_error_callback_;
   StatusOnceCallback on_stopped_callback_;
@@ -104,7 +108,7 @@ class Subscriber {
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::RequestSubscribe(
-    const NodeInfo& node_info, const std::string& topic,
+    const NodeInfo& node_info, const std::string& topic, int channel_types,
     OnMessageCallback on_message_callback, StatusCallback on_error_callback,
     const communication::Settings& settings, StatusOnceCallback callback) {
   if (!IsUnregistered()) {
@@ -124,8 +128,9 @@ void Subscriber<MessageTy>::RequestSubscribe(
       request, response,
       ::base::BindOnce(&Subscriber<MessageTy>::OnSubscribeTopicAsync,
                        ::base::Unretained(this), ::base::Owned(request),
-                       ::base::Owned(response), on_message_callback,
-                       on_error_callback, settings, std::move(callback)),
+                       ::base::Owned(response), channel_types,
+                       on_message_callback, on_error_callback, settings,
+                       std::move(callback)),
       ::base::BindRepeating(&Subscriber<MessageTy>::OnFindPublisher,
                             ::base::Unretained(this)));
 }
@@ -158,9 +163,9 @@ void Subscriber<MessageTy>::RequestUnsubscribe(const NodeInfo& node_info,
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnSubscribeTopicAsync(
     SubscribeTopicRequest* request, SubscribeTopicResponse* response,
-    OnMessageCallback on_message_callback, StatusCallback on_error_callback,
-    const communication::Settings& settings, StatusOnceCallback callback,
-    const Status& s) {
+    int channel_types, OnMessageCallback on_message_callback,
+    StatusCallback on_error_callback, const communication::Settings& settings,
+    StatusOnceCallback callback, const Status& s) {
   if (!IsRegistering()) {
     std::move(callback).Run(register_state_.InvalidStateError());
     return;
@@ -172,6 +177,7 @@ void Subscriber<MessageTy>::OnSubscribeTopicAsync(
     return;
   }
 
+  channel_types_ = channel_types;
   on_message_callback_ = on_message_callback;
   on_error_callback_ = on_error_callback;
   settings_ = settings;
@@ -242,22 +248,36 @@ void Subscriber<MessageTy>::OnFindPublisher(const TopicInfo& topic_info) {
   // connects to publisher again using |topic_info_|.
   topic_info_ = topic_info;
 
+  channel_type_ = 1;
   ConnectToPublisher();
 }
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::ConnectToPublisher() {
-  channel_ = ChannelFactory::NewChannel<MessageTy>(
-      topic_info_.topic_source().channel_def());
-
-  if (settings_.is_dynamic_buffer) {
-    channel_->EnableDynamicBuffer();
-  } else {
-    channel_->SetReceiveBufferSize(settings_.buffer_size);
+  ChannelDef matched_channel_def;
+  while (channel_type_ <= channel_types_) {
+    if (channel_type_ & channel_types_) {
+      for (ChannelDef channel_def : topic_info_.topic_source().channel_defs()) {
+        if (channel_def.type() ==
+            static_cast<ChannelDef::Type>(channel_type_)) {
+          matched_channel_def = channel_def;
+          break;
+        }
+      }
+    }
+    channel_type_ <<= 1;
   }
 
+  if (matched_channel_def.type() == ChannelDef::NONE) {
+    on_error_callback_.Run(
+        errors::Unavailable("Failed to connect to publisher."));
+    return;
+  }
+
+  channel_ = ChannelFactory::NewChannel<MessageTy>(matched_channel_def.type());
+
   channel_->Connect(
-      topic_info_.topic_source(),
+      matched_channel_def,
       ::base::BindOnce(&Subscriber<MessageTy>::OnConnectToPublisher,
                        ::base::Unretained(this)));
 }
@@ -265,12 +285,17 @@ void Subscriber<MessageTy>::ConnectToPublisher() {
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
   if (s.ok()) {
+    if (settings_.is_dynamic_buffer) {
+      channel_->EnableDynamicBuffer();
+    } else {
+      channel_->SetReceiveBufferSize(settings_.buffer_size);
+    }
+
     StartMessageLoop();
   } else {
-    Status new_status(s.error_code(),
-                      ::base::StringPrintf("Failed to connect to publisher: %s",
-                                           s.error_message().c_str()));
-    on_error_callback_.Run(new_status);
+    LOG(ERROR) << "Failed to connect to publisher: " << s;
+    channel_type_ <<= 1;
+    ConnectToPublisher();
   }
 }
 
@@ -422,7 +447,9 @@ void Subscriber<MessageTy>::Stop() {
       TopicInfo topic_info = topic_info_to_update_.value();
       topic_info_to_update_.reset();
       OnFindPublisher(topic_info);
-    } else if (receive_message_failed_cnt_ >= kMaximumReceiveMessageFailedAllowed) {
+    } else if (receive_message_failed_cnt_ >=
+               kMaximumReceiveMessageFailedAllowed) {
+      channel_type_ = 1;
       ConnectToPublisher();
     }
   } else {

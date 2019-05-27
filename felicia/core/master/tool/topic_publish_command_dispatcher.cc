@@ -17,9 +17,7 @@ class DynamicPublisherDelegate : public DynamicPublishingNode::Delegate {
         topic_(topic),
         message_(message),
         delay_(::base::TimeDelta::FromMilliseconds(interval)) {
-    ChannelDef_Type type;
-    ChannelDef_Type_Parse(channel_type, &type);
-    channel_def_.set_type(type);
+    ChannelDef::Type_Parse(channel_type, &channel_type_);
   }
 
   void OnDidCreate(DynamicPublishingNode* node) override {
@@ -28,7 +26,7 @@ class DynamicPublisherDelegate : public DynamicPublishingNode::Delegate {
     communication::Settings settings;
     settings.is_dynamic_buffer = true;
 
-    node_->RequestPublish(message_type_, topic_, channel_def_, settings);
+    node_->RequestPublish(message_type_, topic_, channel_type_, settings);
   }
 
   void OnError(const Status& s) override { NOTREACHED() << s; }
@@ -57,7 +55,7 @@ class DynamicPublisherDelegate : public DynamicPublishingNode::Delegate {
  private:
   std::string message_type_;
   std::string topic_;
-  ChannelDef channel_def_;
+  ChannelDef::Type channel_type_;
   std::string message_;
   ::base::TimeDelta delay_;
   DynamicPublishingNode* node_;

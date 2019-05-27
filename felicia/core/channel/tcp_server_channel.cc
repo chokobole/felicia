@@ -29,7 +29,7 @@ bool TCPServerChannel::IsConnected() const {
   return false;
 }
 
-StatusOr<ChannelSource> TCPServerChannel::Listen() {
+StatusOr<ChannelDef> TCPServerChannel::Listen() {
   auto server_socket = std::make_unique<::net::TCPSocket>(nullptr);
 
   int rv = server_socket->Open(::net::ADDRESS_FAMILY_IPV4);
@@ -57,7 +57,7 @@ StatusOr<ChannelSource> TCPServerChannel::Listen() {
 
   socket_ = std::move(server_socket);
 
-  return ToChannelSource(
+  return ToChannelDef(
       ::net::IPEndPoint(net::HostIPAddress(net::HOST_IP_ONLY_ALLOW_IPV4), port),
       ChannelDef::TCP);
 }

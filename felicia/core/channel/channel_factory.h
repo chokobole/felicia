@@ -15,11 +15,11 @@ class ChannelFactory {
  public:
   template <typename MessageTy>
   static std::unique_ptr<Channel<MessageTy>> NewChannel(
-      const ChannelDef& channel_def) {
+      ChannelDef::Type channel_type) {
     std::unique_ptr<Channel<MessageTy>> channel;
-    if (channel_def.type() == ChannelDef::TCP) {
+    if (channel_type == ChannelDef::TCP) {
       channel = std::make_unique<TCPChannel<MessageTy>>();
-    } else if (channel_def.type() == ChannelDef::UDP) {
+    } else if (channel_type == ChannelDef::UDP) {
       channel = std::make_unique<UDPChannel<MessageTy>>();
     }
 

@@ -17,13 +17,13 @@ void DynamicPublishingNode::OnError(const Status& s) {
 }
 
 void DynamicPublishingNode::RequestPublish(
-    const std::string& message_type, const std::string& topic,
-    const ChannelDef& channel_def, const communication::Settings& settings) {
+    const std::string& message_type, const std::string& topic, int channel_defs,
+    const communication::Settings& settings) {
   publisher_ = std::make_unique<DynamicPublisher>();
   publisher_->ResetMessage(message_type);
 
   publisher_->RequestPublish(
-      node_info_, topic, channel_def, settings,
+      node_info_, topic, channel_defs, settings,
       ::base::BindOnce(&DynamicPublishingNode::OnRequestPublish,
                        ::base::Unretained(this)));
 }

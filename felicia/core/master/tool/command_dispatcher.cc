@@ -106,10 +106,12 @@ void CommandDispatcher::OnListClientsAsync(ListClientsRequest* request,
     writer.SetElement(row, 0, ::base::NumberToString(client_info.id()));
     const ChannelSource& hbs_channel_source =
         client_info.heart_beat_signaller_source();
-    writer.SetElement(row, 1, ChannelSourceToString(hbs_channel_source));
+    writer.SetElement(row, 1,
+                      EndPointToString(hbs_channel_source.channel_defs(0)));
     const ChannelSource& tiw_channel_source =
         client_info.topic_info_watcher_source();
-    writer.SetElement(row, 2, ChannelSourceToString(tiw_channel_source));
+    writer.SetElement(row, 2,
+                      EndPointToString(tiw_channel_source.channel_defs(0)));
     row++;
   }
 
@@ -269,13 +271,14 @@ void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
             .Build();
     size_t row = 0;
     for (auto& topic_info : topic_infos) {
-      writer.SetElement(row, 0, topic_info.topic());
-      writer.SetElement(row, 1, topic_info.type_name());
       const ChannelSource& channel_source = topic_info.topic_source();
-      writer.SetElement(
-          row, 2, ChannelDef_Type_Name(channel_source.channel_def().type()));
-      writer.SetElement(row, 3, ChannelSourceToString(channel_source));
-      row++;
+      for (auto& channel_def : channel_source.channel_defs()) {
+        writer.SetElement(row, 0, topic_info.topic());
+        writer.SetElement(row, 1, topic_info.type_name());
+        writer.SetElement(row, 2, ChannelDef::Type_Name(channel_def.type()));
+        writer.SetElement(row, 3, EndPointToString(channel_def));
+        row++;
+      }
     }
 
     std::cout << writer.ToString() << std::endl;
@@ -291,13 +294,10 @@ void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
     std::cout << ::base::StringPrintf(
                      "TYPE: %s\n"
                      "FORMAT: %s\n"
-                     "PROTOCOL: %s\n"
-                     "END_POINT: %s\n",
+                     "CHANNEL_SOURCE: %s\n",
                      topic_info.type_name().c_str(),
                      message->GetDescriptor()->DebugString().c_str(),
-                     ChannelDef_Type_Name(channel_source.channel_def().type())
-                         .c_str(),
-                     ChannelSourceToString(channel_source).c_str())
+                     channel_source.DebugString().c_str())
               << std::endl;
   }
 }

@@ -46,12 +46,16 @@ void HeartBeatListener::StartCheckHeartBeat() {
     g_heart_beat_duration = GetHeartBeatDuration();
   }
 
+  DCHECK_EQ(client_info_.heart_beat_signaller_source().channel_defs_size(), 1);
+  DCHECK_EQ(client_info_.heart_beat_signaller_source().channel_defs(0).type(),
+            ChannelDef::TCP);
+
   channel_ = ChannelFactory::NewChannel<HeartBeat>(
-      client_info_.heart_beat_signaller_source().channel_def());
+      client_info_.heart_beat_signaller_source().channel_defs(0).type());
 
   channel_->SetReceiveBufferSize(kHeartBeatBytes);
 
-  channel_->Connect(client_info_.heart_beat_signaller_source(),
+  channel_->Connect(client_info_.heart_beat_signaller_source().channel_defs(0),
                     ::base::BindOnce(&HeartBeatListener::DoCheckHeartBeat,
                                      ::base::Unretained(this)));
 }

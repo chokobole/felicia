@@ -2,21 +2,22 @@ syntax = "proto3";
 
 package felicia;
 
-message ChannelDef {
-  enum Type {
-    TCP = 0; // Default
-    UDP = 1;
-  }
-
-  Type type = 1;
-}
-
 message IPEndPoint {
   string ip = 1;
   uint32 port = 2;
 }
 
-message ChannelSource {
-  ChannelDef channel_def = 1;
+message ChannelDef {
+  enum Type {
+    NONE = 0; // Default
+    TCP = 1;
+    UDP = 2;
+  }
+
+  Type type = 1;
   IPEndPoint ip_endpoint = 2;
+}
+
+message ChannelSource {
+  repeated ChannelDef channel_defs = 1;
 }

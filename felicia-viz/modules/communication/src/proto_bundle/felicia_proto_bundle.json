@@ -2,22 +2,6 @@
   "nested": {
     "felicia": {
       "nested": {
-        "ChannelDef": {
-          "fields": {
-            "type": {
-              "type": "Type",
-              "id": 1
-            }
-          },
-          "nested": {
-            "Type": {
-              "values": {
-                "TCP": 0,
-                "UDP": 1
-              }
-            }
-          }
-        },
         "IPEndPoint": {
           "fields": {
             "ip": {
@@ -30,15 +14,33 @@
             }
           }
         },
-        "ChannelSource": {
+        "ChannelDef": {
           "fields": {
-            "channelDef": {
-              "type": "ChannelDef",
+            "type": {
+              "type": "Type",
               "id": 1
             },
             "ipEndpoint": {
               "type": "IPEndPoint",
               "id": 2
+            }
+          },
+          "nested": {
+            "Type": {
+              "values": {
+                "NONE": 0,
+                "TCP": 1,
+                "UDP": 2
+              }
+            }
+          }
+        },
+        "ChannelSource": {
+          "fields": {
+            "channelDefs": {
+              "rule": "repeated",
+              "type": "ChannelDef",
+              "id": 1
             }
           }
         },

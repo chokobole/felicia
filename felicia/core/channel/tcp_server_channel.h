@@ -30,7 +30,7 @@ class EXPORT TCPServerChannel : public TCPChannelBase {
 
   bool IsConnected() const override;
 
-  StatusOr<ChannelSource> Listen();
+  StatusOr<ChannelDef> Listen();
 
   void DoAcceptLoop(AcceptCallback callback);
 

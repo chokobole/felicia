@@ -81,11 +81,7 @@ class SimplePublishingNode: public NodeLifecycle {
   SimplePublishingNode(const std::string& topic,
                        const std::string& channel_type)
       : topic_(topic) {
-    if (channel_type.compare("TCP") == 0) {
-      channel_def_.set_type(ChannelDef::TCP);
-    } else if (channel_type.compare("UDP") == 0) {
-      channel_def_.set_type(ChannelDef::UDP);
-    }
+    ChannelDef::Type_Parse(channel_type, &channel_type_);
   }
 
   void OnInit() override {
@@ -122,7 +118,7 @@ void RequestPublish() {
   settings.buffer_size = Bytes::FromBytes(512);
 
   publisher_.RequestPublish(
-        node_info_, topic_, channel_def_, settings,
+        node_info_, topic_, channel_type_, settings,
         ::base::BindOnce(&SimplePublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
 }
@@ -140,9 +136,9 @@ void OnRequestPublish(const Status& s) {
 }
 
 void RepeatingPublish() {
-  publisher_.Publish(GenerateMessage(), ::base::BindOnce(::base::BindOnce(
-                                            &SimplePublishingNode::OnPublish,
-                                            ::base::Unretained(this))));
+  publisher_.Publish(GenerateMessage(),
+                     ::base::BindOnce(&SimplePublishingNode::OnPublish,
+                                      ::base::Unretained(this)));
 
   if (!publisher_.IsUnregistered()) {
     MasterProxy& master_proxy = MasterProxy::GetInstance();
@@ -187,7 +183,7 @@ void RequestSubscribe() {
   settings.buffer_size = Bytes::FromBytes(512);
 
   subscriber_.RequestSubscribe(
-      node_info_, topic_,
+      node_info_, topic_, ChannelDef::TCP | ChannelDef::UDP,
       ::base::BindRepeating(&SimpleSubscribingNode::OnMessage,
                             ::base::Unretained(this)),
       ::base::BindRepeating(&SimpleSubscribingNode::OnSubscriptionError,

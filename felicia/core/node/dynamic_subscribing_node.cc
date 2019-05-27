@@ -45,7 +45,7 @@ void DynamicSubscribingNode::RequestSubscribe(
   auto subscriber = std::make_unique<DynamicSubscriber>();
 
   subscriber->RequestSubscribe(
-      node_info_, topic,
+      node_info_, topic, ChannelDef::TCP | ChannelDef::UDP,
       ::base::BindRepeating(
           &DynamicSubscribingNode::OneTopicDelegate::OnNewMessage,
           ::base::Unretained(one_topic_delegate_.get())),
@@ -129,9 +129,8 @@ void DynamicSubscribingNode::UpdateTopicInfo(const TopicInfo& topic_info) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(
-        FROM_HERE,
-        ::base::BindOnce(&DynamicSubscribingNode::UpdateTopicInfo,
-                         ::base::Unretained(this), topic_info));
+        FROM_HERE, ::base::BindOnce(&DynamicSubscribingNode::UpdateTopicInfo,
+                                    ::base::Unretained(this), topic_info));
     return;
   }
 

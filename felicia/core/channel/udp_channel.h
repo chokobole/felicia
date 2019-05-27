@@ -26,21 +26,21 @@ class UDPChannel : public Channel<MessageTy> {
 
   bool IsUDPChannel() const override { return true; }
 
-  StatusOr<ChannelSource> Bind();
+  StatusOr<ChannelDef> Bind();
 
-  void Connect(const ChannelSource& channel_source,
+  void Connect(const ChannelDef& channel_def,
                StatusOnceCallback callback) override;
 
   void SetSendBufferSize(Bytes bytes) override {
     if (bytes > kMaximumBufferSize) {
-      LOG(ERROR) << "UDP buffer can't exceed " << bytes << "Bytes";
+      LOG(ERROR) << "UDP buffer can't exceed " << bytes;
       bytes = kMaximumBufferSize;
     }
     this->send_buffer_.resize(bytes.bytes());
   }
   void SetReceiveBufferSize(Bytes bytes) override {
     if (bytes > kMaximumBufferSize) {
-      LOG(ERROR) << "UDP buffer can't exceed " << bytes << "Bytes";
+      LOG(ERROR) << "UDP buffer can't exceed " << bytes;
       bytes = kMaximumBufferSize;
     }
     this->receive_buffer_.resize(bytes.bytes());
@@ -57,19 +57,19 @@ template <typename MessageTy>
 UDPChannel<MessageTy>::~UDPChannel() {}
 
 template <typename MessageTy>
-StatusOr<ChannelSource> UDPChannel<MessageTy>::Bind() {
+StatusOr<ChannelDef> UDPChannel<MessageTy>::Bind() {
   DCHECK(!this->channel_);
   this->channel_ = std::make_unique<UDPServerChannel>();
   return this->channel_->ToUDPChannelBase()->ToUDPServerChannel()->Bind();
 }
 
 template <typename MessageTy>
-void UDPChannel<MessageTy>::Connect(const ChannelSource& channel_source,
+void UDPChannel<MessageTy>::Connect(const ChannelDef& channel_def,
                                     StatusOnceCallback callback) {
   DCHECK(!this->channel_);
   DCHECK(!callback.is_null());
   ::net::IPEndPoint ip_endpoint;
-  bool ret = ToNetIPEndPoint(channel_source, &ip_endpoint);
+  bool ret = ToNetIPEndPoint(channel_def, &ip_endpoint);
   DCHECK(ret);
   this->channel_ = std::make_unique<UDPClientChannel>();
   this->channel_->ToUDPChannelBase()->ToUDPClientChannel()->Connect(

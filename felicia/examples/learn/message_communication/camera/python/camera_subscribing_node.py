@@ -1,5 +1,5 @@
 import felicia_py as fel
-
+from felicia.core.protobuf.channel_pb2 import ChannelDef
 from felicia.drivers.camera.camera_frame_message_pb2 import CameraFrameMessage
 
 
@@ -26,9 +26,10 @@ class CameraSubscribingNode(fel.NodeLifecycle):
         settings.period = fel.TimeDelta.from_milliseconds(100)
         settings.is_dynamic_buffer = True
 
-        self.subscriber.request_subscribe(self.node_info, self.topic, CameraFrameMessage,
-                                          self.on_message, self.on_subscription_error,
-                                          settings, self.on_request_subscribe)
+        self.subscriber.request_subscribe(self.node_info, self.topic, ChannelDef.TCP,
+                                          CameraFrameMessage, self.on_message,
+                                          self.on_subscription_error, settings,
+                                          self.on_request_subscribe)
 
         # fel.MasterProxy.post_delayed_task(
         #         self.request_unsubscribe, fel.from_seconds(10))

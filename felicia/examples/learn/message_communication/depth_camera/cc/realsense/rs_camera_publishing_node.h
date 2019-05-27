@@ -44,25 +44,23 @@ class RsCameraPublishingNode : public NodeLifecycle {
   }
 
   void RequestPublish() {
-    ChannelDef channel_def;
-
     communication::Settings settings;
     settings.queue_size = 1;
     settings.is_dynamic_buffer = true;
 
     color_publisher_.RequestPublish(
-        node_info_, color_topic_, channel_def, settings,
+        node_info_, color_topic_, ChannelDef::TCP, settings,
         ::base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
 
     depth_publisher_.RequestPublish(
-        node_info_, depth_topic_, channel_def, settings,
+        node_info_, depth_topic_, ChannelDef::TCP, settings,
         ::base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
 
     if (!imu_topic_.empty()) {
       imu_publisher_.RequestPublish(
-          node_info_, imu_topic_, channel_def, settings,
+          node_info_, imu_topic_, ChannelDef::TCP, settings,
           ::base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
                            ::base::Unretained(this)));
     }

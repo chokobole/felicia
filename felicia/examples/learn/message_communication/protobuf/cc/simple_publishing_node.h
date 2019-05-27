@@ -16,9 +16,7 @@ class SimplePublishingNode : public NodeLifecycle {
   SimplePublishingNode(const std::string& topic,
                        const std::string& channel_type)
       : topic_(topic) {
-    ChannelDef_Type type;
-    ChannelDef_Type_Parse(channel_type, &type);
-    channel_def_.set_type(type);
+    ChannelDef::Type_Parse(channel_type, &channel_type_);
   }
 
   void OnInit() override {
@@ -48,7 +46,7 @@ class SimplePublishingNode : public NodeLifecycle {
     settings.buffer_size = Bytes::FromBytes(512);
 
     publisher_.RequestPublish(
-        node_info_, topic_, channel_def_, settings,
+        node_info_, topic_, channel_type_, settings,
         ::base::BindOnce(&SimplePublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
   }
@@ -104,7 +102,7 @@ class SimplePublishingNode : public NodeLifecycle {
  private:
   NodeInfo node_info_;
   std::string topic_;
-  ChannelDef channel_def_;
+  ChannelDef::Type channel_type_;
   Publisher<MessageSpec> publisher_;
   Timestamper timestamper_;
 };

@@ -78,8 +78,12 @@ class MasterTest : public ::testing::Test {
       : master_(NewMasterForTesting()),
         publishing_node_name_("publisher"),
         subscribing_node_name_("subscriber"),
-        topic_("topic"),
-        topic_source_(PickRandomChannelSource(ChannelDef::TCP)) {}
+        topic_("topic") {
+    ChannelDef channel_def;
+    channel_def.set_type(ChannelDef::TCP);
+    FillChannelDef(&channel_def);
+    *topic_source_.add_channel_defs() = channel_def;
+  }
 
   void SetUp() override {
     ClientInfo client_info;
@@ -328,8 +332,10 @@ TEST_F(MasterTest, PublishTopic) {
                        topic_info->topic_source()));
 
   topic_info->set_topic(topic_);
-  *topic_info->mutable_topic_source() =
-      PickRandomChannelSource(ChannelDef::TCP);
+  ChannelDef channel_def;
+  channel_def.set_type(ChannelDef::TCP);
+  FillChannelDef(&channel_def);
+  *topic_info->mutable_topic_source()->add_channel_defs() = channel_def;
 
   master_->PublishTopic(
       request.get(), response.get(),
@@ -439,7 +445,10 @@ TEST_F(MasterTest, ListTopics) {
   std::string topic = "test2";
   TopicInfo topic_info;
   topic_info.set_topic(topic);
-  *topic_info.mutable_topic_source() = PickRandomChannelSource(ChannelDef::TCP);
+  ChannelDef channel_def;
+  channel_def.set_type(ChannelDef::TCP);
+  FillChannelDef(&channel_def);
+  *topic_info.mutable_topic_source()->add_channel_defs() = channel_def;
   PublishTopicForTesting(topic_info);
   topic_filter->Clear();
   topic_filter->set_topic(topic);

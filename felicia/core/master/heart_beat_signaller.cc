@@ -25,15 +25,13 @@ void HeartBeatSignaller::Start() {
     g_heart_beat_duration = GetHeartBeatDuration();
   }
 
-  ChannelDef channel_def;
-  channel_def.set_type(ChannelDef::TCP);
-  channel_ = ChannelFactory::NewChannel<HeartBeat>(channel_def);
+  channel_ = ChannelFactory::NewChannel<HeartBeat>(ChannelDef::TCP);
 
   channel_->SetSendBufferSize(kHeartBeatBytes);
 
   TCPChannel<HeartBeat>* tcp_channel = channel_->ToTCPChannel();
   auto status_or = tcp_channel->Listen();
-  channel_source_ = status_or.ValueOrDie();
+  *channel_source_.add_channel_defs() = status_or.ValueOrDie();
   DoAccept();
 }
 

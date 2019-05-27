@@ -46,7 +46,7 @@ class Channel {
     return reinterpret_cast<UDPChannel<MessageTy>*>(this);
   }
 
-  virtual void Connect(const ChannelSource& channel_source,
+  virtual void Connect(const ChannelDef& channel_def,
                        StatusOnceCallback callback) = 0;
 
   void SendMessage(const MessageTy& message, StatusOnceCallback callback);
@@ -250,21 +250,28 @@ void Channel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
 
 // Convert ChannelSource |channel_source| to ::net::IPEndPoint,
 // Retures true if succeeded.
-EXPORT bool ToNetIPEndPoint(const ChannelSource& channel_source,
+EXPORT bool ToNetIPEndPoint(const ChannelDef& channel_source,
                             ::net::IPEndPoint* ip_endpoint);
 
-// Convert ::net::IPEndPoint |ip_endpoint| to ChannelSource
-EXPORT ChannelSource ToChannelSource(const ::net::IPEndPoint& ip_endpoint,
-                                     ChannelDef_Type type);
+// Create ChannelDef from |ip_endpoint| and |type|
+EXPORT ChannelDef ToChannelDef(const ::net::IPEndPoint& ip_endpoint,
+                               ChannelDef::Type type);
 
-// Convert ChannelDef |channel_source| to std::string
-EXPORT std::string ChannelSourceToString(const ChannelSource& channel_source);
+// Convert EndPoint of |channel_def| to std::string
+EXPORT std::string EndPointToString(const ChannelDef& channel_def);
 
-// Randomly pick channel source.
-EXPORT ChannelSource PickRandomChannelSource(ChannelDef_Type type);
+// Fill channel def with randomly picked port.
+EXPORT void FillChannelDef(ChannelDef* channel_def);
+
+// Check if |channel_def| is a valid. Returns true if so.
+EXPORT bool IsValidChannelDef(const ChannelDef& channel_def);
 
 // Check if |channel_source| is a valid. Returns true if so.
 EXPORT bool IsValidChannelSource(const ChannelSource& channel_source);
+
+// Check if |c| and |c2| are same. Returns true if so. Return false if
+// either |c| or |c2| is invalid or they are not same.
+EXPORT bool IsSameChannelDef(const ChannelDef& c, const ChannelDef& c2);
 
 // Check if |c| and |c2| are same. Returns true if so. Return false if
 // either |c| or |c2| is invalid or they are not same.

@@ -496,25 +496,28 @@ void JsMasterProxy::SubscribeTopic(const ::Napi::CallbackInfo& info) {
     ::Napi::Object topicSource =
         static_cast<::Napi::Value>(obj["topicSource"]).As<::Napi::Object>();
     ChannelSource* channel_source = topic_info.mutable_topic_source();
-    ::Napi::Object channelDef =
-        static_cast<::Napi::Value>(topicSource["channelDef"])
-            .As<::Napi::Object>();
-    channel_source->mutable_channel_def()->set_type(
-        static_cast<ChannelDef_Type>(
-            static_cast<::Napi::Value>(channelDef["type"])
-                .As<::Napi::Number>()
-                .Int32Value()));
-
-    ::Napi::Object ipEndpoint =
-        static_cast<::Napi::Value>(topicSource["ipEndpoint"])
-            .As<::Napi::Object>();
-    IPEndPoint* ip_endpoint = channel_source->mutable_ip_endpoint();
-    ip_endpoint->set_ip(static_cast<::Napi::Value>(ipEndpoint["ip"])
-                            .As<::Napi::String>()
-                            .Utf8Value());
-    ip_endpoint->set_port(static_cast<::Napi::Value>(ipEndpoint["port"])
-                              .As<::Napi::Number>()
-                              .Uint32Value());
+    ::Napi::Array channelDefs =
+        static_cast<::Napi::Value>(topicSource["channelDefs"])
+            .As<::Napi::Array>();
+    for (size_t i = 0; i < channelDefs.Length(); ++i) {
+      ChannelDef* channel_def = channel_source->add_channel_defs();
+      ::Napi::Object channelDef =
+          static_cast<::Napi::Value>(channelDefs[i]).As<::Napi::Object>();
+      channel_def->set_type(static_cast<ChannelDef::Type>(
+          static_cast<::Napi::Value>(channelDef["type"])
+              .As<::Napi::Number>()
+              .Int32Value()));
+      ::Napi::Object ipEndpoint =
+          static_cast<::Napi::Value>(channelDef["ipEndpoint"])
+              .As<::Napi::Object>();
+      IPEndPoint* ip_endpoint = channel_def->mutable_ip_endpoint();
+      ip_endpoint->set_ip(static_cast<::Napi::Value>(ipEndpoint["ip"])
+                              .As<::Napi::String>()
+                              .Utf8Value());
+      ip_endpoint->set_port(static_cast<::Napi::Value>(ipEndpoint["port"])
+                                .As<::Napi::Number>()
+                                .Uint32Value());
+    }
 
     on_new_message = ::Napi::Persistent(info[1].As<::Napi::Function>());
     on_subscription_error = ::Napi::Persistent(info[2].As<::Napi::Function>());

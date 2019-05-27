@@ -12,7 +12,8 @@ namespace felicia {
 // Used by single thread task which needs timestamp.
 class EXPORT Timestamper {
  public:
-  virtual ~Timestamper();
+  Timestamper();
+  ~Timestamper();
 
   ::base::TimeDelta timestamp();
 
@@ -24,6 +25,9 @@ class EXPORT Timestamper {
 // set |base_time_in_ms_|.
 class EXPORT ThreadSafeTimestamper {
  public:
+  ThreadSafeTimestamper();
+  ~ThreadSafeTimestamper();
+
   ::base::TimeDelta timestamp();
 
  private:

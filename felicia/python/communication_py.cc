@@ -47,13 +47,13 @@ void AddCommunication(py::module& m) {
       .def("is_unregistered", &DynamicPublisher::IsUnregistered)
       .def("request_publish",
            [](DynamicPublisher& self, const NodeInfo& node_info,
-              const std::string& topic, const std::string message_type,
-              const ChannelDef& channel_def,
+              const std::string& topic, int channel_types,
+              const std::string message_type,
               const communication::Settings& settings, py::function callback) {
              self.ResetMessage(message_type);
 
              return self.RequestPublish(
-                 node_info, topic, channel_def, settings,
+                 node_info, topic, channel_types, settings,
                  ::base::BindOnce(
                      &PyStatusCallback::Invoke,
                      ::base::Owned(new PyStatusCallback(callback))));
@@ -94,11 +94,12 @@ void AddCommunication(py::module& m) {
       .def("is_stopped", &DynamicSubscriber::IsStopped)
       .def("request_subscribe",
            [](DynamicSubscriber& self, const NodeInfo& node_info,
-              const std::string& topic, py::object mesage_prototype,
-              py::function on_message_callback, py::function on_error_callback,
+              const std::string& topic, int channel_types,
+              py::object mesage_prototype, py::function on_message_callback,
+              py::function on_error_callback,
               const communication::Settings& settings, py::function callback) {
              return self.RequestSubscribe(
-                 node_info, topic,
+                 node_info, topic, channel_types,
                  ::base::BindRepeating(
                      &PyMessageCallback::Invoke,
                      ::base::Owned(new PyMessageCallback(mesage_prototype,

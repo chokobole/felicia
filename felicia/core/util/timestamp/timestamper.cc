@@ -2,6 +2,8 @@
 
 namespace felicia {
 
+Timestamper::Timestamper() = default;
+
 Timestamper::~Timestamper() = default;
 
 ::base::TimeDelta Timestamper::timestamp() {
@@ -12,6 +14,10 @@ Timestamper::~Timestamper() = default;
 
   return now - base_time_ref_;
 }
+
+ThreadSafeTimestamper::ThreadSafeTimestamper() = default;
+
+ThreadSafeTimestamper::~ThreadSafeTimestamper() = default;
 
 ::base::TimeDelta ThreadSafeTimestamper::timestamp() {
   int64_t placeholder_zero = 0;

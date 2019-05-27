@@ -8,10 +8,10 @@ class SimplePublishingNode(fel.NodeLifecycle):
     def __init__(self, topic, channel_type):
         super().__init__()
         self.topic = topic
-        self.channel_def = ChannelDef()
-        self.channel_def.type = ChannelDef.Type.Value(channel_type)
+        self.channel_def_type = ChannelDef.Type.Value(channel_type)
         self.publisher = fel.Publisher()
         self.message_id = 0
+        self.timestamper = fel.Timestamper()
 
     def on_init(self):
         print("SimplePublishingNode.on_init()")
@@ -32,9 +32,9 @@ class SimplePublishingNode(fel.NodeLifecycle):
         settings = fel.Settings()
         settings.buffer_size = fel.Bytes.from_bytes(512)
 
-        self.publisher.request_publish(
-            self.node_info, self.topic, MessageSpec.DESCRIPTOR.full_name,
-            self.channel_def, settings, self.on_request_publish)
+        self.publisher.request_publish(self.node_info, self.topic, self.channel_def_type,
+                                       MessageSpec.DESCRIPTOR.full_name,
+                                       settings, self.on_request_publish)
 
     def on_request_publish(self, status):
         print("SimplePublishingNode.on_request_publish()")
@@ -54,8 +54,9 @@ class SimplePublishingNode(fel.NodeLifecycle):
 
     def generate_message(self):
         message_spec = MessageSpec()
+        timestamp = self.timestamper.timestamp()
         message_spec.id = self.message_id
-        message_spec.timestamp = fel.Time.now().to_double_t()
+        message_spec.timestamp = timestamp.in_microseconds()
         message_spec.content = "hello world"
         self.message_id += 1
         return message_spec

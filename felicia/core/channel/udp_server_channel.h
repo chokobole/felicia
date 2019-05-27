@@ -18,7 +18,7 @@ class EXPORT UDPServerChannel : public UDPChannelBase {
 
   bool IsServer() const override;
 
-  StatusOr<ChannelSource> Bind();
+  StatusOr<ChannelDef> Bind();
 
   void Write(char* buffer, int size, StatusOnceCallback callback) override;
   void Read(char* buffer, int size, StatusOnceCallback callback) override;

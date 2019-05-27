@@ -31,14 +31,12 @@ class CameraPublishingNode : public NodeLifecycle {
   }
 
   void RequestPublish() {
-    ChannelDef channel_def;
-
     communication::Settings settings;
     settings.queue_size = 1;
     settings.is_dynamic_buffer = true;
 
     publisher_.RequestPublish(
-        node_info_, topic_, channel_def, settings,
+        node_info_, topic_, ChannelDef::TCP, settings,
         ::base::BindOnce(&CameraPublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
   }

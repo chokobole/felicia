@@ -29,15 +29,13 @@ class CameraPublishingNode(fel.NodeLifecycle):
         fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
     def request_publish(self):
-        channel_def = ChannelDef()
-
         settings = fel.Settings()
         settings.queue_size = 1
         settings.is_dynamic_buffer = True
 
-        self.publisher.request_publish(
-            self.node_info, self.topic, CameraFrameMessage.DESCRIPTOR.full_name,
-            channel_def, settings, self.on_request_publish)
+        self.publisher.request_publish(self.node_info, self.topic, ChannelDef.TCP,
+                                       CameraFrameMessage.DESCRIPTOR.full_name,
+                                       settings, self.on_request_publish)
 
     def on_request_publish(self, status):
         print("CameraPublishingNode.on_request_publish()")

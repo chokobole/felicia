@@ -7,6 +7,7 @@
 #include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/compiler_specific.h"
+#include "third_party/chromium/base/containers/stack_container.h"
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
@@ -41,7 +42,7 @@ class Publisher {
   }
 
   void RequestPublish(const NodeInfo& node_info, const std::string& topic,
-                      const ChannelDef& channel_def,
+                      int channel_types,
                       const communication::Settings& settings,
                       StatusOnceCallback callback);
 
@@ -61,10 +62,9 @@ class Publisher {
                              UnpublishTopicResponse* response,
                              StatusOnceCallback callback, const Status& s);
 
-  StatusOr<ChannelSource> Setup(const ChannelDef& channel_def);
+  StatusOr<ChannelDef> Setup(Channel<MessageTy>* channel_def);
 
   void SendMesasge(StatusOnceCallback callback);
-  void DoAcceptLoop();
   void OnAccept(const Status& s);
 
   void Release();
@@ -77,7 +77,7 @@ class Publisher {
   }
 
   Pool<MessageTy, uint8_t> message_queue_;
-  std::unique_ptr<Channel<MessageTy>> channel_;
+  std::vector<std::unique_ptr<Channel<MessageTy>>> channels_;
 
   communication::RegisterState register_state_;
 
@@ -86,16 +86,15 @@ class Publisher {
 
 template <typename MessageTy>
 void Publisher<MessageTy>::RequestPublish(
-    const NodeInfo& node_info, const std::string& topic,
-    const ChannelDef& channel_def, const communication::Settings& settings,
-    StatusOnceCallback callback) {
+    const NodeInfo& node_info, const std::string& topic, int channel_types,
+    const communication::Settings& settings, StatusOnceCallback callback) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(
         FROM_HERE,
         ::base::BindOnce(&Publisher<MessageTy>::RequestPublish,
                          ::base::Unretained(this), node_info, topic,
-                         channel_def, settings, std::move(callback)));
+                         channel_types, settings, std::move(callback)));
     return;
   }
 
@@ -106,19 +105,33 @@ void Publisher<MessageTy>::RequestPublish(
 
   register_state_.ToRegistering(FROM_HERE);
 
-  StatusOr<ChannelSource> status_or = Setup(channel_def);
-  if (!status_or.ok()) {
-    std::move(callback).Run(status_or.status());
-    return;
+  ::base::StackVector<ChannelDef, ChannelDef::Type_ARRAYSIZE> channel_defs;
+  int channel_type = 1;
+  while (channel_type <= channel_types) {
+    if (channel_type & channel_types) {
+      auto channel = ChannelFactory::NewChannel<MessageTy>(
+          static_cast<ChannelDef::Type>(channel_type));
+      StatusOr<ChannelDef> status_or = Setup(channel.get());
+      if (!status_or.ok()) {
+        Release();
+        std::move(callback).Run(status_or.status());
+        return;
+      }
+      channel_defs->push_back(status_or.ValueOrDie());
+      channels_.push_back(std::move(channel));
+    }
+    channel_type <<= 1;
   }
-  DoAcceptLoop();
 
   PublishTopicRequest* request = new PublishTopicRequest();
   *request->mutable_node_info() = node_info;
   TopicInfo* topic_info = request->mutable_topic_info();
   topic_info->set_topic(topic);
   topic_info->set_type_name(GetMessageTypeName());
-  *topic_info->mutable_topic_source() = status_or.ValueOrDie();
+  ChannelSource* channel_source = topic_info->mutable_topic_source();
+  for (auto& channel_def : channel_defs) {
+    *channel_source->add_channel_defs() = channel_def;
+  }
   PublishTopicResponse* response = new PublishTopicResponse();
 
   master_proxy.PublishTopicAsync(
@@ -179,16 +192,15 @@ void Publisher<MessageTy>::RequestUnpublish(const NodeInfo& node_info,
 }
 
 template <typename MessageTy>
-StatusOr<ChannelSource> Publisher<MessageTy>::Setup(
-    const ChannelDef& channel_def) {
-  channel_ = ChannelFactory::NewChannel<MessageTy>(channel_def);
-
-  StatusOr<ChannelSource> status_or;
-  if (channel_->IsTCPChannel()) {
-    TCPChannel<MessageTy>* tcp_channel = channel_->ToTCPChannel();
+StatusOr<ChannelDef> Publisher<MessageTy>::Setup(Channel<MessageTy>* channel) {
+  StatusOr<ChannelDef> status_or;
+  if (channel->IsTCPChannel()) {
+    TCPChannel<MessageTy>* tcp_channel = channel->ToTCPChannel();
     status_or = tcp_channel->Listen();
-  } else if (channel_->IsUDPChannel()) {
-    UDPChannel<MessageTy>* udp_channel = channel_->ToUDPChannel();
+    tcp_channel->DoAcceptLoop(::base::BindRepeating(
+        [](const Status& s) { LOG_IF(ERROR, !s.ok()) << s.error_message(); }));
+  } else if (channel->IsUDPChannel()) {
+    UDPChannel<MessageTy>* udp_channel = channel->ToUDPChannel();
     status_or = udp_channel->Bind();
   }
 
@@ -212,10 +224,12 @@ void Publisher<MessageTy>::OnPublishTopicAsync(
   }
 
   message_queue_.set_capacity(settings.queue_size);
-  if (settings.is_dynamic_buffer) {
-    channel_->EnableDynamicBuffer();
-  } else {
-    channel_->SetSendBufferSize(settings.buffer_size);
+  for (auto& channel : channels_) {
+    if (settings.is_dynamic_buffer) {
+      channel->EnableDynamicBuffer();
+    } else {
+      channel->SetSendBufferSize(settings.buffer_size);
+    }
   }
 
   register_state_.ToRegistered(FROM_HERE);
@@ -246,13 +260,16 @@ void Publisher<MessageTy>::OnUnpublishTopicAsync(
 template <typename MessageTy>
 void Publisher<MessageTy>::SendMesasge(StatusOnceCallback callback) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!channel_->IsSendingMessage() && master_proxy.IsBoundToCurrentThread()) {
+  if (master_proxy.IsBoundToCurrentThread()) {
     if (!message_queue_.empty()) {
-      if (!channel_->HasReceivers()) return;
-
       MessageTy message = std::move(message_queue_.front());
       message_queue_.pop();
-      channel_->SendMessage(message, std::move(callback));
+
+      for (auto& channel : channels_) {
+        if (!channel->IsSendingMessage() && channel->HasReceivers()) {
+          channel->SendMessage(message, std::move(callback));
+        }
+      }
     }
   } else {
     master_proxy.PostTask(
@@ -260,23 +277,6 @@ void Publisher<MessageTy>::SendMesasge(StatusOnceCallback callback) {
         ::base::BindOnce(&Publisher<MessageTy>::SendMesasge,
                          ::base::Unretained(this), std::move(callback)));
   }
-}
-
-template <typename MessageTy>
-void Publisher<MessageTy>::DoAcceptLoop() {
-#if DCHECK_IS_ON()
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  DCHECK(master_proxy.IsBoundToCurrentThread());
-#endif
-  if (!channel_->IsTCPChannel()) return;
-
-  channel_->ToTCPChannel()->DoAcceptLoop(::base::BindRepeating(
-      &Publisher<MessageTy>::OnAccept, ::base::Unretained(this)));
-}
-
-template <typename MessageTy>
-void Publisher<MessageTy>::OnAccept(const Status& s) {
-  LOG_IF(ERROR, !s.ok()) << s.error_message();
 }
 
 template <typename MessageTy>
@@ -289,7 +289,9 @@ void Publisher<MessageTy>::Release() {
     return;
   }
 
-  channel_.reset();
+  for (auto& channel : channels_) {
+    channel.reset();
+  }
   message_queue_.clear();
 }
 

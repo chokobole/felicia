@@ -166,8 +166,23 @@ void TypeConvertor<::google::protobuf::Message>::ToNativeValue(
       return ::Napi::String::New(
           env, reflection->GetStringReference(message, field_desc, &scratch));
     }
-    case ::google::protobuf::FieldDescriptor::TYPE_MESSAGE:
+    case ::google::protobuf::FieldDescriptor::TYPE_MESSAGE: {
+      if (field_desc->is_repeated()) {
+        auto repeated_field_ref =
+            reflection->GetRepeatedFieldRef<::google::protobuf::Message>(
+                message, field_desc);
+        ::Napi::Array array =
+            ::Napi::Array::New(env, repeated_field_ref.size());
+        std::unique_ptr<::google::protobuf::Message> scratch_space(
+            repeated_field_ref.NewMessage());
+        for (int i = 0; i < repeated_field_ref.size(); ++i) {
+          array[i] =
+              ToJSObject(env, repeated_field_ref.Get(i, scratch_space.get()));
+        }
+        return array;
+      }
       return ToJSObject(env, reflection->GetMessage(message, field_desc));
+    }
     case ::google::protobuf::FieldDescriptor::TYPE_BYTES: {
       if (field_desc->is_repeated()) {
         auto repeated_field_ref =

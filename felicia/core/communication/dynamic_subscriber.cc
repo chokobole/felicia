@@ -18,6 +18,7 @@ void DynamicSubscriber::Subscribe(OnMessageCallback on_message_callback,
 
   register_state_.ToRegistered(FROM_HERE);
 
+  channel_types_ = ChannelDef::TCP | ChannelDef::UDP;
   on_message_callback_ = on_message_callback;
   on_error_callback_ = on_error_callback;
   settings_ = settings;

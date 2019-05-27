@@ -28,15 +28,13 @@ void TopicInfoWatcher::UnregisterAllTopicCallback() {
 
 void TopicInfoWatcher::Start() {
   DCHECK(!channel_);
-  ChannelDef channel_def;
-  channel_def.set_type(ChannelDef::TCP);
-  channel_ = ChannelFactory::NewChannel<TopicInfo>(channel_def);
+  channel_ = ChannelFactory::NewChannel<TopicInfo>(ChannelDef::TCP);
 
   channel_->SetReceiveBufferSize(kTopicInfoBytes);
 
   TCPChannel<TopicInfo>* tcp_channel = channel_->ToTCPChannel();
   auto status_or = tcp_channel->Listen();
-  channel_source_ = status_or.ValueOrDie();
+  *channel_source_.add_channel_defs() = status_or.ValueOrDie();
   DoAccept();
 }
 
