@@ -8,8 +8,8 @@
 #include "third_party/chromium/net/socket/udp_socket.h"
 
 #include "felicia/core/channel/channel.h"
-#include "felicia/core/channel/udp_client_channel.h"
-#include "felicia/core/channel/udp_server_channel.h"
+#include "felicia/core/channel/socket/udp_client_socket.h"
+#include "felicia/core/channel/socket/udp_server_socket.h"
 #include "felicia/core/lib/error/status.h"
 
 namespace felicia {
@@ -58,22 +58,25 @@ UDPChannel<MessageTy>::~UDPChannel() {}
 
 template <typename MessageTy>
 StatusOr<ChannelDef> UDPChannel<MessageTy>::Bind() {
-  DCHECK(!this->channel_);
-  this->channel_ = std::make_unique<UDPServerChannel>();
-  return this->channel_->ToUDPChannelBase()->ToUDPServerChannel()->Bind();
+  DCHECK(!this->channel_impl_);
+  this->channel_impl_ = std::make_unique<UDPServerSocket>();
+  UDPServerSocket* server_socket =
+      this->channel_impl_->ToSocket()->ToUDPSocket()->ToUDPServerSocket();
+  return server_socket->Bind();
 }
 
 template <typename MessageTy>
 void UDPChannel<MessageTy>::Connect(const ChannelDef& channel_def,
                                     StatusOnceCallback callback) {
-  DCHECK(!this->channel_);
+  DCHECK(!this->channel_impl_);
   DCHECK(!callback.is_null());
   ::net::IPEndPoint ip_endpoint;
   bool ret = ToNetIPEndPoint(channel_def, &ip_endpoint);
   DCHECK(ret);
-  this->channel_ = std::make_unique<UDPClientChannel>();
-  this->channel_->ToUDPChannelBase()->ToUDPClientChannel()->Connect(
-      ip_endpoint, std::move(callback));
+  this->channel_impl_ = std::make_unique<UDPClientSocket>();
+  UDPClientSocket* client_socket =
+      this->channel_impl_->ToSocket()->ToUDPSocket()->ToUDPClientSocket();
+  client_socket->Connect(ip_endpoint, std::move(callback));
 }
 
 }  // namespace felicia

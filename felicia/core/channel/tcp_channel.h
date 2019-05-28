@@ -8,8 +8,8 @@
 #include "third_party/chromium/net/base/ip_endpoint.h"
 
 #include "felicia/core/channel/channel.h"
-#include "felicia/core/channel/tcp_client_channel.h"
-#include "felicia/core/channel/tcp_server_channel.h"
+#include "felicia/core/channel/socket/tcp_client_socket.h"
+#include "felicia/core/channel/socket/tcp_server_socket.h"
 #include "felicia/core/lib/error/status.h"
 
 namespace felicia {
@@ -25,15 +25,15 @@ class TCPChannel : public Channel<MessageTy> {
   bool HasReceivers() const override;
 
   bool IsConnected() const {
-    DCHECK(this->channel_);
-    return this->channel_->ToTCPChannelBase()->IsConnected();
+    DCHECK(this->channel_impl_);
+    return this->channel_impl_->ToSocket()->ToTCPSocket()->IsConnected();
   }
 
   StatusOr<ChannelDef> Listen();
 
-  void DoAcceptLoop(TCPServerChannel::AcceptCallback accept_callback);
+  void DoAcceptLoop(TCPServerSocket::AcceptCallback accept_callback);
 
-  void AcceptOnce(TCPServerChannel::AcceptOnceCallback accept_once_callback);
+  void AcceptOnce(TCPServerSocket::AcceptOnceCallback accept_once_callback);
 
   void Connect(const ChannelDef& channel_def,
                StatusOnceCallback callback) override;
@@ -50,50 +50,52 @@ TCPChannel<MessageTy>::~TCPChannel() = default;
 
 template <typename MessageTy>
 bool TCPChannel<MessageTy>::HasReceivers() const {
-  DCHECK(this->channel_);
-  TCPServerChannel* server_channel =
-      this->channel_->ToTCPChannelBase()->ToTCPServerChannel();
-  return server_channel->accepted_sockets().size() > 0;
+  DCHECK(this->channel_impl_);
+  TCPServerSocket* server_socket =
+      this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPServerSocket();
+  return server_socket->accepted_sockets().size() > 0;
 }
 
 template <typename MessageTy>
 StatusOr<ChannelDef> TCPChannel<MessageTy>::Listen() {
-  DCHECK(!this->channel_);
-  this->channel_ = std::make_unique<TCPServerChannel>();
-  TCPServerChannel* server_channel =
-      this->channel_->ToTCPChannelBase()->ToTCPServerChannel();
-  return server_channel->Listen();
+  DCHECK(!this->channel_impl_);
+  this->channel_impl_ = std::make_unique<TCPServerSocket>();
+  TCPServerSocket* server_socket =
+      this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPServerSocket();
+  return server_socket->Listen();
 }
 
 template <typename MessageTy>
 void TCPChannel<MessageTy>::DoAcceptLoop(
-    TCPServerChannel::AcceptCallback accept_callback) {
-  DCHECK(this->channel_);
+    TCPServerSocket::AcceptCallback accept_callback) {
+  DCHECK(this->channel_impl_);
   DCHECK(!accept_callback.is_null());
-  this->channel_->ToTCPChannelBase()->ToTCPServerChannel()->DoAcceptLoop(
-      accept_callback);
+  TCPServerSocket* server_socket =
+      this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPServerSocket();
+  server_socket->DoAcceptLoop(accept_callback);
 }
 
 template <typename MessageTy>
 void TCPChannel<MessageTy>::AcceptOnce(
-    TCPServerChannel::AcceptOnceCallback accept_once_callback) {
-  DCHECK(this->channel_);
+    TCPServerSocket::AcceptOnceCallback accept_once_callback) {
+  DCHECK(this->channel_impl_);
   DCHECK(!accept_once_callback.is_null());
-  this->channel_->ToTCPChannelBase()->ToTCPServerChannel()->AcceptOnce(
-      std::move(accept_once_callback));
+  TCPServerSocket* server_socket =
+      this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPServerSocket();
+  server_socket->AcceptOnce(std::move(accept_once_callback));
 }
 
 template <typename MessageTy>
 void TCPChannel<MessageTy>::Connect(const ChannelDef& channel_def,
                                     StatusOnceCallback callback) {
-  DCHECK(!this->channel_);
+  DCHECK(!this->channel_impl_);
   DCHECK(!callback.is_null());
   ::net::IPEndPoint ip_endpoint;
   bool ret = ToNetIPEndPoint(channel_def, &ip_endpoint);
   DCHECK(ret);
-  this->channel_ = std::make_unique<TCPClientChannel>();
-  this->channel_->ToTCPChannelBase()->ToTCPClientChannel()->Connect(
-      ip_endpoint, std::move(callback));
+  auto client_socket = std::make_unique<TCPClientSocket>();
+  client_socket->Connect(ip_endpoint, std::move(callback));
+  this->channel_impl_ = std::move(client_socket);
 }
 
 }  // namespace felicia

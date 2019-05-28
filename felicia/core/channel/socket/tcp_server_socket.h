@@ -1,27 +1,19 @@
-#ifndef FELICIA_CORE_CHANNEL_TCP_SERVER_CHANNEL_H_
-#define FELICIA_CORE_CHANNEL_TCP_SERVER_CHANNEL_H_
+#ifndef FELICIA_CORE_CHANNEL_SOCKET_TCP_SERVER_SOCKET_H_
+#define FELICIA_CORE_CHANNEL_SOCKET_TCP_SERVER_SOCKET_H_
 
-#include <memory>
-#include <vector>
-
-#include "third_party/chromium/base/callback.h"
-#include "third_party/chromium/base/cancelable_callback.h"
-#include "third_party/chromium/base/macros.h"
-#include "third_party/chromium/net/base/io_buffer.h"
-#include "third_party/chromium/net/socket/tcp_socket.h"
-
-#include "felicia/core/channel/channel.h"
-#include "felicia/core/channel/tcp_channel_base.h"
+#include "felicia/core/channel/socket/tcp_socket.h"
+#include "felicia/core/lib/error/statusor.h"
+#include "felicia/core/protobuf/channel.pb.h"
 
 namespace felicia {
 
-class EXPORT TCPServerChannel : public TCPChannelBase {
+class EXPORT TCPServerSocket : public TCPSocket {
  public:
   using AcceptCallback = ::base::RepeatingCallback<void(const Status& s)>;
   using AcceptOnceCallback = ::base::OnceCallback<void(const Status& s)>;
 
-  TCPServerChannel();
-  ~TCPServerChannel();
+  TCPServerSocket();
+  ~TCPServerSocket();
 
   const std::vector<std::unique_ptr<::net::TCPSocket>>& accepted_sockets()
       const;
@@ -43,7 +35,7 @@ class EXPORT TCPServerChannel : public TCPChannelBase {
   void Write(char* buffer, int size, StatusOnceCallback callback) override;
   // Read from the last |accepted_sockets_|. Currently the read case
   // is only happend communication between master and master proxy.
-  // TODO(chokobole): Divide TCPServerChannel to for broadcast use and
+  // TODO(chokobole): Divide TCPServerSocket to for broadcast use and
   // unicast use. For broadcast use, remove the method below.
   void Read(char* buffer, int size, StatusOnceCallback callback) override;
 
@@ -75,9 +67,9 @@ class EXPORT TCPServerChannel : public TCPChannelBase {
   std::unique_ptr<::net::TCPSocket> accepted_socket_;
   std::vector<std::unique_ptr<::net::TCPSocket>> accepted_sockets_;
 
-  DISALLOW_COPY_AND_ASSIGN(TCPServerChannel);
+  DISALLOW_COPY_AND_ASSIGN(TCPServerSocket);
 };
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_CHANNEL_TCP_SERVER_CHANNEL_H_
+#endif  // FELICIA_CORE_CHANNEL_SOCKET_TCP_SERVER_SOCKET_H_

@@ -8,7 +8,8 @@
 #include "third_party/chromium/net/base/io_buffer.h"
 #include "third_party/chromium/net/base/ip_endpoint.h"
 
-#include "felicia/core/channel/channel_base.h"
+#include "felicia/core/channel/channel_impl.h"
+#include "felicia/core/channel/socket/socket.h"
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/errors.h"
 #include "felicia/core/lib/error/statusor.h"
@@ -74,7 +75,7 @@ class Channel {
   Header header_;
   MessageTy* message_ = nullptr;
 
-  std::unique_ptr<ChannelBase> channel_;
+  std::unique_ptr<ChannelImpl> channel_impl_;
   std::vector<char> send_buffer_;
   StatusOnceCallback send_callback_;
   std::vector<char> receive_buffer_;
@@ -88,7 +89,7 @@ class Channel {
 template <typename MessageTy>
 void Channel<MessageTy>::SendMessage(const MessageTy& message,
                                      StatusOnceCallback callback) {
-  DCHECK(channel_);
+  DCHECK(channel_impl_);
   DCHECK(this->send_callback_.is_null());
   DCHECK(!callback.is_null());
 
@@ -102,9 +103,9 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
       MessageIO<MessageTy>::SerializeToBuffer(&message, send_buffer_, &to_send);
   if (err == MessageIoError::OK) {
     this->send_callback_ = std::move(callback);
-    channel_->Write(send_buffer_.data(), to_send,
-                    ::base::BindOnce(&Channel<MessageTy>::OnSendMessage,
-                                     ::base::Unretained(this)));
+    channel_impl_->Write(send_buffer_.data(), to_send,
+                         ::base::BindOnce(&Channel<MessageTy>::OnSendMessage,
+                                          ::base::Unretained(this)));
   } else if (err == MessageIoError::ERR_NOT_ENOUGH_BUFFER) {
     if (is_dynamic_buffer_) {
       DLOG(INFO) << "Dynamically allocate buffer " << Bytes::FromBytes(to_send);
@@ -126,7 +127,7 @@ void Channel<MessageTy>::OnSendMessage(const Status& s) {
 template <typename MessageTy>
 void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
                                         StatusOnceCallback callback) {
-  DCHECK(channel_);
+  DCHECK(channel_impl_);
   DCHECK(this->receive_callback_.is_null());
   DCHECK(!callback.is_null());
 
@@ -152,12 +153,12 @@ void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
     receive_buffer_.resize(Bytes::FromKilloBytes(1).bytes());
   }
 
-  if (channel_->IsTCPChannelBase()) {
-    channel_->Read(receive_buffer_.data(), sizeof(Header),
-                   ::base::BindOnce(&Channel<MessageTy>::OnReceiveHeader,
-                                    ::base::Unretained(this)));
+  if (IsTCPChannel()) {
+    channel_impl_->Read(receive_buffer_.data(), sizeof(Header),
+                        ::base::BindOnce(&Channel<MessageTy>::OnReceiveHeader,
+                                         ::base::Unretained(this)));
   } else {
-    channel_->Read(
+    channel_impl_->Read(
         receive_buffer_.data(), receive_buffer_.size(),
         ::base::BindOnce(&Channel<MessageTy>::OnReceiveMessageWithHeader,
                          ::base::Unretained(this)));
@@ -166,7 +167,7 @@ void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
 
 template <typename MessageTy>
 void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
-  DCHECK(channel_->IsTCPChannelBase());
+  DCHECK(IsTCPChannel());
   if (!s.ok()) {
     std::move(this->receive_callback_).Run(s);
     return;
@@ -193,14 +194,14 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
     }
   }
 
-  channel_->Read(receive_buffer_.data(), header_.size(),
-                 ::base::BindOnce(&Channel<MessageTy>::OnReceiveMessage,
-                                  ::base::Unretained(this)));
+  channel_impl_->Read(receive_buffer_.data(), header_.size(),
+                      ::base::BindOnce(&Channel<MessageTy>::OnReceiveMessage,
+                                       ::base::Unretained(this)));
 }
 
 template <typename MessageTy>
 void Channel<MessageTy>::OnReceiveMessage(const Status& s) {
-  DCHECK(channel_->IsTCPChannelBase());
+  DCHECK(IsTCPChannel());
   if (s.ok()) {
     MessageIoError err = MessageIO<MessageTy>::ParseMessageFromBuffer(
         receive_buffer_.data(), header_, false, this->message_);
@@ -216,7 +217,7 @@ void Channel<MessageTy>::OnReceiveMessage(const Status& s) {
 
 template <typename MessageTy>
 void Channel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
-  DCHECK(channel_->IsUDPChannelBase());
+  DCHECK(IsUDPChannel());
   if (!s.ok()) {
     std::move(this->receive_callback_).Run(s);
     return;

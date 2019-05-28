@@ -1,21 +1,14 @@
-#ifndef FELICIA_CORE_CHANNEL_TCP_CLIENT_CHANNEL_H_
-#define FELICIA_CORE_CHANNEL_TCP_CLIENT_CHANNEL_H_
+#ifndef FELICIA_CORE_CHANNEL_SOCKET_TCP_CLIENT_SOCKET_H_
+#define FELICIA_CORE_CHANNEL_SOCKET_TCP_CLIENT_SOCKET_H_
 
-#include <memory>
-
-#include "third_party/chromium/base/macros.h"
-#include "third_party/chromium/net/base/io_buffer.h"
-#include "third_party/chromium/net/base/ip_endpoint.h"
-#include "third_party/chromium/net/socket/tcp_socket.h"
-
-#include "felicia/core/channel/tcp_channel_base.h"
+#include "felicia/core/channel/socket/tcp_socket.h"
 
 namespace felicia {
 
-class EXPORT TCPClientChannel : public TCPChannelBase {
+class EXPORT TCPClientSocket : public TCPSocket {
  public:
-  TCPClientChannel();
-  ~TCPClientChannel();
+  TCPClientSocket();
+  ~TCPClientSocket();
 
   bool IsClient() const override;
 
@@ -40,9 +33,9 @@ class EXPORT TCPClientChannel : public TCPChannelBase {
 
   std::unique_ptr<::net::TCPSocket> socket_;
 
-  DISALLOW_COPY_AND_ASSIGN(TCPClientChannel);
+  DISALLOW_COPY_AND_ASSIGN(TCPClientSocket);
 };
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_CHANNEL_TCP_CLIENT_CHANNEL_H_
+#endif  // FELICIA_CORE_CHANNEL_SOCKET_TCP_CLIENT_SOCKET_H_

@@ -1,23 +1,19 @@
-#include "felicia/core/channel/udp_server_channel.h"
+#include "felicia/core/channel/socket/udp_server_socket.h"
 
-#include <utility>
-
-#include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/rand_util.h"
-#include "third_party/chromium/base/strings/strcat.h"
-#include "third_party/chromium/net/base/net_errors.h"
 
+#include "felicia/core/channel/channel.h"
 #include "felicia/core/lib/error/errors.h"
 #include "felicia/core/lib/net/net_util.h"
 
 namespace felicia {
 
-UDPServerChannel::UDPServerChannel() = default;
-UDPServerChannel::~UDPServerChannel() = default;
+UDPServerSocket::UDPServerSocket() = default;
+UDPServerSocket::~UDPServerSocket() = default;
 
-bool UDPServerChannel::IsServer() const { return true; }
+bool UDPServerSocket::IsServer() const { return true; }
 
-StatusOr<ChannelDef> UDPServerChannel::Bind() {
+StatusOr<ChannelDef> UDPServerSocket::Bind() {
   auto server_socket = std::make_unique<::net::UDPSocket>(
       ::net::DatagramSocket::BindType::DEFAULT_BIND);
 
@@ -56,8 +52,8 @@ StatusOr<ChannelDef> UDPServerChannel::Bind() {
   return ToChannelDef(multicast_ip_endpoint_, ChannelDef::UDP);
 }
 
-void UDPServerChannel::Write(char* buffer, int size,
-                             StatusOnceCallback callback) {
+void UDPServerSocket::Write(char* buffer, int size,
+                            StatusOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
   write_callback_ = std::move(callback);
@@ -69,7 +65,7 @@ void UDPServerChannel::Write(char* buffer, int size,
     memcpy(write_buffer->data(), buffer + written, to_write);
     int rv = socket_->SendTo(
         write_buffer.get(), write_buffer->size(), multicast_ip_endpoint_,
-        ::base::BindOnce(&UDPServerChannel::OnWrite, ::base::Unretained(this)));
+        ::base::BindOnce(&UDPServerSocket::OnWrite, ::base::Unretained(this)));
 
     if (rv == ::net::ERR_IO_PENDING) break;
 
@@ -85,8 +81,8 @@ void UDPServerChannel::Write(char* buffer, int size,
   }
 }
 
-void UDPServerChannel::Read(char* buffer, int size,
-                            StatusOnceCallback callback) {
+void UDPServerSocket::Read(char* buffer, int size,
+                           StatusOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
   read_callback_ = std::move(callback);
@@ -97,7 +93,7 @@ void UDPServerChannel::Read(char* buffer, int size,
         base::MakeRefCounted<::net::IOBufferWithSize>(to_read);
     int rv = socket_->RecvFrom(
         read_buffer.get(), read_buffer->size(), &recv_from_ip_endpoint_,
-        ::base::BindOnce(&UDPServerChannel::OnReadAsync,
+        ::base::BindOnce(&UDPServerSocket::OnReadAsync,
                          ::base::Unretained(this), buffer + read, read_buffer));
 
     if (rv == ::net::ERR_IO_PENDING) break;

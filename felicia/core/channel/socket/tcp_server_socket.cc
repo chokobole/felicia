@@ -1,35 +1,29 @@
-#include "felicia/core/channel/tcp_server_channel.h"
+#include "felicia/core/channel/socket/tcp_server_socket.h"
 
-#include <utility>
-
-#include "third_party/chromium/base/bind.h"
-#include "third_party/chromium/base/strings/strcat.h"
-#include "third_party/chromium/base/threading/thread_task_runner_handle.h"
-#include "third_party/chromium/net/base/net_errors.h"
-
+#include "felicia/core/channel/channel.h"
 #include "felicia/core/lib/error/errors.h"
 #include "felicia/core/lib/net/net_util.h"
 
 namespace felicia {
 
-TCPServerChannel::TCPServerChannel() = default;
-TCPServerChannel::~TCPServerChannel() = default;
+TCPServerSocket::TCPServerSocket() = default;
+TCPServerSocket::~TCPServerSocket() = default;
 
 const std::vector<std::unique_ptr<::net::TCPSocket>>&
-TCPServerChannel::accepted_sockets() const {
+TCPServerSocket::accepted_sockets() const {
   return accepted_sockets_;
 }
 
-bool TCPServerChannel::IsServer() const { return true; }
+bool TCPServerSocket::IsServer() const { return true; }
 
-bool TCPServerChannel::IsConnected() const {
+bool TCPServerSocket::IsConnected() const {
   for (auto& accepted_socket : accepted_sockets_) {
     if (accepted_socket->IsConnected()) return true;
   }
   return false;
 }
 
-StatusOr<ChannelDef> TCPServerChannel::Listen() {
+StatusOr<ChannelDef> TCPServerSocket::Listen() {
   auto server_socket = std::make_unique<::net::TCPSocket>(nullptr);
 
   int rv = server_socket->Open(::net::ADDRESS_FAMILY_IPV4);
@@ -62,22 +56,22 @@ StatusOr<ChannelDef> TCPServerChannel::Listen() {
       ChannelDef::TCP);
 }
 
-void TCPServerChannel::DoAcceptLoop(AcceptCallback callback) {
+void TCPServerSocket::DoAcceptLoop(AcceptCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(accept_callback_.is_null() && accept_once_callback_.is_null());
   accept_callback_ = callback;
   DoAcceptLoop();
 }
 
-void TCPServerChannel::AcceptOnce(AcceptOnceCallback callback) {
+void TCPServerSocket::AcceptOnce(AcceptOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(accept_callback_.is_null() && accept_once_callback_.is_null());
   accept_once_callback_ = std::move(callback);
   DoAccept();
 }
 
-void TCPServerChannel::Write(char* buffer, int size,
-                             StatusOnceCallback callback) {
+void TCPServerSocket::Write(char* buffer, int size,
+                            StatusOnceCallback callback) {
   DCHECK_EQ(0, to_write_count_);
   DCHECK_EQ(0, written_count_);
   DCHECK(write_callback_.is_null());
@@ -104,7 +98,7 @@ void TCPServerChannel::Write(char* buffer, int size,
       memcpy(write_buffer->data(), buffer + written, to_write);
       int rv =
           (*it)->Write(write_buffer.get(), write_buffer->size(),
-                       ::base::BindOnce(&TCPServerChannel::OnWrite,
+                       ::base::BindOnce(&TCPServerSocket::OnWrite,
                                         ::base::Unretained(this), (*it).get()),
                        ::net::DefineNetworkTrafficAnnotation(
                            "tcp_server_channel", "Send Message"));
@@ -125,8 +119,8 @@ void TCPServerChannel::Write(char* buffer, int size,
   }
 }
 
-void TCPServerChannel::Read(char* buffer, int size,
-                            StatusOnceCallback callback) {
+void TCPServerSocket::Read(char* buffer, int size,
+                           StatusOnceCallback callback) {
   DCHECK(read_callback_.is_null());
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
@@ -149,7 +143,7 @@ void TCPServerChannel::Read(char* buffer, int size,
         base::MakeRefCounted<::net::IOBufferWithSize>(to_read);
     int rv =
         (*it)->Read(read_buffer.get(), read_buffer->size(),
-                    ::base::BindOnce(&TCPServerChannel::OnReadAsync,
+                    ::base::BindOnce(&TCPServerSocket::OnReadAsync,
                                      ::base::Unretained(this), buffer + read,
                                      read_buffer, (*it).get()));
 
@@ -167,22 +161,22 @@ void TCPServerChannel::Read(char* buffer, int size,
   }
 }
 
-int TCPServerChannel::DoAccept() {
+int TCPServerSocket::DoAccept() {
   int result = socket_->Accept(
       &accepted_socket_, &accepted_endpoint_,
-      ::base::BindOnce(&TCPServerChannel::OnAccept, ::base::Unretained(this)));
+      ::base::BindOnce(&TCPServerSocket::OnAccept, ::base::Unretained(this)));
   if (result != ::net::ERR_IO_PENDING) HandleAccpetResult(result);
   return result;
 }
 
-void TCPServerChannel::DoAcceptLoop() {
+void TCPServerSocket::DoAcceptLoop() {
   int result = ::net::OK;
   while (result == ::net::OK) {
     result = DoAccept();
   }
 }
 
-void TCPServerChannel::HandleAccpetResult(int result) {
+void TCPServerSocket::HandleAccpetResult(int result) {
   DCHECK_NE(result, ::net::ERR_IO_PENDING);
 
   if (result < 0) {
@@ -198,21 +192,21 @@ void TCPServerChannel::HandleAccpetResult(int result) {
     std::move(accept_once_callback_).Run(Status::OK());
 }
 
-void TCPServerChannel::OnAccept(int result) {
+void TCPServerSocket::OnAccept(int result) {
   HandleAccpetResult(result);
   if (result == ::net::OK) {
     if (accept_callback_) DoAcceptLoop();
   }
 }
 
-void TCPServerChannel::OnReadAsync(
+void TCPServerSocket::OnReadAsync(
     char* buffer, scoped_refptr<::net::IOBufferWithSize> read_buffer,
     ::net::TCPSocket* socket, int result) {
   if (result > 0) memcpy(buffer, read_buffer->data(), result);
   OnRead(socket, result);
 }
 
-void TCPServerChannel::OnRead(::net::TCPSocket* socket, int result) {
+void TCPServerSocket::OnRead(::net::TCPSocket* socket, int result) {
   if (result == 0) {
     result = ::net::ERR_CONNECTION_CLOSED;
     socket->Close();
@@ -221,7 +215,7 @@ void TCPServerChannel::OnRead(::net::TCPSocket* socket, int result) {
   CallbackWithStatus(std::move(read_callback_), result);
 }
 
-void TCPServerChannel::OnWrite(::net::TCPSocket* socket, int result) {
+void TCPServerSocket::OnWrite(::net::TCPSocket* socket, int result) {
   if (result == ::net::ERR_CONNECTION_RESET) {
     socket->Close();
     has_closed_sockets_ = true;
@@ -229,7 +223,7 @@ void TCPServerChannel::OnWrite(::net::TCPSocket* socket, int result) {
 
   written_count_++;
   if (result < 0) {
-    LOG(ERROR) << "TCPServerChannel::OnWrite: " << ::net::ErrorToString(result);
+    LOG(ERROR) << "TCPServerSocket::OnWrite: " << ::net::ErrorToString(result);
     write_result_ = result;
   }
   if (to_write_count_ == written_count_) {
@@ -241,7 +235,7 @@ void TCPServerChannel::OnWrite(::net::TCPSocket* socket, int result) {
   }
 }
 
-void TCPServerChannel::EraseClosedSockets() {
+void TCPServerSocket::EraseClosedSockets() {
   if (has_closed_sockets_) {
     auto it = accepted_sockets_.begin();
     while (it != accepted_sockets_.end()) {
