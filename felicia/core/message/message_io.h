@@ -44,7 +44,7 @@ class MessageIO<T, std::enable_if_t<
     if (!MessageToJsonString(proto, &text))
       return MessageIoError::ERR_FAILED_TO_SERIALIZE;
 
-    return AttachToBufferWithHeader(text, buffer, size);
+    return AttachToBuffer(text, buffer, false, size);
   }
 
   static MessageIoError SerializeToBuffer(
@@ -54,7 +54,7 @@ class MessageIO<T, std::enable_if_t<
     if (!proto->SerializeToString(&text))
       return MessageIoError::ERR_FAILED_TO_SERIALIZE;
 
-    return AttachToBufferWithHeader(text, buffer, size);
+    return AttachToBuffer(text, buffer, true, size);
   }
 
   static MessageIoError ParseHeaderFromBuffer(char* buffer, Header* header) {
@@ -80,21 +80,29 @@ class MessageIO<T, std::enable_if_t<
   }
 
  private:
-  static MessageIoError AttachToBufferWithHeader(
+  static MessageIoError AttachToBuffer(
       const std::string& text, scoped_refptr<::net::GrowableIOBuffer> buffer,
-      int* size) {
+      bool buffer_include_header, int* size) {
     // This should be before return `ERR_NOT_ENOUGH_BUFFER`. Caller might use
     // this |size| to reallocate buffer.
-    *size = sizeof(Header) + text.length();
+    if (buffer_include_header) {
+      *size = sizeof(Header) + text.length();
+    } else {
+      *size = text.length();
+    }
 
     if (buffer->RemainingCapacity() < *size)
       return MessageIoError::ERR_NOT_ENOUGH_BUFFER;
 
-    Header header;
-    header.set_size(text.length());
-    memcpy(buffer->StartOfBuffer(), &header, sizeof(Header));
-    memcpy(buffer->StartOfBuffer() + sizeof(Header), text.data(),
-           text.length());
+    if (buffer_include_header) {
+      Header header;
+      header.set_size(text.length());
+      memcpy(buffer->StartOfBuffer(), &header, sizeof(Header));
+      memcpy(buffer->StartOfBuffer() + sizeof(Header), text.data(),
+             text.length());
+    } else {
+      memcpy(buffer->StartOfBuffer(), text.data(), text.length());
+    }
 
     return MessageIoError::OK;
   }
