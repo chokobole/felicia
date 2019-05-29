@@ -1,6 +1,7 @@
 #include "felicia/core/node/dynamic_subscribing_node.h"
 
 #include "third_party/chromium/base/bind.h"
+#include "third_party/chromium/base/strings/strcat.h"
 
 #include "felicia/core/lib/error/errors.h"
 #include "felicia/core/master/master_proxy.h"

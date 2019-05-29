@@ -17,6 +17,7 @@ bool Socket::IsServer() const { return false; }
 
 bool Socket::IsTCPSocket() const { return false; }
 bool Socket::IsUDPSocket() const { return false; }
+bool Socket::IsWebSocket() const { return false; }
 
 TCPSocket* Socket::ToTCPSocket() {
   DCHECK(IsTCPSocket());
@@ -26,6 +27,11 @@ TCPSocket* Socket::ToTCPSocket() {
 UDPSocket* Socket::ToUDPSocket() {
   DCHECK(IsUDPSocket());
   return reinterpret_cast<UDPSocket*>(this);
+}
+
+WebSocket* Socket::ToWebSocket() {
+  DCHECK(IsWebSocket());
+  return reinterpret_cast<WebSocket*>(this);
 }
 
 // static

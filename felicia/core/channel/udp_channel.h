@@ -1,16 +1,9 @@
 #ifndef FELICIA_CORE_CHANNEL_UDP_CHANNEL_H_
 #define FELICIA_CORE_CHANNEL_UDP_CHANNEL_H_
 
-#include <memory>
-
-#include "third_party/chromium/base/macros.h"
-#include "third_party/chromium/net/base/ip_endpoint.h"
-#include "third_party/chromium/net/socket/udp_socket.h"
-
 #include "felicia/core/channel/channel.h"
 #include "felicia/core/channel/socket/udp_client_socket.h"
 #include "felicia/core/channel/socket/udp_server_socket.h"
-#include "felicia/core/lib/error/status.h"
 
 namespace felicia {
 

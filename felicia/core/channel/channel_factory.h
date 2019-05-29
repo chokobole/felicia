@@ -7,6 +7,7 @@
 
 #include "felicia/core/channel/tcp_channel.h"
 #include "felicia/core/channel/udp_channel.h"
+#include "felicia/core/channel/ws_channel.h"
 #include "felicia/core/protobuf/channel.pb.h"
 
 namespace felicia {
@@ -21,6 +22,8 @@ class ChannelFactory {
       channel = std::make_unique<TCPChannel<MessageTy>>();
     } else if (channel_type == ChannelDef::UDP) {
       channel = std::make_unique<UDPChannel<MessageTy>>();
+    } else if (channel_type == ChannelDef::WS) {
+      channel = std::make_unique<WSChannel<MessageTy>>();
     }
 
     return channel;

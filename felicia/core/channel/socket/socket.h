@@ -14,6 +14,7 @@ namespace felicia {
 
 class TCPSocket;
 class UDPSocket;
+class WebSocket;
 
 class EXPORT Socket : public ChannelImpl {
  public:
@@ -27,9 +28,11 @@ class EXPORT Socket : public ChannelImpl {
 
   virtual bool IsTCPSocket() const;
   virtual bool IsUDPSocket() const;
+  virtual bool IsWebSocket() const;
 
   TCPSocket* ToTCPSocket();
   UDPSocket* ToUDPSocket();
+  WebSocket* ToWebSocket();
 
  protected:
   static void CallbackWithStatus(StatusOnceCallback callback, int result);

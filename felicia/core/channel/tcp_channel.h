@@ -1,16 +1,9 @@
 #ifndef FELICIA_CORE_CHANNEL_TCP_CHANNEL_H_
 #define FELICIA_CORE_CHANNEL_TCP_CHANNEL_H_
 
-#include <memory>
-#include <utility>
-
-#include "third_party/chromium/base/macros.h"
-#include "third_party/chromium/net/base/ip_endpoint.h"
-
 #include "felicia/core/channel/channel.h"
 #include "felicia/core/channel/socket/tcp_client_socket.h"
 #include "felicia/core/channel/socket/tcp_server_socket.h"
-#include "felicia/core/lib/error/status.h"
 
 namespace felicia {
 
@@ -31,7 +24,7 @@ class TCPChannel : public Channel<MessageTy> {
 
   StatusOr<ChannelDef> Listen();
 
-  void DoAcceptLoop(TCPServerSocket::AcceptCallback accept_callback);
+  void AcceptLoop(TCPServerSocket::AcceptCallback accept_callback);
 
   void AcceptOnce(TCPServerSocket::AcceptOnceCallback accept_once_callback);
 
@@ -66,13 +59,13 @@ StatusOr<ChannelDef> TCPChannel<MessageTy>::Listen() {
 }
 
 template <typename MessageTy>
-void TCPChannel<MessageTy>::DoAcceptLoop(
+void TCPChannel<MessageTy>::AcceptLoop(
     TCPServerSocket::AcceptCallback accept_callback) {
   DCHECK(this->channel_impl_);
   DCHECK(!accept_callback.is_null());
   TCPServerSocket* server_socket =
       this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPServerSocket();
-  server_socket->DoAcceptLoop(accept_callback);
+  server_socket->AcceptLoop(accept_callback);
 }
 
 template <typename MessageTy>

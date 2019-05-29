@@ -12,6 +12,7 @@ message ChannelDef {
     NONE = 0; // Default
     TCP = 1;
     UDP = 2;
+    WS = 4;
   }
 
   Type type = 1;

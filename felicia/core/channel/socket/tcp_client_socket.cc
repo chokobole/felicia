@@ -57,7 +57,7 @@ void TCPClientSocket::Write(char* buffer, int size,
     int rv = socket_->Write(
         write_buffer.get(), write_buffer->size(),
         ::base::BindOnce(&TCPClientSocket::OnWrite, ::base::Unretained(this)),
-        ::net::DefineNetworkTrafficAnnotation("tcp_client_channel",
+        ::net::DefineNetworkTrafficAnnotation("tcp_client_socket",
                                               "Send Message"));
 
     if (rv == ::net::ERR_IO_PENDING) break;

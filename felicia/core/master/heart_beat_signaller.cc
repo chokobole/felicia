@@ -32,19 +32,19 @@ void HeartBeatSignaller::Start() {
   TCPChannel<HeartBeat>* tcp_channel = channel_->ToTCPChannel();
   auto status_or = tcp_channel->Listen();
   *channel_source_.add_channel_defs() = status_or.ValueOrDie();
-  DoAccept();
+  AcceptLoop();
 }
 
-void HeartBeatSignaller::DoAccept() {
+void HeartBeatSignaller::AcceptLoop() {
   if (!task_runner_interface_->IsBoundToCurrentThread()) {
     task_runner_interface_->PostTask(
-        FROM_HERE, ::base::BindOnce(&HeartBeatSignaller::DoAccept,
+        FROM_HERE, ::base::BindOnce(&HeartBeatSignaller::AcceptLoop,
                                     ::base::Unretained(this)));
     return;
   }
   TCPChannel<HeartBeat>* tcp_channel = channel_->ToTCPChannel();
-  tcp_channel->DoAcceptLoop(::base::BindRepeating(&HeartBeatSignaller::OnAccept,
-                                                  ::base::Unretained(this)));
+  tcp_channel->AcceptLoop(::base::BindRepeating(&HeartBeatSignaller::OnAccept,
+                                                ::base::Unretained(this)));
 }
 
 void HeartBeatSignaller::OnAccept(const Status& s) {

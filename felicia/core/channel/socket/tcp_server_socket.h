@@ -11,6 +11,8 @@ class EXPORT TCPServerSocket : public TCPSocket {
  public:
   using AcceptCallback = ::base::RepeatingCallback<void(const Status& s)>;
   using AcceptOnceCallback = ::base::OnceCallback<void(const Status& s)>;
+  using AcceptOnceInterceptCallback =
+      ::base::OnceCallback<void(StatusOr<std::unique_ptr<::net::TCPSocket>>)>;
 
   TCPServerSocket();
   ~TCPServerSocket();
@@ -24,9 +26,13 @@ class EXPORT TCPServerSocket : public TCPSocket {
 
   StatusOr<ChannelDef> Listen();
 
-  void DoAcceptLoop(AcceptCallback callback);
+  void AcceptLoop(AcceptCallback callback);
 
   void AcceptOnce(AcceptOnceCallback callback);
+
+  void AcceptOnceIntercept(AcceptOnceInterceptCallback callback);
+
+  void AddSocket(std::unique_ptr<::net::TCPSocket> socket);
 
   // Write the |buffer| to the |accepted_sockets_|. If it succeeds to write
   // all the sockets, then callback with Status::OK(), otherwise callback
@@ -55,6 +61,7 @@ class EXPORT TCPServerSocket : public TCPSocket {
 
   AcceptCallback accept_callback_;
   AcceptOnceCallback accept_once_callback_;
+  AcceptOnceInterceptCallback accept_once_intercept_callback_;
 
   size_t to_write_count_ = 0;
   size_t written_count_ = 0;

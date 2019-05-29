@@ -176,8 +176,6 @@ BASE_HDRS = chromium_platform_hdrs(exclude = [
     # windows, please sync with base_win_hdrs
     "profiler/win32_stack_frame_unwinder.h",
     ##########################################################
-    "base64url.h",
-    "base64.h",
     "i18n/**",
     "message_loop/message_pump_glib.h",
     "trace_event/trace_event_etw_export_win.h",  # Does it need?
@@ -269,8 +267,6 @@ chromium_cc_library(
         # windows
         "profiler/win32_stack_frame_unwinder.cc",
         ##########################################################
-        "base64url.cc",
-        "base64.cc",
         "i18n/**",
         "message_loop/message_pump_glib.cc",
         "trace_event/trace_event_etw_export_win.cc",  # Does it need?
@@ -311,6 +307,7 @@ chromium_cc_library(
         "//third_party/chromium:build_date",
         "//third_party/chromium/build",
         "//third_party/chromium/testing",
+        "//third_party/chromium/third_party/modp_b64",
     ] + base_additional_deps(),
 )
 
@@ -765,8 +762,6 @@ chromium_cc_test(
         "time/time_win_unittest.cc",
         "sampling_heap_profiler/module_cache_unittest.cc",
         ##########################################################
-        "base64url_unittest.cc",
-        "base64_unittest.cc",
         "i18n/**",
         "message_loop/message_pump_glib_unittest.cc",
         "trace_event/trace_event_etw_export_win_unittest.cc",

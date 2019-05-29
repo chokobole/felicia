@@ -14,6 +14,8 @@ fel_cc_library(
         "socket/udp_client_socket.cc",
         "socket/udp_server_socket.cc",
         "socket/udp_socket.cc",
+        "socket/web_socket_server.cc",
+        "socket/web_socket.cc",
     ],
     hdrs = [
         "channel.h",
@@ -26,8 +28,11 @@ fel_cc_library(
         "socket/udp_client_socket.h",
         "socket/udp_server_socket.h",
         "socket/udp_socket.h",
+        "socket/web_socket_server.h",
+        "socket/web_socket.h",
         "tcp_channel.h",
         "udp_channel.h",
+        "ws_channel.h",
     ],
     deps = [
         "//felicia/core/lib",

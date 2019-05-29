@@ -2,9 +2,6 @@
 #define FELICIA_CORE_CHANNEL_CHANNEL_H_
 
 #include "third_party/chromium/base/bind.h"
-#include "third_party/chromium/base/callback.h"
-#include "third_party/chromium/base/macros.h"
-#include "third_party/chromium/base/strings/strcat.h"
 #include "third_party/chromium/net/base/io_buffer.h"
 #include "third_party/chromium/net/base/ip_endpoint.h"
 
@@ -23,6 +20,8 @@ template <typename MessageTy>
 class TCPChannel;
 template <typename MessageTy>
 class UDPChannel;
+template <typename MessageTy>
+class WSChannel;
 
 template <typename MessageTy>
 class Channel {
@@ -31,6 +30,7 @@ class Channel {
 
   virtual bool IsTCPChannel() const { return false; }
   virtual bool IsUDPChannel() const { return false; }
+  virtual bool IsWSChannel() const { return false; }
 
   virtual bool HasReceivers() const { return true; }
 
@@ -45,6 +45,11 @@ class Channel {
   UDPChannel<MessageTy>* ToUDPChannel() {
     DCHECK(IsUDPChannel());
     return reinterpret_cast<UDPChannel<MessageTy>*>(this);
+  }
+
+  WSChannel<MessageTy>* ToWSChannel() {
+    DCHECK(IsWSChannel());
+    return reinterpret_cast<WSChannel<MessageTy>*>(this);
   }
 
   virtual void Connect(const ChannelDef& channel_def,

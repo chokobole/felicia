@@ -56,18 +56,33 @@ StatusOr<ChannelDef> TCPServerSocket::Listen() {
       ChannelDef::TCP);
 }
 
-void TCPServerSocket::DoAcceptLoop(AcceptCallback callback) {
+void TCPServerSocket::AcceptLoop(AcceptCallback callback) {
   DCHECK(!callback.is_null());
-  DCHECK(accept_callback_.is_null() && accept_once_callback_.is_null());
+  DCHECK(accept_callback_.is_null() && accept_once_callback_.is_null() &&
+         accept_once_intercept_callback_.is_null());
   accept_callback_ = callback;
   DoAcceptLoop();
 }
 
 void TCPServerSocket::AcceptOnce(AcceptOnceCallback callback) {
   DCHECK(!callback.is_null());
-  DCHECK(accept_callback_.is_null() && accept_once_callback_.is_null());
+  DCHECK(accept_callback_.is_null() && accept_once_callback_.is_null() &&
+         accept_once_intercept_callback_.is_null());
   accept_once_callback_ = std::move(callback);
   DoAccept();
+}
+
+void TCPServerSocket::AcceptOnceIntercept(
+    AcceptOnceInterceptCallback callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(accept_callback_.is_null() && accept_once_callback_.is_null() &&
+         accept_once_intercept_callback_.is_null());
+  accept_once_intercept_callback_ = std::move(callback);
+  DoAccept();
+}
+
+void TCPServerSocket::AddSocket(std::unique_ptr<::net::TCPSocket> socket) {
+  accepted_sockets_.push_back(std::move(socket));
 }
 
 void TCPServerSocket::Write(char* buffer, int size,
@@ -101,7 +116,7 @@ void TCPServerSocket::Write(char* buffer, int size,
                        ::base::BindOnce(&TCPServerSocket::OnWrite,
                                         ::base::Unretained(this), (*it).get()),
                        ::net::DefineNetworkTrafficAnnotation(
-                           "tcp_server_channel", "Send Message"));
+                           "tcp_server_socket", "Send Message"));
       if (rv == ::net::ERR_IO_PENDING) break;
 
       if (rv >= 0) {
@@ -185,18 +200,20 @@ void TCPServerSocket::HandleAccpetResult(int result) {
     return;
   }
 
-  accepted_sockets_.push_back(std::move(accepted_socket_));
-  if (accept_callback_)
-    accept_callback_.Run(Status::OK());
-  else
-    std::move(accept_once_callback_).Run(Status::OK());
+  if (accept_once_intercept_callback_) {
+    std::move(accept_once_intercept_callback_).Run(std::move(accepted_socket_));
+  } else {
+    accepted_sockets_.push_back(std::move(accepted_socket_));
+    if (accept_callback_)
+      accept_callback_.Run(Status::OK());
+    else
+      std::move(accept_once_callback_).Run(Status::OK());
+  }
 }
 
 void TCPServerSocket::OnAccept(int result) {
   HandleAccpetResult(result);
-  if (result == ::net::OK) {
-    if (accept_callback_) DoAcceptLoop();
-  }
+  if (accept_callback_) DoAcceptLoop();
 }
 
 void TCPServerSocket::OnReadAsync(

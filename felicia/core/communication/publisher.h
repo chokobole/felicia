@@ -197,11 +197,16 @@ StatusOr<ChannelDef> Publisher<MessageTy>::Setup(Channel<MessageTy>* channel) {
   if (channel->IsTCPChannel()) {
     TCPChannel<MessageTy>* tcp_channel = channel->ToTCPChannel();
     status_or = tcp_channel->Listen();
-    tcp_channel->DoAcceptLoop(::base::BindRepeating(
+    tcp_channel->AcceptLoop(::base::BindRepeating(
         [](const Status& s) { LOG_IF(ERROR, !s.ok()) << s.error_message(); }));
   } else if (channel->IsUDPChannel()) {
     UDPChannel<MessageTy>* udp_channel = channel->ToUDPChannel();
     status_or = udp_channel->Bind();
+  } else if (channel->IsWSChannel()) {
+    WSChannel<MessageTy>* ws_channel = channel->ToWSChannel();
+    status_or = ws_channel->Listen();
+    ws_channel->AcceptLoop(::base::BindRepeating(
+        [](const Status& s) { LOG_IF(ERROR, !s.ok()) << s.error_message(); }));
   }
 
   return status_or;
