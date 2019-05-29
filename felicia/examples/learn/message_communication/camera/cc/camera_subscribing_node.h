@@ -28,6 +28,7 @@ class CameraSubscribingNode : public NodeLifecycle {
 
   void RequestSubscribe() {
     communication::Settings settings;
+    settings.queue_size = 1;
     settings.period = ::base::TimeDelta::FromMilliseconds(100);
     settings.is_dynamic_buffer = true;
 
