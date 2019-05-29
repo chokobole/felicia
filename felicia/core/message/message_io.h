@@ -17,6 +17,18 @@ enum MessageIoError {
 
 std::string MessageIoErrorToString(MessageIoError mesasge_io_error);
 
+template <typename T>
+std::enable_if_t<std::is_same<DynamicProtobufMessage, T>::value, bool>
+MessageToJsonString(const T* message, std::string* text) {
+  return message->MessageToJsonString(text).ok();
+}
+
+template <typename T>
+std::enable_if_t<std::is_base_of<::google::protobuf::Message, T>::value, bool>
+MessageToJsonString(const T* message, std::string* text) {
+  return ::google::protobuf::util::MessageToJsonString(*message, text).ok();
+}
+
 template <typename T, typename SFINAE = void>
 class MessageIO;
 
@@ -25,6 +37,16 @@ class MessageIO<T, std::enable_if_t<
                        std::is_base_of<::google::protobuf::Message, T>::value ||
                        std::is_same<DynamicProtobufMessage, T>::value>> {
  public:
+  static MessageIoError JsonizeToBuffer(const T* proto,
+                                        std::vector<char>& buffer,
+                                        size_t* size) {
+    std::string text;
+    if (!MessageToJsonString(proto, &text))
+      return MessageIoError::ERR_FAILED_TO_SERIALIZE;
+
+    return AttachToBufferWithHeader(text, buffer, size);
+  }
+
   static MessageIoError SerializeToBuffer(const T* proto,
                                           std::vector<char>& buffer,
                                           size_t* size) {
@@ -32,20 +54,7 @@ class MessageIO<T, std::enable_if_t<
     if (!proto->SerializeToString(&text))
       return MessageIoError::ERR_FAILED_TO_SERIALIZE;
 
-    // This should be before return `ERR_NOT_ENOUGH_BUFFER`. Caller might use
-    // this |size| to reallocate buffer.
-    *size = sizeof(Header) + text.length();
-
-    if (buffer.size() < *size) return MessageIoError::ERR_NOT_ENOUGH_BUFFER;
-
-    Header header;
-    header.set_size(text.length());
-    memcpy(buffer.data(), &header, sizeof(Header));
-    memcpy(buffer.data() + sizeof(Header), text.data(), text.length());
-
-    *size = sizeof(Header) + text.length();
-
-    return MessageIoError::OK;
+    return AttachToBufferWithHeader(text, buffer, size);
   }
 
   static MessageIoError ParseHeaderFromBuffer(char* buffer, Header* header) {
@@ -66,6 +75,24 @@ class MessageIO<T, std::enable_if_t<
     }
     if (!proto->ParseFromArray(start, header.size()))
       return MessageIoError::ERR_FAILED_TO_PARSE;
+
+    return MessageIoError::OK;
+  }
+
+ private:
+  static MessageIoError AttachToBufferWithHeader(const std::string& text,
+                                                 std::vector<char>& buffer,
+                                                 size_t* size) {
+    // This should be before return `ERR_NOT_ENOUGH_BUFFER`. Caller might use
+    // this |size| to reallocate buffer.
+    *size = sizeof(Header) + text.length();
+
+    if (buffer.size() < *size) return MessageIoError::ERR_NOT_ENOUGH_BUFFER;
+
+    Header header;
+    header.set_size(text.length());
+    memcpy(buffer.data(), &header, sizeof(Header));
+    memcpy(buffer.data() + sizeof(Header), text.data(), text.length());
 
     return MessageIoError::OK;
   }

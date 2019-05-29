@@ -13,6 +13,7 @@ WebSocketServer::~WebSocketServer() = default;
 bool WebSocketServer::IsServer() const { return true; }
 
 StatusOr<ChannelDef> WebSocketServer::Listen() {
+  DCHECK(tcp_server_socket_);
   auto status_or = tcp_server_socket_->Listen();
   if (status_or.ok()) {
     ChannelDef channel_def = status_or.ValueOrDie();
@@ -24,6 +25,7 @@ StatusOr<ChannelDef> WebSocketServer::Listen() {
 }
 
 void WebSocketServer::AcceptLoop(TCPServerSocket::AcceptCallback callback) {
+  DCHECK(!callback.is_null());
   accept_callback_ = callback;
   DoAcceptOnce();
 }
@@ -34,7 +36,9 @@ void WebSocketServer::DoAcceptOnce() {
 }
 
 void WebSocketServer::Write(char* buffer, int size,
-                            StatusOnceCallback callback) {}
+                            StatusOnceCallback callback) {
+  DLOG(INFO) << "Write:" << std::string(buffer, size);
+}
 
 void WebSocketServer::Read(char* buffer, int size,
                            StatusOnceCallback callback) {

@@ -104,8 +104,14 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
   }
 
   size_t to_send;
-  MessageIoError err =
-      MessageIO<MessageTy>::SerializeToBuffer(&message, send_buffer_, &to_send);
+  MessageIoError err;
+  if (IsWSChannel()) {
+    err =
+        MessageIO<MessageTy>::JsonizeToBuffer(&message, send_buffer_, &to_send);
+  } else {
+    err = MessageIO<MessageTy>::SerializeToBuffer(&message, send_buffer_,
+                                                  &to_send);
+  }
   if (err == MessageIoError::OK) {
     this->send_callback_ = std::move(callback);
     channel_impl_->Write(send_buffer_.data(), to_send,
