@@ -37,14 +37,15 @@ class TopicInfoWatcher {
 
  private:
   void DoAccept();
-  void OnAccept(const Status& s);
+  void OnAccept(StatusOr<std::unique_ptr<TCPChannel<TopicInfo>>> status_or);
 
   void WatchNewTopicInfo();
   void OnNewTopicInfo(const Status& s);
 
   ChannelSource channel_source_;
   TopicInfo topic_info_;
-  std::unique_ptr<Channel<TopicInfo>> channel_;
+  std::unique_ptr<Channel<TopicInfo>> server_channel_;
+  std::unique_ptr<TCPChannel<TopicInfo>> channel_;
   ::base::flat_map<std::string, NewTopicInfoCallback> callback_map_;
   NewTopicInfoCallback all_topic_callback_;
 

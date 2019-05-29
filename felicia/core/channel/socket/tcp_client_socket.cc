@@ -7,6 +7,10 @@ namespace felicia {
 TCPClientSocket::TCPClientSocket() = default;
 TCPClientSocket::~TCPClientSocket() = default;
 
+void TCPClientSocket::set_socket(std::unique_ptr<::net::TCPSocket> socket) {
+  socket_ = std::move(socket);
+}
+
 bool TCPClientSocket::IsClient() const { return true; }
 
 bool TCPClientSocket::IsConnected() const {

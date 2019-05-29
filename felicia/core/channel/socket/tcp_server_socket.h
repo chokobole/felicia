@@ -10,7 +10,6 @@ namespace felicia {
 class EXPORT TCPServerSocket : public TCPSocket {
  public:
   using AcceptCallback = ::base::RepeatingCallback<void(const Status& s)>;
-  using AcceptOnceCallback = ::base::OnceCallback<void(const Status& s)>;
   using AcceptOnceInterceptCallback =
       ::base::OnceCallback<void(StatusOr<std::unique_ptr<::net::TCPSocket>>)>;
 
@@ -27,9 +26,6 @@ class EXPORT TCPServerSocket : public TCPSocket {
   StatusOr<ChannelDef> Listen();
 
   void AcceptLoop(AcceptCallback callback);
-
-  void AcceptOnce(AcceptOnceCallback callback);
-
   void AcceptOnceIntercept(AcceptOnceInterceptCallback callback);
 
   void AddSocket(std::unique_ptr<::net::TCPSocket> socket);
@@ -39,10 +35,6 @@ class EXPORT TCPServerSocket : public TCPSocket {
   // with the |write_result_|, which is recorded at every time finishing
   // write.
   void Write(char* buffer, int size, StatusOnceCallback callback) override;
-  // Read from the last |accepted_sockets_|. Currently the read case
-  // is only happend communication between master and master proxy.
-  // TODO(chokobole): Divide TCPServerSocket to for broadcast use and
-  // unicast use. For broadcast use, remove the method below.
   void Read(char* buffer, int size, StatusOnceCallback callback) override;
 
  private:
@@ -51,16 +43,11 @@ class EXPORT TCPServerSocket : public TCPSocket {
   void HandleAccpetResult(int result);
   void OnAccept(int result);
 
-  void OnReadAsync(char* buffer,
-                   scoped_refptr<::net::IOBufferWithSize> read_buffer,
-                   ::net::TCPSocket* socket, int result);
-  void OnRead(::net::TCPSocket* socket, int result);
   void OnWrite(::net::TCPSocket* socket, int result);
 
   void EraseClosedSockets();
 
   AcceptCallback accept_callback_;
-  AcceptOnceCallback accept_once_callback_;
   AcceptOnceInterceptCallback accept_once_intercept_callback_;
 
   size_t to_write_count_ = 0;

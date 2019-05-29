@@ -27,7 +27,7 @@ class EXPORT WebSocketServer : public WebSocket {
       StatusOr<std::unique_ptr<::net::TCPSocket>> status_or) override;
 
  private:
-  void DoAcceptLoop();
+  void DoAcceptOnce();
   void OnAccept(StatusOr<std::unique_ptr<::net::TCPSocket>> status_or);
 
   TCPServerSocket::AcceptCallback accept_callback_;

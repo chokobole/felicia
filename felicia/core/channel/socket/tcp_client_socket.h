@@ -10,6 +10,8 @@ class EXPORT TCPClientSocket : public TCPSocket {
   TCPClientSocket();
   ~TCPClientSocket();
 
+  void set_socket(std::unique_ptr<::net::TCPSocket> socket);
+
   bool IsClient() const override;
 
   bool IsConnected() const override;

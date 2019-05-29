@@ -25,10 +25,10 @@ StatusOr<ChannelDef> WebSocketServer::Listen() {
 
 void WebSocketServer::AcceptLoop(TCPServerSocket::AcceptCallback callback) {
   accept_callback_ = callback;
-  DoAcceptLoop();
+  DoAcceptOnce();
 }
 
-void WebSocketServer::DoAcceptLoop() {
+void WebSocketServer::DoAcceptOnce() {
   tcp_server_socket_->AcceptOnceIntercept(::base::BindRepeating(
       &WebSocketServer::OnAccept, ::base::Unretained(this)));
 }
@@ -37,7 +37,9 @@ void WebSocketServer::Write(char* buffer, int size,
                             StatusOnceCallback callback) {}
 
 void WebSocketServer::Read(char* buffer, int size,
-                           StatusOnceCallback callback) {}
+                           StatusOnceCallback callback) {
+  NOTREACHED() << "You read data from ServerSocket";
+}
 
 void WebSocketServer::OnAccept(
     StatusOr<std::unique_ptr<::net::TCPSocket>> status_or) {
@@ -45,7 +47,7 @@ void WebSocketServer::OnAccept(
     handshake_handler_.Handle(std::move(status_or.ValueOrDie()));
   } else {
     accept_callback_.Run(status_or.status());
-    DoAcceptLoop();
+    DoAcceptOnce();
   }
 }
 
@@ -57,7 +59,7 @@ void WebSocketServer::OnHandshaked(
   } else {
     accept_callback_.Run(status_or.status());
   }
-  DoAcceptLoop();
+  DoAcceptOnce();
 }
 
 }  // namespace felicia

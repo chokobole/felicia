@@ -27,33 +27,35 @@ void TopicInfoWatcher::UnregisterAllTopicCallback() {
 }
 
 void TopicInfoWatcher::Start() {
-  DCHECK(!channel_);
-  channel_ = ChannelFactory::NewChannel<TopicInfo>(ChannelDef::TCP);
+  DCHECK(!server_channel_);
+  server_channel_ = ChannelFactory::NewChannel<TopicInfo>(ChannelDef::TCP);
 
-  channel_->SetReceiveBufferSize(kTopicInfoBytes);
-
-  TCPChannel<TopicInfo>* tcp_channel = channel_->ToTCPChannel();
+  TCPChannel<TopicInfo>* tcp_channel = server_channel_->ToTCPChannel();
   auto status_or = tcp_channel->Listen();
   *channel_source_.add_channel_defs() = status_or.ValueOrDie();
   DoAccept();
 }
 
 void TopicInfoWatcher::DoAccept() {
-  TCPChannel<TopicInfo>* tcp_channel = channel_->ToTCPChannel();
-  tcp_channel->AcceptOnce(
+  TCPChannel<TopicInfo>* tcp_channel = server_channel_->ToTCPChannel();
+  tcp_channel->AcceptOnceIntercept(
       ::base::BindOnce(&TopicInfoWatcher::OnAccept, ::base::Unretained(this)));
 }
 
-void TopicInfoWatcher::OnAccept(const Status& s) {
-  if (s.ok()) {
+void TopicInfoWatcher::OnAccept(
+    StatusOr<std::unique_ptr<TCPChannel<TopicInfo>>> status_or) {
+  if (status_or.ok()) {
+    channel_ = std::move(status_or.ValueOrDie());
     WatchNewTopicInfo();
   } else {
-    LOG(ERROR) << "Failed to accept: " << s.error_message();
+    LOG(ERROR) << "Failed to accept: " << status_or.status();
   }
 }
 
 void TopicInfoWatcher::WatchNewTopicInfo() {
   DCHECK(channel_);
+  channel_->SetReceiveBufferSize(kTopicInfoBytes);
+
   channel_->ReceiveMessage(&topic_info_,
                            ::base::BindOnce(&TopicInfoWatcher::OnNewTopicInfo,
                                             ::base::Unretained(this)));

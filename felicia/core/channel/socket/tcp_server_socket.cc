@@ -58,24 +58,16 @@ StatusOr<ChannelDef> TCPServerSocket::Listen() {
 
 void TCPServerSocket::AcceptLoop(AcceptCallback callback) {
   DCHECK(!callback.is_null());
-  DCHECK(accept_callback_.is_null() && accept_once_callback_.is_null() &&
+  DCHECK(accept_callback_.is_null() &&
          accept_once_intercept_callback_.is_null());
   accept_callback_ = callback;
   DoAcceptLoop();
 }
 
-void TCPServerSocket::AcceptOnce(AcceptOnceCallback callback) {
-  DCHECK(!callback.is_null());
-  DCHECK(accept_callback_.is_null() && accept_once_callback_.is_null() &&
-         accept_once_intercept_callback_.is_null());
-  accept_once_callback_ = std::move(callback);
-  DoAccept();
-}
-
 void TCPServerSocket::AcceptOnceIntercept(
     AcceptOnceInterceptCallback callback) {
   DCHECK(!callback.is_null());
-  DCHECK(accept_callback_.is_null() && accept_once_callback_.is_null() &&
+  DCHECK(accept_callback_.is_null() &&
          accept_once_intercept_callback_.is_null());
   accept_once_intercept_callback_ = std::move(callback);
   DoAccept();
@@ -136,44 +128,8 @@ void TCPServerSocket::Write(char* buffer, int size,
 
 void TCPServerSocket::Read(char* buffer, int size,
                            StatusOnceCallback callback) {
-  DCHECK(read_callback_.is_null());
-  DCHECK(!callback.is_null());
-  DCHECK(size > 0);
-
-  EraseClosedSockets();
-
-  if (accepted_sockets_.size() == 0) {
-    std::move(callback).Run(errors::NetworkError(
-        ::net::ErrorToString(::net::ERR_SOCKET_NOT_CONNECTED)));
-    return;
-  }
-
-  read_callback_ = std::move(callback);
-  auto it = accepted_sockets_.rbegin();
-
-  int to_read = size;
-  int read = 0;
-  while (to_read > 0) {
-    scoped_refptr<::net::IOBufferWithSize> read_buffer =
-        base::MakeRefCounted<::net::IOBufferWithSize>(to_read);
-    int rv =
-        (*it)->Read(read_buffer.get(), read_buffer->size(),
-                    ::base::BindOnce(&TCPServerSocket::OnReadAsync,
-                                     ::base::Unretained(this), buffer + read,
-                                     read_buffer, (*it).get()));
-
-    if (rv == ::net::ERR_IO_PENDING) break;
-
-    if (rv > 0) {
-      memcpy(buffer + read, read_buffer->data(), rv);
-      to_read -= rv;
-      read += rv;
-    }
-
-    if (to_read == 0 || rv <= 0) {
-      OnRead((*it).get(), rv);
-    }
-  }
+  NOTREACHED() << "You read data from ServerSocket, if you need, please use "
+                  "TCPServerSokcet::AcceptOnceIntercept.";
 }
 
 int TCPServerSocket::DoAccept() {
@@ -204,32 +160,13 @@ void TCPServerSocket::HandleAccpetResult(int result) {
     std::move(accept_once_intercept_callback_).Run(std::move(accepted_socket_));
   } else {
     accepted_sockets_.push_back(std::move(accepted_socket_));
-    if (accept_callback_)
-      accept_callback_.Run(Status::OK());
-    else
-      std::move(accept_once_callback_).Run(Status::OK());
+    if (accept_callback_) accept_callback_.Run(Status::OK());
   }
 }
 
 void TCPServerSocket::OnAccept(int result) {
   HandleAccpetResult(result);
   if (accept_callback_) DoAcceptLoop();
-}
-
-void TCPServerSocket::OnReadAsync(
-    char* buffer, scoped_refptr<::net::IOBufferWithSize> read_buffer,
-    ::net::TCPSocket* socket, int result) {
-  if (result > 0) memcpy(buffer, read_buffer->data(), result);
-  OnRead(socket, result);
-}
-
-void TCPServerSocket::OnRead(::net::TCPSocket* socket, int result) {
-  if (result == 0) {
-    result = ::net::ERR_CONNECTION_CLOSED;
-    socket->Close();
-    has_closed_sockets_ = true;
-  }
-  CallbackWithStatus(std::move(read_callback_), result);
 }
 
 void TCPServerSocket::OnWrite(::net::TCPSocket* socket, int result) {

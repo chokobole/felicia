@@ -10,6 +10,9 @@ namespace felicia {
 template <typename MessageTy>
 class TCPChannel : public Channel<MessageTy> {
  public:
+  using AcceptOnceInterceptCallback = ::base::OnceCallback<void(
+      StatusOr<std::unique_ptr<TCPChannel<MessageTy>>>)>;
+
   TCPChannel();
   ~TCPChannel();
 
@@ -24,14 +27,17 @@ class TCPChannel : public Channel<MessageTy> {
 
   StatusOr<ChannelDef> Listen();
 
-  void AcceptLoop(TCPServerSocket::AcceptCallback accept_callback);
+  void AcceptLoop(TCPServerSocket::AcceptCallback callback);
 
-  void AcceptOnce(TCPServerSocket::AcceptOnceCallback accept_once_callback);
+  void AcceptOnceIntercept(AcceptOnceInterceptCallback callback);
 
   void Connect(const ChannelDef& channel_def,
                StatusOnceCallback callback) override;
 
  private:
+  void OnAccept(AcceptOnceInterceptCallback callback,
+                StatusOr<std::unique_ptr<::net::TCPSocket>> status_or);
+
   DISALLOW_COPY_AND_ASSIGN(TCPChannel);
 };
 
@@ -60,22 +66,39 @@ StatusOr<ChannelDef> TCPChannel<MessageTy>::Listen() {
 
 template <typename MessageTy>
 void TCPChannel<MessageTy>::AcceptLoop(
-    TCPServerSocket::AcceptCallback accept_callback) {
+    TCPServerSocket::AcceptCallback callback) {
   DCHECK(this->channel_impl_);
-  DCHECK(!accept_callback.is_null());
+  DCHECK(!callback.is_null());
   TCPServerSocket* server_socket =
       this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPServerSocket();
-  server_socket->AcceptLoop(accept_callback);
+  server_socket->AcceptLoop(callback);
 }
 
 template <typename MessageTy>
-void TCPChannel<MessageTy>::AcceptOnce(
-    TCPServerSocket::AcceptOnceCallback accept_once_callback) {
+void TCPChannel<MessageTy>::AcceptOnceIntercept(
+    AcceptOnceInterceptCallback callback) {
   DCHECK(this->channel_impl_);
-  DCHECK(!accept_once_callback.is_null());
+  DCHECK(!callback.is_null());
   TCPServerSocket* server_socket =
       this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPServerSocket();
-  server_socket->AcceptOnce(std::move(accept_once_callback));
+  server_socket->AcceptOnceIntercept(
+      ::base::BindOnce(&TCPChannel<MessageTy>::OnAccept,
+                       ::base::Unretained(this), std::move(callback)));
+}
+
+template <typename MessageTy>
+void TCPChannel<MessageTy>::OnAccept(
+    AcceptOnceInterceptCallback callback,
+    StatusOr<std::unique_ptr<::net::TCPSocket>> status_or) {
+  if (status_or.ok()) {
+    auto channel = std::make_unique<TCPChannel<MessageTy>>();
+    auto client_socket = std::make_unique<TCPClientSocket>();
+    client_socket->set_socket(std::move(status_or.ValueOrDie()));
+    channel->channel_impl_ = std::move(client_socket);
+    std::move(callback).Run(std::move(channel));
+  } else {
+    std::move(callback).Run(status_or.status());
+  }
 }
 
 template <typename MessageTy>

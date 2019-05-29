@@ -83,32 +83,7 @@ void UDPServerSocket::Write(char* buffer, int size,
 
 void UDPServerSocket::Read(char* buffer, int size,
                            StatusOnceCallback callback) {
-  DCHECK(!callback.is_null());
-  DCHECK(size > 0);
-  read_callback_ = std::move(callback);
-  int to_read = size;
-  int read = 0;
-  while (to_read > 0) {
-    scoped_refptr<::net::IOBufferWithSize> read_buffer =
-        base::MakeRefCounted<::net::IOBufferWithSize>(to_read);
-    int rv = socket_->RecvFrom(
-        read_buffer.get(), read_buffer->size(), &recv_from_ip_endpoint_,
-        ::base::BindOnce(&UDPServerSocket::OnReadAsync,
-                         ::base::Unretained(this), buffer + read, read_buffer));
-
-    if (rv == ::net::ERR_IO_PENDING) break;
-
-    if (rv > 0) {
-      memcpy(buffer + read, read_buffer->data(), rv);
-      to_read -= rv;
-      read += rv;
-    }
-
-    if (to_read == 0 || rv <= 0) {
-      OnRead(rv);
-      break;
-    }
-  }
+  NOTREACHED() << "You read data from ServerSocket";
 }
 
 }  // namespace felicia
