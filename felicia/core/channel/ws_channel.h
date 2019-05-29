@@ -15,6 +15,8 @@ class WSChannel : public Channel<MessageTy> {
 
   bool IsWSChannel() const override { return true; }
 
+  bool HasReceivers() const override;
+
   void Connect(const ChannelDef& channel_def,
                StatusOnceCallback callback) override {
     NOTREACHED();
@@ -33,6 +35,14 @@ WSChannel<MessageTy>::WSChannel() {}
 
 template <typename MessageTy>
 WSChannel<MessageTy>::~WSChannel() = default;
+
+template <typename MessageTy>
+bool WSChannel<MessageTy>::HasReceivers() const {
+  DCHECK(this->channel_impl_);
+  WebSocketServer* server =
+      this->channel_impl_->ToSocket()->ToWebSocket()->ToWebSocketServer();
+  return server->HasReceivers();
+}
 
 template <typename MessageTy>
 StatusOr<ChannelDef> WSChannel<MessageTy>::Listen() {

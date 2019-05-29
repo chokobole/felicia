@@ -12,6 +12,11 @@ WebSocketServer::~WebSocketServer() = default;
 
 bool WebSocketServer::IsServer() const { return true; }
 
+bool WebSocketServer::HasReceivers() const {
+  DCHECK(tcp_server_socket_);
+  return tcp_server_socket_->accepted_sockets().size() > 0;
+}
+
 StatusOr<ChannelDef> WebSocketServer::Listen() {
   DCHECK(tcp_server_socket_);
   auto status_or = tcp_server_socket_->Listen();

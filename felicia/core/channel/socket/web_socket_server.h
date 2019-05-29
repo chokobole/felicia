@@ -14,6 +14,8 @@ class EXPORT WebSocketServer : public WebSocket {
   // Socket methods
   bool IsServer() const override;
 
+  bool HasReceivers() const;
+
   StatusOr<ChannelDef> Listen();
 
   void AcceptLoop(TCPServerSocket::AcceptCallback callback);
