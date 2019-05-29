@@ -21,13 +21,6 @@ void UDPSocket::OnWrite(int result) {
   CallbackWithStatus(std::move(write_callback_), result);
 }
 
-void UDPSocket::OnReadAsync(char* buffer,
-                            scoped_refptr<::net::IOBufferWithSize> read_buffer,
-                            int result) {
-  if (result > 0) memcpy(buffer, read_buffer->data(), result);
-  OnRead(result);
-}
-
 void UDPSocket::OnRead(int result) {
   CallbackWithStatus(std::move(read_callback_), result);
 }

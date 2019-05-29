@@ -20,9 +20,6 @@ class EXPORT UDPSocket : public Socket {
   UDPClientSocket* ToUDPClientSocket();
   UDPServerSocket* ToUDPServerSocket();
 
-  void OnReadAsync(char* buffer,
-                   scoped_refptr<::net::IOBufferWithSize> read_buffer,
-                   int result);
   void OnRead(int result);
   void OnWrite(int result);
 

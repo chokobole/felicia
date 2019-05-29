@@ -40,13 +40,13 @@ void WebSocketServer::DoAcceptOnce() {
       &WebSocketServer::OnAccept, ::base::Unretained(this)));
 }
 
-void WebSocketServer::Write(char* buffer, int size,
+void WebSocketServer::Write(scoped_refptr<::net::IOBuffer> buffer, int size,
                             StatusOnceCallback callback) {
-  DLOG(INFO) << "Write:" << std::string(buffer, size);
+  DLOG(INFO) << "Write:" << std::string(buffer->data(), size);
 }
 
-void WebSocketServer::Read(char* buffer, int size,
-                           StatusOnceCallback callback) {
+void WebSocketServer::Read(scoped_refptr<::net::GrowableIOBuffer> buffer,
+                           int size, StatusOnceCallback callback) {
   NOTREACHED() << "You read data from ServerSocket";
 }
 

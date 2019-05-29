@@ -59,10 +59,10 @@ class Channel {
   void ReceiveMessage(MessageTy* message, StatusOnceCallback callback);
 
   virtual void SetSendBufferSize(Bytes bytes) {
-    send_buffer_.resize(bytes.bytes());
+    send_buffer_->SetCapacity(bytes.bytes());
   }
   virtual void SetReceiveBufferSize(Bytes bytes) {
-    receive_buffer_.resize(bytes.bytes());
+    receive_buffer_->SetCapacity(bytes.bytes());
   }
 
   void EnableDynamicBuffer() { is_dynamic_buffer_ = true; }
@@ -75,15 +75,17 @@ class Channel {
   void OnReceiveMessage(const Status& s);
   void OnReceiveMessageWithHeader(const Status& s);
 
-  Channel() {}
+  Channel()
+      : send_buffer_(::base::MakeRefCounted<::net::GrowableIOBuffer>()),
+        receive_buffer_(::base::MakeRefCounted<::net::GrowableIOBuffer>()) {}
 
   Header header_;
   MessageTy* message_ = nullptr;
 
   std::unique_ptr<ChannelImpl> channel_impl_;
-  std::vector<char> send_buffer_;
+  scoped_refptr<::net::GrowableIOBuffer> send_buffer_;
   StatusOnceCallback send_callback_;
-  std::vector<char> receive_buffer_;
+  scoped_refptr<::net::GrowableIOBuffer> receive_buffer_;
   StatusOnceCallback receive_callback_;
 
   bool is_dynamic_buffer_ = false;
@@ -98,12 +100,13 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
   DCHECK(this->send_callback_.is_null());
   DCHECK(!callback.is_null());
 
-  if (!is_dynamic_buffer_ && send_buffer_.size() == 0) {
+  if (!is_dynamic_buffer_ && send_buffer_->capacity() == 0) {
     DLOG(WARNING) << "Send buffer was not allocated, used default size.";
-    send_buffer_.resize(Bytes::FromKilloBytes(1).bytes());
+    send_buffer_->SetCapacity(Bytes::FromKilloBytes(1).bytes());
   }
 
-  size_t to_send;
+  send_buffer_->set_offset(0);
+  int to_send;
   MessageIoError err;
   if (IsWSChannel()) {
     err =
@@ -114,13 +117,13 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
   }
   if (err == MessageIoError::OK) {
     this->send_callback_ = std::move(callback);
-    channel_impl_->Write(send_buffer_.data(), to_send,
+    channel_impl_->Write(send_buffer_, to_send,
                          ::base::BindOnce(&Channel<MessageTy>::OnSendMessage,
                                           ::base::Unretained(this)));
   } else if (err == MessageIoError::ERR_NOT_ENOUGH_BUFFER) {
     if (is_dynamic_buffer_) {
       DLOG(INFO) << "Dynamically allocate buffer " << Bytes::FromBytes(to_send);
-      send_buffer_.resize(to_send);
+      send_buffer_->SetCapacity(to_send);
     } else {
       std::move(callback).Run(errors::Aborted(MessageIoErrorToString(err)));
       return;
@@ -146,9 +149,9 @@ void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
   this->receive_callback_ = std::move(callback);
 
   if (is_dynamic_buffer_) {
-    if (receive_buffer_.size() == 0) {
+    if (receive_buffer_->capacity() == 0) {
       if (IsTCPChannel()) {
-        receive_buffer_.resize(sizeof(Header));
+        receive_buffer_->SetCapacity(sizeof(Header));
       } else {
         LOG(INFO)
             << "You can ignore the following error statement, This is a hack "
@@ -159,18 +162,19 @@ void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
         SetReceiveBufferSize(Bytes::Max());
       }
     }
-  } else if (receive_buffer_.size() == 0) {
+  } else if (receive_buffer_->capacity() == 0) {
     DLOG(WARNING) << "Receive buffer was not allocated, used default size.";
-    receive_buffer_.resize(Bytes::FromKilloBytes(1).bytes());
+    receive_buffer_->SetCapacity(Bytes::FromKilloBytes(1).bytes());
   }
 
+  receive_buffer_->set_offset(0);
   if (IsTCPChannel()) {
-    channel_impl_->Read(receive_buffer_.data(), sizeof(Header),
+    channel_impl_->Read(receive_buffer_, sizeof(Header),
                         ::base::BindOnce(&Channel<MessageTy>::OnReceiveHeader,
                                          ::base::Unretained(this)));
   } else {
     channel_impl_->Read(
-        receive_buffer_.data(), receive_buffer_.size(),
+        receive_buffer_, receive_buffer_->capacity(),
         ::base::BindOnce(&Channel<MessageTy>::OnReceiveMessageWithHeader,
                          ::base::Unretained(this)));
   }
@@ -185,18 +189,18 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
   }
 
   MessageIoError err = MessageIO<MessageTy>::ParseHeaderFromBuffer(
-      receive_buffer_.data(), &header_);
+      receive_buffer_->StartOfBuffer(), &header_);
   if (err != MessageIoError::OK) {
     std::move(this->receive_callback_)
         .Run(errors::DataLoss(MessageIoErrorToString(err)));
     return;
   }
 
-  if (receive_buffer_.size() < header_.size()) {
+  int bytes = sizeof(Header) + header_.size();
+  if (receive_buffer_->capacity() < bytes) {
     if (is_dynamic_buffer_) {
-      DLOG(INFO) << "Dynamically allocate buffer "
-                 << Bytes::FromBytes(header_.size());
-      receive_buffer_.resize(header_.size());
+      DLOG(INFO) << "Dynamically allocate buffer " << Bytes::FromBytes(bytes);
+      receive_buffer_->SetCapacity(bytes);
     } else {
       std::move(this->receive_callback_)
           .Run(errors::Aborted(
@@ -205,7 +209,8 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
     }
   }
 
-  channel_impl_->Read(receive_buffer_.data(), header_.size(),
+  receive_buffer_->set_offset(0);
+  channel_impl_->Read(receive_buffer_, header_.size(),
                       ::base::BindOnce(&Channel<MessageTy>::OnReceiveMessage,
                                        ::base::Unretained(this)));
 }
@@ -215,7 +220,7 @@ void Channel<MessageTy>::OnReceiveMessage(const Status& s) {
   DCHECK(IsTCPChannel());
   if (s.ok()) {
     MessageIoError err = MessageIO<MessageTy>::ParseMessageFromBuffer(
-        receive_buffer_.data(), header_, false, this->message_);
+        receive_buffer_->StartOfBuffer(), header_, false, this->message_);
     if (err != MessageIoError::OK) {
       std::move(this->receive_callback_)
           .Run(errors::DataLoss("Failed to parse message from buffer."));
@@ -235,14 +240,14 @@ void Channel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
   }
 
   MessageIoError err = MessageIO<MessageTy>::ParseHeaderFromBuffer(
-      receive_buffer_.data(), &header_);
+      receive_buffer_->StartOfBuffer(), &header_);
   if (err != MessageIoError::OK) {
     std::move(this->receive_callback_)
         .Run(errors::DataLoss(MessageIoErrorToString(err)));
     return;
   }
 
-  if (receive_buffer_.size() - sizeof(Header) < header_.size()) {
+  if (receive_buffer_->capacity() - sizeof(Header) < header_.size()) {
     std::move(this->receive_callback_)
         .Run(errors::Aborted(
             MessageIoErrorToString(MessageIoError::ERR_NOT_ENOUGH_BUFFER)));
@@ -250,7 +255,7 @@ void Channel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
   }
 
   err = MessageIO<MessageTy>::ParseMessageFromBuffer(
-      receive_buffer_.data(), header_, true, this->message_);
+      receive_buffer_->StartOfBuffer(), header_, true, this->message_);
   if (err != MessageIoError::OK) {
     std::move(this->receive_callback_)
         .Run(errors::DataLoss("Failed to parse message from buffer."));

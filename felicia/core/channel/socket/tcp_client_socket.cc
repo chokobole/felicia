@@ -47,19 +47,17 @@ void TCPClientSocket::Connect(const ::net::IPEndPoint& ip_endpoint,
   }
 }
 
-void TCPClientSocket::Write(char* buffer, int size,
+void TCPClientSocket::Write(scoped_refptr<::net::IOBuffer> buffer, int size,
                             StatusOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
   write_callback_ = std::move(callback);
-  int to_write = size;
-  int written = 0;
-  while (to_write > 0) {
-    scoped_refptr<::net::IOBufferWithSize> write_buffer =
-        base::MakeRefCounted<::net::IOBufferWithSize>(to_write);
-    memcpy(write_buffer->data(), buffer + written, to_write);
+  scoped_refptr<::net::DrainableIOBuffer> write_buffer =
+      ::base::MakeRefCounted<::net::DrainableIOBuffer>(
+          buffer, static_cast<size_t>(size));
+  while (write_buffer->BytesRemaining() > 0) {
     int rv = socket_->Write(
-        write_buffer.get(), write_buffer->size(),
+        write_buffer.get(), write_buffer->BytesRemaining(),
         ::base::BindOnce(&TCPClientSocket::OnWrite, ::base::Unretained(this)),
         ::net::DefineNetworkTrafficAnnotation("tcp_client_socket",
                                               "Send Message"));
@@ -67,38 +65,32 @@ void TCPClientSocket::Write(char* buffer, int size,
     if (rv == ::net::ERR_IO_PENDING) break;
 
     if (rv > 0) {
-      to_write -= rv;
-      written += rv;
+      write_buffer->DidConsume(rv);
     }
 
-    if (to_write == 0 || rv <= 0) {
+    if (write_buffer->BytesRemaining() == 0 || rv <= 0) {
       OnWrite(rv);
       break;
     }
   }
 }
 
-void TCPClientSocket::Read(char* buffer, int size,
-                           StatusOnceCallback callback) {
+void TCPClientSocket::Read(scoped_refptr<::net::GrowableIOBuffer> buffer,
+                           int size, StatusOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
   read_callback_ = std::move(callback);
   int to_read = size;
-  int read = 0;
   while (to_read > 0) {
-    scoped_refptr<::net::IOBufferWithSize> read_buffer =
-        base::MakeRefCounted<::net::IOBufferWithSize>(to_read);
     int rv = socket_->Read(
-        read_buffer.get(), read_buffer->size(),
-        ::base::BindOnce(&TCPClientSocket::OnReadAsync,
-                         ::base::Unretained(this), buffer + read, read_buffer));
+        buffer.get(), to_read,
+        ::base::BindOnce(&TCPClientSocket::OnRead, ::base::Unretained(this)));
 
     if (rv == ::net::ERR_IO_PENDING) break;
 
     if (rv > 0) {
-      memcpy(buffer + read, read_buffer->data(), rv);
+      buffer->set_offset(buffer->offset() + rv);
       to_read -= rv;
-      read += rv;
     }
 
     if (to_read == 0 || rv <= 0) {
@@ -117,13 +109,6 @@ void TCPClientSocket::OnWrite(int result) {
     socket_.reset();
   }
   CallbackWithStatus(std::move(write_callback_), result);
-}
-
-void TCPClientSocket::OnReadAsync(
-    char* buffer, scoped_refptr<::net::IOBufferWithSize> read_buffer,
-    int result) {
-  if (result > 0) memcpy(buffer, read_buffer->data(), result);
-  OnRead(result);
 }
 
 void TCPClientSocket::OnRead(int result) {

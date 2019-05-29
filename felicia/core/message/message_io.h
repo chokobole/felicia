@@ -37,9 +37,9 @@ class MessageIO<T, std::enable_if_t<
                        std::is_base_of<::google::protobuf::Message, T>::value ||
                        std::is_same<DynamicProtobufMessage, T>::value>> {
  public:
-  static MessageIoError JsonizeToBuffer(const T* proto,
-                                        std::vector<char>& buffer,
-                                        size_t* size) {
+  static MessageIoError JsonizeToBuffer(
+      const T* proto, scoped_refptr<::net::GrowableIOBuffer> buffer,
+      int* size) {
     std::string text;
     if (!MessageToJsonString(proto, &text))
       return MessageIoError::ERR_FAILED_TO_SERIALIZE;
@@ -47,9 +47,9 @@ class MessageIO<T, std::enable_if_t<
     return AttachToBufferWithHeader(text, buffer, size);
   }
 
-  static MessageIoError SerializeToBuffer(const T* proto,
-                                          std::vector<char>& buffer,
-                                          size_t* size) {
+  static MessageIoError SerializeToBuffer(
+      const T* proto, scoped_refptr<::net::GrowableIOBuffer> buffer,
+      int* size) {
     std::string text;
     if (!proto->SerializeToString(&text))
       return MessageIoError::ERR_FAILED_TO_SERIALIZE;
@@ -80,19 +80,21 @@ class MessageIO<T, std::enable_if_t<
   }
 
  private:
-  static MessageIoError AttachToBufferWithHeader(const std::string& text,
-                                                 std::vector<char>& buffer,
-                                                 size_t* size) {
+  static MessageIoError AttachToBufferWithHeader(
+      const std::string& text, scoped_refptr<::net::GrowableIOBuffer> buffer,
+      int* size) {
     // This should be before return `ERR_NOT_ENOUGH_BUFFER`. Caller might use
     // this |size| to reallocate buffer.
     *size = sizeof(Header) + text.length();
 
-    if (buffer.size() < *size) return MessageIoError::ERR_NOT_ENOUGH_BUFFER;
+    if (buffer->RemainingCapacity() < *size)
+      return MessageIoError::ERR_NOT_ENOUGH_BUFFER;
 
     Header header;
     header.set_size(text.length());
-    memcpy(buffer.data(), &header, sizeof(Header));
-    memcpy(buffer.data() + sizeof(Header), text.data(), text.length());
+    memcpy(buffer->StartOfBuffer(), &header, sizeof(Header));
+    memcpy(buffer->StartOfBuffer() + sizeof(Header), text.data(),
+           text.length());
 
     return MessageIoError::OK;
   }

@@ -17,8 +17,10 @@ class EXPORT UDPServerSocket : public UDPSocket {
 
   StatusOr<ChannelDef> Bind();
 
-  void Write(char* buffer, int size, StatusOnceCallback callback) override;
-  void Read(char* buffer, int size, StatusOnceCallback callback) override;
+  void Write(scoped_refptr<::net::IOBuffer> buffer, int size,
+             StatusOnceCallback callback) override;
+  void Read(scoped_refptr<::net::GrowableIOBuffer> buffer, int size,
+            StatusOnceCallback callback) override;
 
  private:
   std::unique_ptr<::net::UDPSocket> socket_;

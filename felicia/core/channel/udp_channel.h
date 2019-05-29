@@ -29,14 +29,14 @@ class UDPChannel : public Channel<MessageTy> {
       LOG(ERROR) << "UDP buffer can't exceed " << bytes;
       bytes = kMaximumBufferSize;
     }
-    this->send_buffer_.resize(bytes.bytes());
+    this->send_buffer_->SetCapacity(bytes.bytes());
   }
   void SetReceiveBufferSize(Bytes bytes) override {
     if (bytes > kMaximumBufferSize) {
       LOG(ERROR) << "UDP buffer can't exceed " << bytes;
       bytes = kMaximumBufferSize;
     }
-    this->receive_buffer_.resize(bytes.bytes());
+    this->receive_buffer_->SetCapacity(bytes.bytes());
   }
 
  private:

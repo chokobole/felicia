@@ -77,7 +77,7 @@ void TCPServerSocket::AddSocket(std::unique_ptr<::net::TCPSocket> socket) {
   accepted_sockets_.push_back(std::move(socket));
 }
 
-void TCPServerSocket::Write(char* buffer, int size,
+void TCPServerSocket::Write(scoped_refptr<::net::IOBuffer> buffer, int size,
                             StatusOnceCallback callback) {
   DCHECK_EQ(0, to_write_count_);
   DCHECK_EQ(0, written_count_);
@@ -97,26 +97,24 @@ void TCPServerSocket::Write(char* buffer, int size,
   write_callback_ = std::move(callback);
   auto it = accepted_sockets_.begin();
   while (it != accepted_sockets_.end()) {
-    int to_write = size;
-    int written = 0;
-    while (to_write > 0) {
-      scoped_refptr<::net::IOBufferWithSize> write_buffer =
-          base::MakeRefCounted<::net::IOBufferWithSize>(to_write);
-      memcpy(write_buffer->data(), buffer + written, to_write);
+    scoped_refptr<::net::DrainableIOBuffer> write_buffer =
+        ::base::MakeRefCounted<::net::DrainableIOBuffer>(
+            buffer, static_cast<size_t>(size));
+    while (write_buffer->BytesRemaining() > 0) {
       int rv =
-          (*it)->Write(write_buffer.get(), write_buffer->size(),
+          (*it)->Write(write_buffer.get(), write_buffer->BytesRemaining(),
                        ::base::BindOnce(&TCPServerSocket::OnWrite,
                                         ::base::Unretained(this), (*it).get()),
                        ::net::DefineNetworkTrafficAnnotation(
                            "tcp_server_socket", "Send Message"));
+
       if (rv == ::net::ERR_IO_PENDING) break;
 
       if (rv >= 0) {
-        to_write -= rv;
-        written += rv;
+        write_buffer->DidConsume(rv);
       }
 
-      if (to_write == 0 || rv <= 0) {
+      if (write_buffer->BytesRemaining() == 0 || rv <= 0) {
         OnWrite((*it).get(), rv);
         break;
       }
@@ -126,8 +124,8 @@ void TCPServerSocket::Write(char* buffer, int size,
   }
 }
 
-void TCPServerSocket::Read(char* buffer, int size,
-                           StatusOnceCallback callback) {
+void TCPServerSocket::Read(scoped_refptr<::net::GrowableIOBuffer> buffer,
+                           int size, StatusOnceCallback callback) {
   NOTREACHED() << "You read data from ServerSocket, if you need, please use "
                   "TCPServerSokcet::AcceptOnceIntercept.";
 }

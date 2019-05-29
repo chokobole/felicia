@@ -19,16 +19,15 @@ class EXPORT TCPClientSocket : public TCPSocket {
   void Connect(const ::net::IPEndPoint& ip_endpoint,
                StatusOnceCallback callback);
 
-  void Write(char* buffer, int size, StatusOnceCallback callback) override;
-  void Read(char* buffer, int size, StatusOnceCallback callback) override;
+  void Write(scoped_refptr<::net::IOBuffer> buffer, int size,
+             StatusOnceCallback callback) override;
+  void Read(scoped_refptr<::net::GrowableIOBuffer> buffer, int size,
+            StatusOnceCallback callback) override;
 
  private:
   void OnConnect(int result);
 
   void OnWrite(int result);
-  void OnReadAsync(char* buffer,
-                   scoped_refptr<::net::IOBufferWithSize> read_buffer,
-                   int result);
   void OnRead(int result);
 
   StatusOnceCallback connect_callback_;
