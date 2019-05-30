@@ -45,7 +45,7 @@ matrix:
       install:
         - choco install python3 --params "/InstallDir:C:\Python3"
         - ./installers/install_python_deps.sh
-        - choco install bazel --version 0.20.0
+        - choco install bazel --version 0.24.0
         - choco install nodejs.install --version 10.15.3
       script:
         - bazel build //felicia/...

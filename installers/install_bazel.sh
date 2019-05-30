@@ -2,7 +2,7 @@
 
 set -e
 
-BAZEL_VERSION=0.20.0
+BAZEL_VERSION=0.24.0
 OS=`uname -s | tr '[:upper:]' '[:lower:]'`
 ARCH=`uname -m`
 FILE="bazel-${BAZEL_VERSION}-installer-${OS}-${ARCH}.sh"

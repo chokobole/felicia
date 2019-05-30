@@ -33,7 +33,7 @@ def load_deps():
     git_repository(
         name = "com_google_protobuf",
         remote = "https://github.com/protocolbuffers/protobuf.git",
-        tag = "v3.6.0",
+        tag = "v3.7.0",
     )
 
     http_archive(
@@ -56,14 +56,14 @@ def load_deps():
     # Needed by grpc
     git_repository(
         name = "boringssl",
-        commit = "90bd81032325ba659e538556e64977c29df32a3c",
+        commit = "334990fcddeaa4916f4c455026bbd66595daa104",
         remote = "https://github.com/google/boringssl.git",
     )
 
     git_repository(
         name = "com_github_grpc_grpc",
         remote = "https://github.com/grpc/grpc.git",
-        tag = "v1.19.1",
+        tag = "v1.21.1",
     )
 
     new_git_repository(
