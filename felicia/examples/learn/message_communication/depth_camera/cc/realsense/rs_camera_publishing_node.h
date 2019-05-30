@@ -29,7 +29,10 @@ class RsCameraPublishingNode : public NodeLifecycle {
   void OnInit() override {
     std::cout << "RsCameraPublishingNode::OnInit()" << std::endl;
     camera_ = RsCameraFactory::NewDepthCamera(camera_descriptor_);
-    CHECK(camera_->Init().ok());
+    Status s = camera_->Init();
+    if (!s.ok()) {
+      LOG(ERROR) << s;
+    }
   }
 
   void OnDidCreate(const NodeInfo& node_info) override {
@@ -49,18 +52,18 @@ class RsCameraPublishingNode : public NodeLifecycle {
     settings.is_dynamic_buffer = true;
 
     color_publisher_.RequestPublish(
-        node_info_, color_topic_, ChannelDef::TCP, settings,
+        node_info_, color_topic_, ChannelDef::TCP | ChannelDef::WS, settings,
         ::base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
 
     depth_publisher_.RequestPublish(
-        node_info_, depth_topic_, ChannelDef::TCP, settings,
+        node_info_, depth_topic_, ChannelDef::TCP | ChannelDef::WS, settings,
         ::base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
 
     if (!imu_topic_.empty()) {
       imu_publisher_.RequestPublish(
-          node_info_, imu_topic_, ChannelDef::TCP, settings,
+          node_info_, imu_topic_, ChannelDef::TCP | ChannelDef::WS, settings,
           ::base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
                            ::base::Unretained(this)));
     }

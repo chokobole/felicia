@@ -73,14 +73,14 @@ EXPORT std::ostream& operator<<(std::ostream& os,
 
 using CameraFormats = std::vector<CameraFormat>;
 
-bool ComparePixelFormatPreference(PixelFormat lhs, PixelFormat rhs);
+EXPORT bool ComparePixelFormatPreference(PixelFormat lhs, PixelFormat rhs);
 
 // Compares the priority of the camera formats. Returns true if |lhs| is the
 // preferred camera format in comparison with |rhs|. Returns false otherwise.
-bool CompareCapability(const CameraFormat& requested, const CameraFormat& lhs,
-                       const CameraFormat& rhs);
+EXPORT bool CompareCapability(const CameraFormat& requested,
+                              const CameraFormat& lhs, const CameraFormat& rhs);
 
-const CameraFormat& GetBestMatchedCameraFormat(
+EXPORT const CameraFormat& GetBestMatchedCameraFormat(
     const CameraFormat& requested, const CameraFormats& camera_formats);
 
 }  // namespace felicia

@@ -14,17 +14,15 @@ fel_cc_library(
         "rs_pixel_format.cc",
         "rs_pixel_format.h",
     ]),
-    hdrs = [
+    hdrs = if_has_realsense([
         "rs_camera_factory.h",
         "rs_capability.h",
         "rs_stream_info.h",
-    ],
-    linkopts = if_has_realsense([
-        "-lrealsense2",
     ]),
-    deps = [
+    deps = if_has_realsense([
         "//felicia/core/lib",
         "//felicia/drivers/camera",
         "//felicia/drivers/imu",
-    ],
+        "@realsense//:realsense_headers",
+    ]),
 )

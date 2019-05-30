@@ -17,7 +17,9 @@ class CameraPublishingNode(fel.NodeLifecycle):
     def on_init(self):
         print("CameraPublishingNode.on_init()")
         self.camera = fel.CameraFactory.new_camera(self.camera_descriptor)
-        fel.check(self.camera.init().ok())
+        s = self.camera.init()
+        if not s.ok():
+            fel.log(fel.ERROR, status.error_message())
 
     def on_did_create(self, node_info):
         print("CameraPublishingNode.on_did_create()")

@@ -16,7 +16,10 @@ class CameraPublishingNode : public NodeLifecycle {
   void OnInit() override {
     std::cout << "CameraPublishingNode::OnInit()" << std::endl;
     camera_ = CameraFactory::NewCamera(camera_descriptor_);
-    CHECK(camera_->Init().ok());
+    Status s = camera_->Init();
+    if (!s.ok()) {
+      LOG(ERROR) << s;
+    }
   }
 
   void OnDidCreate(const NodeInfo& node_info) override {

@@ -18,7 +18,28 @@ struct RsCapability {
   RsCapability(int stream_index, const ImuFormat& format)
       : format(format), stream_index(stream_index), is_camera_format(false) {}
 
+  RsCapability(const RsCapability& other)
+      : stream_index(other.stream_index),
+        is_camera_format(other.is_camera_format) {
+    if (is_camera_format) {
+      format.camera_format = other.format.camera_format;
+    } else {
+      format.imu_format = other.format.imu_format;
+    }
+  }
+
+  void operator=(const RsCapability& other) {
+    stream_index = other.stream_index;
+    is_camera_format = other.is_camera_format;
+    if (is_camera_format) {
+      format.camera_format = other.format.camera_format;
+    } else {
+      format.imu_format = other.format.imu_format;
+    }
+  }
+
   union Format {
+    Format() {}
     Format(const CameraFormat& camera_format) : camera_format(camera_format) {}
     Format(const ImuFormat& imu_format) : imu_format(imu_format) {}
 

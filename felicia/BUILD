@@ -208,5 +208,6 @@ fel_cc_shared_library(
         "//felicia/core/node:node_lifecycle",
         "//felicia/core/util",
         "//felicia/drivers/camera",
+        "//felicia/drivers/imu",
     ],
 )

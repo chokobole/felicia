@@ -37,7 +37,7 @@ class RsCamera : public DepthCameraInterface {
                AlignDirection align_direction,
                SynchedDepthCameraFrameCallback synched_frame_callback,
                StatusCallback status_callback) override;
-  Status Stop();
+  Status Stop() override;
 
   Status Start(const CameraFormat& requested_color_format,
                const CameraFormat& requested_depth_format,

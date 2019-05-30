@@ -9,14 +9,14 @@ package(default_visibility = ["//third_party/chromium:internal"])
 
 chromium_c_library(
     name = "modp_b64",
+    srcs = [
+        "modp_b64.cc",
+    ],
     hdrs = [
         "modp_b64.h",
         "modp_b64_data.h",
     ],
-    srcs = [
-        "modp_b64.cc",
-    ],
     deps = [
-        "//third_party/chromium/build"
-    ]
+        "//third_party/chromium/build",
+    ],
 )

@@ -6,20 +6,9 @@ load(
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_binary",
-    "fel_cc_library",
 )
 
 package(default_visibility = ["//visibility:private"])
-
-fel_cc_library(
-    name = "depth_camera_publishing_node",
-    srcs = ["depth_camera_publishing_node.h"],
-    deps = [
-        "//felicia/core/communication",
-        "//felicia/core/master:master_proxy",
-        "//felicia/drivers/camera",
-    ],
-)
 
 fel_cc_binary(
     name = "node_creator",
@@ -41,7 +30,5 @@ fel_cc_binary(
         "//felicia/examples/learn/message_communication/common/cc:camera_flag",
         "//felicia/examples/learn/message_communication/common/cc:camera_util",
         "//felicia/core:felicia_init",
-    ] + if_has_realsense([
-        "//felicia/drivers/vendors/realsense",
-    ]),
+    ] + if_has_realsense(["//felicia/drivers/vendors/realsense"]),
 )

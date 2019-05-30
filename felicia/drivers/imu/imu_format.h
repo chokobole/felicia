@@ -35,8 +35,8 @@ using ImuFormats = std::vector<ImuFormat>;
 
 // Compares the priority of the imu formats. Returns true if |lhs| is the
 // preferred imu format in comparison with |rhs|. Returns false otherwise.
-bool CompareCapability(const ImuFormat& requested, const ImuFormat& lhs,
-                       const ImuFormat& rhs);
+EXPORT bool CompareCapability(const ImuFormat& requested, const ImuFormat& lhs,
+                              const ImuFormat& rhs);
 
 }  // namespace felicia
 
