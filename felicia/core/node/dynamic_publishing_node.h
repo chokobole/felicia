@@ -22,7 +22,7 @@ class DynamicPublishingNode : public NodeLifecycle {
     virtual void OnRequestPublish(const Status& s) = 0;
     virtual void OnRequestUnpublish(const Status& s) = 0;
 
-    virtual void OnPublish(const Status& s) = 0;
+    virtual void OnPublish(ChannelDef::Type type, const Status& s) = 0;
   };
 
   explicit DynamicPublishingNode(std::unique_ptr<Delegate> delegate);

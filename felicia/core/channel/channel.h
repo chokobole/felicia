@@ -23,6 +23,9 @@ class UDPChannel;
 template <typename MessageTy>
 class WSChannel;
 
+using SendMessageCallback =
+    ::base::RepeatingCallback<void(ChannelDef::Type, const Status&)>;
+
 template <typename MessageTy>
 class Channel {
  public:
@@ -32,9 +35,11 @@ class Channel {
   virtual bool IsUDPChannel() const { return false; }
   virtual bool IsWSChannel() const { return false; }
 
+  virtual ChannelDef::Type type() const = 0;
+
   virtual bool HasReceivers() const { return true; }
 
-  bool IsSendingMessage() const { return !send_callback_.is_null(); }
+  bool IsSendingMessage() const { return is_sending_; }
   bool IsReceivingMessage() const { return !receive_callback_.is_null(); }
 
   TCPChannel<MessageTy>* ToTCPChannel() {
@@ -55,7 +60,7 @@ class Channel {
   virtual void Connect(const ChannelDef& channel_def,
                        StatusOnceCallback callback) = 0;
 
-  void SendMessage(const MessageTy& message, StatusOnceCallback callback);
+  void SendMessage(const MessageTy& message, SendMessageCallback callback);
   void ReceiveMessage(MessageTy* message, StatusOnceCallback callback);
 
   virtual void SetSendBufferSize(Bytes bytes) {
@@ -84,10 +89,11 @@ class Channel {
 
   std::unique_ptr<ChannelImpl> channel_impl_;
   scoped_refptr<::net::GrowableIOBuffer> send_buffer_;
-  StatusOnceCallback send_callback_;
+  SendMessageCallback send_callback_;
   scoped_refptr<::net::GrowableIOBuffer> receive_buffer_;
   StatusOnceCallback receive_callback_;
 
+  bool is_sending_ = false;
   bool is_dynamic_buffer_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Channel);
@@ -95,9 +101,9 @@ class Channel {
 
 template <typename MessageTy>
 void Channel<MessageTy>::SendMessage(const MessageTy& message,
-                                     StatusOnceCallback callback) {
+                                     SendMessageCallback callback) {
   DCHECK(channel_impl_);
-  DCHECK(this->send_callback_.is_null());
+  DCHECK(!is_sending_);
   DCHECK(!callback.is_null());
 
   if (!is_dynamic_buffer_ && send_buffer_->capacity() == 0) {
@@ -116,7 +122,8 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
                                                   &to_send);
   }
   if (err == MessageIoError::OK) {
-    this->send_callback_ = std::move(callback);
+    is_sending_ = true;
+    this->send_callback_ = callback;
     channel_impl_->Write(send_buffer_, to_send,
                          ::base::BindOnce(&Channel<MessageTy>::OnSendMessage,
                                           ::base::Unretained(this)));
@@ -125,17 +132,18 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
       DLOG(INFO) << "Dynamically allocate buffer " << Bytes::FromBytes(to_send);
       send_buffer_->SetCapacity(to_send);
     } else {
-      std::move(callback).Run(errors::Aborted(MessageIoErrorToString(err)));
+      callback.Run(type(), errors::Aborted(MessageIoErrorToString(err)));
       return;
     }
   } else {
-    std::move(callback).Run(errors::Unavailable(MessageIoErrorToString(err)));
+    callback.Run(type(), errors::Unavailable(MessageIoErrorToString(err)));
   }
 }
 
 template <typename MessageTy>
 void Channel<MessageTy>::OnSendMessage(const Status& s) {
-  std::move(this->send_callback_).Run(s);
+  is_sending_ = false;
+  this->send_callback_.Run(type(), s);
 }
 
 template <typename MessageTy>

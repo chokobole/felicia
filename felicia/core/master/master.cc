@@ -560,10 +560,12 @@ void Master::OnConnetToTopicInfoWatcher(
     std::unique_ptr<Channel<TopicInfo>> channel, const TopicInfo& topic_info,
     const Status& s) {
   if (s.ok()) {
-    channel->SendMessage(topic_info, ::base::BindOnce([](const Status& s) {
-                           LOG_IF(ERROR, !s.ok()) << "Failed to send message: "
-                                                  << s.error_message();
-                         }));
+    channel->SendMessage(
+        topic_info,
+        ::base::BindRepeating([](ChannelDef::Type type, const Status& s) {
+          LOG_IF(ERROR, !s.ok())
+              << "Failed to send message: " << s.error_message();
+        }));
   } else {
     LOG(ERROR) << "Failed to connect topic info channel: " << s.error_message();
   }

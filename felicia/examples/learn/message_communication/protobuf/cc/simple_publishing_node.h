@@ -59,8 +59,8 @@ class SimplePublishingNode : public NodeLifecycle {
 
   void RepeatingPublish() {
     publisher_.Publish(GenerateMessage(),
-                       ::base::BindOnce(&SimplePublishingNode::OnPublish,
-                                        ::base::Unretained(this)));
+                       ::base::BindRepeating(&SimplePublishingNode::OnPublish,
+                                             ::base::Unretained(this)));
 
     if (!publisher_.IsUnregistered()) {
       MasterProxy& master_proxy = MasterProxy::GetInstance();
@@ -72,8 +72,9 @@ class SimplePublishingNode : public NodeLifecycle {
     }
   }
 
-  void OnPublish(const Status& s) {
-    std::cout << "SimplePublishingNode::OnPublish()" << std::endl;
+  void OnPublish(ChannelDef::Type type, const Status& s) {
+    std::cout << "SimplePublishingNode::OnPublish() from "
+              << ChannelDef::Type_Name(type) << std::endl;
     LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 

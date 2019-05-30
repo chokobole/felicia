@@ -48,8 +48,9 @@ class SimplePublishingNode(fel.NodeLifecycle):
             fel.MasterProxy.post_delayed_task(
                 self.repeating_publish, fel.TimeDelta.from_seconds(1))
 
-    def on_publish(self, status):
-        print("SimplePublishingNode.on_publish()")
+    def on_publish(self, channel_type, status):
+        print("SimplePublishingNode.on_publish() from {}".format(
+            ChannelDef.Type.Name(channel_type)))
         fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
     def generate_message(self):

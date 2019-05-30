@@ -60,11 +60,11 @@ void HeartBeatSignaller::Signal() {
   HeartBeat heart_beat;
   heart_beat.set_ok(true);
   channel_->SendMessage(heart_beat,
-                        ::base::BindOnce(&HeartBeatSignaller::OnSignal,
-                                         ::base::Unretained(this)));
+                        ::base::BindRepeating(&HeartBeatSignaller::OnSignal,
+                                              ::base::Unretained(this)));
 }
 
-void HeartBeatSignaller::OnSignal(const Status& s) {
+void HeartBeatSignaller::OnSignal(ChannelDef::Type type, const Status& s) {
   if (s.ok() || trial_ <= kMaximumTrial) {
     task_runner_interface_->PostDelayedTask(
         FROM_HERE,

@@ -147,14 +147,14 @@ class RsCameraPublishingNode : public NodeLifecycle {
     if (!color_publisher_.IsUnregistered()) {
       color_publisher_.Publish(
           color_frame.ToCameraFrameMessage(),
-          ::base::BindOnce(&RsCameraPublishingNode::OnPublishColor,
-                           ::base::Unretained(this)));
+          ::base::BindRepeating(&RsCameraPublishingNode::OnPublishColor,
+                                ::base::Unretained(this)));
     }
     if (!depth_publisher_.IsUnregistered()) {
       depth_publisher_.Publish(
           depth_frame.ToDepthCameraFrameMessage(),
-          ::base::BindOnce(&RsCameraPublishingNode::OnPublishDepth,
-                           ::base::Unretained(this)));
+          ::base::BindRepeating(&RsCameraPublishingNode::OnPublishDepth,
+                                ::base::Unretained(this)));
     }
   }
 
@@ -163,8 +163,8 @@ class RsCameraPublishingNode : public NodeLifecycle {
 
     color_publisher_.Publish(
         color_frame.ToCameraFrameMessage(),
-        ::base::BindOnce(&RsCameraPublishingNode::OnPublishColor,
-                         ::base::Unretained(this)));
+        ::base::BindRepeating(&RsCameraPublishingNode::OnPublishColor,
+                              ::base::Unretained(this)));
   }
 
   void OnDepthFrame(DepthCameraFrame depth_frame) {
@@ -172,8 +172,8 @@ class RsCameraPublishingNode : public NodeLifecycle {
 
     depth_publisher_.Publish(
         depth_frame.ToDepthCameraFrameMessage(),
-        ::base::BindOnce(&RsCameraPublishingNode::OnPublishDepth,
-                         ::base::Unretained(this)));
+        ::base::BindRepeating(&RsCameraPublishingNode::OnPublishDepth,
+                              ::base::Unretained(this)));
   }
 
   void OnImu(const Imu& imu) {
@@ -185,8 +185,8 @@ class RsCameraPublishingNode : public NodeLifecycle {
 
     imu_publisher_.Publish(
         imu.ToImuMessage(),
-        ::base::BindOnce(&RsCameraPublishingNode::OnPublishImu,
-                         ::base::Unretained(this)));
+        ::base::BindRepeating(&RsCameraPublishingNode::OnPublishImu,
+                              ::base::Unretained(this)));
 
     last_timestamp_ = imu.timestamp();
   }
@@ -195,16 +195,19 @@ class RsCameraPublishingNode : public NodeLifecycle {
     LOG_IF(ERROR, !s.ok()) << s.error_message();
   }
 
-  void OnPublishColor(const Status& s) {
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+  void OnPublishColor(ChannelDef::Type type, const Status& s) {
+    LOG_IF(ERROR, !s.ok()) << s.error_message() << "from "
+                           << ChannelDef::Type_Name(type);
   }
 
-  void OnPublishDepth(const Status& s) {
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+  void OnPublishDepth(ChannelDef::Type type, const Status& s) {
+    LOG_IF(ERROR, !s.ok()) << s.error_message() << "from "
+                           << ChannelDef::Type_Name(type);
   }
 
-  void OnPublishImu(const Status& s) {
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+  void OnPublishImu(ChannelDef::Type type, const Status& s) {
+    LOG_IF(ERROR, !s.ok()) << s.error_message() << "from "
+                           << ChannelDef::Type_Name(type);
   }
 
   void RequestUnpublish() {

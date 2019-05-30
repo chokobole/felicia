@@ -39,8 +39,8 @@ void DynamicPublishingNode::PublishMessageFromJson(
     const std::string& json_message) {
   publisher_->PublishFromJson(
       json_message,
-      ::base::BindOnce(&DynamicPublishingNode::Delegate::OnPublish,
-                       ::base::Unretained(delegate_.get())));
+      ::base::BindRepeating(&DynamicPublishingNode::Delegate::OnPublish,
+                            ::base::Unretained(delegate_.get())));
 }
 
 void DynamicPublishingNode::OnRequestPublish(const Status& s) {

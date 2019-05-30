@@ -46,8 +46,8 @@ class Publisher {
                       const communication::Settings& settings,
                       StatusOnceCallback callback);
 
-  void Publish(const MessageTy& message, StatusOnceCallback callback);
-  void Publish(MessageTy&& message, StatusOnceCallback callback);
+  void Publish(const MessageTy& message, SendMessageCallback callback);
+  void Publish(MessageTy&& message, SendMessageCallback callback);
 
   void RequestUnpublish(const NodeInfo& node_info, const std::string& topic,
                         StatusOnceCallback callback);
@@ -64,7 +64,7 @@ class Publisher {
 
   StatusOr<ChannelDef> Setup(Channel<MessageTy>* channel_def);
 
-  void SendMesasge(StatusOnceCallback callback);
+  void SendMesasge(SendMessageCallback callback);
   void OnAccept(const Status& s);
 
   void Release();
@@ -143,28 +143,28 @@ void Publisher<MessageTy>::RequestPublish(
 
 template <typename MessageTy>
 void Publisher<MessageTy>::Publish(const MessageTy& message,
-                                   StatusOnceCallback callback) {
+                                   SendMessageCallback callback) {
   if (!IsRegistered()) {
-    std::move(callback).Run(register_state_.InvalidStateError());
+    callback.Run(ChannelDef::NONE, register_state_.InvalidStateError());
     return;
   }
 
   message_queue_.push(message);
 
-  SendMesasge(std::move(callback));
+  SendMesasge(callback);
 }
 
 template <typename MessageTy>
 void Publisher<MessageTy>::Publish(MessageTy&& message,
-                                   StatusOnceCallback callback) {
+                                   SendMessageCallback callback) {
   if (!IsRegistered()) {
-    std::move(callback).Run(register_state_.InvalidStateError());
+    callback.Run(ChannelDef::NONE, register_state_.InvalidStateError());
     return;
   }
 
   message_queue_.push(std::move(message));
 
-  SendMesasge(std::move(callback));
+  SendMesasge(callback);
 }
 
 template <typename MessageTy>
@@ -263,7 +263,7 @@ void Publisher<MessageTy>::OnUnpublishTopicAsync(
 }
 
 template <typename MessageTy>
-void Publisher<MessageTy>::SendMesasge(StatusOnceCallback callback) {
+void Publisher<MessageTy>::SendMesasge(SendMessageCallback callback) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   if (master_proxy.IsBoundToCurrentThread()) {
     if (!message_queue_.empty()) {
@@ -272,15 +272,14 @@ void Publisher<MessageTy>::SendMesasge(StatusOnceCallback callback) {
 
       for (auto& channel : channels_) {
         if (!channel->IsSendingMessage() && channel->HasReceivers()) {
-          channel->SendMessage(message, std::move(callback));
+          channel->SendMessage(message, callback);
         }
       }
     }
   } else {
-    master_proxy.PostTask(
-        FROM_HERE,
-        ::base::BindOnce(&Publisher<MessageTy>::SendMesasge,
-                         ::base::Unretained(this), std::move(callback)));
+    master_proxy.PostTask(FROM_HERE,
+                          ::base::BindOnce(&Publisher<MessageTy>::SendMesasge,
+                                           ::base::Unretained(this), callback));
   }
 }
 

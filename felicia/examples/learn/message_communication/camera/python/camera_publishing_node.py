@@ -65,8 +65,9 @@ class CameraPublishingNode(fel.NodeLifecycle):
     def on_camera_error(self, status):
         fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
-    def on_publish(self, status):
-        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
+    def on_publish(self, channel_type, status):
+        fel.log_if(fel.ERROR, not status.ok(), "{} from {}".format(
+            status.error_message(), ChannelDef.Type.Name(channel_type)))
 
     def request_unpublish(self):
         self.publisher.request_unpublish(self.node_info, self.topic,

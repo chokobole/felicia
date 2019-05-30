@@ -18,6 +18,8 @@ class TCPChannel : public Channel<MessageTy> {
 
   bool IsTCPChannel() const override { return true; }
 
+  ChannelDef::Type type() const override { return ChannelDef::TCP; }
+
   bool HasReceivers() const override;
 
   bool IsConnected() const {

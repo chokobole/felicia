@@ -19,6 +19,8 @@ class UDPChannel : public Channel<MessageTy> {
 
   bool IsUDPChannel() const override { return true; }
 
+  ChannelDef::Type type() const override { return ChannelDef::UDP; }
+
   StatusOr<ChannelDef> Bind();
 
   void Connect(const ChannelDef& channel_def,

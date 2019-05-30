@@ -77,14 +77,15 @@ class CameraPublishingNode : public NodeLifecycle {
     if (publisher_.IsUnregistered()) return;
 
     publisher_.Publish(camera_frame.ToCameraFrameMessage(),
-                       ::base::BindOnce(&CameraPublishingNode::OnPublish,
-                                        ::base::Unretained(this)));
+                       ::base::BindRepeating(&CameraPublishingNode::OnPublish,
+                                             ::base::Unretained(this)));
   }
 
   void OnCameraError(const Status& s) { LOG(ERROR) << s.error_message(); }
 
-  void OnPublish(const Status& s) {
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+  void OnPublish(ChannelDef::Type type, const Status& s) {
+    LOG_IF(ERROR, !s.ok()) << s.error_message() << "from "
+                           << ChannelDef::Type_Name(type);
   }
 
   void RequestUnpublish() {

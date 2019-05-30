@@ -9,6 +9,7 @@ SUPPORT_PROTOBUF_TYPE_CAST(::felicia::ChannelDef, ChannelDef,
                            felicia.core.protobuf.channel_pb2)
 SUPPORT_PROTOBUF_TYPE_CAST(::felicia::NodeInfo, NodeInfo,
                            felicia.core.protobuf.master_data_pb2)
+SUPPORT_PROTOBUF_ENUM_TYPE_CAST(::felicia::ChannelDef::Type, ChannelDef.Type)
 
 namespace felicia {
 
@@ -16,7 +17,7 @@ namespace {
 
 class PyMessageCallback {
  public:
-  explicit PyMessageCallback(py::object message_prototype, py::function func)
+  PyMessageCallback(py::object message_prototype, py::function func)
       : message_prototype_(message_prototype), func_(func) {}
 
   void Invoke(DynamicProtobufMessage&& message) {
@@ -37,6 +38,8 @@ class PyMessageCallback {
 };
 
 }  // namespace
+
+using PySendMessageCallback = PyCallback<void(ChannelDef::Type, const Status&)>;
 
 void AddCommunication(py::module& m) {
   py::class_<DynamicPublisher>(m, "Publisher")
@@ -70,9 +73,9 @@ void AddCommunication(py::module& m) {
              }
 
              return self.PublishFromSerialized(
-                 text, ::base::BindOnce(
-                           &PyStatusCallback::Invoke,
-                           ::base::Owned(new PyStatusCallback(callback))));
+                 text, ::base::BindRepeating(
+                           &PySendMessageCallback::Invoke,
+                           ::base::Owned(new PySendMessageCallback(callback))));
            })
       .def("request_unpublish", [](DynamicPublisher& self,
                                    const NodeInfo& node_info,

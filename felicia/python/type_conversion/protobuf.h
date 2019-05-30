@@ -3,7 +3,7 @@
 
 #include "pybind11/pybind11.h"
 
-#define SUPPORT_PROTOBUF_ENUM_TYPE_CAST(CcType, PyType, Module)      \
+#define SUPPORT_PROTOBUF_ENUM_TYPE_CAST(CcType, PyType)              \
   namespace pybind11 {                                               \
   namespace detail {                                                 \
   template <>                                                        \

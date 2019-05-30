@@ -22,7 +22,7 @@ class HeartBeatSignaller {
   void AcceptLoop();
   void OnAccept(const Status& s);
   void Signal();
-  void OnSignal(const Status& s);
+  void OnSignal(ChannelDef::Type type, const Status& s);
 
   TaskRunnerInterface* task_runner_interface_;  // not owned
   ChannelSource channel_source_;

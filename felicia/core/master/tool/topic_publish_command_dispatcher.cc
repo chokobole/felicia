@@ -40,7 +40,9 @@ class DynamicPublisherDelegate : public DynamicPublishingNode::Delegate {
     if (!s.ok()) NOTREACHED() << s;
   }
 
-  void OnPublish(const Status& s) override { LOG_IF(ERROR, !s.ok()) << s; }
+  void OnPublish(ChannelDef::Type type, const Status& s) override {
+    LOG_IF(ERROR, !s.ok()) << s << " from " << ChannelDef::Type_Name(type);
+  }
 
   void PublishMessageFromJson() {
     node_->PublishMessageFromJson(message_);
