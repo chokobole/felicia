@@ -26,7 +26,7 @@ class EXPORT WebSocket : public Socket {
 
    private:
     void ReadHeader();
-    void OnReadHeader(scoped_refptr<::net::IOBuffer> buffer, int result);
+    void OnReadHeader(int result);
 
     void Parse();
     void Validate();
@@ -38,8 +38,7 @@ class EXPORT WebSocket : public Socket {
 
     WebSocket* websocket_;  // not owned
     std::unique_ptr<::net::TCPSocket> socket_;
-    std::unique_ptr<std::vector<char>> buffer_;
-    int read_;
+    scoped_refptr<::net::GrowableIOBuffer> buffer_;
     Status status_;
     ::base::CancelableOnceClosure timeout_;
     ::base::flat_map<std::string, std::string> headers_;

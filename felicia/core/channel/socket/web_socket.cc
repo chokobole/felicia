@@ -25,7 +25,8 @@ constexpr const char* kSecWebSocketExtensions = "sec-websocket-extensions";
 constexpr const char* kHandshakeGuid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
 WebSocket::HandshakeHandler::HandshakeHandler(WebSocket* websocket)
-    : websocket_(websocket) {}
+    : websocket_(websocket),
+      buffer_(::base::MakeRefCounted<::net::GrowableIOBuffer>()) {}
 
 WebSocket::HandshakeHandler::~HandshakeHandler() = default;
 
@@ -39,43 +40,35 @@ void WebSocket::HandshakeHandler::Handle(
       FROM_HERE, timeout_.callback(), g_timeout);
 
   socket_ = std::move(socket);
-  buffer_ = std::make_unique<std::vector<char>>(kHeaderSize);
-  read_ = 0;
+  if (buffer_->capacity() == 0) {
+    buffer_->SetCapacity(kHeaderSize);
+  }
+  buffer_->set_offset(0);
   ReadHeader();
 }
 
 void WebSocket::HandshakeHandler::ReadHeader() {
-  int to_read = kHeaderSize - read_;
-  if (to_read < 0) {
+  int to_read = buffer_->RemainingCapacity();
+  if (to_read <= 0) {
     SendError(::net::HTTP_BAD_REQUEST);
     return;
   }
 
-  scoped_refptr<::net::IOBuffer> buffer =
-      ::base::MakeRefCounted<::net::IOBufferWithSize>(to_read);
-
   int rv =
-      socket_->Read(buffer.get(), to_read,
+      socket_->Read(buffer_.get(), to_read,
                     ::base::BindOnce(&WebSocket::HandshakeHandler::OnReadHeader,
-                                     ::base::Unretained(this), buffer));
+                                     ::base::Unretained(this)));
   if (rv == ::net::ERR_IO_PENDING) return;
 
   if (rv > 0) {
-    memcpy(buffer_->data() + read_, buffer->data(), rv);
-    read_ += rv;
+    buffer_->set_offset(buffer_->offset() + rv);
   }
-
-  if (rv <= 0) {
-    OnReadHeader(nullptr, rv);
-  }
+  OnReadHeader(0);
 }
 
-void WebSocket::HandshakeHandler::OnReadHeader(
-    scoped_refptr<::net::IOBuffer> buffer, int result) {
-  if (result > 0) {
-    memcpy(buffer_->data() + read_, buffer->data(), result);
-  }
+void WebSocket::HandshakeHandler::OnReadHeader(int result) {
   if (result >= 0) {
+    buffer_->set_offset(buffer_->offset() + result);
     Parse();
   } else {
     SendError(::net::HTTP_INTERNAL_SERVER_ERROR);
@@ -83,12 +76,11 @@ void WebSocket::HandshakeHandler::OnReadHeader(
 }
 
 void WebSocket::HandshakeHandler::Parse() {
-  std::string header(buffer_->data(), buffer_->size());
+  std::string header(buffer_->StartOfBuffer(), buffer_->offset());
   DLOG(INFO) << "Header received: " << header;
 
   size_t first_status_line =
-      ::base::StringPiece(buffer_->data(), buffer_->size())
-          .find_first_of("\r\n");
+      ::base::StringPiece(header.data(), header.length()).find_first_of("\r\n");
   if (first_status_line == ::base::StringPiece::npos) {
     SendError(::net::HTTP_BAD_REQUEST);
     return;
