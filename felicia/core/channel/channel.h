@@ -113,14 +113,8 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
 
   send_buffer_->set_offset(0);
   int to_send;
-  MessageIoError err;
-  if (IsWSChannel()) {
-    err =
-        MessageIO<MessageTy>::JsonizeToBuffer(&message, send_buffer_, &to_send);
-  } else {
-    err = MessageIO<MessageTy>::SerializeToBuffer(&message, send_buffer_,
-                                                  &to_send);
-  }
+  MessageIoError err = MessageIO<MessageTy>::SerializeToBuffer(
+      &message, send_buffer_, IsWSChannel(), &to_send);
   if (err == MessageIoError::OK) {
     is_sending_ = true;
     this->send_callback_ = callback;

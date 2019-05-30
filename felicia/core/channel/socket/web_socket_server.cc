@@ -1,7 +1,5 @@
 #include "felicia/core/channel/socket/web_socket_server.h"
 
-#include "third_party/chromium/net/websockets/websocket_frame.h"
-
 #include "felicia/core/lib/unit/bytes.h"
 
 namespace felicia {
@@ -44,24 +42,7 @@ void WebSocketServer::DoAcceptOnce() {
 
 void WebSocketServer::Write(scoped_refptr<::net::IOBuffer> buffer, int size,
                             StatusOnceCallback callback) {
-  auto frame = std::make_unique<::net::WebSocketFrame>(
-      ::net::WebSocketFrameHeader::kOpCodeText);
-  ::net::WebSocketFrameHeader& header = frame->header;
-  header.final = true;
-  header.masked = false;
-  header.payload_length = size;
-  frame->data = std::move(buffer);
-
-  int total_size = ::net::GetWebSocketFrameHeaderSize(frame->header) +
-                   frame->header.payload_length;
-  scoped_refptr<::net::IOBuffer> write_buffer =
-      ::base::MakeRefCounted<::net::IOBufferWithSize>(total_size);
-  int header_size = ::net::WriteWebSocketFrameHeader(
-      frame->header, nullptr, write_buffer->data(), total_size);
-  memcpy(write_buffer->data() + header_size, frame->data->data(),
-         total_size - header_size);
-
-  tcp_server_socket_->Write(write_buffer, total_size, std::move(callback));
+  tcp_server_socket_->Write(buffer, size, std::move(callback));
 }
 
 void WebSocketServer::Read(scoped_refptr<::net::GrowableIOBuffer> buffer,

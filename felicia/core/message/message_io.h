@@ -3,6 +3,7 @@
 
 #include "google/protobuf/message.h"
 #include "third_party/chromium/net/base/io_buffer.h"
+#include "third_party/chromium/net/websockets/websocket_frame.h"
 
 #include "felicia/core/message/dynamic_protobuf_message.h"
 #include "felicia/core/message/header.h"
@@ -17,18 +18,6 @@ enum MessageIoError {
 
 std::string MessageIoErrorToString(MessageIoError mesasge_io_error);
 
-template <typename T>
-std::enable_if_t<std::is_same<DynamicProtobufMessage, T>::value, bool>
-MessageToJsonString(const T* message, std::string* text) {
-  return message->MessageToJsonString(text).ok();
-}
-
-template <typename T>
-std::enable_if_t<std::is_base_of<::google::protobuf::Message, T>::value, bool>
-MessageToJsonString(const T* message, std::string* text) {
-  return ::google::protobuf::util::MessageToJsonString(*message, text).ok();
-}
-
 template <typename T, typename SFINAE = void>
 class MessageIO;
 
@@ -37,24 +26,14 @@ class MessageIO<T, std::enable_if_t<
                        std::is_base_of<::google::protobuf::Message, T>::value ||
                        std::is_same<DynamicProtobufMessage, T>::value>> {
  public:
-  static MessageIoError JsonizeToBuffer(
-      const T* proto, scoped_refptr<::net::GrowableIOBuffer> buffer,
-      int* size) {
-    std::string text;
-    if (!MessageToJsonString(proto, &text))
-      return MessageIoError::ERR_FAILED_TO_SERIALIZE;
-
-    return AttachToBuffer(text, buffer, false, size);
-  }
-
   static MessageIoError SerializeToBuffer(
       const T* proto, scoped_refptr<::net::GrowableIOBuffer> buffer,
-      int* size) {
+      bool via_websocket, int* size) {
     std::string text;
     if (!proto->SerializeToString(&text))
       return MessageIoError::ERR_FAILED_TO_SERIALIZE;
 
-    return AttachToBuffer(text, buffer, true, size);
+    return AttachToBuffer(text, buffer, via_websocket, size);
   }
 
   static MessageIoError ParseHeaderFromBuffer(char* buffer, Header* header) {
@@ -82,26 +61,35 @@ class MessageIO<T, std::enable_if_t<
  private:
   static MessageIoError AttachToBuffer(
       const std::string& text, scoped_refptr<::net::GrowableIOBuffer> buffer,
-      bool buffer_include_header, int* size) {
+      bool via_websocket, int* size) {
     // This should be before return `ERR_NOT_ENOUGH_BUFFER`. Caller might use
     // this |size| to reallocate buffer.
-    if (buffer_include_header) {
-      *size = sizeof(Header) + text.length();
+    if (via_websocket) {
+      ::net::WebSocketFrame frame(::net::WebSocketFrameHeader::kOpCodeBinary);
+      ::net::WebSocketFrameHeader& header = frame.header;
+      header.final = true;
+      header.masked = false;
+      header.payload_length = text.length();
+      *size = ::net::GetWebSocketFrameHeaderSize(frame.header) +
+              frame.header.payload_length;
+
+      if (buffer->RemainingCapacity() < *size)
+        return MessageIoError::ERR_NOT_ENOUGH_BUFFER;
+
+      int header_size = ::net::WriteWebSocketFrameHeader(
+          frame.header, nullptr, buffer->StartOfBuffer(), *size);
+      memcpy(buffer->StartOfBuffer() + header_size, text.data(), text.length());
     } else {
-      *size = text.length();
-    }
+      *size = sizeof(Header) + text.length();
 
-    if (buffer->RemainingCapacity() < *size)
-      return MessageIoError::ERR_NOT_ENOUGH_BUFFER;
+      if (buffer->RemainingCapacity() < *size)
+        return MessageIoError::ERR_NOT_ENOUGH_BUFFER;
 
-    if (buffer_include_header) {
       Header header;
       header.set_size(text.length());
       memcpy(buffer->StartOfBuffer(), &header, sizeof(Header));
       memcpy(buffer->StartOfBuffer() + sizeof(Header), text.data(),
              text.length());
-    } else {
-      memcpy(buffer->StartOfBuffer(), text.data(), text.length());
     }
 
     return MessageIoError::OK;
