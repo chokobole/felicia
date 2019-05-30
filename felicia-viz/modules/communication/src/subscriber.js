@@ -2,35 +2,22 @@ import Connection from './connection';
 import Worker from './subscriber-webworker';
 
 class Subscriber {
-  constructor(serverAddr) {
-    let serverAddrUsed = serverAddr;
-    if (!serverAddrUsed) {
-      serverAddrUsed = `ws://${SERVER_ADDRESS}:${WEBSOCKET_PORT}`;
-    }
-    this.connection = new Connection(serverAddrUsed);
+  constructor(ipEndpoint) {
+    const { ip, port } = ipEndpoint;
+    const serverAddr = `ws://${ip}:${port}`;
+    this.connection = new Connection(serverAddr);
     this.listeners = [];
   }
 
-  initialize(worker, type, topic) {
+  initialize(worker, type) {
     this.type = type;
-    this.connection.initialize(
-      () => {
-        console.log(`request Topic ${type} ${topic}`);
-        const data = JSON.stringify({
-          type,
-          topic,
-        });
-
-        this.connection.ws.send(data);
-      },
-      event => {
-        worker.postMessage({
-          type,
-          destinations: this.listeners,
-          data: event.data,
-        });
-      }
-    );
+    this.connection.initialize(null, event => {
+      worker.postMessage({
+        type,
+        destinations: this.listeners,
+        data: event.data,
+      });
+    });
   }
 
   close() {
@@ -59,14 +46,13 @@ class Subscriber {
 }
 
 export default class SubscriberPool {
-  constructor(serverAddr, onmessage) {
-    this.serverAddr = serverAddr;
+  constructor(onmessage) {
     this.worker = new Worker();
     this.worker.onmessage = onmessage;
     this.subscribers = new Map();
   }
 
-  subscribeTopic(id, type, topic) {
+  subscribeTopic(id, type, topic, address) {
     this.subscribers.forEach((subscriber, topicKey, map) => {
       if (subscriber.type === type) {
         if (subscriber.removeListener(id)) {
@@ -82,8 +68,8 @@ export default class SubscriberPool {
 
     let subscriber;
     if (!this.subscribers.has(topic)) {
-      subscriber = new Subscriber(this.serverAddr);
-      subscriber.initialize(this.worker, type, topic);
+      subscriber = new Subscriber(address);
+      subscriber.initialize(this.worker, type);
       this.subscribers.set(topic, subscriber);
     } else {
       subscriber = this.subscribers.get(topic);

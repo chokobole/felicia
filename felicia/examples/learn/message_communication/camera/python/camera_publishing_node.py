@@ -33,7 +33,8 @@ class CameraPublishingNode(fel.NodeLifecycle):
         settings.queue_size = 1
         settings.is_dynamic_buffer = True
 
-        self.publisher.request_publish(self.node_info, self.topic, ChannelDef.TCP,
+        self.publisher.request_publish(self.node_info, self.topic,
+                                       ChannelDef.TCP | ChannelDef.WS,
                                        CameraFrameMessage.DESCRIPTOR.full_name,
                                        settings, self.on_request_publish)
 

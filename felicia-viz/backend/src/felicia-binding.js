@@ -10,10 +10,10 @@ import websocket from 'websocket';
 export default () => {
   const ws = websocket(
     (connection, message) => {
-      handleMessage(connection, ws, message);
+      handleMessage(connection, message);
     },
-    connection => {
-      handleClose(connection);
+    () => {
+      handleClose();
     }
   );
   feliciaJs.MasterProxy.setBackground();
@@ -48,11 +48,7 @@ export default () => {
         }
         const topics = [];
         TOPIC_MAP.forEach(value => {
-          const { typeName } = value;
-          topics.push({
-            topic: value.topic,
-            typeName,
-          });
+          topics.push(value);
         });
 
         ws.broadcast(

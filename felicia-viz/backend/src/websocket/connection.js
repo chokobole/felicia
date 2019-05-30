@@ -1,21 +1,18 @@
 import WebSocket from 'ws';
 
-import { CAMERA_FRAME_MESSAGE } from '@felicia-viz/communication';
-
 function noop() {}
 
 export default class Connection {
   constructor(ws, onmessage, onclose) {
     this.ws = ws;
     this.type = null;
-    this.topic = null;
 
     this.ws.on('message', message => {
       onmessage(this, message);
     });
 
     this.ws.on('close', () => {
-      onclose(this);
+      onclose();
     });
 
     this.ws.on('pong', () => {
@@ -26,14 +23,8 @@ export default class Connection {
     this.checkHeartbeat();
   }
 
-  send(topic, data, type) {
-    if (this.ws.readyState === WebSocket.OPEN && type === this.type && topic === this.topic) {
-      if (this.type === CAMERA_FRAME_MESSAGE) {
-        if (!(data instanceof Buffer)) {
-          console.error(`Data should be Buffer but got ${typeof data}`);
-          return;
-        }
-      }
+  send(data, type) {
+    if (this.ws.readyState === WebSocket.OPEN && type === this.type) {
       this.ws.send(data);
     }
   }

@@ -9,8 +9,8 @@ export default class PanelState {
     this.id = id;
   }
 
-  @action setTopic(typeName, newTopic) {
-    this.topics.set(typeName, newTopic);
-    SUBSCRIBER.subscribeTopic(this.id, typeName, newTopic);
+  @action setTopic(typeName, topic, address) {
+    this.topics.set(typeName, topic);
+    SUBSCRIBER.subscribeTopic(this.id, typeName, topic, address);
   }
 }

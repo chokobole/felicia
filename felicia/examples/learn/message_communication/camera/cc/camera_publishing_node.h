@@ -36,7 +36,7 @@ class CameraPublishingNode : public NodeLifecycle {
     settings.is_dynamic_buffer = true;
 
     publisher_.RequestPublish(
-        node_info_, topic_, ChannelDef::TCP, settings,
+        node_info_, topic_, ChannelDef::TCP | ChannelDef::WS, settings,
         ::base::BindOnce(&CameraPublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
   }
