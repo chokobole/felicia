@@ -17,7 +17,9 @@ Done. Now let's begin and run the server!
 bazel-bin/felicia/core/master/rpc/grpc_server_main
 ```
 
-We don't explain the same we had in [README.md](/felicia/examples/learn/message_communication/protobuf/python/README.md). Argument `-t`, `-p` and `-n` are explained at the above link. Here we introduce new arguments to use camera! Because every camera device has a unique id, you have to pass it and it can be different per OS. For convenience, we give you a way to pass it by index. To know which index you want to run with, you should pass `-l` to the program.
+If you want to see the visual result, check out [felicia-viz](/felicia-viz/README.md)!
+
+We don't explain the same we had in [README.md](/felicia/examples/learn/message_communication/protobuf/python/README.md). Here we introduce new arguments to use camera! Because every camera device has a unique id, you have to pass it and it can be different per OS. For convenience, we give you a way to pass it by index. To know which index you want to run with, you should pass `-l` to the program.
 
 ```bash
 bazel-bin/felicia/examples/learn/message_communication/camera/python/node_creator -l
