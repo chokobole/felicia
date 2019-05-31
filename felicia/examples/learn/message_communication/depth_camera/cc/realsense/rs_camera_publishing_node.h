@@ -199,17 +199,17 @@ class RsCameraPublishingNode : public NodeLifecycle {
   }
 
   void OnPublishColor(ChannelDef::Type type, const Status& s) {
-    LOG_IF(ERROR, !s.ok()) << s.error_message() << "from "
+    LOG_IF(ERROR, !s.ok()) << s.error_message() << " from "
                            << ChannelDef::Type_Name(type);
   }
 
   void OnPublishDepth(ChannelDef::Type type, const Status& s) {
-    LOG_IF(ERROR, !s.ok()) << s.error_message() << "from "
+    LOG_IF(ERROR, !s.ok()) << s.error_message() << " from "
                            << ChannelDef::Type_Name(type);
   }
 
   void OnPublishImu(ChannelDef::Type type, const Status& s) {
-    LOG_IF(ERROR, !s.ok()) << s.error_message() << "from "
+    LOG_IF(ERROR, !s.ok()) << s.error_message() << " from "
                            << ChannelDef::Type_Name(type);
   }
 

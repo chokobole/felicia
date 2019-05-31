@@ -87,7 +87,7 @@ class CameraPublishingNode : public NodeLifecycle {
   void OnCameraError(const Status& s) { LOG(ERROR) << s.error_message(); }
 
   void OnPublish(ChannelDef::Type type, const Status& s) {
-    LOG_IF(ERROR, !s.ok()) << s.error_message() << "from "
+    LOG_IF(ERROR, !s.ok()) << s.error_message() << " from "
                            << ChannelDef::Type_Name(type);
   }
 
