@@ -179,7 +179,6 @@ void WebSocket::HandshakeHandler::Validate() {
 
 void WebSocket::HandshakeHandler::SendOK(const std::string& key) {
   timeout_.Cancel();
-  buffer_.reset();
 
   status_ = Status::OK();
 
@@ -199,7 +198,6 @@ void WebSocket::HandshakeHandler::SendOK(const std::string& key) {
 
 void WebSocket::HandshakeHandler::SendError(::net::HttpStatusCode code) {
   timeout_.Cancel();
-  buffer_.reset();
 
   const char* reason = ::net::GetHttpReasonPhrase(code);
 
