@@ -17,6 +17,14 @@ To use felicia-viz, you need a `felicia_js.node` which is built from target `//f
 bazel build --config win_no_grpc //felicia/js:felicia_js_node
 ```
 
+And then move the `felicia_js.node` to the root directory. This will be used from the backend side.
+
+```bash
+mv bazel-bin/felicia/js/felicia_js.node .
+```
+
+Lastly you should build again whatever you want, but just removing `--config win_no_grpc` and it's done.
+
 ## How to run
 
 ```bash
