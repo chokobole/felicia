@@ -134,7 +134,6 @@ V4l2Camera::V4l2Camera(const CameraDescriptor& camera_descriptor)
 
 V4l2Camera::~V4l2Camera() {
   if (thread_.IsRunning()) thread_.Stop();
-  if (fd_ != ::base::kInvalidPlatformFile) close(fd_);
 }
 
 // static
@@ -172,13 +171,14 @@ Status V4l2Camera::GetSupportedCameraFormats(
     const CameraDescriptor& camera_descriptor, CameraFormats* camera_formats) {
   DCHECK(camera_formats->empty());
 
-  int fd;
+  ::base::ScopedFD fd;
   Status s = InitDevice(camera_descriptor, &fd);
   if (!s.ok()) return s;
 
   v4l2_fmtdesc v4l2_format = {};
   v4l2_format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  for (; DoIoctl(fd, VIDIOC_ENUM_FMT, &v4l2_format) == 0; ++v4l2_format.index) {
+  for (; DoIoctl(fd.get(), VIDIOC_ENUM_FMT, &v4l2_format) == 0;
+       ++v4l2_format.index) {
     CameraFormat camera_format;
     camera_format.set_pixel_format(
         CameraFormat::FromV4l2PixelFormat(v4l2_format.pixelformat));
@@ -187,7 +187,7 @@ Status V4l2Camera::GetSupportedCameraFormats(
 
     v4l2_frmsizeenum frame_size = {};
     frame_size.pixel_format = v4l2_format.pixelformat;
-    for (; DoIoctl(fd, VIDIOC_ENUM_FRAMESIZES, &frame_size) == 0;
+    for (; DoIoctl(fd.get(), VIDIOC_ENUM_FRAMESIZES, &frame_size) == 0;
          ++frame_size.index) {
       if (frame_size.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
         camera_format.SetSize(frame_size.discrete.width,
@@ -199,7 +199,7 @@ Status V4l2Camera::GetSupportedCameraFormats(
       }
 
       const std::vector<float> frame_rates = GetFrameRateList(
-          fd, v4l2_format.pixelformat, frame_size.discrete.width,
+          fd.get(), v4l2_format.pixelformat, frame_size.discrete.width,
           frame_size.discrete.height);
       for (const auto& frame_rate : frame_rates) {
         camera_format.set_frame_rate(frame_rate);
@@ -224,7 +224,7 @@ Status V4l2Camera::Init() {
 
   camera_state_.ToInitialized();
 
-  return InitMmap();
+  return Status::OK();
 }
 
 Status V4l2Camera::Start(const CameraFormat& requested_camera_format,
@@ -243,17 +243,20 @@ Status V4l2Camera::Start(const CameraFormat& requested_camera_format,
   s = SetCameraFormat(final_camera_format);
   if (!s.ok()) return s;
 
+  s = InitMmap();
+  if (!s.ok()) return s;
+
   for (size_t i = 0; i < buffers_.size(); ++i) {
     v4l2_buffer buffer;
     FillV4L2Buffer(&buffer, i);
 
-    if (DoIoctl(fd_, VIDIOC_QBUF, &buffer) < 0) {
+    if (DoIoctl(fd_.get(), VIDIOC_QBUF, &buffer) < 0) {
       return errors::FailedToEnqueueBuffer();
     }
   }
 
   v4l2_buf_type capture_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  if (DoIoctl(fd_, VIDIOC_STREAMON, &capture_type) < 0) {
+  if (DoIoctl(fd_.get(), VIDIOC_STREAMON, &capture_type) < 0) {
     return errors::FailedToStreamOn();
   }
 
@@ -286,7 +289,7 @@ Status V4l2Camera::Stop() {
   }
 
   if (thread_.IsRunning()) thread_.Stop();
-  if (fd_ != ::base::kInvalidPlatformFile) close(fd_);
+  fd_.reset();
 
   camera_frame_callback_.Reset();
   status_callback_.Reset();
@@ -299,7 +302,7 @@ Status V4l2Camera::InitMmap() {
   v4l2_requestbuffers requestbuffers;
   FillV4L2RequestBuffer(&requestbuffers, kNumVideoBuffers);
 
-  if (DoIoctl(fd_, VIDIOC_REQBUFS, &requestbuffers) < 0) {
+  if (DoIoctl(fd_.get(), VIDIOC_REQBUFS, &requestbuffers) < 0) {
     return errors::FailedToRequestMmapBuffers();
   }
 
@@ -307,12 +310,12 @@ Status V4l2Camera::InitMmap() {
     v4l2_buffer buffer;
     FillV4L2Buffer(&buffer, i);
 
-    if (DoIoctl(fd_, VIDIOC_QUERYBUF, &buffer) < 0) {
+    if (DoIoctl(fd_.get(), VIDIOC_QUERYBUF, &buffer) < 0) {
       return errors::FailedToRequestMmapBuffers();
     }
 
     void* const start = mmap(nullptr, buffer.length, PROT_READ | PROT_WRITE,
-                             MAP_SHARED, fd_, buffer.m.offset);
+                             MAP_SHARED, fd_.get(), buffer.m.offset);
     if (start == MAP_FAILED) {
       return errors::FailedToMmapBuffers();
     }
@@ -337,13 +340,13 @@ Status V4l2Camera::SetCameraFormat(const CameraFormat& camera_format) {
   v4l2_format format;
   FillV4L2Format(&format, camera_format.width(), camera_format.height(),
                  camera_format.ToV4l2PixelFormat());
-  if (DoIoctl(fd_, VIDIOC_S_FMT, &format) < 0) {
+  if (DoIoctl(fd_.get(), VIDIOC_S_FMT, &format) < 0) {
     return errors::FailedToSetV4l2Format();
   }
 
   v4l2_streamparm streamparm = {};
   streamparm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  if (DoIoctl(fd_, VIDIOC_G_PARM, &streamparm) < 0) {
+  if (DoIoctl(fd_.get(), VIDIOC_G_PARM, &streamparm) < 0) {
     return errors::FailedToGetFrameRate();
   }
 
@@ -354,7 +357,7 @@ Status V4l2Camera::SetCameraFormat(const CameraFormat& camera_format) {
             ? (camera_format.frame_rate() * kFrameRatePrecision)
             : (kTypicalFramerate * kFrameRatePrecision);
 
-    if (DoIoctl(fd_, VIDIOC_S_PARM, &streamparm) < 0) {
+    if (DoIoctl(fd_.get(), VIDIOC_S_PARM, &streamparm) < 0) {
       return errors::FailedToSetFrameRate();
     }
   } else {
@@ -371,7 +374,7 @@ void V4l2Camera::DoStop(Status* status) {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
 
   v4l2_buf_type capture_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  if (DoIoctl(fd_, VIDIOC_STREAMOFF, &capture_type) < 0) {
+  if (DoIoctl(fd_.get(), VIDIOC_STREAMOFF, &capture_type) < 0) {
     *status = errors::FailedToStreamOff();
     return;
   }
@@ -384,7 +387,7 @@ void V4l2Camera::DoStop(Status* status) {
 
   v4l2_requestbuffers requestbuffers;
   FillV4L2RequestBuffer(&requestbuffers, 0);
-  if (DoIoctl(fd_, VIDIOC_REQBUFS, &requestbuffers) < 0) {
+  if (DoIoctl(fd_.get(), VIDIOC_REQBUFS, &requestbuffers) < 0) {
     *status = errors::FailedToRequestMmapBuffers();
     return;
   }
@@ -397,7 +400,7 @@ void V4l2Camera::DoCapture() {
 
   v4l2_buffer buffer;
   FillV4L2Buffer(&buffer, 0);
-  if (DoIoctl(fd_, VIDIOC_DQBUF, &buffer) < 0) {
+  if (DoIoctl(fd_.get(), VIDIOC_DQBUF, &buffer) < 0) {
     status_callback_.Run(errors::FailedToDequeueBuffer());
     return;
   }
@@ -424,7 +427,7 @@ void V4l2Camera::DoCapture() {
     }
   }
 
-  if (DoIoctl(fd_, VIDIOC_QBUF, &buffer) < 0) {
+  if (DoIoctl(fd_.get(), VIDIOC_QBUF, &buffer) < 0) {
     status_callback_.Run(errors::FailedToEnqueueBuffer());
     return;
   }
@@ -453,20 +456,20 @@ bool V4l2Camera::RunIoctl(int fd, int request, void* argp) {
 
 // static
 Status V4l2Camera::InitDevice(const CameraDescriptor& camera_descriptor,
-                              int* fd) {
+                              ::base::ScopedFD* fd) {
   const std::string& device_id = camera_descriptor.device_id();
-  int fd_temp = HANDLE_EINTR(open(device_id.c_str(), O_RDWR));
+  ::base::ScopedFD fd_temp(HANDLE_EINTR(open(device_id.c_str(), O_RDWR)));
   if (fd_temp == ::base::kInvalidPlatformFile)
     return errors::FailedToOpenCamera(device_id);
 
   v4l2_capability cap;
-  if (!(DoIoctl(fd_temp, VIDIOC_QUERYCAP, &cap) == 0) &&
+  if (!(DoIoctl(fd_temp.get(), VIDIOC_QUERYCAP, &cap) == 0) &&
       (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) &&
       !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)) {
     return errors::NoVideoCapbility();
   }
 
-  *fd = fd_temp;
+  fd->swap(fd_temp);
   return Status::OK();
 }
 

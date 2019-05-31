@@ -30,9 +30,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
     std::cout << "RsCameraPublishingNode::OnInit()" << std::endl;
     camera_ = RsCameraFactory::NewDepthCamera(camera_descriptor_);
     Status s = camera_->Init();
-    if (!s.ok()) {
-      LOG(ERROR) << s;
-    }
+    CHECK(s.ok()) << s;
   }
 
   void OnDidCreate(const NodeInfo& node_info) override {

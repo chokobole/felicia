@@ -14,10 +14,7 @@ inline ::felicia::Status FailedToOpenCamera(const std::string& device_id) {
 }
 
 inline ::felicia::Status FailedToSetV4l2Format() {
-  return Unavailable(
-      "Failed to set v4l2 format. If you keep failing, how about tring like "
-      "this? e.g) "
-      "v4l2-ctl --set-fmt-video=width=XXX,height=YYY,pixelformat=ZZZ");
+  return Unavailable("Failed to set v4l2 format.");
 }
 
 inline ::felicia::Status FailedToRequestMmapBuffers() {

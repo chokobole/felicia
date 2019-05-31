@@ -11,6 +11,7 @@
 #include <linux/videodev2.h>
 
 #include "third_party/chromium/base/files/platform_file.h"
+#include "third_party/chromium/base/files/scoped_file.h"
 #include "third_party/chromium/base/memory/weak_ptr.h"
 #include "third_party/chromium/base/threading/thread.h"
 
@@ -50,11 +51,12 @@ class V4l2Camera : public CameraInterface,
   static int DoIoctl(int fd, int request, void* argp);
   static bool RunIoctl(int fd, int request, void* argp);
 
-  static Status InitDevice(const CameraDescriptor& camera_descriptor, int* fd);
+  static Status InitDevice(const CameraDescriptor& camera_descriptor,
+                           ::base::ScopedFD* fd);
   static std::vector<float> GetFrameRateList(int fd, uint32_t fourcc,
                                              uint32_t width, uint32_t height);
 
-  int fd_ = ::base::kInvalidPlatformFile;
+  ::base::ScopedFD fd_;
 
   std::vector<CameraBuffer> buffers_;
   ::base::Thread thread_;
