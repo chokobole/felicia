@@ -33,7 +33,7 @@ class EXPORT WebSocket : public Socket {
     void SendOK(const std::string& key);
     void SendError(::net::HttpStatusCode code);
 
-    void WriteResponse(const std::string& response);
+    void WriteResponse(std::unique_ptr<std::string> response);
     void OnWriteResponse(int result);
 
     WebSocket* websocket_;  // not owned

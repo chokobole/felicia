@@ -185,15 +185,15 @@ void WebSocket::HandshakeHandler::SendOK(const std::string& key) {
   ::net::HttpStatusCode code = ::net::HTTP_SWITCHING_PROTOCOLS;
 
   const char* reason = ::net::GetHttpReasonPhrase(code);
+  auto response = std::make_unique<std::string>();
+  ::base::StringAppendF(response.get(),
+                        "HTTP/1.1 %d %s\r\n"
+                        "Connection: Upgrade\r\n"
+                        "Upgrade: websocket\r\n"
+                        "Sec-WebSocket-Accept: %s\r\n\r\n",
+                        static_cast<int>(code), reason, key.c_str());
 
-  std::string response = ::base::StringPrintf(
-      "HTTP/1.1 %d %s\r\n"
-      "Connection: Upgrade\r\n"
-      "Upgrade: websocket\r\n"
-      "Sec-WebSocket-Accept: %s\r\n\r\n",
-      static_cast<int>(code), reason, key.c_str());
-
-  WriteResponse(response);
+  WriteResponse(std::move(response));
 }
 
 void WebSocket::HandshakeHandler::SendError(::net::HttpStatusCode code) {
@@ -209,26 +209,28 @@ void WebSocket::HandshakeHandler::SendError(::net::HttpStatusCode code) {
     status_ = errors::Unknown(reason);
   }
 
-  std::string response = ::base::StringPrintf(
-      "HTTP/1.1 %d %s\r\n"
-      "Connection: close\r\n"
-      "Content-Type: text/plain\r\n"
-      "Content-Length: %zd\r\n\r\n"
-      "%s",
-      static_cast<int>(code), reason, strlen(reason), reason);
+  auto response = std::make_unique<std::string>();
+  ::base::StringAppendF(response.get(),
+                        "HTTP/1.1 %d %s\r\n"
+                        "Connection: close\r\n"
+                        "Content-Type: text/plain\r\n"
+                        "Content-Length: %zd\r\n\r\n"
+                        "%s",
+                        static_cast<int>(code), reason, strlen(reason), reason);
 
-  WriteResponse(response);
+  WriteResponse(std::move(response));
 }
 
-void WebSocket::HandshakeHandler::WriteResponse(const std::string& response) {
-  int to_write = response.length();
-  int written = 0;
-  while (to_write > 0) {
-    scoped_refptr<::net::IOBufferWithSize> buffer =
-        ::base::MakeRefCounted<::net::IOBufferWithSize>(to_write);
-    memcpy(buffer->data(), response.data() + written, to_write);
+void WebSocket::HandshakeHandler::WriteResponse(
+    std::unique_ptr<std::string> response) {
+  size_t length = response->length();
+  scoped_refptr<::net::StringIOBuffer> string_buffer =
+      ::base::MakeRefCounted<::net::StringIOBuffer>(std::move(response));
+  scoped_refptr<::net::DrainableIOBuffer> buffer =
+      ::base::MakeRefCounted<::net::DrainableIOBuffer>(string_buffer, length);
+  while (buffer->BytesRemaining() > 0) {
     int rv = socket_->Write(
-        buffer.get(), buffer->size(),
+        buffer.get(), buffer->BytesRemaining(),
         ::base::BindOnce(&WebSocket::HandshakeHandler::OnWriteResponse,
                          ::base::Unretained(this)),
         ::net::DefineNetworkTrafficAnnotation("web_socket_server",
@@ -237,11 +239,10 @@ void WebSocket::HandshakeHandler::WriteResponse(const std::string& response) {
     if (rv == ::net::ERR_IO_PENDING) break;
 
     if (rv > 0) {
-      to_write -= rv;
-      written += rv;
+      buffer->DidConsume(rv);
     }
 
-    if (to_write == 0 || rv <= 0) {
+    if (buffer->BytesRemaining() == 0 || rv <= 0) {
       OnWriteResponse(rv);
       break;
     }
