@@ -337,11 +337,8 @@ Status V4l2Camera::SetCameraFormat(const CameraFormat& camera_format) {
   v4l2_format format;
   FillV4L2Format(&format, camera_format.width(), camera_format.height(),
                  camera_format.ToV4l2PixelFormat());
-  // https://linuxtv.org/downloads/v4l-dvb-apis/uapi/v4l/vidioc-g-fmt.html#vidioc-g-fmt
-  // Use VIDIOC_TRY_FMT instead of VIDIOC_S_FMT, because VIDIOC_TRY_FMT don't
-  // emit EBUSY.
-  if (DoIoctl(fd_, VIDIOC_TRY_FMT, &format) < 0) {
-    return errors::FailedToSetPixelFormat();
+  if (DoIoctl(fd_, VIDIOC_S_FMT, &format) < 0) {
+    return errors::FailedToSetV4l2Format();
   }
 
   v4l2_streamparm streamparm = {};

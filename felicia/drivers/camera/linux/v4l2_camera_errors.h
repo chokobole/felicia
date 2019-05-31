@@ -13,6 +13,13 @@ inline ::felicia::Status FailedToOpenCamera(const std::string& device_id) {
       ::base::StringPrintf("Failed to open %s.", device_id.c_str()));
 }
 
+inline ::felicia::Status FailedToSetV4l2Format() {
+  return Unavailable(
+      "Failed to set v4l2 format. If you keep failing, how about tring like "
+      "this? e.g) "
+      "v4l2-ctl --set-fmt-video=width=XXX,height=YYY,pixelformat=ZZZ");
+}
+
 inline ::felicia::Status FailedToRequestMmapBuffers() {
   return Unavailable("Failed to request mmap buffers from V4L2.");
 }

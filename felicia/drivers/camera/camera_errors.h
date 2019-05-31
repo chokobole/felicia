@@ -26,10 +26,6 @@ inline ::felicia::Status FailedToSetCameraFormat() {
   return Unavailable("Failed to set camera format.");
 }
 
-inline ::felicia::Status FailedToSetPixelFormat() {
-  return Unavailable("Failed to set pixel format");
-}
-
 inline ::felicia::Status FailedToSetFrameRate() {
   return Unavailable("Failed to set frame rate.");
 }
