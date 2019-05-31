@@ -1,11 +1,10 @@
 import Connection from './connection';
+import { hasWSChannel } from './proto-types';
 import Worker from './subscriber-webworker';
 
 class Subscriber {
   constructor(ipEndpoint) {
-    const { ip, port } = ipEndpoint;
-    const serverAddr = `ws://${ip}:${port}`;
-    this.connection = new Connection(serverAddr);
+    this.updateAddress(ipEndpoint);
     this.listeners = [];
   }
 
@@ -20,9 +19,16 @@ class Subscriber {
     });
   }
 
+  updateAddress(ipEndpoint) {
+    this.close();
+    this.ipEndpoint = ipEndpoint;
+    const { ip, port } = ipEndpoint;
+    const serverAddr = `ws://${ip}:${port}`;
+    this.connection = new Connection(serverAddr);
+  }
+
   close() {
-    this.connection.markClose();
-    this.connection.ws.close();
+    if (this.connection) this.connection.close();
   }
 
   addListener(id) {
@@ -88,6 +94,20 @@ export default class SubscriberPool {
             console.log(`unsubscribe ${topicKey}`);
           }
         }
+      }
+    });
+  }
+
+  updateTopics(newTopics) {
+    this.subscribers.forEach((subscriber, topicKey, map) => {
+      let found = false;
+      newTopics.forEach(value => {
+        found = hasWSChannel(value);
+      });
+
+      if (!found) {
+        subscriber.close();
+        map.delete(topicKey);
       }
     });
   }

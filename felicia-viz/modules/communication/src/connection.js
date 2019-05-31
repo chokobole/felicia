@@ -18,11 +18,12 @@ export default class Connection {
     this.ws.onopen = onopen;
     this.ws.onmessage = onmessage;
     this.ws.onclose = () => {
-      if (!this.forceClosed) this.initialize();
+      if (!this.ws.forceClosed) this.initialize();
     };
   }
 
-  markClose() {
-    this.forceClosed = true;
+  close() {
+    this.ws.forceClosed = true;
+    this.ws.close();
   }
 }

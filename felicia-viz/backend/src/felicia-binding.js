@@ -52,7 +52,6 @@ export default () => {
         });
 
         ws.broadcast(
-          null,
           JSON.stringify({
             type: TOPIC_INFO,
             data: topics,

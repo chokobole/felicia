@@ -4,7 +4,7 @@ import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import { Dropdown, Label } from '@streetscape.gl/monochrome';
 
-import { CHANNEL_DEF_TYPE, PROTO_TYPES } from '@felicia-viz/communication';
+import { hasWSChannel, findWSChannel } from '@felicia-viz/communication';
 
 import { PanelItemContainer } from './panel-item';
 
@@ -29,9 +29,7 @@ export default class TopicDropdown extends Component {
       return;
     }
 
-    found = found.topicSource.channelDefs.find(channelDef => {
-      return PROTO_TYPES[CHANNEL_DEF_TYPE].valuesById[channelDef.type] === 'WS';
-    });
+    found = findWSChannel(found);
 
     if (found) {
       const viewState = store.uiState.activeViewState.getState();
@@ -51,12 +49,8 @@ export default class TopicDropdown extends Component {
 
     const topics = toJS(store.topicInfo.topics);
     const data = topics.reduce((obj, v) => {
-      const { topic, topicSource } = v;
-      if (
-        topicSource.channelDefs.some(channelDef => {
-          return PROTO_TYPES[CHANNEL_DEF_TYPE].valuesById[channelDef.type] === 'WS';
-        })
-      ) {
+      const { topic } = v;
+      if (hasWSChannel(v)) {
         if (typeName === v.typeName) {
           obj[topic] = topic; // eslint-disable-line no-param-reassign
         }
@@ -65,6 +59,10 @@ export default class TopicDropdown extends Component {
     }, {});
     if (value === '') {
       data[''] = '';
+    }
+    if (!data[value]) {
+      data[''] = '';
+      value = '';
     }
 
     return (

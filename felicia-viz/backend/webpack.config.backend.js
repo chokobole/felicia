@@ -35,7 +35,7 @@ module.exports = env => {
     feliciaJsNodePath = resolve(ROOT_PATH, '../bazel-bin/felicia/js/felicia_js.node');
   }
   config.resolve.alias = Object.assign(config.resolve.alias, {
-    'felicia_js.node': feliciaJsNodePath
+    'felicia_js.node': feliciaJsNodePath,
   });
 
   config.resolve.modules = config.resolve.modules.concat(resolve('src'), resolve('node_modules'));

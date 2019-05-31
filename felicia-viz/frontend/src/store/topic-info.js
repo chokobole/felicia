@@ -2,6 +2,8 @@ import { action, observable } from 'mobx';
 
 import { TOPIC_INFO } from '@felicia-viz/communication';
 
+import SUBSCRIBER from 'util/subscriber';
+
 // TODO: Maybe we need loadash?
 function arraysEqual(a, b) {
   if (a === b) return true;
@@ -20,6 +22,8 @@ export default class TopicInfo {
   @action updateTopics(newTopics) {
     console.log('updateTopics');
     this.topics = newTopics;
+
+    SUBSCRIBER.updateTopics(newTopics);
   }
 
   update(message) {
