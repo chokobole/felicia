@@ -60,10 +60,6 @@ export default class TopicDropdown extends Component {
     if (value === '') {
       data[''] = '';
     }
-    if (!data[value]) {
-      data[''] = '';
-      value = '';
-    }
 
     return (
       <PanelItemContainer>

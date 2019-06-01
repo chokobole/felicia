@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
+import { NotificationContainer } from 'react-notifications';
 
 import { TopicInfoSubscriber } from '@felicia-viz/communication';
 
@@ -10,6 +11,7 @@ import ToolBar from 'components/tool-bar';
 import UI_TYPES from 'store/ui/ui-types';
 
 import 'fonts/felicia-icons.css';
+import 'react-notifications/lib/notifications.css';
 import 'stylesheets/main.scss';
 
 @inject('store')
@@ -73,6 +75,7 @@ export default class App extends Component {
         <MainScene />
         {this._renderViews()}
         <ToolBar />
+        <NotificationContainer />
       </div>
     );
   }

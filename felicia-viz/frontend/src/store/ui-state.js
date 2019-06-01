@@ -1,4 +1,7 @@
 import { observable, action } from 'mobx';
+import { NotificationManager } from 'react-notifications';
+
+import { TOPIC_INFO, hasWSChannel } from '@felicia-viz/communication';
 
 import UI_TYPES from 'store/ui/ui-types';
 import SUBSCRIBER from 'util/subscriber';
@@ -77,6 +80,24 @@ export default class UIState {
   }
 
   update(message) {
+    if (TOPIC_INFO === message.type) {
+      const newTopics = message.data;
+      this.viewStates.forEach(viewState => {
+        viewState.topics.forEach((topic, typeName) => {
+          let found = false;
+          newTopics.forEach(value => {
+            found = hasWSChannel(value);
+          });
+
+          if (!found) {
+            viewState.unsetTopic(typeName, topic);
+            NotificationManager.error(`${topic} was disconnected.`, 'Disconnection');
+          }
+        });
+      });
+      return;
+    }
+
     this.viewStates.forEach(viewState => {
       if (viewState.id === message.id) {
         viewState.update(message);

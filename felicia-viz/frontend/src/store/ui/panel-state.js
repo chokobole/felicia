@@ -13,4 +13,9 @@ export default class PanelState {
     this.topics.set(typeName, topic);
     SUBSCRIBER.subscribeTopic(this.id, typeName, topic, address);
   }
+
+  @action unsetTopic(typeName, topic) {
+    this.topics.delete(typeName);
+    SUBSCRIBER.unsubscribeTopic(this.id, topic);
+  }
 }
