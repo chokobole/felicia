@@ -20,5 +20,10 @@ build:apple_debug --copt="-DAPPLE_DEBUG"
 
 build:win_no_grpc --define win_no_grpc=true
 
+build:wasm --crosstool_top=//toolchain:emscripten
+build:wasm --cpu=wasm
+build:wasm --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
+build:wasm --define wasm=true
+
 # Put user-specific options in .bazelrc.user
 try-import %workspace%/.bazelrc.user

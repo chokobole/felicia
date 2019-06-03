@@ -1,3 +1,5 @@
+import path from 'path';
+
 import express from 'express';
 import morgan from 'morgan';
 
@@ -16,7 +18,8 @@ if (isDevelopment) {
   app.use(express.static('dist'));
 }
 
-app.use(express.static('static'));
+express.static.mime.define({ 'application/wasm': ['wasm'] });
+app.use(express.static(path.resolve('../wasm')));
 
 app.listen(HTTP_PORT, () =>
   console.log(`Running FeliciaViz-${packagejson.version} on ${HTTP_PORT}`)

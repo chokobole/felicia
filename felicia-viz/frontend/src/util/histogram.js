@@ -1,5 +1,7 @@
 import colormap from 'colormap';
 
+import { PixelFormat } from '@felicia-viz/communication';
+
 export default class Histogram {
   histogram = null;
 
@@ -57,7 +59,7 @@ export default class Histogram {
     }
 
     switch (pixelFormat) {
-      case 'PIXEL_FORMAT_ARGB': {
+      case PixelFormat.values.PIXEL_FORMAT_ARGB: {
         const pixelData2 = new Uint8ClampedArray(data);
         for (let i = 0; i < height; i += 1) {
           for (let j = 0; j < width; j += 1) {
@@ -125,7 +127,7 @@ export default class Histogram {
     }
 
     switch (pixelFormat) {
-      case 'PIXEL_FORMAT_ARGB': {
+      case PixelFormat.values.PIXEL_FORMAT_ARGB: {
         const pixelData2 = new Uint8ClampedArray(data);
         for (let i = 0; i < height; i += 1) {
           for (let j = 0; j < width; j += 1) {

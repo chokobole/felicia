@@ -99,3 +99,17 @@ def load_deps():
         strip_prefix = "buildtools-db073457c5a56d810e46efc18bb93a4fd7aa7b5e",
         url = "https://github.com/bazelbuild/buildtools/archive/db073457c5a56d810e46efc18bb93a4fd7aa7b5e.zip",
     )
+
+    http_archive(
+        name = "emscripten_toolchain",
+        url = "https://github.com/kripken/emscripten/archive/1.38.30.tar.gz",
+        build_file = "//toolchain:emscripten-toolchain.BUILD",
+        strip_prefix = "emscripten-1.38.30",
+    )
+
+    http_archive(
+        name = "emscripten_clang",
+        url = "https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/linux_64bit/emscripten-llvm-e1.38.30.tar.gz",
+        build_file = "//toolchain:emscripten-clang.BUILD",
+        strip_prefix = "emscripten-llvm-e1.38.30",
+    )

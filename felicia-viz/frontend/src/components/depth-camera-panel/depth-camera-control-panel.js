@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import { Form } from '@streetscape.gl/monochrome';
 
-import { CAMERA_FRAME_MESSAGE, DEPTH_CAMERA_FRAME_MESSAGE } from '@felicia-viz/communication';
+import { CAMERA_FRAME_MESSAGE, DEPTH_CAMERA_FRAME_MESSAGE, PixelFormat } from '@felicia-viz/communication';
 import { TopicDropdown, renderText } from '@felicia-viz/ui';
 
 import { FORM_STYLE } from 'custom-styles';
@@ -83,7 +83,7 @@ export default class DepthCameraControlPanel extends Component {
         width,
         height,
         frameRate,
-        pixelFormat,
+        pixelFormat: PixelFormat.valuesById[pixelFormat],
         scale,
         topic,
         filter,

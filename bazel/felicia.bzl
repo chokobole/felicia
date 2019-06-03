@@ -151,3 +151,23 @@ def fel_additional_deps():
 
 def fel_shared_library():
     return ["//felicia"]
+
+def _tpl_impl(ctx):
+    ctx.actions.expand_template(
+        template = ctx.file.template,
+        output = ctx.outputs.file,
+        substitutions = ctx.attr.substitutions,
+    )
+
+tpl = rule(
+    implementation = _tpl_impl,
+    attrs = {
+        "output": attr.string(mandatory = True),
+        "template": attr.label(
+            mandatory = True,
+            allow_single_file = True,
+        ),
+        "substitutions": attr.string_dict(mandatory = True),
+    },
+    outputs = {"file": "%{output}"},
+)

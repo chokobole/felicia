@@ -27,7 +27,7 @@ self.onmessage = event => {
 
     const decoded = protoType.decode(new Uint8Array(data));
     message = {
-      data: protoType.toObject(decoded, { enums: String }),
+      data: protoType.toObject(decoded),
       type,
       destinations,
     };

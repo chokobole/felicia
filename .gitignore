@@ -18,6 +18,8 @@ __pycache__
 /.bazelrc.user
 build
 !third_party/chromium/build
+toolchain/emscripten_cache
+felicia-viz/wasm
 
 # Log related
 *.log

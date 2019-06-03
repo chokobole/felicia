@@ -3,6 +3,7 @@ import PROTO_TYPES, {
   DEPTH_CAMERA_FRAME_MESSAGE,
   IMU_MESSAGE,
   TOPIC_INFO,
+  PixelFormat,
   hasWSChannel,
   findWSChannel,
 } from './proto-types';
@@ -15,7 +16,9 @@ export {
   DEPTH_CAMERA_FRAME_MESSAGE,
   IMU_MESSAGE,
   TOPIC_INFO,
+  PixelFormat,
   hasWSChannel,
   findWSChannel,
+  TopicInfoSubscriber,
+  Subscriber,
 };
-export { TopicInfoSubscriber, Subscriber };

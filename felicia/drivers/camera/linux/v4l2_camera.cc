@@ -416,15 +416,13 @@ void V4l2Camera::DoCapture() {
     buffer.bytesused = 0;
     status_callback_.Run(errors::InvalidNumberOfBytesInBuffer());
   } else {
-    buffers_[buffer.index].set_payload(buffer.bytesused);
-    ::base::Optional<CameraFrame> argb_frame =
-        ConvertToARGB(buffers_[buffer.index], camera_format_);
-    if (argb_frame.has_value()) {
-      argb_frame.value().set_timestamp(timestamper_.timestamp());
-      camera_frame_callback_.Run(std::move(argb_frame.value()));
-    } else {
-      status_callback_.Run(errors::FailedToConvertToARGB());
-    }
+    CameraBuffer& camera_buffer = buffers_[buffer.index];
+    camera_buffer.set_payload(buffer.bytesused);
+    std::unique_ptr<uint8_t[]> data(new uint8_t[camera_buffer.payload()]);
+    memcpy(data.get(), camera_buffer.start(), camera_buffer.payload());
+    CameraFrame camera_frame(std::move(data), camera_format_);
+    ;
+    camera_frame_callback_.Run(std::move(camera_frame));
   }
 
   if (DoIoctl(fd_.get(), VIDIOC_QBUF, &buffer) < 0) {

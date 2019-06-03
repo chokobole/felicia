@@ -1,6 +1,9 @@
 /* global self */
 /* eslint no-restricted-globals: ["off"] */
+import { PixelFormat } from '@felicia-viz/communication';
+
 import Histogram from 'util/histogram';
+import Module from 'wasm/felicia_wasm.js'; // eslint-disable-line
 
 let histogram;
 
@@ -12,7 +15,7 @@ self.onmessage = event => {
       const { imageData, width, height, pixelFormat, filter, frameToAlign } = data;
       const pixels = imageData.data;
       switch (pixelFormat) {
-        case 'PIXEL_FORMAT_Z16': {
+        case PixelFormat.values.PIXEL_FORMAT_Z16: {
           if (!histogram) {
             histogram = new Histogram();
           }
@@ -30,7 +33,7 @@ self.onmessage = event => {
           );
           break;
         }
-        case 'PIXEL_FORMAT_ARGB': {
+        case PixelFormat.values.PIXEL_FORMAT_ARGB: {
           const pixelData = new Uint8ClampedArray(data.data);
           for (let i = 0; i < height; i += 1) {
             for (let j = 0; j < width; j += 1) {
@@ -43,8 +46,35 @@ self.onmessage = event => {
           }
           break;
         }
-        default:
-          console.error(`Not implemented yet for this format: ${pixelFormat}`);
+        default: {
+          if (!Module.calledRun) break;
+
+          const imgSize = data.data.byteLength;
+          const argbSize = width * height * 4;
+
+          const imgBuffer = Module.createBuffer(imgSize);
+          const argbBuffer = Module.createBuffer(argbSize);
+
+          Module.HEAPU8.set(data.data, imgBuffer);
+          Module.fillColor(
+            imgBuffer,
+            imgSize,
+            argbBuffer,
+            width,
+            height,
+            PixelFormat.valuesById[pixelFormat]
+          );
+
+          const pixelData = imageData.data;
+          const argbBufferTA = new Uint8Array(Module.HEAPU8.buffer, argbBuffer, argbSize);
+          for (let i = 0; i < argbSize; i += 1) {
+            pixelData[i] = argbBufferTA[i];
+          }
+
+          Module.releaseBuffer(imgBuffer);
+          Module.releaseBuffer(argbBuffer);
+          break;
+        }
       }
 
       message = imageData;

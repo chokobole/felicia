@@ -11,6 +11,7 @@ export const TOPIC_INFO = 'felicia.TopicInfo';
 
 const ChannelDefType = FeliciaProtoRoot.lookupEnum('felicia.ChannelDef.Type');
 const TopicInfo = FeliciaProtoRoot.lookupType(TOPIC_INFO);
+export const PixelFormat = FeliciaProtoRoot.lookupEnum('felicia.PixelFormat');
 
 const PROTO_TYPES = {};
 PROTO_TYPES[CAMERA_FRAME_MESSAGE] = FeliciaProtoRoot.lookupType(CAMERA_FRAME_MESSAGE);

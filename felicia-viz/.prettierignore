@@ -1,2 +1,3 @@
 **/dist*/**/*.js
 **/package-lock.json
+wasm/*.js
