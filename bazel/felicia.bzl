@@ -153,10 +153,17 @@ def fel_shared_library():
     return ["//felicia"]
 
 def _tpl_impl(ctx):
+    substitutions = {}
+    if ctx.attr.normalize_path:
+        for key in ctx.attr.substitutions:
+            substitutions[key] = ctx.attr.substitutions[key].replace("\\", "/")
+    else:
+        substitutions = ctx.attr.substitutions
+
     ctx.actions.expand_template(
         template = ctx.file.template,
         output = ctx.outputs.file,
-        substitutions = ctx.attr.substitutions,
+        substitutions = substitutions,
     )
 
 tpl = rule(
@@ -167,6 +174,7 @@ tpl = rule(
             mandatory = True,
             allow_single_file = True,
         ),
+        "normalize_path": attr.bool(),
         "substitutions": attr.string_dict(mandatory = True),
     },
     outputs = {"file": "%{output}"},

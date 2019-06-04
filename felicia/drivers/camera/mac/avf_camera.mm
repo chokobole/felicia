@@ -90,6 +90,10 @@ Status AvfCamera::Start(const CameraFormat& requested_camera_format,
   s = SetCameraFormat(final_camera_format);
   if (!s.ok()) return s;
 
+  if (requested_camera_format.convert_to_argb()) {
+    camera_format_.set_convert_to_argb(true);
+  }
+
   if (![capture_device_ startCapture]) {
     return errors::FailedtoStartCapture();
   }
@@ -139,14 +143,22 @@ Status AvfCamera::SetCameraFormat(const CameraFormat& camera_format) {
 void AvfCamera::ReceiveFrame(const uint8_t* video_frame, int video_frame_length,
                              const CameraFormat& camera_format, int aspect_numerator,
                              int aspect_denominator, ::base::TimeDelta timestamp) {
-  CameraBuffer camera_buffer(const_cast<uint8_t*>(video_frame), video_frame_length);
-  camera_buffer.set_payload(video_frame_length);
-  ::base::Optional<CameraFrame> argb_frame = ConvertToARGB(camera_buffer, camera_format);
-  if (argb_frame.has_value()) {
-    argb_frame.value().set_timestamp(timestamp);
-    camera_frame_callback_.Run(std::move(argb_frame.value()));
+  if (camera_format_.convert_to_argb()) {
+    CameraBuffer camera_buffer(const_cast<uint8_t*>(video_frame), video_frame_length);
+    camera_buffer.set_payload(video_frame_length);
+    ::base::Optional<CameraFrame> argb_frame = ConvertToARGB(camera_buffer, camera_format);
+    if (argb_frame.has_value()) {
+      argb_frame.value().set_timestamp(timestamp);
+      camera_frame_callback_.Run(std::move(argb_frame.value()));
+    } else {
+      status_callback_.Run(errors::FailedToConvertToARGB());
+    }
   } else {
-    status_callback_.Run(errors::FailedToConvertToARGB());
+    std::unique_ptr<uint8_t[]> data(new uint8_t[video_frame_length]);
+    memcpy(data.get(), video_frame, video_frame_length);
+    CameraFrame camera_frame(std::move(data), camera_format_);
+    camera_frame.set_timestamp(timestamp);
+    camera_frame_callback_.Run(std::move(camera_frame));
   }
 }
 

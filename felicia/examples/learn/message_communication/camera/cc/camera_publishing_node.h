@@ -57,7 +57,7 @@ class CameraPublishingNode : public NodeLifecycle {
   void StartCamera() {
     // You should set the camera format if you have any you want to run with.
     Status s = camera_->Start(
-        CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 25),
+        CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 25, true),
         ::base::BindRepeating(&CameraPublishingNode::OnCameraFrame,
                               ::base::Unretained(this)),
         ::base::BindRepeating(&CameraPublishingNode::OnCameraError,

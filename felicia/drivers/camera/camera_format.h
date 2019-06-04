@@ -22,9 +22,10 @@ const int kFrameRatePrecision = 10000;
 class EXPORT CameraFormat {
  public:
   CameraFormat();
-  CameraFormat(Sizei size, PixelFormat pixel_format, float frame_rate);
+  CameraFormat(Sizei size, PixelFormat pixel_format, float frame_rate,
+               bool convert_to_argb = false);
   CameraFormat(int width, int height, PixelFormat pixel_format,
-               float frame_rate);
+               float frame_rate, bool convert_to_argb = false);
   CameraFormat(const CameraFormat& camera_format);
   CameraFormat& operator=(const CameraFormat& camera_format);
 
@@ -42,6 +43,8 @@ class EXPORT CameraFormat {
   size_t AllocationSize() const;
   float frame_rate() const;
   void set_frame_rate(float frame_rate);
+  bool convert_to_argb() const;
+  void set_convert_to_argb(bool convert_to_argb);
 
 #if defined(OS_LINUX)
   uint32_t ToV4l2PixelFormat() const;
@@ -65,6 +68,7 @@ class EXPORT CameraFormat {
   Sizei size_;
   PixelFormat pixel_format_ = PIXEL_FORMAT_UNKNOWN;
   float frame_rate_ = 0;
+  bool convert_to_argb_ = false;
 };
 
 // Prints a human-readable representation of |camera_format| to |os|.

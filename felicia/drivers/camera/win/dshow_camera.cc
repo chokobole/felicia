@@ -273,6 +273,9 @@ Status DshowCamera::Start(const CameraFormat& requested_camera_format,
 
   camera_format_ = found_capability.supported_format;
   camera_format_.set_frame_rate(frame_rate);
+  if (requested_camera_format.convert_to_argb()) {
+    camera_format_.set_convert_to_argb(true);
+  }
 
   if (media_type->subtype == kMediaSubTypeHDYC) {
     // HDYC pixel format, used by the DeckLink capture card, needs an AVI
@@ -326,17 +329,27 @@ void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
                                 ::base::TimeDelta timestamp) {
   CameraBuffer camera_buffer(const_cast<uint8_t*>(buffer), length);
   camera_buffer.set_payload(length);
-  ::base::Optional<CameraFrame> argb_frame =
-      ConvertToARGB(camera_buffer, camera_format);
-  if (argb_frame.has_value()) {
-    // There is a chance that the platform does not provide us with the
-    // timestamp, in which case, we use reference time to calculate a timestamp.
-    if (timestamp == kNoTimestamp) timestamp = timestamper_.timestamp();
+  if (camera_format_.convert_to_argb()) {
+    ::base::Optional<CameraFrame> argb_frame =
+        ConvertToARGB(camera_buffer, camera_format);
+    if (argb_frame.has_value()) {
+      // There is a chance that the platform does not provide us with the
+      // timestamp, in which case, we use reference time to calculate a
+      // timestamp.
+      if (timestamp == kNoTimestamp) timestamp = timestamper_.timestamp();
 
-    argb_frame.value().set_timestamp(timestamp);
-    camera_frame_callback_.Run(std::move(argb_frame.value()));
+      argb_frame.value().set_timestamp(timestamp);
+      camera_frame_callback_.Run(std::move(argb_frame.value()));
+    } else {
+      status_callback_.Run(errors::FailedToConvertToARGB());
+    }
   } else {
-    status_callback_.Run(errors::FailedToConvertToARGB());
+    std::unique_ptr<uint8_t[]> data(new uint8_t[camera_buffer.payload()]);
+    memcpy(data.get(), camera_buffer.start(), camera_buffer.payload());
+    CameraFrame camera_frame(std::move(data), camera_format_);
+    if (timestamp == kNoTimestamp) timestamp = timestamper_.timestamp();
+    camera_frame.set_timestamp(timestamp);
+    camera_frame_callback_.Run(std::move(camera_frame));
   }
 }
 

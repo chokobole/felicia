@@ -436,6 +436,9 @@ Status MfCamera::Start(const CameraFormat& requested_camera_format,
   }
 
   camera_format_ = found_capability.supported_format;
+  if (requested_camera_format.convert_to_argb()) {
+    camera_format_.set_convert_to_argb(true);
+  }
 
   ComPtr<IMFCaptureSink> sink;
   hr = engine_->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW,
@@ -528,13 +531,21 @@ void MfCamera::OnIncomingCapturedData(const uint8_t* data, int length,
 
   CameraBuffer camera_buffer(const_cast<uint8_t*>(data), length);
   camera_buffer.set_payload(length);
-  ::base::Optional<CameraFrame> argb_frame =
-      ConvertToARGB(camera_buffer, camera_format_);
-  if (argb_frame.has_value()) {
-    argb_frame.value().set_timestamp(timestamp);
-    camera_frame_callback_.Run(std::move(argb_frame.value()));
+  if (camera_format_.convert_to_argb()) {
+    ::base::Optional<CameraFrame> argb_frame =
+        ConvertToARGB(camera_buffer, camera_format_);
+    if (argb_frame.has_value()) {
+      argb_frame.value().set_timestamp(timestamp);
+      camera_frame_callback_.Run(std::move(argb_frame.value()));
+    } else {
+      status_callback_.Run(errors::FailedToConvertToARGB());
+    }
   } else {
-    status_callback_.Run(errors::FailedToConvertToARGB());
+    std::unique_ptr<uint8_t[]> new_data(new uint8_t[camera_buffer.payload()]);
+    memcpy(new_data.get(), camera_buffer.start(), camera_buffer.payload());
+    CameraFrame camera_frame(std::move(new_data), camera_format_);
+    camera_frame.set_timestamp(timestamp);
+    camera_frame_callback_.Run(std::move(camera_frame));
   }
 }
 

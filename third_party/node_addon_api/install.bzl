@@ -1,4 +1,5 @@
 load("@local_config_python//:py.bzl", "PYTHON2_BIN")
+load("//bazel:repo.bzl", "find_bash")
 
 def _npm_install_node_addon_api_impl(repository_ctx):
     repository_ctx.symlink(Label("//third_party/node_addon_api:BUILD.bazel"), "BUILD.bazel")
@@ -6,7 +7,7 @@ def _npm_install_node_addon_api_impl(repository_ctx):
     repository_ctx.symlink(Label("//third_party/node_addon_api:package-lock.json"), "package-lock.json")
     repository_ctx.symlink(Label("//third_party/node_addon_api:binding.gyp"), "binding.gyp")
 
-    bash = repository_ctx.which("bash")
+    bash = find_bash(repository_ctx)
     cmd = [bash, "-c", "npm install"]
     result = repository_ctx.execute(cmd)
     if result.return_code != 0:

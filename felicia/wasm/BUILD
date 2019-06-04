@@ -13,5 +13,5 @@ fel_wasm_binary(
     ],
     deps = [
         "@libyuv",
-    ]
+    ],
 )

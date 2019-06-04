@@ -7,6 +7,10 @@ npm install
 npx run bootstrap
 ```
 
+### To build wasm
+
+**On windows it's not supported yet.**
+
 On felicia root, run this command below!
 
 ```bash
@@ -24,7 +28,17 @@ Then you should run command below. Please refer to section 9 in [bazel tutorial]
 
 ```bash
 ./toolchain/embuilder.sh build compiler-rt dlmalloc libc libc-wasm libc++ libc++_noexcept libc++abi pthreads
+```
+
+And if you try again, you will find that it succeds.
+
+```bash
 bazel build --config wasm //felicia/wasm/...
+```
+
+Finally to make use of this build result, you have to run this command below.
+
+```bash
 cd felicia-viz && node install-wasm.js
 ```
 

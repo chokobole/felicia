@@ -43,13 +43,24 @@ void AddCamera(py::module& m) {
 
   py::class_<CameraFormat>(m, "CameraFormat")
       .def(py::init([](int width, int height, PixelFormat pixel_format,
-                       float frame_rate) {
-        return new CameraFormat(width, height, pixel_format, frame_rate);
+                       float frame_rate, bool convert_to_argb) {
+        return new CameraFormat(width, height, pixel_format, frame_rate,
+                                convert_to_argb);
       }))
-      .def_property_readonly("pixel_format", &CameraFormat::pixel_format)
-      .def_property_readonly("width", &CameraFormat::width)
-      .def_property_readonly("height", &CameraFormat::height)
-      .def_property_readonly("frame_rate", &CameraFormat::frame_rate)
+      .def_property("pixel_format", &CameraFormat::pixel_format,
+                    &CameraFormat::set_pixel_format)
+      .def_property("width", &CameraFormat::width,
+                    [](CameraFormat& self, int width) {
+                      self.SetSize(width, self.height());
+                    })
+      .def_property("height", &CameraFormat::height,
+                    [](CameraFormat& self, int height) {
+                      self.SetSize(self.width(), height);
+                    })
+      .def_property("frame_rate", &CameraFormat::frame_rate,
+                    &CameraFormat::set_frame_rate)
+      .def_property("convert_to_argb", &CameraFormat::convert_to_argb,
+                    &CameraFormat::set_convert_to_argb)
       .def("__str__", &CameraFormat::ToString);
 
   py::class_<CameraFrame>(m, "CameraFrame")

@@ -19,7 +19,8 @@ class RsCameraPublishingNode : public NodeLifecycle {
         imu_topic_(imu_topic),
         camera_descriptor_(camera_descriptor),
         synched_(synched),
-        requested_color_format_(CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 30)),
+        requested_color_format_(
+            CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 30, true)),
         requested_depth_format_(CameraFormat(640, 480, PIXEL_FORMAT_Z16, 30)),
         align_direction_(AlignDirection::AlignToColor),
         requested_gyro_format_(ImuFormat(200)),

@@ -15,7 +15,9 @@ cc_toolchain_suite(
 filegroup(
     name = "all",
     srcs = [
+        "emar.bat",
         "emar.sh",
+        "emcc.bat",
         "emcc.sh",
         ":emscripten_cache_content",
         ":env_sh",
@@ -31,6 +33,7 @@ filegroup(
 
 tpl(
     name = "env_sh",
+    normalize_path = True,
     output = "env.sh",
     substitutions = {
         "%{BAZEL_FELICIA}": "%s/bazel-felicia" % FELICIA_ROOT,

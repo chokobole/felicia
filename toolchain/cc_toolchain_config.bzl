@@ -13,15 +13,15 @@ def _impl(ctx):
     tool_paths = [
         tool_path(
             name = "gcc",
-            path = "emcc.sh",
+            path = "emcc.bat" if ctx.attr.win else "emcc.sh",
         ),
         tool_path(
             name = "ld",
-            path = "emcc.sh",
+            path = "emcc.bat" if ctx.attr.win else "emcc.sh",
         ),
         tool_path(
             name = "ar",
-            path = "emar.sh",
+            path = "emar.bat" if ctx.attr.win else "emar.sh",
         ),
         tool_path(
             name = "cpp",
@@ -203,6 +203,8 @@ def _impl(ctx):
 
 cc_toolchain_config = rule(
     implementation = _impl,
-    attrs = {},
+    attrs = {
+        "win": attr.bool(),
+    },
     provides = [CcToolchainConfigInfo],
 )

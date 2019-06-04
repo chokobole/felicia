@@ -28,7 +28,8 @@ done
 $PYTHON2_BIN external/emscripten_toolchain/emcc.py "${argv[@]}"
 
 # Remove the first line of .d file
-find . -name "*.d" -exec sed -i '2d' {} \;
+find . -name "*.d" -exec sed -i.bak '2d' {} \;
+find . -name "*.d.bak" -exec rm {} \;
 
 # Now create the tarfile
 shopt -s extglob

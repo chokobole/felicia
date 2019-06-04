@@ -180,6 +180,9 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
             requested_color_format, capability_map_[sensor.first]);
         if (!found_capability) return errors::NoVideoCapbility();
         color_format_ = found_capability->format.camera_format;
+        if (requested_color_format.convert_to_argb()) {
+          color_format_.set_convert_to_argb(true);
+        }
         sensor.second.open(
             sensor.second
                 .get_stream_profiles()[found_capability->stream_index]);
@@ -257,18 +260,36 @@ void RsCamera::OnFrame(::rs2::frame frame) {
     ::rs2::video_frame rs_color_frame = frameset.get_color_frame();
     ::rs2::depth_frame rs_depth_frame = frameset.get_depth_frame();
 
-    CameraFrame color_frame = FromRsColorFrame(rs_color_frame);
     DepthCameraFrame depth_frame = FromRsDepthFrame(rs_depth_frame);
-
-    synched_frame_callback_.Run(std::move(color_frame), std::move(depth_frame));
+    if (color_format_.convert_to_argb()) {
+      auto color_frame = ConvertToARGB(rs_color_frame);
+      if (color_frame.has_value()) {
+        synched_frame_callback_.Run(std::move(color_frame.value()),
+                                    std::move(depth_frame));
+      } else {
+        status_callback_.Run(errors::FailedToConvertToARGB());
+      }
+    } else {
+      CameraFrame color_frame = FromRsColorFrame(rs_color_frame);
+      synched_frame_callback_.Run(std::move(color_frame),
+                                  std::move(depth_frame));
+    }
   } else if (frame.is<::rs2::video_frame>()) {
     if (frame.is<::rs2::depth_frame>()) {
       depth_frame_callback_.Run(
           FromRsDepthFrame(frame.as<::rs2::depth_frame>()));
-      return;
     } else {
-      color_frame_callback_.Run(
-          FromRsColorFrame(frame.as<::rs2::video_frame>()));
+      if (color_format_.convert_to_argb()) {
+        auto color_frame = ConvertToARGB(frame.as<::rs2::video_frame>());
+        if (color_frame.has_value()) {
+          color_frame_callback_.Run(std::move(color_frame.value()));
+        } else {
+          status_callback_.Run(errors::FailedToConvertToARGB());
+        }
+      } else {
+        color_frame_callback_.Run(
+            FromRsColorFrame(frame.as<::rs2::video_frame>()));
+      }
     }
   }
 }
@@ -291,6 +312,22 @@ void RsCamera::OnImu(::rs2::frame frame) {
   imu.set_orientation(imu_filter_->orientation());
 
   imu_callback_.Run(imu);
+}
+
+::base::Optional<CameraFrame> RsCamera::ConvertToARGB(
+    ::rs2::video_frame color_frame) {
+  size_t length = color_format_.AllocationSize();
+  CameraBuffer camera_buffer(
+      reinterpret_cast<uint8_t*>(const_cast<void*>(color_frame.get_data())),
+      length);
+  camera_buffer.set_payload(length);
+  ::base::Optional<CameraFrame> argb_frame =
+      felicia::ConvertToARGB(camera_buffer, color_format_);
+  if (argb_frame.has_value()) {
+    argb_frame.value().set_timestamp(timestamper_.timestamp());
+  }
+
+  return argb_frame;
 }
 
 CameraFrame RsCamera::FromRsColorFrame(::rs2::video_frame color_frame) {

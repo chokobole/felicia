@@ -8,6 +8,7 @@ load("//third_party/cc:cc_configure.bzl", "cc_configure")
 load("//third_party/env:env_configure.bzl", "env_configure")
 load("//third_party/py:python_configure.bzl", "python_configure")
 load("//third_party/realsense:realsense_configure.bzl", "realsense_configure")
+load("//bazel:repo.bzl", "http_archive_per_os")
 
 def load_deps():
     """Loads dependencies need to compile and test the felicia."""
@@ -107,9 +108,18 @@ def load_deps():
         strip_prefix = "emscripten-1.38.30",
     )
 
-    http_archive(
+    http_archive_per_os(
         name = "emscripten_clang",
-        url = "https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/linux_64bit/emscripten-llvm-e1.38.30.tar.gz",
+        url_fmt = "https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/%s/emscripten-llvm-e1.38.30%s",
+        fmt_dict = {
+            "k8": ["linux_64bit", ".tar.gz"],
+            "darwin": ["osx_64bit", ".tar.gz"],
+            "x64_windows": ["win_64bit", ".zip"],
+        },
         build_file = "//toolchain:emscripten-clang.BUILD",
-        strip_prefix = "emscripten-llvm-e1.38.30",
+        strip_prefix_dict = {
+            "k8": "emscripten-llvm-e1.38.30",
+            "darwin": "emscripten-llvm-e1.38.30",
+            "x64_windows": "",
+        },
     )

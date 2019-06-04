@@ -11,14 +11,18 @@ namespace felicia {
 CameraFormat::CameraFormat() = default;
 
 CameraFormat::CameraFormat(Sizei size, PixelFormat pixel_format,
-                           float frame_rate)
-    : size_(size), pixel_format_(pixel_format), frame_rate_(frame_rate) {}
+                           float frame_rate, bool convert_to_argb)
+    : size_(size),
+      pixel_format_(pixel_format),
+      frame_rate_(frame_rate),
+      convert_to_argb_(convert_to_argb) {}
 
 CameraFormat::CameraFormat(int width, int height, PixelFormat pixel_format,
-                           float frame_rate)
+                           float frame_rate, bool convert_to_argb)
     : size_(Sizei(width, height)),
       pixel_format_(pixel_format),
-      frame_rate_(frame_rate) {}
+      frame_rate_(frame_rate),
+      convert_to_argb_(convert_to_argb) {}
 
 CameraFormat::CameraFormat(const CameraFormat& camera_format) = default;
 
@@ -48,6 +52,12 @@ float CameraFormat::frame_rate() const { return frame_rate_; }
 
 void CameraFormat::set_frame_rate(float frame_rate) {
   frame_rate_ = frame_rate;
+}
+
+bool CameraFormat::convert_to_argb() const { return convert_to_argb_; }
+
+void CameraFormat::set_convert_to_argb(bool convert_to_argb) {
+  convert_to_argb_ = convert_to_argb;
 }
 
 // static

@@ -243,6 +243,10 @@ Status V4l2Camera::Start(const CameraFormat& requested_camera_format,
   s = SetCameraFormat(final_camera_format);
   if (!s.ok()) return s;
 
+  if (requested_camera_format.convert_to_argb()) {
+    camera_format_.set_convert_to_argb(true);
+  }
+
   s = InitMmap();
   if (!s.ok()) return s;
 
@@ -418,10 +422,22 @@ void V4l2Camera::DoCapture() {
   } else {
     CameraBuffer& camera_buffer = buffers_[buffer.index];
     camera_buffer.set_payload(buffer.bytesused);
-    std::unique_ptr<uint8_t[]> data(new uint8_t[camera_buffer.payload()]);
-    memcpy(data.get(), camera_buffer.start(), camera_buffer.payload());
-    CameraFrame camera_frame(std::move(data), camera_format_);
-    camera_frame_callback_.Run(std::move(camera_frame));
+    if (camera_format_.convert_to_argb()) {
+      ::base::Optional<CameraFrame> argb_frame =
+          ConvertToARGB(camera_buffer, camera_format_);
+      if (argb_frame.has_value()) {
+        argb_frame.value().set_timestamp(timestamper_.timestamp());
+        camera_frame_callback_.Run(std::move(argb_frame.value()));
+      } else {
+        status_callback_.Run(errors::FailedToConvertToARGB());
+      }
+    } else {
+      std::unique_ptr<uint8_t[]> data(new uint8_t[camera_buffer.payload()]);
+      memcpy(data.get(), camera_buffer.start(), camera_buffer.payload());
+      CameraFrame camera_frame(std::move(data), camera_format_);
+      camera_frame.set_timestamp(timestamper_.timestamp());
+      camera_frame_callback_.Run(std::move(camera_frame));
+    }
   }
 
   if (DoIoctl(fd_.get(), VIDIOC_QBUF, &buffer) < 0) {
