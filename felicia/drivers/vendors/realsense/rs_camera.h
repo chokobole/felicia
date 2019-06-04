@@ -73,8 +73,7 @@ class RsCamera : public DepthCameraInterface {
 
   void SetFirstRefTime();
 
-  ::base::Optional<CameraFrame> FromRsColorFrame(
-      ::rs2::video_frame color_frame);
+  CameraFrame FromRsColorFrame(::rs2::video_frame color_frame);
   DepthCameraFrame FromRsDepthFrame(::rs2::depth_frame depth_frame);
 
   static Status CreateDevice(const CameraDescriptor& camera_descriptor,

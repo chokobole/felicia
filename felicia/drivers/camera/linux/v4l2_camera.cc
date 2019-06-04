@@ -421,7 +421,6 @@ void V4l2Camera::DoCapture() {
     std::unique_ptr<uint8_t[]> data(new uint8_t[camera_buffer.payload()]);
     memcpy(data.get(), camera_buffer.start(), camera_buffer.payload());
     CameraFrame camera_frame(std::move(data), camera_format_);
-    ;
     camera_frame_callback_.Run(std::move(camera_frame));
   }
 

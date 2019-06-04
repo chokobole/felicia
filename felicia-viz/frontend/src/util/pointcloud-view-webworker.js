@@ -26,7 +26,6 @@ self.onmessage = event => {
 
     const { buffer, byteOffset, byteLength } = data;
     const pixelData = new Uint16Array(buffer, byteOffset, byteLength / 2);
-    histogram.make(pixelData, width, height);
     histogram.fillVerticesWithColormap(
       colors,
       positions,

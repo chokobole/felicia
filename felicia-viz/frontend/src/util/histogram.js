@@ -1,11 +1,61 @@
+/* eslint no-bitwise: ["off"] */
+/* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["imageData", "colors", "dst", "positions"] }] */
 import colormap from 'colormap';
 
 import { PixelFormat } from '@felicia-viz/communication';
 
+import { RGBA, BGRA } from 'util/color';
+
+function align(dst, frameToAlign, width, height, normalize) {
+  if (!frameToAlign) return;
+
+  const { cameraFormat, data, converted } = frameToAlign.frame;
+  const { pixelFormat } = cameraFormat;
+
+  if (cameraFormat.width !== width || cameraFormat.height !== height) {
+    console.error(
+      `Resolution mismatched, Depth: (${width}, ${height}) Color: (${cameraFormat.width}, ${
+        cameraFormat.height
+      })`
+    );
+    return;
+  }
+
+  if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_ARGB || converted) {
+    const size = width * height;
+    const pixelData = new Uint8ClampedArray(data);
+    if (normalize) {
+      for (let i = 0; i < size; i += 1) {
+        const imageDataIdx = i << 2;
+        dst[imageDataIdx + RGBA.rIdx] =
+          (dst[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + BGRA.rIdx] / 256) / 2;
+        dst[imageDataIdx + RGBA.gIdx] =
+          (dst[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + BGRA.gIdx] / 256) / 2;
+        dst[imageDataIdx + RGBA.bIdx] =
+          (dst[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + BGRA.bIdx] / 256) / 2;
+        dst[imageDataIdx + RGBA.aIdx] =
+          (dst[imageDataIdx + RGBA.aIdx] + pixelData[imageDataIdx + BGRA.aIdx] / 256) / 2;
+      }
+    } else {
+      for (let i = 0; i < size; i += 1) {
+        const imageDataIdx = i << 2;
+        dst[imageDataIdx + RGBA.rIdx] =
+          (dst[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + BGRA.rIdx]) >> 1;
+        dst[imageDataIdx + RGBA.gIdx] =
+          (dst[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + BGRA.gIdx]) >> 1;
+        dst[imageDataIdx + RGBA.bIdx] =
+          (dst[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + BGRA.bIdx]) >> 1;
+        dst[imageDataIdx + RGBA.aIdx] =
+          (dst[imageDataIdx + RGBA.aIdx] + pixelData[imageDataIdx + BGRA.aIdx]) >> 1;
+      }
+    }
+  } else {
+    console.error(`Color format is not ARGB: ${pixelFormat}`);
+  }
+}
+
 export default class Histogram {
   histogram = null;
-
-  skipIdx = 0;
 
   make(pixelData, width, height) {
     if (!this.histogram) {
@@ -14,17 +64,20 @@ export default class Histogram {
       this.histogram.fill(0);
     }
 
-    for (let i = 0; i < height; i += 1) {
-      for (let j = 0; j < width; j += 1) {
-        const pixelDataIndex = width * i + j;
-        const k = Math.floor((pixelData[pixelDataIndex] + 1) / 256);
-        this.histogram[k] += 1;
-      }
+    const size = width * height;
+    for (let i = 0; i < size; i += 1) {
+      const k = pixelData[i] >> 8;
+      this.histogram[k] += 1;
+    }
+
+    for (let i = 0; i < 256; i += 1) {
+      this.histogram[i] = Math.floor((this.histogram[i] / size) * 256);
     }
   }
 
-  /* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["pixels", "colors", "positions"] }] */
-  fillImageDataWithColormap(pixels, pixelData, width, height, filter, frameToAlign) {
+  fillImageDataWithColormap(imageData, pixelData, width, height, filter, frameToAlign) {
+    this.make(pixelData, width, height);
+
     const cm = colormap({
       colormap: filter,
       nshades: 256,
@@ -32,49 +85,16 @@ export default class Histogram {
       alpha: 1,
     });
 
-    for (let i = 0; i < height; i += 1) {
-      for (let j = 0; j < width; j += 1) {
-        const pixelDataIndex = width * i + j;
-        const index = 4 * pixelDataIndex;
-        const k = Math.floor((pixelData[pixelDataIndex] + 1) / 256);
-        const v = Math.floor(256 * (this.histogram[k] / (width * height)));
-        const color = cm[v];
-        [pixels[index], pixels[index + 1], pixels[index + 2]] = color;
-        pixels[index + 3] = 255;
-      }
+    const size = width * height;
+    for (let i = 0; i < size; i += 1) {
+      const imageDataIdx = i << 2;
+      const k = pixelData[i] >> 8;
+      const c = cm[this.histogram[k]];
+      [imageData[imageDataIdx], imageData[imageDataIdx + 1], imageData[imageDataIdx + 2]] = c;
+      imageData[imageDataIdx + 3] = 255;
     }
 
-    if (!frameToAlign) return;
-
-    const { cameraFormat, data } = frameToAlign.frame;
-    const { pixelFormat } = cameraFormat;
-
-    if (cameraFormat.width !== width || cameraFormat.height !== height) {
-      console.error(
-        `Resolution mismatched, Depth: (${width}, ${height}) Color: (${cameraFormat.width}, ${
-          cameraFormat.height
-        })`
-      );
-      return;
-    }
-
-    switch (pixelFormat) {
-      case PixelFormat.values.PIXEL_FORMAT_ARGB: {
-        const pixelData2 = new Uint8ClampedArray(data);
-        for (let i = 0; i < height; i += 1) {
-          for (let j = 0; j < width; j += 1) {
-            const index = 4 * width * i + j * 4;
-            pixels[index] = (pixels[index] + pixelData2[index + 2]) / 2;
-            pixels[index + 1] = (pixels[index + 1] + pixelData2[index + 1]) / 2;
-            pixels[index + 2] = (pixels[index + 2] + pixelData2[index]) / 2;
-            pixels[index + 3] = (pixels[index + 3] + pixelData2[index + 3]) / 2;
-          }
-        }
-        break;
-      }
-      default:
-        console.error(`Not implemented yet for this format: ${pixelFormat}`);
-    }
+    align(imageData, frameToAlign, width, height, false);
   }
 
   fillVerticesWithColormap(
@@ -87,61 +107,26 @@ export default class Histogram {
     filter,
     frameToAlign
   ) {
+    this.make(pixelData, width, height);
+
     const cm = colormap({
       colormap: filter,
       nshades: 256,
-      format: 'rgba',
+      format: 'float',
       alpha: 1,
     });
 
-    for (let i = 0; i < height; i += 1) {
-      for (let j = 0; j < width; j += 1) {
-        const pixelDataIndex = width * i + j;
-        const positionIdx = 3 * pixelDataIndex;
-        const colorIdx = 4 * pixelDataIndex;
+    const size = width * height;
+    for (let i = 0; i < size; i += 1) {
+      const positionIdx = 3 * i;
+      const colorIdx = i << 2;
 
-        const k = Math.floor((pixelData[pixelDataIndex] + 1) / 256);
-        const v = Math.floor(256 * (this.histogram[k] / (width * height)));
-        const [r, g, b] = cm[v];
-
-        positions[positionIdx + 2] = -pixelData[pixelDataIndex] * scale * 300;
-
-        colors[colorIdx] = (r + 1) / 256;
-        colors[colorIdx + 1] = (g + 1) / 256;
-        colors[colorIdx + 2] = (b + 1) / 256;
-      }
+      positions[positionIdx + 2] = -pixelData[i] * scale * 300;
+      const k = pixelData[i] >> 8;
+      const c = cm[this.histogram[k]];
+      [colors[colorIdx], colors[colorIdx + 1], colors[colorIdx + 2]] = c;
     }
 
-    if (!frameToAlign) return;
-
-    const { cameraFormat, data } = frameToAlign.frame;
-    const { pixelFormat } = cameraFormat;
-
-    if (cameraFormat.width !== width || cameraFormat.height !== height) {
-      console.error(
-        `Resolution mismatched, Depth: (${width}, ${height}) Color: (${cameraFormat.width}, ${
-          cameraFormat.height
-        })`
-      );
-      return;
-    }
-
-    switch (pixelFormat) {
-      case PixelFormat.values.PIXEL_FORMAT_ARGB: {
-        const pixelData2 = new Uint8ClampedArray(data);
-        for (let i = 0; i < height; i += 1) {
-          for (let j = 0; j < width; j += 1) {
-            const index = 4 * width * i + j * 4;
-            colors[index] = (colors[index] + pixelData2[index + 2] / 256) / 2;
-            colors[index + 1] = (colors[index + 1] + pixelData2[index + 1] / 256) / 2;
-            colors[index + 2] = (colors[index + 2] + pixelData2[index] / 256) / 2;
-            colors[index + 3] = (colors[index + 3] + pixelData2[index + 3] / 256) / 2;
-          }
-        }
-        break;
-      }
-      default:
-        console.error(`Not implemented yet for this format: ${pixelFormat}`);
-    }
+    align(colors, frameToAlign, width, height, true);
   }
 }

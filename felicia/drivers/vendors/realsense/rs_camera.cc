@@ -257,27 +257,18 @@ void RsCamera::OnFrame(::rs2::frame frame) {
     ::rs2::video_frame rs_color_frame = frameset.get_color_frame();
     ::rs2::depth_frame rs_depth_frame = frameset.get_depth_frame();
 
-    auto color_frame = FromRsColorFrame(rs_color_frame);
+    CameraFrame color_frame = FromRsColorFrame(rs_color_frame);
     DepthCameraFrame depth_frame = FromRsDepthFrame(rs_depth_frame);
 
-    if (color_frame.has_value()) {
-      synched_frame_callback_.Run(std::move(color_frame.value()),
-                                  std::move(depth_frame));
-    } else {
-      status_callback_.Run(errors::FailedToConvertToARGB());
-    }
+    synched_frame_callback_.Run(std::move(color_frame), std::move(depth_frame));
   } else if (frame.is<::rs2::video_frame>()) {
     if (frame.is<::rs2::depth_frame>()) {
       depth_frame_callback_.Run(
           FromRsDepthFrame(frame.as<::rs2::depth_frame>()));
       return;
     } else {
-      auto argb_frame = FromRsColorFrame(frame.as<::rs2::video_frame>());
-      if (argb_frame.has_value()) {
-        color_frame_callback_.Run(std::move(argb_frame.value()));
-      } else {
-        status_callback_.Run(errors::FailedToConvertToARGB());
-      }
+      color_frame_callback_.Run(
+          FromRsColorFrame(frame.as<::rs2::video_frame>()));
     }
   }
 }
@@ -302,20 +293,13 @@ void RsCamera::OnImu(::rs2::frame frame) {
   imu_callback_.Run(imu);
 }
 
-::base::Optional<CameraFrame> RsCamera::FromRsColorFrame(
-    ::rs2::video_frame color_frame) {
+CameraFrame RsCamera::FromRsColorFrame(::rs2::video_frame color_frame) {
   size_t length = color_format_.AllocationSize();
-  CameraBuffer camera_buffer(
-      reinterpret_cast<uint8_t*>(const_cast<void*>(color_frame.get_data())),
-      length);
-  camera_buffer.set_payload(length);
-  ::base::Optional<CameraFrame> argb_frame =
-      ConvertToARGB(camera_buffer, color_format_);
-  if (argb_frame.has_value()) {
-    argb_frame.value().set_timestamp(timestamper_.timestamp());
-  }
-
-  return argb_frame;
+  std::unique_ptr<uint8_t[]> new_color_frame(new uint8_t[length]);
+  memcpy(new_color_frame.get(), color_frame.get_data(), length);
+  CameraFrame camera_frame(std::move(new_color_frame), color_format_);
+  camera_frame.set_timestamp(timestamper_.timestamp());
+  return camera_frame;
 }
 
 DepthCameraFrame RsCamera::FromRsDepthFrame(::rs2::depth_frame depth_frame) {

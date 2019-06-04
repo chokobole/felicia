@@ -77,7 +77,7 @@ export default class PointcloudView extends Component {
         this._moveCamera(width, height);
       }
 
-      if (this.meshInfo.toUpdate < 5) {
+      if (this.meshInfo.toUpdate === 0) {
         this._updatePointcloud(nextProps.frame);
         return true;
       }
