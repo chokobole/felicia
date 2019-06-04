@@ -111,9 +111,10 @@ void TCPChannel<MessageTy>::Connect(const ChannelDef& channel_def,
   ::net::IPEndPoint ip_endpoint;
   bool ret = ToNetIPEndPoint(channel_def, &ip_endpoint);
   DCHECK(ret);
-  auto client_socket = std::make_unique<TCPClientSocket>();
+  this->channel_impl_ = std::make_unique<TCPClientSocket>();
+  TCPClientSocket* client_socket =
+      this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPClientSocket();
   client_socket->Connect(ip_endpoint, std::move(callback));
-  this->channel_impl_ = std::move(client_socket);
 }
 
 }  // namespace felicia
