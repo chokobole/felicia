@@ -172,18 +172,15 @@ export default class PointcloudView extends Component {
     this.meshInfo.toUpdate += 1;
 
     this.worker.postMessage({
-      source: 'pointcloudView',
-      data: {
-        colors,
-        positions,
-        width,
-        height,
-        data,
-        pixelFormat,
-        scale,
-        filter,
-        frameToAlign,
-      },
+      colors,
+      positions,
+      width,
+      height,
+      data,
+      pixelFormat,
+      scale,
+      filter,
+      frameToAlign,
     });
   }
 

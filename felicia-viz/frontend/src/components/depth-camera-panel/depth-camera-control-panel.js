@@ -3,7 +3,11 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import { Form } from '@streetscape.gl/monochrome';
 
-import { CAMERA_FRAME_MESSAGE, DEPTH_CAMERA_FRAME_MESSAGE, PixelFormat } from '@felicia-viz/communication';
+import {
+  CAMERA_FRAME_MESSAGE,
+  DEPTH_CAMERA_FRAME_MESSAGE,
+  PixelFormat,
+} from '@felicia-viz/communication';
 import { TopicDropdown, renderText } from '@felicia-viz/ui';
 
 import { FORM_STYLE } from 'custom-styles';

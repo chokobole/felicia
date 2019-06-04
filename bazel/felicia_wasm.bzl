@@ -1,6 +1,3 @@
-def _location(x):
-    return "$(location: %s) % x"
-
 def fel_wasm_binary(
         name,
         srcs = [],

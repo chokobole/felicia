@@ -8,6 +8,10 @@ export class CameraFrame {
     this.frame = data;
   }
 
+  get converted() {
+    return this.frame.converted;
+  }
+
   get data() {
     return this.frame.data;
   }
