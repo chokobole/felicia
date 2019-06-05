@@ -9,10 +9,20 @@ namespace felicia {
 
 class PermessageDeflate : public WebSocketExtensionInterface {
  public:
-  static const char* kKey;
+  static constexpr const char* kKey = "permessage-deflate";
+  static constexpr const int kMinWindowBits = 8;
+  static constexpr const int kMaxWindowBits = 15;
 
   bool Negotiate(::base::StringTokenizer& params,
                  std::string* response) override;
+
+  void AppendResponse(std::string* response) const override;
+
+ private:
+  bool client_no_context_takeover_;
+  bool server_no_context_takeover_;
+  uint8_t client_max_window_bits_;
+  uint8_t server_max_window_bits_;
 };
 
 }  // namespace felicia

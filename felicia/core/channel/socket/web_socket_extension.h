@@ -17,12 +17,13 @@ class EXPORT WebSocketExtensionInterface {
   virtual ~WebSocketExtensionInterface();
   virtual bool Negotiate(::base::StringTokenizer& params,
                          std::string* response) = 0;
+  virtual void AppendResponse(std::string* response) const = 0;
 };
 
 class WebSocketExtension {
  public:
   WebSocketExtension();
-  bool Negotiate(const std::string& extension, std::string* response);
+  bool Negotiate(const std::string& extensions, std::string* response);
 
  private:
   ::base::flat_map<std::string, std::unique_ptr<WebSocketExtensionInterface>>

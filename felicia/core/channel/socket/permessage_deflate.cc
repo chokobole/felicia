@@ -12,10 +12,6 @@ constexpr const char* kClientNoContextTakeover = "client_no_context_takeover";
 constexpr const char* kServerNoContextTakeover = "server_no_context_takeover";
 constexpr const char* kClientMaxWindowBits = "client_max_window_bits";
 constexpr const char* kServerMaxWindowBits = "server_max_window_bits";
-constexpr const int kMinWindowBits = 8;
-constexpr const int kMaxWindowBits = 15;
-
-const char* PermessageDeflate::kKey = "permessage-deflate";
 
 #define CHECK_NO_VALUE(key, value)                        \
   if (!value.empty()) {                                   \
@@ -39,10 +35,10 @@ const char* PermessageDeflate::kKey = "permessage-deflate";
 
 bool PermessageDeflate::Negotiate(::base::StringTokenizer& params,
                                   std::string* response) {
-  bool client_no_context_takeover = true;
-  bool server_no_context_takeover = true;
-  int client_max_window_bits = kMaxWindowBits;
-  int server_max_window_bits = kMaxWindowBits;
+  client_no_context_takeover_ = true;
+  server_no_context_takeover_ = true;
+  client_max_window_bits_ = kMaxWindowBits;
+  server_max_window_bits_ = kMaxWindowBits;
 
   while (params.GetNext()) {
     std::string::const_iterator param_begin = params.token_begin();
@@ -84,17 +80,20 @@ bool PermessageDeflate::Negotiate(::base::StringTokenizer& params,
     }
   }
 
+  AppendResponse(response);
+  return true;
+}
+
+void PermessageDeflate::AppendResponse(std::string* response) const {
   ::base::StringAppendF(response, "%s", kKey);
-  if (client_no_context_takeover) {
+  if (client_no_context_takeover_) {
     ::base::StringAppendF(response, "; %s", kClientNoContextTakeover);
   }
-  if (server_no_context_takeover) {
+  if (server_no_context_takeover_) {
     ::base::StringAppendF(response, "; %s", kServerNoContextTakeover);
   }
   ::base::StringAppendF(response, "; %s=%d", kServerMaxWindowBits,
-                        server_max_window_bits);
-
-  return true;
+                        server_max_window_bits_);
 }
 
 #undef CHECK_NO_VALUE

@@ -1,4 +1,9 @@
-load("//bazel:felicia_cc.bzl", "fel_cc_library")
+load("//bazel:felicia.bzl", "fel_shared_library")
+load(
+    "//bazel:felicia_cc.bzl",
+    "fel_cc_library",
+    "fel_cc_test",
+)
 
 package(default_visibility = ["//felicia:internal"])
 
@@ -42,5 +47,18 @@ fel_cc_library(
         "//felicia/core/lib",
         "//felicia/core/message",
         "//felicia/core/protobuf:protos_all_cc",
+    ],
+)
+
+fel_cc_test(
+    name = "channel_tests",
+    size = "small",
+    srcs = [
+        "socket/permessage_deflate_test.cc",
+        "socket/web_socket_test.cc",
+    ],
+    deps = fel_shared_library() + [
+        ":channel",
+        "@com_google_googletest//:gtest_main",
     ],
 )

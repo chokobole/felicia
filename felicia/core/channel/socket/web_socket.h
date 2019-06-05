@@ -1,6 +1,7 @@
 #ifndef FELICIA_CORE_CHANNEL_SOCKET_WEB_SOCKET_H_
 #define FELICIA_CORE_CHANNEL_SOCKET_WEB_SOCKET_H_
 
+#include "gtest/gtest_prod.h"
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/containers/flat_map.h"
 #include "third_party/chromium/base/macros.h"
@@ -26,6 +27,8 @@ class EXPORT WebSocket : public Socket {
     void Handle(std::unique_ptr<::net::TCPSocket> socket);
 
    private:
+    FRIEND_TEST(WebSocketHandshakeHandler, BasicNegotiate);
+
     void ReadHeader();
     void OnReadHeader(int result);
 
