@@ -69,54 +69,64 @@ void WebSocket::HandshakeHandler::ReadHeader() {
 void WebSocket::HandshakeHandler::OnReadHeader(int result) {
   if (result >= 0) {
     buffer_->set_offset(buffer_->offset() + result);
-    Parse();
+    if (!(Parse() && Validate())) {
+      SendError(::net::HTTP_BAD_REQUEST);
+      return;
+    }
+
+    std::string key = headers_[kSecWebSocketKey];
+    key.append(kHandshakeGuid);
+    std::string sha1_hashed = ::base::SHA1HashString(key);
+    std::string base64_encoded;
+    ::base::Base64Encode(sha1_hashed, &base64_encoded);
+
+    const std::string& extension = headers_[kSecWebSocketExtensions];
+    if (!extension.empty()) {
+      std::string response;
+      if (extension_.Negotiate(extension, &response)) {
+        SendOK(base64_encoded, response);
+      } else {
+        SendError(::net::HTTP_BAD_REQUEST);
+      }
+    } else {
+      SendOK(base64_encoded, ::base::EmptyString());
+    }
   } else {
     SendError(::net::HTTP_INTERNAL_SERVER_ERROR);
   }
 }
 
-void WebSocket::HandshakeHandler::Parse() {
+bool WebSocket::HandshakeHandler::Parse() {
   std::string header(buffer_->StartOfBuffer(), buffer_->offset());
   DLOG(INFO) << "Header received: " << header;
 
   size_t first_status_line =
       ::base::StringPiece(header.data(), header.length()).find_first_of("\r\n");
-  if (first_status_line == ::base::StringPiece::npos) {
-    SendError(::net::HTTP_BAD_REQUEST);
-    return;
-  }
+  if (first_status_line == ::base::StringPiece::npos) return false;
 
   std::string::const_iterator begin = header.cbegin();
   std::string::const_iterator end = std::find(begin, header.cend(), ' ');
 
-  if (end == header.end()) {
-    SendError(::net::HTTP_BAD_REQUEST);
-    return;
-  }
+  if (end == header.end()) return false;
 
   std::string method = std::string(begin, end);
   if (!::base::EqualsCaseInsensitiveASCII(method, "GET")) {
     DLOG(ERROR) << "method mismatched " << method;
-    SendError(::net::HTTP_BAD_REQUEST);
-    return;
+    return false;
   }
 
   // uri
   begin = end + 1;
   end = std::find(begin, header.cend(), ' ');
 
-  if (end == header.end()) {
-    SendError(::net::HTTP_BAD_REQUEST);
-    return;
-  }
+  if (end == header.end()) return false;
 
   std::string version =
       std::string(end + 1, header.cbegin() + first_status_line);
 
   if (!::base::EqualsCaseInsensitiveASCII(version, "HTTP/1.1")) {
     DLOG(ERROR) << "version mismatched " << version;
-    SendError(::net::HTTP_BAD_REQUEST);
-    return;
+    return false;
   }
 
   ::base::StringTokenizer lines(header.cbegin() + first_status_line + 1,
@@ -131,53 +141,46 @@ void WebSocket::HandshakeHandler::Parse() {
 
     std::string key, value;
     key = ::base::ToLowerASCII(::base::TrimWhitespaceASCII(
-        std::string(line_begin, end), ::base::TrimPositions::TRIM_ALL));
+        ::base::StringPiece(&*line_begin, std::distance(line_begin, end)),
+        ::base::TrimPositions::TRIM_ALL));
     ::base::TrimWhitespaceASCII(std::string(end + 1, line_end),
                                 ::base::TrimPositions::TRIM_ALL, &value);
 
     headers_[key] = value;
   }
 
-  Validate();
+  return true;
 }
 
-void WebSocket::HandshakeHandler::Validate() {
+bool WebSocket::HandshakeHandler::Validate() {
   const std::string& connection = headers_[kConnection];
   if (!::base::EqualsCaseInsensitiveASCII(connection, "upgrade")) {
     DLOG(ERROR) << "connection mismatched " << connection;
-    SendError(::net::HTTP_BAD_REQUEST);
-    return;
+    return false;
   }
 
   const std::string& upgrade = headers_[kUpgrade];
   if (!::base::EqualsCaseInsensitiveASCII(upgrade, "websocket")) {
     DLOG(ERROR) << "upgrade mismatched " << upgrade;
-    SendError(::net::HTTP_BAD_REQUEST);
-    return;
+    return false;
   }
 
   const std::string& version = headers_[kSecWebSocketVersion];
   if (!::base::EqualsCaseInsensitiveASCII(version, "13")) {
     DLOG(ERROR) << "sec-websocket-version mismatched " << version;
-    SendError(::net::HTTP_BAD_REQUEST);
-    return;
+    return false;
   }
 
-  std::string key = headers_[kSecWebSocketKey];
-  if (key.empty()) {
-    SendError(::net::HTTP_BAD_REQUEST);
-    return;
+  if (headers_[kSecWebSocketKey].empty()) {
+    DLOG(ERROR) << "sec-websocket-key is empty";
+    return false;
   }
 
-  key.append(kHandshakeGuid);
-  std::string sha1_hashed = ::base::SHA1HashString(key);
-  std::string base64_encoded;
-  ::base::Base64Encode(sha1_hashed, &base64_encoded);
-
-  SendOK(base64_encoded);
+  return true;
 }
 
-void WebSocket::HandshakeHandler::SendOK(const std::string& key) {
+void WebSocket::HandshakeHandler::SendOK(const std::string& key,
+                                         const std::string& extension) {
   timeout_.Cancel();
 
   status_ = Status::OK();
@@ -190,8 +193,13 @@ void WebSocket::HandshakeHandler::SendOK(const std::string& key) {
                         "HTTP/1.1 %d %s\r\n"
                         "Connection: Upgrade\r\n"
                         "Upgrade: websocket\r\n"
-                        "Sec-WebSocket-Accept: %s\r\n\r\n",
+                        "Sec-WebSocket-Accept: %s\r\n",
                         static_cast<int>(code), reason, key.c_str());
+  if (!extension.empty()) {
+    ::base::StringAppendF(response.get(), "Sec-WebSocket-Extensions: %s\r\n",
+                          extension.c_str());
+  }
+  ::base::StringAppendF(response.get(), "\r\n");
 
   WriteResponse(std::move(response));
 }

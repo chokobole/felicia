@@ -9,6 +9,7 @@
 #include "third_party/chromium/net/socket/tcp_socket.h"
 
 #include "felicia/core/channel/socket/socket.h"
+#include "felicia/core/channel/socket/web_socket_extension.h"
 #include "felicia/core/lib/error/statusor.h"
 
 namespace felicia {
@@ -28,9 +29,9 @@ class EXPORT WebSocket : public Socket {
     void ReadHeader();
     void OnReadHeader(int result);
 
-    void Parse();
-    void Validate();
-    void SendOK(const std::string& key);
+    bool Parse();
+    bool Validate();
+    void SendOK(const std::string& key, const std::string& extension);
     void SendError(::net::HttpStatusCode code);
 
     void WriteResponse(std::unique_ptr<std::string> response);
@@ -42,6 +43,7 @@ class EXPORT WebSocket : public Socket {
     Status status_;
     ::base::CancelableOnceClosure timeout_;
     ::base::flat_map<std::string, std::string> headers_;
+    WebSocketExtension extension_;
 
     DISALLOW_COPY_AND_ASSIGN(HandshakeHandler);
   };
