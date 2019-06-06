@@ -77,6 +77,7 @@ class Publisher {
   }
 
   Pool<MessageTy, uint8_t> message_queue_;
+  ::base::TimeDelta period_;
   std::vector<std::unique_ptr<Channel<MessageTy>>> channels_;
 
   communication::RegisterState register_state_;
@@ -144,27 +145,45 @@ void Publisher<MessageTy>::RequestPublish(
 template <typename MessageTy>
 void Publisher<MessageTy>::Publish(const MessageTy& message,
                                    SendMessageCallback callback) {
-  if (!IsRegistered()) {
-    callback.Run(ChannelDef::NONE, register_state_.InvalidStateError());
-    return;
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  if (master_proxy.IsBoundToCurrentThread()) {
+    if (!IsRegistered()) {
+      callback.Run(ChannelDef::NONE, register_state_.InvalidStateError());
+      return;
+    }
+
+    message_queue_.push(message);
+
+    SendMesasge(callback);
+  } else {
+    master_proxy.PostTask(
+        FROM_HERE, ::base::BindOnce<void (Publisher<MessageTy>::*)(
+                       const MessageTy&, SendMessageCallback)>(
+                       &Publisher<MessageTy>::Publish, ::base::Unretained(this),
+                       message, callback));
   }
-
-  message_queue_.push(message);
-
-  SendMesasge(callback);
 }
 
 template <typename MessageTy>
 void Publisher<MessageTy>::Publish(MessageTy&& message,
                                    SendMessageCallback callback) {
-  if (!IsRegistered()) {
-    callback.Run(ChannelDef::NONE, register_state_.InvalidStateError());
-    return;
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  if (master_proxy.IsBoundToCurrentThread()) {
+    if (!IsRegistered()) {
+      callback.Run(ChannelDef::NONE, register_state_.InvalidStateError());
+      return;
+    }
+
+    message_queue_.push(std::move(message));
+
+    SendMesasge(callback);
+  } else {
+    master_proxy.PostTask(
+        FROM_HERE, ::base::BindOnce<void (Publisher<MessageTy>::*)(
+                       MessageTy&&, SendMessageCallback)>(
+                       &Publisher<MessageTy>::Publish, ::base::Unretained(this),
+                       std::move(message), callback));
   }
-
-  message_queue_.push(std::move(message));
-
-  SendMesasge(callback);
 }
 
 template <typename MessageTy>
@@ -228,6 +247,7 @@ void Publisher<MessageTy>::OnPublishTopicAsync(
     return;
   }
 
+  period_ = settings.period;
   message_queue_.set_capacity(settings.queue_size);
   for (auto& channel : channels_) {
     if (settings.is_dynamic_buffer) {
@@ -265,8 +285,17 @@ void Publisher<MessageTy>::OnUnpublishTopicAsync(
 template <typename MessageTy>
 void Publisher<MessageTy>::SendMesasge(SendMessageCallback callback) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (master_proxy.IsBoundToCurrentThread()) {
-    if (!message_queue_.empty()) {
+  DCHECK(master_proxy.IsBoundToCurrentThread());
+  if (!message_queue_.empty()) {
+    bool can_send = false;
+    for (auto& channel : channels_) {
+      if (!channel->IsSendingMessage() && channel->HasReceivers()) {
+        can_send = true;
+        break;
+      }
+    }
+
+    if (can_send) {
       MessageTy message = std::move(message_queue_.front());
       message_queue_.pop();
 
@@ -276,10 +305,10 @@ void Publisher<MessageTy>::SendMesasge(SendMessageCallback callback) {
         }
       }
     }
-  } else {
-    master_proxy.PostTask(FROM_HERE,
+
+    master_proxy.PostDelayedTask(FROM_HERE,
                           ::base::BindOnce(&Publisher<MessageTy>::SendMesasge,
-                                           ::base::Unretained(this), callback));
+                                           ::base::Unretained(this), callback), period_);
   }
 }
 
@@ -293,9 +322,7 @@ void Publisher<MessageTy>::Release() {
     return;
   }
 
-  for (auto& channel : channels_) {
-    channel.reset();
-  }
+  channels_.clear();
   message_queue_.clear();
 }
 
