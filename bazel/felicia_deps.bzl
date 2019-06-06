@@ -64,7 +64,7 @@ def load_deps():
     git_repository(
         name = "com_github_grpc_grpc",
         remote = "https://github.com/grpc/grpc.git",
-        tag = "v1.21.1",
+        tag = "v1.19.1",
     )
 
     new_git_repository(
