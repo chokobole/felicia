@@ -7,11 +7,15 @@ package(default_visibility = ["//felicia:internal"])
 fel_cc_library(
     name = "felicia_py_cc",
     srcs = [
+        "channel_py.cc",
+        "command_line_interface_py.cc",
         "communication_py.cc",
         "master_proxy_py.cc",
         "node_py.cc",
     ],
     hdrs = [
+        "channel_py.h",
+        "command_line_interface_py.h",
         "communication_py.h",
         "master_proxy_py.h",
         "node_py.h",
@@ -22,8 +26,8 @@ fel_cc_library(
         "//felicia/core/communication:dynamic_subscriber",
         "//felicia/core/master:master_proxy",
         "//felicia/core/node:node_lifecycle",
+        "//felicia/core/util:command_line_interface",
         "//felicia/python/type_conversion",
-        "//felicia/python/command_line_interface:flag_py",
         "//felicia/python/drivers:camera_py",
         "@pybind11",
     ] + fel_additional_deps(),

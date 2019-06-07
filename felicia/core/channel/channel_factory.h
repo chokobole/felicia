@@ -5,6 +5,7 @@
 
 #include "third_party/chromium/base/macros.h"
 
+#include "felicia/core/channel/settings.h"
 #include "felicia/core/channel/tcp_channel.h"
 #include "felicia/core/channel/udp_channel.h"
 #include "felicia/core/channel/ws_channel.h"
@@ -16,14 +17,15 @@ class ChannelFactory {
  public:
   template <typename MessageTy>
   static std::unique_ptr<Channel<MessageTy>> NewChannel(
-      ChannelDef::Type channel_type) {
+      ChannelDef::Type channel_type,
+      const channel::Settings& settings = channel::Settings()) {
     std::unique_ptr<Channel<MessageTy>> channel;
     if (channel_type == ChannelDef::TCP) {
       channel = std::make_unique<TCPChannel<MessageTy>>();
     } else if (channel_type == ChannelDef::UDP) {
       channel = std::make_unique<UDPChannel<MessageTy>>();
     } else if (channel_type == ChannelDef::WS) {
-      channel = std::make_unique<WSChannel<MessageTy>>();
+      channel = std::make_unique<WSChannel<MessageTy>>(settings.ws_settings);
     }
 
     return channel;

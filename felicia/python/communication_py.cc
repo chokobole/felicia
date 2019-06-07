@@ -42,7 +42,19 @@ class PyMessageCallback {
 using PySendMessageCallback = PyCallback<void(ChannelDef::Type, const Status&)>;
 
 void AddCommunication(py::module& m) {
-  py::class_<DynamicPublisher>(m, "Publisher")
+  py::module communication = m.def_submodule("communication");
+
+  py::class_<communication::Settings>(communication, "Settings")
+      .def(py::init<>())
+      .def_readwrite("period", &communication::Settings::period)
+      .def_readwrite("buffer_size", &communication::Settings::buffer_size)
+      .def_readwrite("is_dynamic_buffer",
+                     &communication::Settings::is_dynamic_buffer)
+      .def_readwrite("queue_size", &communication::Settings::queue_size)
+      .def_readwrite("channel_settings",
+                     &communication::Settings::channel_settings);
+
+  py::class_<DynamicPublisher>(communication, "Publisher")
       .def(py::init<>())
       .def("is_registering", &DynamicPublisher::IsRegistering)
       .def("is_registered", &DynamicPublisher::IsRegistered)
@@ -87,7 +99,7 @@ void AddCommunication(py::module& m) {
                              ::base::Owned(new PyStatusCallback(callback))));
       });
 
-  py::class_<DynamicSubscriber>(m, "Subscriber")
+  py::class_<DynamicSubscriber>(communication, "Subscriber")
       .def(py::init<>())
       .def("is_registering", &DynamicSubscriber::IsRegistering)
       .def("is_registered", &DynamicSubscriber::IsRegistered)

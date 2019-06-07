@@ -14,6 +14,7 @@ class PermessageDeflate : public WebSocketExtensionInterface {
   static constexpr const int kMaxWindowBits = 15;
 
   bool Negotiate(::base::StringTokenizer& params,
+                 const channel::WSSettings& settings,
                  std::string* response) override;
 
   void AppendResponse(std::string* response) const override;

@@ -1,3 +1,4 @@
+
 #include "pybind11/operators.h"
 #include "pybind11/pybind11.h"
 
@@ -7,7 +8,8 @@
 #include "felicia/core/communication/settings.h"
 #include "felicia/core/felicia_init.h"
 #include "felicia/core/util/timestamp/timestamper.h"
-#include "felicia/python/command_line_interface/flag_py.h"
+#include "felicia/python/channel_py.h"
+#include "felicia/python/command_line_interface_py.h"
 #include "felicia/python/communication_py.h"
 #include "felicia/python/drivers/camera_py.h"
 #include "felicia/python/master_proxy_py.h"
@@ -197,14 +199,6 @@ void AddGlobalObject(py::module& m) {
         return ss.str();
       });
 
-  py::class_<communication::Settings>(m, "Settings")
-      .def(py::init<>())
-      .def_readwrite("period", &communication::Settings::period)
-      .def_readwrite("buffer_size", &communication::Settings::buffer_size)
-      .def_readwrite("is_dynamic_buffer",
-                     &communication::Settings::is_dynamic_buffer)
-      .def_readwrite("queue_size", &communication::Settings::queue_size);
-
   py::class_<Timestamper>(m, "Timestamper")
       .def(py::init<>())
       .def("timestamp", &Timestamper::timestamp);
@@ -221,11 +215,10 @@ PYBIND11_MODULE(felicia_py, m) {
   AddGlobalObject(m);
   AddMasterProxy(m);
   AddNodeLifecycle(m);
+  AddChannel(m);
   AddCommunication(m);
   AddCamera(m);
-
-  py::module command_line_interface = m.def_submodule("command_line_interface");
-  AddFlag(command_line_interface);
+  AddCommandLineInterface(m);
 }
 
 }  // namespace felicia

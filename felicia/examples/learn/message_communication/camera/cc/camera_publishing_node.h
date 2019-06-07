@@ -35,6 +35,7 @@ class CameraPublishingNode : public NodeLifecycle {
     communication::Settings settings;
     settings.queue_size = 1;
     settings.is_dynamic_buffer = true;
+    settings.channel_settings.ws_settings.permessage_deflate_enabled = false;
 
     publisher_.RequestPublish(
         node_info_, topic_, ChannelDef::TCP | ChannelDef::WS, settings,

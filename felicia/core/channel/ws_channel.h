@@ -10,7 +10,7 @@ namespace felicia {
 template <typename MessageTy>
 class WSChannel : public Channel<MessageTy> {
  public:
-  WSChannel();
+  WSChannel(const channel::WSSettings& settings);
   ~WSChannel();
 
   bool IsWSChannel() const override { return true; }
@@ -29,11 +29,17 @@ class WSChannel : public Channel<MessageTy> {
   void AcceptLoop(TCPServerSocket::AcceptCallback accept_callback);
 
  private:
+  MessageIoError SerializeToBuffer(const MessageTy& message,
+                                   int* to_send) override;
+
+  channel::WSSettings settings_;
+
   DISALLOW_COPY_AND_ASSIGN(WSChannel);
 };
 
 template <typename MessageTy>
-WSChannel<MessageTy>::WSChannel() {}
+WSChannel<MessageTy>::WSChannel(const channel::WSSettings& settings)
+    : settings_(settings) {}
 
 template <typename MessageTy>
 WSChannel<MessageTy>::~WSChannel() = default;
@@ -49,7 +55,7 @@ bool WSChannel<MessageTy>::HasReceivers() const {
 template <typename MessageTy>
 StatusOr<ChannelDef> WSChannel<MessageTy>::Listen() {
   DCHECK(!this->channel_impl_);
-  this->channel_impl_ = std::make_unique<WebSocketServer>();
+  this->channel_impl_ = std::make_unique<WebSocketServer>(settings_);
   WebSocketServer* server =
       this->channel_impl_->ToSocket()->ToWebSocket()->ToWebSocketServer();
   return server->Listen();
@@ -63,6 +69,24 @@ void WSChannel<MessageTy>::AcceptLoop(
   WebSocketServer* server =
       this->channel_impl_->ToSocket()->ToWebSocket()->ToWebSocketServer();
   server->AcceptLoop(accept_callback);
+}
+
+template <typename MessageTy>
+MessageIoError WSChannel<MessageTy>::SerializeToBuffer(const MessageTy& message,
+                                                       int* to_send) {
+  std::string text;
+  MessageIoError err = MessageIO<MessageTy>::SerializeToString(&message, &text);
+  if (err != MessageIoError::OK) return err;
+
+  ::net::WebSocketDeflater* deflater = nullptr;
+  if (DeflateTraits<MessageTy>::ShouldDeflate(&message, text)) {
+    WebSocketServer* server =
+        this->channel_impl_->ToSocket()->ToWebSocket()->ToWebSocketServer();
+    deflater = server->deflater();
+  }
+
+  return MessageIO<MessageTy>::AttachToBuffer(text, this->send_buffer_,
+                                              deflater, to_send);
 }
 
 }  // namespace felicia

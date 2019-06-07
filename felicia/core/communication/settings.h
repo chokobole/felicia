@@ -3,6 +3,7 @@
 
 #include "third_party/chromium/base/time/time.h"
 
+#include "felicia/core/channel/settings.h"
 #include "felicia/core/lib/unit/bytes.h"
 
 namespace felicia {
@@ -15,11 +16,12 @@ struct Settings {
 
   Settings() = default;
 
-  ::base::TimeDelta period = ::base::TimeDelta::FromMilliseconds(
-      kDefaultPeriod);
+  ::base::TimeDelta period =
+      ::base::TimeDelta::FromMilliseconds(kDefaultPeriod);
   Bytes buffer_size = Bytes::FromBytes(kDefaultMessageSize);
   bool is_dynamic_buffer = false;
   uint8_t queue_size = kDefaultQueueSize;
+  channel::Settings channel_settings;
 };
 
 }  // namespace communication

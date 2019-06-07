@@ -9,7 +9,7 @@ class SimplePublishingNode(fel.NodeLifecycle):
         super().__init__()
         self.topic = topic
         self.channel_def_type = ChannelDef.Type.Value(channel_type)
-        self.publisher = fel.Publisher()
+        self.publisher = fel.communication.Publisher()
         self.message_id = 0
         self.timestamper = fel.Timestamper()
 
@@ -29,7 +29,7 @@ class SimplePublishingNode(fel.NodeLifecycle):
         fel.log(fel.ERROR, status.error_message())
 
     def request_publish(self):
-        settings = fel.Settings()
+        settings = fel.communication.Settings()
         settings.buffer_size = fel.Bytes.from_bytes(512)
 
         self.publisher.request_publish(self.node_info, self.topic, self.channel_def_type,

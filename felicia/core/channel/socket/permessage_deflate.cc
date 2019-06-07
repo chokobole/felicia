@@ -21,7 +21,7 @@ constexpr const char* kServerMaxWindowBits = "server_max_window_bits";
 
 #define VALIDATE_IF_HAVE_VALUE(key, value, out_value)                        \
   if (!value.empty()) {                                                      \
-    if (::base::StringToInt(value, &out_value)) {                            \
+    if (::base::StringToInt(value, reinterpret_cast<int*>(&out_value))) {    \
       if (out_value < kMinWindowBits || out_value > kMaxWindowBits) {        \
         DLOG(ERROR) << "Value should be between " << kMinWindowBits << " ~ " \
                     << kMaxWindowBits << " for " << key << " but got "       \
@@ -34,11 +34,13 @@ constexpr const char* kServerMaxWindowBits = "server_max_window_bits";
   }
 
 bool PermessageDeflate::Negotiate(::base::StringTokenizer& params,
+                                  const channel::WSSettings& settings,
                                   std::string* response) {
+  DCHECK(settings.permessage_deflate_enabled);
   client_no_context_takeover_ = true;
   server_no_context_takeover_ = true;
   client_max_window_bits_ = kMaxWindowBits;
-  server_max_window_bits_ = kMaxWindowBits;
+  server_max_window_bits_ = settings.server_max_window_bits;
 
   while (params.GetNext()) {
     std::string::const_iterator param_begin = params.token_begin();
@@ -69,8 +71,7 @@ bool PermessageDeflate::Negotiate(::base::StringTokenizer& params,
     } else if (key == kServerNoContextTakeover) {
       CHECK_NO_VALUE(key, value);
     } else if (key == kClientMaxWindowBits) {
-      int temp_value;  // not used
-      VALIDATE_IF_HAVE_VALUE(key, value, temp_value);
+      VALIDATE_IF_HAVE_VALUE(key, value, client_max_window_bits_);
     } else if (key == kServerMaxWindowBits) {
       int temp_value;  // not used
       VALIDATE_IF_HAVE_VALUE(key, value, temp_value);

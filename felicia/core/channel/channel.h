@@ -75,10 +75,13 @@ class Channel {
  protected:
   friend class ChannelFactory;
 
+  virtual MessageIoError SerializeToBuffer(const MessageTy& message,
+                                           int* to_send);
+  virtual void ReadImpl(MessageTy* message, StatusOnceCallback callback);
+
   void OnSendMessage(const Status& s);
   void OnReceiveHeader(const Status& s);
   void OnReceiveMessage(const Status& s);
-  void OnReceiveMessageWithHeader(const Status& s);
 
   Channel()
       : send_buffer_(::base::MakeRefCounted<::net::GrowableIOBuffer>()),
@@ -113,11 +116,11 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
 
   send_buffer_->set_offset(0);
   int to_send;
-  MessageIoError err = MessageIO<MessageTy>::SerializeToBuffer(
-      &message, send_buffer_, IsWSChannel(), &to_send);
+  MessageIoError err = SerializeToBuffer(message, &to_send);
+
   if (err == MessageIoError::OK) {
     is_sending_ = true;
-    this->send_callback_ = callback;
+    send_callback_ = callback;
     channel_impl_->Write(send_buffer_, to_send,
                          ::base::BindOnce(&Channel<MessageTy>::OnSendMessage,
                                           ::base::Unretained(this)));
@@ -135,20 +138,30 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
 }
 
 template <typename MessageTy>
+MessageIoError Channel<MessageTy>::SerializeToBuffer(const MessageTy& message,
+                                                     int* to_send) {
+  std::string text;
+  MessageIoError err = MessageIO<MessageTy>::SerializeToString(&message, &text);
+  if (err != MessageIoError::OK) return err;
+
+  return MessageIO<MessageTy>::AttachToBuffer(text, send_buffer_, to_send);
+}
+
+template <typename MessageTy>
 void Channel<MessageTy>::OnSendMessage(const Status& s) {
   is_sending_ = false;
-  this->send_callback_.Run(type(), s);
+  send_callback_.Run(type(), s);
 }
 
 template <typename MessageTy>
 void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
                                         StatusOnceCallback callback) {
   DCHECK(channel_impl_);
-  DCHECK(this->receive_callback_.is_null());
+  DCHECK(receive_callback_.is_null());
   DCHECK(!callback.is_null());
 
-  this->message_ = message;
-  this->receive_callback_ = std::move(callback);
+  message_ = message;
+  receive_callback_ = std::move(callback);
 
   if (is_dynamic_buffer_) {
     if (receive_buffer_->capacity() == 0) {
@@ -170,30 +183,29 @@ void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
   }
 
   receive_buffer_->set_offset(0);
-  if (IsTCPChannel()) {
-    channel_impl_->Read(receive_buffer_, sizeof(Header),
-                        ::base::BindOnce(&Channel<MessageTy>::OnReceiveHeader,
-                                         ::base::Unretained(this)));
-  } else {
-    channel_impl_->Read(
-        receive_buffer_, receive_buffer_->capacity(),
-        ::base::BindOnce(&Channel<MessageTy>::OnReceiveMessageWithHeader,
-                         ::base::Unretained(this)));
-  }
+  ReadImpl(message_, std::move(callback));
+}
+
+template <typename MessageTy>
+void Channel<MessageTy>::ReadImpl(MessageTy* message,
+                                  StatusOnceCallback callback) {
+  channel_impl_->Read(receive_buffer_, sizeof(Header),
+                      ::base::BindOnce(&Channel<MessageTy>::OnReceiveHeader,
+                                       ::base::Unretained(this)));
 }
 
 template <typename MessageTy>
 void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
   DCHECK(IsTCPChannel());
   if (!s.ok()) {
-    std::move(this->receive_callback_).Run(s);
+    std::move(receive_callback_).Run(s);
     return;
   }
 
   MessageIoError err = MessageIO<MessageTy>::ParseHeaderFromBuffer(
       receive_buffer_->StartOfBuffer(), &header_);
   if (err != MessageIoError::OK) {
-    std::move(this->receive_callback_)
+    std::move(receive_callback_)
         .Run(errors::DataLoss(MessageIoErrorToString(err)));
     return;
   }
@@ -204,7 +216,7 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
       DLOG(INFO) << "Dynamically allocate buffer " << Bytes::FromBytes(bytes);
       receive_buffer_->SetCapacity(bytes);
     } else {
-      std::move(this->receive_callback_)
+      std::move(receive_callback_)
           .Run(errors::Aborted(
               MessageIoErrorToString(MessageIoError::ERR_NOT_ENOUGH_BUFFER)));
       return;
@@ -219,62 +231,23 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
 
 template <typename MessageTy>
 void Channel<MessageTy>::OnReceiveMessage(const Status& s) {
-  DCHECK(IsTCPChannel());
   if (s.ok()) {
     MessageIoError err = MessageIO<MessageTy>::ParseMessageFromBuffer(
-        receive_buffer_->StartOfBuffer(), header_, false, this->message_);
+        receive_buffer_->StartOfBuffer(), header_, false, message_);
     if (err != MessageIoError::OK) {
-      std::move(this->receive_callback_)
+      std::move(receive_callback_)
           .Run(errors::DataLoss("Failed to parse message from buffer."));
       return;
     }
   }
 
-  std::move(this->receive_callback_).Run(s);
-}
-
-template <typename MessageTy>
-void Channel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
-  DCHECK(IsUDPChannel());
-  if (!s.ok()) {
-    std::move(this->receive_callback_).Run(s);
-    return;
-  }
-
-  MessageIoError err = MessageIO<MessageTy>::ParseHeaderFromBuffer(
-      receive_buffer_->StartOfBuffer(), &header_);
-  if (err != MessageIoError::OK) {
-    std::move(this->receive_callback_)
-        .Run(errors::DataLoss(MessageIoErrorToString(err)));
-    return;
-  }
-
-  if (receive_buffer_->capacity() - sizeof(Header) < header_.size()) {
-    std::move(this->receive_callback_)
-        .Run(errors::Aborted(
-            MessageIoErrorToString(MessageIoError::ERR_NOT_ENOUGH_BUFFER)));
-    return;
-  }
-
-  err = MessageIO<MessageTy>::ParseMessageFromBuffer(
-      receive_buffer_->StartOfBuffer(), header_, true, this->message_);
-  if (err != MessageIoError::OK) {
-    std::move(this->receive_callback_)
-        .Run(errors::DataLoss("Failed to parse message from buffer."));
-    return;
-  }
-
-  std::move(this->receive_callback_).Run(s);
+  std::move(receive_callback_).Run(s);
 }
 
 // Convert ChannelSource |channel_source| to ::net::IPEndPoint,
 // Retures true if succeeded.
 EXPORT bool ToNetIPEndPoint(const ChannelDef& channel_source,
                             ::net::IPEndPoint* ip_endpoint);
-
-// Create ChannelDef from |ip_endpoint| and |type|
-EXPORT ChannelDef ToChannelDef(const ::net::IPEndPoint& ip_endpoint,
-                               ChannelDef::Type type);
 
 // Convert EndPoint of |channel_def| to std::string
 EXPORT std::string EndPointToString(const ChannelDef& channel_def);

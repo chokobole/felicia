@@ -49,6 +49,7 @@ chromium_cc_library(
         "//third_party/chromium/base",
         "//third_party/chromium/build",
         "//third_party/chromium/url",
+        "@com_github_madler_zlib//:z",
     ],
 )
 

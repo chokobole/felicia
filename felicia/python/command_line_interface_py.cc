@@ -1,8 +1,4 @@
-#include "felicia/python/command_line_interface/flag_py.h"
-
-#include <type_traits>
-
-namespace py = pybind11;
+#include "felicia/python/command_line_interface_py.h"
 
 namespace felicia {
 
@@ -102,10 +98,12 @@ void AddFlag(py::module& m, const char* name) {
       .def("parse", &FlagTy::Parse);
 }
 
-void AddFlag(py::module& m) {
-#define ADD_FLAG(Flag)                      \
-  AddFlagBuilder<Flag>(m, #Flag "Builder"); \
-  AddFlag<Flag>(m, #Flag)
+void AddCommandLineInterface(py::module& m) {
+  py::module command_line_interface = m.def_submodule("command_line_interface");
+
+#define ADD_FLAG(Flag)                                           \
+  AddFlagBuilder<Flag>(command_line_interface, #Flag "Builder"); \
+  AddFlag<Flag>(command_line_interface, #Flag)
 
   ADD_FLAG(BoolFlag);
   ADD_FLAG(IntFlag);
@@ -124,7 +122,7 @@ void AddFlag(py::module& m) {
 
 #undef ADD_FLAG
 
-  py::class_<FlagParser::Delegate, PyFlagParserDelegate>(m,
+  py::class_<FlagParser::Delegate, PyFlagParserDelegate>(command_line_interface,
                                                          "_FlagParserDelegate")
       .def(py::init<>())
       .def("Parse", &FlagParser::Delegate::Parse)
@@ -133,7 +131,7 @@ void AddFlag(py::module& m) {
       .def("Description", &FlagParser::Delegate::Description)
       .def("CollectNamedHelps", &FlagParser::Delegate::CollectNamedHelps);
 
-  py::class_<TextStyle>(m, "TextStyle")
+  py::class_<TextStyle>(command_line_interface, "TextStyle")
       .def_static("red",
                   [](const std::string& text) { return TextStyle::Red(text); })
       .def_static(
@@ -148,7 +146,7 @@ void AddFlag(py::module& m) {
         return TextStyle::Bold(text);
       });
 
-  py::class_<FlagParser>(m, "FlagParser")
+  py::class_<FlagParser>(command_line_interface, "FlagParser")
       .def(py::init<>())
       .def("set_program_name", &FlagParser::set_program_name,
            "Set program name to display.\n"
@@ -165,11 +163,11 @@ void AddFlag(py::module& m) {
             return self.Parse(argc, tmp_argv, &delegate);
           },
           py::call_guard<py::gil_scoped_release>(),
-          "// Parse by passing every each |argv| to |flag|.");
+          "Parse by passing every each |argv| to |flag|.");
 
-  m.attr("RED_ERROR") = kRedError;
-  m.attr("YELLOW_OPTIONS") = kYellowOptions;
-  m.attr("YELLOW_COMMANDS") = kYellowCommands;
+  command_line_interface.attr("RED_ERROR") = kRedError;
+  command_line_interface.attr("YELLOW_OPTIONS") = kYellowOptions;
+  command_line_interface.attr("YELLOW_COMMANDS") = kYellowCommands;
 }
 
 }  // namespace felicia

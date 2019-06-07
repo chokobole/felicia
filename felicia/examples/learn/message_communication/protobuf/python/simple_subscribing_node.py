@@ -7,7 +7,7 @@ class SimpleSubscribingNode(fel.NodeLifecycle):
     def __init__(self, topic):
         super().__init__()
         self.topic = topic
-        self.subscriber = fel.Subscriber()
+        self.subscriber = fel.communication.Subscriber()
 
     def on_init(self):
         print("SimpleSubscribingNode.on_init()")
@@ -22,7 +22,7 @@ class SimpleSubscribingNode(fel.NodeLifecycle):
         fel.log(fel.ERROR, status.error_message())
 
     def request_subscribe(self):
-        settings = fel.Settings()
+        settings = fel.communication.Settings()
         settings.buffer_size = fel.Bytes.from_bytes(512)
 
         self.subscriber.request_subscribe(self.node_info, self.topic,

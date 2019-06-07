@@ -1,6 +1,5 @@
 #include "felicia/core/channel/socket/tcp_server_socket.h"
 
-#include "felicia/core/channel/channel.h"
 #include "felicia/core/lib/error/errors.h"
 #include "felicia/core/lib/net/net_util.h"
 

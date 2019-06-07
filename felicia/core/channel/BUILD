@@ -1,64 +1,33 @@
-load("//bazel:felicia.bzl", "fel_shared_library")
-load(
-    "//bazel:felicia_cc.bzl",
-    "fel_cc_library",
-    "fel_cc_test",
-)
+load("//bazel:felicia_cc.bzl", "fel_cc_library")
 
 package(default_visibility = ["//felicia:internal"])
+
+fel_cc_library(
+    name = "channel_impl",
+    srcs = ["channel_impl.cc"],
+    hdrs = [
+        "channel_impl.h",
+        "settings.h",
+    ],
+    deps = ["//felicia/core/lib"],
+)
 
 fel_cc_library(
     name = "channel",
     srcs = [
         "channel.cc",
-        "channel_impl.cc",
-        "socket/permessage_deflate.cc",
-        "socket/socket.cc",
-        "socket/tcp_client_socket.cc",
-        "socket/tcp_server_socket.cc",
-        "socket/tcp_socket.cc",
-        "socket/udp_client_socket.cc",
-        "socket/udp_server_socket.cc",
-        "socket/udp_socket.cc",
-        "socket/web_socket.cc",
-        "socket/web_socket_extension.cc",
-        "socket/web_socket_server.cc",
     ],
     hdrs = [
         "channel.h",
         "channel_factory.h",
-        "channel_impl.h",
-        "socket/permessage_deflate.h",
-        "socket/socket.h",
-        "socket/tcp_client_socket.h",
-        "socket/tcp_server_socket.h",
-        "socket/tcp_socket.h",
-        "socket/udp_client_socket.h",
-        "socket/udp_server_socket.h",
-        "socket/udp_socket.h",
-        "socket/web_socket.h",
-        "socket/web_socket_extension.h",
-        "socket/web_socket_server.h",
         "tcp_channel.h",
         "udp_channel.h",
         "ws_channel.h",
     ],
     deps = [
+        ":channel_impl",
+        "//felicia/core/channel/socket",
         "//felicia/core/lib",
         "//felicia/core/message",
-        "//felicia/core/protobuf:protos_all_cc",
-    ],
-)
-
-fel_cc_test(
-    name = "channel_tests",
-    size = "small",
-    srcs = [
-        "socket/permessage_deflate_test.cc",
-        "socket/web_socket_test.cc",
-    ],
-    deps = fel_shared_library() + [
-        ":channel",
-        "@com_google_googletest//:gtest_main",
     ],
 )

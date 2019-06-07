@@ -4,9 +4,19 @@
 
 namespace felicia {
 
-WebSocketServer::WebSocketServer()
+WebSocketServer::WebSocketServer(const channel::WSSettings& settings)
     : tcp_server_socket_(std::make_unique<TCPServerSocket>()),
-      handshake_handler_(this) {}
+      handshake_handler_(this, settings) {
+  if (settings.permessage_deflate_enabled) {
+    deflater_ = std::make_unique<::net::WebSocketDeflater>(
+        ::net::WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT);
+
+    if (!deflater_->Initialize(settings.server_max_window_bits)) {
+      DVLOG(1) << "WebSocket protocol error. "
+               << "deflater_->Initialize() returns an error.";
+    }
+  }
+}
 
 WebSocketServer::~WebSocketServer() = default;
 
@@ -69,6 +79,10 @@ void WebSocketServer::OnHandshaked(
     accept_callback_.Run(status_or.status());
   }
   DoAcceptOnce();
+}
+
+::net::WebSocketDeflater* WebSocketServer::deflater() {
+  return deflater_.get();
 }
 
 }  // namespace felicia

@@ -2,9 +2,11 @@
 #define FELICIA_CORE_CHANNEL_CHANNEL_IMPL_H_
 
 #include "third_party/chromium/net/base/io_buffer.h"
+#include "third_party/chromium/net/base/ip_endpoint.h"
 
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"
+#include "felicia/core/protobuf/channel.pb.h"
 
 namespace felicia {
 
@@ -23,6 +25,10 @@ class ChannelImpl {
   virtual void Read(scoped_refptr<::net::GrowableIOBuffer> buffer, int size,
                     StatusOnceCallback callback) = 0;
 };
+
+// Create ChannelDef from |ip_endpoint| and |type|
+EXPORT ChannelDef ToChannelDef(const ::net::IPEndPoint& ip_endpoint,
+                               ChannelDef::Type type);
 
 }  // namespace felicia
 

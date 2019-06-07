@@ -24,8 +24,10 @@ constexpr const char* kSecWebSocketVersion = "sec-websocket-version";
 constexpr const char* kSecWebSocketExtensions = "sec-websocket-extensions";
 constexpr const char* kHandshakeGuid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
-WebSocket::HandshakeHandler::HandshakeHandler(WebSocket* websocket)
+WebSocket::HandshakeHandler::HandshakeHandler(
+    WebSocket* websocket, const channel::WSSettings& settings)
     : websocket_(websocket),
+      settings_(settings),
       buffer_(::base::MakeRefCounted<::net::GrowableIOBuffer>()) {}
 
 WebSocket::HandshakeHandler::~HandshakeHandler() = default;
@@ -80,17 +82,20 @@ void WebSocket::HandshakeHandler::OnReadHeader(int result) {
     std::string base64_encoded;
     ::base::Base64Encode(sha1_hashed, &base64_encoded);
 
-    const std::string& extension = headers_[kSecWebSocketExtensions];
-    if (!extension.empty()) {
-      std::string response;
-      if (extension_.Negotiate(extension, &response)) {
-        SendOK(base64_encoded, response);
-      } else {
-        SendError(::net::HTTP_BAD_REQUEST);
+    if (settings_.permessage_deflate_enabled) {
+      const std::string& extension = headers_[kSecWebSocketExtensions];
+      if (!extension.empty()) {
+        std::string response;
+        if (extension_.Negotiate(extension, settings_, &response)) {
+          SendOK(base64_encoded, response);
+        } else {
+          SendError(::net::HTTP_BAD_REQUEST);
+        }
+        return;
       }
-    } else {
-      SendOK(base64_encoded, ::base::EmptyString());
     }
+
+    SendOK(base64_encoded, ::base::EmptyString());
   } else {
     SendError(::net::HTTP_INTERNAL_SERVER_ERROR);
   }

@@ -111,7 +111,8 @@ void Publisher<MessageTy>::RequestPublish(
   while (channel_type <= channel_types) {
     if (channel_type & channel_types) {
       auto channel = ChannelFactory::NewChannel<MessageTy>(
-          static_cast<ChannelDef::Type>(channel_type));
+          static_cast<ChannelDef::Type>(channel_type),
+          settings.channel_settings);
       StatusOr<ChannelDef> status_or = Setup(channel.get());
       if (!status_or.ok()) {
         Release();
@@ -306,9 +307,11 @@ void Publisher<MessageTy>::SendMesasge(SendMessageCallback callback) {
       }
     }
 
-    master_proxy.PostDelayedTask(FROM_HERE,
-                          ::base::BindOnce(&Publisher<MessageTy>::SendMesasge,
-                                           ::base::Unretained(this), callback), period_);
+    master_proxy.PostDelayedTask(
+        FROM_HERE,
+        ::base::BindOnce(&Publisher<MessageTy>::SendMesasge,
+                         ::base::Unretained(this), callback),
+        period_);
   }
 }
 

@@ -9,6 +9,7 @@
 #include "third_party/chromium/net/http/http_status_code.h"
 #include "third_party/chromium/net/socket/tcp_socket.h"
 
+#include "felicia/core/channel/settings.h"
 #include "felicia/core/channel/socket/socket.h"
 #include "felicia/core/channel/socket/web_socket_extension.h"
 #include "felicia/core/lib/error/statusor.h"
@@ -21,7 +22,7 @@ class EXPORT WebSocket : public Socket {
  public:
   class HandshakeHandler {
    public:
-    HandshakeHandler(WebSocket* websocket);
+    HandshakeHandler(WebSocket* websocket, const channel::WSSettings& settings);
     ~HandshakeHandler();
 
     void Handle(std::unique_ptr<::net::TCPSocket> socket);
@@ -41,6 +42,7 @@ class EXPORT WebSocket : public Socket {
     void OnWriteResponse(int result);
 
     WebSocket* websocket_;  // not owned
+    channel::WSSettings settings_;
     std::unique_ptr<::net::TCPSocket> socket_;
     scoped_refptr<::net::GrowableIOBuffer> buffer_;
     Status status_;

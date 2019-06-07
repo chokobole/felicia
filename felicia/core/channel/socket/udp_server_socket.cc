@@ -2,7 +2,6 @@
 
 #include "third_party/chromium/base/rand_util.h"
 
-#include "felicia/core/channel/channel.h"
 #include "felicia/core/lib/error/errors.h"
 #include "felicia/core/lib/net/net_util.h"
 

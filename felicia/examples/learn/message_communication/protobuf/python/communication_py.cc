@@ -13,8 +13,18 @@ namespace py = pybind11;
 namespace felicia {
 
 void AddCommunication(py::module& m) {
-  AddPublisher<MessageSpec>(m, "Publisher");
-  AddSubscriber<MessageSpec>(m, "Subscriber");
+  py::module communication = m.def_submodule("communication");
+
+  AddPublisher<MessageSpec>(communication, "Publisher");
+  AddSubscriber<MessageSpec>(communication, "Subscriber");
+
+  py::class_<communication::Settings>(communication, "Settings")
+      .def(py::init<>())
+      .def_readwrite("period", &communication::Settings::period)
+      .def_readwrite("buffer_size", &communication::Settings::buffer_size)
+      .def_readwrite("is_dynamic_buffer",
+                     &communication::Settings::is_dynamic_buffer)
+      .def_readwrite("queue_size", &communication::Settings::queue_size);
 }
 
 }  // namespace felicia

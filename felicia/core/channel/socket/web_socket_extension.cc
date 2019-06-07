@@ -14,6 +14,7 @@ WebSocketExtension::WebSocketExtension() {
 }
 
 bool WebSocketExtension::Negotiate(const std::string& extensions,
+                                   const channel::WSSettings& settings,
                                    std::string* response) {
   ::base::StringTokenizer extension(extensions.cbegin(), extensions.cend(),
                                     ",");
@@ -36,7 +37,7 @@ bool WebSocketExtension::Negotiate(const std::string& extensions,
     // TODO(chokobole): If extension is added more, then maybe negotiate
     // followings. At this moment, not to negotiate fallback one, return
     // early here.
-    if (it->second->Negotiate(params, response)) {
+    if (it->second->Negotiate(params, settings, response)) {
       return true;
     }
   }

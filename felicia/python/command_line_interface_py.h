@@ -1,5 +1,5 @@
-#ifndef FELICIA_PYTHON_COMMAND_LINE_INTERFACE_FLAG_PY_H_
-#define FELICIA_PYTHON_COMMAND_LINE_INTERFACE_FLAG_PY_H_
+#ifndef FELICIA_PYTHON_COMMAND_LINE_INTERFACE_PY_H_
+#define FELICIA_PYTHON_COMMAND_LINE_INTERFACE_PY_H_
 
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
@@ -57,8 +57,8 @@ class PyFlagParserDelegate : public FlagParser::Delegate {
   }
 };
 
-void AddFlag(py::module& m);
+void AddCommandLineInterface(py::module& m);
 
 }  // namespace felicia
 
-#endif  // FELICIA_PYTHON_COMMAND_LINE_INTERFACE_FLAG_PY_H_
+#endif  // FELICIA_PYTHON_COMMAND_LINE_INTERFACE_PY_H_

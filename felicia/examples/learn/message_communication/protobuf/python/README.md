@@ -103,7 +103,7 @@ Then how is possibly publishing topics? If you want to publish topic, you have t
 
 ```python
 def request_publish(self):
-    settings = fel.Settings()
+    settings = fel.communication.Settings()
     settings.buffer_size = fel.Bytes.from_bytes(512)
 
     self.publisher.request_publish(self.node_info, self.topic, self.channel_def_type,
@@ -151,7 +151,7 @@ def on_request_unpublish(self, status):
 
 ```python
 def request_subscribe(self):
-    settings = fel.Settings()
+    settings = fel.communication.Settings()
     settings.buffer_size = fel.Bytes.from_bytes(512)
 
     self.subscriber.request_subscribe(self.node_info, self.topic,

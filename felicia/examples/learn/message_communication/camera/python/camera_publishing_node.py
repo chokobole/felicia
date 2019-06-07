@@ -12,7 +12,7 @@ class CameraPublishingNode(fel.NodeLifecycle):
         super().__init__()
         self.topic = topic
         self.camera_descriptor = camera_descriptor
-        self.publisher = fel.Publisher()
+        self.publisher = fel.communication.Publisher()
 
     def on_init(self):
         print("CameraPublishingNode.on_init()")
@@ -32,7 +32,7 @@ class CameraPublishingNode(fel.NodeLifecycle):
         fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
     def request_publish(self):
-        settings = fel.Settings()
+        settings = fel.communication.Settings()
         settings.queue_size = 1
         settings.is_dynamic_buffer = True
 

@@ -7,7 +7,7 @@ class CameraSubscribingNode(fel.NodeLifecycle):
     def __init__(self, topic):
         super().__init__()
         self.topic = topic
-        self.subscriber = fel.Subscriber()
+        self.subscriber = fel.communication.Subscriber()
 
     def on_init(self):
         print("CameraSubscribingNode.on_init()")
@@ -22,7 +22,7 @@ class CameraSubscribingNode(fel.NodeLifecycle):
         fel.log(fel.ERROR, status.error_message())
 
     def request_subscribe(self):
-        settings = fel.Settings()
+        settings = fel.communication.Settings()
         settings.period = fel.TimeDelta.from_milliseconds(100)
         settings.is_dynamic_buffer = True
 

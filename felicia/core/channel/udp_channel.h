@@ -42,6 +42,9 @@ class UDPChannel : public Channel<MessageTy> {
   }
 
  private:
+  void ReadImpl(MessageTy* message, StatusOnceCallback callback) override;
+  void OnReceiveMessageWithHeader(const Status& s);
+
   DISALLOW_COPY_AND_ASSIGN(UDPChannel);
 };
 
@@ -72,6 +75,50 @@ void UDPChannel<MessageTy>::Connect(const ChannelDef& channel_def,
   UDPClientSocket* client_socket =
       this->channel_impl_->ToSocket()->ToUDPSocket()->ToUDPClientSocket();
   client_socket->Connect(ip_endpoint, std::move(callback));
+}
+
+template <typename MessageTy>
+void UDPChannel<MessageTy>::ReadImpl(MessageTy* message,
+                                     StatusOnceCallback callback) {
+  this->channel_impl_->Read(
+      this->receive_buffer_, this->receive_buffer_->capacity(),
+      ::base::BindOnce(&UDPChannel<MessageTy>::OnReceiveMessageWithHeader,
+                       ::base::Unretained(this)));
+}
+
+template <typename MessageTy>
+void UDPChannel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
+  if (!s.ok()) {
+    std::move(this->receive_callback_).Run(s);
+    return;
+  }
+
+  MessageIoError err = MessageIO<MessageTy>::ParseHeaderFromBuffer(
+      this->receive_buffer_->StartOfBuffer(), &this->header_);
+  if (err != MessageIoError::OK) {
+    std::move(this->receive_callback_)
+        .Run(errors::DataLoss(MessageIoErrorToString(err)));
+    return;
+  }
+
+  if (this->receive_buffer_->capacity() - sizeof(Header) <
+      this->header_.size()) {
+    std::move(this->receive_callback_)
+        .Run(errors::Aborted(
+            MessageIoErrorToString(MessageIoError::ERR_NOT_ENOUGH_BUFFER)));
+    return;
+  }
+
+  err = MessageIO<MessageTy>::ParseMessageFromBuffer(
+      this->receive_buffer_->StartOfBuffer(), this->header_, true,
+      this->message_);
+  if (err != MessageIoError::OK) {
+    std::move(this->receive_callback_)
+        .Run(errors::DataLoss("Failed to parse message from buffer."));
+    return;
+  }
+
+  std::move(this->receive_callback_).Run(s);
 }
 
 }  // namespace felicia

@@ -10,7 +10,7 @@ namespace felicia {
   handler.buffer_->set_offset(handler.buffer_->offset() + text.length())
 
 TEST(WebSocketHandshakeHandler, BasicNegotiate) {
-  WebSocket::HandshakeHandler handler(nullptr);
+  WebSocket::HandshakeHandler handler(nullptr, channel::WSSettings());
   handler.buffer_->SetCapacity(1024);
 
   std::string text = "POST / HTTP/1.1\r\n\r\n";

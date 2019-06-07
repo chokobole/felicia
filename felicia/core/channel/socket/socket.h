@@ -2,7 +2,6 @@
 #define FELICIA_CORE_CHANNEL_SOCKET_SOCKET_H_
 
 #include "third_party/chromium/base/macros.h"
-#include "third_party/chromium/net/base/ip_endpoint.h"
 #include "third_party/chromium/net/base/net_errors.h"
 
 #include "felicia/core/channel/channel_impl.h"
