@@ -34,29 +34,32 @@ self.onmessage = event => {
 
       const { cameraFormat } = obj;
       const { width, height, pixelFormat } = cameraFormat;
-      const imgSize = obj.data.byteLength;
-      const argbSize = width * height * 4;
 
-      const imgBuffer = Module.createBuffer(imgSize);
-      const argbBuffer = Module.createBuffer(argbSize);
+      if (pixelFormat !== PixelFormat.values.PIXEL_FORMAT_ARGB) {
+        const imgSize = obj.data.byteLength;
+        const argbSize = width * height * 4;
 
-      Module.HEAPU8.set(obj.data, imgBuffer);
-      if (
-        Module.convertToARGB(
-          imgBuffer,
-          imgSize,
-          argbBuffer,
-          width,
-          height,
-          PixelFormat.valuesById[pixelFormat]
-        )
-      ) {
-        obj.data = new Uint8Array(Module.HEAPU8.buffer, argbBuffer, argbSize);
-        obj.converted = true;
+        const imgBuffer = Module.createBuffer(imgSize);
+        const argbBuffer = Module.createBuffer(argbSize);
+
+        Module.HEAPU8.set(obj.data, imgBuffer);
+        if (
+          Module.convertToARGB(
+            imgBuffer,
+            imgSize,
+            argbBuffer,
+            width,
+            height,
+            PixelFormat.valuesById[pixelFormat]
+          )
+        ) {
+          obj.data = new Uint8Array(Module.HEAPU8.buffer, argbBuffer, argbSize);
+          obj.converted = true;
+        }
+
+        Module.releaseBuffer(imgBuffer);
+        Module.releaseBuffer(argbBuffer);
       }
-
-      Module.releaseBuffer(imgBuffer);
-      Module.releaseBuffer(argbBuffer);
     }
 
     message = {
