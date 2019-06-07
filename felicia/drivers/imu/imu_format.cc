@@ -38,9 +38,9 @@ std::ostream& operator<<(std::ostream& os, const ImuFormat& imu_format) {
 bool CompareCapability(const ImuFormat& requested, const ImuFormat& lhs,
                        const ImuFormat& rhs) {
   const float diff_fps_lhs =
-      std::fabs(lhs.frame_rate() - requested.frame_rate());
+      std::abs(lhs.frame_rate() - requested.frame_rate());
   const float diff_fps_rhs =
-      std::fabs(rhs.frame_rate() - requested.frame_rate());
+      std::abs(rhs.frame_rate() - requested.frame_rate());
   return diff_fps_lhs < diff_fps_rhs;
 }
 
