@@ -104,7 +104,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
             requested_gyro_format_, requested_accel_format_, filter_kind_,
             ::base::BindRepeating(&RsCameraPublishingNode::OnSynchedCameraFrame,
                                   ::base::Unretained(this)),
-            ::base::BindRepeating(&RsCameraPublishingNode::OnImu,
+            ::base::BindRepeating(&RsCameraPublishingNode::OnImuFrame,
                                   ::base::Unretained(this)),
             ::base::BindRepeating(&RsCameraPublishingNode::OnCameraError,
                                   ::base::Unretained(this)));
@@ -127,7 +127,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
                                   ::base::Unretained(this)),
             ::base::BindRepeating(&RsCameraPublishingNode::OnDepthFrame,
                                   ::base::Unretained(this)),
-            ::base::BindRepeating(&RsCameraPublishingNode::OnImu,
+            ::base::BindRepeating(&RsCameraPublishingNode::OnImuFrame,
                                   ::base::Unretained(this)),
             ::base::BindRepeating(&RsCameraPublishingNode::OnCameraError,
                                   ::base::Unretained(this)));
@@ -179,19 +179,19 @@ class RsCameraPublishingNode : public NodeLifecycle {
                               ::base::Unretained(this)));
   }
 
-  void OnImu(const Imu& imu) {
+  void OnImuFrame(const ImuFrame& imu_frame) {
     if (imu_publisher_.IsUnregistered()) return;
 
-    if (imu.timestamp() - last_timestamp_ <
+    if (imu_frame.timestamp() - last_timestamp_ <
         ::base::TimeDelta::FromMilliseconds(100))
       return;
 
     imu_publisher_.Publish(
-        imu.ToImuMessage(),
+        imu_frame.ToImuFrameMessage(),
         ::base::BindRepeating(&RsCameraPublishingNode::OnPublishImu,
                               ::base::Unretained(this)));
 
-    last_timestamp_ = imu.timestamp();
+    last_timestamp_ = imu_frame.timestamp();
   }
 
   void OnCameraError(const Status& s) {
@@ -262,7 +262,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
   ImuFilterFactory::ImuFilterKind filter_kind_;
   Publisher<CameraFrameMessage> color_publisher_;
   Publisher<DepthCameraFrameMessage> depth_publisher_;
-  Publisher<ImuMessage> imu_publisher_;
+  Publisher<ImuFrameMessage> imu_publisher_;
   std::unique_ptr<RsCamera> camera_;
   ::base::TimeDelta last_timestamp_;
 };

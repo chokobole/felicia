@@ -3,7 +3,7 @@
 
 #include "felicia/core/communication/subscriber.h"
 #include "felicia/core/node/node_lifecycle.h"
-#include "felicia/drivers/camera/camera_factory.h"
+#include "felicia/drivers/camera/camera_frame_message.pb.h"
 
 namespace felicia {
 

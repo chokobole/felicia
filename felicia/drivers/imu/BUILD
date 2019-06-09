@@ -7,7 +7,7 @@ fel_proto_library(
     name = "imu_proto",
     srcs = [
         "imu_format_message.proto",
-        "imu_message.proto",
+        "imu_frame_message.proto",
     ],
     default_header = True,
     protodeps = ["//felicia/core/protobuf:protos_all_proto"],
@@ -19,19 +19,19 @@ fel_cc_library(
     srcs = [
         "complementary_filter/complementary_filter.cc",
         "complementary_filter/complementary_filter.h",
-        "imu.cc",
         "imu_filter_factory.cc",
         "imu_filter_interface.cc",
         "imu_format.cc",
+        "imu_frame.cc",
         "madgwick_filter/madgwick_filter.cc",
         "madgwick_filter/madgwick_filter.h",
     ],
     hdrs = [
-        "imu.h",
         "imu_errors.h",
         "imu_filter_factory.h",
         "imu_filter_interface.h",
         "imu_format.h",
+        "imu_frame.h",
     ],
     deps = [
         "//felicia/core/lib",

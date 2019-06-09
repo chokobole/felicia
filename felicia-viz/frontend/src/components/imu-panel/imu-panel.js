@@ -49,7 +49,7 @@ export default class ImuPanel extends Component {
     const { id, store } = this.props;
     const { width, height } = panelState;
     const viewState = store.uiState.findView(id);
-    const { imu } = viewState;
+    const { frame } = viewState;
 
     return (
       <FloatPanel
@@ -58,7 +58,7 @@ export default class ImuPanel extends Component {
         onUpdate={this._onUpdate}
         style={FLOAT_PANEL_STYLE}>
         <Activatable id={id} type={UI_TYPES.ImuPanel.name} uiState={store.uiState}>
-          <ImuView imu={imu} width={`${width}px`} height={`${height}px`} />
+          <ImuView frame={frame} width={`${width}px`} height={`${height}px`} />
         </Activatable>
       </FloatPanel>
     );

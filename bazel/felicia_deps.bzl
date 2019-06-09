@@ -127,6 +127,6 @@ def load_deps():
     new_git_repository(
         name = "rplidar_sdk",
         remote = "https://github.com/Slamtec/rplidar_sdk.git",
-        commit = "25d34dbfbcb4de9046a31d366fc734c5c09a69f7", # release/v1.11.0 + patch
+        commit = "25d34dbfbcb4de9046a31d366fc734c5c09a69f7",  # release/v1.11.0 + patch
         build_file = "//third_party:rplidar_sdk.BUILD",
     )

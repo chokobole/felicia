@@ -132,9 +132,7 @@ class DevVideoFilePathsDeviceProvider {
 V4l2Camera::V4l2Camera(const CameraDescriptor& camera_descriptor)
     : CameraInterface(camera_descriptor), thread_("V4l2CameraThread") {}
 
-V4l2Camera::~V4l2Camera() {
-  if (thread_.IsRunning()) thread_.Stop();
-}
+V4l2Camera::~V4l2Camera() = default;
 
 // static
 Status V4l2Camera::GetCameraDescriptors(CameraDescriptors* camera_descriptors) {

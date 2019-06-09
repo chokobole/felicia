@@ -10,7 +10,7 @@ Before beginning, let's build the binary.
 
 ```bash
 bazel build --define has_realsense=true //felicia/core/master/rpc:grpc_server_main
-bazel build --define has_realsense=true //felicia/examples/learn/message_communication/depth_camera/cc:node_creator
+bazel build --define has_realsense=true //felicia/examples/learn/message_communication/depth_camera/cc:depth_camera_node_creator
 ```
 
 Done. Now let's begin and run the server!
@@ -24,7 +24,7 @@ If you want to see the visual result, check out [felicia-viz](/felicia-viz/READM
 We don't explain the same we had in [README.md](/felicia/examples/learn/message_communication/camera/cc/README.md).
 
 ```bash
-bazel-bin/felicia/examples/learn/message_communication/depth_camera/cc/node_creator -l
+bazel-bin/felicia/examples/learn/message_communication/depth_camera/cc/depth_camera_node_creator -l
 # For example on linux
 device_list is on, it just shows a list of camera devices. If you pass -i(--device_index) with the -l then you can iterate the camera formats the device supports.
 [0] display_name: Intel RealSense D435I device_id: /sys/devices/pci0000:00/0000:00:14.0/usb2/2-7/2-7.2/2-7.2.1/2-7.2.1:1.0/video4linux/video0 model_id: 0B3A

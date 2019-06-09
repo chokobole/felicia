@@ -20,9 +20,9 @@ class LidarFlag : public NodeCreateFlag {
   bool Validate() const override;
 
   AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(is_publishing_node_flag_, name_flag_,
-                                          topic_flag_, serial_port_flag_,
-                                          baudrate_flag_, ip_flag_,
-                                          tcp_port_flag_)
+                                          topic_flag_, channel_type_flag_,
+                                          serial_port_flag_, baudrate_flag_,
+                                          ip_flag_, tcp_port_flag_)
 
  protected:
   std::string serial_port_;

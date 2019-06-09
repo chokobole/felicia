@@ -103,7 +103,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
                        ImuFilterFactory::ImuFilterKind kind,
                        CameraFrameCallback color_frame_callback,
                        DepthCameraFrameCallback depth_frame_callback,
-                       ImuCallback imu_callback,
+                       ImuFrameCallback imu_frame_callback,
                        StatusCallback status_callback) {
   Status s = Start(requested_color_format, requested_depth_format,
                    requested_gyro_format, requested_accel_format,
@@ -112,7 +112,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
 
   color_frame_callback_ = color_frame_callback;
   depth_frame_callback_ = depth_frame_callback;
-  imu_callback_ = imu_callback;
+  imu_frame_callback_ = imu_frame_callback;
   status_callback_ = status_callback;
 
   imu_filter_ = ImuFilterFactory::NewImuFilter(kind);
@@ -129,7 +129,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
                        const ImuFormat& requested_accel_format,
                        ImuFilterFactory::ImuFilterKind kind,
                        SynchedDepthCameraFrameCallback synched_frame_callback,
-                       ImuCallback imu_callback,
+                       ImuFrameCallback imu_frame_callback,
                        StatusCallback status_callback) {
   Status s = Start(requested_color_format, requested_depth_format,
                    requested_gyro_format, requested_accel_format,
@@ -137,7 +137,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
   if (!s.ok()) return s;
 
   synched_frame_callback_ = synched_frame_callback;
-  imu_callback_ = imu_callback;
+  imu_frame_callback_ = imu_frame_callback;
   status_callback_ = status_callback;
 
   SetRsAlignFromDirection(align_direction);
@@ -169,7 +169,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
   }
 
   if (imu) {
-    imu_callback_function = [this](::rs2::frame frame) { OnImu(frame); };
+    imu_callback_function = [this](::rs2::frame frame) { OnImuFrame(frame); };
   }
 
   bool imu_started = false;
@@ -300,24 +300,24 @@ void RsCamera::OnFrame(::rs2::frame frame) {
   }
 }
 
-void RsCamera::OnImu(::rs2::frame frame) {
+void RsCamera::OnImuFrame(::rs2::frame frame) {
   auto motion = frame.as<rs2::motion_frame>();
   auto stream = frame.get_profile().stream_type();
-  Imu imu;
+  ImuFrame imu_frame;
 
   rs2_vector vector = motion.get_motion_data();
   ::base::TimeDelta timestamp = timestamper_.timestamp();
   if (stream == GYRO.stream_type) {
-    imu.set_angulary_veilocity(vector.x, vector.y, vector.z);
+    imu_frame.set_angulary_veilocity(vector.x, vector.y, vector.z);
     imu_filter_->UpdateAngularVelocity(vector.x, vector.y, vector.z, timestamp);
   } else {
-    imu.set_linear_acceleration(vector.x, vector.y, vector.z);
+    imu_frame.set_linear_acceleration(vector.x, vector.y, vector.z);
     imu_filter_->UpdateLinearAcceleration(vector.x, vector.y, vector.z);
   }
-  imu.set_timestamp(timestamp);
-  imu.set_orientation(imu_filter_->orientation());
+  imu_frame.set_timestamp(timestamp);
+  imu_frame.set_orientation(imu_filter_->orientation());
 
-  imu_callback_.Run(imu);
+  imu_frame_callback_.Run(imu_frame);
 }
 
 ::base::Optional<CameraFrame> RsCamera::ConvertToARGB(

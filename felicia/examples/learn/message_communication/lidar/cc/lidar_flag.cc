@@ -2,9 +2,6 @@
 
 #include <iostream>
 
-#include "third_party/chromium/build/build_config.h"
-
-#include "felicia/core/lib/unit/bytes.h"
 #include "felicia/core/util/command_line_interface/text_style.h"
 
 namespace felicia {
@@ -39,30 +36,32 @@ LidarFlag::~LidarFlag() = default;
 
 bool LidarFlag::Parse(FlagParser& parser) {
   return PARSE_OPTIONAL_FLAG(parser, is_publishing_node_flag_, name_flag_,
-                             topic_flag_, serial_port_flag_, baudrate_flag_,
-                             ip_flag_, tcp_port_flag_);
+                             topic_flag_, channel_type_flag_, serial_port_flag_,
+                             baudrate_flag_, ip_flag_, tcp_port_flag_);
 }
 
 bool LidarFlag::Validate() const {
-  if (serial_port_flag_->is_set() && baudrate_flag_->is_set()) {
-    if (ip_flag_->is_set() || tcp_port_flag_->is_set()) {
-      std::cerr << kRedError << "ip or tcp_port is set" << std::endl;
-      return false;
+  if (is_publishing_node_) {
+    if (serial_port_flag_->is_set() && baudrate_flag_->is_set()) {
+      if (ip_flag_->is_set() || tcp_port_flag_->is_set()) {
+        std::cerr << kRedError << "ip or tcp_port is set" << std::endl;
+        return false;
+      }
+      return true;
     }
-    return true;
-  }
 
-  if (ip_flag_->is_set() && tcp_port_flag_->is_set()) {
-    if (serial_port_flag_->is_set() || baudrate_flag_->is_set()) {
-      std::cerr << kRedError << "serial_port or baudrate is set" << std::endl;
-      return false;
+    if (ip_flag_->is_set() && tcp_port_flag_->is_set()) {
+      if (serial_port_flag_->is_set() || baudrate_flag_->is_set()) {
+        std::cerr << kRedError << "serial_port or baudrate is set" << std::endl;
+        return false;
+      }
+      return true;
     }
-    return true;
-  }
 
-  std::cerr << kRedError
-            << "(serial_port, baudrate) or (ip, tcp_port) should be set "
-            << std::endl;
+    std::cerr << kRedError
+              << "(serial_port, baudrate) or (ip, tcp_port) should be set "
+              << std::endl;
+  }
 
   return NodeCreateFlag::Validate();
 }

@@ -8,7 +8,7 @@ Before beginning, let's build the binary.
 
 ```bash
 bazel build //felicia/core/master/rpc:grpc_server_main
-bazel build //felicia/examples/learn/message_communication/camera/python:node_creator
+bazel build //felicia/examples/learn/message_communication/camera/python:camera_node_creator
 ```
 
 Done. Now let's begin and run the server!
@@ -22,7 +22,7 @@ If you want to see the visual result, check out [felicia-viz](/felicia-viz/READM
 We don't explain the same we had in [README.md](/felicia/examples/learn/message_communication/protobuf/python/README.md). Here we introduce new arguments to use camera! Because every camera device has a unique id, you have to pass it and it can be different per OS. For convenience, we give you a way to pass it by index. To know which index you want to run with, you should pass `-l` to the program.
 
 ```bash
-bazel-bin/felicia/examples/learn/message_communication/camera/python/node_creator -l
+bazel-bin/felicia/examples/learn/message_communication/camera/python/camera_node_creator -l
 # For example on linux
 device_list is on, it just shows a list of camera devices. If you pass -i(--device_index) with the -l then you can iterate the camera formats the device supports.
 [0] display_name: UVC Camera (046d:0825) device_id: /dev/video0 model_id: 046d:0825
@@ -31,13 +31,13 @@ device_list is on, it just shows a list of camera devices. If you pass -i(--devi
 Now we know that there is an only one camera connected and let's run with it by passing `-i` with `0`.
 
 ```bash
-bazel-bin/felicia/examples/learn/message_communication/camera/python/node_creator -t message -p -i 0
+bazel-bin/felicia/examples/learn/message_communication/camera/python/camera_node_creator -t message -p -i 0
 ```
 
 On the subscriber side, if you type a command below, then you are successful to communicate.
 
 ```bash
-bazel-bin/felicia/examples/learn/message_communication/camera/python/node_creator -t message
+bazel-bin/felicia/examples/learn/message_communication/camera/python/camera_node_creator -t message
 ```
 
 Now look into the [camera_publishing_node.py](camera_publishing_node.py). In order to use camera, you should make a new camera instance using `CameraFactory.new_camera()` and call `init()`.

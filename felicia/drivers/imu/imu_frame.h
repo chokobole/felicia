@@ -1,18 +1,18 @@
 #ifndef FELICIA_DRIVERS_IMU_IMU_H_
-#define FELICIA_DRIVERS_IMU_IMU_H_
+#define FELICIA_DRIVERS_IMU_IMU_FRAME_H_
 
 #include "Eigen/Core"
 #include "Eigen/Geometry"
 #include "third_party/chromium/base/callback.h"
 
 #include "felicia/core/lib/base/export.h"
-#include "felicia/drivers/imu/imu_message.pb.h"
+#include "felicia/drivers/imu/imu_frame_message.pb.h"
 
 namespace felicia {
 
-class EXPORT Imu {
+class EXPORT ImuFrame {
  public:
-  Imu();
+  ImuFrame();
 
   void set_orientation(float w, float x, float y, float z);
   void set_angulary_veilocity(float x, float y, float z);
@@ -29,7 +29,7 @@ class EXPORT Imu {
   void set_timestamp(::base::TimeDelta timestamp);
   ::base::TimeDelta timestamp() const;
 
-  ImuMessage ToImuMessage() const;
+  ImuFrameMessage ToImuFrameMessage() const;
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -40,7 +40,7 @@ class EXPORT Imu {
   ::base::TimeDelta timestamp_;
 };
 
-typedef ::base::RepeatingCallback<void(const Imu&)> ImuCallback;
+typedef ::base::RepeatingCallback<void(const ImuFrame&)> ImuFrameCallback;
 
 }  // namespace felicia
 

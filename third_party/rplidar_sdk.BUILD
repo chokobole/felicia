@@ -22,20 +22,23 @@ config_setting(
 
 cc_library(
     name = "rplidar_sdk",
-    hdrs = glob([
-        "sdk/sdk/**/*.h",
-        "sdk/sdk/**/*.hpp",
-    ]),
-    srcs = glob([
-        "sdk/sdk/src/**/*.cpp",
-    ], exclude = [
-        "sdk/sdk/src/arch/**",
-    ]) + select({
+    srcs = glob(
+        [
+            "sdk/sdk/src/**/*.cpp",
+        ],
+        exclude = [
+            "sdk/sdk/src/arch/**",
+        ],
+    ) + select({
         ":mac": glob(["sdk/sdk/src/arch/macOS/*.cpp"]),
         ":linux": glob(["sdk/sdk/src/arch/linux/*.cpp"]),
         ":windows": glob(["sdk/sdk/src/arch/win32/*.cpp"]),
         "//conditions:default": [],
     }),
+    hdrs = glob([
+        "sdk/sdk/**/*.h",
+        "sdk/sdk/**/*.hpp",
+    ]),
     includes = [
         "sdk/sdk/include",
         "sdk/sdk/src",

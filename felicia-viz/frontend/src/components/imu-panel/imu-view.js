@@ -6,20 +6,20 @@ import { Vector3, Color3, Quaternion } from '@babylonjs/core/Maths/math';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import '@babylonjs/core/Meshes/meshBuilder';
 
-import { Imu } from 'store/ui/imu-panel-state';
+import { ImuFrame } from 'store/ui/imu-panel-state';
 import { drawAxis } from 'util/babylon-util';
 
 export default class ImuView extends PureComponent {
   static propTypes = {
     width: PropTypes.string,
     height: PropTypes.string,
-    imu: PropTypes.instanceOf(Imu),
+    frame: PropTypes.instanceOf(ImuFrame),
   };
 
   static defaultProps = {
     width: '100%',
     height: '100%',
-    imu: null,
+    frame: null,
   };
 
   componentDidMount() {
@@ -37,10 +37,10 @@ export default class ImuView extends PureComponent {
     const localOrigin = drawAxis(10, scene);
 
     engine.runRenderLoop(() => {
-      const { imu } = this.props;
+      const { frame } = this.props;
 
-      if (imu) {
-        const { x, y, z, w } = imu.orientation;
+      if (frame) {
+        const { x, y, z, w } = frame.orientation;
         // TODO(chokobole): If i don't put - to |y| and |z|, yawn and roll is
         // mirrored. It needs to be tested with a different IMU device.
         const orientation = new Quaternion(x, -y, -z, w);

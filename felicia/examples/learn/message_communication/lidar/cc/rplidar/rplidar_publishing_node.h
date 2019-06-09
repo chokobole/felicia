@@ -1,17 +1,30 @@
 #ifndef FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_LIDAR_CC_RPLIDAR_RPLIDAR_PUBLISHING_NODE_H_
 #define FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_LIDAR_CC_RPLIDAR_RPLIDAR_PUBLISHING_NODE_H_
 
+#include <csignal>
+
 #include "felicia/core/communication/publisher.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/drivers/vendors/rplidar/rplidar_factory.h"
 
 namespace felicia {
 
+#ifdef OS_POSIX
+class RPlidarPublishingNode;
+RPlidarPublishingNode* node = nullptr;
+
+void Shutdown(int signal);
+#endif
+
 class RPlidarPublishingNode : public NodeLifecycle {
  public:
   RPlidarPublishingNode(const std::string& topic,
-                        const LidarEndpoint& lidar_endpoint)
-      : topic_(topic), lidar_endpoint_(lidar_endpoint) {}
+                        const std::string& channel_type,
+                        const LidarEndpoint& lidar_endpoint,
+                        const std::string& scan_mode)
+      : topic_(topic), lidar_endpoint_(lidar_endpoint), scan_mode_(scan_mode) {
+    ChannelDef::Type_Parse(channel_type, &channel_type_);
+  }
 
   void OnInit() override {
     std::cout << "RPlidarPublishingNode::OnInit()" << std::endl;
@@ -22,6 +35,7 @@ class RPlidarPublishingNode : public NodeLifecycle {
 
   void OnDidCreate(const NodeInfo& node_info) override {
     std::cout << "RPlidarPublishingNode::OnDidCreate()" << std::endl;
+    node = this;
     node_info_ = node_info;
     RequestPublish();
   }
@@ -36,15 +50,17 @@ class RPlidarPublishingNode : public NodeLifecycle {
     settings.queue_size = 1;
     settings.is_dynamic_buffer = true;
     settings.channel_settings.ws_settings.permessage_deflate_enabled = false;
+
+    lidar_publisher_.RequestPublish(
+        node_info_, topic_, channel_type_ | ChannelDef::WS, settings,
+        ::base::BindOnce(&RPlidarPublishingNode::OnRequestPublish,
+                         ::base::Unretained(this)));
   }
 
   void OnRequestPublish(const Status& s) {
     std::cout << "RPlidarPublishingNode::OnRequestPublish()" << std::endl;
     if (s.ok()) {
-      MasterProxy& master_proxy = MasterProxy::GetInstance();
-      master_proxy.PostTask(FROM_HERE,
-                            ::base::BindOnce(&RPlidarPublishingNode::StartLidar,
-                                             ::base::Unretained(this)));
+      StartLidar();
     } else {
       LOG(ERROR) << s.error_message();
     }
@@ -53,9 +69,42 @@ class RPlidarPublishingNode : public NodeLifecycle {
   void StartLidar() {
     if (lidar_->IsStarted()) return;
 
-    Status s = lidar_->Start();
+    bool started = false;
+    Status s;
+    if (!scan_mode_.empty()) {
+      std::vector<rp::standalone::rplidar::RplidarScanMode> scan_modes;
+      s = lidar_->GetSupportedScanModes(&scan_modes);
+      if (!s.ok()) {
+        LOG(ERROR) << s.error_message();
+      } else {
+        for (auto& scan_mode : scan_modes) {
+          if (scan_mode.scan_mode == scan_mode_) {
+            s = lidar_->Start(
+                scan_mode,
+                ::base::BindRepeating(&RPlidarPublishingNode::OnLidarFrame,
+                                      ::base::Unretained(this)));
+            started = true;
+            break;
+          }
+        }
+      }
+    }
+
+    if (!started) {
+      s = lidar_->Start(::base::BindRepeating(
+          &RPlidarPublishingNode::OnLidarFrame, ::base::Unretained(this)));
+    }
 
     if (s.ok()) {
+#ifdef OS_POSIX
+      // To handle general case when POSIX ask the process to quit.
+      std::signal(SIGTERM, &::felicia::Shutdown);
+      // To handle Ctrl + C.
+      std::signal(SIGINT, &::felicia::Shutdown);
+      // To handle when the terminal is closed.
+      std::signal(SIGHUP, &::felicia::Shutdown);
+#endif
+      lidar_->DoScanLoop();
       // MasterProxy& master_proxy = MasterProxy::GetInstance();
       // master_proxy.PostDelayedTask(
       //     FROM_HERE,
@@ -67,15 +116,31 @@ class RPlidarPublishingNode : public NodeLifecycle {
     }
   }
 
-  void RequestUnpublish() {}
+  void OnLidarFrame(const LidarFrame& lidar_frame) {
+    if (lidar_publisher_.IsUnregistered()) return;
+
+    lidar_publisher_.Publish(
+        lidar_frame.ToLidarFrameMessage(),
+        ::base::BindRepeating(&RPlidarPublishingNode::OnPublishLidarFrame,
+                              ::base::Unretained(this)));
+  }
+
+  void OnPublishLidarFrame(ChannelDef::Type type, const Status& s) {
+    LOG_IF(ERROR, !s.ok()) << s.error_message() << " from "
+                           << ChannelDef::Type_Name(type);
+  }
+
+  void RequestUnpublish() {
+    lidar_publisher_.RequestUnpublish(
+        node_info_, topic_,
+        ::base::BindOnce(&RPlidarPublishingNode::OnRequestUnpublish,
+                         ::base::Unretained(this)));
+  }
 
   void OnRequestUnpublish(const Status& s) {
     std::cout << "RPlidarPublishingNode::OnRequestUnpublish()" << std::endl;
     if (s.ok()) {
-      MasterProxy& master_proxy = MasterProxy::GetInstance();
-      master_proxy.PostTask(FROM_HERE,
-                            ::base::BindOnce(&RPlidarPublishingNode::StopLidar,
-                                             ::base::Unretained(this)));
+      StopLidar();
     } else {
       LOG(ERROR) << s.error_message();
     }
@@ -89,9 +154,23 @@ class RPlidarPublishingNode : public NodeLifecycle {
  private:
   NodeInfo node_info_;
   std::string topic_;
+  ChannelDef::Type channel_type_;
   LidarEndpoint lidar_endpoint_;
+  std::string scan_mode_;
   std::unique_ptr<RPlidar> lidar_;
+  Publisher<LidarFrameMessage> lidar_publisher_;
 };
+
+#ifdef OS_POSIX
+void Shutdown(int signal) {
+  if (node) {
+    node->StopLidar();
+  }
+
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  master_proxy.Stop();
+}
+#endif
 
 }  // namespace felicia
 

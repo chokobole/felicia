@@ -4,6 +4,7 @@
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/drivers/lidar/lidar_endpoint.h"
+#include "felicia/drivers/lidar/lidar_frame.h"
 #include "felicia/drivers/lidar/lidar_state.h"
 
 namespace felicia {
@@ -14,7 +15,7 @@ class EXPORT LidarInterface {
   virtual ~LidarInterface();
 
   virtual Status Init() = 0;
-  virtual Status Start() = 0;
+  virtual Status Start(LidarFrameCallback lidar_frame_callback) = 0;
   virtual Status Stop() = 0;
 
   bool IsInitialized() const;
@@ -25,6 +26,7 @@ class EXPORT LidarInterface {
   LidarEndpoint lidar_endpoint_;
   LidarState lidar_state_;
 
+  LidarFrameCallback lidar_frame_callback_;
   StatusCallback status_callback_;
 };
 

@@ -9,9 +9,9 @@
 
 #include "felicia/core/util/timestamp/timestamper.h"
 #include "felicia/drivers/camera/depth_camera_interface.h"
-#include "felicia/drivers/imu/imu.h"
 #include "felicia/drivers/imu/imu_filter_factory.h"
 #include "felicia/drivers/imu/imu_filter_interface.h"
+#include "felicia/drivers/imu/imu_frame.h"
 #include "felicia/drivers/vendors/realsense/rs_capability.h"
 
 namespace felicia {
@@ -46,7 +46,8 @@ class RsCamera : public DepthCameraInterface {
                ImuFilterFactory::ImuFilterKind kind,
                CameraFrameCallback color_frame_callback,
                DepthCameraFrameCallback depth_frame_callback,
-               ImuCallback imu_callback, StatusCallback status_callback);
+               ImuFrameCallback imu_frame_callback,
+               StatusCallback status_callback);
   Status Start(const CameraFormat& requested_color_format,
                const CameraFormat& requested_depth_format,
                AlignDirection align_direction,
@@ -54,7 +55,8 @@ class RsCamera : public DepthCameraInterface {
                const ImuFormat& requested_accel_format,
                ImuFilterFactory::ImuFilterKind kind,
                SynchedDepthCameraFrameCallback synched_frame_callback,
-               ImuCallback imu_callback, StatusCallback status_callback);
+               ImuFrameCallback imu_frame_callback,
+               StatusCallback status_callback);
 
  private:
   friend class RsCameraFactory;
@@ -69,7 +71,7 @@ class RsCamera : public DepthCameraInterface {
   void SetRsAlignFromDirection(AlignDirection align_direction);
 
   void OnFrame(::rs2::frame frame);
-  void OnImu(::rs2::frame frame);
+  void OnImuFrame(::rs2::frame frame);
 
   void SetFirstRefTime();
 
@@ -95,7 +97,7 @@ class RsCamera : public DepthCameraInterface {
   ImuFormat gyro_format_;
   ImuFormat accel_format_;
   std::unique_ptr<ImuFilterInterface> imu_filter_;
-  ImuCallback imu_callback_;
+  ImuFrameCallback imu_frame_callback_;
 
   ThreadSafeTimestamper timestamper_;
 

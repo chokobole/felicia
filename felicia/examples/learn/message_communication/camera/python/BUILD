@@ -3,9 +3,9 @@ package(default_visibility = ["//visibility:private"])
 py_binary(
     name = "camera_node_creator",
     srcs = [
+        "camera_node_creator.py",
         "camera_publishing_node.py",
         "camera_subscribing_node.py",
-        "camera_node_creator.py",
     ],
     main = "camera_node_creator.py",
     deps = [

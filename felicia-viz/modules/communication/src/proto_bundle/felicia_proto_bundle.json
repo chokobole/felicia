@@ -472,7 +472,7 @@
             }
           }
         },
-        "ImuMessage": {
+        "ImuFrameMessage": {
           "fields": {
             "orientation": {
               "type": "QuarternionMessage",
@@ -489,6 +489,44 @@
             "timestamp": {
               "type": "int64",
               "id": 4
+            }
+          }
+        },
+        "LidarFrameMessage": {
+          "fields": {
+            "angleStart": {
+              "type": "float",
+              "id": 1
+            },
+            "angleEnd": {
+              "type": "float",
+              "id": 2
+            },
+            "angleDelta": {
+              "type": "float",
+              "id": 3
+            },
+            "timeDelta": {
+              "type": "float",
+              "id": 4
+            },
+            "rangeMin": {
+              "type": "float",
+              "id": 5
+            },
+            "rangeMax": {
+              "type": "float",
+              "id": 6
+            },
+            "ranges": {
+              "rule": "repeated",
+              "type": "float",
+              "id": 7
+            },
+            "intensities": {
+              "rule": "repeated",
+              "type": "float",
+              "id": 8
             }
           }
         },

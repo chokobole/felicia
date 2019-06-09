@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import { Form, MetricCard, MetricChart } from '@streetscape.gl/monochrome';
 
-import { IMU_MESSAGE } from '@felicia-viz/communication';
+import { IMU_FRAME_MESSAGE } from '@felicia-viz/communication';
 import { TopicDropdown, PanelItemContainer } from '@felicia-viz/ui';
 
 import { FORM_STYLE, METRIC_CARD_STYLE } from 'custom-styles';
@@ -94,7 +94,7 @@ export default class ImuControlPanel extends Component {
           type: 'custom',
           title: 'topic',
           render: self => {
-            return <TopicDropdown {...self} typeName={IMU_MESSAGE} />;
+            return <TopicDropdown {...self} typeName={IMU_FRAME_MESSAGE} />;
           },
         },
       },
@@ -106,10 +106,10 @@ export default class ImuControlPanel extends Component {
   _fetchValues() {
     const { store } = this.props;
     const viewState = store.uiState.activeViewState.getState();
-    const { topic, imu } = viewState;
+    const { topic, frame } = viewState;
 
-    if (imu) {
-      const { angularVelocity, linearAcceleration, timestamp } = imu;
+    if (frame) {
+      const { angularVelocity, linearAcceleration, timestamp } = frame;
       this.angularVelocities.push(angularVelocity, timestamp);
       this.linearAccelerations.push(linearAcceleration, timestamp);
     }

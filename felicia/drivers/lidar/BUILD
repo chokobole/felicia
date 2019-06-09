@@ -6,7 +6,7 @@ package(default_visibility = ["//felicia:internal"])
 fel_proto_library(
     name = "lidar_proto",
     srcs = [
-        "lidar_message.proto",
+        "lidar_frame_message.proto",
     ],
     default_header = True,
     visibility = ["//visibility:public"],
@@ -16,14 +16,16 @@ fel_cc_library(
     name = "lidar",
     srcs = [
         "lidar_endpoint.cc",
+        "lidar_frame.cc",
         "lidar_interface.cc",
     ],
     hdrs = [
         "lidar_endpoint.h",
+        "lidar_frame.h",
         "lidar_interface.h",
         "lidar_state.h",
     ],
     deps = [
         "//felicia/core/lib",
-    ]
+    ],
 )
