@@ -16,7 +16,7 @@ def main():
 
     delegate = CameraFlag()
     parser = cli.FlagParser()
-    parser.set_program_name('node_creator')
+    parser.set_program_name('camera_node_creator')
     if not parser.parse(len(sys.argv), sys.argv, delegate):
         sys.exit(1)
 

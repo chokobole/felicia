@@ -28,11 +28,10 @@ fel_cc_library(
 )
 
 fel_cc_binary(
-    name = "node_creator",
-    srcs = ["node_creator.cc"],
+    name = "camera_node_creator",
+    srcs = ["camera_node_creator.cc"],
     deps = fel_shared_library() + [
         "//felicia/examples/learn/message_communication/common/cc:camera_flag",
-        "//felicia/examples/learn/message_communication/common/cc:camera_util",
         ":camera_publishing_node",
         ":camera_subscribing_node",
         "//felicia/core:felicia_init",

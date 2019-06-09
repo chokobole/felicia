@@ -1,0 +1,24 @@
+// This is taken ans modified from http://docs.ros.org/melodic/api/sensor_msgs/html/msg/LaserScan.html
+
+syntax = "proto3";
+
+package felicia;
+
+message LidarMessage {
+  float angle_start = 1;  // start angle of the scan [rad]
+  float angle_end = 2;  // end angle of the scan [rad]
+  float angle_delta = 3;  // angular distance between measurements [rad]
+  // time between measurements [seconds]
+  // - if your scanner is moving, this will be used in interpolating
+  // position of 3d points
+  float time_delta = 4;
+  float range_min = 5;  // minimum range value [m]
+  float range_max = 6;  // maximum range value [m]
+  // range data [m]
+  // (Note: values < range_min or > range_max should be discarded)
+  repeated float ranges = 7;
+  // intensity data [device-specific units].
+  // If your device does not provide intensities, please leave the array
+  // empty.
+  repeated float intensities = 8;
+}

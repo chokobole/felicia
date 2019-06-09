@@ -107,17 +107,17 @@ void AddCommandLineInterface(py::module& m) {
 
   ADD_FLAG(BoolFlag);
   ADD_FLAG(IntFlag);
+  ADD_FLAG(FloatFlag);
   ADD_FLAG(DoubleFlag);
   ADD_FLAG(StringFlag);
   ADD_FLAG(BoolDefaultFlag);
   ADD_FLAG(IntDefaultFlag);
+  ADD_FLAG(FloatDefaultFlag);
   ADD_FLAG(DoubleDefaultFlag);
   ADD_FLAG(StringDefaultFlag);
   ADD_FLAG(IntRangeFlag);
-  ADD_FLAG(DoubleRangeFlag);
   ADD_FLAG(StringRangeFlag);
   ADD_FLAG(IntChoicesFlag);
-  ADD_FLAG(DoubleChoicesFlag);
   ADD_FLAG(StringChoicesFlag);
 
 #undef ADD_FLAG

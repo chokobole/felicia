@@ -36,4 +36,12 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
+std::ostream& operator<<(std::ostream& os,
+                         const CameraDescriptors& camera_descriptors) {
+  for (size_t i = 0; i < camera_descriptors.size(); ++i) {
+    os << "[" << i << "] " << camera_descriptors[i] << std::endl;
+  }
+  return os;
+}
+
 }  // namespace felicia

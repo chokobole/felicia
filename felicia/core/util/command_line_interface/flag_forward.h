@@ -19,20 +19,20 @@ using ChoicesFlag = Flag<Choices<T>, DefaultValueTraits<T>>;
 
 typedef Flag<bool> BoolFlag;
 typedef Flag<int> IntFlag;
+typedef Flag<float> FloatFlag;
 typedef Flag<double> DoubleFlag;
 typedef Flag<std::string> StringFlag;
 
 typedef DefaultFlag<bool> BoolDefaultFlag;
 typedef DefaultFlag<int> IntDefaultFlag;
+typedef DefaultFlag<float> FloatDefaultFlag;
 typedef DefaultFlag<double> DoubleDefaultFlag;
 typedef DefaultFlag<std::string> StringDefaultFlag;
 
 typedef RangeFlag<int> IntRangeFlag;
-typedef RangeFlag<double> DoubleRangeFlag;
 typedef RangeFlag<std::string> StringRangeFlag;
 
 typedef ChoicesFlag<int> IntChoicesFlag;
-typedef ChoicesFlag<double> DoubleChoicesFlag;
 typedef ChoicesFlag<std::string> StringChoicesFlag;
 
 }  // namespace felicia

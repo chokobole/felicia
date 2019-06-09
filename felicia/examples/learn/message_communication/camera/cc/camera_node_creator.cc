@@ -3,7 +3,6 @@
 #include "felicia/examples/learn/message_communication/camera/cc/camera_publishing_node.h"
 #include "felicia/examples/learn/message_communication/camera/cc/camera_subscribing_node.h"
 #include "felicia/examples/learn/message_communication/common/cc/camera_flag.h"
-#include "felicia/examples/learn/message_communication/common/cc/camera_util.h"
 
 namespace felicia {
 
@@ -12,7 +11,7 @@ int RealMain(int argc, char* argv[]) {
 
   CameraFlag delegate;
   FlagParser parser;
-  parser.set_program_name("node_creator");
+  parser.set_program_name("camera_node_creator");
   if (!parser.Parse(argc, argv, &delegate)) {
     return 1;
   }
@@ -34,9 +33,9 @@ int RealMain(int argc, char* argv[]) {
         std::cerr << kRedError << s << std::endl;
         return 1;
       }
-      Print(camera_formats);
+      std::cout << camera_formats;
     } else {
-      Print(camera_descriptors);
+      std::cout << camera_descriptors;
     }
     return 0;
   }
@@ -55,7 +54,7 @@ int RealMain(int argc, char* argv[]) {
     if (camera_descriptors.size() <= delegate.device_index_flag()->value()) {
       std::cerr << kRedError << "Please set device_index among them.."
                 << std::endl;
-      Print(camera_descriptors);
+      std::cout << camera_descriptors;
       return 1;
     }
 

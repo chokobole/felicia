@@ -23,6 +23,7 @@ fel_proto_library(
         ":protos_all_proto",
         "//felicia/drivers/camera:camera_proto",
         "//felicia/drivers/imu:imu_proto",
+        "//felicia/drivers/lidar:lidar_proto",
     ],
     visibility = ["//visibility:public"],
 )

@@ -23,6 +23,6 @@ fel_cc_library(
         "//felicia/core/lib",
         "//felicia/drivers/camera",
         "//felicia/drivers/imu",
-        "@realsense//:realsense_headers",
+        "@realsense",
     ]),
 )

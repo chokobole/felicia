@@ -1,0 +1,33 @@
+load(
+    "//bazel:felicia.bzl",
+    "fel_shared_library",
+    "if_has_rplidar",
+)
+load(
+    "//bazel:felicia_cc.bzl",
+    "fel_cc_binary",
+    "fel_cc_library",
+)
+
+package(default_visibility = ["//visibility:private"])
+
+fel_cc_binary(
+    name = "lidar_node_creator",
+    srcs = [
+        "lidar_flag.cc",
+        "lidar_flag.h",
+    ] + select({
+        "//felicia:has_rplidar": [
+            "rplidar/rplidar_node_creator.cc",
+            "rplidar/rplidar_publishing_node.h",
+        ],
+        "//conditions:default": ["//felicia:only_main.cc"],
+    }),
+    deps = fel_shared_library() + [
+        "//felicia/core:felicia_init",
+        "//felicia/examples/learn/message_communication/common/cc:node_create_flag",
+    ] + select({
+        "//felicia:has_rplidar": ["//felicia/drivers/vendors/rplidar"],
+        "//conditions:default": [],
+    }),
+)

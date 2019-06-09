@@ -102,6 +102,14 @@ std::ostream& operator<<(std::ostream& os, const CameraFormat& camera_format) {
   return os;
 }
 
+std::ostream& operator<<(std::ostream& os,
+                         const CameraFormats& camera_formats) {
+  for (size_t i = 0; i < camera_formats.size(); ++i) {
+    os << "[" << i << "] " << camera_formats[i] << std::endl;
+  }
+  return os;
+}
+
 // This list is ordered by precedence of use.
 static PixelFormat const kSupportedCapturePixelFormats[] = {
     PIXEL_FORMAT_I420,  PIXEL_FORMAT_YV12,  PIXEL_FORMAT_NV12,

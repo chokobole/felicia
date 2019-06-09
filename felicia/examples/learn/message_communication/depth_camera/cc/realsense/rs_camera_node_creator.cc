@@ -1,6 +1,5 @@
 #include "felicia/core/felicia_init.h"
 #include "felicia/core/master/master_proxy.h"
-#include "felicia/examples/learn/message_communication/common/cc/camera_util.h"
 #include "felicia/examples/learn/message_communication/depth_camera/cc/realsense/rs_camera_flag.h"
 #include "felicia/examples/learn/message_communication/depth_camera/cc/realsense/rs_camera_publishing_node.h"
 
@@ -36,7 +35,7 @@ int RealMain(int argc, char* argv[]) {
 
   RsCameraFlag delegate;
   FlagParser parser;
-  parser.set_program_name("node_creator");
+  parser.set_program_name("rs_camera_node_creator");
   if (!parser.Parse(argc, argv, &delegate)) {
     return 1;
   }
@@ -60,7 +59,7 @@ int RealMain(int argc, char* argv[]) {
       }
       Print(rs_capability_map);
     } else {
-      Print(camera_descriptors);
+      std::cout << camera_descriptors;
     }
     return 0;
   }
@@ -78,7 +77,7 @@ int RealMain(int argc, char* argv[]) {
   if (camera_descriptors.size() <= delegate.device_index_flag()->value()) {
     std::cerr << kRedError << "Please set device_index among them.."
               << std::endl;
-    Print(camera_descriptors);
+    std::cout << camera_descriptors;
     return 1;
   }
 

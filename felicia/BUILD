@@ -164,6 +164,14 @@ config_setting(
 )
 
 config_setting(
+    name = "has_rplidar",
+    define_values = {
+        "has_rplidar": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
     name = "asan",
     define_values = {
         "asan": "true",
@@ -217,5 +225,6 @@ fel_cc_shared_library(
         "//felicia/core/util",
         "//felicia/drivers/camera",
         "//felicia/drivers/imu",
+        "//felicia/drivers/lidar",
     ],
 )

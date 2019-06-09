@@ -71,11 +71,14 @@ class EXPORT CameraFormat {
   bool convert_to_argb_ = false;
 };
 
+using CameraFormats = std::vector<CameraFormat>;
+
 // Prints a human-readable representation of |camera_format| to |os|.
 EXPORT std::ostream& operator<<(std::ostream& os,
                                 const CameraFormat& camera_format);
 
-using CameraFormats = std::vector<CameraFormat>;
+EXPORT std::ostream& operator<<(std::ostream& os,
+                                const CameraFormats& camera_formats);
 
 EXPORT bool ComparePixelFormatPreference(PixelFormat lhs, PixelFormat rhs);
 

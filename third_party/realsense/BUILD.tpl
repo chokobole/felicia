@@ -13,7 +13,7 @@ cc_import(
 )
 
 cc_library(
-    name = "realsense_headers",
+    name = "realsense",
     hdrs = select({
         ":windows": [":realsense_include"],
         "//conditions:default": [],

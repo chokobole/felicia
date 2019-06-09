@@ -224,6 +224,10 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
 }
 
 Status RsCamera::Stop() {
+  if (!camera_state_.IsStarted()) {
+    return camera_state_.InvalidStateError();
+  }
+
   for (auto& sensor : sensors_) {
     if (sensor.first == COLOR || sensor.first == DEPTH) {
       try {
@@ -238,6 +242,8 @@ Status RsCamera::Stop() {
   color_frame_callback_.Reset();
   depth_frame_callback_.Reset();
   synched_frame_callback_.Reset();
+
+  camera_state_.ToStopped();
 
   return Status::OK();
 }
