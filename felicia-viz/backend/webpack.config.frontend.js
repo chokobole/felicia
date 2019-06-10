@@ -75,6 +75,8 @@ module.exports = env => {
     '@felicia-viz/ui': resolve(rootPath, 'modules/ui/src'),
   });
 
+  config.resolve.modules = config.resolve.modules.concat(resolve('../modules/ui/node_modules'));
+
   if (env.production) {
     // production
   } else {
