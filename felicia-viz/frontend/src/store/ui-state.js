@@ -91,7 +91,7 @@ export default class UIState {
 
           if (!found) {
             viewState.unsetTopic(typeName, topic);
-            NotificationManager.error(`${topic} was disconnected.`, 'Disconnection');
+            NotificationManager.error(`Topic '${topic}' was disconnected.`, 'Topic Info');
           }
         });
       });
