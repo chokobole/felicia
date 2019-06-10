@@ -1,8 +1,8 @@
 @font-face {
 	font-family: "felicia-icons";
-	src: url("felicia-icons.eot?8d8eaf5ab8b64e914914152b57ca6c02?#iefix") format("embedded-opentype"),
-url("felicia-icons.woff2?8d8eaf5ab8b64e914914152b57ca6c02") format("woff2"),
-url("felicia-icons.woff?8d8eaf5ab8b64e914914152b57ca6c02") format("woff");
+	src: url("felicia-icons.eot?2674eab86d3862860c2b333a8c6b63d6?#iefix") format("embedded-opentype"),
+url("felicia-icons.woff2?2674eab86d3862860c2b333a8c6b63d6") format("woff2"),
+url("felicia-icons.woff?2674eab86d3862860c2b333a8c6b63d6") format("woff");
 }
 
 .felicia-icons {
@@ -25,6 +25,9 @@ url("felicia-icons.woff?8d8eaf5ab8b64e914914152b57ca6c02") format("woff");
 .felicia-icons-imu-panel:before {
 	content: "\f103";
 }
-.felicia-icons-plus:before {
+.felicia-icons-lidar-panel:before {
 	content: "\f104";
+}
+.felicia-icons-plus:before {
+	content: "\f105";
 }

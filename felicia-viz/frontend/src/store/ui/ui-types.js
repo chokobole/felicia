@@ -3,9 +3,11 @@ import React from 'react';
 import CameraPanel, { CameraControlPanel } from 'components/camera-panel';
 import DepthCameraPanel, { DepthCameraControlPanel } from 'components/depth-camera-panel';
 import ImuPanel, { ImuControlPanel } from 'components/imu-panel';
+import LidarPanel, { LidarControlPanel } from 'components/lidar-panel';
 import CameraPanelState from 'store/ui/camera-panel-state';
 import DepthCameraPanelState from 'store/ui/depth-camera-panel-state';
 import ImuPanelState from 'store/ui/imu-panel-state';
+import LidarPanelState from 'store/ui/lidar-panel-state';
 
 const UI_TYPES = {};
 
@@ -50,5 +52,19 @@ export const ImuPanelType = {
 };
 
 UI_TYPES[ImuPanelType.name] = ImuPanelType;
+
+export const LidarPanelType = {
+  name: 'LidarPanel',
+  className: 'lidar-panel',
+  state: LidarPanelState,
+  renderView: id => {
+    return <LidarPanel key={id} id={id} />;
+  },
+  renderControlView: () => {
+    return <LidarControlPanel />;
+  },
+};
+
+UI_TYPES[LidarPanelType.name] = LidarPanelType;
 
 export default UI_TYPES;

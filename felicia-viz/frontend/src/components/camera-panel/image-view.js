@@ -98,20 +98,21 @@ export default class ImageView extends Component {
       return;
     }
 
-    if (image) {
-      this.proxyCanvas.width = image.width;
-      this.proxyCanvas.height = image.height;
-
-      if (image instanceof Image) {
-        this.proxyContext.drawImage(image, 0, 0);
-      } else {
-        this.proxyContext.putImageData(image, 0, 0);
-      }
-
-      this.resizableCanvas.update();
-    } else {
+    if (!image) {
       this.resizableCanvas.clearRect();
+      return;
     }
+
+    this.proxyCanvas.width = image.width;
+    this.proxyCanvas.height = image.height;
+
+    if (image instanceof Image) {
+      this.proxyContext.drawImage(image, 0, 0);
+    } else {
+      this.proxyContext.putImageData(image, 0, 0);
+    }
+
+    this.resizableCanvas.update();
   }
 
   render() {

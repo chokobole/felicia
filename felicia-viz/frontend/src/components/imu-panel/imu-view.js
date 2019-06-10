@@ -12,8 +12,8 @@ import { drawAxis } from 'util/babylon-util';
 
 export default class ImuView extends PureComponent {
   static propTypes = {
-    width: PropTypes.string,  // eslint-disable-line
-    height: PropTypes.string,  // eslint-disable-line
+    width: PropTypes.string, // eslint-disable-line
+    height: PropTypes.string, // eslint-disable-line
     frame: PropTypes.instanceOf(ImuFrame),
   };
 

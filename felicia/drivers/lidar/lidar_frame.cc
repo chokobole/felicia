@@ -58,6 +58,7 @@ LidarFrameMessage LidarFrame::ToLidarFrameMessage() const {
   message.set_angle_end(angle_end_);
   message.set_angle_delta(angle_delta_);
   message.set_time_delta(time_delta_);
+  message.set_scan_time(scan_time_);
   message.set_range_min(range_min_);
   message.set_range_max(range_max_);
   for (float range : ranges_) {
