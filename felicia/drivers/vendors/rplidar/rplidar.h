@@ -6,6 +6,7 @@
 #include "third_party/chromium/base/threading/thread.h"
 
 #include "felicia/core/lib/error/statusor.h"
+#include "felicia/core/util/timestamp/timestamper.h"
 #include "felicia/drivers/lidar/lidar_interface.h"
 
 namespace felicia {
@@ -36,10 +37,13 @@ class RPlidar : public LidarInterface, public ::base::SupportsWeakPtr<RPlidar> {
   void DoScan();
 
   ::base::Thread thread_;
+  Timestamper timestamper_;
   bool is_stopping_ = false;
 
   std::unique_ptr<rp::standalone::rplidar::RPlidarDriver> driver_;
   rp::standalone::rplidar::RplidarScanMode scan_mode_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(RPlidar);
 };
 
 }  // namespace felicia

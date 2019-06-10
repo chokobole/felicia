@@ -14,6 +14,7 @@ fel_cc_library(
         "rplidar.h",
     ]),
     deps = if_has_rplidar([
+        "//felicia/core/util",
         "//felicia/drivers/lidar",
         "@rplidar_sdk",
     ]),

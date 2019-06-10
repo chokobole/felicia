@@ -295,6 +295,7 @@ void RPlidar::DoScan() {
     }
     lidar_frame.intensities()[i] = static_cast<float>(nodes[i].quality >> 2);
   }
+  lidar_frame.set_timestamp(timestamper_.timestamp());
 
   lidar_frame_callback_.Run(lidar_frame);
 }

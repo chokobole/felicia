@@ -2,6 +2,7 @@
 #define FELICIA_DRIVERS_LIDRA_LIDRA_FRAME_H_
 
 #include "third_party/chromium/base/callback.h"
+#include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/lib/base/export.h"
 #include "felicia/drivers/lidar/lidar_frame_message.pb.h"
@@ -26,6 +27,8 @@ class EXPORT LidarFrame {
   float range_min() const;
   void set_range_max(float range_max);
   float range_max() const;
+  void set_timestamp(::base::TimeDelta timestamp);
+  ::base::TimeDelta timestamp() const;
 
   std::vector<float>& ranges();
   const std::vector<float>& ranges() const;
@@ -44,6 +47,7 @@ class EXPORT LidarFrame {
   float range_max_;
   std::vector<float> ranges_;
   std::vector<float> intensities_;
+  ::base::TimeDelta timestamp_;
 };
 
 typedef ::base::RepeatingCallback<void(const LidarFrame&)> LidarFrameCallback;

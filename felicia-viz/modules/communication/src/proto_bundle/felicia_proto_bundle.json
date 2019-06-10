@@ -510,23 +510,31 @@
               "type": "float",
               "id": 4
             },
-            "rangeMin": {
+            "scanTime": {
               "type": "float",
               "id": 5
             },
-            "rangeMax": {
+            "rangeMin": {
               "type": "float",
               "id": 6
+            },
+            "rangeMax": {
+              "type": "float",
+              "id": 7
             },
             "ranges": {
               "rule": "repeated",
               "type": "float",
-              "id": 7
+              "id": 8
             },
             "intensities": {
               "rule": "repeated",
               "type": "float",
-              "id": 8
+              "id": 9
+            },
+            "timestamp": {
+              "type": "int64",
+              "id": 10
             }
           }
         },

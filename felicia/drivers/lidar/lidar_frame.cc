@@ -46,6 +46,12 @@ const std::vector<float>& LidarFrame::intensities() const {
   return intensities_;
 }
 
+void LidarFrame::set_timestamp(::base::TimeDelta timestamp) {
+  timestamp_ = timestamp;
+}
+
+::base::TimeDelta LidarFrame::timestamp() const { return timestamp_; }
+
 LidarFrameMessage LidarFrame::ToLidarFrameMessage() const {
   LidarFrameMessage message;
   message.set_angle_start(angle_start_);
@@ -60,6 +66,7 @@ LidarFrameMessage LidarFrame::ToLidarFrameMessage() const {
   for (float intensity : intensities_) {
     message.add_intensities(intensity);
   }
+  message.set_timestamp(timestamp_.InMicroseconds());
   return message;
 }
 

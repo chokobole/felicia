@@ -22,4 +22,5 @@ message LidarFrameMessage {
   // If your device does not provide intensities, please leave the array
   // empty.
   repeated float intensities = 9;
+  int64 timestamp = 10;
 }
