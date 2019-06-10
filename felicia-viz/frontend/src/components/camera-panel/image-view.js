@@ -1,13 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { ResizeDetector } from '@felicia-viz/ui';
+import { ResizableCanvas } from '@felicia-viz/ui';
 
 import { CameraFrame } from 'store/ui/camera-panel-state';
 import Worker from 'util/image-view-webworker.js';
-
-const PROXY = 'proxy';
-const MAIN = 'main';
 
 export default class ImageView extends Component {
   static propTypes = {
@@ -28,12 +25,6 @@ export default class ImageView extends Component {
     frameToAlign: null,
   };
 
-  constructor(props) {
-    super(props);
-
-    this._context = null;
-  }
-
   componentDidMount() {
     this.worker = new Worker();
 
@@ -42,7 +33,7 @@ export default class ImageView extends Component {
     };
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
+  shouldComponentUpdate(nextProps) {
     const { src, frame } = this.props;
 
     if (src !== nextProps.src) {
@@ -55,11 +46,6 @@ export default class ImageView extends Component {
       return true;
     }
 
-    if (this.state) {
-      const { width, height } = this.state;
-      if (width !== nextState.width || height !== nextState.height) return true;
-    }
-
     return false;
   }
 
@@ -67,25 +53,11 @@ export default class ImageView extends Component {
     this.worker.terminate();
   }
 
-  _onResize = entry => {
-    this.setState({ width: entry.contentRect.width, height: entry.contentRect.height });
+  _onCanvasLoad = (proxyCavnas, proxyContext, resizableCanvas) => {
+    this.proxyCanvas = proxyCavnas;
+    this.proxyContext = proxyContext;
+    this.resizableCanvas = resizableCanvas;
   };
-
-  _onCanvasLoad(tag, ref) {
-    if (!this._canvas) {
-      this._canvas = {};
-    }
-
-    this._canvas[tag] = ref;
-
-    if (!this._context) {
-      this._context = {};
-    }
-
-    if (ref) {
-      this._context[tag] = ref.getContext('2d');
-    }
-  }
 
   _loadImage(src) {
     if (src) {
@@ -102,7 +74,7 @@ export default class ImageView extends Component {
   }
 
   _loadImageData(frame) {
-    if (!this._canvas) return;
+    if (!this.proxyContext) return;
 
     if (!frame) return;
 
@@ -110,7 +82,7 @@ export default class ImageView extends Component {
     const { filter, frameToAlign } = this.props; // for depth-camera
 
     this.worker.postMessage({
-      imageData: this._context[PROXY].getImageData(0, 0, width, height),
+      imageData: this.proxyContext.getImageData(0, 0, width, height),
       width,
       height,
       data,
@@ -122,55 +94,29 @@ export default class ImageView extends Component {
   }
 
   _drawImageOrImageData(image) {
-    if (!this._canvas) {
+    if (!this.proxyCanvas) {
       return;
     }
 
-    const mainCanvas = this._canvas[MAIN];
-    const mainContext = this._context[MAIN];
-    const proxyCanvas = this._canvas[PROXY];
-    const proxyContext = this._context[PROXY];
-
     if (image) {
-      proxyCanvas.width = image.width;
-      proxyCanvas.height = image.height;
+      this.proxyCanvas.width = image.width;
+      this.proxyCanvas.height = image.height;
 
       if (image instanceof Image) {
-        proxyContext.drawImage(image, 0, 0);
+        this.proxyContext.drawImage(image, 0, 0);
       } else {
-        proxyContext.putImageData(image, 0, 0);
+        this.proxyContext.putImageData(image, 0, 0);
       }
 
-      const { width, height } = this.state;
-
-      mainCanvas.width = width;
-      let finalHeight = height;
-      // eslint-disable-next-line react/destructuring-assignment
-      if (this.props.height === 'auto') {
-        finalHeight = (width / image.width) * image.height;
-      }
-      mainCanvas.height = finalHeight;
-      // resize
-      mainContext.drawImage(proxyCanvas, 0, 0, mainCanvas.width, mainCanvas.height);
+      this.resizableCanvas.update();
     } else {
-      mainContext.clearRect(0, 0, this.width, this.height);
+      this.resizableCanvas.clearRect();
     }
   }
 
   render() {
     const { width, height } = this.props;
 
-    const style = {
-      width,
-      height,
-    };
-
-    return (
-      <div style={style}>
-        <ResizeDetector onResize={this._onResize} />
-        <canvas ref={this._onCanvasLoad.bind(this, PROXY)} style={{ display: 'none' }} />
-        <canvas ref={this._onCanvasLoad.bind(this, MAIN)} />
-      </div>
-    );
+    return <ResizableCanvas width={width} height={height} onCanvasLoad={this._onCanvasLoad} />;
   }
 }

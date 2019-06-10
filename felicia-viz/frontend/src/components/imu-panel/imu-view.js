@@ -6,13 +6,14 @@ import { Vector3, Color3, Quaternion } from '@babylonjs/core/Maths/math';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import '@babylonjs/core/Meshes/meshBuilder';
 
+import { babylonCanvasStyle } from 'custom-styles';
 import { ImuFrame } from 'store/ui/imu-panel-state';
 import { drawAxis } from 'util/babylon-util';
 
 export default class ImuView extends PureComponent {
   static propTypes = {
-    width: PropTypes.string,
-    height: PropTypes.string,
+    width: PropTypes.string,  // eslint-disable-line
+    height: PropTypes.string,  // eslint-disable-line
     frame: PropTypes.instanceOf(ImuFrame),
   };
 
@@ -56,16 +57,6 @@ export default class ImuView extends PureComponent {
   };
 
   render() {
-    const { width, height } = this.props;
-    const margin = '30px';
-
-    const style = {
-      width: `calc(${width} - ${margin} * 2)`,
-      height: `calc(${height} - ${margin} * 2)`,
-      margin,
-      outline: 'none',
-    };
-
-    return <canvas style={style} ref={this._onCanvasLoad} />;
+    return <canvas style={babylonCanvasStyle(this.props)} ref={this._onCanvasLoad} />;
   }
 }

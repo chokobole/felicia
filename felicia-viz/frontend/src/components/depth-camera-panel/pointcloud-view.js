@@ -11,8 +11,7 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import '@babylonjs/core/Meshes/meshBuilder';
 
-import { ResizeDetector } from '@felicia-viz/ui';
-
+import { babylonCanvasStyle } from 'custom-styles';
 import { CameraFrame } from 'store/ui/camera-panel-state';
 import Worker from 'util/pointcloud-view-webworker.js';
 
@@ -94,12 +93,6 @@ export default class PointcloudView extends Component {
   componentWillUnmount() {
     this.worker.terminate();
   }
-
-  _onResize = entry => {
-    const { width, height } = entry.contentRect;
-    this.canvas.width = width;
-    this.canvas.height = height;
-  };
 
   _onCanvasLoad = ref => {
     this.canvas = ref;
@@ -194,20 +187,6 @@ export default class PointcloudView extends Component {
   }
 
   render() {
-    const { width, height } = this.props;
-    const margin = '30px';
-
-    const style = {
-      width: `calc(${width} - ${margin} * 2)`,
-      height: `calc(${height} - ${margin} * 2)`,
-      margin,
-    };
-
-    return (
-      <div style={style}>
-        <ResizeDetector onResize={this._onResize} />
-        <canvas style={{ outline: 'none' }} ref={this._onCanvasLoad} />
-      </div>
-    );
+    return <canvas style={babylonCanvasStyle(this.props)} ref={this._onCanvasLoad} />;
   }
 }
