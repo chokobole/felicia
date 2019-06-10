@@ -6,6 +6,7 @@ import { FloatPanel } from '@streetscape.gl/monochrome';
 import { Activatable } from '@felicia-viz/ui';
 
 import { FLOAT_PANEL_STYLE } from 'custom-styles';
+import { panelInitialState, FLOAT_PANEL_SETTINGS } from 'custom-settings';
 import UI_TYPES from 'store/ui/ui-types';
 import ImuView from './imu-view';
 
@@ -20,20 +21,8 @@ export default class ImuPanel extends Component {
   constructor(props) {
     super(props);
 
-    this.floatPanelSettings = {
-      movable: true,
-      minimizable: false,
-      resizable: true,
-    };
-
-    this.state = {
-      panelState: {
-        x: window.innerWidth - 500,
-        y: 20,
-        width: 480, // constant for a while. This should be modified in the future.
-        height: 320, // constant for a while. This should be modified in the future.
-      },
-    };
+    this.floatPanelSettings = FLOAT_PANEL_SETTINGS;
+    this.state = { ...panelInitialState(window) };
   }
 
   _onUpdate = panelState => {

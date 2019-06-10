@@ -16,9 +16,9 @@ export default class CameraControlPanel extends Component {
   };
 
   SETTINGS = {
-    userHeader: { type: 'header', title: 'Camera Control' },
+    header: { type: 'header', title: 'Camera Control' },
     sectionSeperator: { type: 'separator' },
-    cameraInfo: {
+    info: {
       type: 'header',
       title: 'Info',
       children: {
@@ -26,9 +26,10 @@ export default class CameraControlPanel extends Component {
         height: { type: 'custom', title: 'height', render: renderText },
         frameRate: { type: 'custom', title: 'frameRate', render: renderText },
         pixelFormat: { type: 'custom', title: 'pixelFormat', render: renderText },
+        timestamp: { type: 'custom', title: 'timestamp', render: renderText },
       },
     },
-    caemraControl: {
+    control: {
       type: 'header',
       title: 'Control',
       children: {
@@ -51,12 +52,13 @@ export default class CameraControlPanel extends Component {
     const { frame, topic } = viewState;
 
     if (frame) {
-      const { width, height, frameRate, pixelFormat } = frame;
+      const { width, height, frameRate, pixelFormat, timestamp } = frame;
       return {
         width,
         height,
         frameRate,
         pixelFormat: PixelFormat.valuesById[pixelFormat],
+        timestamp,
         topic,
       };
     }
@@ -65,6 +67,7 @@ export default class CameraControlPanel extends Component {
       height: '',
       frameRate: '',
       pixelFormat: '',
+      timestamp: '',
       topic,
     };
   }

@@ -4,7 +4,7 @@ import { inject, observer } from 'mobx-react';
 import { Form, MetricCard, MetricChart } from '@streetscape.gl/monochrome';
 
 import { IMU_FRAME_MESSAGE } from '@felicia-viz/communication';
-import { TopicDropdown, PanelItemContainer } from '@felicia-viz/ui';
+import { TopicDropdown, PanelItemContainer, renderText } from '@felicia-viz/ui';
 
 import { FORM_STYLE, METRIC_CARD_STYLE } from 'custom-styles';
 
@@ -28,7 +28,7 @@ function renderImuGraph(self) {
   );
 }
 
-class ImuHistory {
+class History {
   constructor(size) {
     this.size = size;
     this.data = {
@@ -71,22 +71,23 @@ export default class ImuControlPanel extends Component {
     store: PropTypes.object.isRequired,
   };
 
-  angularVelocities = new ImuHistory(100);
+  angularVelocities = new History(100);
 
-  linearAccelerations = new ImuHistory(100);
+  linearAccelerations = new History(100);
 
   SETTINGS = {
-    userHeader: { type: 'header', title: 'Imu Control' },
+    header: { type: 'header', title: 'Imu Control' },
     sectionSeperator: { type: 'separator' },
-    cameraInfo: {
+    info: {
       type: 'header',
       title: 'Info',
       children: {
         angularVelocity: { type: 'custom', title: 'angularVelocity', render: renderImuGraph },
         linearAcceleration: { type: 'custom', title: 'linearAcceleration', render: renderImuGraph },
+        timestamp: { type: 'custom', title: 'timestamp', render: renderText },
       },
     },
-    caemraControl: {
+    control: {
       type: 'header',
       title: 'Control',
       children: {
@@ -118,6 +119,7 @@ export default class ImuControlPanel extends Component {
       topic,
       angularVelocity: this.angularVelocities.history(),
       linearAcceleration: this.linearAccelerations.history(),
+      timestamp: frame ? frame.timestamp : '',
     };
   }
 
