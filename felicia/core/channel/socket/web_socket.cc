@@ -159,7 +159,19 @@ bool WebSocket::HandshakeHandler::Parse() {
 
 bool WebSocket::HandshakeHandler::Validate() {
   const std::string& connection = headers_[kConnection];
-  if (!::base::EqualsCaseInsensitiveASCII(connection, "upgrade")) {
+  ::base::StringTokenizer conn_token(connection.cbegin(), connection.cend(),
+                                     ",");
+  bool connection_matched = false;
+  while (conn_token.GetNext()) {
+    auto conn_token_trimmed = ::base::TrimWhitespaceASCII(
+        conn_token.token_piece(), ::base::TrimPositions::TRIM_ALL);
+    if (::base::EqualsCaseInsensitiveASCII(conn_token_trimmed, "upgrade")) {
+      connection_matched = true;
+      break;
+    }
+  }
+
+  if (!connection_matched) {
     DLOG(ERROR) << "connection mismatched " << connection;
     return false;
   }
