@@ -221,7 +221,7 @@ Status RPlidar::DoStart(RplidarScanMode* scan_mode,
 
 namespace {
 
-float Angle(const rplidar_response_measurement_node_hq_t& node) {
+float getAngle(const rplidar_response_measurement_node_hq_t& node) {
   return node.angle_z_q14 * 90.f / 16384.f;
 }
 
@@ -241,29 +241,17 @@ void RPlidar::DoScan() {
   result = driver_->ascendScanData(nodes, count);
   float angle_start, angle_end;
   if (result == RESULT_OK) {
-    auto start_it =
-        std::find_if(std::begin(nodes), std::end(nodes),
-                     [](rplidar_response_measurement_node_hq_t& node) {
-                       return node.dist_mm_q2 == 0;
-                     });
-    if (start_it == std::end(nodes)) {
-      LOG(ERROR) << "Failed to find the first valid node";
-      return;
+    size_t start_node = 0, end_node = count - 1;
+    // find the first valid node and last valid node
+    for (; start_node < count; ++start_node) {
+      if (nodes[start_node].dist_mm_q2 != 0) break;
     }
-    auto end_it =
-        std::find_if(std::rbegin(nodes), std::rend(nodes),
-                     [](rplidar_response_measurement_node_hq_t& node) {
-                       return node.dist_mm_q2 == 0;
-                     });
-    if (end_it == std::rend(nodes)) {
-      LOG(ERROR) << "Failed to find the last valid node";
-      return;
+    for (; end_node >= 0; --end_node) {
+      if (nodes[end_node].dist_mm_q2 != 0) break;
     }
-    auto start_idx = std::distance(std::begin(nodes), start_it);
-    auto end_idx = std::distance(std::rbegin(nodes), end_it);
-    angle_start = DEG2RAD(Angle(*start_it));
-    angle_end = DEG2RAD(Angle(*end_it));
-    count = count - (start_idx + end_idx);
+    angle_start = DEG2RAD(getAngle(nodes[start_node]));
+    angle_end = DEG2RAD(getAngle(nodes[end_node]));
+    count = end_node - start_node + 1;
   } else {
     // All the data is invalid
     angle_start = DEG2RAD(0.0f);
