@@ -10,7 +10,6 @@ package(default_visibility = ["//felicia:internal"])
 fel_cc_library(
     name = "socket",
     srcs = [
-        "permessage_deflate.cc",
         "socket.cc",
         "tcp_client_socket.cc",
         "tcp_server_socket.cc",
@@ -18,12 +17,16 @@ fel_cc_library(
         "udp_client_socket.cc",
         "udp_server_socket.cc",
         "udp_socket.cc",
-        "web_socket.cc",
-        "web_socket_extension.cc",
-        "web_socket_server.cc",
-    ],
+    ] + select({
+        "//felicia:win_no_grpc": [],
+        "//conditions:default": [
+            "permessage_deflate.cc",
+            "web_socket.cc",
+            "web_socket_extension.cc",
+            "web_socket_server.cc",
+        ],
+    }),
     hdrs = [
-        "permessage_deflate.h",
         "socket.h",
         "tcp_client_socket.h",
         "tcp_server_socket.h",
@@ -31,10 +34,15 @@ fel_cc_library(
         "udp_client_socket.h",
         "udp_server_socket.h",
         "udp_socket.h",
-        "web_socket.h",
-        "web_socket_extension.h",
-        "web_socket_server.h",
-    ],
+    ] + select({
+        "//felicia:win_no_grpc": [],
+        "//conditions:default": [
+            "permessage_deflate.h",
+            "web_socket.h",
+            "web_socket_extension.h",
+            "web_socket_server.h",
+        ],
+    }),
     deps = [
         "//felicia/core/channel:channel_impl",
     ],

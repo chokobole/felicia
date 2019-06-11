@@ -133,6 +133,18 @@ def if_not_travis(a):
         return a
     return []
 
+def if_win_no_grpc(a):
+    return select({
+        "//felicia:win_no_grpc": a,
+        "//conditions:default": [],
+    })
+
+def if_not_win_no_grpc(a):
+    return select({
+        "//felicia:win_no_grpc": [],
+        "//conditions:default": a,
+    })
+
 def if_has_realsense(a):
     return select({
         "//felicia:has_realsense": a,

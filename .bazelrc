@@ -19,6 +19,7 @@ build:apple_debug --compilation_mode dbg
 build:apple_debug --copt="-DAPPLE_DEBUG"
 
 build:win_no_grpc --define win_no_grpc=true
+build:win_no_grpc --copt="/DFEL_WIN_NO_GRPC"
 
 build:wasm --crosstool_top=//toolchain:emscripten
 build:wasm --cpu=wasm

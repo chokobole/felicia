@@ -5,6 +5,7 @@ package(default_visibility = ["//third_party/chromium:internal"])
 load(
     "//bazel:felicia.bzl",
     "if_not_linux",
+    "if_not_win_no_grpc",
     "if_not_windows",
     "if_not_windows_and_not_linux",
     "if_windows",
@@ -29,19 +30,25 @@ chromium_cc_library(
         "base/network_interfaces_getifaddrs.cc",
         "base/winsock_init.cc",
         "base/winsock_util.cc",
+        "websockets/**",
     ]) + if_windows([
         ":net_win_srcs",
     ]) + if_not_windows_and_not_linux([
         ":net_posix_srcs",
+    ]) + if_not_win_no_grpc([
+        ":net_websockets_srcs",
     ]),
     hdrs = chromium_platform_hdrs(exclude = [
         "base/network_interfaces_getifaddrs.h",
         "base/winsock_init.h",
         "base/winsock_util.h",
+        "websockets/**",
     ]) + if_windows([
         ":net_win_hdrs",
     ]) + if_not_windows([
         ":net_posix_hdrs",
+    ]) + if_not_win_no_grpc([
+        ":net_websockets_hdrs",
     ]),
     copts = net_copts(),
     linkopts = net_linkopts(),
@@ -49,8 +56,21 @@ chromium_cc_library(
         "//third_party/chromium/base",
         "//third_party/chromium/build",
         "//third_party/chromium/url",
+    ] + if_not_win_no_grpc([
         "@com_github_madler_zlib//:z",
-    ],
+    ]),
+)
+
+filegroup(
+    name = "net_websockets_hdrs",
+    srcs = chromium_platform_hdrs(base = "websockets"),
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "net_websockets_srcs",
+    srcs = chromium_platform_srcs(base = "websockets"),
+    visibility = ["//visibility:private"],
 )
 
 filegroup(

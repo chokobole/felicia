@@ -50,10 +50,6 @@ fel_cc_library(
     hdrs = [
         "master_proxy.h",
     ],
-    copts = select({
-        "//felicia:win_no_grpc": ["/DFEL_WIN_NO_GRPC"],
-        "//conditions:default": [],
-    }),
     deps = [
         ":heart_beat",
         ":master_client_interface",

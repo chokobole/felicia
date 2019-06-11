@@ -8,7 +8,9 @@
 #include "felicia/core/channel/settings.h"
 #include "felicia/core/channel/tcp_channel.h"
 #include "felicia/core/channel/udp_channel.h"
+#ifndef FEL_WIN_NO_GRPC
 #include "felicia/core/channel/ws_channel.h"
+#endif
 #include "felicia/core/protobuf/channel.pb.h"
 
 namespace felicia {
@@ -24,9 +26,12 @@ class ChannelFactory {
       channel = std::make_unique<TCPChannel<MessageTy>>();
     } else if (channel_type == ChannelDef::UDP) {
       channel = std::make_unique<UDPChannel<MessageTy>>();
-    } else if (channel_type == ChannelDef::WS) {
+    }
+#ifndef FEL_WIN_NO_GRPC
+    else if (channel_type == ChannelDef::WS) {
       channel = std::make_unique<WSChannel<MessageTy>>(settings.ws_settings);
     }
+#endif
 
     return channel;
   }

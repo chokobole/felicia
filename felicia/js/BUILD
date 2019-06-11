@@ -83,10 +83,6 @@ fel_nodejs_bind_node_library(
         "//felicia:windows": [":felicia_js_win_srcs"],
         "//conditions:default": [":felicia_js_srcs"],
     }),
-    copts = select({
-        "//felicia:win_no_grpc": ["/DFEL_WIN_NO_GRPC"],
-        "//conditions:default": [],
-    }),
     deps = select({
         "//felicia:windows": [":felicia_js_win_deps"],
         "//conditions:default": [":felicia_js_deps"],
