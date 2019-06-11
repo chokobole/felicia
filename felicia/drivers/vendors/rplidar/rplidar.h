@@ -1,9 +1,10 @@
 #ifndef FELICIA_DRIVERS_VENDORS_RPLIDAR_H_
 #define FELICIA_DRIVERS_VENDORS_RPLIDAR_H_
 
-#include <rplidar.h>
 #include "third_party/chromium/base/memory/weak_ptr.h"
 #include "third_party/chromium/base/threading/thread.h"
+// #define __le in sdk/sdk/src/hal causes a compilation error
+#include <rplidar.h>
 
 #include "felicia/core/lib/error/statusor.h"
 #include "felicia/core/util/timestamp/timestamper.h"

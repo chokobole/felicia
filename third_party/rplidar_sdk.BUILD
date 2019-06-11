@@ -30,8 +30,8 @@ cc_library(
             "sdk/sdk/src/arch/**",
         ],
     ) + select({
-        ":mac": glob(["sdk/sdk/src/arch/macOS/*.cpp"]),
         ":linux": glob(["sdk/sdk/src/arch/linux/*.cpp"]),
+        ":mac": glob(["sdk/sdk/src/arch/macOS/*.cpp"]),
         ":windows": glob(["sdk/sdk/src/arch/win32/*.cpp"]),
         "//conditions:default": [],
     }),
@@ -39,6 +39,11 @@ cc_library(
         "sdk/sdk/**/*.h",
         "sdk/sdk/**/*.hpp",
     ]),
+    copts = ["-Wno-c++11-narrowing"],
+    defines = select({
+        ":mac": ["_MACOS"],
+        "//conditions:default": [],
+    }),
     includes = [
         "sdk/sdk/include",
         "sdk/sdk/src",

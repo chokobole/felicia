@@ -1,13 +1,5 @@
-load(
-    "//bazel:felicia.bzl",
-    "fel_shared_library",
-    "if_has_rplidar",
-)
-load(
-    "//bazel:felicia_cc.bzl",
-    "fel_cc_binary",
-    "fel_cc_library",
-)
+load("//bazel:felicia.bzl", "fel_shared_library")
+load("//bazel:felicia_cc.bzl", "fel_cc_binary")
 
 package(default_visibility = ["//visibility:private"])
 

@@ -1,4 +1,4 @@
-#ifndef FELICIA_DRIVERS_IMU_IMU_H_
+#ifndef FELICIA_DRIVERS_IMU_IMU_FRAME_H_
 #define FELICIA_DRIVERS_IMU_IMU_FRAME_H_
 
 #include "Eigen/Core"
@@ -44,4 +44,4 @@ typedef ::base::RepeatingCallback<void(const ImuFrame&)> ImuFrameCallback;
 
 }  // namespace felicia
 
-#endif  // FELICIA_DRIVERS_IMU_IMU_H_
+#endif  // FELICIA_DRIVERS_IMU_IMU_FRAME_H_

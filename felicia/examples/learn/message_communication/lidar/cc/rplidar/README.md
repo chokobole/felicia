@@ -23,13 +23,13 @@ We don't explain the same we had in [README.md](/felicia/examples/learn/message_
 
 To start you need to input either `ip` and `tcp_port` or `serial_port` and `baudrate`.
 
-Here try with serial communication! Maybe you should change the privilege of `serial_port`.
+Here try with serial communication! Maybe you should change the privilege of `serial_port` if you run on Linux.
 
 ```bash
 sudo chmod 666 /dev/ttyUSB0
 ```
 
-The default `baudrate` you should check out on the [web](http://www.slamtec.com/en/Support).
+The default `baudrate` you should check out on the [web](http://www.slamtec.com/en/Support). On windows and mac, you should install the [driver](https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers). The default `serial_port` might be ` /dev/cu.SLABSBtoUART` and `\\\\.\\com3` respectively.
 
 ```bash
 bazel-bin/felicia/examples/learn/message_communication/lidar/cc/lidar_node_creator -t message -p --serial_port /dev/ttyUSB0 --baudrate 115200
