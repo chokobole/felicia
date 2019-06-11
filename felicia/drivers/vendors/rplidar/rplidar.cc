@@ -31,7 +31,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
+#define _USE_MATH_DEFINES
 #include "felicia/drivers/vendors/rplidar/rplidar.h"
 
 #include "third_party/chromium/base/bind.h"

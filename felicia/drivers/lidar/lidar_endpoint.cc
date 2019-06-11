@@ -5,6 +5,7 @@
 namespace felicia {
 
 LidarEndpoint::LidarEndpoint() = default;
+LidarEndpoint::~LidarEndpoint() = default;
 
 LidarEndpoint::LidarEndpoint(::net::IPEndPoint ip_endpoint)
     : type_(ChannelType::TCP), ip_endpoint_(ip_endpoint) {}

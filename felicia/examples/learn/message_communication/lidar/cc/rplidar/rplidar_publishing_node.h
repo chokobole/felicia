@@ -35,7 +35,9 @@ class RPlidarPublishingNode : public NodeLifecycle {
 
   void OnDidCreate(const NodeInfo& node_info) override {
     std::cout << "RPlidarPublishingNode::OnDidCreate()" << std::endl;
+#ifdef OS_POSIX
     node = this;
+#endif
     node_info_ = node_info;
     RequestPublish();
   }

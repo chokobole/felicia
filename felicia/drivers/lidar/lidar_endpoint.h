@@ -15,6 +15,7 @@ class EXPORT LidarEndpoint {
   };
 
   LidarEndpoint();
+  ~LidarEndpoint();
   explicit LidarEndpoint(::net::IPEndPoint ip_endpoint);
   LidarEndpoint(const std::string& seiral_port, float baudrate);
 
