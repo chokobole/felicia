@@ -10,6 +10,7 @@
 #include "third_party/chromium/base/containers/stack_container.h"
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
+#include "third_party/chromium/base/synchronization/lock.h"
 
 #include "felicia/core/channel/channel_factory.h"
 #include "felicia/core/communication/register_state.h"
@@ -76,6 +77,7 @@ class Publisher {
     return message.GetTypeName();
   }
 
+  ::base::Lock lock_;
   Pool<MessageTy, uint8_t> message_queue_;
   ::base::TimeDelta period_;
   std::vector<std::unique_ptr<Channel<MessageTy>>> channels_;
@@ -146,45 +148,23 @@ void Publisher<MessageTy>::RequestPublish(
 template <typename MessageTy>
 void Publisher<MessageTy>::Publish(const MessageTy& message,
                                    SendMessageCallback callback) {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (master_proxy.IsBoundToCurrentThread()) {
-    if (!IsRegistered()) {
-      callback.Run(ChannelDef::NONE, register_state_.InvalidStateError());
-      return;
-    }
-
+  {
+    ::base::AutoLock l(lock_);
     message_queue_.push(message);
-
-    SendMesasge(callback);
-  } else {
-    master_proxy.PostTask(
-        FROM_HERE, ::base::BindOnce<void (Publisher<MessageTy>::*)(
-                       const MessageTy&, SendMessageCallback)>(
-                       &Publisher<MessageTy>::Publish, ::base::Unretained(this),
-                       message, callback));
   }
+
+  SendMesasge(callback);
 }
 
 template <typename MessageTy>
 void Publisher<MessageTy>::Publish(MessageTy&& message,
                                    SendMessageCallback callback) {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (master_proxy.IsBoundToCurrentThread()) {
-    if (!IsRegistered()) {
-      callback.Run(ChannelDef::NONE, register_state_.InvalidStateError());
-      return;
-    }
-
+  {
+    ::base::AutoLock l(lock_);
     message_queue_.push(std::move(message));
-
-    SendMesasge(callback);
-  } else {
-    master_proxy.PostTask(
-        FROM_HERE, ::base::BindOnce<void (Publisher<MessageTy>::*)(
-                       MessageTy&&, SendMessageCallback)>(
-                       &Publisher<MessageTy>::Publish, ::base::Unretained(this),
-                       std::move(message), callback));
   }
+
+  SendMesasge(callback);
 }
 
 template <typename MessageTy>
@@ -286,7 +266,13 @@ void Publisher<MessageTy>::OnUnpublishTopicAsync(
 template <typename MessageTy>
 void Publisher<MessageTy>::SendMesasge(SendMessageCallback callback) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
-  DCHECK(master_proxy.IsBoundToCurrentThread());
+  if (!master_proxy.IsBoundToCurrentThread()) {
+    master_proxy.PostTask(FROM_HERE,
+                          ::base::BindOnce(&Publisher<MessageTy>::SendMesasge,
+                                           ::base::Unretained(this), callback));
+    return;
+  }
+
   if (!message_queue_.empty()) {
     bool can_send = false;
     for (auto& channel : channels_) {
@@ -296,10 +282,14 @@ void Publisher<MessageTy>::SendMesasge(SendMessageCallback callback) {
       }
     }
 
+    MessageTy message;
     if (can_send) {
-      MessageTy message = std::move(message_queue_.front());
+      ::base::AutoLock l(lock_);
+      message = std::move(message_queue_.front());
       message_queue_.pop();
+    }
 
+    if (can_send) {
       for (auto& channel : channels_) {
         if (!channel->IsSendingMessage() && channel->HasReceivers()) {
           channel->SendMessage(message, callback);
