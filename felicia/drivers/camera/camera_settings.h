@@ -24,6 +24,9 @@ class EXPORT CameraSettings {
   DECLARE_NAMED_VALUE_METHOD(int64_t, contrast);
   DECLARE_NAMED_VALUE_METHOD(int64_t, saturation);
   DECLARE_NAMED_VALUE_METHOD(int64_t, sharpness);
+  DECLARE_NAMED_VALUE_METHOD(int64_t, hue);
+  DECLARE_NAMED_VALUE_METHOD(int64_t, gain);
+  DECLARE_NAMED_VALUE_METHOD(int64_t, gamma);
 
 #undef DECLARE_NAMED_VALUE_METHOD
 
@@ -37,6 +40,9 @@ class EXPORT CameraSettings {
   ::base::Optional<int64_t> contrast_;
   ::base::Optional<int64_t> saturation_;
   ::base::Optional<int64_t> sharpness_;
+  ::base::Optional<int64_t> hue_;
+  ::base::Optional<int64_t> gain_;
+  ::base::Optional<int64_t> gamma_;
 };
 
 }  // namespace felicia

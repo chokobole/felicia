@@ -36,4 +36,7 @@ message CameraSettingsInfoMessage {
   CameraSettingsRangedValue contrast = 7;
   CameraSettingsRangedValue saturation = 8;
   CameraSettingsRangedValue sharpness = 9;
+  CameraSettingsRangedValue hue = 10;
+  CameraSettingsRangedValue gain = 11;
+  CameraSettingsRangedValue gamma = 12;
 }

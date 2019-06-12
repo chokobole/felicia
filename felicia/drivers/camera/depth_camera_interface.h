@@ -4,6 +4,7 @@
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/statusor.h"
 #include "felicia/drivers/camera/camera_descriptor.h"
+#include "felicia/drivers/camera/camera_settings.h"
 #include "felicia/drivers/camera/camera_state.h"
 #include "felicia/drivers/camera/depth_camera_frame.h"
 
@@ -32,6 +33,10 @@ class EXPORT DepthCameraInterface {
                        SynchedDepthCameraFrameCallback synched_frame_callback,
                        StatusCallback status_callback) = 0;
   virtual Status Stop() = 0;
+
+  virtual Status SetCameraSettings(const CameraSettings& camera_settings);
+  virtual Status GetCameraSettingsInfo(
+      CameraSettingsInfoMessage* camera_settings);
 
   bool IsInitialized() const;
   bool IsStarted() const;

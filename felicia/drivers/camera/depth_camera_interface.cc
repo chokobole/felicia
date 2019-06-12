@@ -8,6 +8,16 @@ DepthCameraInterface::DepthCameraInterface(
 
 DepthCameraInterface::~DepthCameraInterface() = default;
 
+Status DepthCameraInterface::SetCameraSettings(
+    const CameraSettings& camera_settings) {
+  return errors::Unimplemented("Not implemented yet.");
+}
+
+Status DepthCameraInterface::GetCameraSettingsInfo(
+    CameraSettingsInfoMessage* camera_settings) {
+  return errors::Unimplemented("Not implemented yet.");
+}
+
 bool DepthCameraInterface::IsInitialized() const {
   return camera_state_.IsInitialized();
 }

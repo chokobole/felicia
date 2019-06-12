@@ -26,16 +26,16 @@ struct RsStreamInfo {
   int stream_index;
 };
 
-const RsStreamInfo COLOR{RS2_STREAM_COLOR, 0};
-const RsStreamInfo DEPTH{RS2_STREAM_DEPTH, 0};
-const RsStreamInfo INFRA1{RS2_STREAM_INFRARED, 1};
-const RsStreamInfo INFRA2{RS2_STREAM_INFRARED, 2};
-const RsStreamInfo FISHEYE{RS2_STREAM_FISHEYE, 0};
-const RsStreamInfo FISHEYE1{RS2_STREAM_FISHEYE, 1};
-const RsStreamInfo FISHEYE2{RS2_STREAM_FISHEYE, 2};
-const RsStreamInfo GYRO{RS2_STREAM_GYRO, 0};
-const RsStreamInfo ACCEL{RS2_STREAM_ACCEL, 0};
-const RsStreamInfo POSE{RS2_STREAM_POSE, 0};
+const RsStreamInfo RS_COLOR{RS2_STREAM_COLOR, 0};
+const RsStreamInfo RS_DEPTH{RS2_STREAM_DEPTH, 0};
+const RsStreamInfo RS_INFRA1{RS2_STREAM_INFRARED, 1};
+const RsStreamInfo RS_INFRA2{RS2_STREAM_INFRARED, 2};
+const RsStreamInfo RS_FISHEYE{RS2_STREAM_FISHEYE, 0};
+const RsStreamInfo RS_FISHEYE1{RS2_STREAM_FISHEYE, 1};
+const RsStreamInfo RS_FISHEYE2{RS2_STREAM_FISHEYE, 2};
+const RsStreamInfo RS_GYRO{RS2_STREAM_GYRO, 0};
+const RsStreamInfo RS_ACCEL{RS2_STREAM_ACCEL, 0};
+const RsStreamInfo RS_POSE{RS2_STREAM_POSE, 0};
 
 }  // namespace felicia
 

@@ -8,6 +8,15 @@
 
 namespace felicia {
 
+namespace errors {
+
+Status NotSupportedOption(rs2_option option) {
+  return errors::NotFound(::base::StringPrintf("%s is not supported",
+                                               rs2_option_to_string(option)));
+}
+
+}  // namespace errors
+
 RsCamera::RsCamera(const CameraDescriptor& camera_descriptor)
     : DepthCameraInterface(camera_descriptor) {}
 
@@ -25,31 +34,31 @@ Status RsCamera::Init() {
   for (auto&& sensor : sensors) {
     std::string module_name = sensor.get_info(RS2_CAMERA_INFO_NAME);
     if ("Stereo Module" == module_name) {
-      sensors_[DEPTH] = sensor;
-      sensors_[INFRA1] = sensor;
-      sensors_[INFRA2] = sensor;
+      sensors_[RS_DEPTH] = sensor;
+      sensors_[RS_INFRA1] = sensor;
+      sensors_[RS_INFRA2] = sensor;
 
       depth_scale_ = sensor.as<::rs2::depth_sensor>().get_depth_scale();
     } else if ("Coded-Light Depth Sensor" == module_name) {
-      sensors_[DEPTH] = sensor;
-      sensors_[INFRA1] = sensor;
+      sensors_[RS_DEPTH] = sensor;
+      sensors_[RS_INFRA1] = sensor;
 
       depth_scale_ = sensor.as<::rs2::depth_sensor>().get_depth_scale();
       LOG(ERROR) << "Not Implemented yet for module : " << module_name;
     } else if ("RGB Camera" == module_name) {
-      sensors_[COLOR] = sensor;
+      sensors_[RS_COLOR] = sensor;
     } else if ("Wide FOV Camera" == module_name) {
-      sensors_[FISHEYE] = sensor;
+      sensors_[RS_FISHEYE] = sensor;
       LOG(ERROR) << "Not Implemented yet for module : " << module_name;
     } else if ("Motion Module" == module_name) {
-      sensors_[GYRO] = sensor;
-      sensors_[ACCEL] = sensor;
+      sensors_[RS_GYRO] = sensor;
+      sensors_[RS_ACCEL] = sensor;
     } else if ("Tracking Module" == module_name) {
-      sensors_[GYRO] = sensor;
-      sensors_[ACCEL] = sensor;
-      sensors_[POSE] = sensor;
-      sensors_[FISHEYE1] = sensor;
-      sensors_[FISHEYE2] = sensor;
+      sensors_[RS_GYRO] = sensor;
+      sensors_[RS_ACCEL] = sensor;
+      sensors_[RS_POSE] = sensor;
+      sensors_[RS_FISHEYE1] = sensor;
+      sensors_[RS_FISHEYE2] = sensor;
       LOG(ERROR) << "Not Implemented yet for module : " << module_name;
     }
   }
@@ -175,7 +184,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
   bool imu_started = false;
   for (auto& sensor : sensors_) {
     try {
-      if (sensor.first == COLOR) {
+      if (sensor.first == RS_COLOR) {
         const RsCapability* found_capability = GetBestMatchedCapability(
             requested_color_format, capability_map_[sensor.first]);
         if (!found_capability) return errors::NoVideoCapbility();
@@ -187,7 +196,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
             sensor.second
                 .get_stream_profiles()[found_capability->stream_index]);
         sensor.second.start(frame_callback_function);
-      } else if (sensor.first == DEPTH) {
+      } else if (sensor.first == RS_DEPTH) {
         const RsCapability* found_capability = GetBestMatchedCapability(
             requested_depth_format, capability_map_[sensor.first]);
         if (!found_capability) return errors::NoVideoCapbility();
@@ -196,16 +205,16 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
             sensor.second
                 .get_stream_profiles()[found_capability->stream_index]);
         sensor.second.start(frame_callback_function);
-      } else if (sensor.first == GYRO || sensor.first == ACCEL) {
+      } else if (sensor.first == RS_GYRO || sensor.first == RS_ACCEL) {
         if (!imu) continue;
         if (imu_started) continue;
         imu_started = true;
         const RsCapability* found_gyro_capability = GetBestMatchedCapability(
-            requested_gyro_format, capability_map_[GYRO]);
+            requested_gyro_format, capability_map_[RS_GYRO]);
         if (!found_gyro_capability) return errors::NoImuCapability();
         gyro_format_ = found_gyro_capability->format.imu_format;
         const RsCapability* found_accel_capability = GetBestMatchedCapability(
-            requested_accel_format, capability_map_[ACCEL]);
+            requested_accel_format, capability_map_[RS_ACCEL]);
         if (!found_accel_capability) return errors::NoImuCapability();
         accel_format_ = found_accel_capability->format.imu_format;
         sensor.second.open(
@@ -229,7 +238,7 @@ Status RsCamera::Stop() {
   }
 
   for (auto& sensor : sensors_) {
-    if (sensor.first == COLOR || sensor.first == DEPTH) {
+    if (sensor.first == RS_COLOR || sensor.first == RS_DEPTH) {
       try {
         sensor.second.stop();
         sensor.second.close();
@@ -246,6 +255,239 @@ Status RsCamera::Stop() {
   camera_state_.ToStopped();
 
   return Status::OK();
+}
+
+StatusOr<::rs2::sensor> RsCamera::sensor(const RsStreamInfo& rs_stream_info) {
+  auto it = sensors_.find(rs_stream_info);
+  if (it == sensors_.end()) {
+    return errors::NotFound("No sensor");
+  }
+  return it->second;
+}
+
+Status RsCamera::SetCameraSettings(const CameraSettings& camera_settings) {
+  auto status_or = sensor(RS_COLOR);
+  if (!status_or.ok()) return status_or.status();
+  ::rs2::sensor& s = status_or.ValueOrDie();
+
+  if (camera_settings.has_white_balance_mode()) {
+    const float value =
+        camera_settings.white_balance_mode() == CAMERA_SETTINGS_MODE_AUTO ? 1
+                                                                          : 0;
+    SetOption(s, RS2_OPTION_ENABLE_AUTO_WHITE_BALANCE, value);
+  }
+
+  if (camera_settings.has_color_temperature()) {
+    bool can_set = false;
+    {
+      float value;
+      if (GetOption(s, RS2_OPTION_ENABLE_AUTO_WHITE_BALANCE, &value).ok()) {
+        can_set = value == 1;
+      }
+    }
+    if (can_set) {
+      const float value = camera_settings.color_temperature();
+      SetOption(s, RS2_OPTION_WHITE_BALANCE, value);
+    }
+  }
+
+  if (camera_settings.has_exposure_mode()) {
+    const float value =
+        camera_settings.exposure_mode() == CAMERA_SETTINGS_MODE_AUTO ? 1 : 0;
+    SetOption(s, RS2_OPTION_ENABLE_AUTO_EXPOSURE, value);
+  }
+
+  if (camera_settings.has_exposure_time()) {
+    bool can_set = false;
+    {
+      float value;
+      if (GetOption(s, RS2_OPTION_ENABLE_AUTO_EXPOSURE, &value).ok()) {
+        can_set = value == 1;
+      }
+    }
+    if (can_set) {
+      const float value = camera_settings.exposure_time();
+      SetOption(s, RS2_OPTION_EXPOSURE, value);
+    }
+  }
+
+  if (camera_settings.has_brightness()) {
+    const float value = camera_settings.brightness();
+    SetOption(s, RS2_OPTION_BRIGHTNESS, value);
+  }
+
+  if (camera_settings.has_contrast()) {
+    const float value = camera_settings.contrast();
+    SetOption(s, RS2_OPTION_CONTRAST, value);
+  }
+
+  if (camera_settings.has_saturation()) {
+    const float value = camera_settings.saturation();
+    SetOption(s, RS2_OPTION_SATURATION, value);
+  }
+
+  if (camera_settings.has_sharpness()) {
+    const float value = camera_settings.sharpness();
+    SetOption(s, RS2_OPTION_SHARPNESS, value);
+  }
+
+  if (camera_settings.has_hue()) {
+    const float value = camera_settings.hue();
+    SetOption(s, RS2_OPTION_HUE, value);
+  }
+
+  if (camera_settings.has_gain()) {
+    const float value = camera_settings.gain();
+    SetOption(s, RS2_OPTION_GAIN, value);
+  }
+
+  if (camera_settings.has_gamma()) {
+    const float value = camera_settings.gamma();
+    SetOption(s, RS2_OPTION_GAMMA, value);
+  }
+
+  return Status::OK();
+}
+
+Status RsCamera::SetOption(::rs2::sensor& sensor, rs2_option option,
+                           float value) {
+  if (!sensor.supports(option)) {
+    return errors::NotSupportedOption(option);
+  }
+
+  try {
+    sensor.set_option(option, value);
+    return Status::OK();
+  } catch (const ::rs2::error& e) {
+    return errors::Unavailable(
+        ::base::StringPrintf("Failed to set_option(%s): %s.",
+                             rs2_option_to_string(option), e.what()));
+  }
+
+  return errors::Internal("Not reached");
+}
+
+Status RsCamera::GetOption(::rs2::sensor& sensor, rs2_option option,
+                           float* value) {
+  if (!sensor.supports(option)) {
+    return errors::NotSupportedOption(option);
+  }
+
+  try {
+    *value = sensor.get_option(option);
+    return Status::OK();
+  } catch (const ::rs2::error& e) {
+    return errors::Unavailable(
+        ::base::StringPrintf("Failed to get_option(%s): %s.",
+                             rs2_option_to_string(option), e.what()));
+  }
+
+  return errors::Internal("Not reached");
+}
+
+Status RsCamera::GetOptionRange(::rs2::sensor& sensor, rs2_option option,
+                                ::rs2::option_range* option_range) {
+  if (!sensor.supports(option)) {
+    return errors::NotSupportedOption(option);
+  }
+
+  try {
+    *option_range = sensor.get_option_range(option);
+    return Status::OK();
+  } catch (const ::rs2::error& e) {
+    return errors::Unavailable(
+        ::base::StringPrintf("Failed to get_option_range(%s): %s.",
+                             rs2_option_to_string(option), e.what()));
+  }
+
+  return errors::Internal("Not reached");
+}
+
+Status RsCamera::GetCameraSettingsInfo(
+    CameraSettingsInfoMessage* camera_settings) {
+  auto status_or = sensor(RS_COLOR);
+  if (!status_or.ok()) return status_or.status();
+  ::rs2::sensor& s = status_or.ValueOrDie();
+
+  GetCameraSetting(s, RS2_OPTION_ENABLE_AUTO_WHITE_BALANCE,
+                   camera_settings->mutable_white_balance_mode());
+  GetCameraSetting(s, RS2_OPTION_ENABLE_AUTO_EXPOSURE,
+                   camera_settings->mutable_exposure_mode());
+  GetCameraSetting(s, RS2_OPTION_EXPOSURE,
+                   camera_settings->mutable_exposure_time());
+  GetCameraSetting(s, RS2_OPTION_WHITE_BALANCE,
+                   camera_settings->mutable_color_temperature());
+  GetCameraSetting(s, RS2_OPTION_BRIGHTNESS,
+                   camera_settings->mutable_brightness());
+  GetCameraSetting(s, RS2_OPTION_CONTRAST, camera_settings->mutable_contrast());
+  GetCameraSetting(s, RS2_OPTION_SATURATION,
+                   camera_settings->mutable_saturation());
+  GetCameraSetting(s, RS2_OPTION_SHARPNESS,
+                   camera_settings->mutable_sharpness());
+  GetCameraSetting(s, RS2_OPTION_HUE, camera_settings->mutable_hue());
+  GetCameraSetting(s, RS2_OPTION_GAIN, camera_settings->mutable_gain());
+  GetCameraSetting(s, RS2_OPTION_GAMMA, camera_settings->mutable_gamma());
+  return Status::OK();
+}
+
+Status RsCamera::GetAllOptions(::rs2::sensor& sensor,
+                               std::vector<rs2_option>* options) {
+  DCHECK(options->empty());
+  for (int i = 0; i < static_cast<int>(RS2_OPTION_COUNT); ++i) {
+    rs2_option option = static_cast<rs2_option>(i);
+    if (sensor.supports(option)) {
+      options->push_back(option);
+    }
+  }
+  return Status::OK();
+}
+
+namespace {
+
+CameraSettingsMode ValueToMode(rs2_option option, float value) {
+  return value ? CameraSettingsMode::CAMERA_SETTINGS_MODE_AUTO
+               : CameraSettingsMode::CAMERA_SETTINGS_MODE_MANUAL;
+}
+
+}  // namespace
+
+void RsCamera::GetCameraSetting(::rs2::sensor& sensor, rs2_option option,
+                                CameraSettingsModeValue* value) {
+  ::rs2::option_range option_range;
+  if (!GetOptionRange(sensor, option, &option_range).ok()) {
+    value->Clear();
+    return;
+  }
+  value->add_modes(CameraSettingsMode::CAMERA_SETTINGS_MODE_AUTO);
+  value->add_modes(CameraSettingsMode::CAMERA_SETTINGS_MODE_MANUAL);
+  value->set_default_(ValueToMode(option, option_range.def));
+
+  float v;
+  if (!GetOption(sensor, option, &v).ok()) {
+    value->Clear();
+    return;
+  }
+  value->set_current(ValueToMode(option, v));
+}
+
+void RsCamera::GetCameraSetting(::rs2::sensor& sensor, rs2_option option,
+                                CameraSettingsRangedValue* value) {
+  ::rs2::option_range option_range;
+  if (!GetOptionRange(sensor, option, &option_range).ok()) {
+    value->Clear();
+    return;
+  }
+  value->set_min(static_cast<int64_t>(option_range.min));
+  value->set_max(static_cast<int64_t>(option_range.max));
+  value->set_step(static_cast<int64_t>(option_range.step));
+  value->set_default_(static_cast<int64_t>(option_range.def));
+
+  float v;
+  if (!GetOption(sensor, option, &v).ok()) {
+    value->Clear();
+    return;
+  }
+  value->set_current(v);
 }
 
 void RsCamera::SetRsAlignFromDirection(AlignDirection align_direction) {
@@ -307,7 +549,7 @@ void RsCamera::OnImuFrame(::rs2::frame frame) {
 
   rs2_vector vector = motion.get_motion_data();
   ::base::TimeDelta timestamp = timestamper_.timestamp();
-  if (stream == GYRO.stream_type) {
+  if (stream == RS_GYRO.stream_type) {
     imu_frame.set_angulary_veilocity(vector.x, vector.y, vector.z);
     imu_filter_->UpdateAngularVelocity(vector.x, vector.y, vector.z, timestamp);
   } else {
@@ -422,8 +664,8 @@ Status RsCamera::CreateCapabilityMap(::rs2::device device,
     }
   }
 
-  if ((*rs_capability_map)[COLOR].empty() ||
-      (*rs_capability_map)[DEPTH].empty()) {
+  if ((*rs_capability_map)[RS_COLOR].empty() ||
+      (*rs_capability_map)[RS_DEPTH].empty()) {
     return errors::NoVideoCapbility();
   }
 

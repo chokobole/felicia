@@ -39,6 +39,10 @@ class RsCamera : public DepthCameraInterface {
                StatusCallback status_callback) override;
   Status Stop() override;
 
+  Status SetCameraSettings(const CameraSettings& camera_settings) override;
+  Status GetCameraSettingsInfo(
+      CameraSettingsInfoMessage* camera_settings) override;
+
   Status Start(const CameraFormat& requested_color_format,
                const CameraFormat& requested_depth_format,
                const ImuFormat& requested_gyro_format,
@@ -58,6 +62,14 @@ class RsCamera : public DepthCameraInterface {
                ImuFrameCallback imu_frame_callback,
                StatusCallback status_callback);
 
+  StatusOr<::rs2::sensor> sensor(const RsStreamInfo& rs_stream_info);
+
+  Status SetOption(::rs2::sensor& sensor, rs2_option option, float value);
+  Status GetOption(::rs2::sensor& sensor, rs2_option option, float* value);
+  Status GetOptionRange(::rs2::sensor& sensor, rs2_option option,
+                        ::rs2::option_range* option_range);
+  Status GetAllOptions(::rs2::sensor& sensor, std::vector<rs2_option>* options);
+
  private:
   friend class RsCameraFactory;
 
@@ -67,6 +79,11 @@ class RsCamera : public DepthCameraInterface {
                const CameraFormat& requested_depth_format,
                const ImuFormat& requested_gyro_format,
                const ImuFormat& requested_accel_format, bool imu, bool synched);
+
+  void GetCameraSetting(::rs2::sensor& sensor, rs2_option option,
+                        CameraSettingsModeValue* value);
+  void GetCameraSetting(::rs2::sensor& sensor, rs2_option option,
+                        CameraSettingsRangedValue* value);
 
   void SetRsAlignFromDirection(AlignDirection align_direction);
 

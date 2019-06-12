@@ -418,6 +418,33 @@ Status V4l2Camera::SetCameraSettings(const CameraSettings& camera_settings) {
       DPLOG(ERROR) << "setting sharpness to " << value;
   }
 
+  if (camera_settings.has_hue()) {
+    v4l2_control control = {};
+    const int value = camera_settings.hue();
+    control.id = V4L2_CID_HUE;
+    control.value = value;
+    if (DoIoctl(fd_.get(), VIDIOC_S_CTRL, &control) < 0)
+      DPLOG(ERROR) << "setting hue to " << value;
+  }
+
+  if (camera_settings.has_gain()) {
+    v4l2_control control = {};
+    const int value = camera_settings.gain();
+    control.id = V4L2_CID_GAIN;
+    control.value = value;
+    if (DoIoctl(fd_.get(), VIDIOC_S_CTRL, &control) < 0)
+      DPLOG(ERROR) << "setting gain to " << value;
+  }
+
+  if (camera_settings.has_gamma()) {
+    v4l2_control control = {};
+    const int value = camera_settings.gamma();
+    control.id = V4L2_CID_GAMMA;
+    control.value = value;
+    if (DoIoctl(fd_.get(), VIDIOC_S_CTRL, &control) < 0)
+      DPLOG(ERROR) << "setting gamma to " << value;
+  }
+
   return Status::OK();
 }
 
@@ -437,6 +464,9 @@ Status V4l2Camera::GetCameraSettingsInfo(
   GetCameraSetting(V4L2_CID_CONTRAST, camera_settings->mutable_contrast());
   GetCameraSetting(V4L2_CID_SATURATION, camera_settings->mutable_saturation());
   GetCameraSetting(V4L2_CID_SHARPNESS, camera_settings->mutable_sharpness());
+  GetCameraSetting(V4L2_CID_HUE, camera_settings->mutable_hue());
+  GetCameraSetting(V4L2_CID_GAIN, camera_settings->mutable_gain());
+  GetCameraSetting(V4L2_CID_GAMMA, camera_settings->mutable_gamma());
   return Status::OK();
 }
 
