@@ -21,6 +21,7 @@ fel_proto_library(
     srcs = [
         "camera_format_message.proto",
         "camera_frame_message.proto",
+        "camera_settings_message.proto",
         "depth_camera_frame_message.proto",
     ],
     default_header = True,
@@ -36,6 +37,7 @@ CAMERA_HEADERS = [
     "camera_interface.h",
     "camera_frame.h",
     "camera_frame_util.h",
+    "camera_settings.h",
     "camera_state.h",
     "depth_camera_frame.h",
     "depth_camera_interface.h",
@@ -58,6 +60,7 @@ fel_cc_library(
         "camera_format.cc",
         "camera_frame.cc",
         "camera_frame_util.cc",
+        "camera_settings.cc",
         "depth_camera_frame.cc",
         "depth_camera_interface.cc",
     ] + if_linux([

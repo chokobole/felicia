@@ -300,6 +300,146 @@ Status V4l2Camera::Stop() {
   return s;
 }
 
+Status V4l2Camera::SetCameraSettings(const CameraSettings& camera_settings) {
+  if (camera_settings.has_white_balance_mode()) {
+    v4l2_control control = {};
+    const bool value =
+        camera_settings.white_balance_mode() == CAMERA_SETTINGS_MODE_AUTO;
+    control.id = V4L2_CID_AUTO_WHITE_BALANCE;
+    control.value = value;
+    if (DoIoctl(fd_.get(), VIDIOC_S_CTRL, &control) < 0)
+      DPLOG(ERROR) << "setting whilte_balance_mode to " << value;
+  }
+
+  if (camera_settings.has_color_temperature()) {
+    bool can_set = false;
+    {
+      v4l2_control control = {};
+      control.id = V4L2_CID_AUTO_WHITE_BALANCE;
+      const int result = DoIoctl(fd_.get(), VIDIOC_G_CTRL, &control);
+      // Color temperature can only be applied if Auto White Balance is off.
+      can_set = result >= 0 && !control.value;
+    }
+    if (can_set) {
+      v4l2_control control = {};
+      const int value = camera_settings.color_temperature();
+      control.id = V4L2_CID_WHITE_BALANCE_TEMPERATURE;
+      control.value = value;
+      if (DoIoctl(fd_.get(), VIDIOC_S_CTRL, &control) < 0)
+        DPLOG(ERROR) << "setting exposure_mode to " << value;
+    }
+  }
+
+  if (camera_settings.has_exposure_mode()) {
+    v4l2_control control = {};
+    const bool value =
+        camera_settings.exposure_mode() == CAMERA_SETTINGS_MODE_AUTO;
+    control.id = V4L2_CID_EXPOSURE_AUTO;
+    control.value = value;
+    if (DoIoctl(fd_.get(), VIDIOC_S_CTRL, &control) < 0)
+      DPLOG(ERROR) << "setting exposure_mode to " << value;
+  }
+
+  if (camera_settings.has_exposure_compensation()) {
+    bool can_set = false;
+    {
+      v4l2_control control = {};
+      control.id = V4L2_CID_EXPOSURE_AUTO;
+      const int result = DoIoctl(fd_.get(), VIDIOC_G_CTRL, &control);
+      // Exposure Compensation is effective only when V4L2_CID_EXPOSURE_AUTO
+      // control is set to AUTO, SHUTTER_PRIORITY or APERTURE_PRIORITY.
+      can_set = result >= 0 && control.value != V4L2_EXPOSURE_MANUAL;
+    }
+    if (can_set) {
+      v4l2_control control = {};
+      const int value = camera_settings.exposure_compensation();
+      control.id = V4L2_CID_AUTO_EXPOSURE_BIAS;
+      control.value = value;
+      if (DoIoctl(fd_.get(), VIDIOC_S_CTRL, &control) < 0)
+        DPLOG(ERROR) << "setting exposure_compensation to " << value;
+    }
+  }
+
+  if (camera_settings.has_exposure_time()) {
+    bool can_set = false;
+    {
+      v4l2_control control = {};
+      control.id = V4L2_CID_EXPOSURE_AUTO;
+      const int result = DoIoctl(fd_.get(), VIDIOC_G_CTRL, &control);
+      // Exposure time can only be applied if V4L2_CID_EXPOSURE_AUTO is set to
+      // V4L2_EXPOSURE_MANUAL or V4L2_EXPOSURE_SHUTTER_PRIORITY.
+      can_set =
+          result >= 0 && (control.value == V4L2_EXPOSURE_MANUAL ||
+                          control.value == V4L2_EXPOSURE_SHUTTER_PRIORITY);
+    }
+    if (can_set) {
+      v4l2_control control = {};
+      const int value = camera_settings.exposure_time();
+      control.id = V4L2_CID_EXPOSURE_ABSOLUTE;
+      control.value = value;
+      if (DoIoctl(fd_.get(), VIDIOC_S_CTRL, &control) < 0)
+        DPLOG(ERROR) << "setting exposure_time to " << value;
+    }
+  }
+
+  if (camera_settings.has_brightness()) {
+    v4l2_control control = {};
+    const int value = camera_settings.brightness();
+    control.id = V4L2_CID_BRIGHTNESS;
+    control.value = value;
+    if (DoIoctl(fd_.get(), VIDIOC_S_CTRL, &control) < 0)
+      DPLOG(ERROR) << "setting brightness to " << value;
+  }
+
+  if (camera_settings.has_contrast()) {
+    v4l2_control control = {};
+    const int value = camera_settings.contrast();
+    control.id = V4L2_CID_CONTRAST;
+    control.value = value;
+    if (DoIoctl(fd_.get(), VIDIOC_S_CTRL, &control) < 0)
+      DPLOG(ERROR) << "setting contrast to " << value;
+  }
+
+  if (camera_settings.has_saturation()) {
+    v4l2_control control = {};
+    const int value = camera_settings.saturation();
+    control.id = V4L2_CID_SATURATION;
+    control.value = value;
+    if (DoIoctl(fd_.get(), VIDIOC_S_CTRL, &control) < 0)
+      DPLOG(ERROR) << "setting saturation to " << value;
+  }
+
+  if (camera_settings.has_sharpness()) {
+    v4l2_control control = {};
+    const int value = camera_settings.sharpness();
+    control.id = V4L2_CID_SHARPNESS;
+    control.value = value;
+    if (DoIoctl(fd_.get(), VIDIOC_S_CTRL, &control) < 0)
+      DPLOG(ERROR) << "setting sharpness to " << value;
+  }
+
+  return Status::OK();
+}
+
+Status V4l2Camera::GetCameraSettingsInfo(
+    CameraSettingsInfoMessage* camera_settings) {
+  GetCameraSetting(V4L2_CID_AUTO_WHITE_BALANCE,
+                   camera_settings->mutable_white_balance_mode());
+  GetCameraSetting(V4L2_CID_EXPOSURE_AUTO,
+                   camera_settings->mutable_exposure_mode());
+  GetCameraSetting(V4L2_CID_AUTO_EXPOSURE_BIAS,
+                   camera_settings->mutable_exposure_compensation());
+  GetCameraSetting(V4L2_CID_EXPOSURE_ABSOLUTE,
+                   camera_settings->mutable_exposure_time());
+  GetCameraSetting(V4L2_CID_WHITE_BALANCE_TEMPERATURE,
+                   camera_settings->mutable_color_temperature());
+  GetCameraSetting(V4L2_CID_BRIGHTNESS, camera_settings->mutable_brightness());
+  GetCameraSetting(V4L2_CID_CONTRAST, camera_settings->mutable_contrast());
+  GetCameraSetting(V4L2_CID_SATURATION, camera_settings->mutable_saturation());
+  GetCameraSetting(V4L2_CID_SHARPNESS, camera_settings->mutable_sharpness());
+  return Status::OK();
+}
+
 Status V4l2Camera::InitMmap() {
   v4l2_requestbuffers requestbuffers;
   FillV4L2RequestBuffer(&requestbuffers, kNumVideoBuffers);
@@ -445,6 +585,67 @@ void V4l2Camera::DoCapture() {
 
   thread_.task_runner()->PostTask(
       FROM_HERE, ::base::BindOnce(&V4l2Camera::DoCapture, AsWeakPtr()));
+}
+
+namespace {
+
+CameraSettingsMode ValueToMode(int control_id, int64_t value) {
+  if (control_id == V4L2_CID_EXPOSURE_AUTO) {
+    return value == static_cast<int>(V4L2_EXPOSURE_MANUAL)
+               ? CameraSettingsMode::CAMERA_SETTINGS_MODE_MANUAL
+               : CameraSettingsMode::CAMERA_SETTINGS_MODE_AUTO;
+  }
+
+  return value ? CameraSettingsMode::CAMERA_SETTINGS_MODE_AUTO
+               : CameraSettingsMode::CAMERA_SETTINGS_MODE_MANUAL;
+}
+
+}  // namespace
+
+void V4l2Camera::GetCameraSetting(int control_id,
+                                  CameraSettingsModeValue* value) {
+  v4l2_query_ext_ctrl query_ext_ctrl = {};
+  query_ext_ctrl.id = control_id;
+  query_ext_ctrl.type = V4L2_CTRL_TYPE_INTEGER;
+  if (!RunIoctl(fd_.get(), VIDIOC_QUERYCTRL, &query_ext_ctrl)) {
+    value->Clear();
+    return;
+  }
+  value->add_modes(CameraSettingsMode::CAMERA_SETTINGS_MODE_AUTO);
+  value->add_modes(CameraSettingsMode::CAMERA_SETTINGS_MODE_MANUAL);
+  value->set_default_(ValueToMode(control_id, query_ext_ctrl.default_value));
+  value->set_flags(query_ext_ctrl.flags);
+
+  v4l2_control control = {};
+  control.id = control_id;
+  if (!RunIoctl(fd_.get(), VIDIOC_G_CTRL, &control)) {
+    value->Clear();
+    return;
+  }
+  value->set_current(ValueToMode(control_id, control.value));
+}
+
+void V4l2Camera::GetCameraSetting(int control_id,
+                                  CameraSettingsRangedValue* value) {
+  v4l2_query_ext_ctrl query_ext_ctrl = {};
+  query_ext_ctrl.id = control_id;
+  if (!RunIoctl(fd_.get(), VIDIOC_QUERY_EXT_CTRL, &query_ext_ctrl)) {
+    value->Clear();
+    return;
+  }
+  value->set_min(query_ext_ctrl.minimum);
+  value->set_max(query_ext_ctrl.maximum);
+  value->set_step(query_ext_ctrl.step);
+  value->set_default_(query_ext_ctrl.default_value);
+  value->set_flags(query_ext_ctrl.flags);
+
+  v4l2_control control = {};
+  control.id = control_id;
+  if (!RunIoctl(fd_.get(), VIDIOC_G_CTRL, &control)) {
+    value->Clear();
+    return;
+  }
+  value->set_current(control.value);
 }
 
 // static

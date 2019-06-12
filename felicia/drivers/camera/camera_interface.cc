@@ -7,6 +7,16 @@ CameraInterface::CameraInterface(const CameraDescriptor& camera_descriptor)
 
 CameraInterface::~CameraInterface() = default;
 
+Status CameraInterface::SetCameraSettings(
+    const CameraSettings& camera_settings) {
+  return errors::Unimplemented("Not implemented yet.");
+}
+
+Status CameraInterface::GetCameraSettingsInfo(
+    CameraSettingsInfoMessage* camera_settings) {
+  return errors::Unimplemented("Not implemented yet.");
+}
+
 bool CameraInterface::IsInitialized() const {
   return camera_state_.IsInitialized();
 }

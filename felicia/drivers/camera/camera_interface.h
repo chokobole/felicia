@@ -6,6 +6,7 @@
 #include "felicia/drivers/camera/camera_descriptor.h"
 #include "felicia/drivers/camera/camera_format.h"
 #include "felicia/drivers/camera/camera_frame.h"
+#include "felicia/drivers/camera/camera_settings.h"
 #include "felicia/drivers/camera/camera_state.h"
 
 namespace felicia {
@@ -20,6 +21,10 @@ class EXPORT CameraInterface {
                        CameraFrameCallback camera_frame_callback,
                        StatusCallback status_callback) = 0;
   virtual Status Stop() = 0;
+
+  virtual Status SetCameraSettings(const CameraSettings& camera_settings);
+  virtual Status GetCameraSettingsInfo(
+      CameraSettingsInfoMessage* camera_settings);
 
   bool IsInitialized() const;
   bool IsStarted() const;

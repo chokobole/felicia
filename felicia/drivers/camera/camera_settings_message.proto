@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package felicia;
+
+message CameraSettingsRangedValue {
+  int64 min = 1;
+  int64 max = 2;
+  uint64 step = 3;
+  int64 default = 4;
+  int64 current = 5;
+  uint32 flags = 6;
+}
+
+enum CameraSettingsMode {
+  CAMERA_SETTINGS_MODE_NONE = 0;
+  CAMERA_SETTINGS_MODE_AUTO = 1;
+  CAMERA_SETTINGS_MODE_MANUAL = 2;
+}
+
+message CameraSettingsModeValue {
+  repeated CameraSettingsMode modes = 1;
+  CameraSettingsMode default = 2;
+  CameraSettingsMode current = 3;
+  uint32 flags = 4;
+}
+
+message CameraSettingsInfoMessage {
+  CameraSettingsModeValue white_balance_mode = 1;
+  CameraSettingsModeValue exposure_mode = 2;
+
+  CameraSettingsRangedValue exposure_compensation = 3;
+  CameraSettingsRangedValue exposure_time = 4;
+  CameraSettingsRangedValue color_temperature = 5;
+
+  CameraSettingsRangedValue brightness = 6;
+  CameraSettingsRangedValue contrast = 7;
+  CameraSettingsRangedValue saturation = 8;
+  CameraSettingsRangedValue sharpness = 9;
+}

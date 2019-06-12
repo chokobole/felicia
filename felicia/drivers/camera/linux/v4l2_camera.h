@@ -37,6 +37,10 @@ class V4l2Camera : public CameraInterface,
                StatusCallback status_callback) override;
   Status Stop() override;
 
+  Status SetCameraSettings(const CameraSettings& camera_settings) override;
+  Status GetCameraSettingsInfo(
+      CameraSettingsInfoMessage* camera_settings) override;
+
  private:
   friend class CameraFactory;
 
@@ -47,6 +51,9 @@ class V4l2Camera : public CameraInterface,
   Status SetCameraFormat(const CameraFormat& camera_format);
   void DoStop(Status* status);
   void DoCapture();
+
+  void GetCameraSetting(int control_id, CameraSettingsModeValue* value);
+  void GetCameraSetting(int control_id, CameraSettingsRangedValue* value);
 
   static int DoIoctl(int fd, int request, void* argp);
   static bool RunIoctl(int fd, int request, void* argp);
