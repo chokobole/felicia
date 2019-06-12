@@ -127,5 +127,6 @@ fel_objc_library(
         "//felicia/core/lib",
         "//felicia/core/message",
         "//felicia/core/util",
+        "@libyuv",
     ],
 )

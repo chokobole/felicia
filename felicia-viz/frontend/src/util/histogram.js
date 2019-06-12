@@ -1,12 +1,74 @@
 /* eslint no-bitwise: ["off"] */
-/* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["imageData", "colors", "dst", "positions"] }] */
+/* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["imageData", "colors", "pixels", "positions"] }] */
 import colormap from 'colormap';
 
 import { PixelFormat } from '@felicia-viz/communication';
 
-import { RGBA, BGRA } from 'util/color';
+import { RGBA, RGB, BGRA, BGR } from 'util/color';
 
-function align(dst, frameToAlign, width, height, normalize) {
+function fillPixels(pixels, width, height, data, colorIndexes, normalize) {
+  const pixelData = new Uint8ClampedArray(data);
+  const size = width * height;
+  if (normalize) {
+    if (colorIndexes.aIdx) {
+      for (let i = 0; i < size; i += 1) {
+        const imageDataIdx = i << 2;
+        pixels[imageDataIdx + RGBA.rIdx] =
+          (pixels[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + colorIndexes.rIdx] / 256) /
+          2;
+        pixels[imageDataIdx + RGBA.gIdx] =
+          (pixels[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + colorIndexes.gIdx] / 256) /
+          2;
+        pixels[imageDataIdx + RGBA.bIdx] =
+          (pixels[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + colorIndexes.bIdx] / 256) /
+          2;
+        pixels[imageDataIdx + RGBA.aIdx] =
+          (pixels[imageDataIdx + RGBA.aIdx] + pixelData[imageDataIdx + colorIndexes.aIdx] / 256) /
+          2;
+      }
+    } else {
+      for (let i = 0; i < size; i += 1) {
+        const imageDataIdx = i << 2;
+        pixels[imageDataIdx + RGBA.rIdx] =
+          (pixels[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + colorIndexes.rIdx] / 256) /
+          2;
+        pixels[imageDataIdx + RGBA.gIdx] =
+          (pixels[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + colorIndexes.gIdx] / 256) /
+          2;
+        pixels[imageDataIdx + RGBA.bIdx] =
+          (pixels[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + colorIndexes.bIdx] / 256) /
+          2;
+      }
+    }
+  } else {
+    // eslint-disable-next-line
+    if (colorIndexes.aIdx) {
+      for (let i = 0; i < size; i += 1) {
+        const imageDataIdx = i << 2;
+        pixels[imageDataIdx + RGBA.rIdx] =
+          (pixels[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + colorIndexes.rIdx]) >> 1;
+        pixels[imageDataIdx + RGBA.gIdx] =
+          (pixels[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + colorIndexes.gIdx]) >> 1;
+        pixels[imageDataIdx + RGBA.bIdx] =
+          (pixels[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + colorIndexes.bIdx]) >> 1;
+        pixels[imageDataIdx + RGBA.aIdx] =
+          (pixels[imageDataIdx + RGBA.aIdx] + pixelData[imageDataIdx + colorIndexes.aIdx]) >> 1;
+      }
+    } else {
+      for (let i = 0; i < size; i += 1) {
+        const imageDataIdx = i << 2;
+        pixels[imageDataIdx + RGBA.rIdx] =
+          (pixels[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + colorIndexes.rIdx]) >> 1;
+        pixels[imageDataIdx + RGBA.gIdx] =
+          (pixels[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + colorIndexes.gIdx]) >> 1;
+        pixels[imageDataIdx + RGBA.bIdx] =
+          (pixels[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + colorIndexes.bIdx]) >> 1;
+      }
+    }
+  }
+}
+
+function align(pixels, frameToAlign, width, height, normalize) {
   if (!frameToAlign) return;
 
   const { cameraFormat, data, converted } = frameToAlign.frame;
@@ -22,33 +84,15 @@ function align(dst, frameToAlign, width, height, normalize) {
   }
 
   if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_ARGB || converted) {
-    const size = width * height;
-    const pixelData = new Uint8ClampedArray(data);
-    if (normalize) {
-      for (let i = 0; i < size; i += 1) {
-        const imageDataIdx = i << 2;
-        dst[imageDataIdx + RGBA.rIdx] =
-          (dst[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + BGRA.rIdx] / 256) / 2;
-        dst[imageDataIdx + RGBA.gIdx] =
-          (dst[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + BGRA.gIdx] / 256) / 2;
-        dst[imageDataIdx + RGBA.bIdx] =
-          (dst[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + BGRA.bIdx] / 256) / 2;
-        dst[imageDataIdx + RGBA.aIdx] =
-          (dst[imageDataIdx + RGBA.aIdx] + pixelData[imageDataIdx + BGRA.aIdx] / 256) / 2;
-      }
-    } else {
-      for (let i = 0; i < size; i += 1) {
-        const imageDataIdx = i << 2;
-        dst[imageDataIdx + RGBA.rIdx] =
-          (dst[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + BGRA.rIdx]) >> 1;
-        dst[imageDataIdx + RGBA.gIdx] =
-          (dst[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + BGRA.gIdx]) >> 1;
-        dst[imageDataIdx + RGBA.bIdx] =
-          (dst[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + BGRA.bIdx]) >> 1;
-        dst[imageDataIdx + RGBA.aIdx] =
-          (dst[imageDataIdx + RGBA.aIdx] + pixelData[imageDataIdx + BGRA.aIdx]) >> 1;
-      }
-    }
+    fillPixels(pixels, width, height, data, BGRA, normalize);
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGB24) {
+    fillPixels(pixels, width, height, data, BGR, normalize);
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGB32) {
+    fillPixels(pixels, width, height, data, BGRA, normalize);
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_ABGR) {
+    fillPixels(pixels, width, height, data, RGBA, normalize);
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_XBGR) {
+    fillPixels(pixels, width, height, data, RGB, normalize);
   } else {
     console.error(`Color format is not ARGB: ${pixelFormat}`);
   }

@@ -15,15 +15,34 @@ void ReleaseBuffer(uintptr_t buffer) {
 
 bool ConvertToARGB(uintptr_t start, size_t payload, uintptr_t argb_start,
                    int width, int height, const std::string& pixel_format) {
-  uint32_t src_format;
+  if (pixel_format == "PIXEL_FORMAT_MJPEG") {
+    std::cerr << "Not implemented yet." << std::endl;
+    return false;
+  }
+
+  if (pixel_format == "PIXEL_FORMAT_ARGB") {
+    std::cerr << "Its format is already PIXEL_FORMAT_ARGB." << std::endl;
+  }
+
+  libyuv::FourCC src_format;
+  if (pixel_format == "PIXEL_FORMAT_I420")
+    src_format = libyuv::FOURCC_I420;
+  else if (pixel_format == "PIXEL_FORMAT_YV12")
+    src_format = libyuv::FOURCC_YV12;
+  else if (pixel_format == "PIXEL_FORMAT_NV12")
+    src_format = libyuv::FOURCC_NV12;
   if (pixel_format == "PIXEL_FORMAT_UYVY")
     src_format = libyuv::FOURCC_UYVY;
   else if (pixel_format == "PIXEL_FORMAT_YUY2")
     src_format = libyuv::FOURCC_YUY2;
-  else if (pixel_format == "PIXEL_FORMAT_I420")
-    src_format = libyuv::FOURCC_I420;
+  else if (pixel_format == "PIXEL_FORMAT_ARGB")
+    src_format = libyuv::FOURCC_ARGB;
   else if (pixel_format == "PIXEL_FORMAT_RGB24")
     src_format = libyuv::FOURCC_24BG;
+  else if (pixel_format == "PIXEL_FORMAT_RGB32")
+    src_format = libyuv::FOURCC_BGRA;
+  else if (pixel_format == "PIXEL_FORMAT_ABGR")
+    src_format = libyuv::FOURCC_ABGR;
   else {
     std::cerr << "Unknown format: " << pixel_format << std::endl;
     return false;

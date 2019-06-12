@@ -61,22 +61,18 @@ CameraFrameMessage CameraFrame::ToCameraFrameMessage() const {
 ::base::Optional<CameraFrame> ConvertToARGB(CameraBuffer camera_buffer,
                                             CameraFormat camera_format) {
   PixelFormat pixel_format = camera_format.pixel_format();
-  uint32_t src_format;
+  libyuv::FourCC src_format;
 
   if (pixel_format == PIXEL_FORMAT_MJPEG) {
     NOTIMPLEMENTED();
   }
 
-  if (pixel_format == PIXEL_FORMAT_UYVY)
-    src_format = libyuv::FOURCC_UYVY;
-  else if (pixel_format == PIXEL_FORMAT_YUY2)
-    src_format = libyuv::FOURCC_YUY2;
-  else if (pixel_format == PIXEL_FORMAT_I420)
-    src_format = libyuv::FOURCC_I420;
-  else if (pixel_format == PIXEL_FORMAT_RGB24)
-    src_format = libyuv::FOURCC_24BG;
-  else
-    return ::base::nullopt;
+  if (pixel_format == PIXEL_FORMAT_ARGB) {
+    LOG(ERROR) << "Its format is already PIXEL_FORMAT_ARGB.";
+  }
+
+  src_format = camera_format.ToLibyuvPixelFormat();
+  if (src_format == libyuv::FOURCC_ANY) return ::base::nullopt;
 
   CameraFormat rgba_camera_format(camera_format.width(), camera_format.height(),
                                   PIXEL_FORMAT_ARGB,

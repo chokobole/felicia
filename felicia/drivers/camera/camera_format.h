@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include "libyuv.h"
 #include "third_party/chromium/build/build_config.h"
 
 #if defined(OS_WIN)
@@ -59,6 +60,7 @@ class EXPORT CameraFormat {
   static PixelFormat FromAVFoundationPixelFormat(
       const FourCharCode avf_pixel_format);
 #endif
+  libyuv::FourCC ToLibyuvPixelFormat() const;
 
   CameraFormatMessage ToCameraFormatMessage() const;
 

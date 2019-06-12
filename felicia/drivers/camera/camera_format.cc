@@ -60,6 +60,43 @@ void CameraFormat::set_convert_to_argb(bool convert_to_argb) {
   convert_to_argb_ = convert_to_argb;
 }
 
+libyuv::FourCC CameraFormat::ToLibyuvPixelFormat() const {
+  switch (pixel_format_) {
+    case PIXEL_FORMAT_I420:
+      return libyuv::FOURCC_I420;
+    case PIXEL_FORMAT_YV12:
+      return libyuv::FOURCC_YV12;
+    case PIXEL_FORMAT_NV12:
+      return libyuv::FOURCC_NV12;
+    case PIXEL_FORMAT_NV21:
+      return libyuv::FOURCC_NV21;
+    case PIXEL_FORMAT_UYVY:
+      return libyuv::FOURCC_UYVY;
+    case PIXEL_FORMAT_YUY2:
+      return libyuv::FOURCC_YUY2;
+    case PIXEL_FORMAT_ARGB:
+      return libyuv::FOURCC_ARGB;
+    case PIXEL_FORMAT_RGB24:
+      return libyuv::FOURCC_24BG;
+    case PIXEL_FORMAT_RGB32:
+      return libyuv::FOURCC_BGRA;
+    case PIXEL_FORMAT_MJPEG:
+      return libyuv::FOURCC_MJPG;
+    case PIXEL_FORMAT_ABGR:
+      return libyuv::FOURCC_ABGR;
+    case PIXEL_FORMAT_XBGR:
+    case PIXEL_FORMAT_Y8:
+    case PIXEL_FORMAT_Y16:
+    case PIXEL_FORMAT_Z16:
+    case PIXEL_FORMAT_UNKNOWN:
+    case PixelFormat_INT_MIN_SENTINEL_DO_NOT_USE_:
+    case PixelFormat_INT_MAX_SENTINEL_DO_NOT_USE_:
+      break;
+  }
+  NOTREACHED() << "Unsupported video frame format: " << pixel_format_;
+  return libyuv::FOURCC_ANY;
+}
+
 // static
 std::string CameraFormat::FourccToString(uint32_t fourcc) {
   std::string result = "0000";
