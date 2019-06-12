@@ -3,8 +3,9 @@
 namespace felicia {
 
 DepthCameraFrame::DepthCameraFrame(std::unique_ptr<uint8_t[]> data,
-                                   CameraFormat camera_format, float scale)
-    : CameraFrame(std::move(data), camera_format), scale_(scale) {}
+                                   size_t length, CameraFormat camera_format,
+                                   float scale)
+    : CameraFrame(std::move(data), length, camera_format), scale_(scale) {}
 
 DepthCameraFrame::DepthCameraFrame(DepthCameraFrame&& other) noexcept
     : CameraFrame(std::move(other)), scale_(other.scale_) {}

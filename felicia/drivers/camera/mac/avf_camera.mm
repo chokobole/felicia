@@ -143,6 +143,12 @@ Status AvfCamera::SetCameraFormat(const CameraFormat& camera_format) {
 void AvfCamera::ReceiveFrame(const uint8_t* video_frame, int video_frame_length,
                              const CameraFormat& camera_format, int aspect_numerator,
                              int aspect_denominator, ::base::TimeDelta timestamp) {
+  if (camera_format_.pixel_format() != PixelFormat::PIXEL_FORMAT_MJPEG &&
+      camera_format_.AllocationSize() != video_frame_length) {
+    status_callback_.Run(errors::InvalidNumberOfBytesInBuffer());
+    return;
+  }
+
   if (camera_format_.convert_to_argb()) {
     CameraBuffer camera_buffer(const_cast<uint8_t*>(video_frame), video_frame_length);
     camera_buffer.set_payload(video_frame_length);
@@ -156,7 +162,7 @@ void AvfCamera::ReceiveFrame(const uint8_t* video_frame, int video_frame_length,
   } else {
     std::unique_ptr<uint8_t[]> data(new uint8_t[video_frame_length]);
     memcpy(data.get(), video_frame, video_frame_length);
-    CameraFrame camera_frame(std::move(data), camera_format_);
+    CameraFrame camera_frame(std::move(data), video_frame_length, camera_format_);
     camera_frame.set_timestamp(timestamp);
     camera_frame_callback_.Run(std::move(camera_frame));
   }

@@ -35,7 +35,16 @@ self.onmessage = event => {
       const { cameraFormat } = obj;
       const { width, height, pixelFormat } = cameraFormat;
 
-      if (pixelFormat !== PixelFormat.values.PIXEL_FORMAT_ARGB) {
+      if (
+        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_ARGB &&
+        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_RGB24 &&
+        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_RGB32 &&
+        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_ABGR &&
+        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_XBGR &&
+        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_Y8 &&
+        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_Y16 &&
+        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_Z16
+      ) {
         const imgSize = obj.data.byteLength;
         const argbSize = width * height * 4;
 

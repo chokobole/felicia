@@ -1,0 +1,13 @@
+diff --git a/source/mjpeg_decoder.cc b/source/mjpeg_decoder.cc
+index eaf25301..ecf4aef4 100644
+--- a/source/mjpeg_decoder.cc
++++ b/source/mjpeg_decoder.cc
+@@ -32,7 +32,7 @@ struct FILE;  // For jpeglib.h.
+ extern "C" {
+ #endif
+ 
+-#include <jpeglib.h>
++#include "jpeglib.h"
+ 
+ #ifdef __cplusplus
+ }  // extern "C"

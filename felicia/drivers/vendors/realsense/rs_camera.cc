@@ -340,7 +340,7 @@ CameraFrame RsCamera::FromRsColorFrame(::rs2::video_frame color_frame) {
   size_t length = color_format_.AllocationSize();
   std::unique_ptr<uint8_t[]> new_color_frame(new uint8_t[length]);
   memcpy(new_color_frame.get(), color_frame.get_data(), length);
-  CameraFrame camera_frame(std::move(new_color_frame), color_format_);
+  CameraFrame camera_frame(std::move(new_color_frame), length, color_format_);
   camera_frame.set_timestamp(timestamper_.timestamp());
   return camera_frame;
 }
@@ -349,8 +349,8 @@ DepthCameraFrame RsCamera::FromRsDepthFrame(::rs2::depth_frame depth_frame) {
   size_t length = depth_format_.AllocationSize();
   std::unique_ptr<uint8_t[]> new_depth_frame(new uint8_t[length]);
   memcpy(new_depth_frame.get(), depth_frame.get_data(), length);
-  DepthCameraFrame depth_camera_frame(std::move(new_depth_frame), depth_format_,
-                                      depth_scale_);
+  DepthCameraFrame depth_camera_frame(std::move(new_depth_frame), length,
+                                      depth_format_, depth_scale_);
   depth_camera_frame.set_timestamp(timestamper_.timestamp());
   return depth_camera_frame;
 }

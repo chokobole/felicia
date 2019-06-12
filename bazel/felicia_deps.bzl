@@ -67,11 +67,36 @@ def load_deps():
         tag = "v1.19.1",
     )
 
+    http_archive(
+        name = "jpeg",
+        urls = [
+            "http://mirror.tensorflow.org/github.com/libjpeg-turbo/libjpeg-turbo/archive/2.0.0.tar.gz",
+            "https://github.com/libjpeg-turbo/libjpeg-turbo/archive/2.0.0.tar.gz",
+        ],
+        sha256 = "f892fff427ab3adffc289363eac26d197ce3ccacefe5f5822377348a8166069b",
+        strip_prefix = "libjpeg-turbo-2.0.0",
+        build_file = "//third_party:jpeg.BUILD",
+    )
+
+    http_archive(
+        name = "nasm",
+        urls = [
+            "http://mirror.tensorflow.org/www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.bz2",
+            "http://pkgs.fedoraproject.org/repo/pkgs/nasm/nasm-2.13.03.tar.bz2/sha512/d7a6b4cee8dfd603d8d4c976e5287b5cc542fa0b466ff989b743276a6e28114e64289bf02a7819eca63142a5278aa6eed57773007e5f589e15768e6456a8919d/nasm-2.13.03.tar.bz2",
+            "http://www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.bz2",
+        ],
+        sha256 = "63ec86477ad3f0f6292325fd89e1d93aea2e2fd490070863f17d48f7cd387011",
+        strip_prefix = "nasm-2.13.03",
+        build_file = "//third_party:nasm.BUILD",
+    )
+
     new_git_repository(
         name = "libyuv",
         build_file = "//third_party:libyuv.BUILD",
         remote = "https://chromium.googlesource.com/libyuv/libyuv.git",
         commit = "4bd08cbc0e45fb434a1d1245004c7b922ed91beb",
+        patch_args = ["-p1"],
+        patches = ["//third_party:libyuv.patch"],
     )
 
     # Needed by pybind11

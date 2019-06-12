@@ -66,7 +66,6 @@ void AddCamera(py::module& m) {
   py::class_<CameraFrame>(m, "CameraFrame")
       .def_property_readonly("width", &CameraFrame::width)
       .def_property_readonly("height", &CameraFrame::height)
-      .def_property_readonly("allocation_size", &CameraFrame::AllocationSize)
       .def_property_readonly("pixel_format", &CameraFrame::pixel_format)
       .def_property_readonly("timestamp", &CameraFrame::timestamp)
       .def("to_camera_frame_message", &CameraFrame::ToCameraFrameMessage);

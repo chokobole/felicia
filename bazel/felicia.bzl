@@ -180,14 +180,14 @@ def _tpl_impl(ctx):
 
     ctx.actions.expand_template(
         template = ctx.file.template,
-        output = ctx.outputs.file,
+        output = ctx.outputs.output,
         substitutions = substitutions,
     )
 
 tpl = rule(
     implementation = _tpl_impl,
     attrs = {
-        "output": attr.string(mandatory = True),
+        "output": attr.output(mandatory = True),
         "template": attr.label(
             mandatory = True,
             allow_single_file = True,
@@ -195,5 +195,5 @@ tpl = rule(
         "normalize_path": attr.bool(),
         "substitutions": attr.string_dict(mandatory = True),
     },
-    outputs = {"file": "%{output}"},
+    output_to_genfiles = True,
 )

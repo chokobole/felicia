@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-source bazel-out/host/bin/toolchain/env.sh
+source bazel-out/host/genfiles/toolchain/env.sh
 
 mkdir -p "tmp/emscripten_cache"
 
@@ -28,7 +28,7 @@ done
 $PYTHON2_BIN external/emscripten_toolchain/emcc.py "${argv[@]}"
 
 # Remove the first line of .d file
-find . -name "*.d" -exec sed -i.bak '2d' {} \;
+find . -name "*.d" -exec sed -i.bak -e '2d' -e 's/.*_bazel_.*external/external/g' {} \;
 find . -name "*.d.bak" -exec rm {} \;
 
 # Now create the tarfile

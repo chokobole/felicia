@@ -8,8 +8,8 @@ namespace felicia {
 
 class EXPORT DepthCameraFrame : public CameraFrame {
  public:
-  DepthCameraFrame(std::unique_ptr<uint8_t[]> data, CameraFormat camera_format,
-                   float scale);
+  DepthCameraFrame(std::unique_ptr<uint8_t[]> data, size_t length,
+                   CameraFormat camera_format, float scale);
   DepthCameraFrame(DepthCameraFrame&& other) noexcept;
   DepthCameraFrame& operator=(DepthCameraFrame&& other);
   ~DepthCameraFrame();

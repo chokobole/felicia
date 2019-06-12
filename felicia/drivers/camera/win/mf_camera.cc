@@ -524,14 +524,15 @@ void MfCamera::OnIncomingCapturedData(const uint8_t* data, int length,
                                       ::base::TimeDelta timestamp) {
   ::base::AutoLock lock(lock_);
 
-  if (camera_format_.AllocationSize() != length) {
+  if (camera_format_.pixel_format() != PixelFormat::PIXEL_FORMAT_MJPEG &&
+      camera_format_.AllocationSize() != length) {
     status_callback_.Run(errors::InvalidNumberOfBytesInBuffer());
     return;
   }
 
-  CameraBuffer camera_buffer(const_cast<uint8_t*>(data), length);
-  camera_buffer.set_payload(length);
   if (camera_format_.convert_to_argb()) {
+    CameraBuffer camera_buffer(const_cast<uint8_t*>(data), length);
+    camera_buffer.set_payload(length);
     ::base::Optional<CameraFrame> argb_frame =
         ConvertToARGB(camera_buffer, camera_format_);
     if (argb_frame.has_value()) {
@@ -541,9 +542,9 @@ void MfCamera::OnIncomingCapturedData(const uint8_t* data, int length,
       status_callback_.Run(errors::FailedToConvertToARGB());
     }
   } else {
-    std::unique_ptr<uint8_t[]> new_data(new uint8_t[camera_buffer.payload()]);
-    memcpy(new_data.get(), camera_buffer.start(), camera_buffer.payload());
-    CameraFrame camera_frame(std::move(new_data), camera_format_);
+    std::unique_ptr<uint8_t[]> new_data(new uint8_t[length]);
+    memcpy(new_data.get(), data, length);
+    CameraFrame camera_frame(std::move(new_data), length, camera_format_);
     camera_frame.set_timestamp(timestamp);
     camera_frame_callback_.Run(std::move(camera_frame));
   }

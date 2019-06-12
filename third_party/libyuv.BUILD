@@ -2,6 +2,28 @@ licenses(["notice"])  # BSD 3-Clause
 
 exports_files(["LICENSE"])
 
+config_setting(
+    name = "arm",
+    constraint_values = ["@bazel_tools//platforms:arm"],
+    visibility = ["//visibility:private"],
+)
+
+config_setting(
+    name = "aarch64",
+    constraint_values = ["@bazel_tools//platforms:aarch64"],
+    visibility = ["//visibility:private"],
+)
+
+alias(
+    name = "use_neon",
+    actual = select({
+        ":arm": "arm",
+        ":aarch64": "aarch64",
+        "//conditions:default": ":arm",
+    }),
+    visibility = ["//visibility:private"],
+)
+
 # TODO(chokobole): Add optimizing flags, jpeg dependencies and neon relateds.
 cc_library(
     name = "libyuv",
@@ -38,7 +60,19 @@ cc_library(
         "source/scale_gcc.cc",
         "source/scale_win.cc",
         "source/video_common.cc",
-    ],
+    ] + select({
+        ":use_neon": [
+            "source/compare_neon.cc",
+            "source/compare_neon64.cc",
+            "source/rotate_neon.cc",
+            "source/rotate_neon64.cc",
+            "source/row_neon.cc",
+            "source/row_neon64.cc",
+            "source/scale_neon.cc",
+            "source/scale_neon64.cc",
+        ],
+        "//conditions:default": [],
+    }),
     hdrs = [
         "include/libyuv.h",
         "include/libyuv/basic_types.h",
@@ -61,8 +95,12 @@ cc_library(
         "include/libyuv/version.h",
         "include/libyuv/video_common.h",
     ],
+    defines = ["HAVE_JPEG"],
     includes = [
         "include",
     ],
     visibility = ["//visibility:public"],
+    deps = [
+        "@jpeg",
+    ],
 )

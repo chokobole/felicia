@@ -327,9 +327,15 @@ Status DshowCamera::Stop() {
 void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
                                 const CameraFormat& camera_format,
                                 ::base::TimeDelta timestamp) {
-  CameraBuffer camera_buffer(const_cast<uint8_t*>(buffer), length);
-  camera_buffer.set_payload(length);
+  if (camera_format_.pixel_format() != PixelFormat::PIXEL_FORMAT_MJPEG &&
+      camera_format_.AllocationSize() != length) {
+    status_callback_.Run(errors::InvalidNumberOfBytesInBuffer());
+    return;
+  }
+
   if (camera_format_.convert_to_argb()) {
+    CameraBuffer camera_buffer(const_cast<uint8_t*>(buffer), length);
+    camera_buffer.set_payload(length);
     ::base::Optional<CameraFrame> argb_frame =
         ConvertToARGB(camera_buffer, camera_format);
     if (argb_frame.has_value()) {
@@ -344,9 +350,9 @@ void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
       status_callback_.Run(errors::FailedToConvertToARGB());
     }
   } else {
-    std::unique_ptr<uint8_t[]> data(new uint8_t[camera_buffer.payload()]);
-    memcpy(data.get(), camera_buffer.start(), camera_buffer.payload());
-    CameraFrame camera_frame(std::move(data), camera_format_);
+    std::unique_ptr<uint8_t[]> data(new uint8_t[length]);
+    memcpy(data.get(), buffer, length);
+    CameraFrame camera_frame(std::move(data), length, camera_format_);
     if (timestamp == kNoTimestamp) timestamp = timestamper_.timestamp();
     camera_frame.set_timestamp(timestamp);
     camera_frame_callback_.Run(std::move(camera_frame));

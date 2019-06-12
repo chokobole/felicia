@@ -554,7 +554,8 @@ void V4l2Camera::DoCapture() {
 #endif
   if (buf_error_flag_set) {
     status_callback_.Run(errors::V4l2ErrorFlagWasSet());
-  } else if (buffer.bytesused != camera_format_.AllocationSize()) {
+  } else if (camera_format_.pixel_format() != PixelFormat::PIXEL_FORMAT_MJPEG &&
+             buffer.bytesused != camera_format_.AllocationSize()) {
     buffer.bytesused = 0;
     status_callback_.Run(errors::InvalidNumberOfBytesInBuffer());
   } else {
@@ -572,7 +573,8 @@ void V4l2Camera::DoCapture() {
     } else {
       std::unique_ptr<uint8_t[]> data(new uint8_t[camera_buffer.payload()]);
       memcpy(data.get(), camera_buffer.start(), camera_buffer.payload());
-      CameraFrame camera_frame(std::move(data), camera_format_);
+      CameraFrame camera_frame(std::move(data), camera_buffer.payload(),
+                               camera_format_);
       camera_frame.set_timestamp(timestamper_.timestamp());
       camera_frame_callback_.Run(std::move(camera_frame));
     }

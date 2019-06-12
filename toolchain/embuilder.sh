@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-source bazel-out/host/bin/toolchain/env.sh
+source bazel-out/host/genfiles/toolchain/env.sh
 
 mkdir -p "$PWD/toolchain/emscripten_cache"
 
