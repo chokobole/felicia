@@ -1,5 +1,4 @@
 import { observable, action } from 'mobx';
-import { NotificationManager } from 'react-notifications';
 
 import { TOPIC_INFO, hasWSChannel } from '@felicia-viz/communication';
 
@@ -91,7 +90,6 @@ export default class UIState {
 
           if (!found) {
             viewState.unsetTopic(typeName, topic);
-            NotificationManager.error(`Topic '${topic}' was disconnected.`, 'Topic Info');
           }
         });
       });

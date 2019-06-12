@@ -1,4 +1,4 @@
-import { action, observable } from 'mobx';
+import { action, observable, toJS } from 'mobx';
 import { NotificationManager } from 'react-notifications';
 
 import { TOPIC_INFO, hasWSChannel } from '@felicia-viz/communication';
@@ -32,10 +32,20 @@ export default class TopicInfo {
     const newTopics = message.data;
     let updated = false;
 
+    const topics = toJS(this.topics);
     newTopics.forEach(value => {
       if (hasWSChannel(value)) {
-        if (!this.topics.find(topic => topic === value)) {
-          NotificationManager.info(`Topic '${value.topic}' is being published.`, 'Topic Info');
+        if (!topics.find(topic => topic.topic === value.topic)) {
+          NotificationManager.info(`Topic '${value.topic}' was connected.`, 'Topic Info');
+          updated = true;
+        }
+      }
+    });
+
+    topics.forEach(value => {
+      if (hasWSChannel(value)) {
+        if (!newTopics.find(topic => topic.topic === value.topic)) {
+          NotificationManager.error(`Topic '${value.topic}' was disconnected.`, 'Topic Info');
           updated = true;
         }
       }
