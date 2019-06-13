@@ -45,7 +45,7 @@ Now look into the [camera_publishing_node.py](camera_publishing_node.py). In ord
 ```python
 def on_init(self):
     print("CameraPublishingNode.on_init()")
-    self.camera = fel.CameraFactory.new_camera(self.camera_descriptor)
+    self.camera = fel.drivers.CameraFactory.new_camera(self.camera_descriptor)
     fel.check(self.camera.init().ok())
 ```
 
@@ -61,7 +61,7 @@ def on_request_publish(self, status):
 
 def start_camera(self):
     # You should set the camera format if you have any you want to run with.
-    s = self.camera.start(fel.CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 25, True),
+    s = self.camera.start(fel.drivers.CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 25, True),
                           self.on_camera_frame, self.on_camera_error)
     if s.ok():
         # fel.MasterProxy.post_delayed_task(

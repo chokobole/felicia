@@ -18,22 +18,81 @@ namespace felicia {
 using PyCameraFrameCallback = PyCallback<void(CameraFrame)>;
 
 void AddCamera(py::module& m) {
+  py::class_<CameraSettings>(m, "CameraSettings")
+      .def(py::init<>())
+      .def("has_white_balance_mode", &CameraSettings::has_white_balance_mode)
+      .def("set_white_balance_mode", &CameraSettings::set_white_balance_mode)
+      .def("white_balance_mode", &CameraSettings::white_balance_mode)
+      .def("has_exposure_mode", &CameraSettings::has_exposure_mode)
+      .def("set_exposure_mode", &CameraSettings::set_exposure_mode)
+      .def("exposure_mode", &CameraSettings::exposure_mode)
+      .def("has_exposure_compensation",
+           &CameraSettings::has_exposure_compensation)
+      .def("set_exposure_compensation",
+           &CameraSettings::set_exposure_compensation)
+      .def("exposure_compensation", &CameraSettings::exposure_compensation)
+      .def("has_exposure_time", &CameraSettings::has_exposure_time)
+      .def("set_exposure_time", &CameraSettings::set_exposure_time)
+      .def("exposure_time", &CameraSettings::exposure_time)
+      .def("has_color_temperature", &CameraSettings::has_color_temperature)
+      .def("set_color_temperature", &CameraSettings::set_color_temperature)
+      .def("color_temperature", &CameraSettings::color_temperature)
+      .def("has_brightness", &CameraSettings::has_brightness)
+      .def("set_brightness", &CameraSettings::set_brightness)
+      .def("brightness", &CameraSettings::brightness)
+      .def("has_contrast", &CameraSettings::has_contrast)
+      .def("set_contrast", &CameraSettings::set_contrast)
+      .def("contrast", &CameraSettings::contrast)
+      .def("has_saturation", &CameraSettings::has_saturation)
+      .def("set_saturation", &CameraSettings::set_saturation)
+      .def("saturation", &CameraSettings::saturation)
+      .def("has_sharpness", &CameraSettings::has_sharpness)
+      .def("set_sharpness", &CameraSettings::set_sharpness)
+      .def("sharpness", &CameraSettings::sharpness)
+      .def("has_hue", &CameraSettings::has_hue)
+      .def("set_hue", &CameraSettings::set_hue)
+      .def("hue", &CameraSettings::hue)
+      .def("has_gain", &CameraSettings::has_gain)
+      .def("set_gain", &CameraSettings::set_gain)
+      .def("gain", &CameraSettings::gain)
+      .def("has_gamma", &CameraSettings::has_gamma)
+      .def("set_gamma", &CameraSettings::set_gamma)
+      .def("gamma", &CameraSettings::gamma);
+
   py::class_<CameraInterface, PyCameraInterface>(m, "CameraInterface")
-      .def("init", &CameraInterface::Init)
-      .def("start",
-           [](CameraInterface& self, const CameraFormat& camera_format,
-              py::function on_camera_frame_callback,
-              py::function on_error_callback) {
-             return self.Start(
-                 camera_format,
-                 ::base::BindRepeating(&PyCameraFrameCallback::Invoke,
-                                       ::base::Owned(new PyCameraFrameCallback(
-                                           on_camera_frame_callback))),
-                 ::base::BindRepeating(
-                     &PyStatusCallback::Invoke,
-                     ::base::Owned(new PyStatusCallback(on_error_callback))));
+      .def("init", &CameraInterface::Init,
+           py::call_guard<py::gil_scoped_release>())
+      .def(
+          "start",
+          [](CameraInterface& self, const CameraFormat& camera_format,
+             py::function on_camera_frame_callback,
+             py::function on_error_callback) {
+            return self.Start(
+                camera_format,
+                ::base::BindRepeating(&PyCameraFrameCallback::Invoke,
+                                      ::base::Owned(new PyCameraFrameCallback(
+                                          on_camera_frame_callback))),
+                ::base::BindRepeating(
+                    &PyStatusCallback::Invoke,
+                    ::base::Owned(new PyStatusCallback(on_error_callback))));
+          },
+          py::call_guard<py::gil_scoped_release>())
+      .def("stop", &CameraInterface::Stop,
+           py::call_guard<py::gil_scoped_release>())
+      .def("set_camera_settings", &CameraInterface::SetCameraSettings)
+      .def("get_camera_settings_info",
+           [](CameraInterface& self, py::object object) {
+             CameraSettingsInfoMessage message;
+             Status s = self.GetCameraSettingsInfo(&message);
+
+             std::string text;
+             message.SerializeToString(&text);
+             object.attr("ParseFromString")(py::bytes(text));
+             return s;
            })
-      .def("stop", &CameraInterface::Stop);
+      .def("is_initialized", &CameraInterface::IsInitialized)
+      .def("is_started", &CameraInterface::IsStarted)
+      .def("is_stopped", &CameraInterface::IsStopped);
 
   py::class_<CameraDescriptor>(m, "CameraDescriptor")
       .def_property_readonly("display_name", &CameraDescriptor::display_name)

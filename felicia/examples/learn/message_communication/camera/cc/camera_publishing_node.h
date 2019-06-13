@@ -2,6 +2,7 @@
 #define FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_CAMERA_CC_CAMERA_PUBLISHING_NODE_H_
 
 #include "felicia/core/communication/publisher.h"
+#include "felicia/core/message/protobuf_util.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/drivers/camera/camera_factory.h"
 
@@ -18,6 +19,19 @@ class CameraPublishingNode : public NodeLifecycle {
     camera_ = CameraFactory::NewCamera(camera_descriptor_);
     Status s = camera_->Init();
     CHECK(s.ok()) << s;
+
+    // You can set camera settings here.
+    CameraSettings camera_settings;
+    s = camera_->SetCameraSettings(camera_settings);
+    LOG_IF(ERROR, !s.ok()) << s;
+
+    CameraSettingsInfoMessage message;
+    s = camera_->GetCameraSettingsInfo(&message);
+    if (s.ok()) {
+      std::cout << protobuf::ProtobufMessageToString(message) << std::endl;
+    } else {
+      LOG(ERROR) << s;
+    }
   }
 
   void OnDidCreate(const NodeInfo& node_info) override {

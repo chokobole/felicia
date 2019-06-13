@@ -47,6 +47,15 @@ void OnInit() override {
   std::cout << "CameraPublishingNode::OnInit()" << std::endl;
   camera_ = CameraFactory::NewCamera(camera_descriptor_);
   CHECK(camera_->Init().ok());
+
+  // You can set camera settings here.
+  CameraSettings camera_settings;
+  s = camera_->SetCameraSettings(camera_settings);
+  LOG_IF(ERROR, !s.ok()) << s;
+
+  CameraSettingsInfoMessage message;
+  s = camera_->GetCameraSettingsInfo(&message);
+  std::cout << protobuf::ProtobufMessageToString(message) << std::endl;
 }
 ```
 

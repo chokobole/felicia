@@ -11,7 +11,7 @@
 #include "felicia/python/channel_py.h"
 #include "felicia/python/command_line_interface_py.h"
 #include "felicia/python/communication_py.h"
-#include "felicia/python/drivers/camera_py.h"
+#include "felicia/python/drivers_py.h"
 #include "felicia/python/master_proxy_py.h"
 #include "felicia/python/node_py.h"
 
@@ -217,8 +217,8 @@ PYBIND11_MODULE(felicia_py, m) {
   AddNodeLifecycle(m);
   AddChannel(m);
   AddCommunication(m);
-  AddCamera(m);
   AddCommandLineInterface(m);
+  AddDrivers(m);
 }
 
 }  // namespace felicia

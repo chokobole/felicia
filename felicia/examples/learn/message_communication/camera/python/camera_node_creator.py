@@ -21,7 +21,7 @@ def main():
         sys.exit(1)
 
     camera_descriptors = []
-    s = fel.CameraFactory.get_camera_descriptors(camera_descriptors)
+    s = fel.drivers.CameraFactory.get_camera_descriptors(camera_descriptors)
     if not s.ok():
         print("{} {}.".format(cli.RED_ERROR, s), file=sys.stderr)
         sys.exit(1)
@@ -29,7 +29,7 @@ def main():
     if delegate.device_list_flag.value():
         if delegate.device_index_flag.is_set():
             camera_formats = []
-            s = fel.CameraFactory.get_supported_camera_formats(
+            s = fel.drivers.CameraFactory.get_supported_camera_formats(
                 camera_descriptors[delegate.device_index_flag.value()],
                 camera_formats)
             if not s.ok():

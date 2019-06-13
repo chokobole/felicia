@@ -39,6 +39,25 @@ class PyCameraInterface : public CameraInterface {
         Stop,            /* Name of function in C++ (must match Python name) */
     );
   }
+
+  Status SetCameraSettings(const CameraSettings& camera_settings) override {
+    PYBIND11_OVERLOAD(Status,            /* Return type */
+                      CameraInterface,   /* Parent class */
+                      SetCameraSettings, /* Name of function in C++ (must match
+                                            Python name) */
+                      camera_settings    /* Argument(s) */
+    );
+  }
+
+  Status GetCameraSettingsInfo(
+      CameraSettingsInfoMessage* camera_settings) override {
+    PYBIND11_OVERLOAD(Status,                /* Return type */
+                      CameraInterface,       /* Parent class */
+                      GetCameraSettingsInfo, /* Name of function in C++ (must
+                                                match Python name) */
+                      camera_settings        /* Argument(s) */
+    );
+  }
 };
 
 void AddCamera(py::module& m);

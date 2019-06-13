@@ -5,6 +5,7 @@ import felicia_py.command_line_interface as cli
 from felicia.core.protobuf.channel_pb2 import ChannelDef
 from felicia.drivers.camera.camera_frame_message_pb2 import CameraFrameMessage
 from felicia.drivers.camera.camera_format_message_pb2 import PIXEL_FORMAT_YUY2
+from felicia.drivers.camera.camera_settings_message_pb2 import CameraSettingsInfoMessage
 
 
 class CameraPublishingNode(fel.NodeLifecycle):
@@ -16,11 +17,25 @@ class CameraPublishingNode(fel.NodeLifecycle):
 
     def on_init(self):
         print("CameraPublishingNode.on_init()")
-        self.camera = fel.CameraFactory.new_camera(self.camera_descriptor)
+        self.camera = fel.drivers.CameraFactory.new_camera(
+            self.camera_descriptor)
         s = self.camera.init()
         if not s.ok():
             fel.log(fel.ERROR, s.error_message())
             sys.exit(1)
+
+        # You can set camera settings here.
+        camera_settings = fel.drivers.CameraSettings()
+        camera_settings.set_gain(100)
+        s = self.camera.set_camera_settings(camera_settings)
+        fel.log_if(fel.ERROR, not s.ok(), s.error_message())
+
+        message = CameraSettingsInfoMessage()
+        s = self.camera.get_camera_settings_info(message)
+        if s.ok():
+            print(message)
+        else:
+            fel.log(fel.ERROR, s.error_message())
 
     def on_did_create(self, node_info):
         print("CameraPublishingNode.on_did_create()")
@@ -50,7 +65,7 @@ class CameraPublishingNode(fel.NodeLifecycle):
 
     def start_camera(self):
         # You should set the camera format if you have any you want to run with.
-        s = self.camera.start(fel.CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 25, True),
+        s = self.camera.start(fel.drivers.CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 25, True),
                               self.on_camera_frame, self.on_camera_error)
         if s.ok():
             # fel.MasterProxy.post_delayed_task(
