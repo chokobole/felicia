@@ -131,7 +131,7 @@ If request is successfully delivered to the server, then callback `OnRequestPubl
 ```c++
 void OnRequestPublish(const Status& s) {
   std::cout << "SimplePublishingNode::OnRequestPublish()" << std::endl;
-  LOG_IF(ERROR, !s.ok()) << s.error_message();
+  LOG_IF(ERROR, !s.ok()) << s;
   RepeatingPublish();
 }
 
@@ -152,7 +152,7 @@ void RepeatingPublish() {
 
 void OnPublish(const Status& s) {
   std::cout << "SimplePublishingNode::OnPublish()" << std::endl;
-  LOG_IF(ERROR, !s.ok()) << s.error_message();
+  LOG_IF(ERROR, !s.ok()) << s;
 }
 ```
 
@@ -171,7 +171,7 @@ will be called, too.
 ```c++
 void OnRequestUnpublish(const Status& s) {
   std::cout << "SimplePublishingNode::OnRequestUnpublish()" << std::endl;
-  LOG_IF(ERROR, !s.ok()) << s.error_message();
+  LOG_IF(ERROR, !s.ok()) << s;
 }
 ```
 
@@ -230,7 +230,7 @@ void RequestUnsubscribe() {
 
 void OnRequestUnsubscribe(const Status& s) {
   std::cout << "SimpleSubscribingNode::OnRequestUnsubscribe()" << std::endl;
-  LOG_IF(ERROR, !s.ok()) << s.error_message();
+  LOG_IF(ERROR, !s.ok()) << s;
 }
 ```
 

@@ -24,7 +24,7 @@ void TopicInfoWatcherNode::OnDidCreate(const NodeInfo& node_info) {
 }
 
 void TopicInfoWatcherNode::OnError(const Status& s) {
-  LOG(ERROR) << s.error_message();
+  LOG(ERROR) << s;
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.topic_info_watcher_.UnregisterAllTopicCallback();
   delegate_->OnError(s);

@@ -38,7 +38,7 @@ class SimplePublishingNode : public NodeLifecycle {
 
   void OnError(const Status& s) override {
     std::cout << "SimplePublishingNode::OnError()" << std::endl;
-    LOG(ERROR) << s.error_message();
+    LOG(ERROR) << s;
   }
 
   void RequestPublish() {
@@ -53,7 +53,7 @@ class SimplePublishingNode : public NodeLifecycle {
 
   void OnRequestPublish(const Status& s) {
     std::cout << "SimplePublishingNode::OnRequestPublish()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    LOG_IF(ERROR, !s.ok()) << s;
     RepeatingPublish();
   }
 
@@ -75,7 +75,7 @@ class SimplePublishingNode : public NodeLifecycle {
   void OnPublish(ChannelDef::Type type, const Status& s) {
     std::cout << "SimplePublishingNode::OnPublish() from "
               << ChannelDef::Type_Name(type) << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    LOG_IF(ERROR, !s.ok()) << s;
   }
 
   MessageSpec GenerateMessage() {
@@ -97,7 +97,7 @@ class SimplePublishingNode : public NodeLifecycle {
 
   void OnRequestUnpublish(const Status& s) {
     std::cout << "SimplePublishingNode::OnRequestUnpublish()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    LOG_IF(ERROR, !s.ok()) << s;
   }
 
  private:

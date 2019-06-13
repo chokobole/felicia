@@ -13,7 +13,7 @@ void DynamicPublishingNode::OnDidCreate(const NodeInfo& node_info) {
 }
 
 void DynamicPublishingNode::OnError(const Status& s) {
-  LOG_IF(ERROR, !s.ok()) << s.error_message();
+  LOG_IF(ERROR, !s.ok()) << s;
 }
 
 void DynamicPublishingNode::RequestPublish(

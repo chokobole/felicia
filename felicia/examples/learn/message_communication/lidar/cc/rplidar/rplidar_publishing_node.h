@@ -44,7 +44,7 @@ class RPlidarPublishingNode : public NodeLifecycle {
 
   void OnError(const Status& s) override {
     std::cout << "RPlidarPublishingNode::OnError()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    LOG_IF(ERROR, !s.ok()) << s;
   }
 
   void RequestPublish() {
@@ -64,7 +64,7 @@ class RPlidarPublishingNode : public NodeLifecycle {
     if (s.ok()) {
       StartLidar();
     } else {
-      LOG(ERROR) << s.error_message();
+      LOG(ERROR) << s;
     }
   }
 
@@ -77,7 +77,7 @@ class RPlidarPublishingNode : public NodeLifecycle {
       std::vector<rp::standalone::rplidar::RplidarScanMode> scan_modes;
       s = lidar_->GetSupportedScanModes(&scan_modes);
       if (!s.ok()) {
-        LOG(ERROR) << s.error_message();
+        LOG(ERROR) << s;
       } else {
         for (auto& scan_mode : scan_modes) {
           if (scan_mode.scan_mode == scan_mode_) {
@@ -114,7 +114,7 @@ class RPlidarPublishingNode : public NodeLifecycle {
       //                      ::base::Unretained(this)),
       //     ::base::TimeDelta::FromSeconds(10));
     } else {
-      LOG(ERROR) << s.error_message();
+      LOG(ERROR) << s;
     }
   }
 
@@ -128,8 +128,7 @@ class RPlidarPublishingNode : public NodeLifecycle {
   }
 
   void OnPublishLidarFrame(ChannelDef::Type type, const Status& s) {
-    LOG_IF(ERROR, !s.ok()) << s.error_message() << " from "
-                           << ChannelDef::Type_Name(type);
+    LOG_IF(ERROR, !s.ok()) << s << " from " << ChannelDef::Type_Name(type);
   }
 
   void RequestUnpublish() {
@@ -144,13 +143,13 @@ class RPlidarPublishingNode : public NodeLifecycle {
     if (s.ok()) {
       StopLidar();
     } else {
-      LOG(ERROR) << s.error_message();
+      LOG(ERROR) << s;
     }
   }
 
   void StopLidar() {
     Status s = lidar_->Stop();
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    LOG_IF(ERROR, !s.ok()) << s;
   }
 
  private:

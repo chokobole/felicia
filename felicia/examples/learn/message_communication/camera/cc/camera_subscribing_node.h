@@ -23,7 +23,7 @@ class CameraSubscribingNode : public NodeLifecycle {
 
   void OnError(const Status& s) override {
     std::cout << "CameraSubscribingNode::OnError()" << std::endl;
-    LOG(ERROR) << s.error_message();
+    LOG(ERROR) << s;
   }
 
   void RequestSubscribe() {
@@ -60,12 +60,12 @@ class CameraSubscribingNode : public NodeLifecycle {
 
   void OnSubscriptionError(const Status& s) {
     std::cout << "CameraSubscribingNode::OnSubscriptionError()" << std::endl;
-    LOG(ERROR) << s.error_message();
+    LOG(ERROR) << s;
   }
 
   void OnRequestSubscribe(const Status& s) {
     std::cout << "CameraSubscribingNode::OnRequestSubscribe()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    LOG_IF(ERROR, !s.ok()) << s;
   }
 
   void RequestUnsubscribe() {
@@ -77,7 +77,7 @@ class CameraSubscribingNode : public NodeLifecycle {
 
   void OnRequestUnsubscribe(const Status& s) {
     std::cout << "CameraSubscribingNode::OnRequestUnsubscribe()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    LOG_IF(ERROR, !s.ok()) << s;
   }
 
  private:

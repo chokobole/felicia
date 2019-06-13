@@ -51,7 +51,7 @@ void HeartBeatSignaller::OnAccept(const Status& s) {
   if (s.ok()) {
     Signal();
   } else {
-    LOG(ERROR) << "Failed to accept: " << s.error_message();
+    LOG(ERROR) << "Failed to accept: " << s;
   }
 }
 

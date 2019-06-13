@@ -28,7 +28,7 @@ class CameraPublishingNode : public NodeLifecycle {
 
   void OnError(const Status& s) override {
     std::cout << "CameraPublishingNode::OnError()" << std::endl;
-    LOG(ERROR) << s.error_message();
+    LOG(ERROR) << s;
   }
 
   void RequestPublish() {
@@ -51,7 +51,7 @@ class CameraPublishingNode : public NodeLifecycle {
                             ::base::BindOnce(&CameraPublishingNode::StartCamera,
                                              ::base::Unretained(this)));
     } else {
-      LOG(ERROR) << s.error_message();
+      LOG(ERROR) << s;
     }
   }
 
@@ -71,7 +71,7 @@ class CameraPublishingNode : public NodeLifecycle {
       //                      ::base::Unretained(this)),
       //     ::base::TimeDelta::FromSeconds(10));
     } else {
-      LOG(ERROR) << s.error_message();
+      LOG(ERROR) << s;
     }
   }
 
@@ -83,11 +83,10 @@ class CameraPublishingNode : public NodeLifecycle {
                                              ::base::Unretained(this)));
   }
 
-  void OnCameraError(const Status& s) { LOG(ERROR) << s.error_message(); }
+  void OnCameraError(const Status& s) { LOG(ERROR) << s; }
 
   void OnPublish(ChannelDef::Type type, const Status& s) {
-    LOG_IF(ERROR, !s.ok()) << s.error_message() << " from "
-                           << ChannelDef::Type_Name(type);
+    LOG_IF(ERROR, !s.ok()) << s << " from " << ChannelDef::Type_Name(type);
   }
 
   void RequestUnpublish() {
@@ -105,13 +104,13 @@ class CameraPublishingNode : public NodeLifecycle {
                             ::base::BindOnce(&CameraPublishingNode::StopCamera,
                                              ::base::Unretained(this)));
     } else {
-      LOG(ERROR) << s.error_message();
+      LOG(ERROR) << s;
     }
   }
 
   void StopCamera() {
     Status s = camera_->Stop();
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    LOG_IF(ERROR, !s.ok()) << s;
   }
 
  private:

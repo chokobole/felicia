@@ -213,7 +213,7 @@ void MasterProxy::OnRegisterClient(::base::WaitableEvent* event,
     event->Signal();
 #endif
   } else {
-    LOG(FATAL) << s.error_message();
+    LOG(FATAL) << s;
   }
 }
 

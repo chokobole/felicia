@@ -42,7 +42,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
 
   void OnError(const Status& s) override {
     std::cout << "RsCameraPublishingNode::OnError()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    LOG_IF(ERROR, !s.ok()) << s;
   }
 
   void RequestPublish() {
@@ -82,7 +82,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
           FROM_HERE, ::base::BindOnce(&RsCameraPublishingNode::StartCamera,
                                       ::base::Unretained(this)));
     } else {
-      LOG(ERROR) << s.error_message();
+      LOG(ERROR) << s;
     }
   }
 
@@ -141,7 +141,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
       //                      ::base::Unretained(this)),
       //     ::base::TimeDelta::FromSeconds(10));
     } else {
-      LOG(ERROR) << s.error_message();
+      LOG(ERROR) << s;
     }
   }
 
@@ -194,23 +194,18 @@ class RsCameraPublishingNode : public NodeLifecycle {
     last_timestamp_ = imu_frame.timestamp();
   }
 
-  void OnCameraError(const Status& s) {
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
-  }
+  void OnCameraError(const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }
 
   void OnPublishColor(ChannelDef::Type type, const Status& s) {
-    LOG_IF(ERROR, !s.ok()) << s.error_message() << " from "
-                           << ChannelDef::Type_Name(type);
+    LOG_IF(ERROR, !s.ok()) << s << " from " << ChannelDef::Type_Name(type);
   }
 
   void OnPublishDepth(ChannelDef::Type type, const Status& s) {
-    LOG_IF(ERROR, !s.ok()) << s.error_message() << " from "
-                           << ChannelDef::Type_Name(type);
+    LOG_IF(ERROR, !s.ok()) << s << " from " << ChannelDef::Type_Name(type);
   }
 
   void OnPublishImu(ChannelDef::Type type, const Status& s) {
-    LOG_IF(ERROR, !s.ok()) << s.error_message() << " from "
-                           << ChannelDef::Type_Name(type);
+    LOG_IF(ERROR, !s.ok()) << s << " from " << ChannelDef::Type_Name(type);
   }
 
   void RequestUnpublish() {
@@ -238,13 +233,13 @@ class RsCameraPublishingNode : public NodeLifecycle {
           FROM_HERE, ::base::BindOnce(&RsCameraPublishingNode::StopCamera,
                                       ::base::Unretained(this)));
     } else {
-      LOG(ERROR) << s.error_message();
+      LOG(ERROR) << s;
     }
   }
 
   void StopCamera() {
     Status s = camera_->Stop();
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    LOG_IF(ERROR, !s.ok()) << s;
   }
 
  private:

@@ -23,7 +23,7 @@ class LidarSubscribingNode : public NodeLifecycle {
 
   void OnError(const Status& s) override {
     std::cout << "LidarSubscribingNode::OnError()" << std::endl;
-    LOG(ERROR) << s.error_message();
+    LOG(ERROR) << s;
   }
 
   void RequestSubscribe() {
@@ -49,12 +49,12 @@ class LidarSubscribingNode : public NodeLifecycle {
 
   void OnSubscriptionError(const Status& s) {
     std::cout << "LidarSubscribingNode::OnSubscriptionError()" << std::endl;
-    LOG(ERROR) << s.error_message();
+    LOG(ERROR) << s;
   }
 
   void OnRequestSubscribe(const Status& s) {
     std::cout << "LidarSubscribingNode::OnRequestSubscribe()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    LOG_IF(ERROR, !s.ok()) << s;
   }
 
   void RequestUnsubscribe() {
@@ -66,7 +66,7 @@ class LidarSubscribingNode : public NodeLifecycle {
 
   void OnRequestUnsubscribe(const Status& s) {
     std::cout << "LidarSubscribingNode::OnRequestUnsubscribe()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    LOG_IF(ERROR, !s.ok()) << s;
   }
 
  private:

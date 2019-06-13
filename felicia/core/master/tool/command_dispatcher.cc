@@ -90,7 +90,7 @@ void CommandDispatcher::OnListClientsAsync(ListClientsRequest* request,
   ScopedMasterProxyStopper stopper;
 
   if (!s.ok()) {
-    std::cerr << s.error_message() << std::endl;
+    std::cerr << s << std::endl;
     return;
   }
   auto client_infos = response->client_infos();
@@ -161,7 +161,7 @@ void CommandDispatcher::OnListNodesAsync(ListNodesRequest* request,
   ScopedMasterProxyStopper stopper;
 
   if (!s.ok()) {
-    std::cerr << s.error_message() << std::endl;
+    std::cerr << s << std::endl;
     return;
   }
 
@@ -254,7 +254,7 @@ void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
   ScopedMasterProxyStopper stopper;
 
   if (!s.ok()) {
-    std::cerr << s.error_message() << std::endl;
+    std::cerr << s << std::endl;
     return;
   }
 

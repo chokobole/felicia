@@ -31,7 +31,7 @@ class SimpleSubscribingNode : public NodeLifecycle {
 
   void OnError(const Status& s) override {
     std::cout << "SimpleSubscribingNode::OnError()" << std::endl;
-    LOG(ERROR) << s.error_message();
+    LOG(ERROR) << s;
   }
 
   void RequestSubscribe() {
@@ -56,12 +56,12 @@ class SimpleSubscribingNode : public NodeLifecycle {
 
   void OnSubscriptionError(const Status& s) {
     std::cout << "SimpleSubscribingNode::OnSubscriptionError()" << std::endl;
-    LOG(ERROR) << s.error_message();
+    LOG(ERROR) << s;
   }
 
   void OnRequestSubscribe(const Status& s) {
     std::cout << "SimpleSubscribingNode::OnRequestSubscribe()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    LOG_IF(ERROR, !s.ok()) << s;
   }
 
   void RequestUnsubscribe() {
@@ -73,7 +73,7 @@ class SimpleSubscribingNode : public NodeLifecycle {
 
   void OnRequestUnsubscribe(const Status& s) {
     std::cout << "SimpleSubscribingNode::OnRequestUnsubscribe()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s.error_message();
+    LOG_IF(ERROR, !s.ok()) << s;
   }
 
  private:

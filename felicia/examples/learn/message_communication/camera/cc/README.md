@@ -107,12 +107,12 @@ void OnRequestUnpublish(const Status& s) {
                           ::base::BindOnce(&CameraPublishingNode::StopCamera,
                                             ::base::Unretained(this)));
   } else {
-    LOG(ERROR) << s.error_message();
+    LOG(ERROR) << s;
   }
 }
 
 void StopCamera() {
   Status s = camera_->Stop();
-  LOG_IF(ERROR, !s.ok()) << s.error_message();
+  LOG_IF(ERROR, !s.ok()) << s;
 }
 ```
