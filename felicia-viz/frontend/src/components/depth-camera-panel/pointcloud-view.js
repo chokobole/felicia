@@ -40,7 +40,6 @@ export default class PointcloudView extends Component {
     this.worker.onmessage = event => {
       const { colors, positions } = event.data;
       const { mesh } = this.meshInfo;
-      this.meshInfo.toUpdate -= 1;
 
       mesh.updateVerticesData(VertexBuffer.ColorKind, colors);
       mesh.updateVerticesData(VertexBuffer.PositionKind, positions);
@@ -76,10 +75,8 @@ export default class PointcloudView extends Component {
         this._moveCamera(width, height);
       }
 
-      if (this.meshInfo.toUpdate === 0) {
-        this._updatePointcloud(nextProps.frame);
-        return true;
-      }
+      this._updatePointcloud(nextProps.frame);
+      return true;
     }
 
     const { width, height } = this.props;
@@ -99,36 +96,43 @@ export default class PointcloudView extends Component {
   };
 
   _createPointcloud(width, height) {
-    const positions = [];
-    const indices = [];
-    const colors = [];
+    const positions = new Float32Array(width * height * 3);
+    const indices = new Float32Array((width - 1) * (height - 1) * 6);
+    const colors = new Float32Array(width * height * 4);
     const normals = [];
 
+    let positionsIdx = 0;
+    let colorsIdx = 0;
     for (let i = 0; i < height; i += 1) {
       for (let j = 0; j < width; j += 1) {
-        positions.push(width - j - 1);
-        positions.push(height - i - 1);
-        positions.push(0);
+        positions[positionsIdx] = width - j - 1;
+        positions[positionsIdx + 1] = height - i - 1;
+        positions[positionsIdx + 2] = 0;
 
-        colors.push(0);
-        colors.push(0);
-        colors.push(0);
-        colors.push(1);
+        colors[colorsIdx] = 0;
+        colors[colorsIdx + 1] = 0;
+        colors[colorsIdx + 2] = 0;
+        colors[colorsIdx + 3] = 1;
+
+        positionsIdx += 3;
+        colorsIdx += 4;
       }
     }
 
-    let idx = 0;
+    let indicesIdx = 0;
+    let verticesIdx = 0;
     for (let i = 0; i < height - 1; i += 1) {
       for (let j = 0; j < width; j += 1) {
         if (j !== width - 1) {
-          indices.push(idx);
-          indices.push(idx + width);
-          indices.push(idx + 1);
-          indices.push(idx + 1);
-          indices.push(idx + width);
-          indices.push(idx + width + 1);
+          indices[indicesIdx] = verticesIdx;
+          indices[indicesIdx + 1] = verticesIdx + width;
+          indices[indicesIdx + 2] = verticesIdx + 1;
+          indices[indicesIdx + 3] = verticesIdx + 1;
+          indices[indicesIdx + 4] = verticesIdx + width;
+          indices[indicesIdx + 5] = verticesIdx + width + 1;
+          indicesIdx += 6;
         }
-        idx += 1;
+        verticesIdx += 1;
       }
     }
 
@@ -151,7 +155,6 @@ export default class PointcloudView extends Component {
       mesh,
       width,
       height,
-      toUpdate: 0,
     };
   }
 
@@ -162,7 +165,6 @@ export default class PointcloudView extends Component {
 
     const colors = mesh.getVerticesData(VertexBuffer.ColorKind);
     const positions = mesh.getVerticesData(VertexBuffer.PositionKind);
-    this.meshInfo.toUpdate += 1;
 
     this.worker.postMessage({
       colors,
