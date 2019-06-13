@@ -2,16 +2,18 @@ from six.moves import filter, map
 
 import felicia_py.command_line_interface as cli
 
+
 class FlagParserDelegate(cli._FlagParserDelegate):
     def __init__(self):
         super().__init__()
         self._flags = None
 
     def _is_flag_type(self, flag):
-        return isinstance(flag, (cli.BoolFlag, cli.IntFlag, cli.DoubleFlag, cli.StringFlag,
-                              cli.BoolDefaultFlag, cli.IntDefaultFlag, cli.DoubleDefaultFlag, cli.StringDefaultFlag,
-                              cli.IntRangeFlag, cli.DoubleRangeFlag, cli.StringRangeFlag,
-                              cli.IntChoicesFlag, cli.DoubleChoicesFlag, cli.StringChoicesFlag))
+        return isinstance(flag, (cli.BoolFlag, cli.IntFlag, cli.FloatFlag, cli.DoubleFlag,
+                                 cli.StringFlag, cli.BoolDefaultFlag, cli.IntDefaultFlag,
+                                 cli.FloatDefaultFlag, cli.DoubleDefaultFlag,
+                                 cli.StringDefaultFlag, cli.IntRangeFlag, cli.StringRangeFlag,
+                                 cli.IntChoicesFlag, cli.StringChoicesFlag))
 
     def _collect_flags(self):
         if self._flags is not None:
