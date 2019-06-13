@@ -13,6 +13,7 @@
 #include <mfcaptureengine.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
+#include <strmif.h>
 #include <wrl/client.h>
 
 #include "third_party/chromium/base/bind.h"
@@ -40,6 +41,10 @@ class MfCamera : public CameraInterface {
                CameraFrameCallback camera_frame_callback,
                StatusCallback status_callback) override;
   Status Stop() override;
+
+  Status SetCameraSettings(const CameraSettings& camera_settings) override;
+  Status GetCameraSettingsInfo(
+      CameraSettingsInfoMessage* camera_settings) override;
 
   // Captured new video data.
   void OnIncomingCapturedData(const uint8_t* data, int length,
@@ -73,6 +78,12 @@ class MfCamera : public CameraInterface {
   HRESULT FillCapabilities(IMFCaptureSource* source, bool photo,
                            CapabilityList* capabilities);
 
+  Status InitializeVideoAndCameraControls();
+  void GetCameraSetting(long property, CameraSettingsModeValue* value,
+                        bool camera_control = false);
+  void GetCameraSetting(long property, CameraSettingsRangedValue* value,
+                        bool camera_control = false);
+
   static Status GetCameraFormatFromSourceMediaType(
       IMFMediaType* source_media_type, bool photo, CameraFormat* camera_format);
 
@@ -89,6 +100,9 @@ class MfCamera : public CameraInterface {
 
   Microsoft::WRL::ComPtr<IMFMediaSource> source_;
   Microsoft::WRL::ComPtr<IMFCaptureEngine> engine_;
+
+  Microsoft::WRL::ComPtr<IAMCameraControl> camera_control_;
+  Microsoft::WRL::ComPtr<IAMVideoProcAmp> video_control_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -24,6 +24,10 @@ using Microsoft::WRL::ComPtr;
 
 namespace felicia {
 
+#define MESSAGE_WITH_HRESULT(text, hr)  \
+  ::base::StringPrintf("%s :%s.", text, \
+                       ::logging::SystemErrorCodeToString(hr).c_str())
+
 namespace {
 
 const std::vector<std::pair<GUID, GUID>> kAttributes = {
@@ -321,14 +325,15 @@ Status MfCamera::GetSupportedCameraFormats(
   ComPtr<IMFMediaSource> source;
   if (!CreateVideoCaptureDeviceMediaFoundation(camera_descriptor,
                                                source.GetAddressOf())) {
-    return errors::FailedToCreateVideoCaptureDevice();
+    return errors::Unavailable("Failed to create video capture device.");
   }
 
   ComPtr<IMFSourceReader> reader;
   HRESULT hr = MFCreateSourceReaderFromMediaSource(source.Get(), NULL,
                                                    reader.GetAddressOf());
   if (FAILED(hr)) {
-    return errors::FailedToMFCreateSourceReaderFromMediaSource(hr);
+    return errors::Unauthenticated(MESSAGE_WITH_HRESULT(
+        "Failed to MFCreateSourceReaderFromMediaSource", hr));
   }
 
   DWORD stream_index = 0;
@@ -367,7 +372,8 @@ Status MfCamera::Init() {
 
   HRESULT hr = CreateCaptureEngine(engine_.GetAddressOf());
   if (FAILED(hr)) {
-    return errors::FailedToCreateCaptureEngine(hr);
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to create CaptureEngine", hr));
   }
 
   ComPtr<IMFAttributes> attributes;
@@ -376,14 +382,15 @@ Status MfCamera::Init() {
 
   if (!CreateVideoCaptureDeviceMediaFoundation(camera_descriptor_,
                                                source_.GetAddressOf())) {
-    return errors::FailedToCreateVideoCaptureDevice();
+    return errors::Unavailable("Failed to create video capture device.");
   }
 
   video_callback_ = new MFVideoCallback(this);
   hr = engine_->Initialize(video_callback_.get(), attributes.Get(), nullptr,
                            source_.Get());
   if (FAILED(hr)) {
-    return errors::FailedToInitialize(hr);
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to Initialize", hr));
   }
 
   camera_state_.ToInitialized();
@@ -405,13 +412,14 @@ Status MfCamera::Start(const CameraFormat& requested_camera_format,
   ComPtr<IMFCaptureSource> source;
   HRESULT hr = engine_->GetSource(source.GetAddressOf());
   if (FAILED(hr)) {
-    return errors::FailedToGetSource(hr);
+    return errors::Unavailable(MESSAGE_WITH_HRESULT("Failed to GetSource", hr));
   }
 
   CapabilityList video_capabilities;
   hr = FillCapabilities(source.Get(), false, &video_capabilities);
   if (FAILED(hr)) {
-    return errors::FailedToFillVideoCapabilities(hr);
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to FillVideoCapabilities", hr));
   }
 
   if (video_capabilities.empty()) {
@@ -426,13 +434,15 @@ Status MfCamera::Start(const CameraFormat& requested_camera_format,
                                    found_capability.media_type_index,
                                    source_video_media_type.GetAddressOf());
   if (FAILED(hr)) {
-    return errors::FailedToGetAvailableDeviceMediaType(hr);
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to GetAvailableDeviceMediaType", hr));
   }
 
   hr = source->SetCurrentDeviceMediaType(found_capability.stream_index,
                                          source_video_media_type.Get());
   if (FAILED(hr)) {
-    return errors::FailedToSetCurrentDeviceMediaType(hr);
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to SetCurrentDeviceMediaType", hr));
   }
 
   camera_format_ = found_capability.supported_format;
@@ -444,30 +454,34 @@ Status MfCamera::Start(const CameraFormat& requested_camera_format,
   hr = engine_->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW,
                         sink.GetAddressOf());
   if (FAILED(hr)) {
-    return errors::FailedToGetSink(hr);
+    return errors::Unavailable(MESSAGE_WITH_HRESULT("Failed to GetSink", hr));
   }
 
   ComPtr<IMFCapturePreviewSink> preview_sink;
   hr = sink->QueryInterface(IID_PPV_ARGS(preview_sink.GetAddressOf()));
   if (FAILED(hr)) {
-    return errors::FailedToQueryCapturePreviewSinkInterface(hr);
+    return errors::Unavailable(MESSAGE_WITH_HRESULT(
+        "Failed to query CapturePreviewSink interface", hr));
   }
 
   hr = preview_sink->RemoveAllStreams();
   if (FAILED(hr)) {
-    return errors::FailedToRemoveAllStreams(hr);
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to RemoveAllStreams", hr));
   }
 
   ComPtr<IMFMediaType> sink_video_media_type;
   hr = MFCreateMediaType(sink_video_media_type.GetAddressOf());
   if (FAILED(hr)) {
-    return errors::FailedToCreateSinkVideoMediaType(hr);
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to create SinkVideoMediaType", hr));
   }
 
   hr = ConvertToVideoSinkMediaType(source_video_media_type.Get(),
                                    sink_video_media_type.Get());
   if (FAILED(hr)) {
-    return errors::FailedToConvertToVideoSinkMediaType(hr);
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to ConvertToVideoSinkMediaType", hr));
   }
 
   DWORD dw_sink_stream_index = 0;
@@ -475,18 +489,20 @@ Status MfCamera::Start(const CameraFormat& requested_camera_format,
                                sink_video_media_type.Get(), NULL,
                                &dw_sink_stream_index);
   if (FAILED(hr)) {
-    return errors::FailedToAddStream(hr);
+    return errors::Unavailable(MESSAGE_WITH_HRESULT("Failed to AddStream", hr));
   }
 
   hr = preview_sink->SetSampleCallback(dw_sink_stream_index,
                                        video_callback_.get());
   if (FAILED(hr)) {
-    return errors::FailedToSetSampleCallback(hr);
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to SetSampleCallback", hr));
   }
 
   hr = engine_->StartPreview();
   if (FAILED(hr)) {
-    return errors::FailedToStartPreview(hr);
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to StartPreview", hr));
   }
 
   camera_frame_callback_ = camera_frame_callback;
@@ -508,7 +524,8 @@ Status MfCamera::Stop() {
 
   HRESULT hr = engine_->StopPreview();
   if (FAILED(hr)) {
-    return errors::FailedToStopPreview(hr);
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to StopPreview", hr));
   }
 
   camera_frame_callback_.Reset();
@@ -517,6 +534,238 @@ Status MfCamera::Stop() {
   camera_state_.ToStopped();
 
   return Status::OK();
+}
+
+Status MfCamera::SetCameraSettings(const CameraSettings& camera_settings) {
+  if (camera_state_.IsStopped()) {
+    return camera_state_.InvalidStateError();
+  }
+
+  if (!camera_control_ || !video_control_) {
+    Status s = InitializeVideoAndCameraControls();
+    if (!s.ok()) return s;
+  }
+
+  HRESULT hr;
+  if (camera_settings.has_white_balance_mode()) {
+    bool is_auto =
+        camera_settings.white_balance_mode() == CAMERA_SETTINGS_MODE_AUTO;
+    const long value = is_auto ? 1 : 0;
+    const long flag =
+        is_auto ? VideoProcAmp_Flags_Auto : VideoProcAmp_Flags_Manual;
+    hr = video_control_->Set(VideoProcAmp_WhiteBalance, value, flag);
+    if (FAILED(hr)) DLOG(ERROR) << "setting whilte_balance_mode to " << value;
+  }
+
+  if (camera_settings.has_color_temperature()) {
+    bool can_set = false;
+    {
+      long value, flag;
+      hr = video_control_->Get(VideoProcAmp_WhiteBalance, &value, &flag);
+      can_set = SUCCEEDED(hr) && flag & VideoProcAmp_Flags_Manual;
+    }
+    if (can_set) {
+      const long value = camera_settings.color_temperature();
+      hr = video_control_->Set(VideoProcAmp_WhiteBalance, value,
+                               VideoProcAmp_Flags_Manual);
+      if (FAILED(hr)) DLOG(ERROR) << "setting color_temperature to " << value;
+    }
+  }
+
+  if (camera_settings.has_exposure_mode()) {
+    bool is_auto = camera_settings.exposure_mode() == CAMERA_SETTINGS_MODE_AUTO;
+    const long value = is_auto ? 1 : 0;
+    const long flag =
+        is_auto ? CameraControl_Flags_Auto : CameraControl_Flags_Manual;
+    hr = camera_control_->Set(CameraControl_Exposure, value, flag);
+    if (FAILED(hr)) DLOG(ERROR) << "setting exposure_mode to " << value;
+  }
+
+  if (camera_settings.has_exposure_compensation()) {
+    bool can_set = false;
+    {
+      long value, flag;
+      hr = camera_control_->Get(CameraControl_Exposure, &value, &flag);
+      can_set = SUCCEEDED(hr) && flag & CameraControl_Flags_Manual;
+    }
+    if (can_set) {
+      const long value = camera_settings.exposure_compensation();
+      hr = camera_control_->Set(CameraControl_Exposure, value,
+                                CameraControl_Flags_Manual);
+      if (FAILED(hr))
+        DLOG(ERROR) << "setting exposure_compensation to " << value;
+    }
+  }
+
+  if (camera_settings.has_brightness()) {
+    const long value = camera_settings.brightness();
+    hr = video_control_->Set(VideoProcAmp_Brightness, value,
+                             VideoProcAmp_Flags_Manual);
+    if (FAILED(hr)) DLOG(ERROR) << "setting brightness to " << value;
+  }
+
+  if (camera_settings.has_contrast()) {
+    const long value = camera_settings.contrast();
+    hr = video_control_->Set(VideoProcAmp_Contrast, value,
+                             VideoProcAmp_Flags_Manual);
+    if (FAILED(hr)) DLOG(ERROR) << "setting contrast to " << value;
+  }
+
+  if (camera_settings.has_saturation()) {
+    const long value = camera_settings.saturation();
+    hr = video_control_->Set(VideoProcAmp_Saturation, value,
+                             VideoProcAmp_Flags_Manual);
+    if (FAILED(hr)) DLOG(ERROR) << "setting saturation to " << value;
+  }
+
+  if (camera_settings.has_sharpness()) {
+    const long value = camera_settings.sharpness();
+    hr = video_control_->Set(VideoProcAmp_Sharpness, value,
+                             VideoProcAmp_Flags_Manual);
+    if (FAILED(hr)) DLOG(ERROR) << "setting sharpness to " << value;
+  }
+
+  if (camera_settings.has_hue()) {
+    const long value = camera_settings.hue();
+    hr =
+        video_control_->Set(VideoProcAmp_Hue, value, VideoProcAmp_Flags_Manual);
+    if (FAILED(hr)) DLOG(ERROR) << "setting hue to " << value;
+  }
+
+  if (camera_settings.has_gain()) {
+    const long value = camera_settings.gain();
+    hr = video_control_->Set(VideoProcAmp_Gain, value,
+                             VideoProcAmp_Flags_Manual);
+    if (FAILED(hr)) DLOG(ERROR) << "setting gain to " << value;
+  }
+
+  if (camera_settings.has_gamma()) {
+    const long value = camera_settings.gamma();
+    hr = video_control_->Set(VideoProcAmp_Gamma, value,
+                             VideoProcAmp_Flags_Manual);
+    if (FAILED(hr)) DLOG(ERROR) << "setting gamma to " << value;
+  }
+
+  return Status::OK();
+}
+
+Status MfCamera::GetCameraSettingsInfo(
+    CameraSettingsInfoMessage* camera_settings) {
+  if (camera_state_.IsStopped()) {
+    return camera_state_.InvalidStateError();
+  }
+
+  if (!camera_control_ || !video_control_) {
+    Status s = InitializeVideoAndCameraControls();
+    if (!s.ok()) return s;
+  }
+
+  GetCameraSetting(VideoProcAmp_WhiteBalance,
+                   camera_settings->mutable_white_balance_mode());
+  GetCameraSetting(CameraControl_Exposure,
+                   camera_settings->mutable_exposure_mode(),
+                   true /* camera_control */);
+  GetCameraSetting(CameraControl_Exposure,
+                   camera_settings->mutable_exposure_compensation(),
+                   true /* camera_control */);
+  GetCameraSetting(VideoProcAmp_WhiteBalance,
+                   camera_settings->mutable_color_temperature());
+  GetCameraSetting(VideoProcAmp_Brightness,
+                   camera_settings->mutable_brightness());
+  GetCameraSetting(VideoProcAmp_Contrast, camera_settings->mutable_contrast());
+  GetCameraSetting(VideoProcAmp_Saturation,
+                   camera_settings->mutable_saturation());
+  GetCameraSetting(VideoProcAmp_Sharpness,
+                   camera_settings->mutable_sharpness());
+  GetCameraSetting(VideoProcAmp_Hue, camera_settings->mutable_hue());
+  GetCameraSetting(VideoProcAmp_Gain, camera_settings->mutable_gain());
+  GetCameraSetting(VideoProcAmp_Gamma, camera_settings->mutable_gamma());
+
+  return Status::OK();
+}
+
+namespace {
+
+CameraSettingsMode ValueToMode(long flag, bool camera_control) {
+  if (camera_control) {
+    if (flag & CameraControl_Flags_Auto)
+      return CameraSettingsMode::CAMERA_SETTINGS_MODE_AUTO;
+    else if (flag & CameraControl_Flags_Manual)
+      return CameraSettingsMode::CAMERA_SETTINGS_MODE_MANUAL;
+  } else {
+    if (flag & VideoProcAmp_Flags_Auto)
+      return CameraSettingsMode::CAMERA_SETTINGS_MODE_AUTO;
+    else if (flag & VideoProcAmp_Flags_Manual)
+      return CameraSettingsMode::CAMERA_SETTINGS_MODE_MANUAL;
+  }
+
+  return CameraSettingsMode::CAMERA_SETTINGS_MODE_NONE;
+}
+
+}  // namespace
+
+void MfCamera::GetCameraSetting(long property, CameraSettingsModeValue* value,
+                                bool camera_control) {
+  HRESULT hr;
+  long min, max, step, default_, flag, v;
+  if (camera_control) {
+    hr = camera_control_->GetRange(property, &min, &max, &step, &default_,
+                                   &flag);
+  } else {
+    hr =
+        video_control_->GetRange(property, &min, &max, &step, &default_, &flag);
+  }
+  if (FAILED(hr)) {
+    value->Clear();
+    return;
+  }
+  value->add_modes(CameraSettingsMode::CAMERA_SETTINGS_MODE_AUTO);
+  value->add_modes(CameraSettingsMode::CAMERA_SETTINGS_MODE_MANUAL);
+  value->set_default_(ValueToMode(flag, camera_control));
+
+  if (camera_control) {
+    hr = camera_control_->Get(property, &v, &flag);
+  } else {
+    hr = video_control_->Get(property, &v, &flag);
+  }
+  if (FAILED(hr)) {
+    value->Clear();
+    return;
+  }
+  value->set_current(ValueToMode(flag, camera_control));
+}
+
+void MfCamera::GetCameraSetting(long property, CameraSettingsRangedValue* value,
+                                bool camera_control) {
+  HRESULT hr;
+  long min, max, step, default_, flag, v;
+  if (camera_control) {
+    hr = camera_control_->GetRange(property, &min, &max, &step, &default_,
+                                   &flag);
+  } else {
+    hr =
+        video_control_->GetRange(property, &min, &max, &step, &default_, &flag);
+  }
+  if (FAILED(hr)) {
+    value->Clear();
+    return;
+  }
+  value->set_min(static_cast<int64_t>(min));
+  value->set_max(static_cast<int64_t>(max));
+  value->set_step(static_cast<int64_t>(step));
+  value->set_default_(static_cast<int64_t>(default_));
+  value->set_flags(static_cast<int64_t>(flag));
+
+  if (camera_control) {
+    hr = camera_control_->Get(property, &v, &flag);
+  } else {
+    hr = video_control_->Get(property, &v, &flag);
+  }
+  if (FAILED(hr)) {
+    value->Clear();
+    return;
+  }
+  value->set_current(static_cast<int64_t>(v));
 }
 
 void MfCamera::OnIncomingCapturedData(const uint8_t* data, int length,
@@ -561,7 +810,9 @@ void MfCamera::OnEvent(IMFMediaEvent* media_event) {
   HRESULT hr;
   media_event->GetStatus(&hr);
 
-  if (FAILED(hr)) status_callback_.Run(errors::MediaEventStatusFailed(hr));
+  if (FAILED(hr))
+    status_callback_.Run(errors::Unavailable(
+        MESSAGE_WITH_HRESULT("MediaEventStatusFailed", hr)));
 }
 
 HRESULT MfCamera::ExecuteHresultCallbackWithRetries(
@@ -671,22 +922,40 @@ HRESULT MfCamera::FillCapabilities(IMFCaptureSource* source, bool photo,
   return hr;
 }
 
+Status MfCamera::InitializeVideoAndCameraControls() {
+  HRESULT hr =
+      source_->QueryInterface(IID_PPV_ARGS(camera_control_.GetAddressOf()));
+  if (FAILED(hr)) {
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to query IAMCameraControl interface", hr));
+  }
+
+  hr = source_->QueryInterface(IID_PPV_ARGS(video_control_.GetAddressOf()));
+  if (FAILED(hr)) {
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to query IAMVideoProcAmp interface", hr));
+  }
+
+  return Status::OK();
+}
+
 // static
 Status MfCamera::GetCameraFormatFromSourceMediaType(
     IMFMediaType* source_media_type, bool photo, CameraFormat* camera_format) {
   GUID major_type_guid;
   HRESULT hr = source_media_type->GetGUID(MF_MT_MAJOR_TYPE, &major_type_guid);
   if (FAILED(hr)) {
-    return errors::FailedToGetGUID(hr);
+    return errors::Unavailable(MESSAGE_WITH_HRESULT("Failed to GetGUID", hr));
   }
 
   if (major_type_guid != MFMediaType_Image) {
-    if (photo) return errors::MediaTypeNotMatched();
+    if (photo) return errors::InvalidArgument("MediaType not matched.");
     UINT32 numerator, denominator;
     hr = MFGetAttributeRatio(source_media_type, MF_MT_FRAME_RATE, &numerator,
                              &denominator);
     if (FAILED(hr)) {
-      return errors::FailedToMFGetAttributeRatio(hr);
+      return errors::Unavailable(
+          MESSAGE_WITH_HRESULT("Failed to MFGetAttributeRatio", hr));
     }
     camera_format->set_frame_rate(
         denominator ? static_cast<float>(numerator) / denominator : 0.0f);
@@ -695,7 +964,7 @@ Status MfCamera::GetCameraFormatFromSourceMediaType(
   GUID sub_type_guid;
   hr = source_media_type->GetGUID(MF_MT_SUBTYPE, &sub_type_guid);
   if (FAILED(hr)) {
-    return errors::FailedToGetGUID(hr);
+    return errors::Unavailable(MESSAGE_WITH_HRESULT("Failed to GetGUID", hr));
   }
 
   camera_format->set_pixel_format(
@@ -704,11 +973,14 @@ Status MfCamera::GetCameraFormatFromSourceMediaType(
   UINT32 width, height;
   hr = MFGetAttributeSize(source_media_type, MF_MT_FRAME_SIZE, &width, &height);
   if (FAILED(hr)) {
-    return errors::FailedToMFGetAttributeSize(hr);
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to MFGetAttributeSize", hr));
   }
   camera_format->SetSize(width, height);
 
   return Status::OK();
 }
+
+#undef MESSAGE_WITH_HRESULT
 
 }  // namespace felicia

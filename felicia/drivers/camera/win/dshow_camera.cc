@@ -8,6 +8,8 @@
 
 #include "felicia/drivers/camera/win/dshow_camera.h"
 
+#include <ksmedia.h>
+
 #include "third_party/chromium/base/strings/sys_string_conversions.h"
 #include "third_party/chromium/base/win/scoped_co_mem.h"
 #include "third_party/chromium/base/win/scoped_variant.h"
@@ -23,6 +25,10 @@ using base::win::ScopedVariant;
 using Microsoft::WRL::ComPtr;
 
 namespace felicia {
+
+#define MESSAGE_WITH_HRESULT(text, hr)  \
+  ::base::StringPrintf("%s :%s.", text, \
+                       ::logging::SystemErrorCodeToString(hr).c_str())
 
 // Check if a Pin matches a category.
 bool PinMatchesCategory(IPin* pin, REFGUID category) {
@@ -176,39 +182,53 @@ Status DshowCamera::Init() {
 
   HRESULT hr = GetDeviceFilter(camera_descriptor_.device_id(),
                                capture_filter_.GetAddressOf());
-  if (FAILED(hr)) return errors::FailedToCreateCaptureFilter(hr);
+  if (FAILED(hr))
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to create capture filter", hr));
 
   output_capture_pin_ = GetPin(capture_filter_.Get(), PINDIR_OUTPUT,
                                PIN_CATEGORY_CAPTURE, GUID_NULL);
-  if (!output_capture_pin_.Get()) return errors::FaieldToGetCaptureOutputPin();
+  if (!output_capture_pin_.Get())
+    return errors::Unavailable("Failed to get capture output pin.");
 
   // Create the sink filter used for receiving Captured frames.
   sink_filter_ = new SinkFilter(this);
-  if (sink_filter_.get() == NULL) {
-    return errors::FailedToCreateSinkFilter();
-  }
+  if (sink_filter_.get() == NULL)
+    return errors::Unavailable("Failed to create sink filter.");
 
   input_sink_pin_ = sink_filter_->GetPin(0);
 
   hr = ::CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER,
                           IID_PPV_ARGS(&graph_builder_));
-  if (FAILED(hr)) return errors::FailedToCreateCaptureFilter(hr);
+  if (FAILED(hr))
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to create the Capture Graph Builder", hr));
 
   hr = ::CoCreateInstance(CLSID_CaptureGraphBuilder2, NULL, CLSCTX_INPROC,
                           IID_PPV_ARGS(&capture_graph_builder_));
-  if (FAILED(hr)) return errors::FailedToCreateCaptureGraphBuilder(hr);
+  if (FAILED(hr))
+    return errors::Unavailable(MESSAGE_WITH_HRESULT(
+        "Failed to give graph to capture graph builder", hr));
 
   hr = capture_graph_builder_->SetFiltergraph(graph_builder_.Get());
-  if (FAILED(hr)) return errors::FailedToSetGraphBuilderFilterGraph(hr);
+  if (FAILED(hr))
+    return errors::Unavailable(MESSAGE_WITH_HRESULT(
+        "Failed to give graph to capture graph builder", hr));
 
   hr = graph_builder_.CopyTo(media_control_.GetAddressOf());
-  if (FAILED(hr)) return errors::FailedToCreateMediaControlBuilder(hr);
+  if (FAILED(hr))
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to create media control builder", hr));
 
   hr = graph_builder_->AddFilter(capture_filter_.Get(), NULL);
-  if (FAILED(hr)) return errors::FailedToAddCaptureFilter(hr);
+  if (FAILED(hr))
+    return errors::Unavailable(MESSAGE_WITH_HRESULT(
+        "Failed to add the capture device to the graph", hr));
 
   hr = graph_builder_->AddFilter(sink_filter_.get(), NULL);
-  if (FAILED(hr)) return errors::FailedToAddSinkFilter(hr);
+  if (FAILED(hr))
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to add the sink filter to the graph", hr));
 
   camera_state_.ToInitialized();
 
@@ -240,13 +260,15 @@ Status DshowCamera::Start(const CameraFormat& requested_camera_format,
   ComPtr<IAMStreamConfig> stream_config;
   HRESULT hr = output_capture_pin_.CopyTo(stream_config.GetAddressOf());
   if (FAILED(hr)) {
-    return errors::FailedToGetIAMStreamConfig(hr);
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to get IAMStreamConfig", hr));
   }
 
   int count = 0, size = 0;
   hr = stream_config->GetNumberOfCapabilities(&count, &size);
   if (FAILED(hr)) {
-    return errors::FailedToGetNumberOfCapabilities(hr);
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to GetNumberOfCapabilities", hr));
   }
 
   std::unique_ptr<BYTE[]> caps(new BYTE[size]);
@@ -258,7 +280,8 @@ Status DshowCamera::Start(const CameraFormat& requested_camera_format,
   hr = stream_config->GetStreamCaps(found_capability.media_type_index,
                                     media_type.Receive(), caps.get());
   if (hr != S_OK) {
-    return errors::FailedToGetStreamCaps(hr);
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to GetStreamCaps", hr));
   }
 
   // Set the sink filter to request this format.
@@ -268,7 +291,7 @@ Status DshowCamera::Start(const CameraFormat& requested_camera_format,
   // Order the capture device to use this format.
   hr = stream_config->SetFormat(media_type.get());
   if (hr != S_OK) {
-    return errors::FailedToSetFormat(hr);
+    return errors::Unavailable(MESSAGE_WITH_HRESULT("Failed to SetFormat", hr));
   }
 
   camera_format_ = found_capability.supported_format;
@@ -287,14 +310,20 @@ Status DshowCamera::Start(const CameraFormat& requested_camera_format,
                                        input_sink_pin_.Get(), NULL);
   }
 
-  if (FAILED(hr)) return errors::FailedToConnectTheCaptureGraph(hr);
+  if (FAILED(hr))
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to connect the CaptureGraph", hr));
 
   hr = media_control_->Pause();
-  if (FAILED(hr)) return errors::FailedToPause(hr);
+  if (FAILED(hr))
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to pause the capture device", hr));
 
   // Start capturing.
   hr = media_control_->Run();
-  if (FAILED(hr)) return errors::FailedToRun(hr);
+  if (FAILED(hr))
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to run the capture device", hr));
 
   camera_frame_callback_ = camera_frame_callback;
   status_callback_ = status_callback;
@@ -311,7 +340,8 @@ Status DshowCamera::Stop() {
 
   HRESULT hr = media_control_->Stop();
   if (FAILED(hr)) {
-    return errors::FailedToStop(hr);
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to stop the capture device", hr));
   }
 
   graph_builder_->Disconnect(output_capture_pin_.Get());
@@ -320,6 +350,145 @@ Status DshowCamera::Stop() {
   camera_frame_callback_.Reset();
   status_callback_.Reset();
   camera_state_.ToStopped();
+
+  return Status::OK();
+}
+
+Status DshowCamera::SetCameraSettings(const CameraSettings& camera_settings) {
+  if (camera_state_.IsStopped()) {
+    return camera_state_.InvalidStateError();
+  }
+
+  if (!camera_control_ || !video_control_) {
+    Status s = InitializeVideoAndCameraControls();
+    if (!s.ok()) return s;
+  }
+
+  HRESULT hr;
+  if (camera_settings.has_white_balance_mode()) {
+    bool is_auto =
+        camera_settings.white_balance_mode() == CAMERA_SETTINGS_MODE_AUTO;
+    const long value = is_auto ? 1 : 0;
+    const long flag =
+        is_auto ? VideoProcAmp_Flags_Auto : VideoProcAmp_Flags_Manual;
+    hr = video_control_->put_WhiteBalance(value, flag);
+    if (FAILED(hr)) DLOG(ERROR) << "setting whilte_balance_mode to " << value;
+  }
+
+  if (camera_settings.has_color_temperature()) {
+    bool can_set = false;
+    {
+      long value, flag;
+      hr = video_control_->get_WhiteBalance(&value, &flag);
+      can_set = SUCCEEDED(hr) && flag & VideoProcAmp_Flags_Manual;
+    }
+    if (can_set) {
+      const long value = camera_settings.color_temperature();
+      hr = video_control_->put_WhiteBalance(value, VideoProcAmp_Flags_Manual);
+      if (FAILED(hr)) DLOG(ERROR) << "setting color_temperature to " << value;
+    }
+  }
+
+  if (camera_settings.has_exposure_mode()) {
+    bool is_auto = camera_settings.exposure_mode() == CAMERA_SETTINGS_MODE_AUTO;
+    const long value = is_auto ? 1 : 0;
+    const long flag =
+        is_auto ? CameraControl_Flags_Auto : CameraControl_Flags_Manual;
+    hr = camera_control_->put_Exposure(value, flag);
+    if (FAILED(hr)) DLOG(ERROR) << "setting exposure_mode to " << value;
+  }
+
+  if (camera_settings.has_exposure_compensation()) {
+    bool can_set = false;
+    {
+      long value, flag;
+      hr = camera_control_->get_Exposure(&value, &flag);
+      can_set = SUCCEEDED(hr) && flag & CameraControl_Flags_Manual;
+    }
+    if (can_set) {
+      const long value = camera_settings.exposure_compensation();
+      hr = camera_control_->put_Exposure(value, CameraControl_Flags_Manual);
+      if (FAILED(hr))
+        DLOG(ERROR) << "setting exposure_compensation to " << value;
+    }
+  }
+
+  if (camera_settings.has_brightness()) {
+    const long value = camera_settings.brightness();
+    hr = video_control_->put_Brightness(value, VideoProcAmp_Flags_Manual);
+    if (FAILED(hr)) DLOG(ERROR) << "setting brightness to " << value;
+  }
+
+  if (camera_settings.has_contrast()) {
+    const long value = camera_settings.contrast();
+    hr = video_control_->put_Contrast(value, VideoProcAmp_Flags_Manual);
+    if (FAILED(hr)) DLOG(ERROR) << "setting contrast to " << value;
+  }
+
+  if (camera_settings.has_saturation()) {
+    const long value = camera_settings.saturation();
+    hr = video_control_->put_Saturation(value, VideoProcAmp_Flags_Manual);
+    if (FAILED(hr)) DLOG(ERROR) << "setting saturation to " << value;
+  }
+
+  if (camera_settings.has_sharpness()) {
+    const long value = camera_settings.sharpness();
+    hr = video_control_->put_Sharpness(value, VideoProcAmp_Flags_Manual);
+    if (FAILED(hr)) DLOG(ERROR) << "setting sharpness to " << value;
+  }
+
+  if (camera_settings.has_hue()) {
+    const long value = camera_settings.hue();
+    hr = video_control_->put_Hue(value, VideoProcAmp_Flags_Manual);
+    if (FAILED(hr)) DLOG(ERROR) << "setting hue to " << value;
+  }
+
+  if (camera_settings.has_gain()) {
+    const long value = camera_settings.gain();
+    hr = video_control_->put_Gain(value, VideoProcAmp_Flags_Manual);
+    if (FAILED(hr)) DLOG(ERROR) << "setting gain to " << value;
+  }
+
+  if (camera_settings.has_gamma()) {
+    const long value = camera_settings.gamma();
+    hr = video_control_->put_Gamma(value, VideoProcAmp_Flags_Manual);
+    if (FAILED(hr)) DLOG(ERROR) << "setting gamma to " << value;
+  }
+
+  return Status::OK();
+}
+
+Status DshowCamera::GetCameraSettingsInfo(
+    CameraSettingsInfoMessage* camera_settings) {
+  if (camera_state_.IsStopped()) {
+    return camera_state_.InvalidStateError();
+  }
+
+  if (!camera_control_ || !video_control_) {
+    Status s = InitializeVideoAndCameraControls();
+    if (!s.ok()) return s;
+  }
+
+  GetCameraSetting(VideoProcAmp_WhiteBalance,
+                   camera_settings->mutable_white_balance_mode());
+  GetCameraSetting(CameraControl_Exposure,
+                   camera_settings->mutable_exposure_mode(),
+                   true /* camera_control */);
+  GetCameraSetting(CameraControl_Exposure,
+                   camera_settings->mutable_exposure_compensation(),
+                   true /* camera_control */);
+  GetCameraSetting(VideoProcAmp_WhiteBalance,
+                   camera_settings->mutable_color_temperature());
+  GetCameraSetting(VideoProcAmp_Brightness,
+                   camera_settings->mutable_brightness());
+  GetCameraSetting(VideoProcAmp_Contrast, camera_settings->mutable_contrast());
+  GetCameraSetting(VideoProcAmp_Saturation,
+                   camera_settings->mutable_saturation());
+  GetCameraSetting(VideoProcAmp_Sharpness,
+                   camera_settings->mutable_sharpness());
+  GetCameraSetting(VideoProcAmp_Hue, camera_settings->mutable_hue());
+  GetCameraSetting(VideoProcAmp_Gain, camera_settings->mutable_gain());
+  GetCameraSetting(VideoProcAmp_Gamma, camera_settings->mutable_gamma());
 
   return Status::OK();
 }
@@ -563,5 +732,241 @@ void DshowCamera::GetPinCapabilityList(ComPtr<IBaseFilter> capture_filter,
     }
   }
 }
+
+Status DshowCamera::InitializeVideoAndCameraControls() {
+  ComPtr<IKsTopologyInfo> info;
+  HRESULT hr = capture_filter_.CopyTo(info.GetAddressOf());
+  if (FAILED(hr))
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to obtain the topology info", hr));
+
+  DWORD num_nodes = 0;
+  hr = info->get_NumNodes(&num_nodes);
+  if (FAILED(hr))
+    return errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to obtain the number of nodes.", hr));
+
+  // Every UVC camera is expected to have a single ICameraControl and a single
+  // IVideoProcAmp nodes, and both are needed; ignore any unlikely later ones.
+  GUID node_type;
+  for (size_t i = 0; i < num_nodes; i++) {
+    info->get_NodeType(i, &node_type);
+    if (IsEqualGUID(node_type, KSNODETYPE_VIDEO_CAMERA_TERMINAL)) {
+      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(&camera_control_));
+      if (SUCCEEDED(hr)) break;
+      if (FAILED(hr))
+        return errors::Unavailable(
+            MESSAGE_WITH_HRESULT("Failed to retrieve the ICameraControl.", hr));
+    }
+  }
+  for (size_t i = 0; i < num_nodes; i++) {
+    info->get_NodeType(i, &node_type);
+    if (IsEqualGUID(node_type, KSNODETYPE_VIDEO_PROCESSING)) {
+      hr = info->CreateNodeInstance(i, IID_PPV_ARGS(&video_control_));
+      if (SUCCEEDED(hr)) break;
+      if (FAILED(hr))
+        return errors::Unavailable(
+            MESSAGE_WITH_HRESULT("Failed to retrieve the IVideoProcAmp.", hr));
+    }
+  }
+
+  if (video_control_ && camera_control_) {
+    return Status::OK();
+  } else {
+    return errors::Unavailable(
+        "video_control_ or camera_control_ is not initialized.");
+  }
+}
+
+namespace {
+
+CameraSettingsMode ValueToMode(long flag, bool camera_control) {
+  if (camera_control) {
+    if (flag & CameraControl_Flags_Auto)
+      return CameraSettingsMode::CAMERA_SETTINGS_MODE_AUTO;
+    else if (flag & CameraControl_Flags_Manual)
+      return CameraSettingsMode::CAMERA_SETTINGS_MODE_MANUAL;
+  } else {
+    if (flag & VideoProcAmp_Flags_Auto)
+      return CameraSettingsMode::CAMERA_SETTINGS_MODE_AUTO;
+    else if (flag & VideoProcAmp_Flags_Manual)
+      return CameraSettingsMode::CAMERA_SETTINGS_MODE_MANUAL;
+  }
+
+  return CameraSettingsMode::CAMERA_SETTINGS_MODE_NONE;
+}
+
+}  // namespace
+
+void DshowCamera::GetCameraSetting(long property,
+                                   CameraSettingsModeValue* value,
+                                   bool camera_control) {
+  HRESULT hr;
+  long min, max, step, default_, flag, v;
+  if (camera_control) {
+    tagCameraControlProperty tag =
+        static_cast<tagCameraControlProperty>(property);
+    hr = GetOptionRangedValue(tag, &min, &max, &step, &default_, &flag);
+  } else {
+    tagVideoProcAmpProperty tag =
+        static_cast<tagVideoProcAmpProperty>(property);
+    hr = GetOptionRangedValue(tag, &min, &max, &step, &default_, &flag);
+  }
+  if (FAILED(hr)) {
+    value->Clear();
+    return;
+  }
+  value->add_modes(CameraSettingsMode::CAMERA_SETTINGS_MODE_AUTO);
+  value->add_modes(CameraSettingsMode::CAMERA_SETTINGS_MODE_MANUAL);
+  value->set_default_(ValueToMode(flag, camera_control));
+
+  if (camera_control) {
+    tagCameraControlProperty tag =
+        static_cast<tagCameraControlProperty>(property);
+    hr = GetOptionValue(tag, &v, &flag);
+  } else {
+    tagVideoProcAmpProperty tag =
+        static_cast<tagVideoProcAmpProperty>(property);
+    hr = GetOptionValue(tag, &v, &flag);
+  }
+  if (FAILED(hr)) {
+    value->Clear();
+    return;
+  }
+  value->set_current(ValueToMode(flag, camera_control));
+}
+
+void DshowCamera::GetCameraSetting(long property,
+                                   CameraSettingsRangedValue* value,
+                                   bool camera_control) {
+  HRESULT hr;
+  long min, max, step, default_, flag, v;
+  if (camera_control) {
+    tagCameraControlProperty tag =
+        static_cast<tagCameraControlProperty>(property);
+    hr = GetOptionRangedValue(tag, &min, &max, &step, &default_, &flag);
+  } else {
+    tagVideoProcAmpProperty tag =
+        static_cast<tagVideoProcAmpProperty>(property);
+    hr = GetOptionRangedValue(tag, &min, &max, &step, &default_, &flag);
+  }
+  if (FAILED(hr)) {
+    value->Clear();
+    return;
+  }
+  value->set_min(static_cast<int64_t>(min));
+  value->set_max(static_cast<int64_t>(max));
+  value->set_step(static_cast<int64_t>(step));
+  value->set_default_(static_cast<int64_t>(default_));
+  value->set_flags(static_cast<int64_t>(flag));
+
+  if (camera_control) {
+    tagCameraControlProperty tag =
+        static_cast<tagCameraControlProperty>(property);
+    hr = GetOptionValue(tag, &v, &flag);
+  } else {
+    tagVideoProcAmpProperty tag =
+        static_cast<tagVideoProcAmpProperty>(property);
+    hr = GetOptionValue(tag, &v, &flag);
+  }
+  if (FAILED(hr)) {
+    value->Clear();
+    return;
+  }
+  value->set_current(static_cast<int64_t>(v));
+}
+
+HRESULT DshowCamera::GetOptionRangedValue(tagCameraControlProperty tag,
+                                          long* min, long* max, long* step,
+                                          long* default_, long* flag) {
+  switch (tag) {
+    case CameraControl_Exposure: {
+      return camera_control_->getRange_Exposure(min, max, step, default_, flag);
+    }
+    default:
+      return -1;
+  }
+}
+
+HRESULT DshowCamera::GetOptionRangedValue(tagVideoProcAmpProperty tag,
+                                          long* min, long* max, long* step,
+                                          long* default_, long* flag) {
+  switch (tag) {
+    case VideoProcAmp_WhiteBalance: {
+      return video_control_->getRange_WhiteBalance(min, max, step, default_,
+                                                   flag);
+    }
+    case VideoProcAmp_Brightness: {
+      return video_control_->getRange_Brightness(min, max, step, default_,
+                                                 flag);
+    }
+    case VideoProcAmp_Contrast: {
+      return video_control_->getRange_Contrast(min, max, step, default_, flag);
+    }
+    case VideoProcAmp_Saturation: {
+      return video_control_->getRange_Saturation(min, max, step, default_,
+                                                 flag);
+    }
+    case VideoProcAmp_Sharpness: {
+      return video_control_->getRange_Sharpness(min, max, step, default_, flag);
+    }
+    case VideoProcAmp_Hue: {
+      return video_control_->getRange_Hue(min, max, step, default_, flag);
+    }
+    case VideoProcAmp_Gain: {
+      return video_control_->getRange_Gain(min, max, step, default_, flag);
+    }
+    case VideoProcAmp_Gamma: {
+      return video_control_->getRange_Gamma(min, max, step, default_, flag);
+    }
+    default:
+      return -1;
+  }
+}
+
+HRESULT DshowCamera::GetOptionValue(tagCameraControlProperty tag, long* value,
+                                    long* flag) {
+  switch (tag) {
+    case CameraControl_Exposure: {
+      return camera_control_->get_Exposure(value, flag);
+    }
+    default:
+      return -1;
+  }
+}
+
+HRESULT DshowCamera::GetOptionValue(tagVideoProcAmpProperty tag, long* value,
+                                    long* flag) {
+  switch (tag) {
+    case VideoProcAmp_WhiteBalance: {
+      return video_control_->get_WhiteBalance(value, flag);
+    }
+    case VideoProcAmp_Brightness: {
+      return video_control_->get_Brightness(value, flag);
+    }
+    case VideoProcAmp_Contrast: {
+      return video_control_->get_Contrast(value, flag);
+    }
+    case VideoProcAmp_Saturation: {
+      return video_control_->get_Saturation(value, flag);
+    }
+    case VideoProcAmp_Sharpness: {
+      return video_control_->get_Sharpness(value, flag);
+    }
+    case VideoProcAmp_Hue: {
+      return video_control_->get_Hue(value, flag);
+    }
+    case VideoProcAmp_Gain: {
+      return video_control_->get_Gain(value, flag);
+    }
+    case VideoProcAmp_Gamma: {
+      return video_control_->get_Gamma(value, flag);
+    }
+    default:
+      return -1;
+  }
+}
+
+#undef MESSAGE_WITH_HRESULT
 
 }  // namespace felicia

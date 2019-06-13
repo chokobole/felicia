@@ -12,6 +12,7 @@
 // Avoid including strsafe.h via dshow as it will cause build warnings.
 #define NO_DSHOW_STRSAFE
 #include <dshow.h>
+#include <vidcap.h>
 #include <wrl/client.h>
 
 #include "felicia/core/util/timestamp/timestamper.h"
@@ -57,6 +58,10 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
                StatusCallback status_callback) override;
   Status Stop() override;
 
+  Status SetCameraSettings(const CameraSettings& camera_settings) override;
+  Status GetCameraSettingsInfo(
+      CameraSettingsInfoMessage* camera_settings) override;
+
   // SinkFilterObserver methods
   void FrameReceived(const uint8_t* buffer, int length,
                      const CameraFormat& format,
@@ -87,6 +92,22 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
 
   DshowCamera(const CameraDescriptor& camera_descriptor);
 
+  Status InitializeVideoAndCameraControls();
+
+  void GetCameraSetting(long property, CameraSettingsModeValue* value,
+                        bool camera_control = false);
+  void GetCameraSetting(long property, CameraSettingsRangedValue* value,
+                        bool camera_control = false);
+
+  HRESULT GetOptionRangedValue(tagCameraControlProperty tag, long* min,
+                               long* max, long* step, long* default_,
+                               long* flag);
+  HRESULT GetOptionRangedValue(tagVideoProcAmpProperty tag, long* min,
+                               long* max, long* step, long* default_,
+                               long* flag);
+  HRESULT GetOptionValue(tagCameraControlProperty tag, long* value, long* flag);
+  HRESULT GetOptionValue(tagVideoProcAmpProperty tag, long* value, long* flag);
+
   Microsoft::WRL::ComPtr<IBaseFilter> capture_filter_;
 
   Microsoft::WRL::ComPtr<IGraphBuilder> graph_builder_;
@@ -95,6 +116,9 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
   Microsoft::WRL::ComPtr<IMediaControl> media_control_;
   Microsoft::WRL::ComPtr<IPin> input_sink_pin_;
   Microsoft::WRL::ComPtr<IPin> output_capture_pin_;
+
+  Microsoft::WRL::ComPtr<ICameraControl> camera_control_;
+  Microsoft::WRL::ComPtr<IVideoProcAmp> video_control_;
 
   scoped_refptr<SinkFilter> sink_filter_;
 

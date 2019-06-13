@@ -44,11 +44,7 @@ CAMERA_HEADERS = [
     "timestamp_constants.h",
 ] + if_linux([
     "linux/v4l2_camera_errors.h",
-]) + if_windows([
-    "win/dshow_camera_errors.h",
-] + if_not_travis([
-    "win/mf_camera_errors.h",
-]))
+])
 
 fel_cc_library(
     name = "camera",

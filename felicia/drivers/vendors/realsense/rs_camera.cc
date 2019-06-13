@@ -266,6 +266,10 @@ StatusOr<::rs2::sensor> RsCamera::sensor(const RsStreamInfo& rs_stream_info) {
 }
 
 Status RsCamera::SetCameraSettings(const CameraSettings& camera_settings) {
+  if (camera_state_.IsStopped()) {
+    return camera_state_.InvalidStateError();
+  }
+
   auto status_or = sensor(RS_COLOR);
   if (!status_or.ok()) return status_or.status();
   ::rs2::sensor& s = status_or.ValueOrDie();
@@ -405,6 +409,10 @@ Status RsCamera::GetOptionRange(::rs2::sensor& sensor, rs2_option option,
 
 Status RsCamera::GetCameraSettingsInfo(
     CameraSettingsInfoMessage* camera_settings) {
+  if (camera_state_.IsStopped()) {
+    return camera_state_.InvalidStateError();
+  }
+
   auto status_or = sensor(RS_COLOR);
   if (!status_or.ok()) return status_or.status();
   ::rs2::sensor& s = status_or.ValueOrDie();
@@ -444,7 +452,7 @@ Status RsCamera::GetAllOptions(::rs2::sensor& sensor,
 
 namespace {
 
-CameraSettingsMode ValueToMode(rs2_option option, float value) {
+CameraSettingsMode ValueToMode(float value) {
   return value ? CameraSettingsMode::CAMERA_SETTINGS_MODE_AUTO
                : CameraSettingsMode::CAMERA_SETTINGS_MODE_MANUAL;
 }
@@ -460,14 +468,14 @@ void RsCamera::GetCameraSetting(::rs2::sensor& sensor, rs2_option option,
   }
   value->add_modes(CameraSettingsMode::CAMERA_SETTINGS_MODE_AUTO);
   value->add_modes(CameraSettingsMode::CAMERA_SETTINGS_MODE_MANUAL);
-  value->set_default_(ValueToMode(option, option_range.def));
+  value->set_default_(ValueToMode(option_range.def));
 
   float v;
   if (!GetOption(sensor, option, &v).ok()) {
     value->Clear();
     return;
   }
-  value->set_current(ValueToMode(option, v));
+  value->set_current(ValueToMode(v));
 }
 
 void RsCamera::GetCameraSetting(::rs2::sensor& sensor, rs2_option option,
@@ -487,7 +495,7 @@ void RsCamera::GetCameraSetting(::rs2::sensor& sensor, rs2_option option,
     value->Clear();
     return;
   }
-  value->set_current(v);
+  value->set_current(static_cast<int64_t>(v));
 }
 
 void RsCamera::SetRsAlignFromDirection(AlignDirection align_direction) {

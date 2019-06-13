@@ -301,6 +301,10 @@ Status V4l2Camera::Stop() {
 }
 
 Status V4l2Camera::SetCameraSettings(const CameraSettings& camera_settings) {
+  if (camera_state_.IsStopped()) {
+    return camera_state_.InvalidStateError();
+  }
+
   if (camera_settings.has_white_balance_mode()) {
     v4l2_control control = {};
     const bool value =
@@ -326,7 +330,7 @@ Status V4l2Camera::SetCameraSettings(const CameraSettings& camera_settings) {
       control.id = V4L2_CID_WHITE_BALANCE_TEMPERATURE;
       control.value = value;
       if (DoIoctl(fd_.get(), VIDIOC_S_CTRL, &control) < 0)
-        DPLOG(ERROR) << "setting exposure_mode to " << value;
+        DPLOG(ERROR) << "setting color_temperature to " << value;
     }
   }
 
@@ -450,6 +454,10 @@ Status V4l2Camera::SetCameraSettings(const CameraSettings& camera_settings) {
 
 Status V4l2Camera::GetCameraSettingsInfo(
     CameraSettingsInfoMessage* camera_settings) {
+  if (camera_state_.IsStopped()) {
+    return camera_state_.InvalidStateError();
+  }
+
   GetCameraSetting(V4L2_CID_AUTO_WHITE_BALANCE,
                    camera_settings->mutable_white_balance_mode());
   GetCameraSetting(V4L2_CID_EXPOSURE_AUTO,
