@@ -78,7 +78,8 @@ class Publisher {
   }
 
   ::base::Lock lock_;
-  Pool<MessageTy, uint8_t> message_queue_;
+  std::unique_ptr<Pool<MessageTy, uint8_t>> message_queue_ GUARDED_BY(lock_);
+  ;
   ::base::TimeDelta period_;
   std::vector<std::unique_ptr<Channel<MessageTy>>> channels_;
 
@@ -117,6 +118,7 @@ void Publisher<MessageTy>::RequestPublish(
           settings.channel_settings);
       StatusOr<ChannelDef> status_or = Setup(channel.get());
       if (!status_or.ok()) {
+        register_state_.ToUnregistered(FROM_HERE);
         Release();
         std::move(callback).Run(status_or.status());
         return;
@@ -150,7 +152,7 @@ void Publisher<MessageTy>::Publish(const MessageTy& message,
                                    SendMessageCallback callback) {
   {
     ::base::AutoLock l(lock_);
-    message_queue_.push(message);
+    if (message_queue_) message_queue_->push(message);
   }
 
   SendMesasge(callback);
@@ -161,7 +163,7 @@ void Publisher<MessageTy>::Publish(MessageTy&& message,
                                    SendMessageCallback callback) {
   {
     ::base::AutoLock l(lock_);
-    message_queue_.push(std::move(message));
+    if (message_queue_) message_queue_->push(std::move(message));
   }
 
   SendMesasge(callback);
@@ -229,7 +231,11 @@ void Publisher<MessageTy>::OnPublishTopicAsync(
   }
 
   period_ = settings.period;
-  message_queue_.set_capacity(settings.queue_size);
+  {
+    ::base::AutoLock l(lock_);
+    message_queue_ =
+        std::make_unique<Pool<MessageTy, uint8_t>>(settings.queue_size);
+  }
   for (auto& channel : channels_) {
     if (settings.is_dynamic_buffer) {
       channel->EnableDynamicBuffer();
@@ -257,8 +263,8 @@ void Publisher<MessageTy>::OnUnpublishTopicAsync(
     return;
   }
 
-  Release();
   register_state_.ToUnregistered(FROM_HERE);
+  Release();
 
   std::move(callback).Run(s);
 }
@@ -273,40 +279,42 @@ void Publisher<MessageTy>::SendMesasge(SendMessageCallback callback) {
     return;
   }
 
-  if (!message_queue_.empty()) {
-    bool can_send = false;
+  bool can_send = false;
+  for (auto& channel : channels_) {
+    if (!channel->IsSendingMessage() && channel->HasReceivers()) {
+      can_send = true;
+      break;
+    }
+  }
+
+  if (!can_send) return;
+
+  ::base::Optional<MessageTy> message;
+  {
+    ::base::AutoLock l(lock_);
+    if (message_queue_ && !message_queue_->empty()) {
+      message = std::move(message_queue_->front());
+      message_queue_->pop();
+    }
+  }
+  if (message.has_value()) {
     for (auto& channel : channels_) {
       if (!channel->IsSendingMessage() && channel->HasReceivers()) {
-        can_send = true;
-        break;
+        channel->SendMessage(message.value(), callback);
       }
     }
-
-    MessageTy message;
-    if (can_send) {
-      ::base::AutoLock l(lock_);
-      message = std::move(message_queue_.front());
-      message_queue_.pop();
-    }
-
-    if (can_send) {
-      for (auto& channel : channels_) {
-        if (!channel->IsSendingMessage() && channel->HasReceivers()) {
-          channel->SendMessage(message, callback);
-        }
-      }
-    }
-
-    master_proxy.PostDelayedTask(
-        FROM_HERE,
-        ::base::BindOnce(&Publisher<MessageTy>::SendMesasge,
-                         ::base::Unretained(this), callback),
-        period_);
   }
+
+  master_proxy.PostDelayedTask(
+      FROM_HERE,
+      ::base::BindOnce(&Publisher<MessageTy>::SendMesasge,
+                       ::base::Unretained(this), callback),
+      period_);
 }
 
 template <typename MessageTy>
 void Publisher<MessageTy>::Release() {
+  DCHECK(IsUnregistered());
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(FROM_HERE,
@@ -316,7 +324,10 @@ void Publisher<MessageTy>::Release() {
   }
 
   channels_.clear();
-  message_queue_.clear();
+  {
+    ::base::AutoLock l(lock_);
+    message_queue_.reset();
+  }
 }
 
 }  // namespace felicia
