@@ -44,6 +44,7 @@ export default class App extends Component {
 
   _onKeyDown = e => {
     switch (e.keyCode) {
+      case 8:
       case 46: {
         // Delete
         const { store } = this.props;
