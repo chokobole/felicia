@@ -33,6 +33,9 @@ class EXPORT Socket : public ChannelImpl {
   WebSocket* ToWebSocket();
 
  protected:
+  friend class TCPSocketBroadcaster;
+  friend class WebSocketChannelBroadcaster;
+
   static void CallbackWithStatus(StatusOnceCallback callback, int result);
 
   StatusOnceCallback write_callback_;

@@ -29,8 +29,9 @@ class WSChannel : public Channel<MessageTy> {
   void AcceptLoop(TCPServerSocket::AcceptCallback accept_callback);
 
  private:
-  MessageIoError SerializeToBuffer(const MessageTy& message,
-                                   int* to_send) override;
+  void WriteImpl(const std::string& text,
+                 SendMessageCallback callback) override;
+  void ReadImpl(MessageTy* message, StatusOnceCallback callback) override;
 
   channel::WSSettings settings_;
 
@@ -72,21 +73,28 @@ void WSChannel<MessageTy>::AcceptLoop(
 }
 
 template <typename MessageTy>
-MessageIoError WSChannel<MessageTy>::SerializeToBuffer(const MessageTy& message,
-                                                       int* to_send) {
-  std::string text;
-  MessageIoError err = MessageIO<MessageTy>::SerializeToString(&message, &text);
-  if (err != MessageIoError::OK) return err;
-
-  ::net::WebSocketDeflater* deflater = nullptr;
-  if (DeflateTraits<MessageTy>::ShouldDeflate(&message, text)) {
-    WebSocketServer* server =
-        this->channel_impl_->ToSocket()->ToWebSocket()->ToWebSocketServer();
-    deflater = server->deflater();
+void WSChannel<MessageTy>::WriteImpl(const std::string& text,
+                                     SendMessageCallback callback) {
+  int to_send = text.length();
+  if (this->send_buffer_->capacity() < to_send && this->is_dynamic_buffer_) {
+    DLOG(INFO) << "Dynamically allocate buffer " << Bytes::FromBytes(to_send);
+    this->send_buffer_->SetCapacity(to_send);
   }
 
-  return MessageIO<MessageTy>::AttachToBuffer(text, this->send_buffer_,
-                                              deflater, to_send);
+  memcpy(this->send_buffer_->StartOfBuffer(), text.c_str(), to_send);
+
+  this->is_sending_ = true;
+  this->send_callback_ = callback;
+  this->channel_impl_->Write(
+      this->send_buffer_, to_send,
+      ::base::BindOnce(&WSChannel<MessageTy>::OnSendMessage,
+                       ::base::Unretained(this)));
+}
+
+template <typename MessageTy>
+void WSChannel<MessageTy>::ReadImpl(MessageTy* message,
+                                    StatusOnceCallback callback) {
+  NOTREACHED() << "Do not read via WSChannel.";
 }
 
 }  // namespace felicia

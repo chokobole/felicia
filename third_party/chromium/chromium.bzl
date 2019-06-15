@@ -80,13 +80,13 @@ def chromium_platform_hdrs(base = None, exclude = [], for_test = False):
     return _chromium_platform_files(".h", base = base, exclude = exclude + ([] if for_test else ["**/test/**"]))
 
 def chromium_platform_srcs(base = None, exclude = [], for_test = False):
-    return _chromium_platform_files(".cc", base = base, exclude = exclude + ["**/*unittest*", "**/*perftest*", "**/*fuzzer*"] + ([] if for_test else ["**/test/**"]))
+    return _chromium_platform_files(".cc", base = base, exclude = exclude + ["**/*test*", "**/*fuzzer*"] + ([] if for_test else ["**/test/**"]))
 
 def chromium_platform_objc_srcs(base = None, exclude = []):
-    return _chromium_platform_files(".mm", base = base, exclude = exclude + ["**/*unittest*", "**/*perftest*", "**/*fuzzer*"])
+    return _chromium_platform_files(".mm", base = base, exclude = exclude + ["**/*test*", "**/*fuzzer*"])
 
 def chromium_platform_test_srcs(base = None, exclude = []):
-    return _chromium_platform_files("_unittest.cc", base = base, exclude = exclude + ["**/*perftest*", "**/*fuzzer*"])
+    return _chromium_platform_files("test.cc", base = base, exclude = exclude + ["**/*perftest*"])
 
 def default_compiler_configs():
     return feature_flags() + chromium_code() + no_exception() + default_win_build_config()

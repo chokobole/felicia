@@ -96,7 +96,6 @@ fel_cc_library(
     ])),
     deps = [
         "//felicia/core/lib",
-        "//felicia/core/message",
         "//felicia/core/util",
         "@libyuv",
     ] + if_mac([":avf_camera"]),
@@ -121,7 +120,6 @@ fel_objc_library(
     ],
     deps = [
         "//felicia/core/lib",
-        "//felicia/core/message",
         "//felicia/core/util",
         "@libyuv",
     ],

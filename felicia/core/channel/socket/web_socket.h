@@ -27,6 +27,11 @@ class EXPORT WebSocket : public Socket {
 
     void Handle(std::unique_ptr<::net::TCPSocket> socket);
 
+    const std::vector<WebSocketExtensionInterface*>& accepted_extensions()
+        const {
+      return accepted_extensions_;
+    }
+
    private:
     FRIEND_TEST(WebSocketHandshakeHandler, BasicNegotiate);
 
@@ -49,6 +54,7 @@ class EXPORT WebSocket : public Socket {
     ::base::CancelableOnceClosure timeout_;
     ::base::flat_map<std::string, std::string> headers_;
     WebSocketExtension extension_;
+    std::vector<WebSocketExtensionInterface*> accepted_extensions_;
 
     DISALLOW_COPY_AND_ASSIGN(HandshakeHandler);
   };

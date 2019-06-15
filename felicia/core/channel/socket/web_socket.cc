@@ -46,6 +46,7 @@ void WebSocket::HandshakeHandler::Handle(
     buffer_->SetCapacity(kHeaderSize);
   }
   buffer_->set_offset(0);
+  accepted_extensions_.clear();
   ReadHeader();
 }
 
@@ -86,7 +87,8 @@ void WebSocket::HandshakeHandler::OnReadHeader(int result) {
       const std::string& extension = headers_[kSecWebSocketExtensions];
       if (!extension.empty()) {
         std::string response;
-        if (extension_.Negotiate(extension, settings_, &response)) {
+        if (extension_.Negotiate(extension, settings_, &response,
+                                 &accepted_extensions_)) {
           SendOK(base64_encoded, response);
         } else {
           SendError(::net::HTTP_BAD_REQUEST);

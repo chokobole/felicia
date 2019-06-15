@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#include "third_party/chromium/net/websockets/websocket_deflater.h"
+
 #include "felicia/core/channel/socket/web_socket_extension.h"
 
 namespace felicia {
@@ -19,11 +21,27 @@ class PermessageDeflate : public WebSocketExtensionInterface {
 
   void AppendResponse(std::string* response) const override;
 
+  bool IsPerMessageDeflate() const override { return true; }
+
+  ::net::WebSocketDeflater::ContextTakeOverMode client_context_take_over_mode()
+      const {
+    return client_context_take_over_mode_;
+  }
+
+  ::net::WebSocketDeflater::ContextTakeOverMode server_context_take_over_mode()
+      const {
+    return server_context_take_over_mode_;
+  }
+
+  int client_max_window_bits() const { return client_max_window_bits_; }
+
+  int server_max_window_bits() const { return server_max_window_bits_; }
+
  private:
-  bool client_no_context_takeover_;
-  bool server_no_context_takeover_;
-  uint8_t client_max_window_bits_;
-  uint8_t server_max_window_bits_;
+  ::net::WebSocketDeflater::ContextTakeOverMode client_context_take_over_mode_;
+  ::net::WebSocketDeflater::ContextTakeOverMode server_context_take_over_mode_;
+  int client_max_window_bits_;
+  int server_max_window_bits_;
 };
 
 }  // namespace felicia

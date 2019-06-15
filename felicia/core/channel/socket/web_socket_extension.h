@@ -8,11 +8,12 @@
 #include "third_party/chromium/base/strings/string_tokenizer.h"
 
 #include "felicia/core/channel/settings.h"
-#include "felicia/core/lib/base/export.h"
 
 namespace felicia {
 
-class EXPORT WebSocketExtensionInterface {
+class PermessageDeflate;
+
+class WebSocketExtensionInterface {
  public:
   WebSocketExtensionInterface();
   virtual ~WebSocketExtensionInterface();
@@ -20,13 +21,21 @@ class EXPORT WebSocketExtensionInterface {
                          const channel::WSSettings& settings,
                          std::string* response) = 0;
   virtual void AppendResponse(std::string* response) const = 0;
+
+  virtual bool IsPerMessageDeflate() const { return false; }
+  PermessageDeflate* ToPermessageDeflate() {
+    DCHECK(IsPerMessageDeflate());
+    return reinterpret_cast<PermessageDeflate*>(this);
+  }
 };
 
 class WebSocketExtension {
  public:
   WebSocketExtension();
-  bool Negotiate(const std::string& extensions,
-                 const channel::WSSettings& settings, std::string* response);
+  bool Negotiate(
+      const std::string& extensions, const channel::WSSettings& settings,
+      std::string* response,
+      std::vector<WebSocketExtensionInterface*>* accepted_extensions);
 
  private:
   ::base::flat_map<std::string, std::unique_ptr<WebSocketExtensionInterface>>

@@ -13,9 +13,10 @@ WebSocketExtension::WebSocketExtension() {
   extensions_[PermessageDeflate::kKey] = std::make_unique<PermessageDeflate>();
 }
 
-bool WebSocketExtension::Negotiate(const std::string& extensions,
-                                   const channel::WSSettings& settings,
-                                   std::string* response) {
+bool WebSocketExtension::Negotiate(
+    const std::string& extensions, const channel::WSSettings& settings,
+    std::string* response,
+    std::vector<WebSocketExtensionInterface*>* accepted_extensions) {
   ::base::StringTokenizer extension(extensions.cbegin(), extensions.cend(),
                                     ",");
   while (extension.GetNext()) {
@@ -38,6 +39,7 @@ bool WebSocketExtension::Negotiate(const std::string& extensions,
     // followings. At this moment, not to negotiate fallback one, return
     // early here.
     if (it->second->Negotiate(params, settings, response)) {
+      accepted_extensions->push_back(it->second.get());
       return true;
     }
   }

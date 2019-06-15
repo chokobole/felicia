@@ -10,7 +10,6 @@
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/statusor.h"
 #include "felicia/core/lib/unit/geometry/size.h"
-#include "felicia/core/message/message_io.h"
 #include "felicia/drivers/camera/camera_buffer.h"
 #include "felicia/drivers/camera/camera_format.h"
 #include "felicia/drivers/camera/camera_frame_message.pb.h"
@@ -44,16 +43,6 @@ class EXPORT CameraFrame {
   ::base::TimeDelta timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(CameraFrame);
-};
-
-template <>
-class DeflateTraits<CameraFrameMessage> {
- public:
-  static bool ShouldDeflate(const CameraFrameMessage* proto,
-                            const std::string& serialized) {
-    return proto->camera_format().pixel_format() !=
-           PixelFormat::PIXEL_FORMAT_MJPEG;
-  }
 };
 
 EXPORT ::base::Optional<CameraFrame> ConvertToARGB(CameraBuffer camera_buffer,

@@ -5,10 +5,31 @@
 
 namespace felicia {
 
-TCPServerSocket::TCPServerSocket() = default;
+TCPBroadcastSocket::TCPBroadcastSocket(std::unique_ptr<::net::TCPSocket> socket)
+    : socket_(std::move(socket)) {}
+
+TCPBroadcastSocket::TCPBroadcastSocket(TCPBroadcastSocket&& other)
+    : socket_(std::move(other.socket_)) {}
+
+void TCPBroadcastSocket::operator=(TCPBroadcastSocket&& other) {
+  socket_ = std::move(other.socket_);
+}
+
+bool TCPBroadcastSocket::IsConnected() { return socket_->IsConnected(); }
+
+int TCPBroadcastSocket::Write(::net::IOBuffer* buf, int buf_len,
+                              ::net::CompletionOnceCallback callback) {
+  return socket_->Write(buf, buf_len, std::move(callback),
+                        ::net::DefineNetworkTrafficAnnotation(
+                            "tcp_server_socket", "Send Message"));
+}
+
+void TCPBroadcastSocket::Close() { return socket_->Close(); }
+
+TCPServerSocket::TCPServerSocket() : broadcaster_(&accepted_sockets_) {}
 TCPServerSocket::~TCPServerSocket() = default;
 
-const std::vector<std::unique_ptr<::net::TCPSocket>>&
+const std::vector<std::unique_ptr<TCPSocketBroadcaster::SocketInterface>>&
 TCPServerSocket::accepted_sockets() const {
   return accepted_sockets_;
 }
@@ -73,54 +94,17 @@ void TCPServerSocket::AcceptOnceIntercept(
 }
 
 void TCPServerSocket::AddSocket(std::unique_ptr<::net::TCPSocket> socket) {
-  accepted_sockets_.push_back(std::move(socket));
+  accepted_sockets_.push_back(
+      std::make_unique<TCPBroadcastSocket>(std::move(socket)));
 }
 
 void TCPServerSocket::Write(scoped_refptr<::net::IOBuffer> buffer, int size,
                             StatusOnceCallback callback) {
-  DCHECK_EQ(0, to_write_count_);
-  DCHECK_EQ(0, written_count_);
   DCHECK(write_callback_.is_null());
-  DCHECK(!callback.is_null());
-  DCHECK(size > 0);
-
-  EraseClosedSockets();
-
-  if (accepted_sockets_.size() == 0) {
-    std::move(callback).Run(errors::NetworkError(
-        ::net::ErrorToString(::net::ERR_SOCKET_NOT_CONNECTED)));
-    return;
-  }
-
-  to_write_count_ = accepted_sockets_.size();
   write_callback_ = std::move(callback);
-  auto it = accepted_sockets_.begin();
-  while (it != accepted_sockets_.end()) {
-    scoped_refptr<::net::DrainableIOBuffer> write_buffer =
-        ::base::MakeRefCounted<::net::DrainableIOBuffer>(
-            buffer, static_cast<size_t>(size));
-    while (write_buffer->BytesRemaining() > 0) {
-      int rv =
-          (*it)->Write(write_buffer.get(), write_buffer->BytesRemaining(),
-                       ::base::BindOnce(&TCPServerSocket::OnWrite,
-                                        ::base::Unretained(this), (*it).get()),
-                       ::net::DefineNetworkTrafficAnnotation(
-                           "tcp_server_socket", "Send Message"));
-
-      if (rv == ::net::ERR_IO_PENDING) break;
-
-      if (rv >= 0) {
-        write_buffer->DidConsume(rv);
-      }
-
-      if (write_buffer->BytesRemaining() == 0 || rv <= 0) {
-        OnWrite((*it).get(), rv);
-        break;
-      }
-    }
-
-    it++;
-  }
+  broadcaster_.Broadcast(
+      buffer, size,
+      ::base::BindOnce(&TCPServerSocket::OnWrite, ::base::Unretained(this)));
 }
 
 void TCPServerSocket::Read(scoped_refptr<::net::GrowableIOBuffer> buffer,
@@ -156,7 +140,8 @@ void TCPServerSocket::HandleAccpetResult(int result) {
   if (accept_once_intercept_callback_) {
     std::move(accept_once_intercept_callback_).Run(std::move(accepted_socket_));
   } else {
-    accepted_sockets_.push_back(std::move(accepted_socket_));
+    accepted_sockets_.push_back(
+        std::make_unique<TCPBroadcastSocket>(std::move(accepted_socket_)));
     if (accept_callback_) accept_callback_.Run(Status::OK());
   }
 }
@@ -166,38 +151,8 @@ void TCPServerSocket::OnAccept(int result) {
   if (accept_callback_) DoAcceptLoop();
 }
 
-void TCPServerSocket::OnWrite(::net::TCPSocket* socket, int result) {
-  if (result == ::net::ERR_CONNECTION_RESET) {
-    socket->Close();
-    has_closed_sockets_ = true;
-  }
-
-  written_count_++;
-  if (result < 0) {
-    LOG(ERROR) << "TCPServerSocket::OnWrite: " << ::net::ErrorToString(result);
-    write_result_ = result;
-  }
-  if (to_write_count_ == written_count_) {
-    to_write_count_ = 0;
-    written_count_ = 0;
-    int write_result = write_result_;
-    write_result_ = 0;
-    CallbackWithStatus(std::move(write_callback_), write_result);
-  }
-}
-
-void TCPServerSocket::EraseClosedSockets() {
-  if (has_closed_sockets_) {
-    auto it = accepted_sockets_.begin();
-    while (it != accepted_sockets_.end()) {
-      if (!(*it)->IsConnected()) {
-        it = accepted_sockets_.erase(it);
-        continue;
-      }
-      it++;
-    }
-    has_closed_sockets_ = false;
-  }
+void TCPServerSocket::OnWrite(const Status& s) {
+  std::move(write_callback_).Run(s);
 }
 
 }  // namespace felicia

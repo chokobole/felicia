@@ -1,31 +1,22 @@
 #include "felicia/core/channel/socket/web_socket_server.h"
 
+#include "felicia/core/channel/socket/web_socket_basic_stream.h"
+#include "felicia/core/channel/socket/web_socket_deflate_stream.h"
+#include "felicia/core/lib/error/errors.h"
 #include "felicia/core/lib/unit/bytes.h"
 
 namespace felicia {
 
 WebSocketServer::WebSocketServer(const channel::WSSettings& settings)
     : tcp_server_socket_(std::make_unique<TCPServerSocket>()),
-      handshake_handler_(this, settings) {
-  if (settings.permessage_deflate_enabled) {
-    deflater_ = std::make_unique<::net::WebSocketDeflater>(
-        ::net::WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT);
-
-    if (!deflater_->Initialize(settings.server_max_window_bits)) {
-      DVLOG(1) << "WebSocket protocol error. "
-               << "deflater_->Initialize() returns an error.";
-    }
-  }
-}
+      handshake_handler_(this, settings),
+      broadcaster_(&channels_) {}
 
 WebSocketServer::~WebSocketServer() = default;
 
 bool WebSocketServer::IsServer() const { return true; }
 
-bool WebSocketServer::HasReceivers() const {
-  DCHECK(tcp_server_socket_);
-  return tcp_server_socket_->accepted_sockets().size() > 0;
-}
+bool WebSocketServer::HasReceivers() const { return channels_.size() > 0; }
 
 StatusOr<ChannelDef> WebSocketServer::Listen() {
   DCHECK(tcp_server_socket_);
@@ -52,7 +43,7 @@ void WebSocketServer::DoAcceptOnce() {
 
 void WebSocketServer::Write(scoped_refptr<::net::IOBuffer> buffer, int size,
                             StatusOnceCallback callback) {
-  tcp_server_socket_->Write(buffer, size, std::move(callback));
+  broadcaster_.Broadcast(std::move(buffer), size, std::move(callback));
 }
 
 void WebSocketServer::Read(scoped_refptr<::net::GrowableIOBuffer> buffer,
@@ -73,16 +64,24 @@ void WebSocketServer::OnAccept(
 void WebSocketServer::OnHandshaked(
     StatusOr<std::unique_ptr<::net::TCPSocket>> status_or) {
   if (status_or.ok()) {
-    tcp_server_socket_->AddSocket(std::move(status_or.ValueOrDie()));
+    auto connection =
+        std::make_unique<TCPSocketAdapter>(std::move(status_or.ValueOrDie()));
+    std::unique_ptr<WebSocketStream> stream =
+        std::make_unique<WebSocketBasicStream>(std::move(connection));
+    auto& extensions = handshake_handler_.accepted_extensions();
+    if (extensions.size() > 0) {
+      DCHECK(extensions.size() == 1);
+      if (extensions[0]->IsPerMessageDeflate()) {
+        stream = std::make_unique<WebSocketDeflateStream>(
+            std::move(stream), extensions[0]->ToPermessageDeflate());
+      }
+    }
+    channels_.push_back(std::make_unique<WebSocketChannel>(std::move(stream)));
     accept_callback_.Run(Status::OK());
   } else {
     accept_callback_.Run(status_or.status());
   }
   DoAcceptOnce();
-}
-
-::net::WebSocketDeflater* WebSocketServer::deflater() {
-  return deflater_.get();
 }
 
 }  // namespace felicia

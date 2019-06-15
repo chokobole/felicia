@@ -37,8 +37,10 @@ bool PermessageDeflate::Negotiate(::base::StringTokenizer& params,
                                   const channel::WSSettings& settings,
                                   std::string* response) {
   DCHECK(settings.permessage_deflate_enabled);
-  client_no_context_takeover_ = true;
-  server_no_context_takeover_ = true;
+  client_context_take_over_mode_ =
+      ::net::WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT;
+  server_context_take_over_mode_ =
+      ::net::WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT;
   client_max_window_bits_ = kMaxWindowBits;
   server_max_window_bits_ = settings.server_max_window_bits;
 
@@ -87,10 +89,12 @@ bool PermessageDeflate::Negotiate(::base::StringTokenizer& params,
 
 void PermessageDeflate::AppendResponse(std::string* response) const {
   ::base::StringAppendF(response, "%s", kKey);
-  if (client_no_context_takeover_) {
+  if (client_context_take_over_mode_ ==
+      ::net::WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT) {
     ::base::StringAppendF(response, "; %s", kClientNoContextTakeover);
   }
-  if (server_no_context_takeover_) {
+  if (server_context_take_over_mode_ ==
+      ::net::WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT) {
     ::base::StringAppendF(response, "; %s", kServerNoContextTakeover);
   }
   ::base::StringAppendF(response, "; %s=%d", kServerMaxWindowBits,

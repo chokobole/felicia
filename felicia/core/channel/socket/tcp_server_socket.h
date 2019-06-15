@@ -2,10 +2,28 @@
 #define FELICIA_CORE_CHANNEL_SOCKET_TCP_SERVER_SOCKET_H_
 
 #include "felicia/core/channel/socket/tcp_socket.h"
+#include "felicia/core/channel/socket/tcp_socket_broadcaster.h"
 #include "felicia/core/lib/error/statusor.h"
 #include "felicia/core/protobuf/channel.pb.h"
 
 namespace felicia {
+
+class TCPBroadcastSocket : public TCPSocketBroadcaster::SocketInterface {
+ public:
+  TCPBroadcastSocket(std::unique_ptr<::net::TCPSocket> socket);
+  TCPBroadcastSocket(TCPBroadcastSocket&& other);
+  void operator=(TCPBroadcastSocket&& other);
+
+  bool IsConnected() override;
+  int Write(::net::IOBuffer* buf, int buf_len,
+            ::net::CompletionOnceCallback callback) override;
+  void Close() override;
+
+ private:
+  std::unique_ptr<::net::TCPSocket> socket_;
+
+  DISALLOW_COPY_AND_ASSIGN(TCPBroadcastSocket);
+};
 
 class EXPORT TCPServerSocket : public TCPSocket {
  public:
@@ -16,8 +34,8 @@ class EXPORT TCPServerSocket : public TCPSocket {
   TCPServerSocket();
   ~TCPServerSocket();
 
-  const std::vector<std::unique_ptr<::net::TCPSocket>>& accepted_sockets()
-      const;
+  const std::vector<std::unique_ptr<TCPSocketBroadcaster::SocketInterface>>&
+  accepted_sockets() const;
 
   bool IsServer() const override;
 
@@ -45,23 +63,18 @@ class EXPORT TCPServerSocket : public TCPSocket {
   void HandleAccpetResult(int result);
   void OnAccept(int result);
 
-  void OnWrite(::net::TCPSocket* socket, int result);
-
-  void EraseClosedSockets();
+  void OnWrite(const Status& s);
 
   AcceptCallback accept_callback_;
   AcceptOnceInterceptCallback accept_once_intercept_callback_;
 
-  size_t to_write_count_ = 0;
-  size_t written_count_ = 0;
-  int write_result_ = 0;
-
-  bool has_closed_sockets_ = false;
-
   std::unique_ptr<::net::TCPSocket> socket_;
   ::net::IPEndPoint accepted_endpoint_;
   std::unique_ptr<::net::TCPSocket> accepted_socket_;
-  std::vector<std::unique_ptr<::net::TCPSocket>> accepted_sockets_;
+  std::vector<std::unique_ptr<TCPSocketBroadcaster::SocketInterface>>
+      accepted_sockets_;
+
+  TCPSocketBroadcaster broadcaster_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPServerSocket);
 };

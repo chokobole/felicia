@@ -75,8 +75,7 @@ class Channel {
  protected:
   friend class ChannelFactory;
 
-  virtual MessageIoError SerializeToBuffer(const MessageTy& message,
-                                           int* to_send);
+  virtual void WriteImpl(const std::string& text, SendMessageCallback callback);
   virtual void ReadImpl(MessageTy* message, StatusOnceCallback callback);
 
   void OnSendMessage(const Status& s);
@@ -115,36 +114,13 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
   }
 
   send_buffer_->set_offset(0);
-  int to_send;
-  MessageIoError err = SerializeToBuffer(message, &to_send);
-
+  std::string text;
+  MessageIoError err = MessageIO<MessageTy>::SerializeToString(&message, &text);
   if (err == MessageIoError::OK) {
-    is_sending_ = true;
-    send_callback_ = callback;
-    channel_impl_->Write(send_buffer_, to_send,
-                         ::base::BindOnce(&Channel<MessageTy>::OnSendMessage,
-                                          ::base::Unretained(this)));
-  } else if (err == MessageIoError::ERR_NOT_ENOUGH_BUFFER) {
-    if (is_dynamic_buffer_) {
-      DLOG(INFO) << "Dynamically allocate buffer " << Bytes::FromBytes(to_send);
-      send_buffer_->SetCapacity(to_send);
-    } else {
-      callback.Run(type(), errors::Aborted(MessageIoErrorToString(err)));
-      return;
-    }
+    WriteImpl(text, callback);
   } else {
     callback.Run(type(), errors::Unavailable(MessageIoErrorToString(err)));
   }
-}
-
-template <typename MessageTy>
-MessageIoError Channel<MessageTy>::SerializeToBuffer(const MessageTy& message,
-                                                     int* to_send) {
-  std::string text;
-  MessageIoError err = MessageIO<MessageTy>::SerializeToString(&message, &text);
-  if (err != MessageIoError::OK) return err;
-
-  return MessageIO<MessageTy>::AttachToBuffer(text, send_buffer_, to_send);
 }
 
 template <typename MessageTy>
@@ -184,6 +160,31 @@ void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
 
   receive_buffer_->set_offset(0);
   ReadImpl(message_, std::move(callback));
+}
+
+template <typename MessageTy>
+void Channel<MessageTy>::WriteImpl(const std::string& text,
+                                   SendMessageCallback callback) {
+  int to_send;
+  MessageIoError err =
+      MessageIO<MessageTy>::AttachToBuffer(text, send_buffer_, &to_send);
+  if (err == MessageIoError::ERR_NOT_ENOUGH_BUFFER) {
+    if (is_dynamic_buffer_) {
+      DLOG(INFO) << "Dynamically allocate buffer " << Bytes::FromBytes(to_send);
+      send_buffer_->SetCapacity(to_send);
+      err = MessageIO<MessageTy>::AttachToBuffer(text, send_buffer_, &to_send);
+    }
+  }
+
+  if (err == MessageIoError::OK) {
+    is_sending_ = true;
+    send_callback_ = callback;
+    channel_impl_->Write(send_buffer_, to_send,
+                         ::base::BindOnce(&Channel<MessageTy>::OnSendMessage,
+                                          ::base::Unretained(this)));
+  } else {
+    callback.Run(type(), errors::Unavailable(MessageIoErrorToString(err)));
+  }
 }
 
 template <typename MessageTy>
