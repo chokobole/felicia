@@ -41,8 +41,9 @@ void Master::Stop() { thread_->Stop(); }
 void Master::RegisterClient(const RegisterClientRequest* arg,
                             RegisterClientResponse* result,
                             StatusOnceCallback callback) {
-  ClientInfo client_info = arg->client_info();  // intend to copy
-  if (!IsValidChannelSource(client_info.heart_beat_signaller_source())) {
+  const ClientInfo& client_info = arg->client_info();
+  if (check_heart_beat_ &&
+      !IsValidChannelSource(client_info.heart_beat_signaller_source())) {
     std::move(callback).Run(errors::ChannelSourceNotValid(
         "heart beat signaller", client_info.heart_beat_signaller_source()));
     return;
@@ -59,16 +60,11 @@ void Master::RegisterClient(const RegisterClientRequest* arg,
     std::move(callback).Run(errors::FailedToRegisterClient());
   }
 
-  uint32_t id = client->client_info().id();
-  client_info.set_id(id);
-  result->set_id(id);
-  AddClient(id, std::move(client));
-  DLOG(INFO) << "[RegisterClient]: " << ::base::StringPrintf("client(%u)", id);
-  std::move(callback).Run(Status::OK());
-
+  result->set_id(client->client_info().id());
   thread_->task_runner()->PostTask(
-      FROM_HERE, ::base::BindOnce(&Master::DoCheckHeartBeat,
-                                  ::base::Unretained(this), client_info));
+      FROM_HERE,
+      ::base::BindOnce(&Master::DoRegisterClient, ::base::Unretained(this),
+                       std::move(client), std::move(callback)));
 }
 
 void Master::ListClients(const ListClientsRequest* arg,
@@ -119,17 +115,10 @@ void Master::RegisterNode(const RegisterNodeRequest* arg,
   }
 
   *result->mutable_node_info() = node->node_info();
-  DLOG(INFO) << "[RegisterNode]: "
-             << ::base::StringPrintf("node(%s)",
-                                     node->node_info().name().c_str());
-  AddNode(std::move(node));
-  std::move(callback).Run(Status::OK());
-
-  if (node_info.watcher()) {
-    thread_->task_runner()->PostTask(
-        FROM_HERE,
-        ::base::Bind(&Master::NotifyWatcher, ::base::Unretained(this)));
-  }
+  thread_->task_runner()->PostTask(
+      FROM_HERE,
+      ::base::BindOnce(&Master::DoRegisterNode, ::base::Unretained(this),
+                       std::move(node), std::move(callback)));
 }
 
 void Master::UnregisterNode(const UnregisterNodeRequest* arg,
@@ -138,14 +127,131 @@ void Master::UnregisterNode(const UnregisterNodeRequest* arg,
   const NodeInfo& node_info = arg->node_info();
   CHECK_NODE_EXISTS(node_info);
 
+  thread_->task_runner()->PostTask(
+      FROM_HERE,
+      ::base::BindOnce(&Master::DoUnregisterNode, ::base::Unretained(this),
+                       node_info, std::move(callback)));
+}
+
+void Master::ListNodes(const ListNodesRequest* arg, ListNodesResponse* result,
+                       StatusOnceCallback callback) {
+  thread_->task_runner()->PostTask(
+      FROM_HERE,
+      ::base::BindOnce(&Master::DoListNodes, ::base::Unretained(this), arg,
+                       result, std::move(callback)));
+}
+
+void Master::PublishTopic(const PublishTopicRequest* arg,
+                          PublishTopicResponse* result,
+                          StatusOnceCallback callback) {
+  const NodeInfo& node_info = arg->node_info();
+  CHECK_NODE_EXISTS(node_info);
+
+  const TopicInfo& topic_info = arg->topic_info();
+  if (!IsValidChannelSource(topic_info.topic_source())) {
+    std::move(callback).Run(errors::ChannelSourceNotValid(
+        "topic source", topic_info.topic_source()));
+    return;
+  }
+
+  thread_->task_runner()->PostTask(
+      FROM_HERE,
+      ::base::BindOnce(&Master::DoPublishTopic, ::base::Unretained(this),
+                       node_info, topic_info, std::move(callback)));
+}
+
+void Master::UnpublishTopic(const UnpublishTopicRequest* arg,
+                            UnpublishTopicResponse* result,
+                            StatusOnceCallback callback) {
+  const NodeInfo& node_info = arg->node_info();
+  CHECK_NODE_EXISTS(node_info);
+
+  const std::string& topic = arg->topic();
+  thread_->task_runner()->PostTask(
+      FROM_HERE,
+      ::base::BindOnce(&Master::DoUnpublishTopic, ::base::Unretained(this),
+                       node_info, topic, std::move(callback)));
+}
+
+void Master::SubscribeTopic(const SubscribeTopicRequest* arg,
+                            SubscribeTopicResponse* result,
+                            StatusOnceCallback callback) {
+  const NodeInfo& node_info = arg->node_info();
+  CHECK_NODE_EXISTS(node_info);
+
+  const std::string& topic = arg->topic();
+  thread_->task_runner()->PostTask(
+      FROM_HERE,
+      ::base::BindOnce(&Master::DoSubscribeTopic, ::base::Unretained(this),
+                       node_info, topic, std::move(callback)));
+}
+
+void Master::UnsubscribeTopic(const UnsubscribeTopicRequest* arg,
+                              UnsubscribeTopicResponse* result,
+                              StatusOnceCallback callback) {
+  const NodeInfo& node_info = arg->node_info();
+  CHECK_NODE_EXISTS(node_info);
+
+  const std::string& topic = arg->topic();
+  thread_->task_runner()->PostTask(
+      FROM_HERE,
+      ::base::BindOnce(&Master::DoUnsubscribeTopic, ::base::Unretained(this),
+                       node_info, topic, std::move(callback)));
+}
+
+void Master::ListTopics(const ListTopicsRequest* arg,
+                        ListTopicsResponse* result,
+                        StatusOnceCallback callback) {
+  const TopicFilter& topic_filter = arg->topic_filter();
+  std::vector<TopicInfo> topic_infos = FindTopicInfos(topic_filter);
+  for (auto& topic_info : topic_infos) {
+    *result->add_topic_infos() = topic_info;
+  }
+  DLOG(INFO) << "[ListTopics]";
+  std::move(callback).Run(Status::OK());
+}
+
+void Master::Gc() { LOG(ERROR) << "Not implemented"; }
+
+void Master::DoRegisterClient(std::unique_ptr<Client> client,
+                              StatusOnceCallback callback) {
+  DCHECK(thread_->task_runner()->BelongsToCurrentThread());
+  ClientInfo client_info = client->client_info();  // intend to copy
+  uint32_t id = client_info.id();
+  AddClient(id, std::move(client));
+  DLOG(INFO) << "[RegisterClient]: " << ::base::StringPrintf("client(%u)", id);
+  std::move(callback).Run(Status::OK());
+
+  DoCheckHeartBeat(client_info);
+}
+
+void Master::DoRegisterNode(std::unique_ptr<Node> node,
+                            StatusOnceCallback callback) {
+  DCHECK(thread_->task_runner()->BelongsToCurrentThread());
+  bool is_watcher = node->node_info().watcher();
+  DLOG(INFO) << "[RegisterNode]: "
+             << ::base::StringPrintf("node(%s)",
+                                     node->node_info().name().c_str());
+  AddNode(std::move(node));
+  std::move(callback).Run(Status::OK());
+
+  if (is_watcher) {
+    NotifyWatcher();
+  }
+}
+
+void Master::DoUnregisterNode(const NodeInfo& node_info,
+                              StatusOnceCallback callback) {
+  DCHECK(thread_->task_runner()->BelongsToCurrentThread());
   RemoveNode(node_info);
   DLOG(INFO) << "[UnregisterNode]: "
              << ::base::StringPrintf("node(%s)", node_info.name().c_str());
   std::move(callback).Run(Status::OK());
 }
 
-void Master::ListNodes(const ListNodesRequest* arg, ListNodesResponse* result,
-                       StatusOnceCallback callback) {
+void Master::DoListNodes(const ListNodesRequest* arg, ListNodesResponse* result,
+                         StatusOnceCallback callback) {
+  DCHECK(thread_->task_runner()->BelongsToCurrentThread());
   const NodeFilter& node_filter = arg->node_filter();
   std::vector<::base::WeakPtr<Node>> nodes = FindNodes(node_filter);
   if (!node_filter.name().empty()) {
@@ -176,19 +282,10 @@ void Master::ListNodes(const ListNodesRequest* arg, ListNodesResponse* result,
   std::move(callback).Run(Status::OK());
 }
 
-void Master::PublishTopic(const PublishTopicRequest* arg,
-                          PublishTopicResponse* result,
-                          StatusOnceCallback callback) {
-  const NodeInfo& node_info = arg->node_info();
-  CHECK_NODE_EXISTS(node_info);
-
-  const TopicInfo& topic_info = arg->topic_info();
-  if (!IsValidChannelSource(topic_info.topic_source())) {
-    std::move(callback).Run(errors::ChannelSourceNotValid(
-        "topic source", topic_info.topic_source()));
-    return;
-  }
-
+void Master::DoPublishTopic(const NodeInfo& node_info,
+                            const TopicInfo& topic_info,
+                            StatusOnceCallback callback) {
+  DCHECK(thread_->task_runner()->BelongsToCurrentThread());
   NodeFilter node_filter;
   node_filter.set_publishing_topic(topic_info.topic());
   std::vector<::base::WeakPtr<Node>> publishing_nodes = FindNodes(node_filter);
@@ -209,31 +306,23 @@ void Master::PublishTopic(const PublishTopicRequest* arg,
   }
 
   if (reason == Reason::None) {
-    std::move(callback).Run(Status::OK());
     DLOG(INFO) << "[PublishTopic]: "
                << ::base::StringPrintf("topic(%s) from node(%s)",
                                        topic_info.topic().c_str(),
                                        node_info.name().c_str());
+    std::move(callback).Run(Status::OK());
+    NotifyAllSubscribers(topic_info);
   } else if (reason == Reason::TopicAlreadyPublishing) {
     std::move(callback).Run(errors::TopicAlreadyPublishing(topic_info));
-    return;
   } else if (reason == Reason::UnknownFailed) {
     std::move(callback).Run(errors::FailedToPublish(topic_info));
-    return;
   }
-
-  thread_->task_runner()->PostTask(
-      FROM_HERE, ::base::Bind(&Master::NotifyAllSubscribers,
-                              ::base::Unretained(this), topic_info));
 }
 
-void Master::UnpublishTopic(const UnpublishTopicRequest* arg,
-                            UnpublishTopicResponse* result,
-                            StatusOnceCallback callback) {
-  const NodeInfo& node_info = arg->node_info();
-  CHECK_NODE_EXISTS(node_info);
-
-  const std::string& topic = arg->topic();
+void Master::DoUnpublishTopic(const NodeInfo& node_info,
+                              const std::string& topic,
+                              StatusOnceCallback callback) {
+  DCHECK(thread_->task_runner()->BelongsToCurrentThread());
   ::base::WeakPtr<Node> node = FindNode(node_info);
   TopicInfo topic_info;
   Reason reason;
@@ -253,31 +342,23 @@ void Master::UnpublishTopic(const UnpublishTopicRequest* arg,
   }
 
   if (reason == Reason::None) {
-    std::move(callback).Run(Status::OK());
     DLOG(INFO) << "[UnpublishTopic]: "
                << ::base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                        node_info.name().c_str());
+    std::move(callback).Run(Status::OK());
+    topic_info.set_status(TopicInfo::UNREGISTERED);
+    NotifyAllSubscribers(topic_info);
   } else if (reason == Reason::TopicNotPublishingOnNode) {
     std::move(callback).Run(errors::TopicNotPublishingOnNode(node_info, topic));
-    return;
   } else if (reason == Reason::UnknownFailed) {
     std::move(callback).Run(errors::FailedToUnpublish(topic));
-    return;
   }
-
-  topic_info.set_status(TopicInfo::UNREGISTERED);
-  thread_->task_runner()->PostTask(
-      FROM_HERE, ::base::Bind(&Master::NotifyAllSubscribers,
-                              ::base::Unretained(this), topic_info));
 }
 
-void Master::SubscribeTopic(const SubscribeTopicRequest* arg,
-                            SubscribeTopicResponse* result,
-                            StatusOnceCallback callback) {
-  const NodeInfo& node_info = arg->node_info();
-  CHECK_NODE_EXISTS(node_info);
-
-  const std::string& topic = arg->topic();
+void Master::DoSubscribeTopic(const NodeInfo& node_info,
+                              const std::string& topic,
+                              StatusOnceCallback callback) {
+  DCHECK(thread_->task_runner()->BelongsToCurrentThread());
   ::base::WeakPtr<Node> node = FindNode(node_info);
   Reason reason;
   {
@@ -295,31 +376,23 @@ void Master::SubscribeTopic(const SubscribeTopicRequest* arg,
   }
 
   if (reason == Reason::None) {
-    std::move(callback).Run(Status::OK());
     DLOG(INFO) << "[SubscribeTopic]: "
                << ::base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                        node_info.name().c_str());
+    std::move(callback).Run(Status::OK());
+    NotifySubscriber(topic, node_info);
   } else if (reason == Reason::TopicAlreadySubscribingOnNode) {
     std::move(callback).Run(
         errors::TopicAlreadySubscribingOnNode(node_info, topic));
-    return;
   } else if (reason == Reason::UnknownFailed) {
     std::move(callback).Run(errors::FailedToSubscribe(topic));
-    return;
   }
-
-  thread_->task_runner()->PostTask(
-      FROM_HERE, ::base::Bind(&Master::NotifySubscriber,
-                              ::base::Unretained(this), topic, node_info));
 }
 
-void Master::UnsubscribeTopic(const UnsubscribeTopicRequest* arg,
-                              UnsubscribeTopicResponse* result,
-                              StatusOnceCallback callback) {
-  const NodeInfo& node_info = arg->node_info();
-  CHECK_NODE_EXISTS(node_info);
-
-  const std::string& topic = arg->topic();
+void Master::DoUnsubscribeTopic(const NodeInfo& node_info,
+                                const std::string& topic,
+                                StatusOnceCallback callback) {
+  DCHECK(thread_->task_runner()->BelongsToCurrentThread());
   ::base::WeakPtr<Node> node = FindNode(node_info);
   Reason reason;
   {
@@ -337,10 +410,10 @@ void Master::UnsubscribeTopic(const UnsubscribeTopicRequest* arg,
   }
 
   if (reason == Reason::None) {
-    std::move(callback).Run(Status::OK());
     DLOG(INFO) << "[UnsubscribeTopic]: "
                << ::base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                        node_info.name().c_str());
+    std::move(callback).Run(Status::OK());
   } else if (reason == Reason::TopicNotSubscribingOnNode) {
     std::move(callback).Run(
         errors::TopicNotSubscribingOnNode(node_info, topic));
@@ -348,20 +421,6 @@ void Master::UnsubscribeTopic(const UnsubscribeTopicRequest* arg,
     std::move(callback).Run(errors::FailedToUnsubscribe(topic));
   }
 }
-
-void Master::ListTopics(const ListTopicsRequest* arg,
-                        ListTopicsResponse* result,
-                        StatusOnceCallback callback) {
-  const TopicFilter& topic_filter = arg->topic_filter();
-  std::vector<TopicInfo> topic_infos = FindTopicInfos(topic_filter);
-  for (auto& topic_info : topic_infos) {
-    *result->add_topic_infos() = topic_info;
-  }
-  DLOG(INFO) << "[ListTopics]";
-  std::move(callback).Run(Status::OK());
-}
-
-void Master::Gc() { LOG(ERROR) << "Not implemented"; }
 
 ::base::WeakPtr<Node> Master::FindNode(const NodeInfo& node_info) {
   ::base::AutoLock l(lock_);
@@ -570,7 +629,12 @@ void Master::OnConnetToTopicInfoWatcher(
   }
 }
 
+void Master::SetCheckHeartBeatForTesting(bool check_heart_beat) {
+  check_heart_beat_ = check_heart_beat;
+}
+
 void Master::DoCheckHeartBeat(const ClientInfo& client_info) {
+  if (!check_heart_beat_) return;
   // |listner| is released inside.
   HeartBeatListener* listener = new HeartBeatListener(
       client_info,

@@ -50,7 +50,21 @@ class EXPORT Master {
  private:
   friend class GrpcServer;
   friend class MasterTest;
-  friend std::unique_ptr<Master> NewMasterForTesting();
+
+  void DoRegisterClient(std::unique_ptr<Client> client,
+                        StatusOnceCallback callback);
+  void DoRegisterNode(std::unique_ptr<Node> node, StatusOnceCallback callback);
+  void DoUnregisterNode(const NodeInfo& node_info, StatusOnceCallback callback);
+  void DoListNodes(const ListNodesRequest* arg, ListNodesResponse* result,
+                   StatusOnceCallback callback);
+  void DoPublishTopic(const NodeInfo& node_info, const TopicInfo& topic_info,
+                      StatusOnceCallback callback);
+  void DoUnpublishTopic(const NodeInfo& node_info, const std::string& topic,
+                        StatusOnceCallback callback);
+  void DoSubscribeTopic(const NodeInfo& node_info, const std::string& topic,
+                        StatusOnceCallback callback);
+  void DoUnsubscribeTopic(const NodeInfo& node_info, const std::string& topic,
+                          StatusOnceCallback callback);
 
   enum Reason {
     None,
@@ -101,6 +115,8 @@ class EXPORT Master {
   void OnConnetToTopicInfoWatcher(std::unique_ptr<Channel<TopicInfo>> channel,
                                   const TopicInfo& topic_info, const Status& s);
 
+  void SetCheckHeartBeatForTesting(bool check_heart_beat);
+
   // Every time a new client is registered, invoke an appropriate
   // heart beat listener for this client.
   void DoCheckHeartBeat(const ClientInfo& client_info);
@@ -112,6 +128,8 @@ class EXPORT Master {
   ::base::Lock lock_;
   ::base::flat_map<uint32_t, std::unique_ptr<Client>> client_map_
       GUARDED_BY(lock_);
+
+  bool check_heart_beat_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(Master);
 };
