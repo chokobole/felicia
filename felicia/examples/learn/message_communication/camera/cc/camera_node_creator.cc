@@ -23,6 +23,15 @@ int RealMain(int argc, char* argv[]) {
     return 1;
   }
 
+  if (delegate.device_index_flag()->is_set()) {
+    if (camera_descriptors.size() <= delegate.device_index_flag()->value()) {
+      std::cerr << kRedError << "Please set device_index among them.."
+                << std::endl;
+      std::cout << camera_descriptors;
+      return 1;
+    }
+  }
+
   if (delegate.device_list_flag()->value()) {
     if (delegate.device_index_flag()->is_set()) {
       CameraFormats camera_formats;
@@ -51,13 +60,6 @@ int RealMain(int argc, char* argv[]) {
   node_info.set_name(delegate.name_flag()->value());
 
   if (delegate.is_publishing_node_flag()->value()) {
-    if (camera_descriptors.size() <= delegate.device_index_flag()->value()) {
-      std::cerr << kRedError << "Please set device_index among them.."
-                << std::endl;
-      std::cout << camera_descriptors;
-      return 1;
-    }
-
     master_proxy.RequestRegisterNode<CameraPublishingNode>(
         node_info, delegate.topic_flag()->value(),
         camera_descriptors[delegate.device_index_flag()->value()]);

@@ -1,8 +1,8 @@
 load(
     "//bazel:felicia_repository.bzl",
+    "get_bin_path",
     "is_executable",
     "is_linux",
-    "get_bin_path",
     "symlink_genrule_for_dir",
 )
 load("//bazel:felicia_util.bzl", "red")
@@ -53,8 +53,6 @@ def _cuda_configure_impl(repository_ctx):
             "%{CUDA_INCLUDE_GENRULE}": cuda_include_rule,
         },
     )
-
-
 
 cuda_configure = repository_rule(
     implementation = _cuda_configure_impl,

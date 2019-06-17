@@ -4,6 +4,7 @@
 #include <sl/Camera.hpp>
 
 #include "felicia/drivers/camera/stereo_camera_interface.h"
+#include "felicia/drivers/vendors/zed/zed_capability.h"
 
 namespace felicia {
 

@@ -26,6 +26,13 @@ def main():
         print("{} {}.".format(cli.RED_ERROR, s), file=sys.stderr)
         sys.exit(1)
 
+    if delegate.device_index_flag.is_set():
+        if len(camera_descriptors) <= delegate.device_index_flag.value():
+            print("{} {}".format(cli.RED_ERROR, "Please set device_index among them.."))
+            for i in range(len(camera_descriptors)):
+                print("[{}] {}".format(i, camera_descriptors[i]), file=sys.stderr)
+            sys.exit(1)
+
     if delegate.device_list_flag.value():
         if delegate.device_index_flag.is_set():
             camera_formats = []

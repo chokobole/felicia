@@ -22,8 +22,29 @@ int RealMain(int argc, char* argv[]) {
     return 1;
   }
 
+  if (delegate.device_index_flag()->is_set()) {
+    if (camera_descriptors.size() <= delegate.device_index_flag()->value()) {
+      std::cerr << kRedError << "Please set device_index among them.."
+                << std::endl;
+      std::cout << camera_descriptors;
+      return 1;
+    }
+  }
+
   if (delegate.device_list_flag()->value()) {
-    std::cout << camera_descriptors;
+    if (delegate.device_index_flag()->is_set()) {
+      CameraFormats camera_formats;
+      Status s = ZedCameraFactory::GetSupportedCameraFormats(
+          camera_descriptors[delegate.device_index_flag()->value()],
+          &camera_formats);
+      if (!s.ok()) {
+        std::cerr << kRedError << s << std::endl;
+        return 1;
+      }
+      std::cout << camera_formats;
+    } else {
+      std::cout << camera_descriptors;
+    }
     return 0;
   }
 
@@ -36,13 +57,6 @@ int RealMain(int argc, char* argv[]) {
 
   NodeInfo node_info;
   node_info.set_name(delegate.name_flag()->value());
-
-  if (camera_descriptors.size() <= delegate.device_index_flag()->value()) {
-    std::cerr << kRedError << "Please set device_index among them.."
-              << std::endl;
-    std::cout << camera_descriptors;
-    return 1;
-  }
 
   master_proxy.RequestRegisterNode<ZedCameraPublishingNode>(
       node_info, delegate.left_camera_topic_flag()->value(),

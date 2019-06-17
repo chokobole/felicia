@@ -15,7 +15,7 @@ class RsCameraFactory {
 
   static Status GetCameraDescriptors(CameraDescriptors* camera_descriptors);
 
-  static Status GetSupportedCameraFormats(
+  static Status GetSupportedCapabilities(
       const CameraDescriptor& camera_descriptor,
       RsCapabilityMap* rs_capability_map);
 

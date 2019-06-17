@@ -40,4 +40,14 @@ Status ZedCameraFactory::GetCameraDescriptors(
   return Status::OK();
 }
 
+// static
+Status ZedCameraFactory::GetSupportedCameraFormats(
+    const CameraDescriptor& camera_descriptor, CameraFormats* camera_formats) {
+  DCHECK(camera_formats->empty());
+  for (auto& capability : kZedCapabilities) {
+    camera_formats->push_back(ConvertToCameraFormat(capability));
+  }
+  return Status::OK();
+}
+
 }  // namespace felicia

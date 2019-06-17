@@ -21,21 +21,20 @@ class CameraPublishingNode(fel.NodeLifecycle):
             self.camera_descriptor)
         s = self.camera.init()
         if not s.ok():
-            fel.log(fel.ERROR, s.error_message())
+            fel.log(fel.ERROR, s)
             sys.exit(1)
 
         # You can set camera settings here.
         camera_settings = fel.drivers.CameraSettings()
-        camera_settings.set_gain(100)
         s = self.camera.set_camera_settings(camera_settings)
-        fel.log_if(fel.ERROR, not s.ok(), s.error_message())
+        fel.log_if(fel.ERROR, not s.ok(), s)
 
         message = CameraSettingsInfoMessage()
         s = self.camera.get_camera_settings_info(message)
         if s.ok():
             print(message)
         else:
-            fel.log(fel.ERROR, s.error_message())
+            fel.log(fel.ERROR, s)
 
     def on_did_create(self, node_info):
         print("CameraPublishingNode.on_did_create()")
@@ -44,7 +43,7 @@ class CameraPublishingNode(fel.NodeLifecycle):
 
     def on_error(self, status):
         print("CameraPublishingNode.on_error()")
-        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
+        fel.log_if(fel.ERROR, not status.ok(), status)
 
     def request_publish(self):
         settings = fel.communication.Settings()
@@ -61,7 +60,7 @@ class CameraPublishingNode(fel.NodeLifecycle):
         if status.ok():
             fel.MasterProxy.post_task(self.start_camera)
         else:
-            fel.log(fel.ERROR, status.error_message())
+            fel.log(fel.ERROR, status)
 
     def start_camera(self):
         # You should set the camera format if you have any you want to run with.
@@ -72,7 +71,7 @@ class CameraPublishingNode(fel.NodeLifecycle):
             #     self.request_unpublish, fel.TimeDelta.from_seconds(10))
             pass
         else:
-            fel.log(fel.ERROR, s.error_message())
+            fel.log(fel.ERROR, s)
 
     def on_camera_frame(self, camera_frame):
         if self.publisher.is_unregistered():
@@ -82,11 +81,11 @@ class CameraPublishingNode(fel.NodeLifecycle):
                                self.on_publish)
 
     def on_camera_error(self, status):
-        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
+        fel.log_if(fel.ERROR, not status.ok(), status)
 
     def on_publish(self, channel_type, status):
         fel.log_if(fel.ERROR, not status.ok(), "{} from {}".format(
-            status.error_message(), ChannelDef.Type.Name(channel_type)))
+            status, ChannelDef.Type.Name(channel_type)))
 
     def request_unpublish(self):
         self.publisher.request_unpublish(self.node_info, self.topic,
@@ -94,8 +93,8 @@ class CameraPublishingNode(fel.NodeLifecycle):
 
     def on_request_unpublish(self, status):
         print("CameraPublishingNode.on_request_unpublish()")
-        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
+        fel.log_if(fel.ERROR, not status.ok(), status)
 
     def stop_camera(self):
         s = self.camera.stop()
-        fel.log_if(fel.ERROR, not s.ok(), s.error_message())
+        fel.log_if(fel.ERROR, not s.ok(), s)

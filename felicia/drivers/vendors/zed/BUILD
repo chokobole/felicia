@@ -10,9 +10,11 @@ fel_cc_library(
         "zed_camera.cc",
         "zed_camera.h",
         "zed_camera_factory.cc",
+        "zed_capability.cc",
     ]),
     hdrs = if_has_zed([
         "zed_camera_factory.h",
+        "zed_capability.h",
     ]),
     deps = if_has_zed([
         "//felicia/core/lib",

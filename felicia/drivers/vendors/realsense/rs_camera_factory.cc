@@ -31,7 +31,7 @@ Status RsCameraFactory::GetCameraDescriptors(
 }
 
 // static
-Status RsCameraFactory::GetSupportedCameraFormats(
+Status RsCameraFactory::GetSupportedCapabilities(
     const CameraDescriptor& camera_descriptor,
     RsCapabilityMap* rs_capability_map) {
   DCHECK(rs_capability_map->empty());
