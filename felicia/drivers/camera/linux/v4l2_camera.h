@@ -13,6 +13,7 @@
 #include "third_party/chromium/base/files/platform_file.h"
 #include "third_party/chromium/base/files/scoped_file.h"
 #include "third_party/chromium/base/memory/weak_ptr.h"
+#include "third_party/chromium/base/synchronization/waitable_event.h"
 #include "third_party/chromium/base/threading/thread.h"
 
 #include "felicia/core/util/timestamp/timestamper.h"
@@ -49,7 +50,7 @@ class V4l2Camera : public CameraInterface,
   Status InitMmap();
   Status ClearMmap();
   Status SetCameraFormat(const CameraFormat& camera_format);
-  void DoStop(Status* status);
+  void DoStop(::base::WaitableEvent* event, Status* status);
   void DoCapture();
 
   void GetCameraSetting(int control_id, CameraSettingsModeValue* value);

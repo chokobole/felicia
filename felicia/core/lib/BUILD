@@ -37,6 +37,7 @@ fel_cc_library(
         "error/statusor_internals.h",
         "net/net_util.h",
         "strings/str_util.h",
+        "synchronization/scoped_event_signaller.h",
         "unit/geometry/size.h",
         "unit/geometry/geometry_util.h",
         "unit/bytes.h",

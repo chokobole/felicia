@@ -21,6 +21,7 @@
 #include "third_party/chromium/base/stl_util.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
+#include "felicia/core/lib/synchronization/scoped_event_signaller.h"
 #include "felicia/drivers/camera/camera_errors.h"
 
 namespace felicia {
@@ -285,10 +286,14 @@ Status V4l2Camera::Stop() {
 
   Status s;
   if (thread_.task_runner()->BelongsToCurrentThread()) {
-    DoStop(&s);
+    DoStop(nullptr, &s);
   } else {
+    ::base::WaitableEvent* event = new ::base::WaitableEvent();
     thread_.task_runner()->PostTask(
-        FROM_HERE, ::base::BindOnce(&V4l2Camera::DoStop, AsWeakPtr(), &s));
+        FROM_HERE,
+        ::base::BindOnce(&V4l2Camera::DoStop, AsWeakPtr(), event, &s));
+    event->Wait();
+    delete event;
   }
 
   if (thread_.IsRunning()) thread_.Stop();
@@ -551,8 +556,9 @@ Status V4l2Camera::SetCameraFormat(const CameraFormat& camera_format) {
   return Status::OK();
 }
 
-void V4l2Camera::DoStop(Status* status) {
+void V4l2Camera::DoStop(::base::WaitableEvent* event, Status* status) {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
+  ScopedEventSignaller signaller(event);
 
   v4l2_buf_type capture_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if (DoIoctl(fd_.get(), VIDIOC_STREAMOFF, &capture_type) < 0) {
@@ -578,7 +584,6 @@ void V4l2Camera::DoStop(Status* status) {
 
 void V4l2Camera::DoCapture() {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
-
   v4l2_buffer buffer;
   FillV4L2Buffer(&buffer, 0);
   if (DoIoctl(fd_.get(), VIDIOC_DQBUF, &buffer) < 0) {
