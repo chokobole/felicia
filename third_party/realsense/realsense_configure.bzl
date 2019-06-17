@@ -1,13 +1,12 @@
 load(
-    "@bazel_tools//tools/cpp:lib_cc_configure.bzl",
-    "get_cpu_value",
+    "//bazel:felicia_repository.bzl",
+    "is_windows",
+    "symlink_genrule_for_dir",
 )
 load(
-    "//third_party:util.bzl",
-    "is_windows",
+    "//bazel:felicia_util.bzl",
     "norm_path",
     "red",
-    "symlink_genrule_for_dir",
 )
 
 _REALSENSE_PATH = "REALSENSE_PATH"

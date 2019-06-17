@@ -8,15 +8,21 @@
 """
 
 load(
-    "//third_party:util.bzl",
+    "//bazel:felicia_repository.bzl",
     "execute",
+    "failed_to_find_bash_bin_path",
+    "failed_to_find_bin_path",
+    "get_bash_bin_path",
+    "get_bin_path",
     "is_windows",
-    "norm_path",
-    "red",
     "symlink_genrule_for_dir",
 )
+load(
+    "//bazel:felicia_util.bzl",
+    "norm_path",
+    "red",
+)
 
-_BAZEL_SH = "BAZEL_SH"
 _PYTHON2_BIN_PATH = "PYTHON2_BIN_PATH"
 _PYTHON_BIN_PATH = "PYTHON_BIN_PATH"
 _PYTHON_LIB_PATH = "PYTHON_LIB_PATH"
@@ -35,52 +41,25 @@ def _fail(msg):
     """Output failure message when auto configuration fails."""
     fail("%s %s\n" % (red("Python Confiugation Error:"), msg))
 
+def _get_bash_bin(repository_ctx):
+    bash_bin = get_bash_bin_path(repository_ctx)
+    if bash_bin == None:
+        _fail(failed_to_find_bash_bin_path(repository_ctx))
+    return bash_bin
+
 def _get_python2_bin(repository_ctx):
     """Gets the python2 bin path."""
-    python2_bin = repository_ctx.os.environ.get(_PYTHON2_BIN_PATH)
-    if python2_bin != None:
-        return python2_bin
-    python2_bin_path = repository_ctx.which("python2")
-    if python2_bin_path != None:
-        return str(python2_bin_path)
-    _fail("Cannot find python2 in PATH, please make sure " +
-          "python2 is installed and add its directory in PATH, or --define " +
-          "%s='/something/else'.\nPATH=%s" % (
-              _PYTHON2_BIN_PATH,
-              repository_ctx.os.environ.get("PATH", ""),
-          ))
+    python2_bin = get_bin_path(repository_ctx, "python2", _PYTHON2_BIN_PATH)
+    if python2_bin == None:
+        _fail(failed_to_find_bin_path(repository_ctx, "python2", _PYTHON2_BIN_PATH))
+    return python2_bin
 
 def _get_python_bin(repository_ctx):
     """Gets the python bin path."""
-    python_bin = repository_ctx.os.environ.get(_PYTHON_BIN_PATH)
-    if python_bin != None:
-        return python_bin
-    python_bin_path = repository_ctx.which("python")
-    if python_bin_path != None:
-        return str(python_bin_path)
-    _fail("Cannot find python in PATH, please make sure " +
-          "python is installed and add its directory in PATH, or --define " +
-          "%s='/something/else'.\nPATH=%s" % (
-              _PYTHON_BIN_PATH,
-              repository_ctx.os.environ.get("PATH", ""),
-          ))
-
-def _get_bash_bin(repository_ctx):
-    """Gets the bash bin path."""
-    bash_bin = repository_ctx.os.environ.get(_BAZEL_SH)
-    if bash_bin != None:
-        return bash_bin
-    else:
-        bash_bin_path = repository_ctx.which("bash")
-        if bash_bin_path != None:
-            return str(bash_bin_path)
-        else:
-            _fail("Cannot find bash in PATH, please make sure " +
-                  "bash is installed and add its directory in PATH, or --define " +
-                  "%s='/path/to/bash'.\nPATH=%s" % (
-                      _BAZEL_SH,
-                      repository_ctx.os.environ.get("PATH", ""),
-                  ))
+    python_bin = get_bin_path(repository_ctx, "python", _PYTHON_BIN_PATH)
+    if python_bin == None:
+        _fail(failed_to_find_bin_path(repository_ctx, "python", _PYTHON_BIN_PATH))
+    return python_bin
 
 def _get_python_lib(repository_ctx, python_bin):
     """Gets the python lib path."""
@@ -252,7 +231,6 @@ def _python_autoconf_impl(repository_ctx):
 python_configure = repository_rule(
     implementation = _python_autoconf_impl,
     environ = [
-        _BAZEL_SH,
         _PYTHON2_BIN_PATH,
         _PYTHON_BIN_PATH,
         _PYTHON_LIB_PATH,

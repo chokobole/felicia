@@ -172,6 +172,14 @@ config_setting(
 )
 
 config_setting(
+    name = "has_zed",
+    define_values = {
+        "has_zed": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
     name = "asan",
     define_values = {
         "asan": "true",

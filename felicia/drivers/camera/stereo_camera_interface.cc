@@ -1,8 +1,8 @@
-#include "felicia/drivers/camera/depth_camera_interface.h"
+#include "felicia/drivers/camera/stereo_camera_interface.h"
 
 namespace felicia {
 
-DepthCameraInterface::DepthCameraInterface(
+StereoCameraInterface::StereoCameraInterface(
     const CameraDescriptor& camera_descriptor)
     : CameraInterfaceBase(camera_descriptor) {}
 

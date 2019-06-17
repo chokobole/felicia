@@ -3,26 +3,6 @@
 namespace felicia {
 
 CameraInterface::CameraInterface(const CameraDescriptor& camera_descriptor)
-    : camera_descriptor_(camera_descriptor) {}
-
-CameraInterface::~CameraInterface() = default;
-
-Status CameraInterface::SetCameraSettings(
-    const CameraSettings& camera_settings) {
-  return errors::Unimplemented("Not implemented yet.");
-}
-
-Status CameraInterface::GetCameraSettingsInfo(
-    CameraSettingsInfoMessage* camera_settings) {
-  return errors::Unimplemented("Not implemented yet.");
-}
-
-bool CameraInterface::IsInitialized() const {
-  return camera_state_.IsInitialized();
-}
-
-bool CameraInterface::IsStarted() const { return camera_state_.IsStarted(); }
-
-bool CameraInterface::IsStopped() const { return camera_state_.IsStopped(); }
+    : CameraInterfaceBase(camera_descriptor) {}
 
 }  // namespace felicia

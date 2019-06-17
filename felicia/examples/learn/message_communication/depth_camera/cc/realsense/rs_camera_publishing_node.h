@@ -11,14 +11,13 @@ class RsCameraPublishingNode : public NodeLifecycle {
  public:
   RsCameraPublishingNode(const std::string& color_topic,
                          const std::string& depth_topic,
-                         const std::string& imu_topic,
-                         const CameraDescriptor& camera_descriptor,
-                         bool synched)
+                         const std::string& imu_topic, bool synched,
+                         const CameraDescriptor& camera_descriptor)
       : color_topic_(color_topic),
         depth_topic_(depth_topic),
         imu_topic_(imu_topic),
-        camera_descriptor_(camera_descriptor),
         synched_(synched),
+        camera_descriptor_(camera_descriptor),
         requested_color_format_(
             CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 30, true)),
         requested_depth_format_(CameraFormat(640, 480, PIXEL_FORMAT_Z16, 30)),
@@ -247,8 +246,8 @@ class RsCameraPublishingNode : public NodeLifecycle {
   std::string color_topic_;
   std::string depth_topic_;
   std::string imu_topic_;
-  CameraDescriptor camera_descriptor_;
   bool synched_;
+  CameraDescriptor camera_descriptor_;
   CameraFormat requested_color_format_;
   CameraFormat requested_depth_format_;
   AlignDirection align_direction_;

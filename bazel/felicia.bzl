@@ -157,6 +157,12 @@ def if_has_rplidar(a):
         "//conditions:default": [],
     })
 
+def if_has_zed(a):
+    return select({
+        "//felicia:has_zed": a,
+        "//conditions:default": [],
+    })
+
 def fel_additional_deps():
     return [
         "//felicia/core/protobuf:protos_all_cc_impl",

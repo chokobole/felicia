@@ -1,5 +1,14 @@
 load("@local_config_python//:py.bzl", "PYTHON2_BIN")
-load("//bazel:repo.bzl", "find_bash")
+load(
+    "//bazel:felicia_repository.bzl",
+    "failed_to_find_bash_bin_path",
+    "get_bash_bin_path",
+)
+load("//bazel:felicia_util.bzl", "red")
+
+def _fail(msg):
+    """Output failure message when auto configuration fails."""
+    fail("%s %s\n" % (red("Node Addon Install Error:"), msg))
 
 def _npm_install_node_addon_api_impl(repository_ctx):
     repository_ctx.symlink(Label("//third_party/node_addon_api:BUILD.bazel"), "BUILD.bazel")
@@ -7,22 +16,24 @@ def _npm_install_node_addon_api_impl(repository_ctx):
     repository_ctx.symlink(Label("//third_party/node_addon_api:package-lock.json"), "package-lock.json")
     repository_ctx.symlink(Label("//third_party/node_addon_api:binding.gyp"), "binding.gyp")
 
-    bash = find_bash(repository_ctx)
+    bash = get_bash_bin_path(repository_ctx)
+    if bash == None:
+        _fail(failed_to_find_bash_bin_path(repository_ctx))
     cmd = [bash, "-c", "npm install"]
     result = repository_ctx.execute(cmd)
     if result.return_code != 0:
-        fail("Failed to npm install.", result.stdout)
+        _fail("Failed to npm install.", result.stdout)
 
     cmd = [bash, "-c", "npx node-gyp configure --python %s --devdir ." % PYTHON2_BIN]
 
     result = repository_ctx.execute(cmd)
     if result.return_code != 0:
-        fail("Failed to node-gyp configure.", result.stdout)
+        _fail("Failed to node-gyp configure.", result.stdout)
 
     cmd = ["node", "--version"]
     result = repository_ctx.execute(cmd)
     if result.return_code != 0:
-        fail("Failed to node --version", result.stdout)
+        _fail("Failed to node --version", result.stdout)
 
     version = result.stdout.strip()
     if version.startswith("v"):

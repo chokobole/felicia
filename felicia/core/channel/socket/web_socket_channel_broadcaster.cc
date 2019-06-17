@@ -48,7 +48,8 @@ void WebSocketChannelBroadcaster::Broadcast(
 void WebSocketChannelBroadcaster::OnWrite(int result) {
   written_count_++;
   if (result < 0) {
-    LOG(ERROR) << "WebSocketChannelBroadcaster::OnWrite: " << ::net::ErrorToString(result);
+    LOG(ERROR) << "WebSocketChannelBroadcaster::OnWrite: "
+               << ::net::ErrorToString(result);
     write_result_ = result;
   }
   if (to_write_count_ == written_count_) {
