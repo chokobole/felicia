@@ -3,12 +3,17 @@
 
 #include <sl/Camera.hpp>
 
+#include "third_party/chromium/base/memory/weak_ptr.h"
+#include "third_party/chromium/base/synchronization/waitable_event.h"
+#include "third_party/chromium/base/threading/thread.h"
+
 #include "felicia/drivers/camera/stereo_camera_interface.h"
 #include "felicia/drivers/vendors/zed/zed_capability.h"
 
 namespace felicia {
 
-class ZedCamera : public StereoCameraInterface {
+class ZedCamera : public StereoCameraInterface,
+                  public ::base::SupportsWeakPtr<ZedCamera> {
  public:
   class ScopedCamera {
    public:
@@ -58,10 +63,19 @@ class ZedCamera : public StereoCameraInterface {
   void GetCameraSetting(::sl::CAMERA_SETTINGS camera_setting,
                         CameraSettingsRangedValue* value);
 
+  void DoGrab();
+  void DoStop(::base::WaitableEvent* event, Status* s);
+
   static Status OpenCamera(const CameraDescriptor& camera_descriptor,
                            ::sl::InitParameters& params, ScopedCamera* camera);
 
   ScopedCamera camera_;
+
+  ::base::Thread thread_;
+  ::base::Lock lock_;
+  bool is_stopping_ GUARDED_BY(lock_);
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ZedCamera);
 };
 
 }  // namespace felicia

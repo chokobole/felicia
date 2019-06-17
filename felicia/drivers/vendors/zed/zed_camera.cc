@@ -1,9 +1,16 @@
 #include "felicia/drivers/vendors/zed/zed_camera.h"
 
-#include "felicia/core/lib/error/errors.h"
+#include "third_party/chromium/base/bind.h"
+
 #include "felicia/core/lib/strings/str_util.h"
+#include "felicia/core/lib/synchronization/scoped_event_signaller.h"
+#include "felicia/drivers/camera/camera_errors.h"
+#include "felicia/drivers/vendors/zed/zed_camera_frame.h"
 
 namespace felicia {
+
+#define MESSAGE_WITH_ERROR_CODE(text, err) \
+  ::base::StringPrintf("%s :%s.", text, ::sl::toString(err).c_str())
 
 ZedCamera::ScopedCamera::ScopedCamera()
     : camera_(std::make_unique<::sl::Camera>()) {}
@@ -25,7 +32,9 @@ ZedCamera::ScopedCamera::~ScopedCamera() {
 }
 
 ZedCamera::ZedCamera(const CameraDescriptor& camera_descriptor)
-    : StereoCameraInterface(camera_descriptor) {}
+    : StereoCameraInterface(camera_descriptor),
+      thread_("ZedCameraThread"),
+      is_stopping_(false) {}
 
 ZedCamera::~ZedCamera() = default;
 
@@ -48,16 +57,72 @@ Status ZedCamera::Start(const CameraFormat& requested_camera_format,
     return camera_state_.InvalidStateError();
   }
 
+  const ZedCapability* capability =
+      GetBestMatchedCapability(requested_camera_format);
+  if (!capability) return errors::NoVideoCapbility();
+
+  ScopedCamera camera;
+  ::sl::InitParameters params;
+  params.camera_fps = capability->frame_rate;
+  params.camera_resolution = capability->resolution;
+  camera_format_ = ConvertToCameraFormat(*capability);
+  if (requested_camera_format.convert_to_argb()) {
+    camera_format_.set_convert_to_argb(true);
+  }
+  camera_->close();
+  Status s = OpenCamera(camera_descriptor_, params, &camera);
+  if (!s.ok()) return s;
+
+  camera_ = std::move(camera);
+  thread_.Start();
+  left_camera_frame_callback_ = left_camera_frame_callback;
+  right_camera_frame_callback_ = right_camera_frame_callback;
+  status_callback_ = status_callback;
   camera_state_.ToStarted();
-  return errors::Unimplemented("Not implemented yet.");
+  {
+    ::base::AutoLock l(lock_);
+    is_stopping_ = false;
+  }
+
+  if (thread_.task_runner()->BelongsToCurrentThread()) {
+    DoGrab();
+  } else {
+    thread_.task_runner()->PostTask(
+        FROM_HERE, ::base::BindOnce(&ZedCamera::DoGrab, AsWeakPtr()));
+  }
+
+  return Status::OK();
 }
 
 Status ZedCamera::Stop() {
   if (!camera_state_.IsStarted()) {
     return camera_state_.InvalidStateError();
   }
+
+  {
+    ::base::AutoLock l(lock_);
+    is_stopping_ = true;
+  }
+  Status s;
+  if (thread_.task_runner()->BelongsToCurrentThread()) {
+    DoStop(nullptr, &s);
+  } else {
+    ::base::WaitableEvent* event = new ::base::WaitableEvent();
+    thread_.task_runner()->PostTask(
+        FROM_HERE,
+        ::base::BindOnce(&ZedCamera::DoStop, AsWeakPtr(), event, &s));
+    event->Wait();
+    delete event;
+  }
+
+  if (thread_.IsRunning()) thread_.Stop();
+
+  left_camera_frame_callback_.Reset();
+  right_camera_frame_callback_.Reset();
+  status_callback_.Reset();
+
   camera_state_.ToStopped();
-  return errors::Unimplemented("Not implemented yet.");
+  return s;
 }
 
 Status ZedCamera::SetCameraSettings(const CameraSettings& camera_settings) {
@@ -171,6 +236,44 @@ void ZedCamera::GetCameraSetting(::sl::CAMERA_SETTINGS camera_setting,
   value->set_current(ret);
 }
 
+void ZedCamera::DoGrab() {
+  DCHECK(thread_.task_runner()->BelongsToCurrentThread());
+
+  ::sl::RuntimeParameters params;
+  {
+    ::base::AutoLock l(lock_);
+    if (is_stopping_) return;
+  }
+
+  ::sl::ERROR_CODE err = camera_->grab(params);
+  if (err != ::sl::SUCCESS && err != ::sl::ERROR_CODE_NOT_A_NEW_FRAME) {
+    status_callback_.Run(
+        errors::Unavailable(MESSAGE_WITH_ERROR_CODE("Failed to grab", err)));
+    return;
+  }
+
+  ::sl::Mat left_image;
+  camera_->retrieveImage(left_image, ::sl::VIEW_LEFT);
+  ::sl::Mat right_image;
+  camera_->retrieveImage(right_image, ::sl::VIEW_RIGHT);
+
+  left_camera_frame_callback_.Run(
+      ConverToCameraFrame(left_image, camera_format_));
+  right_camera_frame_callback_.Run(
+      ConverToCameraFrame(right_image, camera_format_));
+
+  thread_.task_runner()->PostTask(
+      FROM_HERE, ::base::BindOnce(&ZedCamera::DoGrab, AsWeakPtr()));
+}
+
+void ZedCamera::DoStop(::base::WaitableEvent* event, Status* status) {
+  DCHECK(thread_.task_runner()->BelongsToCurrentThread());
+
+  camera_->close();
+
+  *status = Status::OK();
+}
+
 // static
 Status ZedCamera::OpenCamera(const CameraDescriptor& camera_descriptor,
                              ::sl::InitParameters& params,
@@ -195,10 +298,12 @@ Status ZedCamera::OpenCamera(const CameraDescriptor& camera_descriptor,
 
   ::sl::ERROR_CODE err = camera->get()->open(params);
   if (err != ::sl::SUCCESS) {
-    return errors::Unavailable(::base::StringPrintf(
-        "Failed to open camera: %s.", ::sl::toString(err).c_str()));
+    return errors::Unavailable(
+        MESSAGE_WITH_ERROR_CODE("Failed to open camera", err));
   }
   return Status::OK();
 }
+
+#undef MESSAGE_WITH_ERROR_CODE
 
 }  // namespace felicia

@@ -72,7 +72,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
 
   void StartCamera() {
     Status s = camera_->Start(
-        CameraFormat(),
+        CameraFormat(1280, 720, PIXEL_FORMAT_ARGB, 30),
         ::base::BindRepeating(&ZedCameraPublishingNode::OnLeftCameraFrame,
                               ::base::Unretained(this)),
         ::base::BindRepeating(&ZedCameraPublishingNode::OnRightCameraFrame,

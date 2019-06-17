@@ -251,6 +251,7 @@ Status RsCamera::Stop() {
   color_frame_callback_.Reset();
   depth_frame_callback_.Reset();
   synched_frame_callback_.Reset();
+  status_callback_.Reset();
 
   camera_state_.ToStopped();
 
