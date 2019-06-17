@@ -7,6 +7,7 @@
 
 #include "felicia/drivers/camera/mac/avf_camera.h"
 
+#include "third_party/chromium/base/strings/sys_string_conversions.h"
 #include "third_party/chromium/base/threading/thread_task_runner_handle.h"
 
 #include "felicia/drivers/camera/camera_errors.h"
@@ -60,12 +61,13 @@ Status AvfCamera::Init() {
 
   capture_device_.reset([[AvfCameraDelegate alloc] initWithFrameReceiver:this]);
 
-  if (!capture_device_) return errors::FailedToInit();
+  if (!capture_device_) return errors::Unavailable("Failed to init capture device.");
 
   NSString* deviceId = [NSString stringWithUTF8String:camera_descriptor_.device_id().c_str()];
   NSString* errorMessage = nil;
   if (![capture_device_ setCaptureDevice:deviceId errorMessage:&errorMessage]) {
-    return errors::FailedToSetCaptureDevice(errorMessage);
+    return errors::Unavailable(::base::StringPrintf(
+        "Failed to set capture device: %s.", ::base::SysNSStringToUTF8(errorMessage).c_str()));
   }
 
   camera_state_.ToInitialized();
@@ -95,7 +97,7 @@ Status AvfCamera::Start(const CameraFormat& requested_camera_format,
   }
 
   if (![capture_device_ startCapture]) {
-    return errors::FailedtoStartCapture();
+    return errors::Unavailable("Failed to start capture.");
   }
 
   camera_frame_callback_ = camera_frame_callback;

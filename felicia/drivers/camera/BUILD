@@ -44,9 +44,7 @@ CAMERA_HEADERS = [
     "depth_camera_interface.h",
     "stereo_camera_interface.h",
     "timestamp_constants.h",
-] + if_linux([
-    "linux/v4l2_camera_errors.h",
-])
+]
 
 fel_cc_library(
     name = "camera",
@@ -108,7 +106,6 @@ fel_cc_library(
 fel_objc_library(
     name = "avf_camera",
     hdrs = CAMERA_HEADERS + [
-        "mac/avf_camera_errors.h",
         "mac/avf_camera_delegate.h",
         "mac/avf_camera.h",
         "mac/frame_receiver.h",

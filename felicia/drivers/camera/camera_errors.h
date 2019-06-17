@@ -41,12 +41,4 @@ inline ::felicia::Status FailedToConvertToARGB() {
 }  // namespace errors
 }  // namespace felicia
 
-#include "third_party/chromium/build/build_config.h"
-
-#if defined(OS_LINUX)
-#include "felicia/drivers/camera/linux/v4l2_camera_errors.h"
-#elif defined(OS_MACOSX)
-#include "felicia/drivers/camera/mac/avf_camera_errors.h"
-#endif
-
 #endif  // FELICIA_DRIVERS_CAMERA_CAMERA_ERRORS_H_
