@@ -27,7 +27,7 @@ self.onmessage = event => {
     }
 
     const decoded = protoType.decode(new Uint8Array(data));
-    const obj = protoType.toObject(decoded);
+    const obj = protoType.toObject(decoded, { defaults: true });
 
     if (type === CAMERA_FRAME_MESSAGE) {
       if (!Module.calledRun) return;

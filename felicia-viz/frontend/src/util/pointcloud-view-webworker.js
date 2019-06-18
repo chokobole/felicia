@@ -8,17 +8,8 @@ let histogram;
 
 self.onmessage = event => {
   let message = null;
-  const {
-    colors,
-    positions,
-    width,
-    height,
-    data,
-    pixelFormat,
-    scale,
-    filter,
-    frameToAlign,
-  } = event.data;
+  const { colors, positions, frame, filter, frameToAlign } = event.data;
+  const { width, height, pixelFormat, data, min, max } = frame;
   if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_Z16) {
     if (!histogram) {
       histogram = new Histogram();
@@ -32,7 +23,8 @@ self.onmessage = event => {
       pixelData,
       width,
       height,
-      scale,
+      min,
+      max,
       filter,
       frameToAlign
     );

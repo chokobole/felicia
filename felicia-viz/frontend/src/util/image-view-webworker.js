@@ -33,17 +33,9 @@ function fillPixels(pixels, width, height, data, colorIndexes) {
 
 self.onmessage = event => {
   let message = null;
-  const {
-    imageData,
-    width,
-    height,
-    data,
-    pixelFormat,
-    converted,
-    filter,
-    frameToAlign,
-  } = event.data;
+  const { imageData, frame, filter, frameToAlign } = event.data;
   const pixels = imageData.data;
+  const { pixelFormat, width, height, min, max, data, converted } = frame;
   if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_Z16) {
     if (!histogram) {
       histogram = new Histogram();
@@ -51,7 +43,16 @@ self.onmessage = event => {
 
     const { buffer, byteOffset, byteLength } = data;
     const pixelData = new Uint16Array(buffer, byteOffset, byteLength / 2);
-    histogram.fillImageDataWithColormap(pixels, pixelData, width, height, filter, frameToAlign);
+    histogram.fillImageDataWithColormap(
+      pixels,
+      pixelData,
+      width,
+      height,
+      min,
+      max,
+      filter,
+      frameToAlign
+    );
   } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_ARGB || converted) {
     fillPixels(pixels, width, height, data, BGRA);
   } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGB24) {

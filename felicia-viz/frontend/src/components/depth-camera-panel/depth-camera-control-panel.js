@@ -31,7 +31,8 @@ export default class DepthCameraControlPanel extends Component {
         height: { type: 'custom', title: 'height', render: renderText },
         frameRate: { type: 'custom', title: 'frameRate', render: renderText },
         pixelFormat: { type: 'custom', title: 'pixelFormat', render: renderText },
-        scale: { type: 'custom', title: 'scale', render: renderText },
+        min: { type: 'custom', title: 'min', render: renderText },
+        max: { type: 'custom', title: 'max', render: renderText },
         timestamp: { type: 'custom', title: 'timestamp', render: renderText },
       },
     },
@@ -83,13 +84,14 @@ export default class DepthCameraControlPanel extends Component {
     const { frame, topic, filter, pointcloudView } = viewState;
 
     if (frame) {
-      const { width, height, frameRate, pixelFormat, scale, timestamp } = frame;
+      const { width, height, frameRate, pixelFormat, min, max, timestamp } = frame;
       return {
         width,
         height,
         frameRate,
         pixelFormat: PixelFormat.valuesById[pixelFormat],
-        scale,
+        min,
+        max,
         timestamp,
         topic,
         filter,
@@ -101,7 +103,8 @@ export default class DepthCameraControlPanel extends Component {
       height: '',
       frameRate: '',
       pixelFormat: '',
-      scale: '',
+      min: '',
+      max: '',
       timestamp: '',
       topic,
       filter,

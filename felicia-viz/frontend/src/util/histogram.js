@@ -14,29 +14,29 @@ function fillPixels(pixels, width, height, data, colorIndexes, normalize) {
       for (let i = 0; i < size; i += 1) {
         const imageDataIdx = i << 2;
         pixels[imageDataIdx + RGBA.rIdx] =
-          (pixels[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + colorIndexes.rIdx] / 256) /
+          (pixels[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + colorIndexes.rIdx] / 255) /
           2;
         pixels[imageDataIdx + RGBA.gIdx] =
-          (pixels[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + colorIndexes.gIdx] / 256) /
+          (pixels[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + colorIndexes.gIdx] / 255) /
           2;
         pixels[imageDataIdx + RGBA.bIdx] =
-          (pixels[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + colorIndexes.bIdx] / 256) /
+          (pixels[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + colorIndexes.bIdx] / 255) /
           2;
         pixels[imageDataIdx + RGBA.aIdx] =
-          (pixels[imageDataIdx + RGBA.aIdx] + pixelData[imageDataIdx + colorIndexes.aIdx] / 256) /
+          (pixels[imageDataIdx + RGBA.aIdx] + pixelData[imageDataIdx + colorIndexes.aIdx] / 255) /
           2;
       }
     } else {
       for (let i = 0; i < size; i += 1) {
         const imageDataIdx = i << 2;
         pixels[imageDataIdx + RGBA.rIdx] =
-          (pixels[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + colorIndexes.rIdx] / 256) /
+          (pixels[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + colorIndexes.rIdx] / 255) /
           2;
         pixels[imageDataIdx + RGBA.gIdx] =
-          (pixels[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + colorIndexes.gIdx] / 256) /
+          (pixels[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + colorIndexes.gIdx] / 255) /
           2;
         pixels[imageDataIdx + RGBA.bIdx] =
-          (pixels[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + colorIndexes.bIdx] / 256) /
+          (pixels[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + colorIndexes.bIdx] / 255) /
           2;
       }
     }
@@ -71,13 +71,12 @@ function fillPixels(pixels, width, height, data, colorIndexes, normalize) {
 function align(pixels, frameToAlign, width, height, normalize) {
   if (!frameToAlign) return;
 
-  const { cameraFormat, data, converted } = frameToAlign.frame;
-  const { pixelFormat } = cameraFormat;
+  const { pixelFormat, data, converted } = frameToAlign;
 
-  if (cameraFormat.width !== width || cameraFormat.height !== height) {
+  if (frameToAlign.width !== width || frameToAlign.height !== height) {
     console.error(
-      `Resolution mismatched, Depth: (${width}, ${height}) Color: (${cameraFormat.width}, ${
-        cameraFormat.height
+      `Resolution mismatched, Depth: (${width}, ${height}) Color: (${frameToAlign.width}, ${
+        frameToAlign.height
       })`
     );
     return;
@@ -99,9 +98,7 @@ function align(pixels, frameToAlign, width, height, normalize) {
 }
 
 export default class Histogram {
-  histogram = null;
-
-  make(pixelData, width, height) {
+  make(pixelData, width, height, min, max) {
     if (!this.histogram) {
       this.histogram = new Array(256).fill(0);
     } else {
@@ -109,18 +106,25 @@ export default class Histogram {
     }
 
     const size = width * height;
-    for (let i = 0; i < size; i += 1) {
-      const k = pixelData[i] >> 8;
-      this.histogram[k] += 1;
+    let validSize = 0;
+    for (let i = 1; i < size; i += 1) {
+      const v = pixelData[i];
+      if (v >= min && v <= max) {
+        const k = v >> 8;
+        this.histogram[k] += 1;
+        validSize += 1;
+      }
     }
 
+    let sum = 0;
     for (let i = 0; i < 256; i += 1) {
-      this.histogram[i] = Math.floor((this.histogram[i] / size) * 256);
+      sum += this.histogram[i];
+      this.histogram[i] = Math.floor((sum / validSize) * 255);
     }
   }
 
-  fillImageDataWithColormap(imageData, pixelData, width, height, filter, frameToAlign) {
-    this.make(pixelData, width, height);
+  fillImageDataWithColormap(imageData, pixelData, width, height, min, max, filter, frameToAlign) {
+    this.make(pixelData, width, height, min, max);
 
     const cm = colormap({
       colormap: filter,
@@ -132,10 +136,15 @@ export default class Histogram {
     const size = width * height;
     for (let i = 0; i < size; i += 1) {
       const imageDataIdx = i << 2;
-      const k = pixelData[i] >> 8;
-      const c = cm[this.histogram[k]];
-      [imageData[imageDataIdx], imageData[imageDataIdx + 1], imageData[imageDataIdx + 2]] = c;
-      imageData[imageDataIdx + 3] = 255;
+      const v = pixelData[i];
+      if (v >= min && v <= max) {
+        const k = v >> 8;
+        const c = cm[this.histogram[k]];
+        [imageData[imageDataIdx], imageData[imageDataIdx + 1], imageData[imageDataIdx + 2]] = c;
+        imageData[imageDataIdx + 3] = 255;
+      } else {
+        imageData[imageDataIdx + 3] = 0;
+      }
     }
 
     align(imageData, frameToAlign, width, height, false);
@@ -147,11 +156,12 @@ export default class Histogram {
     pixelData,
     width,
     height,
-    scale,
+    min,
+    max,
     filter,
     frameToAlign
   ) {
-    this.make(pixelData, width, height);
+    this.make(pixelData, width, height, min, max);
 
     const cm = colormap({
       colormap: filter,
@@ -163,12 +173,17 @@ export default class Histogram {
     const size = width * height;
     for (let i = 0; i < size; i += 1) {
       const positionIdx = 3 * i;
-      const colorIdx = i << 2;
+      const v = pixelData[i];
+      if (v >= min && v <= max) {
+        positions[positionIdx + 2] = -v;
 
-      positions[positionIdx + 2] = -pixelData[i] * scale * 300;
-      const k = pixelData[i] >> 8;
-      const c = cm[this.histogram[k]];
-      [colors[colorIdx], colors[colorIdx + 1], colors[colorIdx + 2]] = c;
+        const colorIdx = i << 2;
+        const k = v >> 8;
+        const c = cm[this.histogram[k]];
+        [colors[colorIdx], colors[colorIdx + 1], colors[colorIdx + 2]] = c;
+      } else {
+        positions[positionIdx + 2] = 10000;
+      }
     }
 
     align(colors, frameToAlign, width, height, true);

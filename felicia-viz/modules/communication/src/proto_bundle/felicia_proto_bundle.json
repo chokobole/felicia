@@ -452,15 +452,127 @@
             }
           }
         },
+        "CameraSettingsRangedValue": {
+          "fields": {
+            "min": {
+              "type": "int64",
+              "id": 1
+            },
+            "max": {
+              "type": "int64",
+              "id": 2
+            },
+            "step": {
+              "type": "uint64",
+              "id": 3
+            },
+            "default": {
+              "type": "int64",
+              "id": 4
+            },
+            "current": {
+              "type": "int64",
+              "id": 5
+            },
+            "flags": {
+              "type": "uint32",
+              "id": 6
+            }
+          }
+        },
+        "CameraSettingsMode": {
+          "values": {
+            "CAMERA_SETTINGS_MODE_NONE": 0,
+            "CAMERA_SETTINGS_MODE_AUTO": 1,
+            "CAMERA_SETTINGS_MODE_MANUAL": 2
+          }
+        },
+        "CameraSettingsModeValue": {
+          "fields": {
+            "modes": {
+              "rule": "repeated",
+              "type": "CameraSettingsMode",
+              "id": 1
+            },
+            "default": {
+              "type": "CameraSettingsMode",
+              "id": 2
+            },
+            "current": {
+              "type": "CameraSettingsMode",
+              "id": 3
+            },
+            "flags": {
+              "type": "uint32",
+              "id": 4
+            }
+          }
+        },
+        "CameraSettingsInfoMessage": {
+          "fields": {
+            "whiteBalanceMode": {
+              "type": "CameraSettingsModeValue",
+              "id": 1
+            },
+            "exposureMode": {
+              "type": "CameraSettingsModeValue",
+              "id": 2
+            },
+            "exposureCompensation": {
+              "type": "CameraSettingsRangedValue",
+              "id": 3
+            },
+            "exposureTime": {
+              "type": "CameraSettingsRangedValue",
+              "id": 4
+            },
+            "colorTemperature": {
+              "type": "CameraSettingsRangedValue",
+              "id": 5
+            },
+            "brightness": {
+              "type": "CameraSettingsRangedValue",
+              "id": 6
+            },
+            "contrast": {
+              "type": "CameraSettingsRangedValue",
+              "id": 7
+            },
+            "saturation": {
+              "type": "CameraSettingsRangedValue",
+              "id": 8
+            },
+            "sharpness": {
+              "type": "CameraSettingsRangedValue",
+              "id": 9
+            },
+            "hue": {
+              "type": "CameraSettingsRangedValue",
+              "id": 10
+            },
+            "gain": {
+              "type": "CameraSettingsRangedValue",
+              "id": 11
+            },
+            "gamma": {
+              "type": "CameraSettingsRangedValue",
+              "id": 12
+            }
+          }
+        },
         "DepthCameraFrameMessage": {
           "fields": {
             "frame": {
               "type": "CameraFrameMessage",
               "id": 1
             },
-            "scale": {
+            "min": {
               "type": "float",
               "id": 2
+            },
+            "max": {
+              "type": "float",
+              "id": 3
             }
           }
         },
@@ -535,15 +647,6 @@
             "timestamp": {
               "type": "int64",
               "id": 10
-            }
-          }
-        },
-        "PointcloudMessage": {
-          "fields": {
-            "points": {
-              "rule": "repeated",
-              "type": "Vec3fMessage",
-              "id": 1
             }
           }
         }

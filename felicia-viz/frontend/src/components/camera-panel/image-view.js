@@ -78,16 +78,12 @@ export default class ImageView extends Component {
 
     if (!frame) return;
 
-    const { width, height, data, pixelFormat, converted } = frame;
+    const { width, height } = frame;
     const { filter, frameToAlign } = this.props; // for depth-camera
 
     this.worker.postMessage({
       imageData: this.proxyContext.getImageData(0, 0, width, height),
-      width,
-      height,
-      data,
-      pixelFormat,
-      converted,
+      frame,
       filter,
       frameToAlign,
     });

@@ -5,35 +5,15 @@ import PanelState from './panel-state';
 export class CameraFrame {
   constructor(message) {
     const { data } = message;
-    this.frame = data;
-  }
-
-  get converted() {
-    return this.frame.converted;
-  }
-
-  get data() {
-    return this.frame.data;
-  }
-
-  get width() {
-    return this.frame.cameraFormat.width;
-  }
-
-  get height() {
-    return this.frame.cameraFormat.height;
-  }
-
-  get pixelFormat() {
-    return this.frame.cameraFormat.pixelFormat;
-  }
-
-  get frameRate() {
-    return this.frame.cameraFormat.frameRate;
-  }
-
-  get timestamp() {
-    return this.frame.timestamp;
+    const { converted, cameraFormat, timestamp } = data;
+    this.converted = converted;
+    this.data = data.data;
+    this.timestamp = timestamp;
+    const { width, height, pixelFormat, frameRate } = cameraFormat;
+    this.width = width;
+    this.height = height;
+    this.pixelFormat = pixelFormat;
+    this.frameRate = frameRate;
   }
 }
 

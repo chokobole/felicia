@@ -159,7 +159,6 @@ export default class PointcloudView extends Component {
   }
 
   _updatePointcloud(frame) {
-    const { width, height, data, pixelFormat, scale } = frame;
     const { mesh } = this.meshInfo;
     const { filter, frameToAlign } = this.props;
 
@@ -169,11 +168,7 @@ export default class PointcloudView extends Component {
     this.worker.postMessage({
       colors,
       positions,
-      width,
-      height,
-      data,
-      pixelFormat,
-      scale,
+      frame,
       filter,
       frameToAlign,
     });
