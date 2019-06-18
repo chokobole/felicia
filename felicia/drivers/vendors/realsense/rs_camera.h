@@ -23,6 +23,21 @@ class PipelineSyncer : public ::rs2::asynchronous_syncer {
 
 class RsCamera : public DepthCameraInterface {
  public:
+  struct InitParams {
+    CameraFormat requested_color_format;
+    CameraFormat requested_depth_format;
+    AlignDirection align_direction;
+    ImuFormat requested_gyro_format;
+    ImuFormat requested_accel_format;
+    ImuFilterFactory::ImuFilterKind imu_filter_kind;
+
+    CameraFrameCallback color_frame_callback;
+    DepthCameraFrameCallback depth_frame_callback;
+    SynchedDepthCameraFrameCallback synched_frame_callback;
+    ImuFrameCallback imu_frame_callback;
+    StatusCallback status_callback;
+  };
+
   ~RsCamera();
 
   // DepthCameraInterface methods
@@ -32,35 +47,13 @@ class RsCamera : public DepthCameraInterface {
                CameraFrameCallback color_frame_callback,
                DepthCameraFrameCallback depth_frame_callback,
                StatusCallback status_callback) override;
-  Status Start(const CameraFormat& requested_color_format,
-               const CameraFormat& requested_depth_format,
-               AlignDirection align_direction,
-               SynchedDepthCameraFrameCallback synched_frame_callback,
-               StatusCallback status_callback) override;
   Status Stop() override;
 
   Status SetCameraSettings(const CameraSettings& camera_settings) override;
   Status GetCameraSettingsInfo(
       CameraSettingsInfoMessage* camera_settings) override;
 
-  Status Start(const CameraFormat& requested_color_format,
-               const CameraFormat& requested_depth_format,
-               const ImuFormat& requested_gyro_format,
-               const ImuFormat& requested_accel_format,
-               ImuFilterFactory::ImuFilterKind kind,
-               CameraFrameCallback color_frame_callback,
-               DepthCameraFrameCallback depth_frame_callback,
-               ImuFrameCallback imu_frame_callback,
-               StatusCallback status_callback);
-  Status Start(const CameraFormat& requested_color_format,
-               const CameraFormat& requested_depth_format,
-               AlignDirection align_direction,
-               const ImuFormat& requested_gyro_format,
-               const ImuFormat& requested_accel_format,
-               ImuFilterFactory::ImuFilterKind kind,
-               SynchedDepthCameraFrameCallback synched_frame_callback,
-               ImuFrameCallback imu_frame_callback,
-               StatusCallback status_callback);
+  Status Start(const InitParams& params);
 
   StatusOr<::rs2::sensor> sensor(const RsStreamInfo& rs_stream_info);
 

@@ -24,7 +24,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
         align_direction_(AlignDirection::AlignToColor),
         requested_gyro_format_(ImuFormat(200)),
         requested_accel_format_(ImuFormat(63)),
-        filter_kind_(ImuFilterFactory::MadgwickFilterKind) {}
+        imu_filter_kind_(ImuFilterFactory::MadgwickFilterKind) {}
 
   void OnInit() override {
     std::cout << "RsCameraPublishingNode::OnInit()" << std::endl;
@@ -88,50 +88,38 @@ class RsCameraPublishingNode : public NodeLifecycle {
   void StartCamera() {
     if (camera_->IsStarted()) return;
 
-    Status s;
+    RsCamera::InitParams params;
+    params.status_callback = ::base::BindRepeating(
+        &RsCameraPublishingNode::OnCameraError, ::base::Unretained(this));
     if (synched_) {
-      if (imu_topic_.empty()) {
-        s = camera_->Start(
-            requested_color_format_, requested_depth_format_, align_direction_,
-            ::base::BindRepeating(&RsCameraPublishingNode::OnSynchedCameraFrame,
-                                  ::base::Unretained(this)),
-            ::base::BindRepeating(&RsCameraPublishingNode::OnCameraError,
-                                  ::base::Unretained(this)));
-      } else {
-        s = camera_->Start(
-            requested_color_format_, requested_depth_format_, align_direction_,
-            requested_gyro_format_, requested_accel_format_, filter_kind_,
-            ::base::BindRepeating(&RsCameraPublishingNode::OnSynchedCameraFrame,
-                                  ::base::Unretained(this)),
-            ::base::BindRepeating(&RsCameraPublishingNode::OnImuFrame,
-                                  ::base::Unretained(this)),
-            ::base::BindRepeating(&RsCameraPublishingNode::OnCameraError,
-                                  ::base::Unretained(this)));
-      }
+      params.requested_color_format = requested_color_format_;
+      params.requested_depth_format = requested_depth_format_;
+      params.align_direction = align_direction_;
+      params.synched_frame_callback =
+          ::base::BindRepeating(&RsCameraPublishingNode::OnSynchedCameraFrame,
+                                ::base::Unretained(this));
     } else {
-      if (imu_topic_.empty()) {
-        s = camera_->Start(
-            requested_color_format_, requested_depth_format_,
-            ::base::BindRepeating(&RsCameraPublishingNode::OnColorFrame,
-                                  ::base::Unretained(this)),
-            ::base::BindRepeating(&RsCameraPublishingNode::OnDepthFrame,
-                                  ::base::Unretained(this)),
-            ::base::BindRepeating(&RsCameraPublishingNode::OnCameraError,
-                                  ::base::Unretained(this)));
-      } else {
-        s = camera_->Start(
-            requested_color_format_, requested_depth_format_,
-            requested_gyro_format_, requested_accel_format_, filter_kind_,
-            ::base::BindRepeating(&RsCameraPublishingNode::OnColorFrame,
-                                  ::base::Unretained(this)),
-            ::base::BindRepeating(&RsCameraPublishingNode::OnDepthFrame,
-                                  ::base::Unretained(this)),
-            ::base::BindRepeating(&RsCameraPublishingNode::OnImuFrame,
-                                  ::base::Unretained(this)),
-            ::base::BindRepeating(&RsCameraPublishingNode::OnCameraError,
-                                  ::base::Unretained(this)));
+      if (!color_topic_.empty()) {
+        params.requested_color_format = requested_color_format_;
+        params.color_frame_callback = ::base::BindRepeating(
+            &RsCameraPublishingNode::OnColorFrame, ::base::Unretained(this));
+      }
+
+      if (!depth_topic_.empty()) {
+        params.requested_depth_format = requested_color_format_;
+        params.depth_frame_callback = ::base::BindRepeating(
+            &RsCameraPublishingNode::OnDepthFrame, ::base::Unretained(this));
       }
     }
+
+    if (!imu_topic_.empty()) {
+      params.requested_accel_format = requested_accel_format_;
+      params.requested_gyro_format = requested_gyro_format_;
+      params.imu_filter_kind = imu_filter_kind_;
+      params.imu_frame_callback = ::base::BindRepeating(
+          &RsCameraPublishingNode::OnImuFrame, ::base::Unretained(this));
+    }
+    Status s = camera_->Start(params);
     if (s.ok()) {
       // MasterProxy& master_proxy = MasterProxy::GetInstance();
       // master_proxy.PostDelayedTask(
@@ -253,7 +241,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
   AlignDirection align_direction_;
   ImuFormat requested_gyro_format_;
   ImuFormat requested_accel_format_;
-  ImuFilterFactory::ImuFilterKind filter_kind_;
+  ImuFilterFactory::ImuFilterKind imu_filter_kind_;
   Publisher<CameraFrameMessage> color_publisher_;
   Publisher<DepthCameraFrameMessage> depth_publisher_;
   Publisher<ImuFrameMessage> imu_publisher_;
