@@ -5,6 +5,7 @@ import "felicia/drivers/camera/camera_frame_message.proto";
 package felicia;
 
 message DepthCameraFrameMessage {
-  CameraFrameMessage frame = 1;
-  float scale = 2;
+  CameraFrameMessage frame = 1; // PIXEL_FORMAT_Z16 and in mm.
+  float min = 2;
+  float max = 3;
 }

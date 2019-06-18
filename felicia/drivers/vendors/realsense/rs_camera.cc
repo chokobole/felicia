@@ -597,11 +597,22 @@ CameraFrame RsCamera::FromRsColorFrame(::rs2::video_frame color_frame) {
 }
 
 DepthCameraFrame RsCamera::FromRsDepthFrame(::rs2::depth_frame depth_frame) {
-  size_t length = depth_format_.AllocationSize();
-  std::unique_ptr<uint8_t[]> new_depth_frame(new uint8_t[length]);
-  memcpy(new_depth_frame.get(), depth_frame.get_data(), length);
-  DepthCameraFrame depth_camera_frame(std::move(new_depth_frame), length,
-                                      depth_format_, depth_scale_);
+  size_t size = depth_format_.width() * depth_format_.height();
+  size_t allocation_size = depth_format_.AllocationSize();
+  std::unique_ptr<uint8_t[]> new_depth_frame(new uint8_t[allocation_size]);
+  memcpy(new_depth_frame.get(), depth_frame.get_data(), allocation_size);
+  for (size_t i = 0; i < size; ++i) {
+    const size_t data_idx = i << 1;
+    uint16_t value = static_cast<uint16_t>(new_depth_frame[data_idx]) |
+                     static_cast<uint16_t>(new_depth_frame[data_idx + 1] << 8);
+    uint16_t* ptr = reinterpret_cast<uint16_t*>(new_depth_frame.get());
+    ptr[i] = static_cast<uint16_t>(
+        std::round(value * depth_scale_ * 1000));  // in mm
+  }
+  CameraFrame camera_frame(std::move(new_depth_frame), allocation_size,
+                           depth_format_);
+  DepthCameraFrame depth_camera_frame(std::move(camera_frame),
+                                      105 /* 0.105 m */, UINT16_MAX);
   depth_camera_frame.set_timestamp(timestamper_.timestamp());
   return depth_camera_frame;
 }

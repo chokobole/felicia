@@ -12,9 +12,11 @@ class ZedCameraPublishingNode : public NodeLifecycle {
  public:
   ZedCameraPublishingNode(const std::string& left_camera_topic,
                           const std::string& right_camera_topic,
+                          const std::string& depth_camera_topic,
                           const CameraDescriptor& camera_descriptor)
       : left_camera_topic_(left_camera_topic),
         right_camera_topic_(right_camera_topic),
+        depth_camera_topic_(depth_camera_topic),
         camera_descriptor_(camera_descriptor) {}
 
   void OnInit() override {
@@ -52,13 +54,20 @@ class ZedCameraPublishingNode : public NodeLifecycle {
         settings,
         ::base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
+
+    depth_camera_publisher_.RequestPublish(
+        node_info_, depth_camera_topic_, ChannelDef::TCP | ChannelDef::WS,
+        settings,
+        ::base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
+                         ::base::Unretained(this)));
   }
 
   void OnRequestPublish(const Status& s) {
     std::cout << "ZedCameraPublishingNode::OnRequestPublish()" << std::endl;
     if (s.ok()) {
       if (!(left_camera_publisher_.IsRegistered() &&
-            right_camera_publisher_.IsRegistered()))
+            right_camera_publisher_.IsRegistered() &&
+            depth_camera_publisher_.IsRegistered()))
         return;
 
       MasterProxy& master_proxy = MasterProxy::GetInstance();
@@ -72,10 +81,12 @@ class ZedCameraPublishingNode : public NodeLifecycle {
 
   void StartCamera() {
     Status s = camera_->Start(
-        CameraFormat(1280, 720, PIXEL_FORMAT_ARGB, 30),
+        CameraFormat(1280, 760, PIXEL_FORMAT_ARGB, 30),
         ::base::BindRepeating(&ZedCameraPublishingNode::OnLeftCameraFrame,
                               ::base::Unretained(this)),
         ::base::BindRepeating(&ZedCameraPublishingNode::OnRightCameraFrame,
+                              ::base::Unretained(this)),
+        ::base::BindRepeating(&ZedCameraPublishingNode::OnDepthCameraFrame,
                               ::base::Unretained(this)),
         ::base::BindRepeating(&ZedCameraPublishingNode::OnCameraError,
                               ::base::Unretained(this)));
@@ -110,6 +121,15 @@ class ZedCameraPublishingNode : public NodeLifecycle {
                               ::base::Unretained(this)));
   }
 
+  void OnDepthCameraFrame(DepthCameraFrame camera_frame) {
+    if (depth_camera_publisher_.IsUnregistered()) return;
+
+    depth_camera_publisher_.Publish(
+        camera_frame.ToDepthCameraFrameMessage(),
+        ::base::BindRepeating(&ZedCameraPublishingNode::OnPublishRight,
+                              ::base::Unretained(this)));
+  }
+
   void OnCameraError(const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }
 
   void OnPublishLeftCamera(ChannelDef::Type type, const Status& s) {
@@ -130,13 +150,19 @@ class ZedCameraPublishingNode : public NodeLifecycle {
         node_info_, right_camera_topic_,
         ::base::BindOnce(&ZedCameraPublishingNode::OnRequestUnpublish,
                          ::base::Unretained(this)));
+
+    depth_camera_publisher_.RequestUnpublish(
+        node_info_, right_camera_topic_,
+        ::base::BindOnce(&ZedCameraPublishingNode::OnRequestUnpublish,
+                         ::base::Unretained(this)));
   }
 
   void OnRequestUnpublish(const Status& s) {
     std::cout << "ZedCameraPublishingNode::OnRequestUnpublish()" << std::endl;
     if (s.ok()) {
       if (!(left_camera_publisher_.IsUnregistered() &&
-            right_camera_publisher_.IsUnregistered()))
+            right_camera_publisher_.IsUnregistered() &&
+            depth_camera_publisher_.IsUnregistered()))
         return;
 
       MasterProxy& master_proxy = MasterProxy::GetInstance();
@@ -157,9 +183,11 @@ class ZedCameraPublishingNode : public NodeLifecycle {
   NodeInfo node_info_;
   std::string left_camera_topic_;
   std::string right_camera_topic_;
+  std::string depth_camera_topic_;
   CameraDescriptor camera_descriptor_;
   Publisher<CameraFrameMessage> left_camera_publisher_;
   Publisher<CameraFrameMessage> right_camera_publisher_;
+  Publisher<DepthCameraFrameMessage> depth_camera_publisher_;
   std::unique_ptr<ZedCamera> camera_;
 };
 

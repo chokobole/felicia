@@ -7,6 +7,8 @@
 
 namespace felicia {
 
+CameraFrame::CameraFrame() = default;
+
 CameraFrame::CameraFrame(std::unique_ptr<uint8_t[]> data, size_t length,
                          CameraFormat camera_format)
     : data_(std::move(data)), length_(length), camera_format_(camera_format) {}

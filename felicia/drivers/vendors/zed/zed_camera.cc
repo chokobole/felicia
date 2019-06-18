@@ -52,6 +52,7 @@ Status ZedCamera::Init() {
 Status ZedCamera::Start(const CameraFormat& requested_camera_format,
                         CameraFrameCallback left_camera_frame_callback,
                         CameraFrameCallback right_camera_frame_callback,
+                        DepthCameraFrameCallback depth_camera_frame_callback,
                         StatusCallback status_callback) {
   if (!camera_state_.IsInitialized()) {
     return camera_state_.InvalidStateError();
@@ -63,12 +64,16 @@ Status ZedCamera::Start(const CameraFormat& requested_camera_format,
 
   ScopedCamera camera;
   ::sl::InitParameters params;
+  params.coordinate_units = ::sl::UNIT_METER;
   params.camera_fps = capability->frame_rate;
   params.camera_resolution = capability->resolution;
   camera_format_ = ConvertToCameraFormat(*capability);
   if (requested_camera_format.convert_to_argb()) {
     camera_format_.set_convert_to_argb(true);
   }
+  depth_camera_format_.set_pixel_format(PIXEL_FORMAT_Z16);
+  depth_camera_format_.SetSize(camera_format_.width(), camera_format_.height());
+  depth_camera_format_.set_frame_rate(camera_format_.frame_rate());
   camera_->close();
   Status s = OpenCamera(camera_descriptor_, params, &camera);
   if (!s.ok()) return s;
@@ -77,11 +82,15 @@ Status ZedCamera::Start(const CameraFormat& requested_camera_format,
   thread_.Start();
   left_camera_frame_callback_ = left_camera_frame_callback;
   right_camera_frame_callback_ = right_camera_frame_callback;
+  depth_camera_frame_callback_ = depth_camera_frame_callback;
   status_callback_ = status_callback;
   camera_state_.ToStarted();
   {
     ::base::AutoLock l(lock_);
     is_stopping_ = false;
+  }
+  if (!depth_camera_frame_callback_.is_null()) {
+    runtime_params_.enable_depth = true;
   }
 
   if (thread_.task_runner()->BelongsToCurrentThread()) {
@@ -119,6 +128,7 @@ Status ZedCamera::Stop() {
 
   left_camera_frame_callback_.Reset();
   right_camera_frame_callback_.Reset();
+  depth_camera_frame_callback_.Reset();
   status_callback_.Reset();
 
   camera_state_.ToStopped();
@@ -238,29 +248,45 @@ void ZedCamera::GetCameraSetting(::sl::CAMERA_SETTINGS camera_setting,
 
 void ZedCamera::DoGrab() {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
-
-  ::sl::RuntimeParameters params;
   {
     ::base::AutoLock l(lock_);
     if (is_stopping_) return;
   }
 
-  ::sl::ERROR_CODE err = camera_->grab(params);
+  ::sl::ERROR_CODE err = camera_->grab(runtime_params_);
   if (err != ::sl::SUCCESS && err != ::sl::ERROR_CODE_NOT_A_NEW_FRAME) {
     status_callback_.Run(
         errors::Unavailable(MESSAGE_WITH_ERROR_CODE("Failed to grab", err)));
     return;
   }
 
-  ::sl::Mat left_image;
-  camera_->retrieveImage(left_image, ::sl::VIEW_LEFT);
-  ::sl::Mat right_image;
-  camera_->retrieveImage(right_image, ::sl::VIEW_RIGHT);
+  ::base::TimeDelta timestamp = ::base::TimeDelta::FromNanoseconds(
+      camera_->getTimestamp(::sl::TIME_REFERENCE_CURRENT));
 
-  left_camera_frame_callback_.Run(
-      ConverToCameraFrame(left_image, camera_format_));
-  right_camera_frame_callback_.Run(
-      ConverToCameraFrame(right_image, camera_format_));
+  if (!left_camera_frame_callback_.is_null()) {
+    ::sl::Mat image;
+    camera_->retrieveImage(image, ::sl::VIEW_LEFT);
+    CameraFrame camera_frame = ConvertToCameraFrame(image, camera_format_);
+    camera_frame.set_timestamp(timestamp);
+    left_camera_frame_callback_.Run(std::move(camera_frame));
+  }
+  if (!right_camera_frame_callback_.is_null()) {
+    ::sl::Mat image;
+    camera_->retrieveImage(image, ::sl::VIEW_RIGHT);
+    CameraFrame camera_frame = ConvertToCameraFrame(image, camera_format_);
+    camera_frame.set_timestamp(timestamp);
+    right_camera_frame_callback_.Run(std::move(camera_frame));
+  }
+  if (!depth_camera_frame_callback_.is_null()) {
+    ::sl::Mat image;
+    camera_->retrieveMeasure(image, ::sl::MEASURE_DEPTH);
+    float min = camera_->getDepthMinRangeValue();
+    float max = camera_->getDepthMaxRangeValue();
+    DepthCameraFrame depth_camera_frame =
+        ConvertToDepthCameraFrame(image, depth_camera_format_, min, max);
+    depth_camera_frame.set_timestamp(timestamp);
+    depth_camera_frame_callback_.Run(std::move(depth_camera_frame));
+  }
 
   thread_.task_runner()->PostTask(
       FROM_HERE, ::base::BindOnce(&ZedCamera::DoGrab, AsWeakPtr()));

@@ -3,12 +3,16 @@
 
 #include <sl_core/utils/Core.hpp>
 
-#include "felicia/drivers/camera/camera_frame.h"
+#include "felicia/drivers/camera/depth_camera_frame.h"
 
 namespace felicia {
 
-CameraFrame ConverToCameraFrame(::sl::Mat image,
-                                const CameraFormat& camera_format);
+CameraFrame ConvertToCameraFrame(::sl::Mat image,
+                                 const CameraFormat& camera_format);
+
+DepthCameraFrame ConvertToDepthCameraFrame(::sl::Mat image,
+                                           const CameraFormat& camera_format,
+                                           float min, float max);
 
 }  // namespace felicia
 

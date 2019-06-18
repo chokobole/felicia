@@ -16,6 +16,9 @@ class StereoCameraFlag : public CameraFlag {
   const StringDefaultFlag* right_camera_topic_flag() const {
     return right_camera_topic_flag_.get();
   }
+  const StringDefaultFlag* depth_camera_topic_flag() const {
+    return depth_camera_topic_flag_.get();
+  }
 
   bool Parse(FlagParser& parser) override;
 
@@ -24,13 +27,16 @@ class StereoCameraFlag : public CameraFlag {
   AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(name_flag_, device_list_flag_,
                                           device_index_flag_,
                                           left_camera_topic_flag_,
-                                          right_camera_topic_flag_)
+                                          right_camera_topic_flag_,
+                                          depth_camera_topic_flag_)
 
  protected:
   std::string left_camera_topic_;
   std::string right_camera_topic_;
+  std::string depth_camera_topic_;
   std::unique_ptr<StringDefaultFlag> left_camera_topic_flag_;
   std::unique_ptr<StringDefaultFlag> right_camera_topic_flag_;
+  std::unique_ptr<StringDefaultFlag> depth_camera_topic_flag_;
 };
 
 }  // namespace felicia

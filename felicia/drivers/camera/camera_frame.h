@@ -18,6 +18,7 @@ namespace felicia {
 
 class EXPORT CameraFrame {
  public:
+  CameraFrame();
   CameraFrame(std::unique_ptr<uint8_t[]> data, size_t length,
               CameraFormat camera_format);
   CameraFrame(CameraFrame&& other) noexcept;

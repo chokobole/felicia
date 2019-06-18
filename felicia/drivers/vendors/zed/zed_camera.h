@@ -42,6 +42,7 @@ class ZedCamera : public StereoCameraInterface,
   Status Start(const CameraFormat& requested_camera_format,
                CameraFrameCallback left_camera_frame_callback,
                CameraFrameCallback right_camera_frame_callback,
+               DepthCameraFrameCallback depth_camera_frame_callback,
                StatusCallback status_callback) override;
   Status Stop() override;
 
@@ -70,6 +71,7 @@ class ZedCamera : public StereoCameraInterface,
                            ::sl::InitParameters& params, ScopedCamera* camera);
 
   ScopedCamera camera_;
+  ::sl::RuntimeParameters runtime_params_;
 
   ::base::Thread thread_;
   ::base::Lock lock_;

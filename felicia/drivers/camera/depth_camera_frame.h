@@ -8,19 +8,17 @@ namespace felicia {
 
 class EXPORT DepthCameraFrame : public CameraFrame {
  public:
-  DepthCameraFrame(std::unique_ptr<uint8_t[]> data, size_t length,
-                   CameraFormat camera_format, float scale);
+  DepthCameraFrame();
+  DepthCameraFrame(CameraFrame other, float min, float max);
   DepthCameraFrame(DepthCameraFrame&& other) noexcept;
   DepthCameraFrame& operator=(DepthCameraFrame&& other);
   ~DepthCameraFrame();
 
-  float scale() const;
-  void set_scale(float scale);
-
   DepthCameraFrameMessage ToDepthCameraFrameMessage() const;
 
  private:
-  float scale_ = 0;
+  float min_;
+  float max_;
 
   DISALLOW_COPY_AND_ASSIGN(DepthCameraFrame);
 };
