@@ -22,6 +22,9 @@
     <glyph glyph-name="plus"
       unicode="&#xF105;"
       horiz-adv-x="24" d=" M19 11H13V5H11V11H5V13H11V19H13V13H19V11z" />
+    <glyph glyph-name="pointcloud-panel"
+      unicode="&#xF106;"
+      horiz-adv-x="24" d=" M19.35 13.97C18.67 17.41 15.64 20 12 20C9.11 20 6.6 18.36 5.35 15.97C2.34 15.64 0 13.1 0 10C0 6.69 2.69 4 6 4H19C21.76 4 24 6.24 24 9C24 11.64 21.95 13.78 19.35 13.97z" />
   </font>
 </defs>
 </svg>

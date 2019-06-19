@@ -108,6 +108,34 @@
             }
           }
         },
+        "PointfMessage": {
+          "fields": {
+            "x": {
+              "type": "float",
+              "id": 1
+            },
+            "y": {
+              "type": "float",
+              "id": 2
+            }
+          }
+        },
+        "Point3fMessage": {
+          "fields": {
+            "x": {
+              "type": "float",
+              "id": 1
+            },
+            "y": {
+              "type": "float",
+              "id": 2
+            },
+            "z": {
+              "type": "float",
+              "id": 3
+            }
+          }
+        },
         "NodeInfo": {
           "fields": {
             "name": {
@@ -396,6 +424,22 @@
             }
           }
         },
+        "ColorMessage": {
+          "fields": {
+            "r": {
+              "type": "float",
+              "id": 1
+            },
+            "g": {
+              "type": "float",
+              "id": 2
+            },
+            "b": {
+              "type": "float",
+              "id": 3
+            }
+          }
+        },
         "PixelFormat": {
           "values": {
             "PIXEL_FORMAT_UNKNOWN": 0,
@@ -647,6 +691,22 @@
             "timestamp": {
               "type": "int64",
               "id": 10
+            }
+          }
+        },
+        "PointcloudFrameMessage": {
+          "fields": {
+            "points": {
+              "type": "bytes",
+              "id": 1
+            },
+            "colors": {
+              "type": "bytes",
+              "id": 2
+            },
+            "timestamp": {
+              "type": "int64",
+              "id": 3
             }
           }
         }

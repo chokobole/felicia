@@ -6,69 +6,35 @@ import { PixelFormat } from '@felicia-viz/communication';
 
 import { RGBA, RGB, BGRA, BGR } from 'util/color';
 
-function fillPixels(pixels, width, height, data, colorIndexes, normalize) {
+function blendPixels(pixels, width, height, data, colorIndexes) {
   const pixelData = new Uint8ClampedArray(data);
   const size = width * height;
-  if (normalize) {
-    if (colorIndexes.aIdx) {
-      for (let i = 0; i < size; i += 1) {
-        const imageDataIdx = i << 2;
-        pixels[imageDataIdx + RGBA.rIdx] =
-          (pixels[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + colorIndexes.rIdx] / 255) /
-          2;
-        pixels[imageDataIdx + RGBA.gIdx] =
-          (pixels[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + colorIndexes.gIdx] / 255) /
-          2;
-        pixels[imageDataIdx + RGBA.bIdx] =
-          (pixels[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + colorIndexes.bIdx] / 255) /
-          2;
-        pixels[imageDataIdx + RGBA.aIdx] =
-          (pixels[imageDataIdx + RGBA.aIdx] + pixelData[imageDataIdx + colorIndexes.aIdx] / 255) /
-          2;
-      }
-    } else {
-      for (let i = 0; i < size; i += 1) {
-        const imageDataIdx = i << 2;
-        pixels[imageDataIdx + RGBA.rIdx] =
-          (pixels[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + colorIndexes.rIdx] / 255) /
-          2;
-        pixels[imageDataIdx + RGBA.gIdx] =
-          (pixels[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + colorIndexes.gIdx] / 255) /
-          2;
-        pixels[imageDataIdx + RGBA.bIdx] =
-          (pixels[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + colorIndexes.bIdx] / 255) /
-          2;
-      }
+  if (colorIndexes.aIdx) {
+    for (let i = 0; i < size; i += 1) {
+      const imageDataIdx = i << 2;
+      pixels[imageDataIdx + RGBA.rIdx] =
+        (pixels[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + colorIndexes.rIdx]) >> 1;
+      pixels[imageDataIdx + RGBA.gIdx] =
+        (pixels[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + colorIndexes.gIdx]) >> 1;
+      pixels[imageDataIdx + RGBA.bIdx] =
+        (pixels[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + colorIndexes.bIdx]) >> 1;
+      pixels[imageDataIdx + RGBA.aIdx] =
+        (pixels[imageDataIdx + RGBA.aIdx] + pixelData[imageDataIdx + colorIndexes.aIdx]) >> 1;
     }
   } else {
-    // eslint-disable-next-line
-    if (colorIndexes.aIdx) {
-      for (let i = 0; i < size; i += 1) {
-        const imageDataIdx = i << 2;
-        pixels[imageDataIdx + RGBA.rIdx] =
-          (pixels[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + colorIndexes.rIdx]) >> 1;
-        pixels[imageDataIdx + RGBA.gIdx] =
-          (pixels[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + colorIndexes.gIdx]) >> 1;
-        pixels[imageDataIdx + RGBA.bIdx] =
-          (pixels[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + colorIndexes.bIdx]) >> 1;
-        pixels[imageDataIdx + RGBA.aIdx] =
-          (pixels[imageDataIdx + RGBA.aIdx] + pixelData[imageDataIdx + colorIndexes.aIdx]) >> 1;
-      }
-    } else {
-      for (let i = 0; i < size; i += 1) {
-        const imageDataIdx = i << 2;
-        pixels[imageDataIdx + RGBA.rIdx] =
-          (pixels[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + colorIndexes.rIdx]) >> 1;
-        pixels[imageDataIdx + RGBA.gIdx] =
-          (pixels[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + colorIndexes.gIdx]) >> 1;
-        pixels[imageDataIdx + RGBA.bIdx] =
-          (pixels[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + colorIndexes.bIdx]) >> 1;
-      }
+    for (let i = 0; i < size; i += 1) {
+      const imageDataIdx = i << 2;
+      pixels[imageDataIdx + RGBA.rIdx] =
+        (pixels[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + colorIndexes.rIdx]) >> 1;
+      pixels[imageDataIdx + RGBA.gIdx] =
+        (pixels[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + colorIndexes.gIdx]) >> 1;
+      pixels[imageDataIdx + RGBA.bIdx] =
+        (pixels[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + colorIndexes.bIdx]) >> 1;
     }
   }
 }
 
-function align(pixels, frameToAlign, width, height, normalize) {
+function align(pixels, frameToAlign, width, height) {
   if (!frameToAlign) return;
 
   const { pixelFormat, data, converted } = frameToAlign;
@@ -83,15 +49,15 @@ function align(pixels, frameToAlign, width, height, normalize) {
   }
 
   if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_ARGB || converted) {
-    fillPixels(pixels, width, height, data, BGRA, normalize);
+    blendPixels(pixels, width, height, data, BGRA);
   } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGB24) {
-    fillPixels(pixels, width, height, data, BGR, normalize);
+    blendPixels(pixels, width, height, data, BGR);
   } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGB32) {
-    fillPixels(pixels, width, height, data, BGRA, normalize);
+    blendPixels(pixels, width, height, data, BGRA);
   } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_ABGR) {
-    fillPixels(pixels, width, height, data, RGBA, normalize);
+    blendPixels(pixels, width, height, data, RGBA);
   } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_XBGR) {
-    fillPixels(pixels, width, height, data, RGB, normalize);
+    blendPixels(pixels, width, height, data, RGB);
   } else {
     console.error(`Color format is not ARGB: ${pixelFormat}`);
   }
@@ -147,45 +113,6 @@ export default class Histogram {
       }
     }
 
-    align(imageData, frameToAlign, width, height, false);
-  }
-
-  fillVerticesWithColormap(
-    colors,
-    positions,
-    pixelData,
-    width,
-    height,
-    min,
-    max,
-    filter,
-    frameToAlign
-  ) {
-    this.make(pixelData, width, height, min, max);
-
-    const cm = colormap({
-      colormap: filter,
-      nshades: 256,
-      format: 'float',
-      alpha: 1,
-    });
-
-    const size = width * height;
-    for (let i = 0; i < size; i += 1) {
-      const positionIdx = 3 * i;
-      const v = pixelData[i];
-      if (v >= min && v <= max) {
-        positions[positionIdx + 2] = -v;
-
-        const colorIdx = i << 2;
-        const k = v >> 8;
-        const c = cm[this.histogram[k]];
-        [colors[colorIdx], colors[colorIdx + 1], colors[colorIdx + 2]] = c;
-      } else {
-        positions[positionIdx + 2] = 10000;
-      }
-    }
-
-    align(colors, frameToAlign, width, height, true);
+    align(imageData, frameToAlign, width, height);
   }
 }

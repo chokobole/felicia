@@ -20,8 +20,6 @@ export class DepthCameraFrame extends CameraFrame {
 export default class DepthCameraPanelState extends CameraPanelState {
   @observable filter = 'jet';
 
-  @observable pointcloudView = false;
-
   @observable topicToAlign = '';
 
   @observable frameToAlign = null;
@@ -36,10 +34,6 @@ export default class DepthCameraPanelState extends CameraPanelState {
 
   @action setFilter(newFilter) {
     this.filter = newFilter;
-  }
-
-  @action setPointcloudView(newPointcloudview) {
-    this.pointcloudView = newPointcloudview;
   }
 
   type = () => {

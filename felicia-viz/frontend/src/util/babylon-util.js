@@ -71,13 +71,50 @@ export function drawAxis(size, scene) {
   const zChar = makeTextPlane('Z', 'blue', size / 10, scene);
   zChar.position = new Vector3(0, 0.05 * size, 0.9 * size);
 
-  const localOrigin = new TransformNode('local_origin');
-  axisX.parent = localOrigin;
-  axisY.parent = localOrigin;
-  axisZ.parent = localOrigin;
-  xChar.parent = localOrigin;
-  yChar.parent = localOrigin;
-  zChar.parent = localOrigin;
+  const node = new TransformNode('axis');
+  axisX.parent = node;
+  axisY.parent = node;
+  axisZ.parent = node;
+  xChar.parent = node;
+  yChar.parent = node;
+  zChar.parent = node;
 
-  return localOrigin;
+  return node;
+}
+
+export function drawFrustrum(camera, scene) {
+  const c = new Color3(0.5, 0.5, 0.5);
+  const l = Math.tan(camera.fov / 2) * camera.maxZ;
+  const frustrum1 = Mesh.CreateLines(
+    'frustrum1',
+    [new Vector3.Zero(), new Vector3(l, l, camera.maxZ)],
+    scene
+  );
+  frustrum1.color = c;
+  const frustrum2 = Mesh.CreateLines(
+    'frustrum2',
+    [new Vector3.Zero(), new Vector3(l, -l, camera.maxZ)],
+    scene
+  );
+  frustrum2.color = c;
+  const frustrum3 = Mesh.CreateLines(
+    'frustrum3',
+    [new Vector3.Zero(), new Vector3(-l, l, camera.maxZ)],
+    scene
+  );
+  frustrum3.color = c;
+  const frustrum4 = Mesh.CreateLines(
+    'frustrum4',
+    [new Vector3.Zero(), new Vector3(-l, -l, camera.maxZ)],
+    scene
+  );
+  frustrum4.color = c;
+
+  const node = new TransformNode('frustrum');
+  frustrum1.parent = node;
+  frustrum2.parent = node;
+  frustrum3.parent = node;
+  frustrum4.parent = node;
+
+  return node;
 }

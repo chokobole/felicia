@@ -54,10 +54,6 @@ export default class DepthCameraControlPanel extends Component {
             return <ColormapDropdown {...self} />;
           },
         },
-        pointcloudView: {
-          type: 'toggle',
-          title: 'pointcloudView',
-        },
         topicToAlign: {
           type: 'custom',
           title: 'topicToAlign',
@@ -69,19 +65,12 @@ export default class DepthCameraControlPanel extends Component {
     },
   };
 
-  _onChange = values => {
-    const { store } = this.props;
-    const viewState = store.uiState.activeViewState.getState();
-
-    if (viewState.pointcloudView !== values.pointcloudView) {
-      viewState.setPointcloudView(values.pointcloudView);
-    }
-  };
+  _onChange = values => {}; // eslint-disable-line no-unused-vars
 
   _fetchValues() {
     const { store } = this.props;
     const viewState = store.uiState.activeViewState.getState();
-    const { frame, topic, filter, pointcloudView } = viewState;
+    const { frame, topic, filter } = viewState;
 
     if (frame) {
       const { width, height, frameRate, pixelFormat, min, max, timestamp } = frame;
@@ -95,7 +84,6 @@ export default class DepthCameraControlPanel extends Component {
         timestamp,
         topic,
         filter,
-        pointcloudView,
       };
     }
     return {
@@ -108,7 +96,6 @@ export default class DepthCameraControlPanel extends Component {
       timestamp: '',
       topic,
       filter,
-      pointcloudView,
     };
   }
 

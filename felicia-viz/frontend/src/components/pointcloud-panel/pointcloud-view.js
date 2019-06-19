@@ -13,13 +13,15 @@ import '@babylonjs/core/Meshes/meshBuilder';
 
 import { babylonCanvasStyle } from 'custom-styles';
 import { CameraFrame } from 'store/ui/camera-panel-state';
+import { PointcloudFrame } from 'store/ui/pointcloud-panel-state';
+import { drawAxis, drawFrustrum } from 'util/babylon-util';
 import Worker from 'util/pointcloud-view-webworker.js';
 
 export default class PointcloudView extends Component {
   static propTypes = {
     width: PropTypes.string,
     height: PropTypes.string,
-    frame: PropTypes.instanceOf(CameraFrame),
+    frame: PropTypes.instanceOf(PointcloudFrame),
     filter: PropTypes.string,
     frameToAlign: PropTypes.instanceOf(CameraFrame),
   };
@@ -57,9 +59,16 @@ export default class PointcloudView extends Component {
     const light = new HemisphericLight('hemiLight', new Vector3(0, 1, 0), scene);
     light.intensity = 1;
 
-    const camera = new ArcRotateCamera('camera', 0, 0, 5, new Vector3(0, -20, 10), scene);
+    const camera = new ArcRotateCamera('camera', 0, 0, 0, new Vector3(0, 0, -2), scene);
+    camera.setTarget(new Vector3.Zero());
+    camera.lowerRadiusLimit = 1;
+    camera.wheelPrecision = 10;
     camera.attachControl(this.canvas, true);
     this.camera = camera;
+
+    const axis = drawAxis(0.1, scene);
+    axis.position = new Vector3.Zero();
+    drawFrustrum(camera, scene);
 
     engine.runRenderLoop(() => {
       scene.render();
@@ -69,10 +78,14 @@ export default class PointcloudView extends Component {
   shouldComponentUpdate(nextProps) {
     const { frame } = this.props;
     if (frame !== nextProps.frame) {
-      const { width, height } = nextProps.frame;
-      if (!frame || width !== this.meshInfo.width || height !== this.meshInfo.height) {
-        this._createPointcloud(width, height);
-        this._moveCamera(width, height);
+      const { points } = nextProps.frame;
+      const size = points.byteLength / 4;
+      const meshSize = this.meshInfo.width * this.meshInfo.height;
+      if (!frame || meshSize < size) {
+        if (this.meshInfo.mesh) {
+          this.meshInfo.mesh.dispose();
+        }
+        this._createPointcloud(Math.ceil(size / 2), 2);
       }
 
       this._updatePointcloud(nextProps.frame);
@@ -103,13 +116,15 @@ export default class PointcloudView extends Component {
 
     let positionsIdx = 0;
     let colorsIdx = 0;
+    const centerX = width / 2;
+    const centerY = height / 2;
     for (let i = 0; i < height; i += 1) {
       for (let j = 0; j < width; j += 1) {
-        positions[positionsIdx] = width - j - 1;
-        positions[positionsIdx + 1] = height - i - 1;
+        positions[positionsIdx] = centerX - j - 1;
+        positions[positionsIdx + 1] = centerY - i - 1;
         positions[positionsIdx + 2] = 0;
 
-        colors[colorsIdx] = 0;
+        colors[colorsIdx] = 1;
         colors[colorsIdx + 1] = 0;
         colors[colorsIdx + 2] = 0;
         colors[colorsIdx + 3] = 1;
@@ -172,15 +187,6 @@ export default class PointcloudView extends Component {
       filter,
       frameToAlign,
     });
-  }
-
-  _moveCamera(width, height) {
-    this.camera.setTarget(new Vector3(width / 2, height / 2, 0));
-    this.camera.position = new Vector3(
-      width / 2,
-      height / 2,
-      (Math.max(width, height) * Math.SQRT2) / 2
-    );
   }
 
   render() {
