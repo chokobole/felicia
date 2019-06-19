@@ -19,13 +19,11 @@ CameraFrame::CameraFrame(CameraFrame&& other) noexcept
       camera_format_(other.camera_format_),
       timestamp_(other.timestamp_) {}
 
-CameraFrame& CameraFrame::operator=(CameraFrame&& other) {
+void CameraFrame::operator=(CameraFrame&& other) {
   data_ = std::move(other.data_);
   length_ = other.length_;
   camera_format_ = other.camera_format_;
   timestamp_ = other.timestamp_;
-
-  return *this;
 }
 
 CameraFrame::~CameraFrame() = default;
@@ -37,6 +35,8 @@ const uint8_t* CameraFrame::data_ptr() const { return data_.get(); }
 int CameraFrame::width() const { return camera_format_.width(); }
 
 int CameraFrame::height() const { return camera_format_.height(); }
+
+size_t CameraFrame::length() const { return length_; }
 
 PixelFormat CameraFrame::pixel_format() const {
   return camera_format_.pixel_format();

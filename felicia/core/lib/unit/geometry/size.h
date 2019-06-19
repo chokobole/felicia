@@ -8,9 +8,11 @@ namespace felicia {
 template <typename T>
 class Size {
  public:
-  constexpr Size() {}
+  constexpr Size() = default;
   constexpr Size(T width, T height)
       : width_(width > 0 ? width : 0), height_(height > 0 ? height : 0) {}
+  constexpr Size(const Size& other) = default;
+  Size& operator=(const Size& other) = default;
 
   constexpr T width() const { return width_; }
   constexpr T height() const { return height_; }
@@ -19,10 +21,6 @@ class Size {
   void set_height(T height) { height_ = height; }
 
   constexpr size_t area() const { return CheckedArea().ValueOrDie(); }
-
-  constexpr bool operator==(const Size& other) {
-    return width_ == other.width_ && height_ == other.height_;
-  }
 
  private:
   constexpr ::base::CheckedNumeric<size_t> CheckedArea() const {

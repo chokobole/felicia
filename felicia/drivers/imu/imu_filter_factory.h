@@ -10,8 +10,8 @@ namespace felicia {
 class ImuFilterFactory {
  public:
   enum ImuFilterKind {
-    ComplementaryFilterKind,
-    MadgwickFilterKind,
+    COMPLEMENTARY_FILTER_KIND,
+    MADGWICK_FILTER_KIND,
   };
 
   static std::unique_ptr<ImuFilterInterface> NewImuFilter(ImuFilterKind kind);

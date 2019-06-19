@@ -1,3 +1,6 @@
+// Some of implementations are taken and modified from
+// https://github.com/IntelRealSense/realsense-ros/blob/development/realsense2_camera/src/base_realsense_node.cpp
+
 #include "felicia/drivers/vendors/realsense/rs_camera.h"
 
 #include "third_party/chromium/base/strings/strcat.h"
@@ -86,28 +89,28 @@ Status RsCamera::Start(const RsCamera::InitParams& params) {
     return camera_state_.InvalidStateError();
   }
 
-  bool has_synched_callback = !params.synched_frame_callback.is_null();
+  bool has_color_callback = !params.color_frame_callback.is_null();
+  bool has_depth_callback = !params.depth_frame_callback.is_null();
+  bool has_pointcloud_callback = !params.pointcloud_frame_callback.is_null();
   bool has_imu_callback = !params.imu_frame_callback.is_null();
-  bool has_color_or_depth_callback = !params.color_frame_callback.is_null() ||
-                                     !params.depth_frame_callback.is_null();
 
   if (params.status_callback.is_null()) {
     return errors::InvalidArgument("status_callback is null.");
   }
 
-  if (!(has_synched_callback || has_imu_callback ||
-        has_color_or_depth_callback)) {
+  if (!(has_color_callback || has_depth_callback || has_pointcloud_callback ||
+        has_imu_callback)) {
     return errors::InvalidArgument("There's no callback to receive frame.");
   }
 
   std::function<void(::rs2::frame)> frame_callback_function;
   std::function<void(::rs2::frame)> imu_callback_function;
 
-  if (has_synched_callback) {
+  if (params.named_filters.size() > 0) {
     frame_callback_function = syncer_;
     auto frame_callback_inner = [this](::rs2::frame frame) { OnFrame(frame); };
     syncer_.start(frame_callback_inner);
-  } else if (has_color_or_depth_callback) {
+  } else if (has_color_callback || has_depth_callback) {
     frame_callback_function = [this](rs2::frame frame) { OnFrame(frame); };
   }
 
@@ -163,24 +166,22 @@ Status RsCamera::Start(const RsCamera::InitParams& params) {
     }
   }
 
-  if (has_synched_callback) {
-    SetRsAlignFromDirection(params.align_direction);
-    synched_frame_callback_ = params.synched_frame_callback;
-  } else if (has_color_or_depth_callback) {
-    if (!params.color_frame_callback.is_null()) {
-      color_frame_callback_ = params.color_frame_callback;
-    }
-    if (!params.depth_frame_callback.is_null()) {
-      depth_frame_callback_ = params.depth_frame_callback;
-    }
+  if (has_color_callback) {
+    color_frame_callback_ = params.color_frame_callback;
   }
-
-  if (!params.imu_frame_callback.is_null()) {
+  if (has_depth_callback) {
+    depth_frame_callback_ = params.depth_frame_callback;
+  }
+  if (has_pointcloud_callback) {
+    pointcloud_frame_callback_ = params.pointcloud_frame_callback;
+  }
+  if (has_imu_callback) {
     imu_filter_ = ImuFilterFactory::NewImuFilter(params.imu_filter_kind);
     imu_frame_callback_ = params.imu_frame_callback;
   }
-
   status_callback_ = params.status_callback;
+
+  named_filters_ = params.named_filters;
 
   camera_state_.ToStarted();
 
@@ -205,7 +206,8 @@ Status RsCamera::Stop() {
 
   color_frame_callback_.Reset();
   depth_frame_callback_.Reset();
-  synched_frame_callback_.Reset();
+  imu_frame_callback_.Reset();
+  pointcloud_frame_callback_.Reset();
   status_callback_.Reset();
 
   camera_state_.ToStopped();
@@ -454,59 +456,37 @@ void RsCamera::GetCameraSetting(::rs2::sensor& sensor, rs2_option option,
   value->set_current(static_cast<int64_t>(v));
 }
 
-void RsCamera::SetRsAlignFromDirection(AlignDirection align_direction) {
-  if (align_direction == AlignDirection::AlignToColor) {
-    align_ = std::make_unique<::rs2::align>(RS2_STREAM_COLOR);
-  } else if (align_direction == AlignDirection::AlignToDepth) {
-    align_ = std::make_unique<::rs2::align>(RS2_STREAM_DEPTH);
-  }
-}
-
 void RsCamera::OnFrame(::rs2::frame frame) {
+  ::base::TimeDelta timestamp = timestamper_.timestamp();
   if (frame.is<::rs2::frameset>()) {
     auto frameset = frame.as<::rs2::frameset>();
-    if (align_) {
-      frameset = align_->process(frameset);
+
+    for (auto& named_filter : named_filters_) {
+      frameset = named_filter.filter->process(frameset);
     }
 
-    ::rs2::video_frame rs_color_frame = frameset.get_color_frame();
-    ::rs2::depth_frame rs_depth_frame = frameset.get_depth_frame();
-
-    DepthCameraFrame depth_frame = FromRsDepthFrame(rs_depth_frame);
-    if (color_format_.convert_to_argb()) {
-      auto color_frame = ConvertToARGB(rs_color_frame);
-      if (color_frame.has_value()) {
-        synched_frame_callback_.Run(std::move(color_frame.value()),
-                                    std::move(depth_frame));
-      } else {
-        status_callback_.Run(errors::FailedToConvertToARGB());
+    if (!pointcloud_frame_callback_.is_null()) {
+      for (auto frame : frameset) {
+        if (frame.is<::rs2::points>()) {
+          HandlePoints(frame.as<::rs2::points>(), timestamp, frameset);
+          break;
+        }
       }
-    } else {
-      CameraFrame color_frame = FromRsColorFrame(rs_color_frame);
-      synched_frame_callback_.Run(std::move(color_frame),
-                                  std::move(depth_frame));
+    }
+
+    for (auto frame : frameset) {
+      if (frame.is<::rs2::video_frame>()) {
+        HandleVideoFrame(frame.as<::rs2::video_frame>(), timestamp);
+      }
     }
   } else if (frame.is<::rs2::video_frame>()) {
-    if (frame.is<::rs2::depth_frame>()) {
-      depth_frame_callback_.Run(
-          FromRsDepthFrame(frame.as<::rs2::depth_frame>()));
-    } else {
-      if (color_format_.convert_to_argb()) {
-        auto color_frame = ConvertToARGB(frame.as<::rs2::video_frame>());
-        if (color_frame.has_value()) {
-          color_frame_callback_.Run(std::move(color_frame.value()));
-        } else {
-          status_callback_.Run(errors::FailedToConvertToARGB());
-        }
-      } else {
-        color_frame_callback_.Run(
-            FromRsColorFrame(frame.as<::rs2::video_frame>()));
-      }
-    }
+    HandleVideoFrame(frame.as<::rs2::video_frame>(), timestamp);
   }
 }
 
 void RsCamera::OnImuFrame(::rs2::frame frame) {
+  if (imu_frame_callback_.is_null()) return;
+
   auto motion = frame.as<rs2::motion_frame>();
   auto stream = frame.get_profile().stream_type();
   ImuFrame imu_frame;
@@ -526,8 +506,120 @@ void RsCamera::OnImuFrame(::rs2::frame frame) {
   imu_frame_callback_.Run(imu_frame);
 }
 
+void RsCamera::HandleVideoFrame(::rs2::video_frame frame,
+                                ::base::TimeDelta timestamp) {
+  if (frame.is<::rs2::depth_frame>()) {
+    if (depth_frame_callback_.is_null()) return;
+
+    depth_frame_callback_.Run(
+        FromRsDepthFrame(frame.as<::rs2::depth_frame>(), timestamp));
+  } else {
+    if (color_frame_callback_.is_null()) return;
+
+    if (color_format_.convert_to_argb()) {
+      if (cached_argb_frame_.data_ptr()) {
+        color_frame_callback_.Run(std::move(cached_argb_frame_));
+      } else {
+        auto color_frame = ConvertToARGB(frame, timestamp);
+        if (color_frame.has_value()) {
+          color_frame_callback_.Run(std::move(color_frame.value()));
+        } else {
+          status_callback_.Run(errors::FailedToConvertToARGB());
+        }
+      }
+    } else {
+      color_frame_callback_.Run(FromRsColorFrame(frame, timestamp));
+    }
+  }
+}
+
+void RsCamera::HandlePoints(::rs2::points points, ::base::TimeDelta timestamp,
+                            const ::rs2::frameset& frameset) {
+  if (pointcloud_frame_callback_.is_null()) return;
+
+  auto pc_filter_iter = std::find_if(
+      named_filters_.begin(), named_filters_.end(),
+      [](NamedFilter named_filter) {
+        return named_filter.name == RsCamera::NamedFilter::POINTCLOUD;
+      });
+  if (pc_filter_iter == named_filters_.end()) return;
+
+  rs2_stream texture_source_id = static_cast<rs2_stream>(
+      pc_filter_iter->filter->get_option(rs2_option::RS2_OPTION_STREAM_FILTER));
+  PointcloudFrame pointcloud_frame(points.size(), points.size());
+  bool use_texture = texture_source_id != RS2_STREAM_ANY;
+  rs2::frameset::iterator texture_frame_itr = frameset.end();
+  if (use_texture) {
+    int width, height, bpp;
+    const uint8_t* color = nullptr;
+    if (texture_source_id == RS2_STREAM_COLOR) {
+      auto color_frame = ConvertToARGB(frameset.get_color_frame(), timestamp);
+      if (color_frame.has_value()) {
+        cached_argb_frame_ = std::move(color_frame.value());
+      }
+
+      width = cached_argb_frame_.width();
+      height = cached_argb_frame_.height();
+      bpp = 4;
+      color = cached_argb_frame_.data_ptr();
+    } else {
+      std::set<rs2_format> available_formats{rs2_format::RS2_FORMAT_RGB8,
+                                            rs2_format::RS2_FORMAT_Y8};
+
+      texture_frame_itr = std::find_if(
+          frameset.begin(), frameset.end(),
+          [&texture_source_id, &available_formats](rs2::frame f) {
+            return (rs2_stream(f.get_profile().stream_type()) ==
+                    texture_source_id) &&
+                  (available_formats.find(f.get_profile().format()) !=
+                    available_formats.end());
+          });
+      if (texture_frame_itr == frameset.end()) {
+        std::string texture_source_name =
+            pc_filter_iter->filter->get_option_value_description(
+                rs2_option::RS2_OPTION_STREAM_FILTER,
+                static_cast<float>(texture_source_id));
+        LOG(WARNING) << "No stream match for pointcloud chosen texture "
+                    << texture_source_name;
+        return;
+      }
+
+      rs2::video_frame texture_frame =
+          (*texture_frame_itr).as<rs2::video_frame>();
+      width = texture_frame.get_width();
+      height = texture_frame.get_height();
+      bpp = texture_frame.get_bytes_per_pixel();
+      color = reinterpret_cast<const uint8_t*>(texture_frame.get_data());
+    }
+
+    const rs2::vertex* vertex = points.get_vertices();
+    const rs2::texture_coordinate* uv = points.get_texture_coordinates();
+    for (size_t i = 0; i < points.size(); ++i) {
+      float u = static_cast<float>(uv[i].u);
+      float v = static_cast<float>(uv[i].v);
+      if (u >= 0.f && u <= 1.f && v >= 0.f && v <= 1.f) {
+        int x = static_cast<int>(u * width);
+        int y = static_cast<int>(v * height);
+        size_t offset = (y * width + x) * bpp;
+        pointcloud_frame.AddPointAndColor(
+            vertex[i].x, vertex[i].y, vertex[i].z, color[offset + 2] / 255.f,
+            color[offset + 1] / 255.f, color[offset] / 255.f);
+      }
+    }
+  } else {
+    const rs2::vertex* vertex = points.get_vertices();
+    for (size_t i = 0; i < points.size(); ++i) {
+      if (vertex[i].z > 0) {
+        pointcloud_frame.AddPoint(vertex[i].x, vertex[i].y, vertex[i].z);
+      }
+    }
+  }
+  pointcloud_frame.set_timestamp(timestamp);
+  pointcloud_frame_callback_.Run(std::move(pointcloud_frame));
+}
+
 ::base::Optional<CameraFrame> RsCamera::ConvertToARGB(
-    ::rs2::video_frame color_frame) {
+    ::rs2::video_frame color_frame, ::base::TimeDelta timestamp) {
   size_t length = color_format_.AllocationSize();
   CameraBuffer camera_buffer(
       reinterpret_cast<uint8_t*>(const_cast<void*>(color_frame.get_data())),
@@ -536,31 +628,33 @@ void RsCamera::OnImuFrame(::rs2::frame frame) {
   ::base::Optional<CameraFrame> argb_frame =
       felicia::ConvertToARGB(camera_buffer, color_format_);
   if (argb_frame.has_value()) {
-    argb_frame.value().set_timestamp(timestamper_.timestamp());
+    argb_frame.value().set_timestamp(timestamp);
   }
 
   return argb_frame;
 }
 
-CameraFrame RsCamera::FromRsColorFrame(::rs2::video_frame color_frame) {
+CameraFrame RsCamera::FromRsColorFrame(::rs2::video_frame color_frame,
+                                       ::base::TimeDelta timestamp) {
   size_t length = color_format_.AllocationSize();
   std::unique_ptr<uint8_t[]> new_color_frame(new uint8_t[length]);
   memcpy(new_color_frame.get(), color_frame.get_data(), length);
   CameraFrame camera_frame(std::move(new_color_frame), length, color_format_);
-  camera_frame.set_timestamp(timestamper_.timestamp());
+  camera_frame.set_timestamp(timestamp);
   return camera_frame;
 }
 
-DepthCameraFrame RsCamera::FromRsDepthFrame(::rs2::depth_frame depth_frame) {
+DepthCameraFrame RsCamera::FromRsDepthFrame(::rs2::depth_frame depth_frame,
+                                            ::base::TimeDelta timestamp) {
   size_t size = depth_format_.width() * depth_format_.height();
   size_t allocation_size = depth_format_.AllocationSize();
   std::unique_ptr<uint8_t[]> new_depth_frame(new uint8_t[allocation_size]);
   memcpy(new_depth_frame.get(), depth_frame.get_data(), allocation_size);
+  uint16_t* ptr = reinterpret_cast<uint16_t*>(new_depth_frame.get());
   for (size_t i = 0; i < size; ++i) {
     const size_t data_idx = i << 1;
     uint16_t value = static_cast<uint16_t>(new_depth_frame[data_idx]) |
                      static_cast<uint16_t>(new_depth_frame[data_idx + 1] << 8);
-    uint16_t* ptr = reinterpret_cast<uint16_t*>(new_depth_frame.get());
     ptr[i] = static_cast<uint16_t>(
         std::round(value * depth_scale_ * 1000));  // in mm
   }
@@ -568,7 +662,7 @@ DepthCameraFrame RsCamera::FromRsDepthFrame(::rs2::depth_frame depth_frame) {
                            depth_format_);
   DepthCameraFrame depth_camera_frame(std::move(camera_frame),
                                       105 /* 0.105 m */, UINT16_MAX);
-  depth_camera_frame.set_timestamp(timestamper_.timestamp());
+  depth_camera_frame.set_timestamp(timestamp);
   return depth_camera_frame;
 }
 

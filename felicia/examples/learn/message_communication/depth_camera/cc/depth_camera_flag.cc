@@ -19,13 +19,6 @@ DepthCameraFlag::DepthCameraFlag() {
                     .Build();
     depth_topic_flag_ = std::make_unique<StringDefaultFlag>(flag);
   }
-  {
-    BoolFlag::Builder builder(MakeValueStore(&synched_));
-    auto flag = builder.SetLongName("--synched")
-                    .SetHelp("whether to read sensor data synchronously")
-                    .Build();
-    synched_flag_ = std::make_unique<BoolFlag>(flag);
-  }
 }
 
 DepthCameraFlag::~DepthCameraFlag() = default;
@@ -33,7 +26,7 @@ DepthCameraFlag::~DepthCameraFlag() = default;
 bool DepthCameraFlag::Parse(FlagParser& parser) {
   return PARSE_OPTIONAL_FLAG(parser, name_flag_, device_list_flag_,
                              device_index_flag_, color_topic_flag_,
-                             depth_topic_flag_, synched_flag_);
+                             depth_topic_flag_);
 }
 
 bool DepthCameraFlag::Validate() const {

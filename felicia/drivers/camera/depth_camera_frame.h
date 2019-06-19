@@ -25,8 +25,6 @@ class EXPORT DepthCameraFrame : public CameraFrame {
 
 typedef ::base::RepeatingCallback<void(DepthCameraFrame)>
     DepthCameraFrameCallback;
-typedef ::base::RepeatingCallback<void(CameraFrame, DepthCameraFrame)>
-    SynchedDepthCameraFrameCallback;
 
 }  // namespace felicia
 

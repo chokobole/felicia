@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+import "felicia/core/protobuf/geometry.proto";
+import "felicia/core/protobuf/ui.proto";
+
+package felicia;
+
+message PointcloudFrameMessage {
+  bytes points = 1;
+  bytes colors = 2;
+  int64 timestamp = 3;
+}

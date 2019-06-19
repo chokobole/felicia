@@ -22,14 +22,14 @@ class EXPORT CameraFrame {
   CameraFrame(std::unique_ptr<uint8_t[]> data, size_t length,
               CameraFormat camera_format);
   CameraFrame(CameraFrame&& other) noexcept;
-  CameraFrame& operator=(CameraFrame&& other);
+  void operator=(CameraFrame&& other);
   ~CameraFrame();
 
   std::unique_ptr<uint8_t[]> data();
   const uint8_t* data_ptr() const;
   int width() const;
   int height() const;
-  size_t AllocationSize() const;
+  size_t length() const;
   PixelFormat pixel_format() const;
 
   void set_timestamp(::base::TimeDelta time);

@@ -5,6 +5,7 @@
 #include "Eigen/Geometry"
 
 #include "felicia/core/lib/base/export.h"
+#include "felicia/core/lib/unit/geometry/point.h"
 #include "felicia/core/protobuf/geometry.pb.h"
 
 namespace felicia {
@@ -13,6 +14,8 @@ EXPORT Vec3fMessage EigenVec3fToVec3fMessage(const ::Eigen::Vector3f& vec);
 
 EXPORT QuarternionMessage
 EigenQuarternionfToQuarternionMessage(const ::Eigen::Quaternionf& quarternion);
+
+EXPORT Point3fMessage Point3fToPoint3fMessage(const Point3f& point);
 
 }  // namespace felicia
 

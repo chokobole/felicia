@@ -22,6 +22,7 @@ fel_cc_library(
         "strings/str_util.cc",
         "unit/bytes.cc",
         "unit/geometry/geometry_util.cc",
+        "unit/ui/color.cc",
     ],
     hdrs = [
         "base/choices.h",
@@ -40,7 +41,9 @@ fel_cc_library(
         "synchronization/scoped_event_signaller.h",
         "unit/geometry/size.h",
         "unit/geometry/geometry_util.h",
+        "unit/geometry/point.h",
         "unit/bytes.h",
+        "unit/ui/color.h",
     ] + [":felicia_env"],
     deps = [
         "//felicia/core/protobuf:protos_all_cc",

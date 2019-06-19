@@ -20,4 +20,12 @@ QuarternionMessage EigenQuarternionfToQuarternionMessage(
   return message;
 }
 
+Point3fMessage Point3fToPoint3fMessage(const Point3f& point) {
+  Point3fMessage message;
+  message.set_x(point.x());
+  message.set_y(point.y());
+  message.set_z(point.z());
+  return message;
+}
+
 }  // namespace felicia

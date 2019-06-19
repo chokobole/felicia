@@ -6,12 +6,6 @@
 
 namespace felicia {
 
-enum AlignDirection {
-  None,
-  AlignToDepth,
-  AlignToColor,
-};
-
 class EXPORT DepthCameraInterface : public CameraInterfaceBase {
  public:
   DepthCameraInterface(const CameraDescriptor& camera_descriptor);
@@ -28,7 +22,6 @@ class EXPORT DepthCameraInterface : public CameraInterfaceBase {
 
   CameraFrameCallback color_frame_callback_;
   DepthCameraFrameCallback depth_frame_callback_;
-  SynchedDepthCameraFrameCallback synched_frame_callback_;
 };
 
 }  // namespace felicia

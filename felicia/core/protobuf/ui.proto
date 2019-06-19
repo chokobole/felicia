@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package felicia;
+
+message ColorMessage {
+  float r = 1;
+  float g = 2;
+  float b = 3;
+}

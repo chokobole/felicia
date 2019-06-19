@@ -10,6 +10,14 @@ RsCameraFlag::RsCameraFlag() {
                     .Build();
     imu_topic_flag_ = std::make_unique<StringFlag>(flag);
   }
+  {
+    StringFlag::Builder builder(
+        MakeValueStore<std::string>(&pointcloud_topic_));
+    auto flag = builder.SetLongName("--pointcloud_topic")
+                    .SetHelp("topic to publish for pointcloud")
+                    .Build();
+    pointcloud_topic_flag_ = std::make_unique<StringFlag>(flag);
+  }
 }
 
 RsCameraFlag::~RsCameraFlag() = default;
@@ -17,7 +25,8 @@ RsCameraFlag::~RsCameraFlag() = default;
 bool RsCameraFlag::Parse(FlagParser& parser) {
   return PARSE_OPTIONAL_FLAG(parser, name_flag_, device_list_flag_,
                              device_index_flag_, color_topic_flag_,
-                             depth_topic_flag_, imu_topic_flag_, synched_flag_);
+                             depth_topic_flag_, imu_topic_flag_,
+                             pointcloud_topic_flag_);
 }
 
 }  // namespace felicia

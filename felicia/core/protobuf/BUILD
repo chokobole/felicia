@@ -10,6 +10,7 @@ fel_proto_library(
         "geometry.proto",
         "master.proto",
         "master_data.proto",
+        "ui.proto",
     ],
     default_header = True,
     visibility = ["//visibility:public"],
@@ -24,6 +25,7 @@ fel_proto_library(
         "//felicia/drivers/camera:camera_proto",
         "//felicia/drivers/imu:imu_proto",
         "//felicia/drivers/lidar:lidar_proto",
+        "//felicia/drivers/pointcloud:pointcloud_proto",
     ],
     visibility = ["//visibility:public"],
 )
