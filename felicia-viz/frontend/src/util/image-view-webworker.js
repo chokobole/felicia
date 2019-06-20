@@ -6,6 +6,7 @@ import { PixelFormat } from '@felicia-viz/communication';
 
 import { RGBA, RGB, BGRA, BGR } from 'util/color';
 import Histogram from 'util/histogram';
+import { getDataView } from 'util/util';
 
 let histogram;
 
@@ -41,8 +42,7 @@ self.onmessage = event => {
       histogram = new Histogram();
     }
 
-    const { buffer, byteOffset, byteLength } = data;
-    const pixelData = new Uint16Array(buffer, byteOffset, byteLength / 2);
+    const pixelData = getDataView(data);
     histogram.fillImageDataWithColormap(
       pixels,
       pixelData,

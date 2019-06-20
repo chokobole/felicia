@@ -74,7 +74,8 @@ export default class Histogram {
     const size = width * height;
     let validSize = 0;
     for (let i = 1; i < size; i += 1) {
-      const v = pixelData[i];
+      const pixelDataIdx = i << 1;
+      const v = pixelData.getUint16(pixelDataIdx, true);
       if (v >= min && v <= max) {
         const k = v >> 8;
         this.histogram[k] += 1;
@@ -101,8 +102,9 @@ export default class Histogram {
 
     const size = width * height;
     for (let i = 0; i < size; i += 1) {
+      const pixelDataIdx = i << 1;
       const imageDataIdx = i << 2;
-      const v = pixelData[i];
+      const v = pixelData.getUint16(pixelDataIdx, true);
       if (v >= min && v <= max) {
         const k = v >> 8;
         const c = cm[this.histogram[k]];
