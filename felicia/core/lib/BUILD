@@ -23,6 +23,7 @@ fel_cc_library(
         "strings/str_util.cc",
         "unit/bytes.cc",
         "unit/geometry/geometry_util.cc",
+        "unit/length.cc",
         "unit/ui/color.cc",
     ],
     hdrs = [
@@ -45,6 +46,7 @@ fel_cc_library(
         "unit/geometry/geometry_util.h",
         "unit/geometry/point.h",
         "unit/bytes.h",
+        "unit/length.h",
         "unit/ui/color.h",
     ] + [":felicia_env"],
     deps = [
@@ -65,6 +67,7 @@ fel_cc_test(
         "containers/pool_test.cc",
         "coordinate/coordinate_test.cc",
         "unit/bytes_test.cc",
+        "unit/length_test.cc",
     ],
     deps = fel_shared_library() + [
         "@com_google_googletest//:gtest_main",

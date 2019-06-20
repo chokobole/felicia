@@ -10,19 +10,19 @@ namespace felicia {
 
 class EXPORT Bytes {
  public:
-  static constexpr size_t kKilloBytes = 1000;
-  static constexpr size_t kMegaBytes = 1000 * kKilloBytes;
-  static constexpr size_t kGigaBytes = 1000 * kMegaBytes;
+  static constexpr int64_t kKilloBytes = 1000;
+  static constexpr int64_t kMegaBytes = 1000 * kKilloBytes;
+  static constexpr int64_t kGigaBytes = 1000 * kMegaBytes;
 
   Bytes();
-  Bytes(size_t bytes);
+  Bytes(int64_t bytes);
 
-  static Bytes FromBytes(size_t bytes);
-  static Bytes FromKilloBytes(size_t killo_bytes);
+  static Bytes FromBytes(int64_t bytes);
+  static Bytes FromKilloBytes(int64_t killo_bytes);
   static Bytes FromKilloBytesD(double killo_bytes);
-  static Bytes FromMegaBytes(size_t mega_bytes);
+  static Bytes FromMegaBytes(int64_t mega_bytes);
   static Bytes FromMegaBytesD(double mega_bytes);
-  static Bytes FromGigaBytes(size_t giga_bytes);
+  static Bytes FromGigaBytes(int64_t giga_bytes);
   static Bytes FromGigaBytesD(double giga_bytes);
 
   static Bytes Max();
@@ -42,7 +42,7 @@ class EXPORT Bytes {
 
   template <typename T>
   Bytes operator*(T a) const {
-    ::base::CheckedNumeric<size_t> rv(bytes_);
+    ::base::CheckedNumeric<int64_t> rv(bytes_);
     rv *= a;
     if (rv.IsValid()) return Bytes(rv.ValueOrDie());
     // Matched sign overflows. Mismatched sign underflows.
@@ -51,7 +51,7 @@ class EXPORT Bytes {
   }
   template <typename T>
   Bytes operator/(T a) const {
-    ::base::CheckedNumeric<size_t> rv(bytes_);
+    ::base::CheckedNumeric<int64_t> rv(bytes_);
     rv /= a;
     if (rv.IsValid()) return Bytes(rv.ValueOrDie());
     // Matched sign overflows. Mismatched sign underflows.
@@ -70,15 +70,15 @@ class EXPORT Bytes {
 
   double operator/(Bytes a) const;
 
-  size_t bytes() const;
+  int64_t bytes() const;
 
  private:
-  static Bytes SaturateAdd(size_t value, size_t value2);
-  static Bytes SaturateSub(size_t value, size_t value2);
-  static Bytes FromProduct(size_t value, size_t positive_value);
+  static Bytes SaturateAdd(int64_t value, int64_t value2);
+  static Bytes SaturateSub(int64_t value, int64_t value2);
+  static Bytes FromProduct(int64_t value, int64_t positive_value);
   static Bytes FromDouble(double value);
 
-  size_t bytes_ = 0;
+  int64_t bytes_ = 0;
 };
 
 template <typename T>
@@ -86,7 +86,7 @@ Bytes operator*(T a, Bytes bytes) {
   return bytes * a;
 }
 
-EXPORT std::ostream& operator<<(std::ostream& os, Bytes time);
+EXPORT std::ostream& operator<<(std::ostream& os, Bytes bytes);
 
 }  // namespace felicia
 
