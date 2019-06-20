@@ -10,11 +10,10 @@ class DepthCameraFlag : public CameraFlag {
   DepthCameraFlag();
   ~DepthCameraFlag();
 
-  const StringDefaultFlag* color_topic_flag() const {
-    return color_topic_flag_.get();
-  }
-  const StringDefaultFlag* depth_topic_flag() const {
-    return depth_topic_flag_.get();
+  const StringFlag* color_topic_flag() const { return color_topic_flag_.get(); }
+  const StringFlag* depth_topic_flag() const { return depth_topic_flag_.get(); }
+  const StringFlag* pointcloud_topic_flag() const {
+    return pointcloud_topic_flag_.get();
   }
 
   bool Parse(FlagParser& parser) override;
@@ -23,13 +22,16 @@ class DepthCameraFlag : public CameraFlag {
 
   AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(name_flag_, device_list_flag_,
                                           device_index_flag_, color_topic_flag_,
-                                          depth_topic_flag_)
+                                          depth_topic_flag_,
+                                          pointcloud_topic_flag_)
 
  protected:
   std::string color_topic_;
   std::string depth_topic_;
-  std::unique_ptr<StringDefaultFlag> color_topic_flag_;
-  std::unique_ptr<StringDefaultFlag> depth_topic_flag_;
+  std::string pointcloud_topic_;
+  std::unique_ptr<StringFlag> color_topic_flag_;
+  std::unique_ptr<StringFlag> depth_topic_flag_;
+  std::unique_ptr<StringFlag> pointcloud_topic_flag_;
 };
 
 }  // namespace felicia

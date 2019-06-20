@@ -10,6 +10,7 @@
 
 #include "third_party/chromium/base/containers/flat_map.h"
 
+#include "felicia/core/lib/coordinate/coordinate.h"
 #include "felicia/core/util/timestamp/timestamper.h"
 #include "felicia/drivers/camera/depth_camera_interface.h"
 #include "felicia/drivers/imu/imu_filter_factory.h"
@@ -52,7 +53,7 @@ class RsCamera : public DepthCameraInterface {
     std::shared_ptr<::rs2::filter> filter;
   };
 
-  struct InitParams {
+  struct StartParams {
     CameraFormat requested_color_format;
     CameraFormat requested_depth_format;
     ImuFormat requested_gyro_format;
@@ -84,7 +85,7 @@ class RsCamera : public DepthCameraInterface {
   Status GetCameraSettingsInfo(
       CameraSettingsInfoMessage* camera_settings) override;
 
-  Status Start(const InitParams& params);
+  Status Start(const StartParams& params);
 
   StatusOr<::rs2::sensor> sensor(const RsStreamInfo& rs_stream_info);
 
@@ -140,6 +141,7 @@ class RsCamera : public DepthCameraInterface {
   ImuFrameCallback imu_frame_callback_;
   PointcloudFrameCallback pointcloud_frame_callback_;
 
+  Coordinate coordinate_;
   ThreadSafeTimestamper timestamper_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(RsCamera);

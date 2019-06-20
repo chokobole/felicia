@@ -76,7 +76,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
                        CameraFrameCallback color_frame_callback,
                        DepthCameraFrameCallback depth_frame_callback,
                        StatusCallback status_callback) {
-  InitParams params;
+  StartParams params;
   params.requested_color_format = requested_color_format;
   params.requested_depth_format = requested_depth_format;
   params.color_frame_callback = color_frame_callback;
@@ -84,7 +84,7 @@ Status RsCamera::Start(const CameraFormat& requested_color_format,
   return Start(params);
 }
 
-Status RsCamera::Start(const RsCamera::InitParams& params) {
+Status RsCamera::Start(const RsCamera::StartParams& params) {
   if (!camera_state_.IsInitialized()) {
     return camera_state_.InvalidStateError();
   }
@@ -492,13 +492,17 @@ void RsCamera::OnImuFrame(::rs2::frame frame) {
   ImuFrame imu_frame;
 
   rs2_vector vector = motion.get_motion_data();
+  Point3f point =
+      coordinate_.Convert(Point3f(vector.x, vector.y, vector.z),
+                          Coordinate::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP);
+  float x = point.x(), y = point.y(), z = point.z();
   ::base::TimeDelta timestamp = timestamper_.timestamp();
   if (stream == RS_GYRO.stream_type) {
-    imu_frame.set_angulary_veilocity(vector.x, vector.y, vector.z);
-    imu_filter_->UpdateAngularVelocity(vector.x, vector.y, vector.z, timestamp);
+    imu_frame.set_angulary_veilocity(x, y, z);
+    imu_filter_->UpdateAngularVelocity(x, y, z, timestamp);
   } else {
-    imu_frame.set_linear_acceleration(vector.x, vector.y, vector.z);
-    imu_filter_->UpdateLinearAcceleration(vector.x, vector.y, vector.z);
+    imu_frame.set_linear_acceleration(x, y, z);
+    imu_filter_->UpdateLinearAcceleration(x, y, z);
   }
   imu_frame.set_timestamp(timestamp);
   imu_frame.set_orientation(imu_filter_->orientation());
@@ -564,14 +568,14 @@ void RsCamera::HandlePoints(::rs2::points points, ::base::TimeDelta timestamp,
       color = cached_argb_frame_.data_ptr();
     } else {
       std::set<rs2_format> available_formats{rs2_format::RS2_FORMAT_RGB8,
-                                            rs2_format::RS2_FORMAT_Y8};
+                                             rs2_format::RS2_FORMAT_Y8};
 
       texture_frame_itr = std::find_if(
           frameset.begin(), frameset.end(),
           [&texture_source_id, &available_formats](rs2::frame f) {
             return (rs2_stream(f.get_profile().stream_type()) ==
                     texture_source_id) &&
-                  (available_formats.find(f.get_profile().format()) !=
+                   (available_formats.find(f.get_profile().format()) !=
                     available_formats.end());
           });
       if (texture_frame_itr == frameset.end()) {
@@ -580,7 +584,7 @@ void RsCamera::HandlePoints(::rs2::points points, ::base::TimeDelta timestamp,
                 rs2_option::RS2_OPTION_STREAM_FILTER,
                 static_cast<float>(texture_source_id));
         LOG(WARNING) << "No stream match for pointcloud chosen texture "
-                    << texture_source_name;
+                     << texture_source_name;
         return;
       }
 

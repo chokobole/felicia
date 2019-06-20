@@ -31,8 +31,8 @@ export default class ImuView extends PureComponent {
     const scene = new Scene(engine);
     scene.clearColor = backgroundColor;
 
-    const camera = new ArcRotateCamera('camera', 0, 0, 5, new Vector3(0, -20, 10), scene);
-    camera.setTarget(Vector3.Zero());
+    const camera = new ArcRotateCamera('camera', 0, 0, 0, new Vector3.Zero(), scene);
+    camera.position = new Vector3(0, 0, -10);
     camera.attachControl(this.canvas, true);
 
     const localOrigin = drawAxis(10, scene);
@@ -42,9 +42,7 @@ export default class ImuView extends PureComponent {
 
       if (frame) {
         const { x, y, z, w } = frame.orientation;
-        // TODO(chokobole): If i don't put - to |y| and |z|, yawn and roll is
-        // mirrored. It needs to be tested with a different IMU device.
-        const orientation = new Quaternion(x, -y, -z, w);
+        const orientation = new Quaternion(x, y, z, w);
         localOrigin.rotationQuaternion = orientation;
       }
 

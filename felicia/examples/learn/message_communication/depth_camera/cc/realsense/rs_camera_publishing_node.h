@@ -11,13 +11,13 @@ class RsCameraPublishingNode : public NodeLifecycle {
  public:
   RsCameraPublishingNode(const std::string& color_topic,
                          const std::string& depth_topic,
-                         const std::string& imu_topic,
                          const std::string& pointcloud_topic,
+                         const std::string& imu_topic,
                          const CameraDescriptor& camera_descriptor)
       : color_topic_(color_topic),
         depth_topic_(depth_topic),
-        imu_topic_(imu_topic),
         pointcloud_topic_(pointcloud_topic),
+        imu_topic_(imu_topic),
         camera_descriptor_(camera_descriptor),
         requested_color_format_(
             CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 30, true)),
@@ -68,17 +68,17 @@ class RsCameraPublishingNode : public NodeLifecycle {
                            ::base::Unretained(this)));
     }
 
-    if (!imu_topic_.empty()) {
-      imu_publisher_.RequestPublish(
-          node_info_, imu_topic_, ChannelDef::TCP | ChannelDef::WS, settings,
-          ::base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
-                           ::base::Unretained(this)));
-    }
-
     if (!pointcloud_topic_.empty()) {
       pointcloud_publisher_.RequestPublish(
           node_info_, pointcloud_topic_, ChannelDef::TCP | ChannelDef::WS,
           settings,
+          ::base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
+                           ::base::Unretained(this)));
+    }
+
+    if (!imu_topic_.empty()) {
+      imu_publisher_.RequestPublish(
+          node_info_, imu_topic_, ChannelDef::TCP | ChannelDef::WS, settings,
           ::base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
                            ::base::Unretained(this)));
     }
@@ -89,9 +89,9 @@ class RsCameraPublishingNode : public NodeLifecycle {
     if (s.ok()) {
       if (!color_topic_.empty() && !color_publisher_.IsRegistered()) return;
       if (!depth_topic_.empty() && !depth_publisher_.IsRegistered()) return;
-      if (!imu_topic_.empty() && !imu_publisher_.IsRegistered()) return;
       if (!pointcloud_topic_.empty() && !pointcloud_publisher_.IsRegistered())
         return;
+      if (!imu_topic_.empty() && !imu_publisher_.IsRegistered()) return;
 
       MasterProxy& master_proxy = MasterProxy::GetInstance();
       master_proxy.PostTask(
@@ -105,14 +105,13 @@ class RsCameraPublishingNode : public NodeLifecycle {
   void StartCamera() {
     if (camera_->IsStarted()) return;
 
-
     StatusOr<::rs2::sensor> status_or = camera_->sensor(RS_COLOR);
     if (status_or.ok()) {
       ::rs2::sensor& s = status_or.ValueOrDie();
       camera_->SetOption(s, RS2_OPTION_EMITTER_ENABLED, 1);
     }
 
-    RsCamera::InitParams params;
+    RsCamera::StartParams params;
     params.status_callback = ::base::BindRepeating(
         &RsCameraPublishingNode::OnCameraError, ::base::Unretained(this));
 
@@ -128,14 +127,6 @@ class RsCameraPublishingNode : public NodeLifecycle {
       params.requested_depth_format = requested_depth_format_;
       params.depth_frame_callback = ::base::BindRepeating(
           &RsCameraPublishingNode::OnDepthFrame, ::base::Unretained(this));
-    }
-
-    if (!imu_topic_.empty()) {
-      params.requested_accel_format = requested_accel_format_;
-      params.requested_gyro_format = requested_gyro_format_;
-      params.imu_filter_kind = imu_filter_kind_;
-      params.imu_frame_callback = ::base::BindRepeating(
-          &RsCameraPublishingNode::OnImuFrame, ::base::Unretained(this));
     }
 
     if (!pointcloud_topic_.empty()) {
@@ -159,6 +150,14 @@ class RsCameraPublishingNode : public NodeLifecycle {
       }
       params.pointcloud_frame_callback = ::base::BindRepeating(
           &RsCameraPublishingNode::OnPointcloudFrame, ::base::Unretained(this));
+    }
+
+    if (!imu_topic_.empty()) {
+      params.requested_accel_format = requested_accel_format_;
+      params.requested_gyro_format = requested_gyro_format_;
+      params.imu_filter_kind = imu_filter_kind_;
+      params.imu_frame_callback = ::base::BindRepeating(
+          &RsCameraPublishingNode::OnImuFrame, ::base::Unretained(this));
     }
 
     Status s = camera_->Start(params);
@@ -192,6 +191,15 @@ class RsCameraPublishingNode : public NodeLifecycle {
                               ::base::Unretained(this)));
   }
 
+  void OnPointcloudFrame(PointcloudFrame pointcloud_frame) {
+    if (pointcloud_publisher_.IsUnregistered()) return;
+
+    pointcloud_publisher_.Publish(
+        pointcloud_frame.ToPointcloudFrameMessage(),
+        ::base::BindRepeating(&RsCameraPublishingNode::OnPublishPointcloud,
+                              ::base::Unretained(this)));
+  }
+
   void OnImuFrame(const ImuFrame& imu_frame) {
     if (imu_publisher_.IsUnregistered()) return;
 
@@ -207,15 +215,6 @@ class RsCameraPublishingNode : public NodeLifecycle {
     last_timestamp_ = imu_frame.timestamp();
   }
 
-  void OnPointcloudFrame(PointcloudFrame pointcloud_frame) {
-    if (pointcloud_publisher_.IsUnregistered()) return;
-
-    pointcloud_publisher_.Publish(
-        pointcloud_frame.ToPointcloudFrameMessage(),
-        ::base::BindRepeating(&RsCameraPublishingNode::OnPublishPointcloud,
-                              ::base::Unretained(this)));
-  }
-
   void OnCameraError(const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }
 
   void OnPublishColor(ChannelDef::Type type, const Status& s) {
@@ -226,11 +225,11 @@ class RsCameraPublishingNode : public NodeLifecycle {
     LOG_IF(ERROR, !s.ok()) << s << " from " << ChannelDef::Type_Name(type);
   }
 
-  void OnPublishImu(ChannelDef::Type type, const Status& s) {
+  void OnPublishPointcloud(ChannelDef::Type type, const Status& s) {
     LOG_IF(ERROR, !s.ok()) << s << " from " << ChannelDef::Type_Name(type);
   }
 
-  void OnPublishPointcloud(ChannelDef::Type type, const Status& s) {
+  void OnPublishImu(ChannelDef::Type type, const Status& s) {
     LOG_IF(ERROR, !s.ok()) << s << " from " << ChannelDef::Type_Name(type);
   }
 
@@ -249,16 +248,16 @@ class RsCameraPublishingNode : public NodeLifecycle {
                            ::base::Unretained(this)));
     }
 
-    if (!imu_topic_.empty()) {
-      imu_publisher_.RequestUnpublish(
-          node_info_, imu_topic_,
+    if (!pointcloud_topic_.empty()) {
+      pointcloud_publisher_.RequestUnpublish(
+          node_info_, pointcloud_topic_,
           ::base::BindOnce(&RsCameraPublishingNode::OnRequestUnpublish,
                            ::base::Unretained(this)));
     }
 
-    if (!pointcloud_topic_.empty()) {
-      pointcloud_publisher_.RequestUnpublish(
-          node_info_, pointcloud_topic_,
+    if (!imu_topic_.empty()) {
+      imu_publisher_.RequestUnpublish(
+          node_info_, imu_topic_,
           ::base::BindOnce(&RsCameraPublishingNode::OnRequestUnpublish,
                            ::base::Unretained(this)));
     }
@@ -269,9 +268,9 @@ class RsCameraPublishingNode : public NodeLifecycle {
     if (s.ok()) {
       if (!color_topic_.empty() && !color_publisher_.IsUnregistered()) return;
       if (!depth_topic_.empty() && !depth_publisher_.IsUnregistered()) return;
-      if (!imu_topic_.empty() && !imu_publisher_.IsUnregistered()) return;
       if (!pointcloud_topic_.empty() && !pointcloud_publisher_.IsUnregistered())
         return;
+      if (!imu_topic_.empty() && !imu_publisher_.IsUnregistered()) return;
 
       MasterProxy& master_proxy = MasterProxy::GetInstance();
       master_proxy.PostTask(
@@ -291,8 +290,8 @@ class RsCameraPublishingNode : public NodeLifecycle {
   NodeInfo node_info_;
   std::string color_topic_;
   std::string depth_topic_;
-  std::string imu_topic_;
   std::string pointcloud_topic_;
+  std::string imu_topic_;
   CameraDescriptor camera_descriptor_;
   CameraFormat requested_color_format_;
   CameraFormat requested_depth_format_;
@@ -301,8 +300,8 @@ class RsCameraPublishingNode : public NodeLifecycle {
   ImuFilterFactory::ImuFilterKind imu_filter_kind_;
   Publisher<CameraFrameMessage> color_publisher_;
   Publisher<DepthCameraFrameMessage> depth_publisher_;
-  Publisher<ImuFrameMessage> imu_publisher_;
   Publisher<PointcloudFrameMessage> pointcloud_publisher_;
+  Publisher<ImuFrameMessage> imu_publisher_;
   std::unique_ptr<RsCamera> camera_;
   ::base::TimeDelta last_timestamp_;
 };
