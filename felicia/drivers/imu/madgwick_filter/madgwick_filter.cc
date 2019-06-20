@@ -36,7 +36,7 @@ MadgwickFilter::MadgwickFilter() : gradient_(::Eigen::Vector4f::Zero()) {
 }
 
 ::Eigen::Quaternionf MadgwickFilter::orientation() const {
-  return orientation_;
+  return orientation_.inverse();
 }
 
 void MadgwickFilter::UpdateAngularVelocity(float x, float y, float z,

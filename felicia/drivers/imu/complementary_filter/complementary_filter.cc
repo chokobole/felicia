@@ -36,6 +36,8 @@ namespace felicia {
 
 constexpr double kGravity = 9.81;
 
+ComplementaryFilter::ComplementaryFilter() = default;
+
 void ComplementaryFilter::set_gain_acc(float gain_acc) { gain_acc_ = gain_acc; }
 
 float ComplementaryFilter::gain_acc() const { return gain_acc_; }
@@ -63,9 +65,9 @@ void ComplementaryFilter::UpdateAngularVelocity(float x, float y, float z,
 
   ::Eigen::Quaternionf q;
   q.w() = 0;
-  q.vec() = ::Eigen::Vector3f(x, y, z) * 0.5 * dt * -1;
+  q.vec() = ::Eigen::Vector3f(x, y, z) * 0.5 * dt;
 
-  q = q * orientation_;
+  q = orientation_ * q;
 
   orientation_.vec() += q.vec();
   orientation_.w() += q.w();

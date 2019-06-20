@@ -52,6 +52,8 @@ class ComplementaryFilter : public ImuFilterInterface {
  private:
   friend class ImuFilterFactory;
 
+  ComplementaryFilter();
+
   float GetAdaptiveGain(float alpha, float ax, float ay, float az);
   void Interpolate(::Eigen::Quaternionf& q, float alpha);
 

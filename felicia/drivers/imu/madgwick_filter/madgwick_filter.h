@@ -7,8 +7,6 @@ namespace felicia {
 
 class MadgwickFilter : public ImuFilterInterface {
  public:
-  MadgwickFilter();
-
   ::Eigen::Quaternionf orientation() const override;
   void UpdateAngularVelocity(float x, float y, float z,
                              ::base::TimeDelta timestamp) override;
@@ -18,6 +16,8 @@ class MadgwickFilter : public ImuFilterInterface {
 
  private:
   friend class ImuFilterFactory;
+
+  MadgwickFilter();
 
   bool has_measurement_ = false;
   ::base::TimeDelta last_timestamp_;
