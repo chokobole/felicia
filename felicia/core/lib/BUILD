@@ -16,6 +16,7 @@ fel_cc_library(
     name = "lib",
     srcs = [
         "base/task_runner_interface.cc",
+        "coordinate/coordinate.cc",
         "error/status.cc",
         "error/statusor.cc",
         "net/net_util.cc",
@@ -32,6 +33,7 @@ fel_cc_library(
         "base/task_runner_interface.h",
         "base/template_util.h",
         "containers/pool.h",
+        "coordinate/coordinate.h",
         "error/errors.h",
         "error/status.h",
         "error/statusor.h",
@@ -61,6 +63,7 @@ fel_cc_test(
         "base/choices_test.cc",
         "base/range_test.cc",
         "containers/pool_test.cc",
+        "coordinate/coordinate_test.cc",
         "unit/bytes_test.cc",
     ],
     deps = fel_shared_library() + [
