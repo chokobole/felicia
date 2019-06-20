@@ -605,8 +605,11 @@ void RsCamera::HandlePoints(::rs2::points points, ::base::TimeDelta timestamp,
         int x = static_cast<int>(u * width);
         int y = static_cast<int>(v * height);
         size_t offset = (y * width + x) * bpp;
+        Point3f point =
+            coordinate_.Convert(Point3f(vertex[i].x, vertex[i].y, vertex[i].z),
+                                Coordinate::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP);
         pointcloud_frame.AddPointAndColor(
-            vertex[i].x, vertex[i].y, vertex[i].z, color[offset + 2] / 255.f,
+            point.x(), point.y(), point.z(), color[offset + 2] / 255.f,
             color[offset + 1] / 255.f, color[offset] / 255.f);
       }
     }
@@ -614,7 +617,10 @@ void RsCamera::HandlePoints(::rs2::points points, ::base::TimeDelta timestamp,
     const rs2::vertex* vertex = points.get_vertices();
     for (size_t i = 0; i < points.size(); ++i) {
       if (vertex[i].z > 0) {
-        pointcloud_frame.AddPoint(vertex[i].x, vertex[i].y, vertex[i].z);
+        Point3f point =
+            coordinate_.Convert(Point3f(vertex[i].x, vertex[i].y, vertex[i].z),
+                                Coordinate::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP);
+        pointcloud_frame.AddPoint(point.x(), point.y(), point.z());
       }
     }
   }
