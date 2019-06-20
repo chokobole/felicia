@@ -6,6 +6,7 @@ DepthCameraFlag::DepthCameraFlag() {
   {
     StringFlag::Builder builder(MakeValueStore<std::string>(&color_topic_));
     auto flag = builder.SetLongName("--color_topic")
+                    .SetShortName("-c")
                     .SetHelp("topic to publish for color frame")
                     .Build();
     color_topic_flag_ = std::make_unique<StringFlag>(flag);
@@ -13,6 +14,7 @@ DepthCameraFlag::DepthCameraFlag() {
   {
     StringFlag::Builder builder(MakeValueStore<std::string>(&depth_topic_));
     auto flag = builder.SetLongName("--depth_topic")
+                    .SetShortName("-d")
                     .SetHelp("topic to publish for depth frame")
                     .Build();
     depth_topic_flag_ = std::make_unique<StringFlag>(flag);
@@ -21,6 +23,7 @@ DepthCameraFlag::DepthCameraFlag() {
     StringFlag::Builder builder(
         MakeValueStore<std::string>(&pointcloud_topic_));
     auto flag = builder.SetLongName("--pointcloud_topic")
+                    .SetShortName("-p")
                     .SetHelp("topic to publish for pointcloud frame")
                     .Build();
     pointcloud_topic_flag_ = std::make_unique<StringFlag>(flag);

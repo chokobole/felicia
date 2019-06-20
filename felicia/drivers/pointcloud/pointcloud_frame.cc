@@ -40,7 +40,8 @@ void PointcloudFrame::AddPointAndColor(float x, float y, float z, float r,
   colors_->emplace_back(r, g, b);
 }
 
-void PointcloudFrame::AddPointAndColor(const Point3f& point, const Color& color) {
+void PointcloudFrame::AddPointAndColor(const Point3f& point,
+                                       const Color& color) {
   points_->push_back(point);
   colors_->push_back(color);
 }

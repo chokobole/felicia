@@ -10,8 +10,6 @@ fel_cc_library(
         "zed_camera.cc",
         "zed_camera.h",
         "zed_camera_factory.cc",
-        "zed_camera_frame.h",
-        "zed_camera_frame.cc",
         "zed_capability.cc",
     ]),
     hdrs = if_has_zed([
@@ -21,6 +19,7 @@ fel_cc_library(
     deps = if_has_zed([
         "//felicia/core/lib",
         "//felicia/drivers/camera",
+        "//felicia/drivers/pointcloud",
         "@zed",
         "@cuda",
     ]),

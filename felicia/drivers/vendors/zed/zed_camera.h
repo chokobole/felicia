@@ -7,7 +7,10 @@
 #include "third_party/chromium/base/synchronization/waitable_event.h"
 #include "third_party/chromium/base/threading/thread.h"
 
+#include "felicia/core/lib/coordinate/coordinate.h"
+#include "felicia/drivers/camera/depth_camera_frame.h"
 #include "felicia/drivers/camera/stereo_camera_interface.h"
+#include "felicia/drivers/pointcloud/pointcloud_frame.h"
 #include "felicia/drivers/vendors/zed/zed_capability.h"
 
 namespace felicia {
@@ -35,6 +38,20 @@ class ZedCamera : public StereoCameraInterface,
     DISALLOW_COPY_AND_ASSIGN(ScopedCamera);
   };
 
+  // |requested_color_format| will overwrite |params|'s |camera_fps|
+  // and |camera_resolution|.
+  struct StartParams {
+    CameraFormat requested_camera_format;
+    ::sl::InitParameters init_params;
+    ::sl::RuntimeParameters runtime_params;
+
+    CameraFrameCallback left_camera_frame_callback;
+    CameraFrameCallback right_camera_frame_callback;
+    DepthCameraFrameCallback depth_camera_frame_callback;
+    PointcloudFrameCallback pointcloud_frame_callback;
+    StatusCallback status_callback;
+  };
+
   ~ZedCamera();
 
   // StereoCameraInterface methods
@@ -49,6 +66,8 @@ class ZedCamera : public StereoCameraInterface,
   Status SetCameraSettings(const CameraSettings& camera_settings) override;
   Status GetCameraSettingsInfo(
       CameraSettingsInfoMessage* camera_settings) override;
+
+  Status Start(const StartParams& params);
 
   ::sl::Camera* camera() { return camera_.get(); }
 
@@ -67,15 +86,30 @@ class ZedCamera : public StereoCameraInterface,
   void DoGrab();
   void DoStop(::base::WaitableEvent* event, Status* s);
 
+  CameraFrame ConvertToCameraFrame(::sl::Mat image);
+
+  DepthCameraFrame ConvertToDepthCameraFrame(::sl::Mat image, float min,
+                                             float max);
+
+  PointcloudFrame ConvertToPointcloudFrame(::sl::Mat cloud);
+
   static Status OpenCamera(const CameraDescriptor& camera_descriptor,
                            ::sl::InitParameters& params, ScopedCamera* camera);
 
   ScopedCamera camera_;
+  ::sl::InitParameters init_params_;
   ::sl::RuntimeParameters runtime_params_;
+
+  DepthCameraFrameCallback depth_camera_frame_callback_;
+  PointcloudFrameCallback pointcloud_frame_callback_;
 
   ::base::Thread thread_;
   ::base::Lock lock_;
   bool is_stopping_ GUARDED_BY(lock_);
+
+  ::base::TimeDelta last_timestamp_;  // It's used to control pointcloud rate.
+
+  Coordinate coordinate_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ZedCamera);
 };

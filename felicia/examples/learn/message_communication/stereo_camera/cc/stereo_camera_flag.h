@@ -10,14 +10,15 @@ class StereoCameraFlag : public CameraFlag {
   StereoCameraFlag();
   ~StereoCameraFlag();
 
-  const StringDefaultFlag* left_camera_topic_flag() const {
+  const StringFlag* left_camera_topic_flag() const {
     return left_camera_topic_flag_.get();
   }
-  const StringDefaultFlag* right_camera_topic_flag() const {
+  const StringFlag* right_camera_topic_flag() const {
     return right_camera_topic_flag_.get();
   }
-  const StringDefaultFlag* depth_camera_topic_flag() const {
-    return depth_camera_topic_flag_.get();
+  const StringFlag* depth_topic_flag() const { return depth_topic_flag_.get(); }
+  const StringFlag* pointcloud_topic_flag() const {
+    return pointcloud_topic_flag_.get();
   }
 
   bool Parse(FlagParser& parser) override;
@@ -28,15 +29,18 @@ class StereoCameraFlag : public CameraFlag {
                                           device_index_flag_,
                                           left_camera_topic_flag_,
                                           right_camera_topic_flag_,
-                                          depth_camera_topic_flag_)
+                                          depth_topic_flag_,
+                                          pointcloud_topic_flag_)
 
  protected:
   std::string left_camera_topic_;
   std::string right_camera_topic_;
-  std::string depth_camera_topic_;
-  std::unique_ptr<StringDefaultFlag> left_camera_topic_flag_;
-  std::unique_ptr<StringDefaultFlag> right_camera_topic_flag_;
-  std::unique_ptr<StringDefaultFlag> depth_camera_topic_flag_;
+  std::string depth_topic_;
+  std::string pointcloud_topic_;
+  std::unique_ptr<StringFlag> left_camera_topic_flag_;
+  std::unique_ptr<StringFlag> right_camera_topic_flag_;
+  std::unique_ptr<StringFlag> depth_topic_flag_;
+  std::unique_ptr<StringFlag> pointcloud_topic_flag_;
 };
 
 }  // namespace felicia

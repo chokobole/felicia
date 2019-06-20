@@ -1,16 +1,92 @@
 #include "felicia/drivers/vendors/zed/zed_camera.h"
 
 #include "third_party/chromium/base/bind.h"
+#include "third_party/chromium/base/bit_cast.h"
 
 #include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/lib/synchronization/scoped_event_signaller.h"
+#include "felicia/core/lib/unit/length.h"
 #include "felicia/drivers/camera/camera_errors.h"
-#include "felicia/drivers/vendors/zed/zed_camera_frame.h"
 
 namespace felicia {
 
 #define MESSAGE_WITH_ERROR_CODE(text, err) \
   ::base::StringPrintf("%s :%s.", text, ::sl::toString(err).c_str())
+
+namespace {
+
+uint16_t InMillimeter(::sl::UNIT unit, float value) {
+  Length length;
+  switch (unit) {
+    case ::sl::UNIT_MILLIMETER:
+      length = Length::FromMillimeter(static_cast<int64_t>(value));
+      break;
+    case ::sl::UNIT_CENTIMETER:
+      length = Length::FromCentimeterD(value);
+      break;
+    case ::sl::UNIT_METER:
+      length = Length::FromMeterD(value);
+      break;
+    case ::sl::UNIT_INCH:
+      length = Length::FromInchD(value);
+      break;
+    case ::sl::UNIT_FOOT:
+      length = Length::FromFeetD(value);
+      break;
+    default:
+      NOTREACHED() << "Invalid unit" << ::sl::toString(unit);
+      break;
+  }
+  return static_cast<uint16_t>(length.InMillimeter());
+}
+
+float InMeter(::sl::UNIT unit, float value) {
+  Length length;
+  switch (unit) {
+    case ::sl::UNIT_MILLIMETER:
+      length = Length::FromMillimeter(static_cast<int64_t>(value));
+      break;
+    case ::sl::UNIT_CENTIMETER:
+      length = Length::FromCentimeterD(value);
+      break;
+    case ::sl::UNIT_METER:
+      length = Length::FromMeterD(value);
+      break;
+    case ::sl::UNIT_INCH:
+      length = Length::FromInchD(value);
+      break;
+    case ::sl::UNIT_FOOT:
+      length = Length::FromFeetD(value);
+      break;
+    default:
+      NOTREACHED() << "Invalid unit" << ::sl::toString(unit);
+      break;
+  }
+  return static_cast<float>(length.InMeter());
+}
+
+Coordinate ToCoordinate(::sl::COORDINATE_SYSTEM coordinate_system) {
+  switch (coordinate_system) {
+    case ::sl::COORDINATE_SYSTEM_IMAGE:
+      return Coordinate();
+    case ::sl::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP:
+      return Coordinate(Coordinate::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP);
+    case ::sl::COORDINATE_SYSTEM_LEFT_HANDED_Z_UP:
+      return Coordinate(Coordinate::COORDINATE_SYSTEM_LEFT_HANDED_Z_UP);
+    case ::sl::COORDINATE_SYSTEM_RIGHT_HANDED_Y_UP:
+      return Coordinate(Coordinate::COORDINATE_SYSTEM_RIGHT_HANDED_Y_UP);
+    case ::sl::COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP:
+      return Coordinate(Coordinate::COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP);
+    case ::sl::COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP_X_FWD:
+      return Coordinate(Coordinate::COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP_X_FWD);
+    default:
+      NOTREACHED() << "Invalid coordinate system"
+                   << ::sl::toString(coordinate_system);
+      return Coordinate();
+  }
+}
+
+}  // namespace
 
 ZedCamera::ScopedCamera::ScopedCamera()
     : camera_(std::make_unique<::sl::Camera>()) {}
@@ -54,36 +130,48 @@ Status ZedCamera::Start(const CameraFormat& requested_camera_format,
                         CameraFrameCallback right_camera_frame_callback,
                         DepthCameraFrameCallback depth_camera_frame_callback,
                         StatusCallback status_callback) {
+  StartParams params;
+  params.requested_camera_format = requested_camera_format;
+  params.left_camera_frame_callback = left_camera_frame_callback;
+  params.right_camera_frame_callback = right_camera_frame_callback;
+  params.depth_camera_frame_callback = depth_camera_frame_callback;
+  params.status_callback = status_callback;
+  return Start(params);
+}
+
+Status ZedCamera::Start(const ZedCamera::StartParams& params) {
   if (!camera_state_.IsInitialized()) {
     return camera_state_.InvalidStateError();
   }
 
   const ZedCapability* capability =
-      GetBestMatchedCapability(requested_camera_format);
+      GetBestMatchedCapability(params.requested_camera_format);
   if (!capability) return errors::NoVideoCapbility();
 
-  ScopedCamera camera;
-  ::sl::InitParameters params;
-  params.coordinate_units = ::sl::UNIT_METER;
-  params.camera_fps = capability->frame_rate;
-  params.camera_resolution = capability->resolution;
+  init_params_ = params.init_params;
+  init_params_.camera_fps = capability->frame_rate;
+  init_params_.camera_resolution = capability->resolution;
+  coordinate_ = ToCoordinate(init_params_.coordinate_system);
   camera_format_ = ConvertToCameraFormat(*capability);
-  if (requested_camera_format.convert_to_argb()) {
+  if (params.requested_camera_format.convert_to_argb()) {
     camera_format_.set_convert_to_argb(true);
   }
   depth_camera_format_.set_pixel_format(PIXEL_FORMAT_Z16);
   depth_camera_format_.SetSize(camera_format_.width(), camera_format_.height());
   depth_camera_format_.set_frame_rate(camera_format_.frame_rate());
   camera_->close();
-  Status s = OpenCamera(camera_descriptor_, params, &camera);
+  ScopedCamera camera;
+  Status s = OpenCamera(camera_descriptor_, init_params_, &camera);
   if (!s.ok()) return s;
 
   camera_ = std::move(camera);
   thread_.Start();
-  left_camera_frame_callback_ = left_camera_frame_callback;
-  right_camera_frame_callback_ = right_camera_frame_callback;
-  depth_camera_frame_callback_ = depth_camera_frame_callback;
-  status_callback_ = status_callback;
+  left_camera_frame_callback_ = params.left_camera_frame_callback;
+  right_camera_frame_callback_ = params.right_camera_frame_callback;
+  depth_camera_frame_callback_ = params.depth_camera_frame_callback;
+  pointcloud_frame_callback_ = params.pointcloud_frame_callback;
+  status_callback_ = params.status_callback;
+  runtime_params_ = params.runtime_params;
   camera_state_.ToStarted();
   {
     ::base::AutoLock l(lock_);
@@ -91,6 +179,9 @@ Status ZedCamera::Start(const CameraFormat& requested_camera_format,
   }
   if (!depth_camera_frame_callback_.is_null()) {
     runtime_params_.enable_depth = true;
+  }
+  if (!pointcloud_frame_callback_.is_null()) {
+    runtime_params_.enable_point_cloud = true;
   }
 
   if (thread_.task_runner()->BelongsToCurrentThread()) {
@@ -266,14 +357,14 @@ void ZedCamera::DoGrab() {
   if (!left_camera_frame_callback_.is_null()) {
     ::sl::Mat image;
     camera_->retrieveImage(image, ::sl::VIEW_LEFT);
-    CameraFrame camera_frame = ConvertToCameraFrame(image, camera_format_);
+    CameraFrame camera_frame = ConvertToCameraFrame(image);
     camera_frame.set_timestamp(timestamp);
     left_camera_frame_callback_.Run(std::move(camera_frame));
   }
   if (!right_camera_frame_callback_.is_null()) {
     ::sl::Mat image;
     camera_->retrieveImage(image, ::sl::VIEW_RIGHT);
-    CameraFrame camera_frame = ConvertToCameraFrame(image, camera_format_);
+    CameraFrame camera_frame = ConvertToCameraFrame(image);
     camera_frame.set_timestamp(timestamp);
     right_camera_frame_callback_.Run(std::move(camera_frame));
   }
@@ -283,9 +374,20 @@ void ZedCamera::DoGrab() {
     float min = camera_->getDepthMinRangeValue();
     float max = camera_->getDepthMaxRangeValue();
     DepthCameraFrame depth_camera_frame =
-        ConvertToDepthCameraFrame(image, depth_camera_format_, min, max);
+        ConvertToDepthCameraFrame(image, min, max);
     depth_camera_frame.set_timestamp(timestamp);
     depth_camera_frame_callback_.Run(std::move(depth_camera_frame));
+  }
+  if (!pointcloud_frame_callback_.is_null()) {
+    ::base::TimeDelta delta = timestamp - last_timestamp_;
+    if (delta > ::base::TimeDelta::FromSeconds(1)) {
+      ::sl::Mat cloud;
+      camera_->retrieveMeasure(cloud, ::sl::MEASURE_XYZRGBA);
+      PointcloudFrame pointcloud_frame = ConvertToPointcloudFrame(cloud);
+      pointcloud_frame.set_timestamp(timestamp);
+      pointcloud_frame_callback_.Run(std::move(pointcloud_frame));
+      last_timestamp_ = timestamp;
+    }
   }
 
   thread_.task_runner()->PostTask(
@@ -328,6 +430,107 @@ Status ZedCamera::OpenCamera(const CameraDescriptor& camera_descriptor,
         MESSAGE_WITH_ERROR_CODE("Failed to open camera", err));
   }
   return Status::OK();
+}
+
+CameraFrame ZedCamera::ConvertToCameraFrame(::sl::Mat image) {
+  size_t size = image.getStepBytes() * image.getHeight();
+  std::unique_ptr<uint8_t[]> data(new uint8_t[size]);
+  ::sl::MAT_TYPE data_type = image.getDataType();
+
+  switch (data_type) {
+    case ::sl::MAT_TYPE_32F_C1:
+      memcpy(data.get(), image.getPtr<::sl::float1>(), size);
+      break;
+    case ::sl::MAT_TYPE_32F_C2:
+      memcpy(data.get(), image.getPtr<::sl::float2>(), size);
+      break;
+    case ::sl::MAT_TYPE_32F_C3:
+      memcpy(data.get(), image.getPtr<::sl::float3>(), size);
+      break;
+    case ::sl::MAT_TYPE_32F_C4:
+      memcpy(data.get(), image.getPtr<::sl::float4>(), size);
+      break;
+    case ::sl::MAT_TYPE_8U_C1:
+      memcpy(data.get(), image.getPtr<::sl::uchar1>(), size);
+      break;
+    case ::sl::MAT_TYPE_8U_C2:
+      memcpy(data.get(), image.getPtr<::sl::uchar2>(), size);
+      break;
+    case ::sl::MAT_TYPE_8U_C3:
+      memcpy(data.get(), image.getPtr<::sl::uchar3>(), size);
+      break;
+    case ::sl::MAT_TYPE_8U_C4:
+      memcpy(data.get(), image.getPtr<::sl::uchar4>(), size);
+      break;
+  }
+
+  return CameraFrame(std::move(data), size, camera_format_);
+}
+
+DepthCameraFrame ZedCamera::ConvertToDepthCameraFrame(::sl::Mat image,
+                                                      float min, float max) {
+  size_t size = image.getWidth() * image.getHeight();
+  size_t allocation_size = 2 * size;
+  std::unique_ptr<uint8_t[]> data(new uint8_t[allocation_size]);
+  ::sl::float1* image_ptr = image.getPtr<::sl::float1>();
+  if (init_params_.coordinate_units == ::sl::UNIT_MILLIMETER) {
+    for (size_t i = 0; i < size; ++i) {
+      const size_t data_idx = i << 1;
+      uint16_t value = static_cast<int64_t>(*(image_ptr++));
+      data[data_idx] = static_cast<uint8_t>(value & UINT8_MAX);
+      data[data_idx + 1] = static_cast<uint8_t>(value >> 8);
+    }
+  } else {
+    for (size_t i = 0; i < size; ++i) {
+      const size_t data_idx = i << 1;
+      uint16_t value =
+          InMillimeter(init_params_.coordinate_units, *(image_ptr++));
+      data[data_idx] = static_cast<uint8_t>(value & UINT8_MAX);
+      data[data_idx + 1] = static_cast<uint8_t>(value >> 8);
+    }
+  }
+  CameraFrame frame(std::move(data), allocation_size, depth_camera_format_);
+  return DepthCameraFrame(std::move(frame), min, max);
+}
+
+PointcloudFrame ZedCamera::ConvertToPointcloudFrame(::sl::Mat cloud) {
+  const float* cloud_ptr = cloud.getPtr<::sl::float4>()->ptr();
+  size_t size = cloud.getWidth() * cloud.getHeight();
+  PointcloudFrame frame(size, size);
+  struct Color8_4 {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
+  };
+  if (init_params_.coordinate_units == ::sl::UNIT_METER &&
+      init_params_.coordinate_system ==
+          ::sl::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP) {
+    for (size_t i = 0; i < size; ++i) {
+      const size_t cloud_ptr_idx = i << 2;
+      Color8_4 c = bit_cast<Color8_4>(cloud_ptr[cloud_ptr_idx + 3]);
+      frame.AddPointAndColor(
+          cloud_ptr[cloud_ptr_idx], cloud_ptr[cloud_ptr_idx + 1],
+          cloud_ptr[cloud_ptr_idx + 2], c.r / 255.f, c.g / 255.f, c.b / 255.f);
+    }
+  } else {
+    for (size_t i = 0; i < size; ++i) {
+      const size_t cloud_ptr_idx = i << 2;
+      float x =
+          InMeter(init_params_.coordinate_units, cloud_ptr[cloud_ptr_idx]);
+      float y =
+          InMeter(init_params_.coordinate_units, cloud_ptr[cloud_ptr_idx + 1]);
+      float z =
+          InMeter(init_params_.coordinate_units, cloud_ptr[cloud_ptr_idx + 2]);
+      Point3f point = coordinate_.Convert(
+          Point3f(x, y, z), Coordinate::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP);
+      Color8_4 c = bit_cast<Color8_4>(cloud_ptr[cloud_ptr_idx + 3]);
+      frame.AddPointAndColor(point.x(), point.y(), point.z(), c.r / 255.f,
+                             c.g / 255.f, c.b / 255.f);
+    }
+  }
+
+  return frame;
 }
 
 #undef MESSAGE_WITH_ERROR_CODE
