@@ -85,6 +85,7 @@ libyuv::FourCC CameraFormat::ToLibyuvPixelFormat() const {
     case PIXEL_FORMAT_ABGR:
       return libyuv::FOURCC_ABGR;
     case PIXEL_FORMAT_XBGR:
+      return libyuv::FOURCC_RAW;
     case PIXEL_FORMAT_Y8:
     case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_Z16:

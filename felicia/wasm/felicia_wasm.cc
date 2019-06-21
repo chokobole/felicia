@@ -40,6 +40,8 @@ bool ConvertToARGB(uintptr_t start, size_t payload, uintptr_t argb_start,
     src_format = libyuv::FOURCC_MJPG;
   else if (pixel_format == "PIXEL_FORMAT_ABGR")
     src_format = libyuv::FOURCC_ABGR;
+  else if (pixel_format == "PIXEL_FORMAT_XBGR")
+    src_format = libyuv::FOURCC_RAW;
   else {
     std::cerr << "Unknown format: " << pixel_format << std::endl;
     return false;
