@@ -24,9 +24,10 @@ function fillPixels(pixels, width, height, data, colorIndexes) {
   } else {
     for (let i = 0; i < size; i += 1) {
       const pixelsIdx = i << 2;
-      pixels[pixelsIdx + RGBA.rIdx] = pixelData[pixelsIdx + colorIndexes.rIdx];
-      pixels[pixelsIdx + RGBA.gIdx] = pixelData[pixelsIdx + colorIndexes.gIdx];
-      pixels[pixelsIdx + RGBA.bIdx] = pixelData[pixelsIdx + colorIndexes.bIdx];
+      const pixelDataIdx = i * 3;
+      pixels[pixelsIdx + RGBA.rIdx] = pixelData[pixelDataIdx + colorIndexes.rIdx];
+      pixels[pixelsIdx + RGBA.gIdx] = pixelData[pixelDataIdx + colorIndexes.gIdx];
+      pixels[pixelsIdx + RGBA.bIdx] = pixelData[pixelDataIdx + colorIndexes.bIdx];
       pixels[pixelsIdx + RGBA.aIdx] = 255;
     }
   }
