@@ -1,6 +1,5 @@
 syntax = "proto3";
 
-import "felicia/core/protobuf/geometry.proto";
 import "felicia/core/protobuf/ui.proto";
 
 package felicia;
