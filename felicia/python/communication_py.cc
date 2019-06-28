@@ -69,7 +69,7 @@ void AddCommunication(py::module& m) {
              const communication::Settings& settings, py::function callback) {
             self.ResetMessage(message_type);
 
-            return self.RequestPublish(
+            self.RequestPublish(
                 node_info, topic, channel_types, settings,
                 ::base::BindOnce(
                     &PyStatusCallback::Invoke,
@@ -88,7 +88,7 @@ void AddCommunication(py::module& m) {
              }
 
              py::gil_scoped_release release;
-             return self.PublishFromSerialized(
+             self.PublishFromSerialized(
                  text, ::base::BindRepeating(
                            &PySendMessageCallback::Invoke,
                            ::base::Owned(new PySendMessageCallback(callback))));
@@ -97,7 +97,7 @@ void AddCommunication(py::module& m) {
           "request_unpublish",
           [](DynamicPublisher& self, const NodeInfo& node_info,
              const std::string& topic, py::function callback) {
-            return self.RequestUnpublish(
+            self.RequestUnpublish(
                 node_info, topic,
                 ::base::BindOnce(
                     &PyStatusCallback::Invoke,
@@ -120,7 +120,7 @@ void AddCommunication(py::module& m) {
              py::object mesage_prototype, py::function on_message_callback,
              py::function on_error_callback,
              const communication::Settings& settings, py::function callback) {
-            return self.RequestSubscribe(
+            self.RequestSubscribe(
                 node_info, topic, channel_types,
                 ::base::BindRepeating(
                     &PyMessageCallback::Invoke,
@@ -139,7 +139,7 @@ void AddCommunication(py::module& m) {
           "request_unsubscribe",
           [](DynamicSubscriber& self, const NodeInfo& node_info,
              const std::string& topic, py::function callback) {
-            return self.RequestUnsubscribe(
+            self.RequestUnsubscribe(
                 node_info, topic,
                 ::base::BindOnce(
                     &PyStatusCallback::Invoke,
