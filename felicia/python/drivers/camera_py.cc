@@ -1,5 +1,6 @@
 #include "felicia/python/drivers/camera_py.h"
 
+#include "pybind11/numpy.h"
 #include "pybind11/stl.h"
 #include "third_party/chromium/base/bind.h"
 
@@ -16,6 +17,29 @@ SUPPORT_PROTOBUF_TYPE_CAST(::felicia::CameraFrameMessage, CameraFrameMessage,
 namespace felicia {
 
 using PyCameraFrameCallback = PyCallback<void(CameraFrame)>;
+
+void CheckIfValidPixelFormat(PixelFormat pixel_format) {
+  switch (pixel_format) {
+    case PIXEL_FORMAT_MJPEG:
+    case PIXEL_FORMAT_UNKNOWN:
+    case PixelFormat_INT_MIN_SENTINEL_DO_NOT_USE_:
+    case PixelFormat_INT_MAX_SENTINEL_DO_NOT_USE_:
+      PyErr_SetString(PyExc_TypeError, "Invalid argument");
+      break;
+    case PIXEL_FORMAT_NV12:
+    case PIXEL_FORMAT_NV21:
+      PyErr_SetString(PyExc_NotImplementedError,
+                      "Not implemented yet for PIXEL_FORMAT_NV12 or "
+                      "PIXEL_FORMAT_NV21");
+      break;
+    default:
+      break;
+  }
+
+  if (PyErr_Occurred()) {
+    throw py::error_already_set();
+  }
+}
 
 void AddCamera(py::module& m) {
   py::class_<CameraSettings>(m, "CameraSettings")
@@ -122,12 +146,39 @@ void AddCamera(py::module& m) {
                     &CameraFormat::set_convert_to_argb)
       .def("__str__", &CameraFormat::ToString);
 
-  py::class_<CameraFrame>(m, "CameraFrame")
+  py::class_<CameraFrame>(m, "CameraFrame", py::buffer_protocol())
+      .def(py::init(
+          [](py::array_t<uint8_t, py::array::c_style | py::array::forcecast>
+                 array,
+             CameraFormat camera_format, ::base::TimeDelta timestamp) {
+            CheckIfValidPixelFormat(camera_format.pixel_format());
+
+            std::unique_ptr<uint8_t[]> data(new uint8_t[array.size()]);
+            memcpy(data.get(), array.data(), array.size());
+            return CameraFrame(std::move(data), array.size(), camera_format,
+                               timestamp);
+          }))
+      .def_property_readonly("length", &CameraFrame::length)
+      .def_property_readonly("camera_format", &CameraFrame::camera_format)
       .def_property_readonly("width", &CameraFrame::width)
       .def_property_readonly("height", &CameraFrame::height)
       .def_property_readonly("pixel_format", &CameraFrame::pixel_format)
+      .def_property_readonly("frame_rate", &CameraFrame::frame_rate)
       .def_property_readonly("timestamp", &CameraFrame::timestamp)
-      .def("to_camera_frame_message", &CameraFrame::ToCameraFrameMessage);
+      .def("to_camera_frame_message", &CameraFrame::ToCameraFrameMessage)
+      .def_buffer([](CameraFrame& camera_frame) {
+        CheckIfValidPixelFormat(camera_frame.pixel_format());
+
+        int width = camera_frame.width();
+        int height = camera_frame.height();
+        int channel = camera_frame.length() / (width * height);
+        return py::buffer_info(const_cast<uint8_t*>(camera_frame.data_ptr()),
+                               sizeof(uint8_t),
+                               py::format_descriptor<uint8_t>::format(), 3,
+                               {height, width, channel},
+                               {sizeof(uint8_t) * width * channel,
+                                sizeof(uint8_t) * channel, sizeof(uint8_t)});
+      });
 
   py::class_<CameraFactory>(m, "CameraFactory")
       .def_static("new_camera", &CameraFactory::NewCamera)

@@ -635,13 +635,7 @@ void RsCamera::HandlePoints(::rs2::points points, ::base::TimeDelta timestamp,
       reinterpret_cast<uint8_t*>(const_cast<void*>(color_frame.get_data())),
       length);
   camera_buffer.set_payload(length);
-  ::base::Optional<CameraFrame> argb_frame =
-      felicia::ConvertToARGB(camera_buffer, color_format_);
-  if (argb_frame.has_value()) {
-    argb_frame.value().set_timestamp(timestamp);
-  }
-
-  return argb_frame;
+  return felicia::ConvertToARGB(camera_buffer, color_format_, timestamp);
 }
 
 CameraFrame RsCamera::FromRsColorFrame(::rs2::video_frame color_frame,
@@ -649,9 +643,8 @@ CameraFrame RsCamera::FromRsColorFrame(::rs2::video_frame color_frame,
   size_t length = color_format_.AllocationSize();
   std::unique_ptr<uint8_t[]> new_color_frame(new uint8_t[length]);
   memcpy(new_color_frame.get(), color_frame.get_data(), length);
-  CameraFrame camera_frame(std::move(new_color_frame), length, color_format_);
-  camera_frame.set_timestamp(timestamp);
-  return camera_frame;
+  return CameraFrame{std::move(new_color_frame), length, color_format_,
+                     timestamp};
 }
 
 DepthCameraFrame RsCamera::FromRsDepthFrame(::rs2::depth_frame depth_frame,
@@ -669,10 +662,9 @@ DepthCameraFrame RsCamera::FromRsDepthFrame(::rs2::depth_frame depth_frame,
         std::round(value * depth_scale_ * 1000));  // in mm
   }
   CameraFrame camera_frame(std::move(new_depth_frame), allocation_size,
-                           depth_format_);
+                           depth_format_, timestamp);
   DepthCameraFrame depth_camera_frame(std::move(camera_frame),
                                       105 /* 0.105 m */, UINT16_MAX);
-  depth_camera_frame.set_timestamp(timestamp);
   return depth_camera_frame;
 }
 

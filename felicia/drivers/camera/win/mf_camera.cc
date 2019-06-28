@@ -783,9 +783,8 @@ void MfCamera::OnIncomingCapturedData(const uint8_t* data, int length,
     CameraBuffer camera_buffer(const_cast<uint8_t*>(data), length);
     camera_buffer.set_payload(length);
     ::base::Optional<CameraFrame> argb_frame =
-        ConvertToARGB(camera_buffer, camera_format_);
+        ConvertToARGB(camera_buffer, camera_format_, timestamp);
     if (argb_frame.has_value()) {
-      argb_frame.value().set_timestamp(timestamp);
       camera_frame_callback_.Run(std::move(argb_frame.value()));
     } else {
       status_callback_.Run(errors::FailedToConvertToARGB());
@@ -793,9 +792,9 @@ void MfCamera::OnIncomingCapturedData(const uint8_t* data, int length,
   } else {
     std::unique_ptr<uint8_t[]> new_data(new uint8_t[length]);
     memcpy(new_data.get(), data, length);
-    CameraFrame camera_frame(std::move(new_data), length, camera_format_);
-    camera_frame.set_timestamp(timestamp);
-    camera_frame_callback_.Run(std::move(camera_frame));
+    camera_frame_callback_.Run(CameraFrame{std::move(new_data),
+                                           static_cast<size_t>(length),
+                                           camera_format_, timestamp});
   }
 }
 

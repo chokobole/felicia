@@ -10,8 +10,12 @@ namespace felicia {
 CameraFrame::CameraFrame() = default;
 
 CameraFrame::CameraFrame(std::unique_ptr<uint8_t[]> data, size_t length,
-                         CameraFormat camera_format)
-    : data_(std::move(data)), length_(length), camera_format_(camera_format) {}
+                         CameraFormat camera_format,
+                         ::base::TimeDelta timestamp)
+    : data_(std::move(data)),
+      length_(length),
+      camera_format_(camera_format),
+      timestamp_(timestamp) {}
 
 CameraFrame::CameraFrame(CameraFrame&& other) noexcept
     : data_(std::move(other.data_)),
@@ -32,11 +36,17 @@ std::unique_ptr<uint8_t[]> CameraFrame::data() { return std::move(data_); }
 
 const uint8_t* CameraFrame::data_ptr() const { return data_.get(); }
 
+size_t CameraFrame::length() const { return length_; }
+
+const CameraFormat& CameraFrame::camera_format() const {
+  return camera_format_;
+}
+
 int CameraFrame::width() const { return camera_format_.width(); }
 
 int CameraFrame::height() const { return camera_format_.height(); }
 
-size_t CameraFrame::length() const { return length_; }
+float CameraFrame::frame_rate() const { return camera_format_.frame_rate(); }
 
 PixelFormat CameraFrame::pixel_format() const {
   return camera_format_.pixel_format();
@@ -59,7 +69,8 @@ CameraFrameMessage CameraFrame::ToCameraFrameMessage() const {
 }
 
 ::base::Optional<CameraFrame> ConvertToARGB(CameraBuffer camera_buffer,
-                                            CameraFormat camera_format) {
+                                            CameraFormat camera_format,
+                                            ::base::TimeDelta timestamp) {
   PixelFormat pixel_format = camera_format.pixel_format();
   libyuv::FourCC src_format;
 
@@ -84,7 +95,8 @@ CameraFrameMessage CameraFrame::ToCameraFrameMessage() const {
     return ::base::nullopt;
   }
 
-  return CameraFrame(std::move(tmp_argb), length, rgba_camera_format);
+  return CameraFrame(std::move(tmp_argb), length, rgba_camera_format,
+                     timestamp);
 }
 
 }  // namespace felicia

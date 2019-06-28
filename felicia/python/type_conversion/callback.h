@@ -1,36 +1,46 @@
 #ifndef FELICIA_PYTHON_TYPE_CONVERSION_CALLBACK_H_
 #define FELICIA_PYTHON_TYPE_CONVERSION_CALLBACK_H_
 
+#include "pybind11/functional.h"
 #include "pybind11/pybind11.h"
 
 #include <type_traits>
 
 #include "felicia/python/type_conversion/callback_forward.h"
+#include "third_party/chromium/base/strings/string_util.h"
 
 namespace py = pybind11;
 
 namespace felicia {
 
 template <typename R, typename... Args>
-class PYBIND11_EXPORT PyCallback<R(Args...)> {
+class PyCallback<R(Args...)> {
  public:
-  explicit PyCallback(py::function func) : func_(func) {}
+  explicit PyCallback(const py::function& func)
+      : func_(py::cast<std::function<void(Args...)>>(func)) {}
 
-  R Invoke(Args... args) { return func_(std::forward<Args>(args)...); }
+  R Invoke(Args... args) {
+    py::gil_scoped_acquire acquire;
+    return func_(std::forward<Args>(args)...);
+  }
 
  private:
-  py::function func_;
+  std::function<R(Args...)> func_;
 };
 
 template <typename... Args>
-class PYBIND11_EXPORT PyCallback<void(Args...)> {
+class PyCallback<void(Args...)> {
  public:
-  explicit PyCallback(py::function func) : func_(func) {}
+  explicit PyCallback(const py::function& func)
+      : func_(py::cast<std::function<void(Args...)>>(func)) {}
 
-  void Invoke(Args... args) { func_(std::forward<Args>(args)...); }
+  void Invoke(Args... args) {
+    py::gil_scoped_acquire acquire;
+    func_(std::forward<Args>(args)...);
+  }
 
  private:
-  py::function func_;
+  std::function<void(Args...)> func_;
 };
 
 }  // namespace felicia

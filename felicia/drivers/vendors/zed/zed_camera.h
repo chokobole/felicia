@@ -86,12 +86,15 @@ class ZedCamera : public StereoCameraInterface,
   void DoGrab();
   void DoStop(::base::WaitableEvent* event, Status* s);
 
-  CameraFrame ConvertToCameraFrame(::sl::Mat image);
+  CameraFrame ConvertToCameraFrame(::sl::Mat image,
+                                   ::base::TimeDelta timestamp);
 
-  DepthCameraFrame ConvertToDepthCameraFrame(::sl::Mat image, float min,
-                                             float max);
+  DepthCameraFrame ConvertToDepthCameraFrame(::sl::Mat image,
+                                             ::base::TimeDelta timestamp,
+                                             float min, float max);
 
-  PointcloudFrame ConvertToPointcloudFrame(::sl::Mat cloud);
+  PointcloudFrame ConvertToPointcloudFrame(::sl::Mat cloud,
+                                           ::base::TimeDelta timestamp);
 
   static Status OpenCamera(const CameraDescriptor& camera_descriptor,
                            ::sl::InitParameters& params, ScopedCamera* camera);

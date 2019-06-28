@@ -357,15 +357,13 @@ void ZedCamera::DoGrab() {
   if (!left_camera_frame_callback_.is_null()) {
     ::sl::Mat image;
     camera_->retrieveImage(image, ::sl::VIEW_LEFT);
-    CameraFrame camera_frame = ConvertToCameraFrame(image);
-    camera_frame.set_timestamp(timestamp);
+    CameraFrame camera_frame = ConvertToCameraFrame(image, timestamp);
     left_camera_frame_callback_.Run(std::move(camera_frame));
   }
   if (!right_camera_frame_callback_.is_null()) {
     ::sl::Mat image;
     camera_->retrieveImage(image, ::sl::VIEW_RIGHT);
-    CameraFrame camera_frame = ConvertToCameraFrame(image);
-    camera_frame.set_timestamp(timestamp);
+    CameraFrame camera_frame = ConvertToCameraFrame(image, timestamp);
     right_camera_frame_callback_.Run(std::move(camera_frame));
   }
   if (!depth_camera_frame_callback_.is_null()) {
@@ -374,8 +372,7 @@ void ZedCamera::DoGrab() {
     float min = camera_->getDepthMinRangeValue();
     float max = camera_->getDepthMaxRangeValue();
     DepthCameraFrame depth_camera_frame =
-        ConvertToDepthCameraFrame(image, min, max);
-    depth_camera_frame.set_timestamp(timestamp);
+        ConvertToDepthCameraFrame(image, timestamp, min, max);
     depth_camera_frame_callback_.Run(std::move(depth_camera_frame));
   }
   if (!pointcloud_frame_callback_.is_null()) {
@@ -383,8 +380,8 @@ void ZedCamera::DoGrab() {
     if (delta > ::base::TimeDelta::FromSeconds(1)) {
       ::sl::Mat cloud;
       camera_->retrieveMeasure(cloud, ::sl::MEASURE_XYZRGBA);
-      PointcloudFrame pointcloud_frame = ConvertToPointcloudFrame(cloud);
-      pointcloud_frame.set_timestamp(timestamp);
+      PointcloudFrame pointcloud_frame =
+          ConvertToPointcloudFrame(cloud, timestamp);
       pointcloud_frame_callback_.Run(std::move(pointcloud_frame));
       last_timestamp_ = timestamp;
     }
@@ -432,7 +429,8 @@ Status ZedCamera::OpenCamera(const CameraDescriptor& camera_descriptor,
   return Status::OK();
 }
 
-CameraFrame ZedCamera::ConvertToCameraFrame(::sl::Mat image) {
+CameraFrame ZedCamera::ConvertToCameraFrame(::sl::Mat image,
+                                            ::base::TimeDelta timestamp) {
   size_t size = image.getStepBytes() * image.getHeight();
   std::unique_ptr<uint8_t[]> data(new uint8_t[size]);
   ::sl::MAT_TYPE data_type = image.getDataType();
@@ -464,11 +462,11 @@ CameraFrame ZedCamera::ConvertToCameraFrame(::sl::Mat image) {
       break;
   }
 
-  return CameraFrame(std::move(data), size, camera_format_);
+  return CameraFrame(std::move(data), size, camera_format_, timestamp);
 }
 
-DepthCameraFrame ZedCamera::ConvertToDepthCameraFrame(::sl::Mat image,
-                                                      float min, float max) {
+DepthCameraFrame ZedCamera::ConvertToDepthCameraFrame(
+    ::sl::Mat image, ::base::TimeDelta timestamp, float min, float max) {
   size_t size = image.getWidth() * image.getHeight();
   size_t allocation_size = 2 * size;
   std::unique_ptr<uint8_t[]> data(new uint8_t[allocation_size]);
@@ -489,11 +487,13 @@ DepthCameraFrame ZedCamera::ConvertToDepthCameraFrame(::sl::Mat image,
       data[data_idx + 1] = static_cast<uint8_t>(value >> 8);
     }
   }
-  CameraFrame frame(std::move(data), allocation_size, depth_camera_format_);
+  CameraFrame frame(std::move(data), allocation_size, depth_camera_format_,
+                    timestamp);
   return DepthCameraFrame(std::move(frame), min, max);
 }
 
-PointcloudFrame ZedCamera::ConvertToPointcloudFrame(::sl::Mat cloud) {
+PointcloudFrame ZedCamera::ConvertToPointcloudFrame(
+    ::sl::Mat cloud, ::base::TimeDelta timestamp) {
   const float* cloud_ptr = cloud.getPtr<::sl::float4>()->ptr();
   size_t size = cloud.getWidth() * cloud.getHeight();
   PointcloudFrame frame(size, size);
@@ -529,6 +529,7 @@ PointcloudFrame ZedCamera::ConvertToPointcloudFrame(::sl::Mat cloud) {
                              c.g / 255.f, c.b / 255.f);
     }
   }
+  frame.set_timestamp(timestamp);
 
   return frame;
 }

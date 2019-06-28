@@ -154,9 +154,9 @@ void AvfCamera::ReceiveFrame(const uint8_t* video_frame, int video_frame_length,
   if (camera_format_.convert_to_argb()) {
     CameraBuffer camera_buffer(const_cast<uint8_t*>(video_frame), video_frame_length);
     camera_buffer.set_payload(video_frame_length);
-    ::base::Optional<CameraFrame> argb_frame = ConvertToARGB(camera_buffer, camera_format);
+    ::base::Optional<CameraFrame> argb_frame =
+        ConvertToARGB(camera_buffer, camera_format, timestamp);
     if (argb_frame.has_value()) {
-      argb_frame.value().set_timestamp(timestamp);
       camera_frame_callback_.Run(std::move(argb_frame.value()));
     } else {
       status_callback_.Run(errors::FailedToConvertToARGB());
@@ -164,9 +164,8 @@ void AvfCamera::ReceiveFrame(const uint8_t* video_frame, int video_frame_length,
   } else {
     std::unique_ptr<uint8_t[]> data(new uint8_t[video_frame_length]);
     memcpy(data.get(), video_frame, video_frame_length);
-    CameraFrame camera_frame(std::move(data), video_frame_length, camera_format_);
-    camera_frame.set_timestamp(timestamp);
-    camera_frame_callback_.Run(std::move(camera_frame));
+    camera_frame_callback_.Run(CameraFrame{std::move(data), static_cast<size_t>(video_frame_length),
+                                           camera_format_, timestamp});
   }
 }
 

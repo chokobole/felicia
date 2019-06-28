@@ -10,7 +10,8 @@ def _default_allocator():
     if is_android() or is_mac() or is_ios() or is_win() or (is_linux() and is_arm64()):
         return "none"
     else:
-        return "tcmalloc"
+        # Disable for a while until figure out why this kill object_detection example.
+        return "none"
 
 def _default_use_allocator_shim():
     if is_linux() or is_android() or is_mac() or (is_win() and not is_debug()) and not IS_HWASAN:  # and more

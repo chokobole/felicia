@@ -61,10 +61,8 @@ void PyMasterProxy::RequestRegisterNode(py::function constructor,
   object.inc_ref();
   NodeLifecycle* node = object.cast<NodeLifecycle*>();
 
-  {
-    py::gil_scoped_release release;
-    node->OnInit();
-  }
+  py::gil_scoped_release release;
+  node->OnInit();
   master_proxy.RegisterNodeAsync(
       request, response,
       ::base::BindOnce(&PyMasterProxy::OnRegisterNodeAsync, object, request,
@@ -90,47 +88,46 @@ void PyMasterProxy::OnRegisterNodeAsync(py::object object,
                       ::base::StringPrintf("Failed to register node : %s",
                                            s.error_message().c_str()));
     NodeLifecycle* node = object.cast<NodeLifecycle*>();
-    {
-      py::gil_scoped_release release;
-      node->OnError(new_status);
-    }
+    node->OnError(new_status);
     return;
   }
-
-  std::cout << ::base::PlatformThread::GetName() << std::endl;
 
   const NodeInfo& node_info = response->node_info();
 
   NodeLifecycle* node = object.cast<NodeLifecycle*>();
-  {
-    py::gil_scoped_release release;
-    node->OnDidCreate(node_info);
-  }
+  node->OnDidCreate(node_info);
 }
 
 void AddMasterProxy(py::module& m) {
   py::class_<PyMasterProxy>(m, "MasterProxy")
-      .def_static("start", &PyMasterProxy::Start)
-      .def_static("stop", &PyMasterProxy::Stop)
-      .def_static("run", &PyMasterProxy::Run)
+      .def_static("start", &PyMasterProxy::Start,
+                  py::call_guard<py::gil_scoped_release>())
+      .def_static("stop", &PyMasterProxy::Stop,
+                  py::call_guard<py::gil_scoped_release>())
+      .def_static("run", &PyMasterProxy::Run,
+                  py::call_guard<py::gil_scoped_release>())
       .def_static("request_register_node", &PyMasterProxy::RequestRegisterNode)
-      .def_static("post_task",
-                  [](py::function callback) {
-                    MasterProxy& master_proxy = MasterProxy::GetInstance();
-                    master_proxy.PostTask(
-                        FROM_HERE, ::base::BindOnce(
-                                       &PyClosure::Invoke,
-                                       ::base::Owned(new PyClosure(callback))));
-                  })
-      .def_static("post_delayed_task", [](py::function callback,
-                                          ::base::TimeDelta delay) {
-        MasterProxy& master_proxy = MasterProxy::GetInstance();
-        master_proxy.PostDelayedTask(
-            FROM_HERE,
-            ::base::BindOnce(&PyClosure::Invoke,
-                             ::base::Owned(new PyClosure(callback))),
-            delay);
-      });
+      .def_static(
+          "post_task",
+          [](py::function callback) {
+            MasterProxy& master_proxy = MasterProxy::GetInstance();
+            master_proxy.PostTask(
+                FROM_HERE,
+                ::base::BindOnce(&PyClosure::Invoke,
+                                 ::base::Owned(new PyClosure(callback))));
+          },
+          py::call_guard<py::gil_scoped_release>())
+      .def_static(
+          "post_delayed_task",
+          [](py::function callback, ::base::TimeDelta delay) {
+            MasterProxy& master_proxy = MasterProxy::GetInstance();
+            master_proxy.PostDelayedTask(
+                FROM_HERE,
+                ::base::BindOnce(&PyClosure::Invoke,
+                                 ::base::Owned(new PyClosure(callback))),
+                delay);
+          },
+          py::call_guard<py::gil_scoped_release>());
 }
 
 }  // namespace felicia

@@ -502,18 +502,17 @@ void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
     return;
   }
 
+  // There is a chance that the platform does not provide us with the
+  // timestamp, in which case, we use reference time to calculate a
+  // timestamp.
+  if (timestamp == kNoTimestamp) timestamp = timestamper_.timestamp();
+
   if (camera_format_.convert_to_argb()) {
     CameraBuffer camera_buffer(const_cast<uint8_t*>(buffer), length);
     camera_buffer.set_payload(length);
     ::base::Optional<CameraFrame> argb_frame =
-        ConvertToARGB(camera_buffer, camera_format);
+        ConvertToARGB(camera_buffer, camera_format, timestamp);
     if (argb_frame.has_value()) {
-      // There is a chance that the platform does not provide us with the
-      // timestamp, in which case, we use reference time to calculate a
-      // timestamp.
-      if (timestamp == kNoTimestamp) timestamp = timestamper_.timestamp();
-
-      argb_frame.value().set_timestamp(timestamp);
       camera_frame_callback_.Run(std::move(argb_frame.value()));
     } else {
       status_callback_.Run(errors::FailedToConvertToARGB());
@@ -521,10 +520,9 @@ void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
   } else {
     std::unique_ptr<uint8_t[]> data(new uint8_t[length]);
     memcpy(data.get(), buffer, length);
-    CameraFrame camera_frame(std::move(data), length, camera_format_);
-    if (timestamp == kNoTimestamp) timestamp = timestamper_.timestamp();
-    camera_frame.set_timestamp(timestamp);
-    camera_frame_callback_.Run(std::move(camera_frame));
+    camera_frame_callback_.Run(CameraFrame{std::move(data),
+                                           static_cast<size_t>(length),
+                                           camera_format_, timestamp});
   }
 }
 

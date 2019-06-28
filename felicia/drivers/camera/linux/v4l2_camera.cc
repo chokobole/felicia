@@ -607,10 +607,9 @@ void V4l2Camera::DoCapture() {
     CameraBuffer& camera_buffer = buffers_[buffer.index];
     camera_buffer.set_payload(buffer.bytesused);
     if (camera_format_.convert_to_argb()) {
-      ::base::Optional<CameraFrame> argb_frame =
-          ConvertToARGB(camera_buffer, camera_format_);
+      ::base::Optional<CameraFrame> argb_frame = ConvertToARGB(
+          camera_buffer, camera_format_, timestamper_.timestamp());
       if (argb_frame.has_value()) {
-        argb_frame.value().set_timestamp(timestamper_.timestamp());
         camera_frame_callback_.Run(std::move(argb_frame.value()));
       } else {
         status_callback_.Run(errors::FailedToConvertToARGB());
@@ -618,10 +617,9 @@ void V4l2Camera::DoCapture() {
     } else {
       std::unique_ptr<uint8_t[]> data(new uint8_t[camera_buffer.payload()]);
       memcpy(data.get(), camera_buffer.start(), camera_buffer.payload());
-      CameraFrame camera_frame(std::move(data), camera_buffer.payload(),
-                               camera_format_);
-      camera_frame.set_timestamp(timestamper_.timestamp());
-      camera_frame_callback_.Run(std::move(camera_frame));
+      camera_frame_callback_.Run(
+          CameraFrame{std::move(data), camera_buffer.payload(), camera_format_,
+                      timestamper_.timestamp()});
     }
   }
 
