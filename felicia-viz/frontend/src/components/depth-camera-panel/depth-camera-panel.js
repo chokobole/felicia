@@ -5,10 +5,10 @@ import { FloatPanel } from '@streetscape.gl/monochrome';
 
 import { Activatable } from '@felicia-viz/ui';
 
+import CameraView from 'components/camera-panel/camera-view';
 import { FLOAT_PANEL_STYLE } from 'custom-styles';
 import { panelInitialState, FLOAT_PANEL_SETTINGS } from 'custom-settings';
 import UI_TYPES from 'store/ui/ui-types';
-import ImageView from 'components/camera-panel/image-view';
 
 @inject('store')
 @observer
@@ -47,7 +47,7 @@ export default class DepthCameraPanel extends Component {
         onUpdate={this._onUpdate}
         style={FLOAT_PANEL_STYLE}>
         <Activatable id={id} type={UI_TYPES.DepthCameraPanel.name} uiState={store.uiState}>
-          <ImageView
+          <CameraView
             frame={frame}
             height={`${height}px`}
             filter={filter}

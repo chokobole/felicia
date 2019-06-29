@@ -12,7 +12,6 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import '@babylonjs/core/Meshes/meshBuilder';
 
 import { babylonCanvasStyle } from 'custom-styles';
-import { CameraFrame } from 'store/ui/camera-panel-state';
 import { PointcloudFrame } from 'store/ui/pointcloud-panel-state';
 import { drawAxis, drawFrustrum } from 'util/babylon-util';
 import Worker from 'util/pointcloud-view-webworker.js';
@@ -22,16 +21,12 @@ export default class PointcloudView extends Component {
     width: PropTypes.string,
     height: PropTypes.string,
     frame: PropTypes.instanceOf(PointcloudFrame),
-    filter: PropTypes.string,
-    frameToAlign: PropTypes.instanceOf(CameraFrame),
   };
 
   static defaultProps = {
     width: '100%',
     height: '100%',
     frame: null,
-    filter: '',
-    frameToAlign: null,
   };
 
   meshInfo = {};
@@ -175,7 +170,6 @@ export default class PointcloudView extends Component {
 
   _updatePointcloud(frame) {
     const { mesh } = this.meshInfo;
-    const { filter, frameToAlign } = this.props;
 
     const colors = mesh.getVerticesData(VertexBuffer.ColorKind);
     const positions = mesh.getVerticesData(VertexBuffer.PositionKind);
@@ -184,8 +178,6 @@ export default class PointcloudView extends Component {
       colors,
       positions,
       frame,
-      filter,
-      frameToAlign,
     });
   }
 

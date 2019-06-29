@@ -8,8 +8,8 @@ import Worker from 'util/lidar-view-webworker.js';
 
 export default class LidarView extends Component {
   static propTypes = {
-    width: PropTypes.string, // eslint-disable-line
-    height: PropTypes.string, // eslint-disable-line
+    width: PropTypes.string,
+    height: PropTypes.string,
     frame: PropTypes.instanceOf(LidarFrame),
   };
 

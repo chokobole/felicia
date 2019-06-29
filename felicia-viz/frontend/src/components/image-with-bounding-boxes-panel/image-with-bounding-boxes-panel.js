@@ -8,11 +8,11 @@ import { Activatable } from '@felicia-viz/ui';
 import { FLOAT_PANEL_STYLE } from 'custom-styles';
 import { panelInitialState, FLOAT_PANEL_SETTINGS } from 'custom-settings';
 import UI_TYPES from 'store/ui/ui-types';
-import PointcloudView from './pointcloud-view';
+import ImageWithBoundingBoxesView from './image-with-bounding-boxes-view';
 
 @inject('store')
 @observer
-export default class PointcloudPanel extends Component {
+export default class ImageWithBoundingBoxesPanel extends Component {
   static propTypes = {
     id: PropTypes.number.isRequired,
     store: PropTypes.object.isRequired,
@@ -36,9 +36,9 @@ export default class PointcloudPanel extends Component {
   render() {
     const { panelState } = this.state;
     const { id, store } = this.props;
-    const { width, height } = panelState;
+    const { height } = panelState;
     const viewState = store.uiState.findView(id);
-    const { frame } = viewState;
+    const { frame, lineWidth, threshold } = viewState;
 
     return (
       <FloatPanel
@@ -46,8 +46,16 @@ export default class PointcloudPanel extends Component {
         {...this.floatPanelSettings}
         onUpdate={this._onUpdate}
         style={FLOAT_PANEL_STYLE}>
-        <Activatable id={id} type={UI_TYPES.PointcloudPanel.name} uiState={store.uiState}>
-          <PointcloudView frame={frame} width={`${width}px`} height={`${height}px`} />
+        <Activatable
+          id={id}
+          type={UI_TYPES.ImageWithBoundingBoxesPanel.name}
+          uiState={store.uiState}>
+          <ImageWithBoundingBoxesView
+            frame={frame}
+            height={`${height}px`}
+            lineWidth={lineWidth}
+            threshold={threshold}
+          />
         </Activatable>
       </FloatPanel>
     );

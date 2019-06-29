@@ -7,3 +7,17 @@ message ColorMessage {
   float g = 2;
   float b = 3;
 }
+
+enum ImageFormat {
+  IMAGE_FORMAT_RGB = 0;
+  IMAGE_FORMAT_RGBA = 1;
+  IMAGE_FORMAT_BGR = 2;
+  IMAGE_FORMAT_BGRA = 3;
+}
+
+message ImageMessage {
+  uint32 width = 1;
+  uint32 height = 2;
+  ImageFormat image_format = 3;
+  bytes data = 4;
+}

@@ -25,3 +25,15 @@ message Point3fMessage {
   float y = 2;
   float z = 3;
 }
+
+message RectfMessage {
+  PointfMessage left_top = 1;
+  PointfMessage right_bottom = 2;
+}
+
+message QuadfMessage {
+  PointfMessage left_top = 1;
+  PointfMessage right_top = 2;
+  PointfMessage left_bottom = 3;
+  PointfMessage right_bottom = 4;
+}

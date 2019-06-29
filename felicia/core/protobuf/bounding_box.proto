@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+import "felicia/core/protobuf/ui.proto";
+import "felicia/core/protobuf/geometry.proto";
+
+package felicia;
+
+message BoundingBoxMessage {
+  ColorMessage color = 1;
+  RectfMessage box = 2;
+  string label = 3;
+  float score = 4;
+}
+
+message ImageWithBoundingBoxesMessage {
+  ImageMessage image = 1;
+  repeated BoundingBoxMessage bounding_boxes = 2;
+}

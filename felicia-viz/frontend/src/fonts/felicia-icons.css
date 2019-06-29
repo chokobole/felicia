@@ -1,8 +1,8 @@
 @font-face {
 	font-family: "felicia-icons";
-	src: url("felicia-icons.eot?5ab66ade61283411cd6c27f98831c219?#iefix") format("embedded-opentype"),
-url("felicia-icons.woff2?5ab66ade61283411cd6c27f98831c219") format("woff2"),
-url("felicia-icons.woff?5ab66ade61283411cd6c27f98831c219") format("woff");
+	src: url("felicia-icons.eot?7aa1d44e97a46bad0e1e428898529b12?#iefix") format("embedded-opentype"),
+url("felicia-icons.woff2?7aa1d44e97a46bad0e1e428898529b12") format("woff2"),
+url("felicia-icons.woff?7aa1d44e97a46bad0e1e428898529b12") format("woff");
 }
 
 .felicia-icons {
@@ -22,15 +22,18 @@ url("felicia-icons.woff?5ab66ade61283411cd6c27f98831c219") format("woff");
 .felicia-icons-depth-camera-panel:before {
 	content: "\f102";
 }
-.felicia-icons-imu-panel:before {
+.felicia-icons-image-with-bounding-boxes-panel:before {
 	content: "\f103";
 }
-.felicia-icons-lidar-panel:before {
+.felicia-icons-imu-panel:before {
 	content: "\f104";
 }
-.felicia-icons-plus:before {
+.felicia-icons-lidar-panel:before {
 	content: "\f105";
 }
-.felicia-icons-pointcloud-panel:before {
+.felicia-icons-plus:before {
 	content: "\f106";
+}
+.felicia-icons-pointcloud-panel:before {
+	content: "\f107";
 }

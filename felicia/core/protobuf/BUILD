@@ -5,6 +5,7 @@ package(default_visibility = ["//felicia:internal"])
 fel_proto_library(
     name = "protos_all_proto",
     srcs = [
+        "bounding_box.proto",
         "channel.proto",
         "error_codes.proto",
         "geometry.proto",

@@ -4,13 +4,12 @@ import PropTypes from 'prop-types';
 import { ResizableCanvas } from '@felicia-viz/ui';
 
 import { CameraFrame } from 'store/ui/camera-panel-state';
-import Worker from 'util/image-view-webworker.js';
+import Worker from 'util/camera-view-webworker.js';
 
-export default class ImageView extends Component {
+export default class CameraView extends Component {
   static propTypes = {
     width: PropTypes.string,
     height: PropTypes.string,
-    src: PropTypes.string,
     frame: PropTypes.instanceOf(CameraFrame),
     filter: PropTypes.string,
     frameToAlign: PropTypes.instanceOf(CameraFrame),
@@ -19,7 +18,6 @@ export default class ImageView extends Component {
   static defaultProps = {
     width: '100%',
     height: 'auto',
-    src: '',
     frame: null,
     filter: '',
     frameToAlign: null,
@@ -29,17 +27,12 @@ export default class ImageView extends Component {
     this.worker = new Worker();
 
     this.worker.onmessage = event => {
-      this._drawImageOrImageData(event.data);
+      this._drawImageData(event.data);
     };
   }
 
   shouldComponentUpdate(nextProps) {
-    const { src, frame } = this.props;
-
-    if (src !== nextProps.src) {
-      this._loadImage(nextProps.src);
-      return true;
-    }
+    const { frame } = this.props;
 
     if (frame !== nextProps.frame) {
       this._loadImageData(nextProps.frame);
@@ -59,20 +52,6 @@ export default class ImageView extends Component {
     this.resizableCanvas = resizableCanvas;
   };
 
-  _loadImage(src) {
-    if (src) {
-      const image = new Image();
-      image.src = src;
-      image.addEventListener(
-        'load',
-        () => {
-          this._drawImageOrImageData(image);
-        },
-        false
-      );
-    }
-  }
-
   _loadImageData(frame) {
     if (!this.proxyContext) return;
 
@@ -89,24 +68,20 @@ export default class ImageView extends Component {
     });
   }
 
-  _drawImageOrImageData(image) {
+  _drawImageData(imageData) {
     if (!this.proxyCanvas) {
       return;
     }
 
-    if (!image) {
+    if (!imageData) {
       this.resizableCanvas.clearRect();
       return;
     }
 
-    this.proxyCanvas.width = image.width;
-    this.proxyCanvas.height = image.height;
+    this.proxyCanvas.width = imageData.width;
+    this.proxyCanvas.height = imageData.height;
 
-    if (image instanceof Image) {
-      this.proxyContext.drawImage(image, 0, 0);
-    } else {
-      this.proxyContext.putImageData(image, 0, 0);
-    }
+    this.proxyContext.putImageData(imageData, 0, 0);
 
     this.resizableCanvas.update();
   }

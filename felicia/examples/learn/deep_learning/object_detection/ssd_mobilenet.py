@@ -4,6 +4,7 @@ import sys
 import tarfile
 
 import numpy as np
+import seaborn as sns
 import six.moves.urllib as urllib
 import tensorflow as tf
 
@@ -11,8 +12,12 @@ from object_detection.utils import label_map_util
 from object_detection.utils import ops as utils_ops
 from object_detection.utils import visualization_utils as vis_util
 
+from felicia.core.protobuf.bounding_box_pb2 import ImageWithBoundingBoxesMessage
+from felicia.core.protobuf.ui_pb2 import IMAGE_FORMAT_RGB
+
 if StrictVersion(tf.__version__) < StrictVersion('1.12.0'):
-  raise ImportError('Please upgrade your TensorFlow installation to v1.12.*.')
+    raise ImportError(
+        'Please upgrade your TensorFlow installation to v1.12.*.')
 
 # What model to download.
 MODEL_NAME = 'ssd_mobilenet_v1_coco_2017_11_17'
@@ -23,7 +28,7 @@ DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
 PATH_TO_FROZEN_GRAPH = MODEL_NAME + '/frozen_inference_graph.pb'
 
 PATH_TO_OBJECT_DETECTION = os.path.join('felicia', 'examples', 'learn', 'deep_learning', 'object_detection',
-    'models', 'research', 'object_detection')
+                                        'models', 'research', 'object_detection')
 
 # List of the strings that is used to add correct label for each box.
 PATH_TO_LABELS = os.path.join(
@@ -51,12 +56,48 @@ category_index = label_map_util.create_category_index_from_labelmap(
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 
+palette_map = {}
+for index, key in enumerate(category_index):
+    palette_map[key] = index
+COLOR_PALETTE = sns.color_palette("deep", len(category_index.keys()))
+
+
+def convert_to_image_with_bounding_boxes(image,
+                                         boxes,
+                                         classes,
+                                         scores,
+                                         category_index,
+                                         threshold):
+    image_with_bounding_boxes = ImageWithBoundingBoxesMessage()
+    shape = np.shape(image)
+    image_with_bounding_boxes.image.width = shape[1]
+    image_with_bounding_boxes.image.height = shape[0]
+    image_with_bounding_boxes.image.image_format = IMAGE_FORMAT_RGB
+    image_with_bounding_boxes.image.data = np.ndarray.tobytes(image)
+    for i in range(boxes.shape[0]):
+        if scores[i] > threshold:
+            bounding_box = image_with_bounding_boxes.bounding_boxes.add()
+            ymin, xmin, ymax, xmax = tuple(boxes[i].tolist())
+            bounding_box.box.left_top.x = xmin
+            bounding_box.box.left_top.y = ymin
+            bounding_box.box.right_bottom.x = xmax
+            bounding_box.box.right_bottom.y = ymax
+            if classes[i] in category_index.keys():
+                class_name = category_index[classes[i]]['name']
+                color = bounding_box.color
+                color.r, color.g, color.b = COLOR_PALETTE[palette_map[classes[i]]]
+            else:
+                class_name = 'N/A'
+            bounding_box.label = class_name
+            bounding_box.score = scores[i]
+    return image_with_bounding_boxes
+
 
 class Inference(object):
     def __init__(self):
         self.sesion = tf.Session(graph=detection_graph, config=config)
 
-    def run(self, image_np):
+    def run(self, image_np, draw_on_image):
         # Get handles to input and output tensors
         ops = detection_graph.get_operations()
         all_tensor_names = {
@@ -80,9 +121,9 @@ class Inference(object):
             real_num_detection = tf.cast(
                 tensor_dict['num_detections'][0], tf.int32)
             detection_boxes = tf.slice(detection_boxes, [0, 0], [
-                                        real_num_detection, -1])
+                real_num_detection, -1])
             detection_masks = tf.slice(detection_masks, [0, 0, 0], [
-                                        real_num_detection, -1, -1])
+                real_num_detection, -1, -1])
             detection_masks_reframed = utils_ops.reframe_box_masks_to_image_masks(
                 detection_masks, detection_boxes, image.shape[1], image.shape[2])
             detection_masks_reframed = tf.cast(
@@ -95,7 +136,8 @@ class Inference(object):
         image_np_expanded = np.expand_dims(image_np, axis=0)
 
         # Run inference
-        output_dict = self.sesion.run(tensor_dict, feed_dict={image_tensor: image_np_expanded})
+        output_dict = self.sesion.run(tensor_dict, feed_dict={
+                                      image_tensor: image_np_expanded})
 
         # all outputs are float32 numpy arrays, so convert types as appropriate
         output_dict['num_detections'] = int(
@@ -107,15 +149,23 @@ class Inference(object):
         if 'detection_masks' in output_dict:
             output_dict['detection_masks'] = output_dict['detection_masks'][0]
 
-        # Visualization of the results of a detection.
-        vis_util.visualize_boxes_and_labels_on_image_array(
-            image_np,
-            output_dict['detection_boxes'],
-            output_dict['detection_classes'],
-            output_dict['detection_scores'],
-            category_index,
-            instance_masks=output_dict.get('detection_masks'),
-            use_normalized_coordinates=True,
-            line_thickness=8)
+        if draw_on_image:
+            # Visualization of the results of a detection.
+            vis_util.visualize_boxes_and_labels_on_image_array(
+                image_np,
+                output_dict['detection_boxes'],
+                output_dict['detection_classes'],
+                output_dict['detection_scores'],
+                category_index,
+                instance_masks=output_dict.get('detection_masks'),
+                use_normalized_coordinates=True,
+                line_thickness=8)
 
-        return image_np
+            return image_np
+        else:
+            return convert_to_image_with_bounding_boxes(
+                image_np,
+                output_dict['detection_boxes'],
+                output_dict['detection_classes'],
+                output_dict['detection_scores'],
+                category_index, 0.1)

@@ -6,6 +6,7 @@ import numpy as np
 import felicia.examples.learn.message_communication.common.python.import_order_resolver
 import felicia_py as fel
 import felicia_py.command_line_interface as cli
+from felicia.core.protobuf.bounding_box_pb2 import ImageWithBoundingBoxesMessage
 from felicia.core.protobuf.master_data_pb2 import NodeInfo
 from felicia.core.protobuf.channel_pb2 import ChannelDef
 from felicia.drivers.camera.camera_frame_message_pb2 import CameraFrameMessage
@@ -19,7 +20,7 @@ class ObjectDetectionNode(fel.NodeLifecycle):
         self.topic = topic
         self.camera_descriptor = camera_descriptor
         self.publisher = fel.communication.Publisher()
-        self.count = 0
+        self.draw_on_image = False
 
     def on_init(self):
         print("ObjectDetectionNode.on_init()")
@@ -44,10 +45,15 @@ class ObjectDetectionNode(fel.NodeLifecycle):
         settings = fel.communication.Settings()
         settings.queue_size = 1
         settings.is_dynamic_buffer = True
+
+        if self.draw_on_image:
+            type_name = CameraFrameMessage.DESCRIPTOR.full_name
+        else:
+            type_name = ImageWithBoundingBoxesMessage.DESCRIPTOR.full_name
+
         self.publisher.request_publish(self.node_info, self.topic,
                                        ChannelDef.TCP | ChannelDef.WS,
-                                       CameraFrameMessage.DESCRIPTOR.full_name,
-                                       settings, self.on_request_publish)
+                                       type_name, settings, self.on_request_publish)
 
     def on_request_publish(self, status):
         print("ObjectDetectionNode.on_request_publish()")
@@ -69,15 +75,22 @@ class ObjectDetectionNode(fel.NodeLifecycle):
             return
 
         image_np = np.array(camera_frame, copy=False)[:, :, [2, 1, 0]]
-        detected_image = self.inference.run(image_np)
 
-        camera_format = camera_frame.camera_format
-        camera_format.pixel_format = PIXEL_FORMAT_XBGR
-        detected_camera_frame = fel.drivers.CameraFrame(
-            detected_image, camera_format, camera_frame.timestamp)
+        if self.draw_on_image:
+            detected_image = self.inference.run(image_np, self.draw_on_image)
 
-        self.publisher.publish(detected_camera_frame.to_camera_frame_message(),
-                               self.on_publish)
+            camera_format = camera_frame.camera_format
+            camera_format.pixel_format = PIXEL_FORMAT_XBGR
+            detected_camera_frame = fel.drivers.CameraFrame(
+                detected_image, camera_format, camera_frame.timestamp)
+
+            self.publisher.publish(detected_camera_frame.to_camera_frame_message(),
+                                   self.on_publish)
+        else:
+            image_with_bounding_boxes = self.inference.run(
+                image_np, self.draw_on_image)
+
+            self.publisher.publish(image_with_bounding_boxes, self.on_publish)
 
     def on_camera_error(self, status):
         fel.log_if(fel.ERROR, not status.ok(), status.error_message())

@@ -8,7 +8,7 @@ import { Activatable } from '@felicia-viz/ui';
 import { FLOAT_PANEL_STYLE } from 'custom-styles';
 import { panelInitialState, FLOAT_PANEL_SETTINGS } from 'custom-settings';
 import UI_TYPES from 'store/ui/ui-types';
-import ImageView from './image-view';
+import CameraView from './camera-view';
 
 @inject('store')
 @observer
@@ -47,7 +47,7 @@ export default class CameraPanel extends Component {
         onUpdate={this._onUpdate}
         style={FLOAT_PANEL_STYLE}>
         <Activatable id={id} type={UI_TYPES.CameraPanel.name} uiState={store.uiState}>
-          <ImageView frame={frame} height={`${height}px`} filter={filter} />
+          <CameraView frame={frame} height={`${height}px`} filter={filter} />
         </Activatable>
       </FloatPanel>
     );
