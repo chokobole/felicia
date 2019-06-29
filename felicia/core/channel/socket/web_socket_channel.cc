@@ -110,6 +110,15 @@ WebSocketChannel::WebSocketChannel(std::unique_ptr<WebSocketStream> stream)
   ignore_result(ReadFrames());
 }
 
+WebSocketChannel::~WebSocketChannel() {
+  // The stream may hold a pointer to read_frames_, and so it needs to be
+  // destroyed first.
+  stream_.reset();
+  // The timer may have a callback pointing back to us, so stop it just in case
+  // someone decides to run the event loop from their destructor.
+  close_timer_.Stop();
+}
+
 void WebSocketChannel::SetState(State new_state) {
   DCHECK_NE(state_, new_state);
   state_ = new_state;
@@ -592,6 +601,8 @@ void WebSocketChannel::DoDropChannel(bool was_clean, uint16_t code,
   // event_interface_->OnDropChannel(was_clean, code, reason);
   if (!write_callback_.is_null())
     std::move(write_callback_).Run(::net::ERR_CONNECTION_RESET);
+
+  close_timer_.Stop();
 }
 
 void WebSocketChannel::CloseTimeout() {

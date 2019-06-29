@@ -24,6 +24,7 @@ class WebSocketChannel {
   enum ChannelState { CHANNEL_ALIVE, CHANNEL_DELETED };
 
   WebSocketChannel(std::unique_ptr<WebSocketStream> stream);
+  ~WebSocketChannel();
 
   // Sends a data frame to the remote side. It is the responsibility of the
   // caller to ensure that they have sufficient send quota to send this data,
