@@ -173,10 +173,33 @@ void ProtobufMessageToString(
       return;
     }
     case ::google::protobuf::FieldDescriptor::TYPE_MESSAGE: {
+      if (field_desc->is_repeated()) {
+        entities.push_back("[ ");
+        auto repeated_field_ref =
+            reflection->GetRepeatedFieldRef<::google::protobuf::Message>(
+                message, field_desc);
+        std::unique_ptr<::google::protobuf::Message> scratch_space(
+            repeated_field_ref.NewMessage());
+        for (int i = 0; i < repeated_field_ref.size(); ++i) {
+          std::string str;
+          ProtobufMessageToString(
+              repeated_field_ref.Get(i, scratch_space.get()), depth + 1, &str);
+          entities.push_back(::base::StrCat({"{\n", str}));
+          for (int j = 0; j < depth; j++) entities.push_back("  ");
+          entities.push_back("}");
+          if (i != repeated_field_ref.size() - 1) {
+            entities.push_back(", ");
+          }
+        }
+        entities.push_back(" ]");
+        return;
+      }
       std::string str;
       ProtobufMessageToString(reflection->GetMessage(message, field_desc),
                               depth + 1, &str);
-      entities.push_back(::base::StrCat({"{\n", str, "}"}));
+      entities.push_back(::base::StrCat({"{\n", str}));
+      for (int j = 0; j < depth; j++) entities.push_back("  ");
+      entities.push_back("}");
       return;
     }
     case ::google::protobuf::FieldDescriptor::TYPE_BYTES: {
@@ -241,20 +264,20 @@ void ProtobufMessageToString(const ::google::protobuf::Message& message,
   const ::google::protobuf::Descriptor* descriptor = message.GetDescriptor();
   const ::google::protobuf::Reflection* reflection = message.GetReflection();
 
-  std::vector<std::string> entites;
-  entites.reserve((descriptor->field_count() + depth) * 3);
+  std::vector<std::string> entities;
+  entities.reserve((descriptor->field_count() + depth) * 3);
 
   for (int i = 0; i < descriptor->field_count(); ++i) {
     const ::google::protobuf::FieldDescriptor* field_desc =
         descriptor->field(i);
-    for (int j = 0; j < depth; j++) entites.push_back("  ");
-    entites.push_back(
+    for (int j = 0; j < depth; j++) entities.push_back("  ");
+    entities.push_back(
         TextStyle::Blue(::base::StrCat({field_desc->name(), ": "})));
-    ProtobufMessageToString(entites, depth, reflection, message, field_desc);
-    entites.push_back("\n");
+    ProtobufMessageToString(entities, depth, reflection, message, field_desc);
+    entities.push_back("\n");
   }
 
-  ::base::StrAppend(out, entites);
+  ::base::StrAppend(out, entities);
 }
 
 std::string ProtobufMessageToString(
