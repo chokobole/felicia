@@ -116,7 +116,8 @@ void AddCamera(py::module& m) {
            })
       .def("is_initialized", &CameraInterface::IsInitialized)
       .def("is_started", &CameraInterface::IsStarted)
-      .def("is_stopped", &CameraInterface::IsStopped);
+      .def("is_stopped", &CameraInterface::IsStopped)
+      .def("camera_format", &CameraInterface::camera_format);
 
   py::class_<CameraDescriptor>(m, "CameraDescriptor")
       .def_property_readonly("display_name", &CameraDescriptor::display_name)
