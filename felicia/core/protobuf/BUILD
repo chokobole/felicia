@@ -9,6 +9,7 @@ fel_proto_library(
         "channel.proto",
         "error_codes.proto",
         "geometry.proto",
+        "human.proto",
         "master.proto",
         "master_data.proto",
         "ui.proto",

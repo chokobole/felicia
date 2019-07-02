@@ -25,7 +25,7 @@ class CameraFlag(NodeCreateFlag):
         if not super().validate():
             return False
 
-        if self.is_publshing_node_flag.value():
+        if self.is_publshing_node_flag.value:
             return self.device_index_flag.is_set()
 
         return True

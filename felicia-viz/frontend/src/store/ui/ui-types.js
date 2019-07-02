@@ -5,12 +5,16 @@ import DepthCameraPanel, { DepthCameraControlPanel } from 'components/depth-came
 import ImageWithBoundingBoxesPanel, {
   ImageWithBoundingBoxesControlPanel,
 } from 'components/image-with-bounding-boxes-panel';
+import ImageWithHumansPanel, {
+  ImageWithHumansControlPanel,
+} from 'components/image-with-humans-panel';
 import ImuPanel, { ImuControlPanel } from 'components/imu-panel';
 import LidarPanel, { LidarControlPanel } from 'components/lidar-panel';
 import PointcloudPanel, { PointcloudControlPanel } from 'components/pointcloud-panel';
 import CameraPanelState from 'store/ui/camera-panel-state';
 import DepthCameraPanelState from 'store/ui/depth-camera-panel-state';
 import ImageWithBoundingBoxesPanelState from 'store/ui/image-with-bounding-boxes-panel-state';
+import ImageWithHumansPanelState from 'store/ui/image-with-humans-panel-state';
 import ImuPanelState from 'store/ui/imu-panel-state';
 import LidarPanelState from 'store/ui/lidar-panel-state';
 import PointcloudPanelState from 'store/ui/pointcloud-panel-state';
@@ -58,6 +62,20 @@ export const ImageWithBoundingBoxesPanelType = {
 };
 
 UI_TYPES[ImageWithBoundingBoxesPanelType.name] = ImageWithBoundingBoxesPanelType;
+
+export const ImageWithHumansPanelType = {
+  name: 'ImageWithHumansPanel',
+  className: 'image-with-humans-panel',
+  state: ImageWithHumansPanelState,
+  renderView: id => {
+    return <ImageWithHumansPanel key={id} id={id} />;
+  },
+  renderControlView: () => {
+    return <ImageWithHumansControlPanel />;
+  },
+};
+
+UI_TYPES[ImageWithHumansPanelType.name] = ImageWithHumansPanelType;
 
 export const ImuPanelType = {
   name: 'ImuPanel',

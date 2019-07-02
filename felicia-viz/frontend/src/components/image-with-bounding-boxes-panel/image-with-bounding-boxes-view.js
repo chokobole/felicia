@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { ResizableCanvas } from '@felicia-viz/ui';
 
 import { ImageWithBoundingBoxes } from 'store/ui/image-with-bounding-boxes-panel-state';
-import Worker from 'util/image-with-bounding-boxes-view-webworker.js';
+import Worker from 'util/image-webworker.js';
 
 export default class ImageWithBoundingBoxesView extends Component {
   static propTypes = {
@@ -70,10 +70,14 @@ export default class ImageWithBoundingBoxesView extends Component {
     if (!frame) return;
 
     const { width, height } = frame.image;
+    const { image, boundingBoxes } = frame;
 
     this.worker.postMessage({
       imageData: this.proxyContext.getImageData(0, 0, width, height),
-      frame,
+      image,
+      data: {
+        boundingBoxes,
+      },
     });
   }
 
@@ -87,7 +91,8 @@ export default class ImageWithBoundingBoxesView extends Component {
       return;
     }
 
-    const { imageData, boundingBoxes } = data;
+    const { imageData } = data;
+    const { boundingBoxes } = data.data;
     const { width, height } = imageData;
     const { lineWidth, fontSize, threshold } = this.props;
 
@@ -100,10 +105,9 @@ export default class ImageWithBoundingBoxesView extends Component {
       if (score >= threshold) {
         const { leftTop, rightBottom } = box;
         const { r, g, b } = color;
-        const x = leftTop.x * width;
-        const y = leftTop.y * height;
-        const w = (rightBottom.x - leftTop.x) * width;
-        const h = (rightBottom.y - leftTop.y) * height;
+        const { x, y } = leftTop;
+        const w = rightBottom.x - leftTop.x;
+        const h = rightBottom.y - leftTop.y;
         const colorStyle = `rgb(${Math.floor(r * 255)}, ${Math.floor(g * 255)}, ${Math.floor(
           b * 255
         )})`;

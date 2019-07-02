@@ -120,7 +120,7 @@ def main():
 
     node_info = NodeInfo()
 
-    # # Use the first camera
+    # Use the first camera
     fel.MasterProxy.request_register_node(
         ObjectDetectionNode, node_info, "message", camera_descriptors[0])
 

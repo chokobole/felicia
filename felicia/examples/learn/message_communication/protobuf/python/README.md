@@ -49,18 +49,18 @@ If you pass `--name` to the command line, then set the name.
 
 ```python
 node_info = NodeInfo()
-node_info.name = delegate.name_flag.value()
+node_info.name = delegate.name_flag.value
 ```
 
 Now register Node. It depends on whether you pass the `-p` flag.
 
 ```python
-if delegate.is_publshing_node_flag.value():
+if delegate.is_publshing_node_flag.value:
       fel.MasterProxy.request_register_node(
-          SimplePublishingNode, node_info, delegate.topic_flag.value(), delegate.channel_type_flag.value())
+          SimplePublishingNode, node_info, delegate.topic_flag.value, delegate.channel_type_flag.value)
 else:
     fel.MasterProxy.request_register_node(
-        SimpleSubscribingNode, node_info, delegate.topic_flag.value())
+        SimpleSubscribingNode, node_info, delegate.topic_flag.value)
 ```
 
 Lastly Run MasterProxy. This will blocks until `stop()` is called.

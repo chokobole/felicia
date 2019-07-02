@@ -69,19 +69,19 @@ def convert_to_image_with_bounding_boxes(image,
                                          category_index,
                                          threshold):
     image_with_bounding_boxes = ImageWithBoundingBoxesMessage()
-    shape = np.shape(image)
-    image_with_bounding_boxes.image.width = shape[1]
-    image_with_bounding_boxes.image.height = shape[0]
+    height, width, _ = image.shape
+    image_with_bounding_boxes.image.width = width
+    image_with_bounding_boxes.image.height = height
     image_with_bounding_boxes.image.image_format = IMAGE_FORMAT_RGB
     image_with_bounding_boxes.image.data = np.ndarray.tobytes(image)
     for i in range(boxes.shape[0]):
         if scores[i] > threshold:
             bounding_box = image_with_bounding_boxes.bounding_boxes.add()
             ymin, xmin, ymax, xmax = tuple(boxes[i].tolist())
-            bounding_box.box.left_top.x = xmin
-            bounding_box.box.left_top.y = ymin
-            bounding_box.box.right_bottom.x = xmax
-            bounding_box.box.right_bottom.y = ymax
+            bounding_box.box.left_top.x = xmin * width
+            bounding_box.box.left_top.y = ymin * height
+            bounding_box.box.right_bottom.x = xmax * width
+            bounding_box.box.right_bottom.y = ymax * height
             if classes[i] in category_index.keys():
                 class_name = category_index[classes[i]]['name']
                 color = bounding_box.color

@@ -1,8 +1,8 @@
 @font-face {
 	font-family: "felicia-icons";
-	src: url("felicia-icons.eot?7aa1d44e97a46bad0e1e428898529b12?#iefix") format("embedded-opentype"),
-url("felicia-icons.woff2?7aa1d44e97a46bad0e1e428898529b12") format("woff2"),
-url("felicia-icons.woff?7aa1d44e97a46bad0e1e428898529b12") format("woff");
+	src: url("felicia-icons.eot?cff8f1fe3707ec98110b3e04762bdaa8?#iefix") format("embedded-opentype"),
+url("felicia-icons.woff2?cff8f1fe3707ec98110b3e04762bdaa8") format("woff2"),
+url("felicia-icons.woff?cff8f1fe3707ec98110b3e04762bdaa8") format("woff");
 }
 
 .felicia-icons {
@@ -25,15 +25,18 @@ url("felicia-icons.woff?7aa1d44e97a46bad0e1e428898529b12") format("woff");
 .felicia-icons-image-with-bounding-boxes-panel:before {
 	content: "\f103";
 }
-.felicia-icons-imu-panel:before {
+.felicia-icons-image-with-humans-panel:before {
 	content: "\f104";
 }
-.felicia-icons-lidar-panel:before {
+.felicia-icons-imu-panel:before {
 	content: "\f105";
 }
-.felicia-icons-plus:before {
+.felicia-icons-lidar-panel:before {
 	content: "\f106";
 }
-.felicia-icons-pointcloud-panel:before {
+.felicia-icons-plus:before {
 	content: "\f107";
+}
+.felicia-icons-pointcloud-panel:before {
+	content: "\f108";
 }

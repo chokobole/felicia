@@ -6,18 +6,17 @@ import { RGBA, RGB, BGRA, BGR, fillPixels } from 'util/color';
 
 self.onmessage = event => {
   let message = null;
-  const { imageData, frame } = event.data;
+  const { imageData, image, data } = event.data;
   const pixels = imageData.data;
-  const { image, boundingBoxes } = frame;
-  const { width, height, data, imageFormat } = image;
+  const { width, height, imageFormat } = image;
   if (imageFormat === ImageFormat.values.IMAGE_FORMAT_RGB) {
-    fillPixels(pixels, width, height, data, RGB);
+    fillPixels(pixels, width, height, image.data, RGB);
   } else if (imageFormat === ImageFormat.values.IMAGE_FORMAT_RGBA) {
-    fillPixels(pixels, width, height, data, RGBA);
+    fillPixels(pixels, width, height, image.data, RGBA);
   } else if (imageFormat === ImageFormat.values.IMAGE_FORMAT_BGR) {
-    fillPixels(pixels, width, height, data, BGR);
+    fillPixels(pixels, width, height, image.data, BGR);
   } else if (imageFormat === ImageFormat.values.IMAGE_FORMAT_BGRA) {
-    fillPixels(pixels, width, height, data, BGRA);
+    fillPixels(pixels, width, height, image.data, BGRA);
   } else {
     console.error(`Unknown format format: ${imageFormat}`);
     return;
@@ -25,7 +24,7 @@ self.onmessage = event => {
 
   message = {
     imageData,
-    boundingBoxes,
+    data,
   };
 
   if (message) {

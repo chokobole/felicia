@@ -7,6 +7,7 @@ const FeliciaProtoRoot = protobuf.Root.fromJSON(feliciaProtobufJson);
 export const CAMERA_FRAME_MESSAGE = 'felicia.CameraFrameMessage';
 export const DEPTH_CAMERA_FRAME_MESSAGE = 'felicia.DepthCameraFrameMessage';
 export const IMAGE_WITH_BOUNDING_BOXES_MESSAGE = 'felicia.ImageWithBoundingBoxesMessage';
+export const IMAGE_WITH_HUMANS_MESSAGE = 'felicia.ImageWithHumansMessage';
 export const IMU_FRAME_MESSAGE = 'felicia.ImuFrameMessage';
 export const LIDAR_FRAME_MESSAGE = 'felicia.LidarFrameMessage';
 export const POINTCLOUD_FRAME_MESSAGE = 'felicia.PointcloudFrameMessage';
@@ -16,6 +17,8 @@ const ChannelDefType = FeliciaProtoRoot.lookupEnum('felicia.ChannelDef.Type');
 const TopicInfo = FeliciaProtoRoot.lookupType(TOPIC_INFO);
 export const PixelFormat = FeliciaProtoRoot.lookupEnum('felicia.PixelFormat');
 export const ImageFormat = FeliciaProtoRoot.lookupEnum('felicia.ImageFormat');
+export const HumanBody = FeliciaProtoRoot.lookupEnum('felicia.HumanBody');
+export const HumanBodyModel = FeliciaProtoRoot.lookupEnum('felicia.HumanBodyModel');
 
 const PROTO_TYPES = {};
 PROTO_TYPES[CAMERA_FRAME_MESSAGE] = FeliciaProtoRoot.lookupType(CAMERA_FRAME_MESSAGE);
@@ -23,6 +26,7 @@ PROTO_TYPES[DEPTH_CAMERA_FRAME_MESSAGE] = FeliciaProtoRoot.lookupType(DEPTH_CAME
 PROTO_TYPES[IMAGE_WITH_BOUNDING_BOXES_MESSAGE] = FeliciaProtoRoot.lookupType(
   IMAGE_WITH_BOUNDING_BOXES_MESSAGE
 );
+PROTO_TYPES[IMAGE_WITH_HUMANS_MESSAGE] = FeliciaProtoRoot.lookupType(IMAGE_WITH_HUMANS_MESSAGE);
 PROTO_TYPES[IMU_FRAME_MESSAGE] = FeliciaProtoRoot.lookupType(IMU_FRAME_MESSAGE);
 PROTO_TYPES[LIDAR_FRAME_MESSAGE] = FeliciaProtoRoot.lookupType(LIDAR_FRAME_MESSAGE);
 PROTO_TYPES[POINTCLOUD_FRAME_MESSAGE] = FeliciaProtoRoot.lookupType(POINTCLOUD_FRAME_MESSAGE);

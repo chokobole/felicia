@@ -27,17 +27,17 @@ def main():
         sys.exit(1)
 
     if delegate.device_index_flag.is_set():
-        if len(camera_descriptors) <= delegate.device_index_flag.value():
+        if len(camera_descriptors) <= delegate.device_index_flag.value:
             print("{} {}".format(cli.RED_ERROR, "Please set device_index among them.."))
             for i in range(len(camera_descriptors)):
                 print("[{}] {}".format(i, camera_descriptors[i]), file=sys.stderr)
             sys.exit(1)
 
-    if delegate.device_list_flag.value():
+    if delegate.device_list_flag.value:
         if delegate.device_index_flag.is_set():
             camera_formats = []
             s = fel.drivers.CameraFactory.get_supported_camera_formats(
-                camera_descriptors[delegate.device_index_flag.value()],
+                camera_descriptors[delegate.device_index_flag.value],
                 camera_formats)
             if not s.ok():
                 print("{} {}.".format(cli.RED_ERROR, s), file=sys.stderr)
@@ -55,17 +55,17 @@ def main():
         sys.exit(1)
 
     node_info = NodeInfo()
-    node_info.name = delegate.name_flag.value()
+    node_info.name = delegate.name_flag.value
 
-    if delegate.is_publshing_node_flag.value():
+    if delegate.is_publshing_node_flag.value:
         fel.MasterProxy.request_register_node(
             CameraPublishingNode, node_info,
-            delegate.topic_flag.value(),
-            camera_descriptors[delegate.device_index_flag.value()])
+            delegate.topic_flag.value,
+            camera_descriptors[delegate.device_index_flag.value])
     else:
         fel.MasterProxy.request_register_node(
             CameraSubscribingNode, node_info,
-            delegate.topic_flag.value())
+            delegate.topic_flag.value)
 
     fel.MasterProxy.run()
 

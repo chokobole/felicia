@@ -85,14 +85,14 @@ AddFlagBuilder(py::module& m, const char* name) {
 template <typename FlagTy>
 void AddFlag(py::module& m, const char* name) {
   py::class_<FlagTy>(m, name)
-      .def("short_name", &FlagTy::short_name)
-      .def("long_name", &FlagTy::long_name)
-      .def("name", &FlagTy::name)
-      .def("usage", &FlagTy::usage)
-      .def("help", &FlagTy::help, py::arg("help_start") = 20)
+      .def_property_readonly("short_name", &FlagTy::short_name)
+      .def_property_readonly("long_name", &FlagTy::long_name)
+      .def_property_readonly("name", &FlagTy::name)
+      .def_property_readonly("usage", &FlagTy::usage)
+      .def_property_readonly("help", &FlagTy::help, py::arg("help_start") = 20)
+      .def_property_readonly("value", &FlagTy::value)
       .def("is_positional", &FlagTy::is_positional)
       .def("is_optional", &FlagTy::is_optional)
-      .def("value", &FlagTy::value)
       .def("is_set", &FlagTy::is_set)
       .def("release", &FlagTy::release)
       .def("parse", &FlagTy::Parse);

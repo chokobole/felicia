@@ -25,19 +25,19 @@ def main():
         sys.exit(1)
 
     node_info = NodeInfo()
-    node_info.name = delegate.name_flag.value()
+    node_info.name = delegate.name_flag.value
 
-    if delegate.is_publshing_node_flag.value():
+    if delegate.is_publshing_node_flag.value:
         fel.MasterProxy.request_register_node(
             SimplePublishingNode,
             node_info,
-            delegate.topic_flag.value(),
-            delegate.channel_type_flag.value())
+            delegate.topic_flag.value,
+            delegate.channel_type_flag.value)
     else:
         fel.MasterProxy.request_register_node(
             SimpleSubscribingNode,
             node_info,
-            delegate.topic_flag.value())
+            delegate.topic_flag.value)
 
     fel.MasterProxy.run()
 
