@@ -92,8 +92,8 @@ Status AvfCamera::Start(const CameraFormat& requested_camera_format,
   s = SetCameraFormat(final_camera_format);
   if (!s.ok()) return s;
 
-  if (requested_camera_format.convert_to_argb()) {
-    camera_format_.set_convert_to_argb(true);
+  if (requested_camera_format.convert_to_bgra()) {
+    camera_format_.set_convert_to_bgra(true);
   }
 
   if (![capture_device_ startCapture]) {
@@ -151,15 +151,15 @@ void AvfCamera::ReceiveFrame(const uint8_t* video_frame, int video_frame_length,
     return;
   }
 
-  if (camera_format_.convert_to_argb()) {
+  if (camera_format_.convert_to_bgra()) {
     CameraBuffer camera_buffer(const_cast<uint8_t*>(video_frame), video_frame_length);
     camera_buffer.set_payload(video_frame_length);
-    ::base::Optional<CameraFrame> argb_frame =
-        ConvertToARGB(camera_buffer, camera_format, timestamp);
-    if (argb_frame.has_value()) {
-      camera_frame_callback_.Run(std::move(argb_frame.value()));
+    ::base::Optional<CameraFrame> bgra_frame =
+        ConvertToBGRA(camera_buffer, camera_format, timestamp);
+    if (bgra_frame.has_value()) {
+      camera_frame_callback_.Run(std::move(bgra_frame.value()));
     } else {
-      status_callback_.Run(errors::FailedToConvertToARGB());
+      status_callback_.Run(errors::FailedToConvertToBGRA());
     }
   } else {
     std::unique_ptr<uint8_t[]> data(new uint8_t[video_frame_length]);

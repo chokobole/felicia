@@ -6,7 +6,7 @@ namespace felicia {
 
 CameraFormat ConvertToCameraFormat(const ZedCapability& capability) {
   CameraFormat camera_format;
-  camera_format.set_pixel_format(PixelFormat::PIXEL_FORMAT_ARGB);
+  camera_format.set_pixel_format(PixelFormat::PIXEL_FORMAT_BGRA);
   camera_format.set_frame_rate(capability.frame_rate);
 
   switch (capability.resolution) {

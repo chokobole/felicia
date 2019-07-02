@@ -446,8 +446,8 @@ Status MfCamera::Start(const CameraFormat& requested_camera_format,
   }
 
   camera_format_ = found_capability.supported_format;
-  if (requested_camera_format.convert_to_argb()) {
-    camera_format_.set_convert_to_argb(true);
+  if (requested_camera_format.convert_to_bgra()) {
+    camera_format_.set_convert_to_bgra(true);
   }
 
   ComPtr<IMFCaptureSink> sink;
@@ -779,15 +779,15 @@ void MfCamera::OnIncomingCapturedData(const uint8_t* data, int length,
     return;
   }
 
-  if (camera_format_.convert_to_argb()) {
+  if (camera_format_.convert_to_bgra()) {
     CameraBuffer camera_buffer(const_cast<uint8_t*>(data), length);
     camera_buffer.set_payload(length);
-    ::base::Optional<CameraFrame> argb_frame =
-        ConvertToARGB(camera_buffer, camera_format_, timestamp);
-    if (argb_frame.has_value()) {
-      camera_frame_callback_.Run(std::move(argb_frame.value()));
+    ::base::Optional<CameraFrame> bgra_frame =
+        ConvertToBGRA(camera_buffer, camera_format_, timestamp);
+    if (bgra_frame.has_value()) {
+      camera_frame_callback_.Run(std::move(bgra_frame.value()));
     } else {
-      status_callback_.Run(errors::FailedToConvertToARGB());
+      status_callback_.Run(errors::FailedToConvertToBGRA());
     }
   } else {
     std::unique_ptr<uint8_t[]> new_data(new uint8_t[length]);

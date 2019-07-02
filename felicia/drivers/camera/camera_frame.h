@@ -48,7 +48,7 @@ class EXPORT CameraFrame {
   DISALLOW_COPY_AND_ASSIGN(CameraFrame);
 };
 
-EXPORT ::base::Optional<CameraFrame> ConvertToARGB(CameraBuffer camera_buffer,
+EXPORT ::base::Optional<CameraFrame> ConvertToBGRA(CameraBuffer camera_buffer,
                                                    CameraFormat camera_format,
                                                    ::base::TimeDelta timestamp);
 

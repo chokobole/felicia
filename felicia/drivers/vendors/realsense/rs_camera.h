@@ -112,7 +112,7 @@ class RsCamera : public DepthCameraInterface {
   void HandlePoints(::rs2::points points, ::base::TimeDelta timestamp,
                     const ::rs2::frameset& frameset);
 
-  ::base::Optional<CameraFrame> ConvertToARGB(::rs2::video_frame color_frame,
+  ::base::Optional<CameraFrame> ConvertToBGRA(::rs2::video_frame color_frame,
                                               ::base::TimeDelta timestamp);
   CameraFrame FromRsColorFrame(::rs2::video_frame color_frame,
                                ::base::TimeDelta timestamp);
@@ -129,7 +129,7 @@ class RsCamera : public DepthCameraInterface {
   PipelineSyncer syncer_;
   std::vector<NamedFilter> named_filters_;
 
-  CameraFrame cached_argb_frame_;
+  CameraFrame cached_bgra_frame_;
   float depth_scale_;
 
   ::base::flat_map<RsStreamInfo, ::rs2::sensor> sensors_;

@@ -11,18 +11,18 @@ namespace felicia {
 CameraFormat::CameraFormat() = default;
 
 CameraFormat::CameraFormat(Sizei size, PixelFormat pixel_format,
-                           float frame_rate, bool convert_to_argb)
+                           float frame_rate, bool convert_to_bgra)
     : size_(size),
       pixel_format_(pixel_format),
       frame_rate_(frame_rate),
-      convert_to_argb_(convert_to_argb) {}
+      convert_to_bgra_(convert_to_bgra) {}
 
 CameraFormat::CameraFormat(int width, int height, PixelFormat pixel_format,
-                           float frame_rate, bool convert_to_argb)
+                           float frame_rate, bool convert_to_bgra)
     : size_(Sizei(width, height)),
       pixel_format_(pixel_format),
       frame_rate_(frame_rate),
-      convert_to_argb_(convert_to_argb) {}
+      convert_to_bgra_(convert_to_bgra) {}
 
 CameraFormat::CameraFormat(const CameraFormat& camera_format) = default;
 
@@ -54,10 +54,10 @@ void CameraFormat::set_frame_rate(float frame_rate) {
   frame_rate_ = frame_rate;
 }
 
-bool CameraFormat::convert_to_argb() const { return convert_to_argb_; }
+bool CameraFormat::convert_to_bgra() const { return convert_to_bgra_; }
 
-void CameraFormat::set_convert_to_argb(bool convert_to_argb) {
-  convert_to_argb_ = convert_to_argb;
+void CameraFormat::set_convert_to_bgra(bool convert_to_bgra) {
+  convert_to_bgra_ = convert_to_bgra;
 }
 
 libyuv::FourCC CameraFormat::ToLibyuvPixelFormat() const {
@@ -74,21 +74,23 @@ libyuv::FourCC CameraFormat::ToLibyuvPixelFormat() const {
       return libyuv::FOURCC_UYVY;
     case PIXEL_FORMAT_YUY2:
       return libyuv::FOURCC_YUY2;
-    case PIXEL_FORMAT_ARGB:
+    case PIXEL_FORMAT_BGRA:
       return libyuv::FOURCC_ARGB;
-    case PIXEL_FORMAT_RGB24:
+    case PIXEL_FORMAT_BGR:
       return libyuv::FOURCC_24BG;
-    case PIXEL_FORMAT_RGB32:
-      return libyuv::FOURCC_BGRA;
     case PIXEL_FORMAT_MJPEG:
       return libyuv::FOURCC_MJPG;
-    case PIXEL_FORMAT_ABGR:
+    case PIXEL_FORMAT_RGBA:
       return libyuv::FOURCC_ABGR;
-    case PIXEL_FORMAT_XBGR:
+    case PIXEL_FORMAT_RGB:
       return libyuv::FOURCC_RAW;
+    case PIXEL_FORMAT_ARGB:
+      return libyuv::FOURCC_BGRA;
+    case PIXEL_FORMAT_BGRX:
     case PIXEL_FORMAT_Y8:
     case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_Z16:
+    case PIXEL_FORMAT_RGBX:
     case PIXEL_FORMAT_UNKNOWN:
     case PixelFormat_INT_MIN_SENTINEL_DO_NOT_USE_:
     case PixelFormat_INT_MAX_SENTINEL_DO_NOT_USE_:
@@ -150,10 +152,9 @@ std::ostream& operator<<(std::ostream& os,
 
 // This list is ordered by precedence of use.
 static PixelFormat const kSupportedCapturePixelFormats[] = {
-    PIXEL_FORMAT_I420,  PIXEL_FORMAT_YV12,  PIXEL_FORMAT_NV12,
-    PIXEL_FORMAT_NV21,  PIXEL_FORMAT_UYVY,  PIXEL_FORMAT_YUY2,
-    PIXEL_FORMAT_RGB24, PIXEL_FORMAT_RGB32, PIXEL_FORMAT_ARGB,
-    PIXEL_FORMAT_MJPEG,
+    PIXEL_FORMAT_I420, PIXEL_FORMAT_YV12,  PIXEL_FORMAT_NV12, PIXEL_FORMAT_NV21,
+    PIXEL_FORMAT_UYVY, PIXEL_FORMAT_YUY2,  PIXEL_FORMAT_BGR,  PIXEL_FORMAT_ARGB,
+    PIXEL_FORMAT_BGRA, PIXEL_FORMAT_MJPEG,
 };
 
 bool ComparePixelFormatPreference(PixelFormat lhs, PixelFormat rhs) {

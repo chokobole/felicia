@@ -4,32 +4,47 @@ import colormap from 'colormap';
 
 import { PixelFormat } from '@felicia-viz/communication';
 
-import { RGBA, RGB, BGRA, BGR } from 'util/color';
+import { RGBA, RGB, BGRA, BGRX, BGR, ARGB } from 'util/color';
 
 function blendPixels(pixels, width, height, data, colorIndexes) {
   const pixelData = new Uint8ClampedArray(data);
   const size = width * height;
-  if (colorIndexes.aIdx) {
-    for (let i = 0; i < size; i += 1) {
-      const imageDataIdx = i << 2;
-      pixels[imageDataIdx + RGBA.rIdx] =
-        (pixels[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + colorIndexes.rIdx]) >> 1;
-      pixels[imageDataIdx + RGBA.gIdx] =
-        (pixels[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + colorIndexes.gIdx]) >> 1;
-      pixels[imageDataIdx + RGBA.bIdx] =
-        (pixels[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + colorIndexes.bIdx]) >> 1;
-      pixels[imageDataIdx + RGBA.aIdx] =
-        (pixels[imageDataIdx + RGBA.aIdx] + pixelData[imageDataIdx + colorIndexes.aIdx]) >> 1;
+  if (colorIndexes.aIdx !== undefined) {
+    if (colorIndexes.aIdx < 0) {
+      for (let i = 0; i < size; i += 1) {
+        const pixelsIdx = i << 2;
+        const pixelDataIdx = pixelsIdx;
+        pixels[pixelsIdx + RGBA.rIdx] =
+          (pixels[pixelsIdx + RGBA.rIdx] + pixelData[pixelDataIdx + colorIndexes.rIdx]) >> 1;
+        pixels[pixelsIdx + RGBA.gIdx] =
+          (pixels[pixelsIdx + RGBA.gIdx] + pixelData[pixelDataIdx + colorIndexes.gIdx]) >> 1;
+        pixels[pixelsIdx + RGBA.bIdx] =
+          (pixels[pixelsIdx + RGBA.bIdx] + pixelData[pixelDataIdx + colorIndexes.bIdx]) >> 1;
+      }
+    } else {
+      for (let i = 0; i < size; i += 1) {
+        const pixelsIdx = i << 2;
+        const pixelDataIdx = pixelsIdx;
+        pixels[pixelsIdx + RGBA.rIdx] =
+          (pixels[pixelsIdx + RGBA.rIdx] + pixelData[pixelDataIdx + colorIndexes.rIdx]) >> 1;
+        pixels[pixelsIdx + RGBA.gIdx] =
+          (pixels[pixelsIdx + RGBA.gIdx] + pixelData[pixelDataIdx + colorIndexes.gIdx]) >> 1;
+        pixels[pixelsIdx + RGBA.bIdx] =
+          (pixels[pixelsIdx + RGBA.bIdx] + pixelData[pixelDataIdx + colorIndexes.bIdx]) >> 1;
+        pixels[pixelsIdx + RGBA.aIdx] =
+          (pixels[pixelsIdx + RGBA.aIdx] + pixelData[pixelDataIdx + colorIndexes.aIdx]) >> 1;
+      }
     }
   } else {
     for (let i = 0; i < size; i += 1) {
-      const imageDataIdx = i << 2;
-      pixels[imageDataIdx + RGBA.rIdx] =
-        (pixels[imageDataIdx + RGBA.rIdx] + pixelData[imageDataIdx + colorIndexes.rIdx]) >> 1;
-      pixels[imageDataIdx + RGBA.gIdx] =
-        (pixels[imageDataIdx + RGBA.gIdx] + pixelData[imageDataIdx + colorIndexes.gIdx]) >> 1;
-      pixels[imageDataIdx + RGBA.bIdx] =
-        (pixels[imageDataIdx + RGBA.bIdx] + pixelData[imageDataIdx + colorIndexes.bIdx]) >> 1;
+      const pixelsIdx = i << 2;
+      const pixelDataIdx = i * 3;
+      pixels[pixelsIdx + RGBA.rIdx] =
+        (pixels[pixelsIdx + RGBA.rIdx] + pixelData[pixelDataIdx + colorIndexes.rIdx]) >> 1;
+      pixels[pixelsIdx + RGBA.gIdx] =
+        (pixels[pixelsIdx + RGBA.gIdx] + pixelData[pixelDataIdx + colorIndexes.gIdx]) >> 1;
+      pixels[pixelsIdx + RGBA.bIdx] =
+        (pixels[pixelsIdx + RGBA.bIdx] + pixelData[pixelDataIdx + colorIndexes.bIdx]) >> 1;
     }
   }
 }
@@ -48,18 +63,20 @@ function align(pixels, frameToAlign, width, height) {
     return;
   }
 
-  if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_ARGB || converted) {
+  if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_BGRA || converted) {
     blendPixels(pixels, width, height, data, BGRA);
-  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGB24) {
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_BGR) {
     blendPixels(pixels, width, height, data, BGR);
-  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGB32) {
-    blendPixels(pixels, width, height, data, BGRA);
-  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_ABGR) {
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_ARGB) {
+    blendPixels(pixels, width, height, data, ARGB);
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGBA) {
     blendPixels(pixels, width, height, data, RGBA);
-  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_XBGR) {
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGB) {
     blendPixels(pixels, width, height, data, RGB);
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_BGRX) {
+    blendPixels(pixels, width, height, data, BGRX);
   } else {
-    console.error(`Color format is not ARGB: ${pixelFormat}`);
+    console.error(`To draw, you need to convert to BGRA format: ${pixelFormat}`);
   }
 }
 

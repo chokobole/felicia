@@ -101,7 +101,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
   void StartCamera() {
     ZedCamera::StartParams params;
     params.requested_camera_format =
-        CameraFormat(1280, 760, PIXEL_FORMAT_ARGB, 30);
+        CameraFormat(1280, 760, PIXEL_FORMAT_BGRA, 30);
     params.status_callback = ::base::BindRepeating(
         &ZedCameraPublishingNode::OnCameraError, ::base::Unretained(this));
     if (!left_camera_topic_.empty()) {

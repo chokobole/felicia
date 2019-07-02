@@ -242,8 +242,8 @@ Status V4l2Camera::Start(const CameraFormat& requested_camera_format,
   s = SetCameraFormat(final_camera_format);
   if (!s.ok()) return s;
 
-  if (requested_camera_format.convert_to_argb()) {
-    camera_format_.set_convert_to_argb(true);
+  if (requested_camera_format.convert_to_bgra()) {
+    camera_format_.set_convert_to_bgra(true);
   }
 
   s = InitMmap();
@@ -606,13 +606,13 @@ void V4l2Camera::DoCapture() {
   } else {
     CameraBuffer& camera_buffer = buffers_[buffer.index];
     camera_buffer.set_payload(buffer.bytesused);
-    if (camera_format_.convert_to_argb()) {
-      ::base::Optional<CameraFrame> argb_frame = ConvertToARGB(
+    if (camera_format_.convert_to_bgra()) {
+      ::base::Optional<CameraFrame> bgra_frame = ConvertToBGRA(
           camera_buffer, camera_format_, timestamper_.timestamp());
-      if (argb_frame.has_value()) {
-        camera_frame_callback_.Run(std::move(argb_frame.value()));
+      if (bgra_frame.has_value()) {
+        camera_frame_callback_.Run(std::move(bgra_frame.value()));
       } else {
-        status_callback_.Run(errors::FailedToConvertToARGB());
+        status_callback_.Run(errors::FailedToConvertToBGRA());
       }
     } else {
       std::unique_ptr<uint8_t[]> data(new uint8_t[camera_buffer.payload()]);

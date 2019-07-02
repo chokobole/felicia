@@ -296,8 +296,8 @@ Status DshowCamera::Start(const CameraFormat& requested_camera_format,
 
   camera_format_ = found_capability.supported_format;
   camera_format_.set_frame_rate(frame_rate);
-  if (requested_camera_format.convert_to_argb()) {
-    camera_format_.set_convert_to_argb(true);
+  if (requested_camera_format.convert_to_bgra()) {
+    camera_format_.set_convert_to_bgra(true);
   }
 
   if (media_type->subtype == kMediaSubTypeHDYC) {
@@ -507,15 +507,15 @@ void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
   // timestamp.
   if (timestamp == kNoTimestamp) timestamp = timestamper_.timestamp();
 
-  if (camera_format_.convert_to_argb()) {
+  if (camera_format_.convert_to_bgra()) {
     CameraBuffer camera_buffer(const_cast<uint8_t*>(buffer), length);
     camera_buffer.set_payload(length);
-    ::base::Optional<CameraFrame> argb_frame =
-        ConvertToARGB(camera_buffer, camera_format, timestamp);
-    if (argb_frame.has_value()) {
-      camera_frame_callback_.Run(std::move(argb_frame.value()));
+    ::base::Optional<CameraFrame> bgra_frame =
+        ConvertToBGRA(camera_buffer, camera_format, timestamp);
+    if (bgra_frame.has_value()) {
+      camera_frame_callback_.Run(std::move(bgra_frame.value()));
     } else {
-      status_callback_.Run(errors::FailedToConvertToARGB());
+      status_callback_.Run(errors::FailedToConvertToBGRA());
     }
   } else {
     std::unique_ptr<uint8_t[]> data(new uint8_t[length]);

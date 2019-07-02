@@ -24,6 +24,14 @@ export const BGRA = {
 };
 Object.freeze(BGRA);
 
+export const BGRX = {
+  rIdx: 2,
+  gIdx: 1,
+  bIdx: 0,
+  aIdx: -1,
+};
+Object.freeze(BGRX);
+
 export const BGR = {
   rIdx: 2,
   gIdx: 1,
@@ -31,16 +39,35 @@ export const BGR = {
 };
 Object.freeze(BGR);
 
+export const ARGB = {
+  rIdx: 1,
+  gIdx: 2,
+  bIdx: 3,
+  aIdx: 0,
+};
+Object.freeze(ARGB);
+
 export function fillPixels(pixels, width, height, data, colorIndexes) {
   const pixelData = new Uint8ClampedArray(data);
   const size = width * height;
-  if (colorIndexes.aIdx) {
-    for (let i = 0; i < size; i += 1) {
-      const pixelsIdx = i << 2;
-      pixels[pixelsIdx + RGBA.rIdx] = pixelData[pixelsIdx + colorIndexes.rIdx];
-      pixels[pixelsIdx + RGBA.gIdx] = pixelData[pixelsIdx + colorIndexes.gIdx];
-      pixels[pixelsIdx + RGBA.bIdx] = pixelData[pixelsIdx + colorIndexes.bIdx];
-      pixels[pixelsIdx + RGBA.aIdx] = pixelData[pixelsIdx + colorIndexes.aIdx];
+  if (colorIndexes.aIdx !== undefined) {
+    if (colorIndexes.aIdx < 0) {
+      for (let i = 0; i < size; i += 1) {
+        const pixelsIdx = i << 2;
+        const pixelDataIdx = pixelsIdx;
+        pixels[pixelsIdx + RGBA.rIdx] = pixelData[pixelDataIdx + colorIndexes.rIdx];
+        pixels[pixelsIdx + RGBA.gIdx] = pixelData[pixelDataIdx + colorIndexes.gIdx];
+        pixels[pixelsIdx + RGBA.bIdx] = pixelData[pixelDataIdx + colorIndexes.bIdx];
+      }
+    } else {
+      for (let i = 0; i < size; i += 1) {
+        const pixelsIdx = i << 2;
+        const pixelDataIdx = pixelsIdx;
+        pixels[pixelsIdx + RGBA.rIdx] = pixelData[pixelDataIdx + colorIndexes.rIdx];
+        pixels[pixelsIdx + RGBA.gIdx] = pixelData[pixelDataIdx + colorIndexes.gIdx];
+        pixels[pixelsIdx + RGBA.bIdx] = pixelData[pixelDataIdx + colorIndexes.bIdx];
+        pixels[pixelsIdx + RGBA.aIdx] = pixelData[pixelDataIdx + colorIndexes.aIdx];
+      }
     }
   } else {
     for (let i = 0; i < size; i += 1) {

@@ -68,26 +68,26 @@ CameraFrameMessage CameraFrame::ToCameraFrameMessage() const {
   return message;
 }
 
-::base::Optional<CameraFrame> ConvertToARGB(CameraBuffer camera_buffer,
+::base::Optional<CameraFrame> ConvertToBGRA(CameraBuffer camera_buffer,
                                             CameraFormat camera_format,
                                             ::base::TimeDelta timestamp) {
   PixelFormat pixel_format = camera_format.pixel_format();
   libyuv::FourCC src_format;
 
-  if (pixel_format == PIXEL_FORMAT_ARGB) {
-    LOG(ERROR) << "Its format is already PIXEL_FORMAT_ARGB.";
+  if (pixel_format == PIXEL_FORMAT_BGRA) {
+    LOG(ERROR) << "Its format is already PIXEL_FORMAT_BGRA.";
   }
 
   src_format = camera_format.ToLibyuvPixelFormat();
   if (src_format == libyuv::FOURCC_ANY) return ::base::nullopt;
 
-  CameraFormat rgba_camera_format(camera_format.width(), camera_format.height(),
-                                  PIXEL_FORMAT_ARGB,
+  CameraFormat bgra_camera_format(camera_format.width(), camera_format.height(),
+                                  PIXEL_FORMAT_BGRA,
                                   camera_format.frame_rate());
-  size_t length = rgba_camera_format.AllocationSize();
-  std::unique_ptr<uint8_t[]> tmp_argb(new uint8_t[length]);
+  size_t length = bgra_camera_format.AllocationSize();
+  std::unique_ptr<uint8_t[]> tmp_bgra(new uint8_t[length]);
   if (libyuv::ConvertToARGB(camera_buffer.start(), camera_buffer.payload(),
-                            tmp_argb.get(), camera_format.width() * 4,
+                            tmp_bgra.get(), camera_format.width() * 4,
                             0 /* crop_x_pos */, 0 /* crop_y_pos */,
                             camera_format.width(), camera_format.height(),
                             camera_format.width(), camera_format.height(),
@@ -95,7 +95,7 @@ CameraFrameMessage CameraFrame::ToCameraFrameMessage() const {
     return ::base::nullopt;
   }
 
-  return CameraFrame(std::move(tmp_argb), length, rgba_camera_format,
+  return CameraFrame(std::move(tmp_bgra), length, bgra_camera_format,
                      timestamp);
 }
 

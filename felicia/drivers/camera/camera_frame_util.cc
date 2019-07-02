@@ -36,15 +36,16 @@ enum {
 bool RequiresEvenSizeAllocation(CameraFormat camera_format) {
   PixelFormat pixel_format = camera_format.pixel_format();
   switch (pixel_format) {
-    case PIXEL_FORMAT_ARGB:
-    // case PIXEL_FORMAT_XRGB:
-    case PIXEL_FORMAT_RGB24:
-    case PIXEL_FORMAT_RGB32:
+    case PIXEL_FORMAT_BGRA:
+    case PIXEL_FORMAT_BGR:
+    case PIXEL_FORMAT_BGRX:
     case PIXEL_FORMAT_Y8:
     case PIXEL_FORMAT_Y16:
+    case PIXEL_FORMAT_RGBA:
+    case PIXEL_FORMAT_RGBX:
+    case PIXEL_FORMAT_RGB:
+    case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_Z16:
-    case PIXEL_FORMAT_ABGR:
-    case PIXEL_FORMAT_XBGR:
       return false;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
@@ -83,16 +84,17 @@ size_t NumPlanes(CameraFormat camera_format) {
   switch (pixel_format) {
     case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_YUY2:
-    case PIXEL_FORMAT_ARGB:
-    // case PIXEL_FORMAT_XRGB:
-    case PIXEL_FORMAT_RGB24:
-    case PIXEL_FORMAT_RGB32:
+    case PIXEL_FORMAT_BGRA:
+    case PIXEL_FORMAT_BGR:
+    case PIXEL_FORMAT_BGRX:
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_Y8:
     case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_Z16:
-    case PIXEL_FORMAT_ABGR:
-    case PIXEL_FORMAT_XBGR:
+    case PIXEL_FORMAT_RGBA:
+    case PIXEL_FORMAT_RGBX:
+    case PIXEL_FORMAT_RGB:
+    case PIXEL_FORMAT_ARGB:
       return 1;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
@@ -175,13 +177,14 @@ Sizei SampleSize(CameraFormat camera_format, size_t plane) {
         case PixelFormat_INT_MAX_SENTINEL_DO_NOT_USE_:
         case PIXEL_FORMAT_UYVY:
         case PIXEL_FORMAT_YUY2:
-        case PIXEL_FORMAT_ARGB:
-        // case PIXEL_FORMAT_XRGB:
-        case PIXEL_FORMAT_RGB24:
-        case PIXEL_FORMAT_RGB32:
+        case PIXEL_FORMAT_BGRA:
+        case PIXEL_FORMAT_BGR:
+        case PIXEL_FORMAT_BGRX:
         case PIXEL_FORMAT_MJPEG:
-        case PIXEL_FORMAT_ABGR:
-        case PIXEL_FORMAT_XBGR:
+        case PIXEL_FORMAT_RGBA:
+        case PIXEL_FORMAT_RGBX:
+        case PIXEL_FORMAT_RGB:
+        case PIXEL_FORMAT_ARGB:
           break;
       }
   }
@@ -194,13 +197,14 @@ int BytesPerElement(CameraFormat camera_format, size_t plane) {
 
   PixelFormat pixel_format = camera_format.pixel_format();
   switch (pixel_format) {
+    case PIXEL_FORMAT_BGRA:
+    case PIXEL_FORMAT_BGRX:
+    case PIXEL_FORMAT_RGBA:
+    case PIXEL_FORMAT_RGBX:
     case PIXEL_FORMAT_ARGB:
-    // case PIXEL_FORMAT_XRGB:
-    case PIXEL_FORMAT_RGB32:
-    case PIXEL_FORMAT_ABGR:
-    case PIXEL_FORMAT_XBGR:
       return 4;
-    case PIXEL_FORMAT_RGB24:
+    case PIXEL_FORMAT_BGR:
+    case PIXEL_FORMAT_RGB:
       return 3;
     case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_Z16:

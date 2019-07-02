@@ -127,9 +127,9 @@ void AddCamera(py::module& m) {
 
   py::class_<CameraFormat>(m, "CameraFormat")
       .def(py::init([](int width, int height, PixelFormat pixel_format,
-                       float frame_rate, bool convert_to_argb) {
+                       float frame_rate, bool convert_to_bgra) {
         return new CameraFormat(width, height, pixel_format, frame_rate,
-                                convert_to_argb);
+                                convert_to_bgra);
       }))
       .def_property("pixel_format", &CameraFormat::pixel_format,
                     &CameraFormat::set_pixel_format)
@@ -143,8 +143,8 @@ void AddCamera(py::module& m) {
                     })
       .def_property("frame_rate", &CameraFormat::frame_rate,
                     &CameraFormat::set_frame_rate)
-      .def_property("convert_to_argb", &CameraFormat::convert_to_argb,
-                    &CameraFormat::set_convert_to_argb)
+      .def_property("convert_to_bgra", &CameraFormat::convert_to_bgra,
+                    &CameraFormat::set_convert_to_bgra)
       .def("__str__", &CameraFormat::ToString);
 
   py::class_<CameraFrame>(m, "CameraFrame", py::buffer_protocol())

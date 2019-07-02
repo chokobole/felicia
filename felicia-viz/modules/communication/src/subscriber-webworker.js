@@ -36,38 +36,40 @@ self.onmessage = event => {
       const { width, height, pixelFormat } = cameraFormat;
 
       if (
-        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_ARGB &&
-        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_RGB24 &&
-        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_RGB32 &&
-        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_ABGR &&
-        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_XBGR &&
+        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_BGRA &&
+        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_BGR &&
+        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_BGRX &&
         pixelFormat !== PixelFormat.values.PIXEL_FORMAT_Y8 &&
         pixelFormat !== PixelFormat.values.PIXEL_FORMAT_Y16 &&
+        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_RGBA &&
+        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_RGBX &&
+        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_RGB &&
+        pixelFormat !== PixelFormat.values.PIXEL_FORMAT_ARGB &&
         pixelFormat !== PixelFormat.values.PIXEL_FORMAT_Z16
       ) {
         const imgSize = obj.data.byteLength;
-        const argbSize = width * height * 4;
+        const bgraSize = width * height * 4;
 
         const imgBuffer = Module.createBuffer(imgSize);
-        const argbBuffer = Module.createBuffer(argbSize);
+        const bgraBuffer = Module.createBuffer(bgraSize);
 
         Module.HEAPU8.set(obj.data, imgBuffer);
         if (
-          Module.convertToARGB(
+          Module.convertToBGRA(
             imgBuffer,
             imgSize,
-            argbBuffer,
+            bgraBuffer,
             width,
             height,
             PixelFormat.valuesById[pixelFormat]
           )
         ) {
-          obj.data = new Uint8Array(Module.HEAPU8.buffer, argbBuffer, argbSize);
+          obj.data = new Uint8Array(Module.HEAPU8.buffer, bgraBuffer, bgraSize);
           obj.converted = true;
         }
 
         Module.releaseBuffer(imgBuffer);
-        Module.releaseBuffer(argbBuffer);
+        Module.releaseBuffer(bgraBuffer);
       }
     }
 

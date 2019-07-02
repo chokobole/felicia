@@ -34,8 +34,8 @@ inline ::felicia::Status InvalidNumberOfBytesInBuffer() {
   return InvalidArgument("Invalid number of bytes in buffer.");
 }
 
-inline ::felicia::Status FailedToConvertToARGB() {
-  return Unavailable(::base::StringPrintf("Failed To convert to ARGB."));
+inline ::felicia::Status FailedToConvertToBGRA() {
+  return Unavailable(::base::StringPrintf("Failed To convert to BGRA."));
 }
 
 }  // namespace errors
