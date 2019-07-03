@@ -13,15 +13,15 @@ self.onmessage = event => {
     const colorsIdx = i * 4;
     const positionsIdx = i * 3;
     const pointsDataIdx = positionsIdx * 4;
-    const colorsdataIdx = positionsIdx * 4;
+    const colorsdataIdx = positionsIdx;
     if (pointsDataIdx + 8 < pointsData.byteLength) {
       positions[positionsIdx] = pointsData.getFloat32(pointsDataIdx, true);
       positions[positionsIdx + 1] = pointsData.getFloat32(pointsDataIdx + 4, true);
       positions[positionsIdx + 2] = pointsData.getFloat32(pointsDataIdx + 8, true);
-      if (colorsdataIdx + 8 < colorsData.byteLength) {
-        colors[colorsIdx] = colorsData.getFloat32(colorsdataIdx + 0, true);
-        colors[colorsIdx + 1] = colorsData.getFloat32(colorsdataIdx + 4, true);
-        colors[colorsIdx + 2] = colorsData.getFloat32(colorsdataIdx + 8, true);
+      if (colorsdataIdx + 2 < colorsData.byteLength) {
+        colors[colorsIdx] = colorsData.getUint8(colorsdataIdx + 0, true) / 255;
+        colors[colorsIdx + 1] = colorsData.getUint8(colorsdataIdx + 1, true) / 255;
+        colors[colorsIdx + 2] = colorsData.getUint8(colorsdataIdx + 2, true) / 255;
         colors[colorsIdx + 3] = 1;
       }
     } else {

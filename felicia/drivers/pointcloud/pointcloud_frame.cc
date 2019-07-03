@@ -6,11 +6,11 @@ namespace felicia {
 
 PointcloudFrame::PointcloudFrame()
     : points_(std::make_unique<std::vector<Point3f>>()),
-      colors_(std::make_unique<std::vector<Color>>()) {}
+      colors_(std::make_unique<std::vector<uint8_t>>()) {}
 
 PointcloudFrame::PointcloudFrame(size_t points_size, size_t colors_size)
     : points_(std::make_unique<std::vector<Point3f>>()),
-      colors_(std::make_unique<std::vector<Color>>()) {
+      colors_(std::make_unique<std::vector<uint8_t>>()) {
   points_->reserve(points_size);
   colors_->reserve(colors_size);
 }
@@ -34,16 +34,12 @@ void PointcloudFrame::AddPoint(const Point3f& point) {
   points_->push_back(point);
 }
 
-void PointcloudFrame::AddPointAndColor(float x, float y, float z, float r,
-                                       float g, float b) {
+void PointcloudFrame::AddPointAndColor(float x, float y, float z, uint8_t r,
+                                       uint8_t g, uint8_t b) {
   points_->emplace_back(x, y, z);
-  colors_->emplace_back(r, g, b);
-}
-
-void PointcloudFrame::AddPointAndColor(const Point3f& point,
-                                       const Color& color) {
-  points_->push_back(point);
-  colors_->push_back(color);
+  colors_->push_back(r);
+  colors_->push_back(g);
+  colors_->push_back(b);
 }
 
 void PointcloudFrame::set_timestamp(::base::TimeDelta timestamp) {
@@ -55,7 +51,7 @@ void PointcloudFrame::set_timestamp(::base::TimeDelta timestamp) {
 PointcloudFrameMessage PointcloudFrame::ToPointcloudFrameMessage() const {
   PointcloudFrameMessage message;
   message.set_points(points_->data(), points_->size() * sizeof(Point3f));
-  message.set_colors(colors_->data(), colors_->size() * sizeof(Color));
+  message.set_colors(colors_->data(), colors_->size() * sizeof(uint8_t));
   message.set_timestamp(timestamp_.InMicroseconds());
   return message;
 }

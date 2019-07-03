@@ -493,7 +493,7 @@ PointcloudFrame ZedCamera::ConvertToPointcloudFrame(
     ::sl::Mat cloud, ::base::TimeDelta timestamp) {
   const float* cloud_ptr = cloud.getPtr<::sl::float4>()->ptr();
   size_t size = cloud.getWidth() * cloud.getHeight();
-  PointcloudFrame frame(size, size);
+  PointcloudFrame frame(size, 3 * size);
   struct Color8_4 {
     uint8_t r;
     uint8_t g;
@@ -506,9 +506,9 @@ PointcloudFrame ZedCamera::ConvertToPointcloudFrame(
     for (size_t i = 0; i < size; ++i) {
       const size_t cloud_ptr_idx = i << 2;
       Color8_4 c = bit_cast<Color8_4>(cloud_ptr[cloud_ptr_idx + 3]);
-      frame.AddPointAndColor(
-          cloud_ptr[cloud_ptr_idx], cloud_ptr[cloud_ptr_idx + 1],
-          cloud_ptr[cloud_ptr_idx + 2], c.r / 255.f, c.g / 255.f, c.b / 255.f);
+      frame.AddPointAndColor(cloud_ptr[cloud_ptr_idx],
+                             cloud_ptr[cloud_ptr_idx + 1],
+                             cloud_ptr[cloud_ptr_idx + 2], c.r, c.g, c.b);
     }
   } else {
     for (size_t i = 0; i < size; ++i) {
@@ -522,8 +522,7 @@ PointcloudFrame ZedCamera::ConvertToPointcloudFrame(
       Point3f point = coordinate_.Convert(
           Point3f(x, y, z), Coordinate::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP);
       Color8_4 c = bit_cast<Color8_4>(cloud_ptr[cloud_ptr_idx + 3]);
-      frame.AddPointAndColor(point.x(), point.y(), point.z(), c.r / 255.f,
-                             c.g / 255.f, c.b / 255.f);
+      frame.AddPointAndColor(point.x(), point.y(), point.z(), c.r, c.g, c.b);
     }
   }
   frame.set_timestamp(timestamp);

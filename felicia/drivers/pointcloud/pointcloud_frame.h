@@ -19,8 +19,8 @@ class EXPORT PointcloudFrame {
 
   void AddPoint(float x, float y, float z);
   void AddPoint(const Point3f& point);
-  void AddPointAndColor(float x, float y, float z, float r, float g, float b);
-  void AddPointAndColor(const Point3f& point, const Color& color);
+  void AddPointAndColor(float x, float y, float z, uint8_t r, uint8_t g,
+                        uint8_t b);
 
   void set_timestamp(::base::TimeDelta time);
   ::base::TimeDelta timestamp() const;
@@ -29,7 +29,7 @@ class EXPORT PointcloudFrame {
 
  private:
   std::unique_ptr<std::vector<Point3f>> points_;
-  std::unique_ptr<std::vector<Color>> colors_;
+  std::unique_ptr<std::vector<uint8_t>> colors_;
   ::base::TimeDelta timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(PointcloudFrame);

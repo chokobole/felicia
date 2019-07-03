@@ -631,10 +631,8 @@ void RsCamera::HandlePoints(::rs2::points points, ::base::TimeDelta timestamp,
             coordinate_.Convert(Point3f(vertex[i].x, vertex[i].y, vertex[i].z),
                                 Coordinate::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP);
         pointcloud_frame.AddPointAndColor(
-            point.x(), point.y(), point.z(),
-            color[offset + color_indexes.r] / 255.f,
-            color[offset + color_indexes.g] / 255.f,
-            color[offset + color_indexes.b] / 255.f);
+            point.x(), point.y(), point.z(), color[offset + color_indexes.r],
+            color[offset + color_indexes.g], color[offset + color_indexes.b]);
       }
     }
   } else {
