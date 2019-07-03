@@ -34,8 +34,11 @@ inline ::felicia::Status InvalidNumberOfBytesInBuffer() {
   return InvalidArgument("Invalid number of bytes in buffer.");
 }
 
-inline ::felicia::Status FailedToConvertToBGRA() {
-  return Unavailable(::base::StringPrintf("Failed To convert to BGRA."));
+inline ::felicia::Status FailedToConvertToRequestedPixelFormat(
+    PixelFormat requested_pixel_format) {
+  return Unavailable(
+      ::base::StringPrintf("Failed To convert to %s.",
+                           PixelFormat_Name(requested_pixel_format).c_str()));
 }
 
 }  // namespace errors

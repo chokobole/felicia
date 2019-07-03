@@ -12,7 +12,7 @@ from felicia.core.protobuf.channel_pb2 import ChannelDef
 from felicia.core.protobuf.ui_pb2 import IMAGE_FORMAT_BGR
 from felicia.core.protobuf.human_pb2 import ImageWithHumansMessage, HumanBody, HUMAN_BODY_MODEL_BODY_25, HUMAN_BODY_MODEL_COCO, HUMAN_BODY_MODEL_MPI
 from felicia.drivers.camera.camera_frame_message_pb2 import CameraFrameMessage
-from felicia.drivers.camera.camera_format_message_pb2 import PIXEL_FORMAT_YUY2, PIXEL_FORMAT_RGB24
+from felicia.drivers.camera.camera_format_message_pb2 import PIXEL_FORMAT_BGR
 from openpose import Openpose, OpenposeFlag
 
 BODY_25_TO_BODY = [
@@ -258,7 +258,7 @@ class HumanPoseEstimationNode(fel.NodeLifecycle):
 
     def start_camera(self):
         # You should set the camera format if you have any you want to run with.
-        s = self.camera.start(fel.drivers.CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 25, True),
+        s = self.camera.start(fel.drivers.CameraFormat(640, 480, PIXEL_FORMAT_BGR, 25),
                               self.on_camera_frame, self.on_camera_error)
         if not s.ok():
             fel.log(fel.ERROR, s.error_message())
@@ -280,24 +280,22 @@ class HumanPoseEstimationNode(fel.NodeLifecycle):
             return
 
         image_np = np.array(camera_frame, copy=False)
-        image_in = cv2.cvtColor(image_np, cv2.COLOR_BGRA2BGR)
-        datum = self.openpose.inference(image_in)
+        datum = self.openpose.inference(image_np)
 
         if self.draw_on_image:
-            camera_format = camera_frame.camera_format
-            camera_format.pixel_format = PIXEL_FORMAT_RGB24
+            camera_format, timestamp = camera_frame
             estimated_camera_frame = fel.drivers.CameraFrame(
-                datum.cvOutputData, camera_format, camera_frame.timestamp)
+                datum.cvOutputData, camera_format, timestamp)
 
             self.publisher.publish(estimated_camera_frame.to_camera_frame_message(),
                                    self.on_publish)
         else:
             image_with_humans = ImageWithHumansMessage()
-            shape = np.shape(image_in)
+            shape = np.shape(image_np)
             image_with_humans.image.width = shape[1]
             image_with_humans.image.height = shape[0]
             image_with_humans.image.image_format = IMAGE_FORMAT_BGR
-            image_with_humans.image.data = np.ndarray.tobytes(image_in)
+            image_with_humans.image.data = np.ndarray.tobytes(image_np)
             model_pose = self.params["model_pose"]
             map_to_body = None
             if model_pose == "BODY_25":

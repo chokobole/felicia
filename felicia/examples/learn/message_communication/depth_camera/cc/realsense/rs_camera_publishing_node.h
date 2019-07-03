@@ -19,8 +19,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
         pointcloud_topic_(pointcloud_topic),
         imu_topic_(imu_topic),
         camera_descriptor_(camera_descriptor),
-        requested_color_format_(
-            CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 30, true)),
+        requested_color_format_(CameraFormat(640, 480, PIXEL_FORMAT_BGR, 30)),
         requested_depth_format_(CameraFormat(640, 480, PIXEL_FORMAT_Z16, 30)),
         requested_gyro_format_(ImuFormat(200)),
         requested_accel_format_(ImuFormat(63)),
@@ -162,6 +161,16 @@ class RsCameraPublishingNode : public NodeLifecycle {
 
     Status s = camera_->Start(params);
     if (s.ok()) {
+      if (!color_topic_.empty()) {
+        std::cout << "Color Fomrat: " << camera_->color_format() << std::endl;
+      }
+      if (!depth_topic_.empty()) {
+        std::cout << "Depth Format: " << camera_->depth_format() << std::endl;
+      }
+      if (!imu_topic_.empty()) {
+        std::cout << "Accel Fomrat: " << camera_->accel_format() << std::endl;
+        std::cout << "Gyro Format: " << camera_->gyro_format() << std::endl;
+      }
       // MasterProxy& master_proxy = MasterProxy::GetInstance();
       // master_proxy.PostDelayedTask(
       //     FROM_HERE,

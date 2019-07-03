@@ -17,6 +17,7 @@ class EXPORT CameraInterface : public CameraInterfaceBase {
 
  protected:
   CameraFormat camera_format_;
+  PixelFormat requested_pixel_format_;
 
   CameraFrameCallback camera_frame_callback_;
 };

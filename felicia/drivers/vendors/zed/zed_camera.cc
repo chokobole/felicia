@@ -153,9 +153,6 @@ Status ZedCamera::Start(const ZedCamera::StartParams& params) {
   init_params_.camera_resolution = capability->resolution;
   coordinate_ = ToCoordinate(init_params_.coordinate_system);
   camera_format_ = ConvertToCameraFormat(*capability);
-  if (params.requested_camera_format.convert_to_bgra()) {
-    camera_format_.set_convert_to_bgra(true);
-  }
   depth_camera_format_.set_pixel_format(PIXEL_FORMAT_Z16);
   depth_camera_format_.SetSize(camera_format_.width(), camera_format_.height());
   depth_camera_format_.set_frame_rate(camera_format_.frame_rate());

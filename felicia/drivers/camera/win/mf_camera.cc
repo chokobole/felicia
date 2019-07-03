@@ -445,10 +445,8 @@ Status MfCamera::Start(const CameraFormat& requested_camera_format,
         MESSAGE_WITH_HRESULT("Failed to SetCurrentDeviceMediaType", hr));
   }
 
+  requested_pixel_format_ = requested_camera_format.pixel_format();
   camera_format_ = found_capability.supported_format;
-  if (requested_camera_format.convert_to_bgra()) {
-    camera_format_.set_convert_to_bgra(true);
-  }
 
   ComPtr<IMFCaptureSink> sink;
   hr = engine_->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW,
@@ -779,22 +777,21 @@ void MfCamera::OnIncomingCapturedData(const uint8_t* data, int length,
     return;
   }
 
-  if (camera_format_.convert_to_bgra()) {
-    CameraBuffer camera_buffer(const_cast<uint8_t*>(data), length);
-    camera_buffer.set_payload(length);
-    ::base::Optional<CameraFrame> bgra_frame =
-        ConvertToBGRA(camera_buffer, camera_format_, timestamp);
-    if (bgra_frame.has_value()) {
-      camera_frame_callback_.Run(std::move(bgra_frame.value()));
-    } else {
-      status_callback_.Run(errors::FailedToConvertToBGRA());
-    }
-  } else {
+  if (requested_pixel_format_ == camera_format_.pixel_format()) {
     std::unique_ptr<uint8_t[]> new_data(new uint8_t[length]);
     memcpy(new_data.get(), data, length);
     camera_frame_callback_.Run(CameraFrame{std::move(new_data),
                                            static_cast<size_t>(length),
                                            camera_format_, timestamp});
+  } else {
+    ::base::Optional<CameraFrame> camera_frame = ConvertToRequestedPixelFormat(
+        data, length, camera_format_, requested_pixel_format_, timestamp);
+    if (camera_frame.has_value()) {
+      camera_frame_callback_.Run(std::move(camera_frame.value()));
+    } else {
+      status_callback_.Run(errors::FailedToConvertToRequestedPixelFormat(
+          requested_pixel_format_));
+    }
   }
 }
 

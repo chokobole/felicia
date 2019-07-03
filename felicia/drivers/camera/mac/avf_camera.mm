@@ -91,10 +91,7 @@ Status AvfCamera::Start(const CameraFormat& requested_camera_format,
       GetBestMatchedCameraFormat(requested_camera_format, camera_formats);
   s = SetCameraFormat(final_camera_format);
   if (!s.ok()) return s;
-
-  if (requested_camera_format.convert_to_bgra()) {
-    camera_format_.set_convert_to_bgra(true);
-  }
+  requested_pixel_format_ = requested_camera_format.pixel_format();
 
   if (![capture_device_ startCapture]) {
     return errors::Unavailable("Failed to start capture.");
@@ -151,21 +148,19 @@ void AvfCamera::ReceiveFrame(const uint8_t* video_frame, int video_frame_length,
     return;
   }
 
-  if (camera_format_.convert_to_bgra()) {
-    CameraBuffer camera_buffer(const_cast<uint8_t*>(video_frame), video_frame_length);
-    camera_buffer.set_payload(video_frame_length);
-    ::base::Optional<CameraFrame> bgra_frame =
-        ConvertToBGRA(camera_buffer, camera_format, timestamp);
-    if (bgra_frame.has_value()) {
-      camera_frame_callback_.Run(std::move(bgra_frame.value()));
-    } else {
-      status_callback_.Run(errors::FailedToConvertToBGRA());
-    }
-  } else {
+  if (requested_pixel_format_ == camera_format_.pixel_format()) {
     std::unique_ptr<uint8_t[]> data(new uint8_t[video_frame_length]);
     memcpy(data.get(), video_frame, video_frame_length);
     camera_frame_callback_.Run(CameraFrame{std::move(data), static_cast<size_t>(video_frame_length),
                                            camera_format_, timestamp});
+  } else {
+    ::base::Optional<CameraFrame> camera_frame = ConvertToRequestedPixelFormat(
+        video_frame, video_frame_length, camera_format_, requested_pixel_format_, timestamp);
+    if (camera_frame.has_value()) {
+      camera_frame_callback_.Run(std::move(camera_frame.value()));
+    } else {
+      status_callback_.Run(errors::FailedToConvertToRequestedPixelFormat(requested_pixel_format_));
+    }
   }
 }
 

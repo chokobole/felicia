@@ -72,6 +72,10 @@ class RsCamera : public DepthCameraInterface {
 
   ~RsCamera();
 
+  const ImuFormat& accel_format() const { return accel_format_; }
+
+  const ImuFormat& gyro_format() const { return gyro_format_; }
+
   // DepthCameraInterface methods
   Status Init() override;
   Status Start(const CameraFormat& requested_color_format,
@@ -112,8 +116,9 @@ class RsCamera : public DepthCameraInterface {
   void HandlePoints(::rs2::points points, ::base::TimeDelta timestamp,
                     const ::rs2::frameset& frameset);
 
-  ::base::Optional<CameraFrame> ConvertToBGRA(::rs2::video_frame color_frame,
-                                              ::base::TimeDelta timestamp);
+  ::base::Optional<CameraFrame> ConvertToRequestedPixelFormat(
+      ::rs2::video_frame color_frame, PixelFormat requested_pixel_format,
+      ::base::TimeDelta timestamp);
   CameraFrame FromRsColorFrame(::rs2::video_frame color_frame,
                                ::base::TimeDelta timestamp);
   DepthCameraFrame FromRsDepthFrame(::rs2::depth_frame depth_frame,
@@ -129,7 +134,7 @@ class RsCamera : public DepthCameraInterface {
   PipelineSyncer syncer_;
   std::vector<NamedFilter> named_filters_;
 
-  CameraFrame cached_bgra_frame_;
+  CameraFrame cached_color_frame_;
   float depth_scale_;
 
   ::base::flat_map<RsStreamInfo, ::rs2::sensor> sensors_;

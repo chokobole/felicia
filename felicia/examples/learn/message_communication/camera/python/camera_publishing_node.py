@@ -4,7 +4,7 @@ import felicia_py as fel
 import felicia_py.command_line_interface as cli
 from felicia.core.protobuf.channel_pb2 import ChannelDef
 from felicia.drivers.camera.camera_frame_message_pb2 import CameraFrameMessage
-from felicia.drivers.camera.camera_format_message_pb2 import PIXEL_FORMAT_YUY2
+from felicia.drivers.camera.camera_format_message_pb2 import PIXEL_FORMAT_BGR
 from felicia.drivers.camera.camera_settings_message_pb2 import CameraSettingsInfoMessage
 
 
@@ -63,9 +63,10 @@ class CameraPublishingNode(fel.NodeLifecycle):
 
     def start_camera(self):
         # You should set the camera format if you have any you want to run with.
-        s = self.camera.start(fel.drivers.CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 25, True),
+        s = self.camera.start(fel.drivers.CameraFormat(640, 480, PIXEL_FORMAT_BGR, 25),
                               self.on_camera_frame, self.on_camera_error)
         if s.ok():
+            print("Camera format: {}".format(self.camera.camera_format()))
             # fel.MasterProxy.post_delayed_task(
             #     self.request_unpublish, fel.TimeDelta.from_seconds(10))
             pass

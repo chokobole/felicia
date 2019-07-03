@@ -10,7 +10,6 @@
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/statusor.h"
 #include "felicia/core/lib/unit/geometry/size.h"
-#include "felicia/drivers/camera/camera_buffer.h"
 #include "felicia/drivers/camera/camera_format.h"
 #include "felicia/drivers/camera/camera_frame_message.pb.h"
 
@@ -48,9 +47,9 @@ class EXPORT CameraFrame {
   DISALLOW_COPY_AND_ASSIGN(CameraFrame);
 };
 
-EXPORT ::base::Optional<CameraFrame> ConvertToBGRA(CameraBuffer camera_buffer,
-                                                   CameraFormat camera_format,
-                                                   ::base::TimeDelta timestamp);
+EXPORT ::base::Optional<CameraFrame> ConvertToRequestedPixelFormat(
+    const uint8_t* data, size_t data_length, CameraFormat camera_format,
+    PixelFormat requested_pixel_format, ::base::TimeDelta timestamp);
 
 typedef ::base::RepeatingCallback<void(CameraFrame)> CameraFrameCallback;
 

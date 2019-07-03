@@ -34,6 +34,19 @@ EXPORT bool operator==(const Color& lhs, const Color& rhs);
 
 EXPORT bool operator!=(const Color& lhs, const Color& rhs);
 
+struct EXPORT ColorIndexes {
+  int r;
+  int g;
+  int b;
+  int a;
+};
+
+const ColorIndexes kRGB{0, 1, 2, -1};
+const ColorIndexes kRGBA{0, 1, 2, 3};
+const ColorIndexes kBGR{2, 1, 0, -1};
+const ColorIndexes kBGRA{2, 1, 0, 3};
+const ColorIndexes kARGB{1, 2, 3, 0};
+
 }  // namespace felicia
 
 #endif  // FELICIA_CORE_LIB_UNIT_UI_COLOR_H_

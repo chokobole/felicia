@@ -72,12 +72,13 @@ class CameraPublishingNode : public NodeLifecycle {
   void StartCamera() {
     // You should set the camera format if you have any you want to run with.
     Status s = camera_->Start(
-        CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 25, true),
+        CameraFormat(640, 480, PIXEL_FORMAT_BGR, 25),
         ::base::BindRepeating(&CameraPublishingNode::OnCameraFrame,
                               ::base::Unretained(this)),
         ::base::BindRepeating(&CameraPublishingNode::OnCameraError,
                               ::base::Unretained(this)));
     if (s.ok()) {
+      std::cout << "Camera Fomrat: " << camera_->camera_format() << std::endl;
       // MasterProxy& master_proxy = MasterProxy::GetInstance();
       // master_proxy.PostDelayedTask(
       //     FROM_HERE,

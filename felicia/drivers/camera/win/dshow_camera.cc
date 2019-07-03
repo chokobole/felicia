@@ -14,7 +14,6 @@
 #include "third_party/chromium/base/win/scoped_co_mem.h"
 #include "third_party/chromium/base/win/scoped_variant.h"
 
-#include "felicia/drivers/camera/camera_buffer.h"
 #include "felicia/drivers/camera/camera_errors.h"
 #include "felicia/drivers/camera/timestamp_constants.h"
 #include "felicia/drivers/camera/win/camera_util.h"
@@ -294,11 +293,9 @@ Status DshowCamera::Start(const CameraFormat& requested_camera_format,
     return errors::Unavailable(MESSAGE_WITH_HRESULT("Failed to SetFormat", hr));
   }
 
+  requested_pixel_format_ = requested_camera_format.pixel_format();
   camera_format_ = found_capability.supported_format;
   camera_format_.set_frame_rate(frame_rate);
-  if (requested_camera_format.convert_to_bgra()) {
-    camera_format_.set_convert_to_bgra(true);
-  }
 
   if (media_type->subtype == kMediaSubTypeHDYC) {
     // HDYC pixel format, used by the DeckLink capture card, needs an AVI
@@ -507,22 +504,21 @@ void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
   // timestamp.
   if (timestamp == kNoTimestamp) timestamp = timestamper_.timestamp();
 
-  if (camera_format_.convert_to_bgra()) {
-    CameraBuffer camera_buffer(const_cast<uint8_t*>(buffer), length);
-    camera_buffer.set_payload(length);
-    ::base::Optional<CameraFrame> bgra_frame =
-        ConvertToBGRA(camera_buffer, camera_format, timestamp);
-    if (bgra_frame.has_value()) {
-      camera_frame_callback_.Run(std::move(bgra_frame.value()));
-    } else {
-      status_callback_.Run(errors::FailedToConvertToBGRA());
-    }
-  } else {
+  if (requested_pixel_format_ == camera_format_.pixel_format()) {
     std::unique_ptr<uint8_t[]> data(new uint8_t[length]);
     memcpy(data.get(), buffer, length);
     camera_frame_callback_.Run(CameraFrame{std::move(data),
                                            static_cast<size_t>(length),
                                            camera_format_, timestamp});
+  } else {
+    ::base::Optional<CameraFrame> camera_frame = ConvertToRequestedPixelFormat(
+        buffer, length, camera_format_, requested_pixel_format_, timestamp);
+    if (camera_frame.has_value()) {
+      camera_frame_callback_.Run(std::move(camera_frame.value()));
+    } else {
+      status_callback_.Run(errors::FailedToConvertToRequestedPixelFormat(
+          requested_pixel_format_));
+    }
   }
 }
 

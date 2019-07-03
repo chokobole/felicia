@@ -133,6 +133,9 @@ class ZedCameraPublishingNode : public NodeLifecycle {
 
     Status s = camera_->Start(params);
     if (s.ok()) {
+      if (!left_camera_topic_.empty() || !right_camera_topic_.empty()) {
+        std::cout << "Camera Fomrat: " << camera_->camera_format() << std::endl;
+      }
       // MasterProxy& master_proxy = MasterProxy::GetInstance();
       // master_proxy.PostDelayedTask(
       //     FROM_HERE,

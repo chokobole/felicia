@@ -17,6 +17,7 @@
 #include "third_party/chromium/base/threading/thread.h"
 
 #include "felicia/core/util/timestamp/timestamper.h"
+#include "felicia/drivers/camera/camera_buffer.h"
 #include "felicia/drivers/camera/camera_interface.h"
 
 namespace felicia {

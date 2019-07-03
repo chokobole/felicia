@@ -61,7 +61,7 @@ def on_request_publish(self, status):
 
 def start_camera(self):
     # You should set the camera format if you have any you want to run with.
-    s = self.camera.start(fel.drivers.CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 25, True),
+    s = self.camera.start(fel.drivers.CameraFormat(640, 480, PIXEL_FORMAT_BGR, 25),
                           self.on_camera_frame, self.on_camera_error)
     if s.ok():
         # fel.MasterProxy.post_delayed_task(

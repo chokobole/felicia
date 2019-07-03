@@ -11,18 +11,14 @@ namespace felicia {
 CameraFormat::CameraFormat() = default;
 
 CameraFormat::CameraFormat(Sizei size, PixelFormat pixel_format,
-                           float frame_rate, bool convert_to_bgra)
-    : size_(size),
-      pixel_format_(pixel_format),
-      frame_rate_(frame_rate),
-      convert_to_bgra_(convert_to_bgra) {}
+                           float frame_rate)
+    : size_(size), pixel_format_(pixel_format), frame_rate_(frame_rate) {}
 
 CameraFormat::CameraFormat(int width, int height, PixelFormat pixel_format,
-                           float frame_rate, bool convert_to_bgra)
+                           float frame_rate)
     : size_(Sizei(width, height)),
       pixel_format_(pixel_format),
-      frame_rate_(frame_rate),
-      convert_to_bgra_(convert_to_bgra) {}
+      frame_rate_(frame_rate) {}
 
 CameraFormat::CameraFormat(const CameraFormat& camera_format) = default;
 
@@ -52,12 +48,6 @@ float CameraFormat::frame_rate() const { return frame_rate_; }
 
 void CameraFormat::set_frame_rate(float frame_rate) {
   frame_rate_ = frame_rate;
-}
-
-bool CameraFormat::convert_to_bgra() const { return convert_to_bgra_; }
-
-void CameraFormat::set_convert_to_bgra(bool convert_to_bgra) {
-  convert_to_bgra_ = convert_to_bgra;
 }
 
 libyuv::FourCC CameraFormat::ToLibyuvPixelFormat() const {
@@ -152,9 +142,10 @@ std::ostream& operator<<(std::ostream& os,
 
 // This list is ordered by precedence of use.
 static PixelFormat const kSupportedCapturePixelFormats[] = {
-    PIXEL_FORMAT_I420, PIXEL_FORMAT_YV12,  PIXEL_FORMAT_NV12, PIXEL_FORMAT_NV21,
-    PIXEL_FORMAT_UYVY, PIXEL_FORMAT_YUY2,  PIXEL_FORMAT_BGR,  PIXEL_FORMAT_ARGB,
-    PIXEL_FORMAT_BGRA, PIXEL_FORMAT_MJPEG,
+    PIXEL_FORMAT_I420,  PIXEL_FORMAT_YV12, PIXEL_FORMAT_NV12, PIXEL_FORMAT_NV21,
+    PIXEL_FORMAT_UYVY,  PIXEL_FORMAT_YUY2, PIXEL_FORMAT_BGR,  PIXEL_FORMAT_RGB,
+    PIXEL_FORMAT_BGRA,  PIXEL_FORMAT_BGRX, PIXEL_FORMAT_RGBA, PIXEL_FORMAT_ARGB,
+    PIXEL_FORMAT_MJPEG,
 };
 
 bool ComparePixelFormatPreference(PixelFormat lhs, PixelFormat rhs) {

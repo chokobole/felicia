@@ -10,7 +10,7 @@ from felicia.core.protobuf.bounding_box_pb2 import ImageWithBoundingBoxesMessage
 from felicia.core.protobuf.master_data_pb2 import NodeInfo
 from felicia.core.protobuf.channel_pb2 import ChannelDef
 from felicia.drivers.camera.camera_frame_message_pb2 import CameraFrameMessage
-from felicia.drivers.camera.camera_format_message_pb2 import PIXEL_FORMAT_YUY2, PIXEL_FORMAT_XBGR
+from felicia.drivers.camera.camera_format_message_pb2 import PIXEL_FORMAT_RGB
 from ssd_mobilenet import Inference
 
 
@@ -64,7 +64,7 @@ class ObjectDetectionNode(fel.NodeLifecycle):
 
     def start_camera(self):
         # You should set the camera format if you have any you want to run with.
-        s = self.camera.start(fel.drivers.CameraFormat(640, 480, PIXEL_FORMAT_YUY2, 25, True),
+        s = self.camera.start(fel.drivers.CameraFormat(640, 480, PIXEL_FORMAT_RGB, 25),
                               self.on_camera_frame, self.on_camera_error)
         if not s.ok():
             fel.log(fel.ERROR, s.error_message())
@@ -74,15 +74,14 @@ class ObjectDetectionNode(fel.NodeLifecycle):
         if self.publisher.is_unregistered():
             return
 
-        image_np = np.array(camera_frame, copy=False)[:, :, [2, 1, 0]]
+        image_np = np.array(camera_frame, copy=False)
 
         if self.draw_on_image:
             detected_image = self.inference.run(image_np, self.draw_on_image)
 
-            camera_format = camera_frame.camera_format
-            camera_format.pixel_format = PIXEL_FORMAT_XBGR
+            camera_format, timestamp = camera_frame
             detected_camera_frame = fel.drivers.CameraFrame(
-                detected_image, camera_format, camera_frame.timestamp)
+                detected_image, camera_format, timestamp)
 
             self.publisher.publish(detected_camera_frame.to_camera_frame_message(),
                                    self.on_publish)

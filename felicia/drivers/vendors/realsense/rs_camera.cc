@@ -126,9 +126,7 @@ Status RsCamera::Start(const RsCamera::StartParams& params) {
             params.requested_color_format, capability_map_[sensor.first]);
         if (!found_capability) return errors::NoVideoCapbility();
         color_format_ = found_capability->format.camera_format;
-        if (params.requested_color_format.convert_to_bgra()) {
-          color_format_.set_convert_to_bgra(true);
-        }
+        requested_pixel_format_ = params.requested_color_format.pixel_format();
         sensor.second.open(
             sensor.second
                 .get_stream_profiles()[found_capability->stream_index]);
@@ -520,19 +518,20 @@ void RsCamera::HandleVideoFrame(::rs2::video_frame frame,
   } else {
     if (color_frame_callback_.is_null()) return;
 
-    if (color_format_.convert_to_bgra()) {
-      if (cached_bgra_frame_.data_ptr()) {
-        color_frame_callback_.Run(std::move(cached_bgra_frame_));
-      } else {
-        auto color_frame = ConvertToBGRA(frame, timestamp);
-        if (color_frame.has_value()) {
-          color_frame_callback_.Run(std::move(color_frame.value()));
-        } else {
-          status_callback_.Run(errors::FailedToConvertToBGRA());
-        }
-      }
-    } else {
+    if (requested_pixel_format_ == color_format_.pixel_format()) {
       color_frame_callback_.Run(FromRsColorFrame(frame, timestamp));
+    } else if (requested_pixel_format_ == cached_color_frame_.pixel_format() &&
+               cached_color_frame_.data_ptr()) {
+      color_frame_callback_.Run(std::move(cached_color_frame_));
+    } else {
+      ::base::Optional<CameraFrame> color_frame = ConvertToRequestedPixelFormat(
+          frame, requested_pixel_format_, timestamp);
+      if (color_frame.has_value()) {
+        color_frame_callback_.Run(std::move(color_frame.value()));
+      } else {
+        status_callback_.Run(errors::FailedToConvertToRequestedPixelFormat(
+            requested_pixel_format_));
+      }
     }
   }
 }
@@ -555,17 +554,40 @@ void RsCamera::HandlePoints(::rs2::points points, ::base::TimeDelta timestamp,
   rs2::frameset::iterator texture_frame_itr = frameset.end();
   if (use_texture) {
     int width, height, bpp;
+    ColorIndexes color_indexes;
     const uint8_t* color = nullptr;
     if (texture_source_id == RS2_STREAM_COLOR) {
-      auto color_frame = ConvertToBGRA(frameset.get_color_frame(), timestamp);
+      PixelFormat final_pixel_format;
+      if (requested_pixel_format_ == PIXEL_FORMAT_BGR) {
+        bpp = 3;
+        color_indexes = kBGR;
+        final_pixel_format = requested_pixel_format_;
+      } else if (requested_pixel_format_ == PIXEL_FORMAT_BGRA) {
+        bpp = 4;
+        color_indexes = kBGRA;
+        final_pixel_format = requested_pixel_format_;
+      } else if (requested_pixel_format_ == PIXEL_FORMAT_RGB) {
+        bpp = 3;
+        color_indexes = kRGB;
+        final_pixel_format = requested_pixel_format_;
+      } else if (requested_pixel_format_ == PIXEL_FORMAT_ARGB) {
+        bpp = 4;
+        color_indexes = kARGB;
+        final_pixel_format = requested_pixel_format_;
+      } else {
+        bpp = 4;
+        color_indexes = kBGRA;
+        final_pixel_format = PIXEL_FORMAT_BGRA;
+      }
+      auto color_frame = ConvertToRequestedPixelFormat(
+          frameset.get_color_frame(), final_pixel_format, timestamp);
       if (color_frame.has_value()) {
-        cached_bgra_frame_ = std::move(color_frame.value());
+        cached_color_frame_ = std::move(color_frame.value());
       }
 
-      width = cached_bgra_frame_.width();
-      height = cached_bgra_frame_.height();
-      bpp = 4;
-      color = cached_bgra_frame_.data_ptr();
+      width = cached_color_frame_.width();
+      height = cached_color_frame_.height();
+      color = cached_color_frame_.data_ptr();
     } else {
       std::set<rs2_format> available_formats{rs2_format::RS2_FORMAT_RGB8,
                                              rs2_format::RS2_FORMAT_Y8};
@@ -609,8 +631,10 @@ void RsCamera::HandlePoints(::rs2::points points, ::base::TimeDelta timestamp,
             coordinate_.Convert(Point3f(vertex[i].x, vertex[i].y, vertex[i].z),
                                 Coordinate::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP);
         pointcloud_frame.AddPointAndColor(
-            point.x(), point.y(), point.z(), color[offset + 2] / 255.f,
-            color[offset + 1] / 255.f, color[offset] / 255.f);
+            point.x(), point.y(), point.z(),
+            color[offset + color_indexes.r] / 255.f,
+            color[offset + color_indexes.g] / 255.f,
+            color[offset + color_indexes.b] / 255.f);
       }
     }
   } else {
@@ -628,14 +652,14 @@ void RsCamera::HandlePoints(::rs2::points points, ::base::TimeDelta timestamp,
   pointcloud_frame_callback_.Run(std::move(pointcloud_frame));
 }
 
-::base::Optional<CameraFrame> RsCamera::ConvertToBGRA(
-    ::rs2::video_frame color_frame, ::base::TimeDelta timestamp) {
+::base::Optional<CameraFrame> RsCamera::ConvertToRequestedPixelFormat(
+    ::rs2::video_frame color_frame, PixelFormat requested_pixel_format,
+    ::base::TimeDelta timestamp) {
+  const uint8_t* data =
+      reinterpret_cast<const uint8_t*>(color_frame.get_data());
   size_t length = color_format_.AllocationSize();
-  CameraBuffer camera_buffer(
-      reinterpret_cast<uint8_t*>(const_cast<void*>(color_frame.get_data())),
-      length);
-  camera_buffer.set_payload(length);
-  return felicia::ConvertToBGRA(camera_buffer, color_format_, timestamp);
+  return felicia::ConvertToRequestedPixelFormat(
+      data, length, color_format_, requested_pixel_format, timestamp);
 }
 
 CameraFrame RsCamera::FromRsColorFrame(::rs2::video_frame color_frame,
