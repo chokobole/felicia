@@ -175,7 +175,7 @@ bool CompareCapability(const CameraFormat& requested, const CameraFormat& lhs,
       rhs.pixel_format() != requested.pixel_format()) {
     return true;
   } else if (lhs.pixel_format() != requested.pixel_format() &&
-             lhs.pixel_format() == requested.pixel_format()) {
+             rhs.pixel_format() == requested.pixel_format()) {
     return false;
   }
 
