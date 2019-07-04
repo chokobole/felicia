@@ -282,9 +282,8 @@ class HumanPoseEstimationNode(fel.NodeLifecycle):
         datum = self.openpose.inference(image_np)
 
         if self.draw_on_image:
-            camera_format, timestamp = camera_frame
             estimated_camera_frame = fel.drivers.CameraFrame(
-                datum.cvOutputData, camera_format, timestamp)
+                datum.cvOutputData, camera_frame.camera_format, camera_frame.timestamp)
 
             self.publisher.publish(estimated_camera_frame.to_camera_frame_message(),
                                    self.on_publish)

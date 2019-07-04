@@ -11,7 +11,7 @@ from felicia.core.protobuf.master_data_pb2 import NodeInfo
 from felicia.core.protobuf.channel_pb2 import ChannelDef
 from felicia.core.protobuf.ui_pb2 import PIXEL_FORMAT_RGB
 from felicia.drivers.camera.camera_frame_message_pb2 import CameraFrameMessage
-from ssd_mobilenet import Inference
+from tf_object_detection import ObjectDetection
 
 
 class ObjectDetectionNode(fel.NodeLifecycle):
@@ -30,7 +30,7 @@ class ObjectDetectionNode(fel.NodeLifecycle):
         if not s.ok():
             fel.log(fel.ERROR, s.error_message())
             sys.exit(1)
-        self.inference = Inference()
+        self.object_detection = ObjectDetection()
 
     def on_did_create(self, node_info):
         print("ObjectDetectionNode.on_did_create()")
@@ -77,16 +77,15 @@ class ObjectDetectionNode(fel.NodeLifecycle):
         image_np = np.array(camera_frame, copy=False)
 
         if self.draw_on_image:
-            detected_image = self.inference.run(image_np, self.draw_on_image)
+            detected_image = self.object_detection.run(image_np, self.draw_on_image)
 
-            camera_format, timestamp = camera_frame
             detected_camera_frame = fel.drivers.CameraFrame(
-                detected_image, camera_format, timestamp)
+                detected_image, camera_frame.camera_format, camera_frame.timestamp)
 
             self.publisher.publish(detected_camera_frame.to_camera_frame_message(),
                                    self.on_publish)
         else:
-            image_with_bounding_boxes = self.inference.run(
+            image_with_bounding_boxes = self.object_detection.run(
                 image_np, self.draw_on_image)
 
             self.publisher.publish(image_with_bounding_boxes, self.on_publish)

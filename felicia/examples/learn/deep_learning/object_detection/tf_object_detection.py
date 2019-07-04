@@ -21,6 +21,7 @@ if StrictVersion(tf.__version__) < StrictVersion('1.12.0'):
 
 # What model to download.
 MODEL_NAME = 'ssd_mobilenet_v1_coco_2017_11_17'
+# MODEL_NAME = 'mask_rcnn_inception_v2_coco_2018_01_28'
 MODEL_FILE = MODEL_NAME + '.tar.gz'
 DOWNLOAD_BASE = 'http://download.tensorflow.org/models/object_detection/'
 
@@ -69,7 +70,7 @@ def convert_to_image_with_bounding_boxes(image,
                                          classes,
                                          scores,
                                          category_index,
-                                         threshold):
+                                         threshold = 0.5):
     image_with_bounding_boxes = ImageWithBoundingBoxesMessage()
     height, width, _ = image.shape
     image_with_bounding_boxes.image.width = width
@@ -127,7 +128,7 @@ class Inference(object):
             detection_masks = tf.slice(detection_masks, [0, 0, 0], [
                 real_num_detection, -1, -1])
             detection_masks_reframed = utils_ops.reframe_box_masks_to_image_masks(
-                detection_masks, detection_boxes, image.shape[1], image.shape[2])
+                detection_masks, detection_boxes, image_np.shape[0], image_np.shape[1])
             detection_masks_reframed = tf.cast(
                 tf.greater(detection_masks_reframed, 0.5), tf.uint8)
             # Follow the convention by adding back the batch dimension
@@ -170,4 +171,5 @@ class Inference(object):
                 output_dict['detection_boxes'],
                 output_dict['detection_classes'],
                 output_dict['detection_scores'],
-                category_index, 0.1)
+                category_index,
+                0.1)
