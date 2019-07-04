@@ -108,9 +108,7 @@ export default class ImageWithBoundingBoxesView extends Component {
         const { x, y } = leftTop;
         const w = rightBottom.x - leftTop.x;
         const h = rightBottom.y - leftTop.y;
-        const colorStyle = `rgb(${Math.floor(r * 255)}, ${Math.floor(g * 255)}, ${Math.floor(
-          b * 255
-        )})`;
+        const colorStyle = `rgb(${r}, ${g}, ${b})`;
         this.proxyContext.beginPath();
         this.proxyContext.font = `${fontSize}px sans`;
         this.proxyContext.fillStyle = colorStyle;

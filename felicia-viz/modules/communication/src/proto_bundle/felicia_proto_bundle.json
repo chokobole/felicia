@@ -5,7 +5,7 @@
         "BoundingBoxMessage": {
           "fields": {
             "color": {
-              "type": "ColorMessage",
+              "type": "Color3uMessage",
               "id": 1
             },
             "box": {
@@ -682,7 +682,23 @@
             }
           }
         },
-        "ColorMessage": {
+        "Color3uMessage": {
+          "fields": {
+            "r": {
+              "type": "uint32",
+              "id": 1
+            },
+            "g": {
+              "type": "uint32",
+              "id": 2
+            },
+            "b": {
+              "type": "uint32",
+              "id": 3
+            }
+          }
+        },
+        "Color3fMessage": {
           "fields": {
             "r": {
               "type": "float",

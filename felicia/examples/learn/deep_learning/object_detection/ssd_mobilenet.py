@@ -60,7 +60,9 @@ palette_map = {}
 for index, key in enumerate(category_index):
     palette_map[key] = index
 COLOR_PALETTE = sns.color_palette("deep", len(category_index.keys()))
-
+for i in range(len(COLOR_PALETTE)):
+    r, g, b = COLOR_PALETTE[i]
+    COLOR_PALETTE[i] = (int(r * 255), int(g * 255), int(b * 255))
 
 def convert_to_image_with_bounding_boxes(image,
                                          boxes,

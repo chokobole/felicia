@@ -6,7 +6,7 @@ import "felicia/core/protobuf/geometry.proto";
 package felicia;
 
 message BoundingBoxMessage {
-  ColorMessage color = 1;
+  Color3uMessage color = 1;
   RectfMessage box = 2;
   string label = 3;
   float score = 4;
