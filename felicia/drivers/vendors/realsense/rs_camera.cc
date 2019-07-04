@@ -562,27 +562,39 @@ void RsCamera::HandlePoints(::rs2::points points, ::base::TimeDelta timestamp,
         bpp = 3;
         color_indexes = kBGR;
         final_pixel_format = requested_pixel_format_;
+        cached_color_frame_ =
+            FromRsColorFrame(frameset.get_color_frame(), timestamp);
       } else if (requested_pixel_format_ == PIXEL_FORMAT_BGRA) {
         bpp = 4;
         color_indexes = kBGRA;
         final_pixel_format = requested_pixel_format_;
+        cached_color_frame_ =
+            FromRsColorFrame(frameset.get_color_frame(), timestamp);
       } else if (requested_pixel_format_ == PIXEL_FORMAT_RGB) {
         bpp = 3;
         color_indexes = kRGB;
         final_pixel_format = requested_pixel_format_;
+        cached_color_frame_ =
+            FromRsColorFrame(frameset.get_color_frame(), timestamp);
       } else if (requested_pixel_format_ == PIXEL_FORMAT_ARGB) {
         bpp = 4;
         color_indexes = kARGB;
         final_pixel_format = requested_pixel_format_;
+        cached_color_frame_ =
+            FromRsColorFrame(frameset.get_color_frame(), timestamp);
       } else {
         bpp = 4;
         color_indexes = kBGRA;
         final_pixel_format = PIXEL_FORMAT_BGRA;
-      }
-      auto color_frame = ConvertToRequestedPixelFormat(
-          frameset.get_color_frame(), final_pixel_format, timestamp);
-      if (color_frame.has_value()) {
-        cached_color_frame_ = std::move(color_frame.value());
+        auto color_frame = ConvertToRequestedPixelFormat(
+            frameset.get_color_frame(), final_pixel_format, timestamp);
+        if (color_frame.has_value()) {
+          cached_color_frame_ = std::move(color_frame.value());
+        } else {
+          LOG(ERROR) << errors::FailedToConvertToRequestedPixelFormat(
+              final_pixel_format);
+          return;
+        }
       }
 
       width = cached_color_frame_.width();
