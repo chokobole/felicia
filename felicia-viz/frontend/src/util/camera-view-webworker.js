@@ -2,7 +2,7 @@
 /* eslint no-restricted-globals: ["off"] */
 import { PixelFormat } from '@felicia-viz/communication';
 
-import { RGBA, RGB, BGRA, BGRX, BGR, ARGB, fillPixels } from 'util/color';
+import { fillPixels } from 'util/color';
 import Histogram from 'util/histogram';
 import { getDataView } from 'util/util';
 
@@ -29,20 +29,15 @@ self.onmessage = event => {
       filter,
       frameToAlign
     );
-  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_BGRA || converted) {
-    fillPixels(pixels, width, height, data, BGRA);
-  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_BGR) {
-    fillPixels(pixels, width, height, data, BGR);
-  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_ARGB) {
-    fillPixels(pixels, width, height, data, ARGB);
-  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGBA) {
-    fillPixels(pixels, width, height, data, RGBA);
-  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGB) {
-    fillPixels(pixels, width, height, data, RGB);
-  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_BGRX) {
-    fillPixels(pixels, width, height, data, BGRX);
-  } else {
-    console.error(`To draw, you need to convert to BGRA format: ${pixelFormat}`);
+  } else if (
+    !fillPixels(
+      pixels,
+      width,
+      height,
+      data,
+      converted ? PixelFormat.values.PIXEL_FORMAT_BGRA : pixelFormat
+    )
+  ) {
     return;
   }
 

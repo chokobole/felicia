@@ -13,7 +13,7 @@ from object_detection.utils import ops as utils_ops
 from object_detection.utils import visualization_utils as vis_util
 
 from felicia.core.protobuf.bounding_box_pb2 import ImageWithBoundingBoxesMessage
-from felicia.core.protobuf.ui_pb2 import IMAGE_FORMAT_RGB
+from felicia.core.protobuf.ui_pb2 import PIXEL_FORMAT_RGB
 
 if StrictVersion(tf.__version__) < StrictVersion('1.12.0'):
     raise ImportError(
@@ -72,7 +72,7 @@ def convert_to_image_with_bounding_boxes(image,
     height, width, _ = image.shape
     image_with_bounding_boxes.image.width = width
     image_with_bounding_boxes.image.height = height
-    image_with_bounding_boxes.image.image_format = IMAGE_FORMAT_RGB
+    image_with_bounding_boxes.image.pixel_format = PIXEL_FORMAT_RGB
     image_with_bounding_boxes.image.data = np.ndarray.tobytes(image)
     for i in range(boxes.shape[0]):
         if scores[i] > threshold:

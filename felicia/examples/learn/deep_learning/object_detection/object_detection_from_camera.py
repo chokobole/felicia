@@ -9,8 +9,8 @@ import felicia_py.command_line_interface as cli
 from felicia.core.protobuf.bounding_box_pb2 import ImageWithBoundingBoxesMessage
 from felicia.core.protobuf.master_data_pb2 import NodeInfo
 from felicia.core.protobuf.channel_pb2 import ChannelDef
+from felicia.core.protobuf.ui_pb2 import PIXEL_FORMAT_RGB
 from felicia.drivers.camera.camera_frame_message_pb2 import CameraFrameMessage
-from felicia.drivers.camera.camera_format_message_pb2 import PIXEL_FORMAT_RGB
 from ssd_mobilenet import Inference
 
 

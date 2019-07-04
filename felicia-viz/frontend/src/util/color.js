@@ -1,6 +1,8 @@
 /* eslint import/prefer-default-export: "off" */
 /* eslint no-bitwise: ["off"] */
 /* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["pixels"] }] */
+import { PixelFormat } from '@felicia-viz/communication';
+
 export const RGBA = {
   rIdx: 0,
   gIdx: 1,
@@ -47,7 +49,7 @@ export const ARGB = {
 };
 Object.freeze(ARGB);
 
-export function fillPixels(pixels, width, height, data, colorIndexes) {
+function fillPixelsImpl(pixels, width, height, data, colorIndexes) {
   const pixelData = new Uint8ClampedArray(data);
   const size = width * height;
   if (colorIndexes.aIdx !== undefined) {
@@ -79,4 +81,27 @@ export function fillPixels(pixels, width, height, data, colorIndexes) {
       pixels[pixelsIdx + RGBA.aIdx] = 255;
     }
   }
+}
+
+export function fillPixels(pixels, width, height, data, pixelFormat) {
+  let colorIndexes = null;
+  if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_BGRA) {
+    colorIndexes = BGRA;
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_BGR) {
+    colorIndexes = BGR;
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_ARGB) {
+    colorIndexes = ARGB;
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGBA) {
+    colorIndexes = RGBA;
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGB) {
+    colorIndexes = RGB;
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_BGRX) {
+    colorIndexes = BGRX;
+  } else {
+    console.error(`To draw, you need to convert to BGRA format: ${pixelFormat}`);
+    return false;
+  }
+
+  fillPixelsImpl(pixels, width, height, data, colorIndexes);
+  return true;
 }

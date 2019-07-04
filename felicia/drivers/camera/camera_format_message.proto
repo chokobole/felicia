@@ -1,38 +1,8 @@
 syntax = "proto3";
 
-package felicia;
+import "felicia/core/protobuf/ui.proto";
 
-// Renamed followings
-// PIXEL_FORMAT_ARGB -> PIXEL_FORMAT_BGRA
-// PIXEL_FORMAT_RGB24 -> PIXEL_FORMAT_BGR
-// PIXEL_FORMAT_RGB32 -> PIXEL_FORMAT_BGRX
-// PIXEL_FORMAT_ABGR -> PIXEL_FORMAT_RGBA
-// PIXEL_FORMAT_XBGR -> PIXEL_FORMAT_RGBX
-// Add  followings
-// PIXEL_FORMAT_BGRX
-// PIXEL_FORMAT_RGB
-// PIXEL_FORMAT_ARGB
-// PIXEL_FORMAT_Z16
-enum PixelFormat {
-  PIXEL_FORMAT_UNKNOWN = 0;  // Unknown or unspecified format value.
-  PIXEL_FORMAT_I420 = 1;  // 12bpp YUV planar 1x1 Y, 2x2 UV samples, a.k.a. YU12.
-  PIXEL_FORMAT_YV12 = 2;  // 12bpp YVU planar 1x1 Y, 2x2 VU samples.
-  PIXEL_FORMAT_NV12 = 6;  // 12bpp with Y plane followed by a 2x2 interleaved UV plane.
-  PIXEL_FORMAT_NV21 = 7;  // 12bpp with Y plane followed by a 2x2 interleaved VU plane.
-  PIXEL_FORMAT_UYVY = 8;  // 16bpp interleaved 2x1 U, 1x1 Y, 2x1 V, 1x1 Y samples.
-  PIXEL_FORMAT_YUY2 = 9;  // 16bpp interleaved 1x1 Y, 2x1 U, 1x1 Y, 2x1 V samples.
-  PIXEL_FORMAT_BGRA = 10;   // 32bpp BGRA, 1 plane.
-  PIXEL_FORMAT_BGR = 12;  // 24bpp BGR, 1 plane.
-  PIXEL_FORMAT_BGRX = 13;  // 32bpp BGRX, 1 plane.
-  PIXEL_FORMAT_MJPEG = 14;  // MJPEG compressed.
-  PIXEL_FORMAT_Y8 = 25;  // single 8bpp plane.
-  PIXEL_FORMAT_Y16 = 26;  // single 16bpp plane.
-  PIXEL_FORMAT_RGBA = 27;  // 32bpp RGBA, 1 plane.
-  PIXEL_FORMAT_RGBX = 28;  // 32bpp RGBX, 1 plane.
-  PIXEL_FORMAT_RGB = 29;  // 24bpp RGB, 1 plane.
-  PIXEL_FORMAT_ARGB = 30;  // 32bpp ARGB, 1plane.
-  PIXEL_FORMAT_Z16 = 31;  // single 16bpp plane.
-}
+package felicia;
 
 message CameraFormatMessage {
   uint32 width = 1;

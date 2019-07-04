@@ -16,7 +16,6 @@ export const TOPIC_INFO = 'felicia.TopicInfo';
 const ChannelDefType = FeliciaProtoRoot.lookupEnum('felicia.ChannelDef.Type');
 const TopicInfo = FeliciaProtoRoot.lookupType(TOPIC_INFO);
 export const PixelFormat = FeliciaProtoRoot.lookupEnum('felicia.PixelFormat');
-export const ImageFormat = FeliciaProtoRoot.lookupEnum('felicia.ImageFormat');
 export const HumanBody = FeliciaProtoRoot.lookupEnum('felicia.HumanBody');
 export const HumanBodyModel = FeliciaProtoRoot.lookupEnum('felicia.HumanBodyModel');
 

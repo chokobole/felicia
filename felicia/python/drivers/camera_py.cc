@@ -26,11 +26,12 @@ void CheckIfValidPixelFormat(PixelFormat pixel_format) {
     case PixelFormat_INT_MAX_SENTINEL_DO_NOT_USE_:
       PyErr_SetString(PyExc_TypeError, "Invalid argument");
       break;
+    case PIXEL_FORMAT_I420:
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
       PyErr_SetString(PyExc_NotImplementedError,
-                      "Not implemented yet for PIXEL_FORMAT_NV12 or "
-                      "PIXEL_FORMAT_NV21");
+                      "Not implemented yet for PIXEL_FORMAT_I420, "
+                      "PIXEL_FORMAT_NV12 or PIXEL_FORMAT_NV21");
       break;
     default:
       break;

@@ -3,8 +3,8 @@ import sys
 import felicia_py as fel
 import felicia_py.command_line_interface as cli
 from felicia.core.protobuf.channel_pb2 import ChannelDef
+from felicia.core.protobuf.ui_pb2 import PIXEL_FORMAT_BGR
 from felicia.drivers.camera.camera_frame_message_pb2 import CameraFrameMessage
-from felicia.drivers.camera.camera_format_message_pb2 import PIXEL_FORMAT_BGR
 from felicia.drivers.camera.camera_settings_message_pb2 import CameraSettingsInfoMessage
 
 

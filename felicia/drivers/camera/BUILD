@@ -24,6 +24,7 @@ fel_proto_library(
         "camera_settings_message.proto",
         "depth_camera_frame_message.proto",
     ],
+    protodeps = ["//felicia/core/protobuf:protos_all_proto"],
     default_header = True,
     visibility = ["//visibility:public"],
 )

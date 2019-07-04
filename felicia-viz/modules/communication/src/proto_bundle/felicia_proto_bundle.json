@@ -698,34 +698,6 @@
             }
           }
         },
-        "ImageFormat": {
-          "values": {
-            "IMAGE_FORMAT_RGB": 0,
-            "IMAGE_FORMAT_RGBA": 1,
-            "IMAGE_FORMAT_BGR": 2,
-            "IMAGE_FORMAT_BGRA": 3
-          }
-        },
-        "ImageMessage": {
-          "fields": {
-            "width": {
-              "type": "uint32",
-              "id": 1
-            },
-            "height": {
-              "type": "uint32",
-              "id": 2
-            },
-            "imageFormat": {
-              "type": "ImageFormat",
-              "id": 3
-            },
-            "data": {
-              "type": "bytes",
-              "id": 4
-            }
-          }
-        },
         "PixelFormat": {
           "values": {
             "PIXEL_FORMAT_UNKNOWN": 0,
@@ -746,6 +718,26 @@
             "PIXEL_FORMAT_RGB": 29,
             "PIXEL_FORMAT_ARGB": 30,
             "PIXEL_FORMAT_Z16": 31
+          }
+        },
+        "ImageMessage": {
+          "fields": {
+            "width": {
+              "type": "uint32",
+              "id": 1
+            },
+            "height": {
+              "type": "uint32",
+              "id": 2
+            },
+            "pixelFormat": {
+              "type": "PixelFormat",
+              "id": 3
+            },
+            "data": {
+              "type": "bytes",
+              "id": 4
+            }
           }
         },
         "CameraFormatMessage": {
