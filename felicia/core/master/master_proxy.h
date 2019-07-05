@@ -7,7 +7,6 @@
 
 #include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/callback.h"
-#include "third_party/chromium/base/containers/flat_map.h"
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/base/message_loop/message_loop.h"
 #include "third_party/chromium/base/no_destructor.h"
