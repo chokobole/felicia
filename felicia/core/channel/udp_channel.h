@@ -80,6 +80,8 @@ void UDPChannel<MessageTy>::Connect(const ChannelDef& channel_def,
 template <typename MessageTy>
 void UDPChannel<MessageTy>::ReadImpl(MessageTy* message,
                                      StatusOnceCallback callback) {
+  this->message_ = message;
+  this->receive_callback_ = std::move(callback);
   this->channel_impl_->Read(
       this->receive_buffer_, this->receive_buffer_->capacity(),
       ::base::BindOnce(&UDPChannel<MessageTy>::OnReceiveMessageWithHeader,

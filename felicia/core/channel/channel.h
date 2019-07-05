@@ -136,9 +136,6 @@ void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
   DCHECK(receive_callback_.is_null());
   DCHECK(!callback.is_null());
 
-  message_ = message;
-  receive_callback_ = std::move(callback);
-
   if (is_dynamic_buffer_) {
     if (receive_buffer_->capacity() == 0) {
       if (IsTCPChannel()) {
@@ -159,7 +156,7 @@ void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
   }
 
   receive_buffer_->set_offset(0);
-  ReadImpl(message_, std::move(callback));
+  ReadImpl(message, std::move(callback));
 }
 
 template <typename MessageTy>
@@ -190,6 +187,8 @@ void Channel<MessageTy>::WriteImpl(const std::string& text,
 template <typename MessageTy>
 void Channel<MessageTy>::ReadImpl(MessageTy* message,
                                   StatusOnceCallback callback) {
+  message_ = message;
+  receive_callback_ = std::move(callback);
   channel_impl_->Read(receive_buffer_, sizeof(Header),
                       ::base::BindOnce(&Channel<MessageTy>::OnReceiveHeader,
                                        ::base::Unretained(this)));
