@@ -1,4 +1,8 @@
-load("//bazel:felicia.bzl", "fel_shared_library")
+load(
+    "//bazel:felicia.bzl",
+    "fel_shared_library",
+    "if_not_windows",
+)
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
@@ -11,14 +15,19 @@ fel_cc_library(
     name = "socket",
     srcs = [
         "socket.cc",
+        "socket_broadcaster.cc",
         "tcp_client_socket.cc",
         "tcp_server_socket.cc",
         "tcp_socket.cc",
-        "tcp_socket_broadcaster.cc",
         "udp_client_socket.cc",
         "udp_server_socket.cc",
         "udp_socket.cc",
-    ] + select({
+    ] + if_not_windows([
+        "uds_endpoint.cc",
+        "unix_domain_client_socket.cc",
+        "unix_domain_server_socket.cc",
+        "unix_domain_socket.cc",
+    ]) + select({
         "//felicia:win_no_grpc": [],
         "//conditions:default": [
             "permessage_deflate.cc",
@@ -33,14 +42,19 @@ fel_cc_library(
     }),
     hdrs = [
         "socket.h",
+        "socket_broadcaster.h",
         "tcp_client_socket.h",
         "tcp_server_socket.h",
         "tcp_socket.h",
-        "tcp_socket_broadcaster.h",
         "udp_client_socket.h",
         "udp_server_socket.h",
         "udp_socket.h",
-    ] + select({
+    ] + if_not_windows([
+        "uds_endpoint.h",
+        "unix_domain_client_socket.h",
+        "unix_domain_server_socket.h",
+        "unix_domain_socket.h",
+    ]) + select({
         "//felicia:win_no_grpc": [],
         "//conditions:default": [
             "permessage_deflate.h",

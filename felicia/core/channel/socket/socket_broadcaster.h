@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_CHANNEL_SOCKET_TCP_SOCKET_BROADCASTER_H_
-#define FELICIA_CORE_CHANNEL_SOCKET_TCP_SOCKET_BROADCASTER_H_
+#ifndef FELICIA_CORE_CHANNEL_SOCKET_SOCKET_BROADCASTER_H_
+#define FELICIA_CORE_CHANNEL_SOCKET_SOCKET_BROADCASTER_H_
 
 #include "third_party/chromium/net/socket/tcp_socket.h"
 
@@ -7,7 +7,7 @@
 
 namespace felicia {
 
-class TCPSocketBroadcaster {
+class SocketBroadcaster {
  public:
   class SocketInterface {
    public:
@@ -18,9 +18,9 @@ class TCPSocketBroadcaster {
     virtual void Close() = 0;
   };
 
-  explicit TCPSocketBroadcaster(
+  explicit SocketBroadcaster(
       std::vector<std::unique_ptr<SocketInterface>>* sockets);
-  ~TCPSocketBroadcaster();
+  ~SocketBroadcaster();
 
   void Broadcast(scoped_refptr<::net::IOBuffer> buffer, int size,
                  StatusOnceCallback callback);
@@ -43,4 +43,4 @@ class TCPSocketBroadcaster {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_CHANNEL_SOCKET_TCP_SOCKET_BROADCASTER_H_
+#endif  // FELICIA_CORE_CHANNEL_SOCKET_SOCKET_BROADCASTER_H_

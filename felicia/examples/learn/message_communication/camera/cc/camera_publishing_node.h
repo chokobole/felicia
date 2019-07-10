@@ -52,7 +52,8 @@ class CameraPublishingNode : public NodeLifecycle {
     settings.channel_settings.ws_settings.permessage_deflate_enabled = false;
 
     publisher_.RequestPublish(
-        node_info_, topic_, ChannelDef::TCP | ChannelDef::WS, settings,
+        node_info_, topic_,
+        ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
         ::base::BindOnce(&CameraPublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
   }

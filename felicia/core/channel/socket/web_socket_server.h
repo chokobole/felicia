@@ -8,7 +8,7 @@
 
 namespace felicia {
 
-class EXPORT WebSocketServer : public WebSocket {
+class WebSocketServer : public WebSocket {
  public:
   WebSocketServer(const channel::WSSettings& settings);
   ~WebSocketServer();

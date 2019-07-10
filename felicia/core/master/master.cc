@@ -547,7 +547,8 @@ bool Master::CheckIfNodeExists(const NodeInfo& node_info) {
 
 void Master::DoNotifySubscriber(const NodeInfo& subscribing_node_info,
                                 const TopicInfo& topic_info) {
-  auto channel = ChannelFactory::NewChannel<TopicInfo>(ChannelDef::TCP);
+  auto channel =
+      ChannelFactory::NewChannel<TopicInfo>(ChannelDef::CHANNEL_TYPE_TCP);
 
   channel->SetSendBufferSize(kTopicInfoBytes);
 
@@ -560,7 +561,8 @@ void Master::DoNotifySubscriber(const NodeInfo& subscribing_node_info,
   }
 
   DCHECK_EQ(channel_source.channel_defs_size(), 1);
-  DCHECK_EQ(channel_source.channel_defs(0).type(), ChannelDef::TCP);
+  DCHECK_EQ(channel_source.channel_defs(0).type(),
+            ChannelDef::CHANNEL_TYPE_TCP);
 
   channel->Connect(channel_source.channel_defs(0),
                    ::base::BindOnce(&Master::OnConnetToTopicInfoWatcher,

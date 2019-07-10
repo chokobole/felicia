@@ -988,8 +988,9 @@ bool GetShmemTempDir(bool executable, FilePath* path) {
 #if defined(OS_LINUX) || defined(OS_AIX)
   bool disable_dev_shm = false;
 #if !defined(OS_CHROMEOS)
-  disable_dev_shm = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableDevShmUsage);
+  disable_dev_shm = false;
+  // disable_dev_shm = CommandLine::ForCurrentProcess()->HasSwitch(
+  //     switches::kDisableDevShmUsage);
 #endif
   bool use_dev_shm = true;
   if (executable) {

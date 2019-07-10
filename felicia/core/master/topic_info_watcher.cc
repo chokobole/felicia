@@ -28,7 +28,8 @@ void TopicInfoWatcher::UnregisterAllTopicCallback() {
 
 void TopicInfoWatcher::Start() {
   DCHECK(!server_channel_);
-  server_channel_ = ChannelFactory::NewChannel<TopicInfo>(ChannelDef::TCP);
+  server_channel_ =
+      ChannelFactory::NewChannel<TopicInfo>(ChannelDef::CHANNEL_TYPE_TCP);
 
   TCPChannel<TopicInfo>* tcp_channel = server_channel_->ToTCPChannel();
   auto status_or = tcp_channel->Listen();

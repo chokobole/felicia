@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "felicia/core/protobuf/channel.pb.h"
 #include "felicia/core/util/command_line_interface/text_style.h"
 
 namespace felicia {
@@ -35,7 +36,13 @@ NodeCreateFlag::NodeCreateFlag() {
   }
   {
     StringChoicesFlag::Builder builder(MakeValueStore<std::string>(
-        &channel_type_, "TCP", Choices<std::string>{"TCP", "UDP"}));
+        &channel_type_, ChannelDef_Type_Name(ChannelDef::CHANNEL_TYPE_TCP),
+        Choices<std::string>{
+            ChannelDef_Type_Name(ChannelDef::CHANNEL_TYPE_TCP),
+            ChannelDef_Type_Name(ChannelDef::CHANNEL_TYPE_UDP),
+            ChannelDef_Type_Name(ChannelDef::CHANNEL_TYPE_UDS),
+            ChannelDef_Type_Name(ChannelDef::CHANNEL_TYPE_SHM),
+        }));
     auto flag = builder.SetShortName("-c")
                     .SetLongName("--channel_type")
                     .SetHelp(

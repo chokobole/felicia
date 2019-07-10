@@ -46,7 +46,8 @@ void DynamicSubscribingNode::RequestSubscribe(
   auto subscriber = std::make_unique<DynamicSubscriber>();
 
   subscriber->RequestSubscribe(
-      node_info_, topic, ChannelDef::TCP | ChannelDef::UDP,
+      node_info_, topic,
+      ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_UDP,
       ::base::BindRepeating(
           &DynamicSubscribingNode::OneTopicDelegate::OnNewMessage,
           ::base::Unretained(one_topic_delegate_.get())),

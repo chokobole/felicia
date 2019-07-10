@@ -63,7 +63,8 @@ class Publisher {
                              UnpublishTopicResponse* response,
                              StatusOnceCallback callback, const Status& s);
 
-  StatusOr<ChannelDef> Setup(Channel<MessageTy>* channel_def);
+  StatusOr<ChannelDef> Setup(Channel<MessageTy>* channel_def,
+                             const channel::Settings& settings);
 
   void SendMesasge(SendMessageCallback callback);
   void OnAccept(const Status& s);
@@ -79,7 +80,6 @@ class Publisher {
 
   ::base::Lock lock_;
   std::unique_ptr<Pool<MessageTy, uint8_t>> message_queue_ GUARDED_BY(lock_);
-  ;
   ::base::TimeDelta period_;
   std::vector<std::unique_ptr<Channel<MessageTy>>> channels_;
 
@@ -116,7 +116,8 @@ void Publisher<MessageTy>::RequestPublish(
       auto channel = ChannelFactory::NewChannel<MessageTy>(
           static_cast<ChannelDef::Type>(channel_type),
           settings.channel_settings);
-      StatusOr<ChannelDef> status_or = Setup(channel.get());
+      StatusOr<ChannelDef> status_or =
+          Setup(channel.get(), settings.channel_settings);
       if (!status_or.ok()) {
         register_state_.ToUnregistered(FROM_HERE);
         Release();
@@ -194,7 +195,12 @@ void Publisher<MessageTy>::RequestUnpublish(const NodeInfo& node_info,
 }
 
 template <typename MessageTy>
-StatusOr<ChannelDef> Publisher<MessageTy>::Setup(Channel<MessageTy>* channel) {
+StatusOr<ChannelDef> Publisher<MessageTy>::Setup(
+    Channel<MessageTy>* channel, const channel::Settings& settings) {
+  if (!channel) {
+    return errors::Aborted("Failed to setup: channel is null.");
+  }
+
   StatusOr<ChannelDef> status_or;
   if (channel->IsTCPChannel()) {
     TCPChannel<MessageTy>* tcp_channel = channel->ToTCPChannel();
@@ -204,11 +210,28 @@ StatusOr<ChannelDef> Publisher<MessageTy>::Setup(Channel<MessageTy>* channel) {
   } else if (channel->IsUDPChannel()) {
     UDPChannel<MessageTy>* udp_channel = channel->ToUDPChannel();
     status_or = udp_channel->Bind();
-  } else if (channel->IsWSChannel()) {
+  }
+#if !defined(FEL_WIN_NO_GRPC)
+  else if (channel->IsWSChannel()) {
     WSChannel<MessageTy>* ws_channel = channel->ToWSChannel();
     status_or = ws_channel->Listen();
     ws_channel->AcceptLoop(::base::BindRepeating(
         [](const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }));
+  }
+#endif
+#if defined(OS_POSIX)
+  else if (channel->IsUDSChannel()) {
+    UDSChannel<MessageTy>* uds_channel = channel->ToUDSChannel();
+    status_or = uds_channel->BindAndListen();
+    uds_channel->AcceptLoop(::base::BindRepeating([](const Status& s) {
+                              LOG_IF(ERROR, !s.ok()) << s;
+                            }),
+                            settings.uds_settings.auth_callback);
+  }
+#endif
+  else if (channel->IsShmChannel()) {
+    ShmChannel<MessageTy>* shm_channel = channel->ToShmChannel();
+    status_or = shm_channel->MakeReadOnlySharedMemory();
   }
 
   return status_or;

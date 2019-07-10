@@ -24,6 +24,7 @@ class EXPORT DynamicProtobufMessage {
   void Reset(::google::protobuf::Message* message);
 
   std::string ToString() const;
+  std::string DebugString() const;
 
   std::string GetTypeName() const;
 

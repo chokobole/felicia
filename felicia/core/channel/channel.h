@@ -2,6 +2,7 @@
 #define FELICIA_CORE_CHANNEL_CHANNEL_H_
 
 #include "third_party/chromium/base/bind.h"
+#include "third_party/chromium/build/build_config.h"
 #include "third_party/chromium/net/base/io_buffer.h"
 #include "third_party/chromium/net/base/ip_endpoint.h"
 
@@ -13,6 +14,9 @@
 #include "felicia/core/lib/unit/bytes.h"
 #include "felicia/core/message/message_io.h"
 #include "felicia/core/protobuf/channel.pb.h"
+#if defined(OS_POSIX)
+#include "felicia/core/channel/socket/uds_endpoint.h"
+#endif
 
 namespace felicia {
 
@@ -22,6 +26,10 @@ template <typename MessageTy>
 class UDPChannel;
 template <typename MessageTy>
 class WSChannel;
+template <typename MessageTy>
+class UDSChannel;
+template <typename MessageTy>
+class ShmChannel;
 
 using SendMessageCallback =
     ::base::RepeatingCallback<void(ChannelDef::Type, const Status&)>;
@@ -34,6 +42,8 @@ class Channel {
   virtual bool IsTCPChannel() const { return false; }
   virtual bool IsUDPChannel() const { return false; }
   virtual bool IsWSChannel() const { return false; }
+  virtual bool IsUDSChannel() const { return false; }
+  virtual bool IsShmChannel() const { return false; }
 
   virtual ChannelDef::Type type() const = 0;
 
@@ -55,6 +65,16 @@ class Channel {
   WSChannel<MessageTy>* ToWSChannel() {
     DCHECK(IsWSChannel());
     return reinterpret_cast<WSChannel<MessageTy>*>(this);
+  }
+
+  UDSChannel<MessageTy>* ToUDSChannel() {
+    DCHECK(IsUDSChannel());
+    return reinterpret_cast<UDSChannel<MessageTy>*>(this);
+  }
+
+  ShmChannel<MessageTy>* ToShmChannel() {
+    DCHECK(IsShmChannel());
+    return reinterpret_cast<ShmChannel<MessageTy>*>(this);
   }
 
   virtual void Connect(const ChannelDef& channel_def,
@@ -136,21 +156,7 @@ void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
   DCHECK(receive_callback_.is_null());
   DCHECK(!callback.is_null());
 
-  if (is_dynamic_buffer_) {
-    if (receive_buffer_->capacity() == 0) {
-      if (IsTCPChannel()) {
-        receive_buffer_->SetCapacity(sizeof(Header));
-      } else {
-        LOG(INFO)
-            << "You can ignore the following error statement, This is a hack "
-               "for allocating the maximum buffer for UDP channel.";
-        // On |SetReceiveBufferSize| is a virtual method, and in UDPChannel,
-        // because the maximum bytes the channel handle is fixed, and it is
-        // implemented inside the method and we use it!
-        SetReceiveBufferSize(Bytes::Max());
-      }
-    }
-  } else if (receive_buffer_->capacity() == 0) {
+  if (!is_dynamic_buffer_ && receive_buffer_->capacity() == 0) {
     DLOG(WARNING) << "Receive buffer was not allocated, used default size.";
     receive_buffer_->SetCapacity(Bytes::FromKilloBytes(1).bytes());
   }
@@ -187,6 +193,10 @@ void Channel<MessageTy>::WriteImpl(const std::string& text,
 template <typename MessageTy>
 void Channel<MessageTy>::ReadImpl(MessageTy* message,
                                   StatusOnceCallback callback) {
+  if (is_dynamic_buffer_ && receive_buffer_->capacity() == 0) {
+    receive_buffer_->SetCapacity(sizeof(Header));
+  }
+
   message_ = message;
   receive_callback_ = std::move(callback);
   channel_impl_->Read(receive_buffer_, sizeof(Header),
@@ -196,7 +206,7 @@ void Channel<MessageTy>::ReadImpl(MessageTy* message,
 
 template <typename MessageTy>
 void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
-  DCHECK(IsTCPChannel());
+  DCHECK(!IsUDPChannel());
   if (!s.ok()) {
     std::move(receive_callback_).Run(s);
     return;
@@ -246,14 +256,18 @@ void Channel<MessageTy>::OnReceiveMessage(const Status& s) {
 
 // Convert ChannelSource |channel_source| to ::net::IPEndPoint,
 // Retures true if succeeded.
-EXPORT bool ToNetIPEndPoint(const ChannelDef& channel_source,
-                            ::net::IPEndPoint* ip_endpoint);
+EXPORT Status ToNetIPEndPoint(const ChannelDef& channel_source,
+                              ::net::IPEndPoint* ip_endpoint);
+
+#if defined(OS_POSIX)
+// Convert ChannelSource |channel_source| to ::net::UDSEndPoint,
+// Retures true if succeeded.
+EXPORT Status ToNetUDSEndPoint(const ChannelDef& channel_source,
+                               ::net::UDSEndPoint* uds_endpoint);
+#endif
 
 // Convert EndPoint of |channel_def| to std::string
 EXPORT std::string EndPointToString(const ChannelDef& channel_def);
-
-// Fill channel def with randomly picked port.
-EXPORT void FillChannelDef(ChannelDef* channel_def);
 
 // Check if |channel_def| is a valid. Returns true if so.
 EXPORT bool IsValidChannelDef(const ChannelDef& channel_def);

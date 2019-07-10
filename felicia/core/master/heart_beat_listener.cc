@@ -48,7 +48,7 @@ void HeartBeatListener::StartCheckHeartBeat() {
 
   DCHECK_EQ(client_info_.heart_beat_signaller_source().channel_defs_size(), 1);
   DCHECK_EQ(client_info_.heart_beat_signaller_source().channel_defs(0).type(),
-            ChannelDef::TCP);
+            ChannelDef::CHANNEL_TYPE_TCP);
 
   channel_ = ChannelFactory::NewChannel<HeartBeat>(
       client_info_.heart_beat_signaller_source().channel_defs(0).type());

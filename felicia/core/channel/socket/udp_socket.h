@@ -10,7 +10,7 @@ namespace felicia {
 class UDPClientSocket;
 class UDPServerSocket;
 
-class EXPORT UDPSocket : public Socket {
+class UDPSocket : public Socket {
  public:
   UDPSocket();
   ~UDPSocket() override;

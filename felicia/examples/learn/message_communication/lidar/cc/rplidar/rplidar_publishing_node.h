@@ -54,7 +54,8 @@ class RPlidarPublishingNode : public NodeLifecycle {
     settings.channel_settings.ws_settings.permessage_deflate_enabled = false;
 
     lidar_publisher_.RequestPublish(
-        node_info_, topic_, channel_type_ | ChannelDef::WS, settings,
+        node_info_, topic_, channel_type_ | ChannelDef::CHANNEL_TYPE_WS,
+        settings,
         ::base::BindOnce(&RPlidarPublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
   }

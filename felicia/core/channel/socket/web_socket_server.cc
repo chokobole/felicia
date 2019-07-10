@@ -23,7 +23,7 @@ StatusOr<ChannelDef> WebSocketServer::Listen() {
   auto status_or = tcp_server_socket_->Listen();
   if (status_or.ok()) {
     ChannelDef channel_def = status_or.ValueOrDie();
-    channel_def.set_type(ChannelDef::WS);
+    channel_def.set_type(ChannelDef::CHANNEL_TYPE_WS);
     return channel_def;
   }
 

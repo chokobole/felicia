@@ -4,13 +4,18 @@
 #include <memory>
 
 #include "third_party/chromium/base/macros.h"
+#include "third_party/chromium/build/build_config.h"
 
 #include "felicia/core/channel/settings.h"
 #include "felicia/core/channel/tcp_channel.h"
 #include "felicia/core/channel/udp_channel.h"
-#ifndef FEL_WIN_NO_GRPC
+#if !defined(FEL_WIN_NO_GRPC)
 #include "felicia/core/channel/ws_channel.h"
 #endif
+#if defined(OS_POSIX)
+#include "felicia/core/channel/uds_channel.h"
+#endif
+#include "felicia/core/channel/shm_channel.h"
 #include "felicia/core/protobuf/channel.pb.h"
 
 namespace felicia {
@@ -22,16 +27,24 @@ class ChannelFactory {
       ChannelDef::Type channel_type,
       const channel::Settings& settings = channel::Settings()) {
     std::unique_ptr<Channel<MessageTy>> channel;
-    if (channel_type == ChannelDef::TCP) {
+    if (channel_type == ChannelDef::CHANNEL_TYPE_TCP) {
       channel = std::make_unique<TCPChannel<MessageTy>>();
-    } else if (channel_type == ChannelDef::UDP) {
+    } else if (channel_type == ChannelDef::CHANNEL_TYPE_UDP) {
       channel = std::make_unique<UDPChannel<MessageTy>>();
     }
-#ifndef FEL_WIN_NO_GRPC
-    else if (channel_type == ChannelDef::WS) {
+#if !defined(FEL_WIN_NO_GRPC)
+    else if (channel_type == ChannelDef::CHANNEL_TYPE_WS) {
       channel = std::make_unique<WSChannel<MessageTy>>(settings.ws_settings);
     }
 #endif
+#if defined(OS_POSIX)
+    else if (channel_type == ChannelDef::CHANNEL_TYPE_UDS) {
+      channel = std::make_unique<UDSChannel<MessageTy>>();
+    }
+#endif
+    else if (channel_type == ChannelDef::CHANNEL_TYPE_SHM) {
+      channel = std::make_unique<ShmChannel<MessageTy>>(settings.shm_settings);
+    }
 
     return channel;
   }

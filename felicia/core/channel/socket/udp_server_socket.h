@@ -8,7 +8,7 @@
 
 namespace felicia {
 
-class EXPORT UDPServerSocket : public UDPSocket {
+class UDPServerSocket : public UDPSocket {
  public:
   UDPServerSocket();
   ~UDPServerSocket();

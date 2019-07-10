@@ -22,7 +22,7 @@ void DynamicPublisher::PublishFromJson(const std::string& json_message,
       ::google::protobuf::util::JsonStringToMessage(
           json_message, message_prototype_.message());
   if (!status.ok()) {
-    callback.Run(ChannelDef::NONE,
+    callback.Run(ChannelDef::CHANNEL_TYPE_NONE,
                  Status(static_cast<felicia::error::Code>(status.error_code()),
                         status.error_message().ToString()));
     return;
@@ -37,7 +37,7 @@ void DynamicPublisher::PublishFromSerialized(const std::string& serialized,
 
   if (!message_prototype_.ParseFromArray(serialized.data(),
                                          serialized.length())) {
-    callback.Run(ChannelDef::NONE,
+    callback.Run(ChannelDef::CHANNEL_TYPE_NONE,
                  errors::InvalidArgument(MessageIoErrorToString(
                      MessageIoError::ERR_FAILED_TO_PARSE)));
     return;

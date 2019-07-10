@@ -1,20 +1,20 @@
-#include "felicia/core/channel/socket/tcp_socket_broadcaster.h"
+#include "felicia/core/channel/socket/socket_broadcaster.h"
 
 #include "felicia/core/channel/socket/socket.h"
 #include "felicia/core/lib/error/errors.h"
 
 namespace felicia {
 
-TCPSocketBroadcaster::SocketInterface::~SocketInterface() = default;
+SocketBroadcaster::SocketInterface::~SocketInterface() = default;
 
-TCPSocketBroadcaster::TCPSocketBroadcaster(
+SocketBroadcaster::SocketBroadcaster(
     std::vector<std::unique_ptr<SocketInterface>>* sockets)
     : sockets_(sockets) {}
 
-TCPSocketBroadcaster::~TCPSocketBroadcaster() = default;
+SocketBroadcaster::~SocketBroadcaster() = default;
 
-void TCPSocketBroadcaster::Broadcast(scoped_refptr<::net::IOBuffer> buffer,
-                                     int size, StatusOnceCallback callback) {
+void SocketBroadcaster::Broadcast(scoped_refptr<::net::IOBuffer> buffer,
+                                  int size, StatusOnceCallback callback) {
   DCHECK_EQ(0, to_write_count_);
   DCHECK_EQ(0, written_count_);
   DCHECK(callback_.is_null());
@@ -39,7 +39,7 @@ void TCPSocketBroadcaster::Broadcast(scoped_refptr<::net::IOBuffer> buffer,
     while (write_buffer->BytesRemaining() > 0) {
       int rv =
           (*it)->Write(write_buffer.get(), write_buffer->BytesRemaining(),
-                       ::base::BindOnce(&TCPSocketBroadcaster::OnWrite,
+                       ::base::BindOnce(&SocketBroadcaster::OnWrite,
                                         ::base::Unretained(this), (*it).get()));
 
       if (rv == ::net::ERR_IO_PENDING) break;
@@ -58,7 +58,7 @@ void TCPSocketBroadcaster::Broadcast(scoped_refptr<::net::IOBuffer> buffer,
   }
 }
 
-void TCPSocketBroadcaster::OnWrite(SocketInterface* socket, int result) {
+void SocketBroadcaster::OnWrite(SocketInterface* socket, int result) {
   if (result == ::net::ERR_CONNECTION_RESET) {
     socket->Close();
     has_closed_sockets_ = true;
@@ -66,7 +66,8 @@ void TCPSocketBroadcaster::OnWrite(SocketInterface* socket, int result) {
 
   written_count_++;
   if (result < 0) {
-    LOG(ERROR) << "TCPServerSocket::OnWrite: " << ::net::ErrorToString(result);
+    LOG(ERROR) << "SocketBroadcaster::OnWrite: "
+               << ::net::ErrorToString(result);
     write_result_ = result;
   }
   if (to_write_count_ == written_count_) {
@@ -78,7 +79,7 @@ void TCPSocketBroadcaster::OnWrite(SocketInterface* socket, int result) {
   }
 }
 
-void TCPSocketBroadcaster::EraseClosedSockets() {
+void SocketBroadcaster::EraseClosedSockets() {
   if (has_closed_sockets_) {
     auto it = sockets_->begin();
     while (it != sockets_->end()) {

@@ -11,14 +11,17 @@
 namespace felicia {
 
 class Socket;
+class SharedMemory;
 
 class ChannelImpl {
  public:
   virtual ~ChannelImpl();
 
   virtual bool IsSocket() const;
+  virtual bool IsSharedMemory() const;
 
   Socket* ToSocket();
+  SharedMemory* ToSharedMemory();
 
   virtual void Write(scoped_refptr<::net::IOBuffer> buffer, int size,
                      StatusOnceCallback callback) = 0;
@@ -27,8 +30,8 @@ class ChannelImpl {
 };
 
 // Create ChannelDef from |ip_endpoint| and |type|
-EXPORT ChannelDef ToChannelDef(const ::net::IPEndPoint& ip_endpoint,
-                               ChannelDef::Type type);
+ChannelDef ToChannelDef(const ::net::IPEndPoint& ip_endpoint,
+                        ChannelDef::Type type);
 
 }  // namespace felicia
 

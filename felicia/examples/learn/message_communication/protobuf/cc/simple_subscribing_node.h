@@ -39,7 +39,9 @@ class SimpleSubscribingNode : public NodeLifecycle {
     settings.buffer_size = Bytes::FromBytes(512);
 
     subscriber_.RequestSubscribe(
-        node_info_, topic_, ChannelDef::TCP | ChannelDef::UDP,
+        node_info_, topic_,
+        ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_UDP |
+            ChannelDef::CHANNEL_TYPE_UDS | ChannelDef::CHANNEL_TYPE_SHM,
         ::base::BindRepeating(&SimpleSubscribingNode::OnMessage,
                               ::base::Unretained(this)),
         ::base::BindRepeating(&SimpleSubscribingNode::OnSubscriptionError,

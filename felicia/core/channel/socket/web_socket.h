@@ -18,7 +18,7 @@ namespace felicia {
 
 class WebSocketServer;
 
-class EXPORT WebSocket : public Socket {
+class WebSocket : public Socket {
  public:
   class HandshakeHandler {
    public:

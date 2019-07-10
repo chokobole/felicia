@@ -8,12 +8,21 @@
 #include "third_party/chromium/base/synchronization/waitable_event.h"
 
 #include "felicia/core/channel/channel.h"
+#include "felicia/core/lib/net/net_util.h"
 #include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/master/errors.h"
 
 namespace felicia {
 
 namespace {
+
+void FillRandomTCPChannelDef(ChannelDef* channel_def) {
+  IPEndPoint* ip_endpoint = channel_def->mutable_ip_endpoint();
+  ip_endpoint->set_ip(
+      net::HostIPAddress(net::HOST_IP_ONLY_ALLOW_IPV4).ToString());
+  ip_endpoint->set_port(
+      net::PickRandomPort(channel_def->type() == ChannelDef::CHANNEL_TYPE_TCP));
+}
 
 void ExpectOK(std::shared_ptr<::base::WaitableEvent> event, const Status& s) {
   EXPECT_TRUE(s.ok());
@@ -185,8 +194,8 @@ class MasterTest : public ::testing::Test {
                                       RegisterClientResponse* response) {
     ClientInfo client_info;
     ChannelDef channel_def;
-    channel_def.set_type(ChannelDef::TCP);
-    FillChannelDef(&channel_def);
+    channel_def.set_type(ChannelDef::CHANNEL_TYPE_TCP);
+    FillRandomTCPChannelDef(&channel_def);
     ChannelSource topic_info_watcher_source;
     *topic_info_watcher_source.add_channel_defs() = channel_def;
     *client_info.mutable_topic_info_watcher_source() =
@@ -201,8 +210,8 @@ class MasterTest : public ::testing::Test {
                               const std::string& topic, TopicInfo* topic_info) {
     topic_info->set_topic(topic);
     ChannelDef channel_def;
-    channel_def.set_type(ChannelDef::TCP);
-    FillChannelDef(&channel_def);
+    channel_def.set_type(ChannelDef::CHANNEL_TYPE_TCP);
+    FillRandomTCPChannelDef(&channel_def);
     ChannelSource* topic_source = topic_info->mutable_topic_source();
     *topic_source->add_channel_defs() = channel_def;
     *request->mutable_node_info() = node_info;
@@ -413,8 +422,8 @@ TEST_F(MasterTest, PublishTopic) {
 
   topic_info->set_topic(topic_);
   ChannelDef channel_def;
-  channel_def.set_type(ChannelDef::TCP);
-  FillChannelDef(&channel_def);
+  channel_def.set_type(ChannelDef::CHANNEL_TYPE_TCP);
+  FillRandomTCPChannelDef(&channel_def);
   *topic_info->mutable_topic_source()->add_channel_defs() = channel_def;
 
   PublishTopic(

@@ -7,16 +7,52 @@ message IPEndPoint {
   uint32 port = 2;
 }
 
+message UDSEndPoint {
+  string socket_path = 1;
+  bool use_abstract_namespace = 2;
+}
+
+message FDPair {
+  int32 fd = 1;
+  int32 readonly_fd = 2;
+}
+
+message ShmPlatformHandle {
+  FDPair fd_pair = 1;
+}
+
+message UngeussableToken {
+  uint64 high = 1;
+  uint64 low = 2;
+}
+
+message ShmEndPoint {
+  enum Mode {
+    SHM_MODE_READ_ONLY = 0;
+    SHM_MODE_WRITABLE = 1;
+    SHM_MODE_UNSAFE = 2;
+  };
+
+  ShmPlatformHandle platform_handle = 1;
+  Mode mode = 2;
+  uint64 size = 3;
+  UngeussableToken guid = 4;
+}
+
 message ChannelDef {
   enum Type {
-    NONE = 0; // Default
-    TCP = 1;
-    UDP = 2;
-    WS = 4;
+    CHANNEL_TYPE_NONE = 0; // Default
+    CHANNEL_TYPE_TCP = 1;
+    CHANNEL_TYPE_UDP = 2;
+    CHANNEL_TYPE_WS = 4; // WebSocket
+    CHANNEL_TYPE_UDS = 8;  // UnixDomainSocket
+    CHANNEL_TYPE_SHM = 16; // SharedMemory
   }
 
   Type type = 1;
   IPEndPoint ip_endpoint = 2;
+  UDSEndPoint uds_endpoint = 3;
+  ShmEndPoint shm_endpoint = 4;
 }
 
 message ChannelSource {

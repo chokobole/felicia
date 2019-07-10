@@ -1,18 +1,18 @@
 #ifndef FELICIA_CORE_CHANNEL_SOCKET_TCP_SERVER_SOCKET_H_
 #define FELICIA_CORE_CHANNEL_SOCKET_TCP_SERVER_SOCKET_H_
 
+#include "felicia/core/channel/socket/socket_broadcaster.h"
 #include "felicia/core/channel/socket/tcp_socket.h"
-#include "felicia/core/channel/socket/tcp_socket_broadcaster.h"
 #include "felicia/core/lib/error/statusor.h"
 #include "felicia/core/protobuf/channel.pb.h"
 
 namespace felicia {
 
-class TCPBroadcastSocket : public TCPSocketBroadcaster::SocketInterface {
+class TCPSocketInterface : public SocketBroadcaster::SocketInterface {
  public:
-  TCPBroadcastSocket(std::unique_ptr<::net::TCPSocket> socket);
-  TCPBroadcastSocket(TCPBroadcastSocket&& other);
-  void operator=(TCPBroadcastSocket&& other);
+  TCPSocketInterface(std::unique_ptr<::net::TCPSocket> socket);
+  TCPSocketInterface(TCPSocketInterface&& other);
+  void operator=(TCPSocketInterface&& other);
 
   bool IsConnected() override;
   int Write(::net::IOBuffer* buf, int buf_len,
@@ -22,10 +22,10 @@ class TCPBroadcastSocket : public TCPSocketBroadcaster::SocketInterface {
  private:
   std::unique_ptr<::net::TCPSocket> socket_;
 
-  DISALLOW_COPY_AND_ASSIGN(TCPBroadcastSocket);
+  DISALLOW_COPY_AND_ASSIGN(TCPSocketInterface);
 };
 
-class EXPORT TCPServerSocket : public TCPSocket {
+class TCPServerSocket : public TCPSocket {
  public:
   using AcceptCallback = ::base::RepeatingCallback<void(const Status& s)>;
   using AcceptOnceInterceptCallback =
@@ -34,7 +34,7 @@ class EXPORT TCPServerSocket : public TCPSocket {
   TCPServerSocket();
   ~TCPServerSocket();
 
-  const std::vector<std::unique_ptr<TCPSocketBroadcaster::SocketInterface>>&
+  const std::vector<std::unique_ptr<SocketBroadcaster::SocketInterface>>&
   accepted_sockets() const;
 
   bool IsServer() const override;
@@ -71,10 +71,10 @@ class EXPORT TCPServerSocket : public TCPSocket {
   std::unique_ptr<::net::TCPSocket> socket_;
   ::net::IPEndPoint accepted_endpoint_;
   std::unique_ptr<::net::TCPSocket> accepted_socket_;
-  std::vector<std::unique_ptr<TCPSocketBroadcaster::SocketInterface>>
+  std::vector<std::unique_ptr<SocketBroadcaster::SocketInterface>>
       accepted_sockets_;
 
-  TCPSocketBroadcaster broadcaster_;
+  SocketBroadcaster broadcaster_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPServerSocket);
 };

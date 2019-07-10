@@ -19,6 +19,7 @@ fel_cc_library(
         "coordinate/coordinate.cc",
         "error/status.cc",
         "error/statusor.cc",
+        "file/file_util.cc",
         "net/net_util.cc",
         "strings/str_util.cc",
         "unit/bytes.cc",
@@ -39,6 +40,7 @@ fel_cc_library(
         "error/status.h",
         "error/statusor.h",
         "error/statusor_internals.h",
+        "file/file_util.h",
         "net/net_util.h",
         "strings/str_util.h",
         "synchronization/scoped_event_signaller.h",
@@ -52,6 +54,7 @@ fel_cc_library(
     deps = [
         "//felicia/core/protobuf:protos_all_cc",
         "//third_party/chromium/base",
+        "//third_party/chromium/device",
         "//third_party/chromium/net",
         "@com_google_googletest//:gtest",
         "@eigen",

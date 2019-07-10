@@ -47,31 +47,32 @@ class ZedCameraPublishingNode : public NodeLifecycle {
 
     if (!left_camera_topic_.empty()) {
       left_camera_publisher_.RequestPublish(
-          node_info_, left_camera_topic_, ChannelDef::TCP | ChannelDef::WS,
-          settings,
+          node_info_, left_camera_topic_,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
           ::base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
                            ::base::Unretained(this)));
     }
 
     if (!right_camera_topic_.empty()) {
       right_camera_publisher_.RequestPublish(
-          node_info_, right_camera_topic_, ChannelDef::TCP | ChannelDef::WS,
-          settings,
+          node_info_, right_camera_topic_,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
           ::base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
                            ::base::Unretained(this)));
     }
 
     if (!depth_topic_.empty()) {
       depth_publisher_.RequestPublish(
-          node_info_, depth_topic_, ChannelDef::TCP | ChannelDef::WS, settings,
+          node_info_, depth_topic_,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
           ::base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
                            ::base::Unretained(this)));
     }
 
     if (!pointcloud_topic_.empty()) {
       pointcloud_publisher_.RequestPublish(
-          node_info_, pointcloud_topic_, ChannelDef::TCP | ChannelDef::WS,
-          settings,
+          node_info_, pointcloud_topic_,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
           ::base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
                            ::base::Unretained(this)));
     }

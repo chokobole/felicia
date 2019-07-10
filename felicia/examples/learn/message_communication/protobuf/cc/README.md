@@ -183,7 +183,7 @@ void RequestSubscribe() {
   settings.buffer_size = Bytes::FromBytes(512);
 
   subscriber_.RequestSubscribe(
-      node_info_, topic_, ChannelDef::TCP | ChannelDef::UDP,
+      node_info_, topic_, ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_UDP,
       ::base::BindRepeating(&SimpleSubscribingNode::OnMessage,
                             ::base::Unretained(this)),
       ::base::BindRepeating(&SimpleSubscribingNode::OnSubscriptionError,

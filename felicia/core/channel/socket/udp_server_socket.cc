@@ -48,7 +48,7 @@ StatusOr<ChannelDef> UDPServerSocket::Bind() {
   multicast_ip_endpoint_ =
       ::net::IPEndPoint(multicast_address, net::PickRandomPort(false));
 
-  return ToChannelDef(multicast_ip_endpoint_, ChannelDef::UDP);
+  return ToChannelDef(multicast_ip_endpoint_, ChannelDef::CHANNEL_TYPE_UDP);
 }
 
 void UDPServerSocket::Write(scoped_refptr<::net::IOBuffer> buffer, int size,

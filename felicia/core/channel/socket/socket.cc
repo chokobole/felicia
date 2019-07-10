@@ -18,6 +18,9 @@ bool Socket::IsServer() const { return false; }
 bool Socket::IsTCPSocket() const { return false; }
 bool Socket::IsUDPSocket() const { return false; }
 bool Socket::IsWebSocket() const { return false; }
+#if defined(OS_POSIX)
+bool Socket::IsUnixDomainSocket() const { return false; }
+#endif
 
 TCPSocket* Socket::ToTCPSocket() {
   DCHECK(IsTCPSocket());
@@ -33,6 +36,13 @@ WebSocket* Socket::ToWebSocket() {
   DCHECK(IsWebSocket());
   return reinterpret_cast<WebSocket*>(this);
 }
+
+#if defined(OS_POSIX)
+UnixDomainSocket* Socket::ToUnixDomainSocket() {
+  DCHECK(IsUnixDomainSocket());
+  return reinterpret_cast<UnixDomainSocket*>(this);
+}
+#endif
 
 // static
 void Socket::CallbackWithStatus(StatusOnceCallback callback, int result) {

@@ -19,7 +19,9 @@ class UDPChannel : public Channel<MessageTy> {
 
   bool IsUDPChannel() const override { return true; }
 
-  ChannelDef::Type type() const override { return ChannelDef::UDP; }
+  ChannelDef::Type type() const override {
+    return ChannelDef::CHANNEL_TYPE_UDP;
+  }
 
   StatusOr<ChannelDef> Bind();
 
@@ -69,8 +71,11 @@ void UDPChannel<MessageTy>::Connect(const ChannelDef& channel_def,
   DCHECK(!this->channel_impl_);
   DCHECK(!callback.is_null());
   ::net::IPEndPoint ip_endpoint;
-  bool ret = ToNetIPEndPoint(channel_def, &ip_endpoint);
-  DCHECK(ret);
+  Status s = ToNetIPEndPoint(channel_def, &ip_endpoint);
+  if (!s.ok()) {
+    std::move(callback).Run(s);
+    return;
+  }
   this->channel_impl_ = std::make_unique<UDPClientSocket>();
   UDPClientSocket* client_socket =
       this->channel_impl_->ToSocket()->ToUDPSocket()->ToUDPClientSocket();
@@ -80,6 +85,10 @@ void UDPChannel<MessageTy>::Connect(const ChannelDef& channel_def,
 template <typename MessageTy>
 void UDPChannel<MessageTy>::ReadImpl(MessageTy* message,
                                      StatusOnceCallback callback) {
+  if (this->is_dynamic_buffer_ && this->receive_buffer_->capacity() == 0) {
+    SetReceiveBufferSize(kMaximumBufferSize);
+  }
+
   this->message_ = message;
   this->receive_callback_ = std::move(callback);
   this->channel_impl_->Read(

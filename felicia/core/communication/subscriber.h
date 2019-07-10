@@ -268,7 +268,7 @@ void Subscriber<MessageTy>::ConnectToPublisher() {
     channel_type_ <<= 1;
   }
 
-  if (matched_channel_def.type() == ChannelDef::NONE) {
+  if (matched_channel_def.type() == ChannelDef::CHANNEL_TYPE_NONE) {
     on_error_callback_.Run(
         errors::Unavailable("Failed to connect to publisher."));
     return;
@@ -380,7 +380,17 @@ void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
       return;
     }
   }
-  ReceiveMessageLoop();
+
+  if (channel_->IsShmChannel()) {
+    MasterProxy& master_proxy = MasterProxy::GetInstance();
+    master_proxy.PostDelayedTask(
+        FROM_HERE,
+        ::base::BindOnce(&Subscriber<MessageTy>::ReceiveMessageLoop,
+                         ::base::Unretained(this)),
+        settings_.period);
+  } else {
+    ReceiveMessageLoop();
+  }
 }
 
 template <typename MessageTy>

@@ -25,7 +25,8 @@ void HeartBeatSignaller::Start() {
     g_heart_beat_duration = GetHeartBeatDuration();
   }
 
-  channel_ = ChannelFactory::NewChannel<HeartBeat>(ChannelDef::TCP);
+  channel_ =
+      ChannelFactory::NewChannel<HeartBeat>(ChannelDef::CHANNEL_TYPE_TCP);
 
   channel_->SetSendBufferSize(kHeartBeatBytes);
 

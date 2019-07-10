@@ -18,7 +18,9 @@ class TCPChannel : public Channel<MessageTy> {
 
   bool IsTCPChannel() const override { return true; }
 
-  ChannelDef::Type type() const override { return ChannelDef::TCP; }
+  ChannelDef::Type type() const override {
+    return ChannelDef::CHANNEL_TYPE_TCP;
+  }
 
   bool HasReceivers() const override;
 
@@ -109,8 +111,11 @@ void TCPChannel<MessageTy>::Connect(const ChannelDef& channel_def,
   DCHECK(!this->channel_impl_);
   DCHECK(!callback.is_null());
   ::net::IPEndPoint ip_endpoint;
-  bool ret = ToNetIPEndPoint(channel_def, &ip_endpoint);
-  DCHECK(ret);
+  Status s = ToNetIPEndPoint(channel_def, &ip_endpoint);
+  if (!s.ok()) {
+    std::move(callback).Run(s);
+    return;
+  }
   this->channel_impl_ = std::make_unique<TCPClientSocket>();
   TCPClientSocket* client_socket =
       this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPClientSocket();

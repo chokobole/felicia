@@ -15,7 +15,7 @@ class WSChannel : public Channel<MessageTy> {
 
   bool IsWSChannel() const override { return true; }
 
-  ChannelDef::Type type() const override { return ChannelDef::WS; }
+  ChannelDef::Type type() const override { return ChannelDef::CHANNEL_TYPE_WS; }
 
   bool HasReceivers() const override;
 

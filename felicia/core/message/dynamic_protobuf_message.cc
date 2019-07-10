@@ -77,6 +77,11 @@ std::string DynamicProtobufMessage::ToString() const {
   return protobuf::ProtobufMessageToString(*message_);
 }
 
+std::string DynamicProtobufMessage::DebugString() const {
+  if (!message_) return ::base::EmptyString();
+  return message_->DebugString();
+}
+
 Status DynamicProtobufMessage::MessageToJsonString(std::string* text) const {
   if (!message_) return errors::NotFound("message is null.");
   ::google::protobuf::util::Status status =

@@ -10,7 +10,7 @@ namespace felicia {
 class TCPClientSocket;
 class TCPServerSocket;
 
-class EXPORT TCPSocket : public Socket {
+class TCPSocket : public Socket {
  public:
   TCPSocket();
   ~TCPSocket() override;
