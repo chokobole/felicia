@@ -1,15 +1,10 @@
 #ifndef FELICIA_CORE_CHANNEL_SHM_CHANNEL_H_
 #define FELICIA_CORE_CHANNEL_SHM_CHANNEL_H_
 
-#include "third_party/chromium/build/build_config.h"
-#if defined(OS_POSIX)
-#include "third_party/chromium/base/posix/unix_domain_socket.h"
-#endif
-
 #include "felicia/core/channel/channel.h"
+#include "felicia/core/channel/shared_memory/platform_handle_broker.h"
 #include "felicia/core/channel/shared_memory/shared_memory.h"
 #include "felicia/core/lib/error/status.h"
-#include "felicia/core/lib/file/file_util.h"
 
 namespace felicia {
 
@@ -33,18 +28,14 @@ class ShmChannel : public Channel<MessageTy> {
   StatusOr<ChannelDef> MakeReadOnlySharedMemory();
 
  private:
-#if defined(OS_POSIX)
-  void OnBrokerConnect(const Status& s);
-  void AcceptLoop();
-  void OnBrokerAccept(StatusOr<std::unique_ptr<::net::SocketPosix>> status_or);
-  bool OnBrokerAuth(const UnixDomainServerSocket::Credentials& credentials);
-#endif
+  void OnReceiveData(StatusOr<PlatformHandleBroker::Data> status_or);
+  void FillData(PlatformHandleBroker::Data* handle_info);
 
   void ReadImpl(MessageTy* message, StatusOnceCallback callback) override;
   void OnReceiveMessageWithHeader(const Status& s);
 
   channel::ShmSettings settings_;
-  std::unique_ptr<ChannelImpl> broker_;
+  PlatformHandleBroker broker_;
   StatusOnceCallback connect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ShmChannel);
@@ -63,21 +54,10 @@ void ShmChannel<MessageTy>::Connect(const ChannelDef& channel_def,
   DCHECK(!this->channel_impl_);
   DCHECK(!callback.is_null());
 
-#if defined(OS_POSIX)
-  ::net::UDSEndPoint uds_endpoint;
-  Status s = ToNetUDSEndPoint(channel_def, &uds_endpoint);
-  if (!s.ok()) {
-    std::move(callback).Run(s);
-    return;
-  }
   connect_callback_ = std::move(callback);
-  broker_ = std::make_unique<UnixDomainClientSocket>();
-  UnixDomainClientSocket* client_socket =
-      broker_->ToSocket()->ToUnixDomainSocket()->ToUnixDomainClientSocket();
-  client_socket->Connect(
-      uds_endpoint, ::base::BindOnce(&ShmChannel<MessageTy>::OnBrokerConnect,
-                                     ::base::Unretained(this)));
-#endif
+  broker_.WaitForBroker(channel_def,
+                        ::base::BindOnce(&ShmChannel<MessageTy>::OnReceiveData,
+                                         ::base::Unretained(this)));
 }
 
 template <typename MessageTy>
@@ -86,58 +66,37 @@ StatusOr<ChannelDef> ShmChannel<MessageTy>::MakeReadOnlySharedMemory() {
   this->channel_impl_ =
       std::make_unique<SharedMemory>(settings_.shm_size.bytes());
 
-#if defined(OS_POSIX)
-  broker_ = std::make_unique<UnixDomainServerSocket>();
-  UnixDomainServerSocket* server_socket =
-      broker_->ToSocket()->ToUnixDomainSocket()->ToUnixDomainServerSocket();
-  auto status_or = server_socket->BindAndListen();
-  if (status_or.ok()) {
-    status_or.ValueOrDie().set_type(ChannelDef::CHANNEL_TYPE_SHM);
-    AcceptLoop();
-  }
-
-  return status_or;
-#else
-  return errors::Unimplemented("");
-#endif
+  return broker_.Setup(::base::BindRepeating(&ShmChannel<MessageTy>::FillData,
+                                             ::base::Unretained(this)));
 }
 
-#if defined(OS_POSIX)
 template <typename MessageTy>
-void ShmChannel<MessageTy>::OnBrokerConnect(const Status& s) {
-  if (!s.ok()) {
-    std::move(connect_callback_).Run(s);
+void ShmChannel<MessageTy>::OnReceiveData(
+    StatusOr<PlatformHandleBroker::Data> status_or) {
+  if (!status_or.ok()) {
+    std::move(connect_callback_).Run(status_or.status());
     return;
   }
 
-  UnixDomainClientSocket* client_socket =
-      broker_->ToSocket()->ToUnixDomainSocket()->ToUnixDomainClientSocket();
-
-  size_t len = 1024;
-  char buf[len];
-  std::vector<::base::ScopedFD> fds;
-  int socket_fd = client_socket->socket_fd();
-  if (!SetBlocking(socket_fd, true)) {
-    PLOG(ERROR) << "Failed to SetBlocking";
-  }
-  ssize_t read = ::base::UnixDomainSocket::RecvMsg(socket_fd, buf, len, &fds);
-  if (read < 0) {
-    PLOG(ERROR) << "Failed to RecvMsg";
-    std::move(connect_callback_).Run(errors::Unavailable("Failed to RecvMsg"));
-    return;
-  }
-
-  std::string txt(buf, read);
+  PlatformHandleBroker::Data data = status_or.ValueOrDie();
   ChannelDef channel_def;
-  if (!channel_def.ParseFromArray(buf, read)) {
+  if (!channel_def.ParseFromString(data.data)) {
     std::move(connect_callback_)
-        .Run(errors::Unavailable("Failed to ParseFromArray"));
+        .Run(errors::Unavailable("Failed to ParseFromString"));
     return;
   }
-  channel_def.mutable_shm_endpoint()
-      ->mutable_platform_handle()
-      ->mutable_fd_pair()
-      ->set_fd(fds[0].release());
+
+  ShmPlatformHandle* platform_handle =
+      channel_def.mutable_shm_endpoint()->mutable_platform_handle();
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  platform_handle->set_mach_port(static_cast<uint64_t>(data.platform_handle));
+#elif defined(OS_WIN)
+
+#else
+  platform_handle->mutable_fd_pair()->set_fd(data.platform_handle.fd);
+  platform_handle->mutable_fd_pair()->set_readonly_fd(
+      data.platform_handle.readonly_fd);
+#endif
   LOG(INFO) << channel_def.DebugString();
   this->channel_impl_ =
       std::unique_ptr<SharedMemory>(SharedMemory::FromChannelDef(channel_def));
@@ -145,48 +104,23 @@ void ShmChannel<MessageTy>::OnBrokerConnect(const Status& s) {
 }
 
 template <typename MessageTy>
-void ShmChannel<MessageTy>::AcceptLoop() {
-  UnixDomainServerSocket* server_socket =
-      broker_->ToSocket()->ToUnixDomainSocket()->ToUnixDomainServerSocket();
-  server_socket->AcceptOnceIntercept(
-      ::base::BindOnce(&ShmChannel<MessageTy>::OnBrokerAccept,
-                       ::base::Unretained(this)),
-      ::base::BindRepeating(&ShmChannel<MessageTy>::OnBrokerAuth,
-                            ::base::Unretained(this)));
-}
+void ShmChannel<MessageTy>::FillData(PlatformHandleBroker::Data* handle_info) {
+  SharedMemory* shared_memory = this->channel_impl_->ToSharedMemory();
+  ChannelDef channel_def = shared_memory->ToChannelDef();
+  handle_info->data = channel_def.SerializeAsString();
+  ShmPlatformHandle platform_handle =
+      channel_def.shm_endpoint().platform_handle();
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  handle_info->platform_handle =
+      static_cast<mach_port_t>(platform_handle.mach_port());
+#elif defined(OS_WIN)
 
-template <typename MessageTy>
-void ShmChannel<MessageTy>::OnBrokerAccept(
-    StatusOr<std::unique_ptr<::net::SocketPosix>> status_or) {
-  if (status_or.ok()) {
-    SharedMemory* shared_memory = this->channel_impl_->ToSharedMemory();
-    ChannelDef channel_def = shared_memory->ToChannelDef();
-    std::string txt = channel_def.SerializeAsString();
-    std::vector<int> fds;
-    const FDPair& fd_pair =
-        channel_def.shm_endpoint().platform_handle().fd_pair();
-    fds.push_back(fd_pair.fd());
-    if (fd_pair.readonly_fd() != -1) fds.push_back(fd_pair.readonly_fd());
-    int socket_fd = status_or.ValueOrDie()->socket_fd();
-    if (!SetBlocking(socket_fd, true)) {
-      PLOG(ERROR) << "Failed to SetBlocking";
-    }
-    if (!::base::UnixDomainSocket::SendMsg(socket_fd, txt.c_str(), txt.length(),
-                                           fds)) {
-      PLOG(ERROR) << "Failed to SendMsg";
-    } else {
-      LOG(INFO) << "Succeed to SendMsg";
-    }
-  }
-  AcceptLoop();
-}
-
-template <typename MessageTy>
-bool ShmChannel<MessageTy>::OnBrokerAuth(
-    const UnixDomainServerSocket::Credentials& credentials) {
-  return true;
-}
+#else
+  const FDPair& fd_pair = platform_handle.fd_pair();
+  handle_info->platform_handle.fd = fd_pair.fd();
+  handle_info->platform_handle.readonly_fd = fd_pair.readonly_fd();
 #endif
+}
 
 template <typename MessageTy>
 void ShmChannel<MessageTy>::ReadImpl(MessageTy* message,

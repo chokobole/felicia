@@ -19,11 +19,17 @@ message FDPair {
 
 message ShmPlatformHandle {
   FDPair fd_pair = 1;
+  uint64 mach_port = 2;
 }
 
 message UngeussableToken {
   uint64 high = 1;
   uint64 low = 2;
+}
+
+message BrokerEndPoint {
+  UDSEndPoint uds_endpoint = 1;
+  string service_name = 2;
 }
 
 message ShmEndPoint {
@@ -37,6 +43,7 @@ message ShmEndPoint {
   Mode mode = 2;
   uint64 size = 3;
   UngeussableToken guid = 4;
+  BrokerEndPoint broker_endpoint = 5;
 }
 
 message ChannelDef {

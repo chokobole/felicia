@@ -73,18 +73,19 @@ ChannelDef SharedMemory::ToChannelDef() const {
   ::base::subtle::PlatformSharedMemoryRegion region =
       ::base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
           writable_buffer->DuplicateSharedMemoryRegion());
+  ::base::subtle::PlatformSharedMemoryRegion::ScopedPlatformHandle
+      platform_handle = region.PassPlatformHandle();
   ::base::UnguessableToken guid = region.GetGUID();
   ::base::subtle::PlatformSharedMemoryRegion::Mode mode = region.GetMode();
   size_t size = region.GetSize();
 
   ShmEndPoint* endpoint = channel_def.mutable_shm_endpoint();
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-
+  endpoint->mutable_platform_handle()->set_mach_port(
+      static_cast<uint64_t>(platform_handle.release()));
 #elif defined(OS_WIN)
 
 #else
-  ::base::subtle::PlatformSharedMemoryRegion::ScopedPlatformHandle
-      platform_handle = region.PassPlatformHandle();
   FDPair* fd_pair = endpoint->mutable_platform_handle()->mutable_fd_pair();
   fd_pair->set_fd(platform_handle.fd.release());
   fd_pair->set_readonly_fd(platform_handle.readonly_fd.release());
@@ -110,7 +111,8 @@ std::unique_ptr<SharedMemory> SharedMemory::FromChannelDef(
                                                     endpoint.guid().low());
   size_t size = endpoint.size();
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-
+  scoped_platform_handle = ::base::mac::ScopedMachSendRight{
+      static_cast<mach_port_t>(endpoint.platform_handle().mach_port())};
 #elif defined(OS_WIN)
 
 #else

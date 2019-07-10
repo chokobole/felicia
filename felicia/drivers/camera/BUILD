@@ -2,9 +2,7 @@ load(
     "//bazel:felicia.bzl",
     "if_linux",
     "if_mac",
-    "if_not_mac",
     "if_not_travis",
-    "if_not_windows",
     "if_windows",
 )
 load(

@@ -1,7 +1,6 @@
 #include "felicia/core/channel/channel.h"
 
 #include "third_party/chromium/base/strings/string_util.h"
-#include "third_party/chromium/build/build_config.h"
 
 #include "felicia/core/lib/net/net_util.h"
 
@@ -22,27 +21,6 @@ Status ToNetIPEndPoint(const ChannelDef& channel_def,
   *ip_endpoint = ::net::IPEndPoint(ip, channel_def.ip_endpoint().port());
   return Status::OK();
 }
-
-#if defined(OS_POSIX)
-Status ToNetUDSEndPoint(const ChannelDef& channel_def,
-                        ::net::UDSEndPoint* uds_endpoint) {
-  if (!channel_def.has_uds_endpoint()) {
-    return errors::InvalidArgument(
-        "channel_def doesn't contain a UDSEndPoint.");
-  }
-
-  UDSEndPoint endpoint = channel_def.uds_endpoint();
-  uds_endpoint->set_socket_path(endpoint.socket_path());
-  uds_endpoint->set_use_abstract_namespace(endpoint.use_abstract_namespace());
-
-  ::net::SockaddrStorage address;
-  if (!uds_endpoint->ToSockAddrStorage(&address)) {
-    return errors::InvalidArgument("Failed to convert to SockAddrStorage.");
-  }
-
-  return Status::OK();
-}
-#endif
 
 std::string EndPointToString(const ChannelDef& channel_def) {
   if (channel_def.has_ip_endpoint()) {

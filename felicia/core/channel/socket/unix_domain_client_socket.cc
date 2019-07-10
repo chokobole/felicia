@@ -36,7 +36,6 @@ void UnixDomainClientSocket::Connect(const ::net::UDSEndPoint& uds_endpoint,
   auto client_socket = std::make_unique<::net::SocketPosix>();
 
   int rv = client_socket->Open(AF_UNIX);
-  DCHECK_NE(::net::ERR_IO_PENDING, rv);
   if (rv != ::net::OK) {
     std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
     return;

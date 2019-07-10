@@ -2,6 +2,8 @@
 
 #include <sys/un.h>
 
+#include "felicia/core/lib/error/errors.h"
+
 namespace net {
 
 UDSEndPoint::UDSEndPoint() = default;
@@ -43,3 +45,47 @@ bool UDSEndPoint::ToSockAddrStorage(SockaddrStorage* address) const {
 }
 
 }  // namespace net
+
+namespace felicia {
+
+namespace {
+
+Status ToNetUDSEndPoint(const UDSEndPoint& uds_endpoint,
+                        ::net::UDSEndPoint* net_uds_endpoint) {
+  net_uds_endpoint->set_socket_path(uds_endpoint.socket_path());
+  net_uds_endpoint->set_use_abstract_namespace(
+      uds_endpoint.use_abstract_namespace());
+
+  ::net::SockaddrStorage address;
+  if (!net_uds_endpoint->ToSockAddrStorage(&address)) {
+    return errors::InvalidArgument("Failed to convert to SockAddrStorage.");
+  }
+
+  return Status::OK();
+}
+
+}  // namespace
+
+Status ToNetUDSEndPoint(const ChannelDef& channel_def,
+                        ::net::UDSEndPoint* uds_endpoint) {
+  if (!channel_def.has_uds_endpoint()) {
+    return errors::InvalidArgument(
+        "channel_def doesn't contain a UDSEndPoint.");
+  }
+
+  UDSEndPoint endpoint = channel_def.uds_endpoint();
+  return ToNetUDSEndPoint(endpoint, uds_endpoint);
+}
+
+Status ToNetUDSEndPoint(const BrokerEndPoint& broker_endpoint,
+                        ::net::UDSEndPoint* uds_endpoint) {
+  if (!broker_endpoint.has_uds_endpoint()) {
+    return errors::InvalidArgument(
+        "broker_endpoint doesn't contain a UDSEndPoint.");
+  }
+
+  UDSEndPoint endpoint = broker_endpoint.uds_endpoint();
+  return ToNetUDSEndPoint(endpoint, uds_endpoint);
+}
+
+}  // namespace felicia

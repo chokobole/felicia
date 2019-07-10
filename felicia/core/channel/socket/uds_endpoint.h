@@ -5,6 +5,9 @@
 
 #include "third_party/chromium/net/base/sockaddr_storage.h"
 
+#include "felicia/core/lib/error/status.h"
+#include "felicia/core/protobuf/channel.pb.h"
+
 namespace net {
 
 class UDSEndPoint {
@@ -31,5 +34,19 @@ class UDSEndPoint {
 };
 
 }  // namespace net
+
+namespace felicia {
+
+// Convert |uds_endpoint()| of |channel_def| to ::net::UDSEndPoint,
+// Returns Status::OK() if succeeded.
+Status ToNetUDSEndPoint(const ChannelDef& channel_def,
+                        ::net::UDSEndPoint* uds_endpoint);
+
+// Convert |uds_endpoint() of |broker_endpoint| to ::net::UDSEndPoint,
+// Returns Status::OK() if succeeded.
+Status ToNetUDSEndPoint(const BrokerEndPoint& broker_endpoint,
+                        ::net::UDSEndPoint* uds_endpoint);
+
+}  // namespace felicia
 
 #endif  // FELICIA_CORE_CHANNEL_SOCKET_UDS_ENDPOINT_H_

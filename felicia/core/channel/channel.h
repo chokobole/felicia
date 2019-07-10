@@ -254,17 +254,10 @@ void Channel<MessageTy>::OnReceiveMessage(const Status& s) {
   std::move(receive_callback_).Run(s);
 }
 
-// Convert ChannelSource |channel_source| to ::net::IPEndPoint,
-// Retures true if succeeded.
-EXPORT Status ToNetIPEndPoint(const ChannelDef& channel_source,
+// Convert |ip_endpoint()| of |channel_def| to ::net::IPEndPoint,
+// Returns Status::OK() if succeeded.
+EXPORT Status ToNetIPEndPoint(const ChannelDef& channel_def,
                               ::net::IPEndPoint* ip_endpoint);
-
-#if defined(OS_POSIX)
-// Convert ChannelSource |channel_source| to ::net::UDSEndPoint,
-// Retures true if succeeded.
-EXPORT Status ToNetUDSEndPoint(const ChannelDef& channel_source,
-                               ::net::UDSEndPoint* uds_endpoint);
-#endif
 
 // Convert EndPoint of |channel_def| to std::string
 EXPORT std::string EndPointToString(const ChannelDef& channel_def);
