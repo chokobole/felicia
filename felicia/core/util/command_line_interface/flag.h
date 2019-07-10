@@ -12,6 +12,7 @@
 #include "third_party/chromium/base/strings/string_util.h"
 
 #include "felicia/core/lib/base/choices.h"
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/base/range.h"
 #include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/util/command_line_interface/flag_forward.h"
@@ -251,22 +252,8 @@ class Flag {
   ValueStore<T, Traits> value_store_;
 };
 
-namespace {
-
-bool ContainsOnlyAsciiAlphaOrDigitOrUndderscore(::base::StringPiece text) {
-  const char* p = text.data();
-  const char* limit = p + text.size();
-  while (p < limit) {
-    const char c = *p;
-    if (!(::base::IsAsciiAlpha(c) || ::base::IsAsciiDigit(c) || c == '_'))
-      return false;
-    p++;
-  }
-
-  return true;
-}
-
-}  // namespace
+EXPORT bool ContainsOnlyAsciiAlphaOrDigitOrUndderscore(
+    ::base::StringPiece text);
 
 template <typename T, typename Traits>
 bool Flag<T, Traits>::set_short_name(const std::string& short_name) {

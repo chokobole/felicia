@@ -72,7 +72,7 @@ ChannelDef SharedMemory::ToChannelDef() const {
   channel_def.set_type(ChannelDef::CHANNEL_TYPE_SHM);
   ::base::subtle::PlatformSharedMemoryRegion region =
       ::base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
-          std::move(writable_buffer->DuplicateSharedMemoryRegion()));
+          writable_buffer->DuplicateSharedMemoryRegion());
   ::base::UnguessableToken guid = region.GetGUID();
   ::base::subtle::PlatformSharedMemoryRegion::Mode mode = region.GetMode();
   size_t size = region.GetSize();

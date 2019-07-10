@@ -33,6 +33,9 @@ def fel_copts(is_external = False):
             "-Werror=thread-safety-analysis",
             "-Werror=delete-non-virtual-dtor",
             "-Werror=return-std-move",
+            "-Werror=self-move",
+            "-Werror=inconsistent-missing-override",
+            "-Werror=pessimizing-move",
         ])
     return COPTS + include(["third_party/chromium"]) + if_windows(_fel_win_copts(is_external)) + select({
         "//felicia:windows": [],

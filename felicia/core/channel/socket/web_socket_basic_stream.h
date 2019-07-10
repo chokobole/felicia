@@ -137,7 +137,7 @@ class TCPSocketAdapter : public WebSocketBasicStream::Adapter {
     socket_ = std::move(other.socket_);
   }
 
-  bool IsConnected() { return socket_->IsConnected(); }
+  bool IsConnected() override { return socket_->IsConnected(); }
 
   int Read(net::IOBuffer* buf, int buf_len,
            net::CompletionOnceCallback callback) override {

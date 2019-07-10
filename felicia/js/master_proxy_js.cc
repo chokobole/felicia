@@ -95,8 +95,6 @@ class TopicInfoWatcherDelegate : public TopicInfoWatcherNode::Delegate {
   }
 
  private:
-  friend void OnNewTopicInfoCallback(uv_async_t*);
-
   ::Napi::FunctionReference on_new_topic_info_callback_;
   ::Napi::FunctionReference on_error_callback_;
 

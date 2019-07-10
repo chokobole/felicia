@@ -10,6 +10,19 @@ std::string MakeNamedHelpText(::base::StringPiece name,
   ALIGN_AT_INDEX_AND_APPEND(ss, help, remain_len, help_start);
 }
 
+bool ContainsOnlyAsciiAlphaOrDigitOrUndderscore(::base::StringPiece text) {
+  const char* p = text.data();
+  const char* limit = p + text.size();
+  while (p < limit) {
+    const char c = *p;
+    if (!(::base::IsAsciiAlpha(c) || ::base::IsAsciiDigit(c) || c == '_'))
+      return false;
+    p++;
+  }
+
+  return true;
+}
+
 bool CheckIfOneOfFlagWasSet(std::vector<std::string>& names) {
   std::string names_txt = ::base::JoinString(names, ", ");
 

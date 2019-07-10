@@ -6,7 +6,7 @@ ReadOnlySharedBuffer::ReadOnlySharedBuffer(
     ::base::subtle::PlatformSharedMemoryRegion handle) {
   shared_memory_region_ =
       ::base::ReadOnlySharedMemoryRegion::Deserialize(std::move(handle));
-  shared_memory_mapping_ = std::move(shared_memory_region_.Map());
+  shared_memory_mapping_ = shared_memory_region_.Map();
   buffer_ = reinterpret_cast<const SerializedBuffer*>(
       shared_memory_mapping_.memory());
 }

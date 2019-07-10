@@ -21,8 +21,8 @@ PointcloudFrame::PointcloudFrame(PointcloudFrame&& other) noexcept
       timestamp_(other.timestamp_) {}
 
 void PointcloudFrame::operator=(PointcloudFrame&& other) {
-  points_ = std::move(points_);
-  colors_ = std::move(colors_);
+  points_ = std::move(other.points_);
+  colors_ = std::move(other.colors_);
   timestamp_ = other.timestamp_;
 }
 
