@@ -92,10 +92,11 @@ void PlatformHandleBroker::AcceptLoop() {
                             ::base::Unretained(this)));
 }
 
-void PlatformHandleBroker::OnBrokerAccept(
+void PlatformHandleBroker::HandleAccept(
     StatusOr<std::unique_ptr<::net::SocketPosix>> status_or) {
   if (!status_or.ok()) {
     LOG(ERROR) << status_or.status();
+    return;
   }
 
   int socket_fd = status_or.ValueOrDie()->socket_fd();
@@ -120,6 +121,12 @@ void PlatformHandleBroker::OnBrokerAccept(
                                          data.data.length(), fds)) {
     PLOG(ERROR) << "Failed to SendMsg";
   }
+}
+
+void PlatformHandleBroker::OnBrokerAccept(
+    StatusOr<std::unique_ptr<::net::SocketPosix>> status_or) {
+  HandleAccept(std::move(status_or));
+  AcceptLoop();
 }
 
 bool PlatformHandleBroker::OnBrokerAuth(

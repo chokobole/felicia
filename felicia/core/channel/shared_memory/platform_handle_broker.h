@@ -53,6 +53,7 @@ class PlatformHandleBroker {
 #else
   void OnBrokerConnect(const Status& s);
   void AcceptLoop();
+  void HandleAccept(StatusOr<std::unique_ptr<::net::SocketPosix>> status_or);
   void OnBrokerAccept(StatusOr<std::unique_ptr<::net::SocketPosix>> status_or);
   bool OnBrokerAuth(const UnixDomainServerSocket::Credentials& credentials);
 #endif
