@@ -91,7 +91,6 @@ void ShmChannel<MessageTy>::OnReceiveData(
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   platform_handle->set_mach_port(static_cast<uint64_t>(data.platform_handle));
 #elif defined(OS_WIN)
-
 #else
   platform_handle->mutable_fd_pair()->set_fd(data.platform_handle.fd);
   platform_handle->mutable_fd_pair()->set_readonly_fd(
@@ -114,7 +113,6 @@ void ShmChannel<MessageTy>::FillData(PlatformHandleBroker::Data* handle_info) {
   handle_info->platform_handle =
       static_cast<mach_port_t>(platform_handle.mach_port());
 #elif defined(OS_WIN)
-
 #else
   const FDPair& fd_pair = platform_handle.fd_pair();
   handle_info->platform_handle.fd = fd_pair.fd();

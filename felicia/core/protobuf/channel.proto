@@ -17,9 +17,15 @@ message FDPair {
   int32 readonly_fd = 2;
 }
 
+message HandleWithProcessId {
+  uint64 handle = 1;
+  uint64 process_id = 2;
+}
+
 message ShmPlatformHandle {
   FDPair fd_pair = 1;
   uint64 mach_port = 2;
+  HandleWithProcessId handle_with_process_id = 3;
 }
 
 message UngeussableToken {

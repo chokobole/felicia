@@ -10,6 +10,7 @@
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "felicia/core/channel/shared_memory/mach_port_broker.h"
 #elif defined(OS_WIN)
+#include "felicia/core/channel/shared_memory/named_pipe_server.h"
 #else
 #include "felicia/core/channel/socket/unix_domain_server_socket.h"
 #endif
@@ -18,6 +19,8 @@ namespace felicia {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 class PlatformHandleBroker : public ::base::PortProvider::Observer {
+#elif defined(OS_WIN)
+class PlatformHandleBroker : public NamedPipeServer::Delegate {
 #else
 class PlatformHandleBroker {
 #endif
@@ -40,6 +43,8 @@ class PlatformHandleBroker {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   void OnReceivedTaskPort(::base::ProcessHandle process) override;
+#elif defined(OS_WIN)
+  void OnConnected() override;
 #endif
 
  private:
@@ -55,6 +60,7 @@ class PlatformHandleBroker {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   std::unique_ptr<MachPortBroker> broker_;
 #elif defined(OS_WIN)
+  std::unique_ptr<NamedPipeServer> broker_;
 #else
   std::unique_ptr<UnixDomainSocket> broker_;
 #endif

@@ -14,6 +14,7 @@
 #include "third_party/chromium/base/mac/foundation_util.h"
 #include "third_party/chromium/base/mac/mach_logging.h"
 #include "third_party/chromium/base/mac/scoped_mach_msg_destroy.h"
+#include "third_party/chromium/base/rand_util.h"
 #include "third_party/chromium/base/strings/string_util.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
@@ -91,8 +92,8 @@ Status MachPortBroker::Init() {
   DCHECK(server_port_.get() == MACH_PORT_NULL);
 
   // Check in with launchd and publish the service name.
-  std::string service_name =
-      ::base::StringPrintf("%s.felicia.%d", ::base::mac::BaseBundleID(), getpid());
+  std::string service_name = ::base::StringPrintf(
+      "%s.felicia.%d.%I64u", ::base::mac::BaseBundleID(), getpid(), ::base::RandUint64());
   kern_return_t kr =
       bootstrap_check_in(bootstrap_port, service_name.c_str(),
                          ::base::mac::ScopedMachReceiveRight::Receiver(server_port_).get());

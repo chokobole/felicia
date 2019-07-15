@@ -84,7 +84,12 @@ ChannelDef SharedMemory::ToChannelDef() const {
   endpoint->mutable_platform_handle()->set_mach_port(
       static_cast<uint64_t>(platform_handle.release()));
 #elif defined(OS_WIN)
-
+  HandleWithProcessId* handle_with_process_id =
+      endpoint->mutable_platform_handle()->mutable_handle_with_process_id();
+  handle_with_process_id->set_handle(
+      static_cast<uint64_t>(HandleToLong(platform_handle.Take())));
+  handle_with_process_id->set_process_id(
+      static_cast<uint64_t>(::base::GetCurrentProcId()));
 #else
   FDPair* fd_pair = endpoint->mutable_platform_handle()->mutable_fd_pair();
   fd_pair->set_fd(platform_handle.fd.release());
@@ -114,7 +119,21 @@ std::unique_ptr<SharedMemory> SharedMemory::FromChannelDef(
   scoped_platform_handle = ::base::mac::ScopedMachSendRight{
       static_cast<mach_port_t>(endpoint.platform_handle().mach_port())};
 #elif defined(OS_WIN)
-
+  const HandleWithProcessId& handle_with_process_id =
+      endpoint.platform_handle().handle_with_process_id();
+  ::base::win::ScopedHandle remote_process_handle(
+      ::OpenProcess(PROCESS_ALL_ACCESS, FALSE,
+                    static_cast<DWORD>(handle_with_process_id.process_id())));
+  HANDLE duped_handle;
+  BOOL result = ::DuplicateHandle(remote_process_handle.Get(),
+                                  LongToHandle(handle_with_process_id.handle()),
+                                  GetCurrentProcess(), &duped_handle, 0, FALSE,
+                                  DUPLICATE_SAME_ACCESS);
+  if (result) {
+    scoped_platform_handle = ::base::win::ScopedHandle(duped_handle);
+  } else {
+    PLOG(ERROR) << "Failed to DuplicateHandle.";
+  }
 #else
   const FDPair& fd_pair = endpoint.platform_handle().fd_pair();
 

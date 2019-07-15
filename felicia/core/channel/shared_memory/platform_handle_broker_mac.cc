@@ -130,7 +130,6 @@ void PlatformHandleBroker::WaitForBroker(ChannelDef channel_def,
                                          ReceiveDataCallback callback) {
   DCHECK(!broker_);
   DCHECK(!callback.is_null());
-  DCHECK(receive_data_callback_.is_null());
 
   std::string service_name =
       channel_def.shm_endpoint().broker_endpoint().service_name();

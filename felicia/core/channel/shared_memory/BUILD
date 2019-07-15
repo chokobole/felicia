@@ -1,4 +1,8 @@
-load("//bazel:felicia.bzl", "if_mac")
+load(
+    "//bazel:felicia.bzl",
+    "if_mac",
+    "if_windows",
+)
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
@@ -23,10 +27,15 @@ fel_cc_library(
         "writable_shared_buffer.cc",
     ] + select({
         "//felicia:mac": ["platform_handle_broker_mac.cc"],
-        "//felicia:windows": ["platform_handle_broker_win.cc"],
+        "//felicia:windows": [
+            "named_pipe_server.cc",
+            "platform_handle_broker_win.cc"
+        ],
         "//conditions:default": ["platform_handle_broker_posix.cc"],
     }),
-    hdrs = SHARED_MEMORY_HDRS,
+    hdrs = SHARED_MEMORY_HDRS + if_windows([
+        "named_pipe_server.h",
+    ]),
     deps = [
         "//felicia/core/channel:channel_impl",
         "//felicia/core/channel/socket",
