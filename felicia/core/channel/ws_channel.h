@@ -76,17 +76,15 @@ template <typename MessageTy>
 void WSChannel<MessageTy>::WriteImpl(const std::string& text,
                                      SendMessageCallback callback) {
   int to_send = text.length();
-  if (this->send_buffer_->capacity() < to_send && this->is_dynamic_buffer_) {
-    DLOG(INFO) << "Dynamically allocate buffer " << Bytes::FromBytes(to_send);
-    this->send_buffer_->SetCapacity(to_send);
-  }
+  this->send_buffer_.SetEnoughCapacityIfDynamic(to_send);
 
-  memcpy(this->send_buffer_->StartOfBuffer(), text.c_str(), to_send);
+  memcpy(this->send_buffer_.StartOfBuffer(), text.c_str(), to_send);
+  this->send_buffer_.AttachWebSocket(to_send);
 
   this->is_sending_ = true;
   this->send_callback_ = callback;
   this->channel_impl_->Write(
-      this->send_buffer_, to_send,
+      this->send_buffer_.buffer(), to_send,
       ::base::BindOnce(&WSChannel<MessageTy>::OnSendMessage,
                        ::base::Unretained(this)));
 }

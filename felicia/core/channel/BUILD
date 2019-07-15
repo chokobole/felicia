@@ -17,10 +17,12 @@ fel_cc_library(
     name = "channel",
     srcs = [
         "channel.cc",
+        "channel_buffer.cc",
     ],
     hdrs = [
         "channel.h",
         "channel_factory.h",
+        "channel_buffer.h",
         "tcp_channel.h",
         "udp_channel.h",
         "shm_channel.h",

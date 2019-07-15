@@ -259,11 +259,15 @@ void Publisher<MessageTy>::OnPublishTopicAsync(
     message_queue_ =
         std::make_unique<Pool<MessageTy, uint8_t>>(settings.queue_size);
   }
+
+  SendBuffer send_buffer;
+  if (!settings.is_dynamic_buffer) {
+    send_buffer.SetCapacity(settings.buffer_size);
+  }
   for (auto& channel : channels_) {
+    channel->SetSendBuffer(send_buffer);
     if (settings.is_dynamic_buffer) {
       channel->EnableDynamicBuffer();
-    } else {
-      channel->SetSendBufferSize(settings.buffer_size);
     }
   }
 
@@ -312,18 +316,24 @@ void Publisher<MessageTy>::SendMesasge(SendMessageCallback callback) {
 
   if (!can_send) return;
 
-  ::base::Optional<MessageTy> message;
+  std::string seriazlied;
   {
     ::base::AutoLock l(lock_);
     if (message_queue_ && !message_queue_->empty()) {
-      message = std::move(message_queue_->front());
+      MessageIoError err = MessageIO<MessageTy>::SerializeToString(
+          &message_queue_->front(), &seriazlied);
+      if (err != MessageIoError::OK) {
+        seriazlied.clear();
+      }
       message_queue_->pop();
     }
   }
-  if (message.has_value()) {
+  if (seriazlied.length() > 0) {
+    bool reuse = false;
     for (auto& channel : channels_) {
       if (!channel->IsSendingMessage() && channel->HasReceivers()) {
-        channel->SendMessage(message.value(), callback);
+        channel->SendMessage(seriazlied, reuse, callback);
+        reuse |= true;
       }
     }
   }

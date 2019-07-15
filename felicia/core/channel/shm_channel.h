@@ -123,15 +123,14 @@ void ShmChannel<MessageTy>::FillData(PlatformHandleBroker::Data* handle_info) {
 template <typename MessageTy>
 void ShmChannel<MessageTy>::ReadImpl(MessageTy* message,
                                      StatusOnceCallback callback) {
-  if (this->is_dynamic_buffer_ && this->receive_buffer_->capacity() == 0) {
-    SharedMemory* shared_memory = this->channel_impl_->ToSharedMemory();
-    this->receive_buffer_->SetCapacity(shared_memory->BufferSize());
-  }
+  SharedMemory* shared_memory = this->channel_impl_->ToSharedMemory();
+  size_t buffer_size = shared_memory->BufferSize();
+  this->receive_buffer_.SetEnoughCapacityIfDynamic(buffer_size);
 
   this->message_ = message;
   this->receive_callback_ = std::move(callback);
   this->channel_impl_->Read(
-      this->receive_buffer_, this->receive_buffer_->capacity(),
+      this->receive_buffer_.buffer(), this->receive_buffer_.capacity(),
       ::base::BindOnce(&ShmChannel<MessageTy>::OnReceiveMessageWithHeader,
                        ::base::Unretained(this)));
 }
@@ -144,14 +143,14 @@ void ShmChannel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
   }
 
   MessageIoError err = MessageIO<MessageTy>::ParseHeaderFromBuffer(
-      this->receive_buffer_->StartOfBuffer(), &this->header_);
+      this->receive_buffer_.StartOfBuffer(), &this->header_);
   if (err != MessageIoError::OK) {
     std::move(this->receive_callback_)
         .Run(errors::DataLoss(MessageIoErrorToString(err)));
     return;
   }
 
-  if (this->receive_buffer_->capacity() - sizeof(Header) <
+  if (this->receive_buffer_.capacity() - sizeof(Header) <
       this->header_.size()) {
     std::move(this->receive_callback_)
         .Run(errors::Aborted(
@@ -160,7 +159,7 @@ void ShmChannel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
   }
 
   err = MessageIO<MessageTy>::ParseMessageFromBuffer(
-      this->receive_buffer_->StartOfBuffer(), this->header_, true,
+      this->receive_buffer_.StartOfBuffer(), this->header_, true,
       this->message_);
   if (err != MessageIoError::OK) {
     std::move(this->receive_callback_)

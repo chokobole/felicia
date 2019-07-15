@@ -29,7 +29,7 @@ fel_cc_library(
         "//felicia:mac": ["platform_handle_broker_mac.cc"],
         "//felicia:windows": [
             "named_pipe_server.cc",
-            "platform_handle_broker_win.cc"
+            "platform_handle_broker_win.cc",
         ],
         "//conditions:default": ["platform_handle_broker_posix.cc"],
     }),

@@ -6,6 +6,7 @@
 #include "third_party/chromium/net/base/io_buffer.h"
 #include "third_party/chromium/net/base/ip_endpoint.h"
 
+#include "felicia/core/channel/channel_buffer.h"
 #include "felicia/core/channel/channel_impl.h"
 #include "felicia/core/channel/socket/socket.h"
 #include "felicia/core/lib/base/export.h"
@@ -81,16 +82,25 @@ class Channel {
                        StatusOnceCallback callback) = 0;
 
   void SendMessage(const MessageTy& message, SendMessageCallback callback);
+  void SendMessage(const std::string& serialized, bool reuse,
+                   SendMessageCallback callback);
   void ReceiveMessage(MessageTy* message, StatusOnceCallback callback);
 
-  virtual void SetSendBufferSize(Bytes bytes) {
-    send_buffer_->SetCapacity(bytes.bytes());
-  }
-  virtual void SetReceiveBufferSize(Bytes bytes) {
-    receive_buffer_->SetCapacity(bytes.bytes());
+  void SetSendBuffer(const SendBuffer& send_buffer) {
+    send_buffer_ = send_buffer;
   }
 
-  void EnableDynamicBuffer() { is_dynamic_buffer_ = true; }
+  virtual void SetSendBufferSize(Bytes bytes) {
+    send_buffer_.SetCapacity(bytes);
+  }
+  virtual void SetReceiveBufferSize(Bytes bytes) {
+    receive_buffer_.SetCapacity(bytes);
+  }
+
+  void EnableDynamicBuffer() {
+    send_buffer_.EnableDynamicBuffer();
+    receive_buffer_.EnableDynamicBuffer();
+  }
 
  protected:
   friend class ChannelFactory;
@@ -102,21 +112,18 @@ class Channel {
   void OnReceiveHeader(const Status& s);
   void OnReceiveMessage(const Status& s);
 
-  Channel()
-      : send_buffer_(::base::MakeRefCounted<::net::GrowableIOBuffer>()),
-        receive_buffer_(::base::MakeRefCounted<::net::GrowableIOBuffer>()) {}
+  Channel() {}
 
   Header header_;
   MessageTy* message_ = nullptr;
 
   std::unique_ptr<ChannelImpl> channel_impl_;
-  scoped_refptr<::net::GrowableIOBuffer> send_buffer_;
+  SendBuffer send_buffer_;
   SendMessageCallback send_callback_;
-  scoped_refptr<::net::GrowableIOBuffer> receive_buffer_;
+  ChannelBuffer receive_buffer_;
   StatusOnceCallback receive_callback_;
 
   bool is_sending_ = false;
-  bool is_dynamic_buffer_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Channel);
 };
@@ -128,19 +135,29 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
   DCHECK(!is_sending_);
   DCHECK(!callback.is_null());
 
-  if (!is_dynamic_buffer_ && send_buffer_->capacity() == 0) {
-    DLOG(WARNING) << "Send buffer was not allocated, used default size.";
-    send_buffer_->SetCapacity(Bytes::FromKilloBytes(1).bytes());
-  }
-
-  send_buffer_->set_offset(0);
+  send_buffer_.Reset();
   std::string text;
   MessageIoError err = MessageIO<MessageTy>::SerializeToString(&message, &text);
   if (err == MessageIoError::OK) {
+    send_buffer_.InvalidateAttachment();
     WriteImpl(text, callback);
   } else {
     callback.Run(type(), errors::Unavailable(MessageIoErrorToString(err)));
   }
+}
+
+template <typename MessageTy>
+void Channel<MessageTy>::SendMessage(const std::string& serialized, bool reuse,
+                                     SendMessageCallback callback) {
+  DCHECK(channel_impl_);
+  DCHECK(!is_sending_);
+  DCHECK(!callback.is_null());
+
+  send_buffer_.Reset();
+  if (!reuse) {
+    send_buffer_.InvalidateAttachment();
+  }
+  WriteImpl(serialized, callback);
 }
 
 template <typename MessageTy>
@@ -156,33 +173,31 @@ void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
   DCHECK(receive_callback_.is_null());
   DCHECK(!callback.is_null());
 
-  if (!is_dynamic_buffer_ && receive_buffer_->capacity() == 0) {
-    DLOG(WARNING) << "Receive buffer was not allocated, used default size.";
-    receive_buffer_->SetCapacity(Bytes::FromKilloBytes(1).bytes());
-  }
-
-  receive_buffer_->set_offset(0);
+  receive_buffer_.Reset();
   ReadImpl(message, std::move(callback));
 }
 
 template <typename MessageTy>
 void Channel<MessageTy>::WriteImpl(const std::string& text,
                                    SendMessageCallback callback) {
-  int to_send;
-  MessageIoError err =
-      MessageIO<MessageTy>::AttachToBuffer(text, send_buffer_, &to_send);
-  if (err == MessageIoError::ERR_NOT_ENOUGH_BUFFER) {
-    if (is_dynamic_buffer_) {
-      DLOG(INFO) << "Dynamically allocate buffer " << Bytes::FromBytes(to_send);
-      send_buffer_->SetCapacity(to_send);
-      err = MessageIO<MessageTy>::AttachToBuffer(text, send_buffer_, &to_send);
+  MessageIoError err = MessageIoError::OK;
+  if (!send_buffer_.CanReuse(SendBuffer::ATTACH_KIND_GENERAL)) {
+    int to_send;
+    err = MessageIO<MessageTy>::AttachToBuffer(text, send_buffer_.buffer(),
+                                               &to_send);
+    if (err == MessageIoError::ERR_NOT_ENOUGH_BUFFER) {
+      if (send_buffer_.SetEnoughCapacityIfDynamic(to_send)) {
+        err = MessageIO<MessageTy>::AttachToBuffer(text, send_buffer_.buffer(),
+                                                   &to_send);
+      }
     }
+    send_buffer_.AttachGeneral(to_send);
   }
 
   if (err == MessageIoError::OK) {
     is_sending_ = true;
     send_callback_ = callback;
-    channel_impl_->Write(send_buffer_, to_send,
+    channel_impl_->Write(send_buffer_.buffer(), send_buffer_.size(),
                          ::base::BindOnce(&Channel<MessageTy>::OnSendMessage,
                                           ::base::Unretained(this)));
   } else {
@@ -193,13 +208,11 @@ void Channel<MessageTy>::WriteImpl(const std::string& text,
 template <typename MessageTy>
 void Channel<MessageTy>::ReadImpl(MessageTy* message,
                                   StatusOnceCallback callback) {
-  if (is_dynamic_buffer_ && receive_buffer_->capacity() == 0) {
-    receive_buffer_->SetCapacity(sizeof(Header));
-  }
+  receive_buffer_.SetEnoughCapacityIfDynamic(sizeof(Header));
 
   message_ = message;
   receive_callback_ = std::move(callback);
-  channel_impl_->Read(receive_buffer_, sizeof(Header),
+  channel_impl_->Read(receive_buffer_.buffer(), sizeof(Header),
                       ::base::BindOnce(&Channel<MessageTy>::OnReceiveHeader,
                                        ::base::Unretained(this)));
 }
@@ -213,7 +226,7 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
   }
 
   MessageIoError err = MessageIO<MessageTy>::ParseHeaderFromBuffer(
-      receive_buffer_->StartOfBuffer(), &header_);
+      receive_buffer_.StartOfBuffer(), &header_);
   if (err != MessageIoError::OK) {
     std::move(receive_callback_)
         .Run(errors::DataLoss(MessageIoErrorToString(err)));
@@ -221,20 +234,15 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
   }
 
   int bytes = sizeof(Header) + header_.size();
-  if (receive_buffer_->capacity() < bytes) {
-    if (is_dynamic_buffer_) {
-      DLOG(INFO) << "Dynamically allocate buffer " << Bytes::FromBytes(bytes);
-      receive_buffer_->SetCapacity(bytes);
-    } else {
-      std::move(receive_callback_)
-          .Run(errors::Aborted(
-              MessageIoErrorToString(MessageIoError::ERR_NOT_ENOUGH_BUFFER)));
-      return;
-    }
+  if (!receive_buffer_.SetEnoughCapacityIfDynamic(bytes)) {
+    std::move(receive_callback_)
+        .Run(errors::Aborted(
+            MessageIoErrorToString(MessageIoError::ERR_NOT_ENOUGH_BUFFER)));
+    return;
   }
 
-  receive_buffer_->set_offset(0);
-  channel_impl_->Read(receive_buffer_, header_.size(),
+  receive_buffer_.set_offset(0);
+  channel_impl_->Read(receive_buffer_.buffer(), header_.size(),
                       ::base::BindOnce(&Channel<MessageTy>::OnReceiveMessage,
                                        ::base::Unretained(this)));
 }
@@ -243,7 +251,7 @@ template <typename MessageTy>
 void Channel<MessageTy>::OnReceiveMessage(const Status& s) {
   if (s.ok()) {
     MessageIoError err = MessageIO<MessageTy>::ParseMessageFromBuffer(
-        receive_buffer_->StartOfBuffer(), header_, false, message_);
+        receive_buffer_.StartOfBuffer(), header_, false, message_);
     if (err != MessageIoError::OK) {
       std::move(receive_callback_)
           .Run(errors::DataLoss("Failed to parse message from buffer."));

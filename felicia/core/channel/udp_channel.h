@@ -33,14 +33,14 @@ class UDPChannel : public Channel<MessageTy> {
       LOG(ERROR) << "UDP buffer can't exceed " << bytes;
       bytes = kMaximumBufferSize;
     }
-    this->send_buffer_->SetCapacity(bytes.bytes());
+    Channel<MessageTy>::SetSendBufferSize(bytes);
   }
   void SetReceiveBufferSize(Bytes bytes) override {
     if (bytes > kMaximumBufferSize) {
       LOG(ERROR) << "UDP buffer can't exceed " << bytes;
       bytes = kMaximumBufferSize;
     }
-    this->receive_buffer_->SetCapacity(bytes.bytes());
+    Channel<MessageTy>::SetReceiveBufferSize(bytes);
   }
 
  private:
@@ -85,14 +85,12 @@ void UDPChannel<MessageTy>::Connect(const ChannelDef& channel_def,
 template <typename MessageTy>
 void UDPChannel<MessageTy>::ReadImpl(MessageTy* message,
                                      StatusOnceCallback callback) {
-  if (this->is_dynamic_buffer_ && this->receive_buffer_->capacity() == 0) {
-    SetReceiveBufferSize(kMaximumBufferSize);
-  }
+  this->receive_buffer_.SetEnoughCapacityIfDynamic(kMaximumBufferSize);
 
   this->message_ = message;
   this->receive_callback_ = std::move(callback);
   this->channel_impl_->Read(
-      this->receive_buffer_, this->receive_buffer_->capacity(),
+      this->receive_buffer_.buffer(), this->receive_buffer_.capacity(),
       ::base::BindOnce(&UDPChannel<MessageTy>::OnReceiveMessageWithHeader,
                        ::base::Unretained(this)));
 }
@@ -105,14 +103,14 @@ void UDPChannel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
   }
 
   MessageIoError err = MessageIO<MessageTy>::ParseHeaderFromBuffer(
-      this->receive_buffer_->StartOfBuffer(), &this->header_);
+      this->receive_buffer_.StartOfBuffer(), &this->header_);
   if (err != MessageIoError::OK) {
     std::move(this->receive_callback_)
         .Run(errors::DataLoss(MessageIoErrorToString(err)));
     return;
   }
 
-  if (this->receive_buffer_->capacity() - sizeof(Header) <
+  if (this->receive_buffer_.capacity() - sizeof(Header) <
       this->header_.size()) {
     std::move(this->receive_callback_)
         .Run(errors::Aborted(
@@ -121,7 +119,7 @@ void UDPChannel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
   }
 
   err = MessageIO<MessageTy>::ParseMessageFromBuffer(
-      this->receive_buffer_->StartOfBuffer(), this->header_, true,
+      this->receive_buffer_.StartOfBuffer(), this->header_, true,
       this->message_);
   if (err != MessageIoError::OK) {
     std::move(this->receive_callback_)
