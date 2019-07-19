@@ -1,29 +1,12 @@
 #ifndef FELICIA_CORE_CHANNEL_SOCKET_TCP_SERVER_SOCKET_H_
 #define FELICIA_CORE_CHANNEL_SOCKET_TCP_SERVER_SOCKET_H_
 
-#include "felicia/core/channel/socket/socket_broadcaster.h"
+#include "felicia/core/channel/socket/stream_socket_broadcaster.h"
 #include "felicia/core/channel/socket/tcp_socket.h"
 #include "felicia/core/lib/error/statusor.h"
 #include "felicia/core/protobuf/channel.pb.h"
 
 namespace felicia {
-
-class TCPSocketInterface : public SocketBroadcaster::SocketInterface {
- public:
-  TCPSocketInterface(std::unique_ptr<::net::TCPSocket> socket);
-  TCPSocketInterface(TCPSocketInterface&& other);
-  void operator=(TCPSocketInterface&& other);
-
-  bool IsConnected() override;
-  int Write(::net::IOBuffer* buf, int buf_len,
-            ::net::CompletionOnceCallback callback) override;
-  void Close() override;
-
- private:
-  std::unique_ptr<::net::TCPSocket> socket_;
-
-  DISALLOW_COPY_AND_ASSIGN(TCPSocketInterface);
-};
 
 class TCPServerSocket : public TCPSocket {
  public:
@@ -34,12 +17,7 @@ class TCPServerSocket : public TCPSocket {
   TCPServerSocket();
   ~TCPServerSocket();
 
-  const std::vector<std::unique_ptr<SocketBroadcaster::SocketInterface>>&
-  accepted_sockets() const;
-
-  bool IsServer() const override;
-
-  bool IsConnected() const override;
+  const std::vector<std::unique_ptr<StreamSocket>>& accepted_sockets() const;
 
   StatusOr<ChannelDef> Listen();
 
@@ -48,6 +26,11 @@ class TCPServerSocket : public TCPSocket {
 
   void AddSocket(std::unique_ptr<::net::TCPSocket> socket);
 
+  // Socket methods
+  bool IsServer() const override;
+  bool IsConnected() const override;
+
+  // ChannelImpl methods
   // Write the |buffer| to the |accepted_sockets_|. If it succeeds to write
   // all the sockets, then callback with Status::OK(), otherwise callback
   // with the |write_result_|, which is recorded at every time finishing
@@ -68,13 +51,11 @@ class TCPServerSocket : public TCPSocket {
   AcceptCallback accept_callback_;
   AcceptOnceInterceptCallback accept_once_intercept_callback_;
 
-  std::unique_ptr<::net::TCPSocket> socket_;
   ::net::IPEndPoint accepted_endpoint_;
   std::unique_ptr<::net::TCPSocket> accepted_socket_;
-  std::vector<std::unique_ptr<SocketBroadcaster::SocketInterface>>
-      accepted_sockets_;
+  std::vector<std::unique_ptr<StreamSocket>> accepted_sockets_;
 
-  SocketBroadcaster broadcaster_;
+  StreamSocketBroadcaster broadcaster_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPServerSocket);
 };

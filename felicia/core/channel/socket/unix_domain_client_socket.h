@@ -17,25 +17,18 @@ class UnixDomainClientSocket : public UnixDomainSocket {
 
   void set_socket(std::unique_ptr<::net::SocketPosix> socket);
 
-  bool IsClient() const override;
-
   void Connect(const ::net::UDSEndPoint& uds_endpoint,
                StatusOnceCallback callback);
 
+  // Socket methods
+  bool IsClient() const override;
+  bool IsConnected() const override;
+
+  // ChannelImpl methods
   void Write(scoped_refptr<::net::IOBuffer> buffer, int size,
              StatusOnceCallback callback) override;
   void Read(scoped_refptr<::net::GrowableIOBuffer> buffer, int size,
             StatusOnceCallback callback) override;
-
- private:
-  void OnConnect(int result);
-
-  void OnWrite(int result);
-  void OnRead(int result);
-
-  StatusOnceCallback connect_callback_;
-
-  std::unique_ptr<::net::SocketPosix> socket_;
 
   DISALLOW_COPY_AND_ASSIGN(UnixDomainClientSocket);
 };

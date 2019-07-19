@@ -24,11 +24,6 @@ class TCPChannel : public Channel<MessageTy> {
 
   bool HasReceivers() const override;
 
-  bool IsConnected() const {
-    DCHECK(this->channel_impl_);
-    return this->channel_impl_->ToSocket()->ToTCPSocket()->IsConnected();
-  }
-
   StatusOr<ChannelDef> Listen();
 
   void AcceptLoop(TCPServerSocket::AcceptCallback callback);

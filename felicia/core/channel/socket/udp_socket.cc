@@ -7,6 +7,28 @@ UDPSocket::~UDPSocket() = default;
 
 bool UDPSocket::IsUDPSocket() const { return true; }
 
+int UDPSocket::Write(::net::IOBuffer* buf, int buf_len,
+                     ::net::CompletionOnceCallback callback) {
+  DCHECK(socket_);
+  return socket_->SendTo(buf, buf_len, multicast_ip_endpoint_,
+                         std::move(callback));
+}
+
+int UDPSocket::Read(::net::IOBuffer* buf, int buf_len,
+                    ::net::CompletionOnceCallback callback) {
+  DCHECK(socket_);
+  return socket_->Read(buf, buf_len, std::move(callback));
+}
+
+void UDPSocket::Close() {
+  DCHECK(socket_);
+  socket_->Close();
+}
+
+bool UDPSocket::IsConnected() const {
+  return socket_ && socket_->is_connected();
+}
+
 UDPClientSocket* UDPSocket::ToUDPClientSocket() {
   DCHECK(IsClient());
   return reinterpret_cast<UDPClientSocket*>(this);
@@ -15,14 +37,6 @@ UDPClientSocket* UDPSocket::ToUDPClientSocket() {
 UDPServerSocket* UDPSocket::ToUDPServerSocket() {
   DCHECK(IsServer());
   return reinterpret_cast<UDPServerSocket*>(this);
-}
-
-void UDPSocket::OnWrite(int result) {
-  CallbackWithStatus(std::move(write_callback_), result);
-}
-
-void UDPSocket::OnRead(int result) {
-  CallbackWithStatus(std::move(read_callback_), result);
 }
 
 }  // namespace felicia

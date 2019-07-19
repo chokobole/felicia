@@ -1,47 +1,20 @@
 #include "felicia/core/channel/socket/tcp_server_socket.h"
 
+#include "felicia/core/channel/socket/tcp_client_socket.h"
 #include "felicia/core/lib/error/errors.h"
 #include "felicia/core/lib/net/net_util.h"
 
 namespace felicia {
 
-TCPSocketInterface::TCPSocketInterface(std::unique_ptr<::net::TCPSocket> socket)
-    : socket_(std::move(socket)) {}
-
-TCPSocketInterface::TCPSocketInterface(TCPSocketInterface&& other)
-    : socket_(std::move(other.socket_)) {}
-
-void TCPSocketInterface::operator=(TCPSocketInterface&& other) {
-  socket_ = std::move(other.socket_);
-}
-
-bool TCPSocketInterface::IsConnected() { return socket_->IsConnected(); }
-
-int TCPSocketInterface::Write(::net::IOBuffer* buf, int buf_len,
-                              ::net::CompletionOnceCallback callback) {
-  return socket_->Write(buf, buf_len, std::move(callback),
-                        ::net::DefineNetworkTrafficAnnotation(
-                            "TCPSocketInterface", "Send Message"));
-}
-
-void TCPSocketInterface::Close() { return socket_->Close(); }
-
 TCPServerSocket::TCPServerSocket() : broadcaster_(&accepted_sockets_) {}
 TCPServerSocket::~TCPServerSocket() = default;
 
-const std::vector<std::unique_ptr<TCPSocketInterface::SocketInterface>>&
+const std::vector<std::unique_ptr<StreamSocket>>&
 TCPServerSocket::accepted_sockets() const {
   return accepted_sockets_;
 }
 
 bool TCPServerSocket::IsServer() const { return true; }
-
-bool TCPServerSocket::IsConnected() const {
-  for (auto& accepted_socket : accepted_sockets_) {
-    if (accepted_socket->IsConnected()) return true;
-  }
-  return false;
-}
 
 StatusOr<ChannelDef> TCPServerSocket::Listen() {
   auto server_socket = std::make_unique<::net::TCPSocket>(nullptr);
@@ -94,8 +67,16 @@ void TCPServerSocket::AcceptOnceIntercept(
 }
 
 void TCPServerSocket::AddSocket(std::unique_ptr<::net::TCPSocket> socket) {
-  accepted_sockets_.push_back(
-      std::make_unique<TCPSocketInterface>(std::move(socket)));
+  auto client_socket = std::make_unique<TCPClientSocket>();
+  client_socket->set_socket(std::move(socket));
+  accepted_sockets_.push_back(std::move(client_socket));
+}
+
+bool TCPServerSocket::IsConnected() const {
+  for (auto& accepted_socket : accepted_sockets_) {
+    if (accepted_socket->IsConnected()) return true;
+  }
+  return false;
 }
 
 void TCPServerSocket::Write(scoped_refptr<::net::IOBuffer> buffer, int size,
@@ -144,8 +125,9 @@ void TCPServerSocket::HandleAccpetResult(int result) {
   if (accept_once_intercept_callback_) {
     std::move(accept_once_intercept_callback_).Run(std::move(accepted_socket_));
   } else {
-    accepted_sockets_.push_back(
-        std::make_unique<TCPSocketInterface>(std::move(accepted_socket_)));
+    auto client_socket = std::make_unique<TCPClientSocket>();
+    client_socket->set_socket(std::move(accepted_socket_));
+    accepted_sockets_.push_back(std::move(client_socket));
     if (accept_callback_) accept_callback_.Run(Status::OK());
   }
 }

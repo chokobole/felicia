@@ -3,6 +3,9 @@
 
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/build/build_config.h"
+#include "third_party/chromium/net/base/completion_once_callback.h"
+#include "third_party/chromium/net/base/completion_repeating_callback.h"
+#include "third_party/chromium/net/base/io_buffer.h"
 #include "third_party/chromium/net/base/net_errors.h"
 
 #include "felicia/core/channel/channel_impl.h"
@@ -11,6 +14,8 @@
 
 namespace felicia {
 
+class StreamSocket;
+class DatagramSocket;
 class TCPSocket;
 class UDPSocket;
 class WebSocket;
@@ -25,6 +30,8 @@ class Socket : public ChannelImpl {
 
   virtual bool IsClient() const;
   virtual bool IsServer() const;
+  virtual bool IsStreamSocket() const;
+  virtual bool IsDatagramSocket() const;
 
   virtual bool IsTCPSocket() const;
   virtual bool IsUDPSocket() const;
@@ -33,6 +40,8 @@ class Socket : public ChannelImpl {
   virtual bool IsUnixDomainSocket() const;
 #endif
 
+  StreamSocket* ToStreamSocket();
+  DatagramSocket* ToDatagramSocket();
   TCPSocket* ToTCPSocket();
   UDPSocket* ToUDPSocket();
   WebSocket* ToWebSocket();
@@ -40,12 +49,31 @@ class Socket : public ChannelImpl {
   UnixDomainSocket* ToUnixDomainSocket();
 #endif
 
+  virtual bool IsConnected() const = 0;
+  virtual int Write(::net::IOBuffer* buf, int buf_len,
+                    ::net::CompletionOnceCallback callback) = 0;
+  virtual int Read(::net::IOBuffer* buf, int buf_len,
+                   ::net::CompletionOnceCallback callback) = 0;
+  virtual void Close() = 0;
+
+  void WriteRepeating(scoped_refptr<::net::IOBuffer> buffer, int size,
+                      StatusOnceCallback callback,
+                      ::net::CompletionRepeatingCallback on_write_callback);
+  void ReadRepeating(scoped_refptr<::net::GrowableIOBuffer> buffer, int size,
+                     StatusOnceCallback callback,
+                     ::net::CompletionRepeatingCallback on_read_callback);
+
  protected:
-  friend class SocketBroadcaster;
+  friend class StreamSocketBroadcaster;
   friend class WebSocketChannelBroadcaster;
+
+  void OnConnect(int result);
+  void OnWrite(int result);
+  void OnRead(int result);
 
   static void CallbackWithStatus(StatusOnceCallback callback, int result);
 
+  StatusOnceCallback connect_callback_;
   StatusOnceCallback write_callback_;
   StatusOnceCallback read_callback_;
 

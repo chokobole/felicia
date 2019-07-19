@@ -3,6 +3,9 @@
 #include "third_party/chromium/base/strings/string_util.h"
 
 #include "felicia/core/lib/net/net_util.h"
+#if defined(OS_POSIX)
+#include "felicia/core/channel/socket/uds_endpoint.h"
+#endif
 
 namespace felicia {
 

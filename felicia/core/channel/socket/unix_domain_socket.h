@@ -1,22 +1,33 @@
 #ifndef FELICIA_CORE_CHANNEL_SOCKET_UNIX_DOMAIN_SOCKET_H_
 #define FELICIA_CORE_CHANNEL_SOCKET_UNIX_DOMAIN_SOCKET_H_
 
-#include "felicia/core/channel/socket/socket.h"
+#include "third_party/chromium/net/socket/socket_posix.h"
+
+#include "felicia/core/channel/socket/stream_socket.h"
 
 namespace felicia {
 
 class UnixDomainClientSocket;
 class UnixDomainServerSocket;
 
-class UnixDomainSocket : public Socket {
+class UnixDomainSocket : public StreamSocket {
  public:
   UnixDomainSocket();
   ~UnixDomainSocket();
 
+  // Socket mehtods
   bool IsUnixDomainSocket() const override;
+  int Write(::net::IOBuffer* buf, int buf_len,
+            ::net::CompletionOnceCallback callback) override;
+  int Read(::net::IOBuffer* buf, int buf_len,
+           ::net::CompletionOnceCallback callback) override;
+  void Close() override;
 
   UnixDomainClientSocket* ToUnixDomainClientSocket();
   UnixDomainServerSocket* ToUnixDomainServerSocket();
+
+ protected:
+  std::unique_ptr<::net::SocketPosix> socket_;
 
   DISALLOW_COPY_AND_ASSIGN(UnixDomainSocket);
 };

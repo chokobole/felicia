@@ -5,43 +5,19 @@
 #include "third_party/chromium/base/strings/strcat.h"
 #include "third_party/chromium/base/strings/string_number_conversions.h"
 
+#include "felicia/core/channel/socket/unix_domain_client_socket.h"
 #include "felicia/core/lib/error/errors.h"
 
 namespace felicia {
-
-UnixDomainSocketInterface::UnixDomainSocketInterface(
-    std::unique_ptr<::net::SocketPosix> socket)
-    : socket_(std::move(socket)) {}
-
-UnixDomainSocketInterface::UnixDomainSocketInterface(
-    UnixDomainSocketInterface&& other)
-    : socket_(std::move(other.socket_)) {}
-
-void UnixDomainSocketInterface::operator=(UnixDomainSocketInterface&& other) {
-  socket_ = std::move(other.socket_);
-}
-
-bool UnixDomainSocketInterface::IsConnected() { return socket_->IsConnected(); }
-
-int UnixDomainSocketInterface::Write(::net::IOBuffer* buf, int buf_len,
-                                     ::net::CompletionOnceCallback callback) {
-  return socket_->Write(buf, buf_len, std::move(callback),
-                        ::net::DefineNetworkTrafficAnnotation(
-                            "UnixDomainSocketInterface", "Send Message"));
-}
-
-void UnixDomainSocketInterface::Close() { return socket_->Close(); }
 
 UnixDomainServerSocket::UnixDomainServerSocket()
     : broadcaster_(&accepted_sockets_) {}
 UnixDomainServerSocket::~UnixDomainServerSocket() = default;
 
-const std::vector<std::unique_ptr<UnixDomainSocketInterface::SocketInterface>>&
+const std::vector<std::unique_ptr<StreamSocket>>&
 UnixDomainServerSocket::accepted_sockets() const {
   return accepted_sockets_;
 }
-
-bool UnixDomainServerSocket::IsServer() const { return true; }
 
 StatusOr<ChannelDef> UnixDomainServerSocket::BindAndListen() {
   auto server_socket = std::make_unique<::net::SocketPosix>();
@@ -121,8 +97,18 @@ void UnixDomainServerSocket::AcceptOnceIntercept(
 
 void UnixDomainServerSocket::AddSocket(
     std::unique_ptr<::net::SocketPosix> socket) {
-  accepted_sockets_.push_back(
-      std::make_unique<UnixDomainSocketInterface>(std::move(socket)));
+  auto client_socket = std::make_unique<UnixDomainClientSocket>();
+  client_socket->set_socket(std::move(socket));
+  accepted_sockets_.push_back(std::move(client_socket));
+}
+
+bool UnixDomainServerSocket::IsServer() const { return true; }
+
+bool UnixDomainServerSocket::IsConnected() const {
+  for (auto& accepted_socket : accepted_sockets_) {
+    if (accepted_socket->IsConnected()) return true;
+  }
+  return false;
 }
 
 void UnixDomainServerSocket::Write(scoped_refptr<::net::IOBuffer> buffer,
@@ -179,8 +165,9 @@ void UnixDomainServerSocket::HandleAccpetResult(int result) {
   if (accept_once_intercept_callback_) {
     std::move(accept_once_intercept_callback_).Run(std::move(accepted_socket_));
   } else {
-    accepted_sockets_.push_back(std::make_unique<UnixDomainSocketInterface>(
-        std::move(accepted_socket_)));
+    auto client_socket = std::make_unique<UnixDomainClientSocket>();
+    client_socket->set_socket(std::move(accepted_socket_));
+    accepted_sockets_.push_back(std::move(client_socket));
     if (accept_callback_) accept_callback_.Run(Status::OK());
   }
 }

@@ -148,7 +148,7 @@ class TCPSocketAdapter : public WebSocketBasicStream::Adapter {
             net::CompletionOnceCallback callback) override {
     return socket_->Write(
         buf, buf_len, std::move(callback),
-        net::DefineNetworkTrafficAnnotation("web_socket_basic_stream", "Send"));
+        net::DefineNetworkTrafficAnnotation("TCPSocketAdapter", "Write"));
   }
 
   void Disconnect() override { return socket_->Close(); }

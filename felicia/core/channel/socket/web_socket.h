@@ -10,7 +10,7 @@
 #include "third_party/chromium/net/socket/tcp_socket.h"
 
 #include "felicia/core/channel/settings.h"
-#include "felicia/core/channel/socket/socket.h"
+#include "felicia/core/channel/socket/stream_socket.h"
 #include "felicia/core/channel/socket/web_socket_extension.h"
 #include "felicia/core/lib/error/statusor.h"
 
@@ -18,7 +18,7 @@ namespace felicia {
 
 class WebSocketServer;
 
-class WebSocket : public Socket {
+class WebSocket : public StreamSocket {
  public:
   class HandshakeHandler {
    public:
@@ -62,7 +62,13 @@ class WebSocket : public Socket {
   WebSocket();
   ~WebSocket() override;
 
+  // Socket methods
   bool IsWebSocket() const override;
+  int Write(::net::IOBuffer* buf, int buf_len,
+            ::net::CompletionOnceCallback callback) override;
+  int Read(::net::IOBuffer* buf, int buf_len,
+           ::net::CompletionOnceCallback callback) override;
+  void Close() override;
 
   WebSocketServer* ToWebSocketServer();
 

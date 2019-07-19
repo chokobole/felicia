@@ -15,9 +15,6 @@
 #include "felicia/core/lib/unit/bytes.h"
 #include "felicia/core/message/message_io.h"
 #include "felicia/core/protobuf/channel.pb.h"
-#if defined(OS_POSIX)
-#include "felicia/core/channel/socket/uds_endpoint.h"
-#endif
 
 namespace felicia {
 
@@ -80,6 +77,18 @@ class Channel {
 
   virtual void Connect(const ChannelDef& channel_def,
                        StatusOnceCallback callback) = 0;
+
+  bool IsConnected() const {
+    DCHECK(this->channel_impl_);
+    if (this->channel_impl_->IsSocket()) {
+      Socket* socket = this->channel_impl_->ToSocket();
+      return socket->IsConnected();
+    } else if (this->channel_impl_->IsSharedMemory()) {
+      return true;
+    }
+    NOTREACHED();
+    return true;
+  }
 
   void SendMessage(const MessageTy& message, SendMessageCallback callback);
   void SendMessage(const std::string& serialized, bool reuse,

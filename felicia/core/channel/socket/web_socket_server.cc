@@ -14,8 +14,6 @@ WebSocketServer::WebSocketServer(const channel::WSSettings& settings)
 
 WebSocketServer::~WebSocketServer() = default;
 
-bool WebSocketServer::IsServer() const { return true; }
-
 bool WebSocketServer::HasReceivers() const { return channels_.size() > 0; }
 
 StatusOr<ChannelDef> WebSocketServer::Listen() {
@@ -39,6 +37,15 @@ void WebSocketServer::AcceptLoop(TCPServerSocket::AcceptCallback callback) {
 void WebSocketServer::DoAcceptOnce() {
   tcp_server_socket_->AcceptOnceIntercept(::base::BindRepeating(
       &WebSocketServer::OnAccept, ::base::Unretained(this)));
+}
+
+bool WebSocketServer::IsServer() const { return true; }
+
+bool WebSocketServer::IsConnected() const {
+  for (auto& channel : channels_) {
+    if (!channel->IsClosedState()) return true;
+  }
+  return false;
 }
 
 void WebSocketServer::Write(scoped_refptr<::net::IOBuffer> buffer, int size,

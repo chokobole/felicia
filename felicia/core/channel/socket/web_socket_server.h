@@ -13,14 +13,15 @@ class WebSocketServer : public WebSocket {
   WebSocketServer(const channel::WSSettings& settings);
   ~WebSocketServer();
 
-  // Socket methods
-  bool IsServer() const override;
-
   bool HasReceivers() const;
 
   StatusOr<ChannelDef> Listen();
 
   void AcceptLoop(TCPServerSocket::AcceptCallback callback);
+
+  // Socket methods
+  bool IsServer() const override;
+  bool IsConnected() const override;
 
   // ChannelImpl methods
   void Write(scoped_refptr<::net::IOBuffer> buffer, int size,

@@ -3,29 +3,12 @@
 
 #include "third_party/chromium/net/socket/socket_posix.h"
 
-#include "felicia/core/channel/socket/socket_broadcaster.h"
+#include "felicia/core/channel/socket/stream_socket_broadcaster.h"
 #include "felicia/core/channel/socket/uds_endpoint.h"
 #include "felicia/core/channel/socket/unix_domain_socket.h"
 #include "felicia/core/lib/error/statusor.h"
 
 namespace felicia {
-
-class UnixDomainSocketInterface : public SocketBroadcaster::SocketInterface {
- public:
-  UnixDomainSocketInterface(std::unique_ptr<::net::SocketPosix> socket);
-  UnixDomainSocketInterface(UnixDomainSocketInterface&& other);
-  void operator=(UnixDomainSocketInterface&& other);
-
-  bool IsConnected() override;
-  int Write(::net::IOBuffer* buf, int buf_len,
-            ::net::CompletionOnceCallback callback) override;
-  void Close() override;
-
- private:
-  std::unique_ptr<::net::SocketPosix> socket_;
-
-  DISALLOW_COPY_AND_ASSIGN(UnixDomainSocketInterface);
-};
 
 class UnixDomainServerSocket : public UnixDomainSocket {
  public:
@@ -51,10 +34,7 @@ class UnixDomainServerSocket : public UnixDomainSocket {
   UnixDomainServerSocket();
   ~UnixDomainServerSocket();
 
-  const std::vector<std::unique_ptr<SocketBroadcaster::SocketInterface>>&
-  accepted_sockets() const;
-
-  bool IsServer() const override;
+  const std::vector<std::unique_ptr<StreamSocket>>& accepted_sockets() const;
 
   StatusOr<ChannelDef> BindAndListen();
 
@@ -65,6 +45,11 @@ class UnixDomainServerSocket : public UnixDomainSocket {
 
   void AddSocket(std::unique_ptr<::net::SocketPosix> socket);
 
+  // Socket methods
+  bool IsServer() const override;
+  bool IsConnected() const override;
+
+  // ChannelImpl methods
   // Write the |buffer| to the |accepted_sockets_|. If it succeeds to write
   // all the sockets, then callback with Status::OK(), otherwise callback
   // with the |write_result_|, which is recorded at every time finishing
@@ -89,12 +74,10 @@ class UnixDomainServerSocket : public UnixDomainSocket {
   AcceptOnceInterceptCallback accept_once_intercept_callback_;
   AuthCallback auth_callback_;
 
-  std::unique_ptr<::net::SocketPosix> socket_;
   std::unique_ptr<::net::SocketPosix> accepted_socket_;
-  std::vector<std::unique_ptr<SocketBroadcaster::SocketInterface>>
-      accepted_sockets_;
+  std::vector<std::unique_ptr<StreamSocket>> accepted_sockets_;
 
-  SocketBroadcaster broadcaster_;
+  StreamSocketBroadcaster broadcaster_;
 };
 
 }  // namespace felicia

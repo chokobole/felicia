@@ -10,20 +10,17 @@ class UDPClientSocket : public UDPSocket {
   UDPClientSocket();
   ~UDPClientSocket();
 
-  bool IsClient() const override;
-
   void Connect(const ::net::IPEndPoint& ip_endpoint,
                StatusOnceCallback callback);
 
+  // Socket methods
+  bool IsClient() const override;
+
+  // ChannelImpl methods
   void Write(scoped_refptr<::net::IOBuffer> buffer, int size,
              StatusOnceCallback callback) override;
   void Read(scoped_refptr<::net::GrowableIOBuffer> buffer, int size,
             StatusOnceCallback callback) override;
-
- private:
-  std::unique_ptr<::net::UDPSocket> socket_;
-  ::net::IPEndPoint multicast_ip_endpoint_;
-  ::net::IPEndPoint recv_from_ip_endpoint_;
 
   DISALLOW_COPY_AND_ASSIGN(UDPClientSocket);
 };

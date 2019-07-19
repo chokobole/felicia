@@ -3,24 +3,31 @@
 
 #include "third_party/chromium/net/socket/tcp_socket.h"
 
-#include "felicia/core/channel/socket/socket.h"
+#include "felicia/core/channel/socket/stream_socket.h"
 
 namespace felicia {
 
 class TCPClientSocket;
 class TCPServerSocket;
 
-class TCPSocket : public Socket {
+class TCPSocket : public StreamSocket {
  public:
   TCPSocket();
   ~TCPSocket() override;
 
+  // Socket methods
   bool IsTCPSocket() const override;
+  int Write(::net::IOBuffer* buf, int buf_len,
+            ::net::CompletionOnceCallback callback) override;
+  int Read(::net::IOBuffer* buf, int buf_len,
+           ::net::CompletionOnceCallback callback) override;
+  void Close() override;
 
   TCPClientSocket* ToTCPClientSocket();
   TCPServerSocket* ToTCPServerSocket();
 
-  virtual bool IsConnected() const = 0;
+ protected:
+  std::unique_ptr<::net::TCPSocket> socket_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPSocket);
 };

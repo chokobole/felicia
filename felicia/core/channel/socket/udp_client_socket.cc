@@ -7,8 +7,6 @@ namespace felicia {
 UDPClientSocket::UDPClientSocket() = default;
 UDPClientSocket::~UDPClientSocket() = default;
 
-bool UDPClientSocket::IsClient() const { return true; }
-
 void UDPClientSocket::Connect(const ::net::IPEndPoint& ip_endpoint,
                               StatusOnceCallback callback) {
   DCHECK(!callback.is_null());
@@ -51,56 +49,20 @@ void UDPClientSocket::Connect(const ::net::IPEndPoint& ip_endpoint,
   std::move(callback).Run(Status::OK());
 }
 
+bool UDPClientSocket::IsClient() const { return true; }
+
 void UDPClientSocket::Write(scoped_refptr<::net::IOBuffer> buffer, int size,
                             StatusOnceCallback callback) {
-  DCHECK(!callback.is_null());
-  DCHECK(size > 0);
-  write_callback_ = std::move(callback);
-  scoped_refptr<::net::DrainableIOBuffer> write_buffer =
-      ::base::MakeRefCounted<::net::DrainableIOBuffer>(
-          buffer, static_cast<size_t>(size));
-  while (write_buffer->BytesRemaining() > 0) {
-    int rv = socket_->SendTo(
-        write_buffer.get(), write_buffer->BytesRemaining(),
-        multicast_ip_endpoint_,
-        ::base::BindOnce(&UDPClientSocket::OnWrite, ::base::Unretained(this)));
-
-    if (rv == ::net::ERR_IO_PENDING) break;
-
-    if (rv > 0) {
-      write_buffer->DidConsume(rv);
-    }
-
-    if (write_buffer->BytesRemaining() == 0 || rv <= 0) {
-      OnWrite(rv);
-      break;
-    }
-  }
+  WriteRepeating(buffer, size, std::move(callback),
+                 ::base::BindRepeating(&UDPClientSocket::OnWrite,
+                                       ::base::Unretained(this)));
 }
 
 void UDPClientSocket::Read(scoped_refptr<::net::GrowableIOBuffer> buffer,
                            int size, StatusOnceCallback callback) {
-  DCHECK(!callback.is_null());
-  DCHECK(size > 0);
-  read_callback_ = std::move(callback);
-  int to_read = size;
-  while (to_read > 0) {
-    int rv = socket_->Read(
-        buffer.get(), to_read,
-        ::base::BindOnce(&UDPClientSocket::OnRead, ::base::Unretained(this)));
-
-    if (rv == ::net::ERR_IO_PENDING) break;
-
-    if (rv > 0) {
-      buffer->set_offset(buffer->offset() + rv);
-      to_read -= rv;
-    }
-
-    if (to_read == 0 || rv <= 0) {
-      OnRead(rv);
-      break;
-    }
-  }
+  ReadRepeating(buffer, size, std::move(callback),
+                ::base::BindRepeating(&UDPClientSocket::OnRead,
+                                      ::base::Unretained(this)));
 }
 
 }  // namespace felicia

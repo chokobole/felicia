@@ -260,8 +260,8 @@ void WebSocket::HandshakeHandler::WriteResponse(
         buffer.get(), buffer->BytesRemaining(),
         ::base::BindOnce(&WebSocket::HandshakeHandler::OnWriteResponse,
                          ::base::Unretained(this)),
-        ::net::DefineNetworkTrafficAnnotation("web_socket_server",
-                                              "Send Message"));
+        ::net::DefineNetworkTrafficAnnotation("WebSocket::HandShakeHandler",
+                                              "WriteResponse"));
 
     if (rv == ::net::ERR_IO_PENDING) break;
 
@@ -289,6 +289,18 @@ WebSocket::WebSocket() = default;
 WebSocket::~WebSocket() = default;
 
 bool WebSocket::IsWebSocket() const { return true; }
+
+int WebSocket::Write(::net::IOBuffer* buf, int buf_len,
+                     ::net::CompletionOnceCallback callback) {
+  NOTREACHED();
+}
+
+int WebSocket::Read(::net::IOBuffer* buf, int buf_len,
+                    ::net::CompletionOnceCallback callback) {
+  NOTREACHED();
+}
+
+void WebSocket::Close() { NOTREACHED(); }
 
 WebSocketServer* WebSocket::ToWebSocketServer() {
   DCHECK(IsServer());
