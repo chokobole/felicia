@@ -11,11 +11,10 @@ namespace felicia {
 class UnixDomainClientSocket : public UnixDomainSocket {
  public:
   UnixDomainClientSocket();
+  explicit UnixDomainClientSocket(std::unique_ptr<::net::SocketPosix> socket);
   ~UnixDomainClientSocket();
 
   int socket_fd() const;
-
-  void set_socket(std::unique_ptr<::net::SocketPosix> socket);
 
   void Connect(const ::net::UDSEndPoint& uds_endpoint,
                StatusOnceCallback callback);

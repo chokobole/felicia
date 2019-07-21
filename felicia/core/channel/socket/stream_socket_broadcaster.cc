@@ -57,7 +57,8 @@ void StreamSocketBroadcaster::Broadcast(scoped_refptr<::net::IOBuffer> buffer,
 }
 
 void StreamSocketBroadcaster::OnWrite(StreamSocket* socket, int result) {
-  if (result == ::net::ERR_CONNECTION_RESET) {
+  if (result == ::net::ERR_CONNECTION_RESET ||
+      (socket->IsStreamSocket() && result == ::net::ERR_FAILED)) {
     socket->Close();
     has_closed_sockets_ = true;
   }

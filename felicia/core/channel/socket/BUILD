@@ -15,7 +15,11 @@ fel_cc_library(
     name = "socket",
     srcs = [
         "socket.cc",
+        "socket_bio_adapter.cc",
         "stream_socket_broadcaster.cc",
+        "ssl_server_context.cc",
+        "ssl_server_socket.cc",
+        "ssl_socket.cc",
         "tcp_client_socket.cc",
         "tcp_server_socket.cc",
         "tcp_socket.cc",
@@ -43,7 +47,11 @@ fel_cc_library(
     hdrs = [
         "datagram_socket.h",
         "socket.h",
+        "socket_bio_adapter.h",
         "stream_socket_broadcaster.h",
+        "ssl_server_context.h",
+        "ssl_server_socket.h",
+        "ssl_socket.h",
         "stream_socket.h",
         "tcp_client_socket.h",
         "tcp_server_socket.h",

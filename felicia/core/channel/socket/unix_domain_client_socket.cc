@@ -5,6 +5,11 @@
 namespace felicia {
 
 UnixDomainClientSocket::UnixDomainClientSocket() = default;
+
+UnixDomainClientSocket::UnixDomainClientSocket(
+    std::unique_ptr<::net::SocketPosix> socket)
+    : UnixDomainSocket(std::move(socket)) {}
+
 UnixDomainClientSocket::~UnixDomainClientSocket() = default;
 
 int UnixDomainClientSocket::socket_fd() const {
@@ -12,11 +17,6 @@ int UnixDomainClientSocket::socket_fd() const {
     return socket_->socket_fd();
   }
   return ::net::kInvalidSocket;
-}
-
-void UnixDomainClientSocket::set_socket(
-    std::unique_ptr<::net::SocketPosix> socket) {
-  socket_ = std::move(socket);
 }
 
 void UnixDomainClientSocket::Connect(const ::net::UDSEndPoint& uds_endpoint,

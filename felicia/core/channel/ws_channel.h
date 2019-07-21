@@ -10,7 +10,7 @@ namespace felicia {
 template <typename MessageTy>
 class WSChannel : public Channel<MessageTy> {
  public:
-  WSChannel(const channel::WSSettings& settings);
+  WSChannel(const channel::WSSettings& settings = channel::WSSettings());
   ~WSChannel();
 
   bool IsWSChannel() const override { return true; }

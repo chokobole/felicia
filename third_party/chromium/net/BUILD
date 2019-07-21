@@ -30,24 +30,28 @@ chromium_cc_library(
         "base/network_interfaces_getifaddrs.cc",
         "base/winsock_init.cc",
         "base/winsock_util.cc",
+        "ssl/**",
         "websockets/**",
     ]) + if_windows([
         ":net_win_srcs",
     ]) + if_not_windows_and_not_linux([
         ":net_posix_srcs",
     ]) + if_not_win_no_grpc([
+        ":net_ssl_srcs",
         ":net_websockets_srcs",
     ]),
     hdrs = chromium_platform_hdrs(exclude = [
         "base/network_interfaces_getifaddrs.h",
         "base/winsock_init.h",
         "base/winsock_util.h",
+        "ssl/**",
         "websockets/**",
     ]) + if_windows([
         ":net_win_hdrs",
     ]) + if_not_windows([
         ":net_posix_hdrs",
     ]) + if_not_win_no_grpc([
+        ":net_ssl_hdrs",
         ":net_websockets_hdrs",
     ]),
     copts = net_copts(),
@@ -57,8 +61,21 @@ chromium_cc_library(
         "//third_party/chromium/build",
         "//third_party/chromium/url",
     ] + if_not_win_no_grpc([
+        "//third_party/chromium/crypto",
         "@com_github_madler_zlib//:z",
     ]),
+)
+
+filegroup(
+    name = "net_ssl_hdrs",
+    srcs = chromium_platform_hdrs(base = "ssl"),
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "net_ssl_srcs",
+    srcs = chromium_platform_srcs(base = "ssl"),
+    visibility = ["//visibility:private"],
 )
 
 filegroup(

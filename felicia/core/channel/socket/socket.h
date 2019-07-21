@@ -16,6 +16,7 @@ namespace felicia {
 
 class StreamSocket;
 class DatagramSocket;
+class SSLSocket;
 class TCPSocket;
 class UDPSocket;
 class WebSocket;
@@ -36,6 +37,7 @@ class Socket : public ChannelImpl {
   virtual bool IsTCPSocket() const;
   virtual bool IsUDPSocket() const;
   virtual bool IsWebSocket() const;
+  virtual bool IsSSLSocket() const;
 #if defined(OS_POSIX)
   virtual bool IsUnixDomainSocket() const;
 #endif
@@ -45,6 +47,7 @@ class Socket : public ChannelImpl {
   TCPSocket* ToTCPSocket();
   UDPSocket* ToUDPSocket();
   WebSocket* ToWebSocket();
+  SSLSocket* ToSSLSocket();
 #if defined(OS_POSIX)
   UnixDomainSocket* ToUnixDomainSocket();
 #endif

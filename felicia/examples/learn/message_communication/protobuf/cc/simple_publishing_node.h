@@ -3,6 +3,7 @@
 
 #include "third_party/chromium/base/time/time.h"
 
+#include "felicia/core/channel/socket/ssl_server_context.h"
 #include "felicia/core/communication/publisher.h"
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/core/node/node_lifecycle.h"
@@ -14,8 +15,9 @@ namespace felicia {
 class SimplePublishingNode : public NodeLifecycle {
  public:
   SimplePublishingNode(const std::string& topic,
-                       const std::string& channel_type)
-      : topic_(topic) {
+                       const std::string& channel_type,
+                       SSLServerContext* ssl_server_context)
+      : topic_(topic), ssl_server_context_(ssl_server_context) {
     ChannelDef::Type_Parse(channel_type, &channel_type_);
   }
 
@@ -44,6 +46,9 @@ class SimplePublishingNode : public NodeLifecycle {
   void RequestPublish() {
     communication::Settings settings;
     settings.buffer_size = Bytes::FromBytes(512);
+    settings.channel_settings.tcp_settings.use_ssl = true;
+    settings.channel_settings.tcp_settings.ssl_server_context =
+        ssl_server_context_;
 
     publisher_.RequestPublish(
         node_info_, topic_, channel_type_, settings,
@@ -106,6 +111,7 @@ class SimplePublishingNode : public NodeLifecycle {
   ChannelDef::Type channel_type_;
   Publisher<MessageSpec> publisher_;
   Timestamper timestamper_;
+  SSLServerContext* ssl_server_context_;
 };
 
 }  // namespace felicia

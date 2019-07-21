@@ -274,7 +274,8 @@ void Subscriber<MessageTy>::ConnectToPublisher() {
     return;
   }
 
-  channel_ = ChannelFactory::NewChannel<MessageTy>(matched_channel_def.type());
+  channel_ = ChannelFactory::NewChannel<MessageTy>(matched_channel_def.type(),
+                                                   settings_.channel_settings);
 
   channel_->Connect(
       matched_channel_def,

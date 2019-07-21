@@ -11,7 +11,7 @@ namespace felicia {
 template <typename MessageTy>
 class ShmChannel : public Channel<MessageTy> {
  public:
-  ShmChannel(const channel::ShmSettings& settings);
+  ShmChannel(const channel::ShmSettings& settings = channel::ShmSettings());
   ~ShmChannel();
 
   bool IsShmChannel() const override { return true; }

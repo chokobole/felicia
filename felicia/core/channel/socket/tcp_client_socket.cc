@@ -5,11 +5,11 @@
 namespace felicia {
 
 TCPClientSocket::TCPClientSocket() = default;
-TCPClientSocket::~TCPClientSocket() = default;
 
-void TCPClientSocket::set_socket(std::unique_ptr<::net::TCPSocket> socket) {
-  socket_ = std::move(socket);
-}
+TCPClientSocket::TCPClientSocket(std::unique_ptr<::net::TCPSocket> socket)
+    : TCPSocket(std::move(socket)) {}
+
+TCPClientSocket::~TCPClientSocket() = default;
 
 void TCPClientSocket::Connect(const ::net::IPEndPoint& ip_endpoint,
                               StatusOnceCallback callback) {
@@ -65,7 +65,7 @@ void TCPClientSocket::OnWrite(int result) {
   if (result == ::net::ERR_CONNECTION_RESET) {
     socket_.reset();
   }
-  TCPSocket::OnWrite(result);
+  Socket::OnWrite(result);
 }
 
 void TCPClientSocket::OnRead(int result) {
@@ -73,7 +73,7 @@ void TCPClientSocket::OnRead(int result) {
     result = ::net::ERR_CONNECTION_CLOSED;
     socket_.reset();
   }
-  TCPSocket::OnRead(result);
+  Socket::OnRead(result);
 }
 
 }  // namespace felicia

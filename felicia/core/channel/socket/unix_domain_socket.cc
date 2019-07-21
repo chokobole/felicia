@@ -4,6 +4,9 @@ namespace felicia {
 
 UnixDomainSocket::UnixDomainSocket() = default;
 
+UnixDomainSocket::UnixDomainSocket(std::unique_ptr<::net::SocketPosix> socket)
+    : socket_(std::move(socket)) {}
+
 UnixDomainSocket::~UnixDomainSocket() = default;
 
 bool UnixDomainSocket::IsUnixDomainSocket() const { return true; }

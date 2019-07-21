@@ -8,9 +8,8 @@ namespace felicia {
 class TCPClientSocket : public TCPSocket {
  public:
   TCPClientSocket();
+  explicit TCPClientSocket(std::unique_ptr<::net::TCPSocket> socket);
   ~TCPClientSocket();
-
-  void set_socket(std::unique_ptr<::net::TCPSocket> socket);
 
   void Connect(const ::net::IPEndPoint& ip_endpoint,
                StatusOnceCallback callback);

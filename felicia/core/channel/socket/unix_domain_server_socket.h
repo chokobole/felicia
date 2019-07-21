@@ -43,8 +43,6 @@ class UnixDomainServerSocket : public UnixDomainSocket {
       AcceptOnceInterceptCallback accept_once_intercept_callback,
       AuthCallback auth_callback);
 
-  void AddSocket(std::unique_ptr<::net::SocketPosix> socket);
-
   // Socket methods
   bool IsServer() const override;
   bool IsConnected() const override;

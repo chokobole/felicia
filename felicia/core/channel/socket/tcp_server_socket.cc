@@ -67,9 +67,12 @@ void TCPServerSocket::AcceptOnceIntercept(
 }
 
 void TCPServerSocket::AddSocket(std::unique_ptr<::net::TCPSocket> socket) {
-  auto client_socket = std::make_unique<TCPClientSocket>();
-  client_socket->set_socket(std::move(socket));
-  accepted_sockets_.push_back(std::move(client_socket));
+  accepted_sockets_.push_back(
+      std::make_unique<TCPClientSocket>(std::move(socket)));
+}
+
+void TCPServerSocket::AddSocket(std::unique_ptr<StreamSocket> socket) {
+  accepted_sockets_.push_back(std::move(socket));
 }
 
 bool TCPServerSocket::IsConnected() const {
@@ -125,9 +128,8 @@ void TCPServerSocket::HandleAccpetResult(int result) {
   if (accept_once_intercept_callback_) {
     std::move(accept_once_intercept_callback_).Run(std::move(accepted_socket_));
   } else {
-    auto client_socket = std::make_unique<TCPClientSocket>();
-    client_socket->set_socket(std::move(accepted_socket_));
-    accepted_sockets_.push_back(std::move(client_socket));
+    accepted_sockets_.push_back(
+        std::make_unique<TCPClientSocket>(std::move(accepted_socket_)));
     if (accept_callback_) accept_callback_.Run(Status::OK());
   }
 }

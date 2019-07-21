@@ -1,3 +1,4 @@
+#include "felicia/core/channel/socket/ssl_server_context.h"
 #include "felicia/core/felicia_init.h"
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/examples/learn/message_communication/common/cc/node_create_flag.h"
@@ -23,13 +24,21 @@ int RealMain(int argc, char* argv[]) {
     return 1;
   }
 
+  ::base::FilePath cert_file_path =
+      ::base::FilePath(FILE_PATH_LITERAL("./felicia/examples/cert/server.crt"));
+  ::base::FilePath private_key_file_path =
+      ::base::FilePath(FILE_PATH_LITERAL("./felicia/examples/cert/server.key"));
+  std::unique_ptr<SSLServerContext> ssl_server_context =
+      SSLServerContext::NewSSLServerContext(cert_file_path,
+                                            private_key_file_path);
+
   NodeInfo node_info;
   node_info.set_name(delegate.name_flag()->value());
 
   if (delegate.is_publishing_node_flag()->value()) {
     master_proxy.RequestRegisterNode<SimplePublishingNode>(
         node_info, delegate.topic_flag()->value(),
-        delegate.channel_type_flag()->value());
+        delegate.channel_type_flag()->value(), ssl_server_context.get());
   } else {
     master_proxy.RequestRegisterNode<SimpleSubscribingNode>(
         node_info, delegate.topic_flag()->value());

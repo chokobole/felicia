@@ -101,9 +101,8 @@ void UDSChannel<MessageTy>::OnAccept(
     StatusOr<std::unique_ptr<::net::SocketPosix>> status_or) {
   if (status_or.ok()) {
     auto channel = std::make_unique<UDSChannel<MessageTy>>();
-    auto client_socket = std::make_unique<UnixDomainClientSocket>();
-    client_socket->set_socket(std::move(status_or.ValueOrDie()));
-    channel->channel_impl_ = std::move(client_socket);
+    channel->channel_impl_ = std::make_unique<UnixDomainClientSocket>(
+        std::move(status_or.ValueOrDie()));
     std::move(callback).Run(std::move(channel));
   } else {
     std::move(callback).Run(status_or.status());

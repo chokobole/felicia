@@ -3,6 +3,10 @@
 namespace felicia {
 
 TCPSocket::TCPSocket() = default;
+
+TCPSocket::TCPSocket(std::unique_ptr<::net::TCPSocket> socket)
+    : socket_(std::move(socket)) {}
+
 TCPSocket::~TCPSocket() = default;
 
 bool TCPSocket::IsTCPSocket() const { return true; }

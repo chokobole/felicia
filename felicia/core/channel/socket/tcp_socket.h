@@ -13,6 +13,7 @@ class TCPServerSocket;
 class TCPSocket : public StreamSocket {
  public:
   TCPSocket();
+  explicit TCPSocket(std::unique_ptr<::net::TCPSocket> socket);
   ~TCPSocket() override;
 
   // Socket methods

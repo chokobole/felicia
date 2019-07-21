@@ -13,6 +13,7 @@ class UnixDomainServerSocket;
 class UnixDomainSocket : public StreamSocket {
  public:
   UnixDomainSocket();
+  explicit UnixDomainSocket(std::unique_ptr<::net::SocketPosix> socket);
   ~UnixDomainSocket();
 
   // Socket mehtods

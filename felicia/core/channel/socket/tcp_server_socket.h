@@ -25,6 +25,7 @@ class TCPServerSocket : public TCPSocket {
   void AcceptOnceIntercept(AcceptOnceInterceptCallback callback);
 
   void AddSocket(std::unique_ptr<::net::TCPSocket> socket);
+  void AddSocket(std::unique_ptr<StreamSocket> socket);
 
   // Socket methods
   bool IsServer() const override;

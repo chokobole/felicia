@@ -28,7 +28,7 @@ class ChannelFactory {
       const channel::Settings& settings = channel::Settings()) {
     std::unique_ptr<Channel<MessageTy>> channel;
     if (channel_type == ChannelDef::CHANNEL_TYPE_TCP) {
-      channel = std::make_unique<TCPChannel<MessageTy>>();
+      channel = std::make_unique<TCPChannel<MessageTy>>(settings.tcp_settings);
     } else if (channel_type == ChannelDef::CHANNEL_TYPE_UDP) {
       channel = std::make_unique<UDPChannel<MessageTy>>();
     }

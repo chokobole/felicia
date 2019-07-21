@@ -83,6 +83,7 @@ fel_nodejs_bind_node_library(
         "//felicia:windows": [":felicia_js_win_srcs"],
         "//conditions:default": [":felicia_js_srcs"],
     }),
+    defines = ["FEL_NO_SSL"],
     deps = select({
         "//felicia:windows": [":felicia_js_win_deps"],
         "//conditions:default": [":felicia_js_deps"],

@@ -20,6 +20,7 @@ bool Socket::IsDatagramSocket() const { return false; }
 bool Socket::IsTCPSocket() const { return false; }
 bool Socket::IsUDPSocket() const { return false; }
 bool Socket::IsWebSocket() const { return false; }
+bool Socket::IsSSLSocket() const { return false; }
 #if defined(OS_POSIX)
 bool Socket::IsUnixDomainSocket() const { return false; }
 #endif
@@ -47,6 +48,11 @@ UDPSocket* Socket::ToUDPSocket() {
 WebSocket* Socket::ToWebSocket() {
   DCHECK(IsWebSocket());
   return reinterpret_cast<WebSocket*>(this);
+}
+
+SSLSocket* Socket::ToSSLSocket() {
+  DCHECK(IsSSLSocket());
+  return reinterpret_cast<SSLSocket*>(this);
 }
 
 #if defined(OS_POSIX)

@@ -95,13 +95,6 @@ void UnixDomainServerSocket::AcceptOnceIntercept(
   DoAccept();
 }
 
-void UnixDomainServerSocket::AddSocket(
-    std::unique_ptr<::net::SocketPosix> socket) {
-  auto client_socket = std::make_unique<UnixDomainClientSocket>();
-  client_socket->set_socket(std::move(socket));
-  accepted_sockets_.push_back(std::move(client_socket));
-}
-
 bool UnixDomainServerSocket::IsServer() const { return true; }
 
 bool UnixDomainServerSocket::IsConnected() const {
@@ -165,9 +158,8 @@ void UnixDomainServerSocket::HandleAccpetResult(int result) {
   if (accept_once_intercept_callback_) {
     std::move(accept_once_intercept_callback_).Run(std::move(accepted_socket_));
   } else {
-    auto client_socket = std::make_unique<UnixDomainClientSocket>();
-    client_socket->set_socket(std::move(accepted_socket_));
-    accepted_sockets_.push_back(std::move(client_socket));
+    accepted_sockets_.push_back(
+        std::make_unique<UnixDomainClientSocket>(std::move(accepted_socket_)));
     if (accept_callback_) accept_callback_.Run(Status::OK());
   }
 }
