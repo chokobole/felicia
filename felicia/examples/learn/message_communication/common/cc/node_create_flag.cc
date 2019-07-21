@@ -18,6 +18,14 @@ NodeCreateFlag::NodeCreateFlag() {
     is_publishing_node_flag_ = std::make_unique<BoolFlag>(flag);
   }
   {
+    BoolFlag::Builder builder(MakeValueStore(&use_ssl_));
+    auto flag =
+        builder.SetLongName("--use_ssl")
+            .SetHelp("use communication via ssl connection, default: false")
+            .Build();
+    use_ssl_flag_ = std::make_unique<BoolFlag>(flag);
+  }
+  {
     StringFlag::Builder builder(MakeValueStore(&name_));
     auto flag = builder.SetShortName("-n")
                     .SetLongName("--name")
@@ -56,8 +64,8 @@ NodeCreateFlag::NodeCreateFlag() {
 NodeCreateFlag::~NodeCreateFlag() = default;
 
 bool NodeCreateFlag::Parse(FlagParser& parser) {
-  return PARSE_OPTIONAL_FLAG(parser, is_publishing_node_flag_, name_flag_,
-                             topic_flag_, channel_type_flag_);
+  return PARSE_OPTIONAL_FLAG(parser, is_publishing_node_flag_, use_ssl_flag_,
+                             name_flag_, topic_flag_, channel_type_flag_);
 }
 
 bool NodeCreateFlag::Validate() const { return CheckIfFlagWasSet(topic_flag_); }

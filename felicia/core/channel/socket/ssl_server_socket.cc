@@ -20,6 +20,8 @@ namespace felicia {
 
 namespace {
 
+const int kHandshakeTimeoutSeconds = 10;
+
 class SocketDataIndex {
  public:
   static SocketDataIndex* GetInstance();
@@ -43,14 +45,16 @@ SocketDataIndex* SocketDataIndex::GetInstance() {
 }  // namespace
 
 SSLServerSocket::SSLServerSocket(SSLServerContext* context,
-                                 std::unique_ptr<StreamSocket> stream_socket) HEAD
-    : context_(context),
-      stream_socket_(std::move(stream_socket)),
+                                 std::unique_ptr<StreamSocket> stream_socket)
+    : SSLSocket(std::move(stream_socket)),
+      context_(context),
       user_read_buf_len_(0),
       user_write_buf_len_(0),
       early_data_received_(false),
       next_handshake_state_(STATE_NONE),
-      completed_handshake_(false) {
+      completed_handshake_(false),
+      handshake_timeout_(
+          base::TimeDelta::FromSeconds(kHandshakeTimeoutSeconds)) {
   ssl_.reset(SSL_new(context_->ssl_ctx_.get()));
   SSL_set_app_data(ssl_.get(), this);
   SSL_set_shed_handshake_config(ssl_.get(), 1);
@@ -63,86 +67,7 @@ SSLServerSocket::~SSLServerSocket() {
     SSL_shutdown(ssl_.get());
     ssl_.reset();
   }
-}
-
-// static
-const SSL_PRIVATE_KEY_METHOD SSLServerSocket::kPrivateKeyMethod = {
-    &SSLServerSocket::PrivateKeySignCallback,
-    &SSLServerSocket::PrivateKeyDecryptCallback,
-    &SSLServerSocket::PrivateKeyCompleteCallback,
-};
-
-// static
-ssl_private_key_result_t SSLServerSocket::PrivateKeySignCallback(
-    SSL* ssl, uint8_t* out, size_t* out_len, size_t max_out, uint16_t algorithm,
-    const uint8_t* in, size_t in_len) {
-  DCHECK(ssl);
-  SSLServerSocket* socket = static_cast<SSLServerSocket*>(SSL_get_ex_data(
-      ssl, SocketDataIndex::GetInstance()->ssl_socket_data_index_));
-  DCHECK(socket);
-  return socket->PrivateKeySignCallback(out, out_len, max_out, algorithm, in,
-                                        in_len);
-}
-
-// static
-ssl_private_key_result_t SSLServerSocket::PrivateKeyDecryptCallback(
-    SSL* ssl, uint8_t* out, size_t* out_len, size_t max_out, const uint8_t* in,
-    size_t in_len) {
-  // Decrypt is not supported.
-  return ssl_private_key_failure;
-}
-
-// static
-ssl_private_key_result_t SSLServerSocket::PrivateKeyCompleteCallback(
-    SSL* ssl, uint8_t* out, size_t* out_len, size_t max_out) {
-  DCHECK(ssl);
-  SSLServerSocket* socket = static_cast<SSLServerSocket*>(SSL_get_ex_data(
-      ssl, SocketDataIndex::GetInstance()->ssl_socket_data_index_));
-  DCHECK(socket);
-  return socket->PrivateKeyCompleteCallback(out, out_len, max_out);
-}
-
-ssl_private_key_result_t SSLServerSocket::PrivateKeySignCallback(
-    uint8_t* out, size_t* out_len, size_t max_out, uint16_t algorithm,
-    const uint8_t* in, size_t in_len) {
-  DCHECK(context_);
-  // DCHECK(context_->private_key_);
-  signature_result_ = net::ERR_IO_PENDING;
-  // context_->private_key_->Sign(
-  //     algorithm, base::make_span(in, in_len),
-  //     base::BindRepeating(
-  //         &SSLServerSocket::OnPrivateKeyComplete,
-  //         weak_factory_.GetWeakPtr()));
-  NOTIMPLEMENTED();
-  return ssl_private_key_retry;
-}
-
-ssl_private_key_result_t SSLServerSocket::PrivateKeyCompleteCallback(
-    uint8_t* out, size_t* out_len, size_t max_out) {
-  if (signature_result_ == net::ERR_IO_PENDING) return ssl_private_key_retry;
-  if (signature_result_ != net::OK) {
-    net::OpenSSLPutNetError(FROM_HERE, signature_result_);
-    return ssl_private_key_failure;
-  }
-  if (signature_.size() > max_out) {
-    net::OpenSSLPutNetError(FROM_HERE,
-                            net::ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
-    return ssl_private_key_failure;
-  }
-  memcpy(out, signature_.data(), signature_.size());
-  *out_len = signature_.size();
-  signature_.clear();
-  return ssl_private_key_success;
-}
-
-void SSLServerSocket::OnPrivateKeyComplete(
-    net::Error error, const std::vector<uint8_t>& signature) {
-  DCHECK_EQ(net::ERR_IO_PENDING, signature_result_);
-  DCHECK(signature_.empty());
-
-  signature_result_ = error;
-  if (signature_result_ == net::OK) signature_ = signature;
-  DoHandshakeLoop(net::ERR_IO_PENDING);
+  handshake_timer_.Stop();
 }
 
 void SSLServerSocket::Handshake(StatusOnceCallback callback) {
@@ -167,6 +92,10 @@ void SSLServerSocket::Handshake(StatusOnceCallback callback) {
     return;
   }
 
+  DCHECK(!handshake_timer_.IsRunning());
+  handshake_timer_.Start(
+      FROM_HERE, handshake_timeout_,
+      base::Bind(&SSLServerSocket::HandshakeTimeout, base::Unretained(this)));
   connect_callback_ = std::move(callback);
 }
 
@@ -225,9 +154,9 @@ void SSLServerSocket::Close() { stream_socket_->Close(); }
 
 void SSLServerSocket::Write(scoped_refptr<net::IOBuffer> buffer, int size,
                             StatusOnceCallback callback) {
-  int result = Write(
-      buffer.get(), size,
-      ::base::BindOnce(&SSLServerSocket::OnWrite, ::base::Unretained(this)));
+  int result = Write(buffer.get(), size,
+                     ::base::BindOnce(&SSLServerSocket::OnWriteCheckingReset,
+                                      ::base::Unretained(this)));
   if (result == net::ERR_IO_PENDING) {
     write_callback_ = std::move(callback);
   } else {
@@ -237,9 +166,9 @@ void SSLServerSocket::Write(scoped_refptr<net::IOBuffer> buffer, int size,
 
 void SSLServerSocket::Read(scoped_refptr<net::GrowableIOBuffer> buffer,
                            int size, StatusOnceCallback callback) {
-  int result = Read(
-      buffer.get(), size,
-      ::base::BindOnce(&SSLServerSocket::OnRead, ::base::Unretained(this)));
+  int result = Read(buffer.get(), size,
+                    ::base::BindOnce(&SSLServerSocket::OnReadCheckingClosed,
+                                     ::base::Unretained(this)));
   if (result == net::ERR_IO_PENDING) {
     read_callback_ = std::move(callback);
   } else {
@@ -352,7 +281,6 @@ int SSLServerSocket::DoHandshake() {
     int ssl_error = SSL_get_error(ssl_.get(), rv);
 
     if (ssl_error == SSL_ERROR_WANT_PRIVATE_KEY_OPERATION) {
-      // DCHECK(context_->private_key_);
       GotoState(STATE_HANDSHAKE);
       return net::ERR_IO_PENDING;
     }
@@ -382,6 +310,7 @@ int SSLServerSocket::DoHandshake() {
 
 void SSLServerSocket::DoHandshakeCallback(int rv) {
   DCHECK_NE(rv, net::ERR_IO_PENDING);
+  handshake_timer_.Stop();
   rv = rv > net::OK ? net::OK : rv;
   Socket::OnConnect(rv);
 }
@@ -404,19 +333,9 @@ void SSLServerSocket::DoWriteCallback(int rv) {
   std::move(user_write_callback_).Run(rv);
 }
 
-void SSLServerSocket::OnWrite(int result) {
-  if (result == ::net::ERR_CONNECTION_RESET) {
-    stream_socket_.reset();
-  }
-  Socket::OnWrite(result);
-}
-
-void SSLServerSocket::OnRead(int result) {
-  if (result == 0) {
-    result = ::net::ERR_CONNECTION_CLOSED;
-    stream_socket_.reset();
-  }
-  Socket::OnRead(result);
+void SSLServerSocket::HandshakeTimeout() {
+  if (!connect_callback_.is_null())
+    DoHandshakeCallback(net::ERR_CONNECTION_TIMED_OUT);
 }
 
 int SSLServerSocket::Init() {

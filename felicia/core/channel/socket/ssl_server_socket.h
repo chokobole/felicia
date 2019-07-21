@@ -12,6 +12,7 @@
 
 #include "openssl/ssl.h"
 
+#include "third_party/chromium/base/timer/timer.h"
 #include "third_party/chromium/crypto/openssl_util.h"
 #include "third_party/chromium/net/ssl/openssl_ssl_util.h"
 
@@ -70,36 +71,11 @@ class SSLServerSocket : public SSLSocket, public SocketBIOAdapter::Delegate {
   void DoReadCallback(int result);
   void DoWriteCallback(int result);
 
-  void OnWrite(int result);
-  void OnRead(int result);
+  void HandshakeTimeout();
 
   int Init();
 
-  static const SSL_PRIVATE_KEY_METHOD kPrivateKeyMethod;
-  static ssl_private_key_result_t PrivateKeySignCallback(
-      SSL* ssl, uint8_t* out, size_t* out_len, size_t max_out,
-      uint16_t algorithm, const uint8_t* in, size_t in_len);
-  static ssl_private_key_result_t PrivateKeyDecryptCallback(
-      SSL* ssl, uint8_t* out, size_t* out_len, size_t max_out,
-      const uint8_t* in, size_t in_len);
-  static ssl_private_key_result_t PrivateKeyCompleteCallback(SSL* ssl,
-                                                             uint8_t* out,
-                                                             size_t* out_len,
-                                                             size_t max_out);
-
-  ssl_private_key_result_t PrivateKeySignCallback(uint8_t* out, size_t* out_len,
-                                                  size_t max_out,
-                                                  uint16_t algorithm,
-                                                  const uint8_t* in,
-                                                  size_t in_len);
-  ssl_private_key_result_t PrivateKeyCompleteCallback(uint8_t* out,
-                                                      size_t* out_len,
-                                                      size_t max_out);
-  void OnPrivateKeyComplete(net::Error error,
-                            const std::vector<uint8_t>& signature);
-
   SSLServerContext* context_;
-  std::unique_ptr<StreamSocket> stream_socket_;
   std::unique_ptr<SocketBIOAdapter> transport_adapter_;
 
   net::CompletionOnceCallback user_read_callback_;
@@ -121,6 +97,11 @@ class SSLServerSocket : public SSLSocket, public SocketBIOAdapter::Delegate {
 
   State next_handshake_state_;
   bool completed_handshake_;
+
+  // Timer for the handshake.
+  base::OneShotTimer handshake_timer_;
+
+  base::TimeDelta handshake_timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLServerSocket);
 };

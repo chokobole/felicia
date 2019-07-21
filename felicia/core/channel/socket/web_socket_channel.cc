@@ -149,7 +149,7 @@ ChannelState WebSocketChannel::SendFrame(
   if (InClosingState()) {
     DVLOG(1) << "SendFrame called in state " << state_
              << ". This may be a bug, or a harmless race.";
-    std::move(callback).Run(::net::ERR_CONNECTION_CLOSED);
+    std::move(callback).Run(net::ERR_CONNECTION_CLOSED);
     return CHANNEL_ALIVE;
   }
 
@@ -518,7 +518,7 @@ void WebSocketChannel::FailChannel(const std::string& message, uint16_t code,
   SetState(CLOSED);
   // event_interface_->OnFailChannel(message);
   if (!write_callback_.is_null())
-    std::move(write_callback_).Run(::net::ERR_CONNECTION_RESET);
+    std::move(write_callback_).Run(net::ERR_CONNECTION_RESET);
 }
 
 ChannelState WebSocketChannel::SendClose(uint16_t code,
@@ -600,7 +600,7 @@ void WebSocketChannel::DoDropChannel(bool was_clean, uint16_t code,
                                      const std::string& reason) {
   // event_interface_->OnDropChannel(was_clean, code, reason);
   if (!write_callback_.is_null())
-    std::move(write_callback_).Run(::net::ERR_CONNECTION_RESET);
+    std::move(write_callback_).Run(net::ERR_CONNECTION_RESET);
 
   close_timer_.Stop();
 }

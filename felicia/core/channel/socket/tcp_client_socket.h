@@ -25,8 +25,8 @@ class TCPClientSocket : public TCPSocket {
             StatusOnceCallback callback) override;
 
  private:
-  void OnWrite(int result);
-  void OnRead(int result);
+  void OnWriteCheckingReset(int result);
+  void OnReadCheckingClosed(int result);
 
   DISALLOW_COPY_AND_ASSIGN(TCPClientSocket);
 };

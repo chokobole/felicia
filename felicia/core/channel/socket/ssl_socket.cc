@@ -3,13 +3,37 @@
 namespace felicia {
 
 SSLSocket::SSLSocket() = default;
+
+SSLSocket::SSLSocket(std::unique_ptr<StreamSocket> stream_socket)
+    : stream_socket_(std::move(stream_socket)) {}
+
 SSLSocket::~SSLSocket() = default;
 
 bool SSLSocket::IsSSLSocket() const { return true; }
 
+SSLClientSocket* SSLSocket::ToSSLClientSocket() {
+  DCHECK(IsClient());
+  return reinterpret_cast<SSLClientSocket*>(this);
+}
+
 SSLServerSocket* SSLSocket::ToSSLServerSocket() {
   DCHECK(IsServer());
   return reinterpret_cast<SSLServerSocket*>(this);
+}
+
+void SSLSocket::OnWriteCheckingReset(int result) {
+  if (result == ::net::ERR_CONNECTION_RESET) {
+    stream_socket_.reset();
+  }
+  Socket::OnWrite(result);
+}
+
+void SSLSocket::OnReadCheckingClosed(int result) {
+  if (result == 0) {
+    result = ::net::ERR_CONNECTION_CLOSED;
+    stream_socket_.reset();
+  }
+  Socket::OnRead(result);
 }
 
 }  // namespace felicia

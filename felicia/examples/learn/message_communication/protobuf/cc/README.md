@@ -79,8 +79,9 @@ namespace felicia {
 class SimplePublishingNode: public NodeLifecycle {
  public:
   SimplePublishingNode(const std::string& topic,
-                       const std::string& channel_type)
-      : topic_(topic) {
+                       const std::string& channel_type,
+                       SSLServerContext* ssl_server_context))
+      : topic_(topic), ssl_server_context_(ssl_server_context) {
     ChannelDef::Type_Parse(channel_type, &channel_type_);
   }
 
@@ -183,7 +184,9 @@ void RequestSubscribe() {
   settings.buffer_size = Bytes::FromBytes(512);
 
   subscriber_.RequestSubscribe(
-      node_info_, topic_, ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_UDP,
+      node_info_, topic_,
+      ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_UDP |
+            ChannelDef::CHANNEL_TYPE_UDS | ChannelDef::CHANNEL_TYPE_SHM,
       ::base::BindRepeating(&SimpleSubscribingNode::OnMessage,
                             ::base::Unretained(this)),
       ::base::BindRepeating(&SimpleSubscribingNode::OnSubscriptionError,
@@ -205,13 +208,14 @@ struct Settings {
   static constexpr size_t kDefaultMessageSize = Bytes::kMegaBytes;
   static constexpr uint8_t kDefaultQueueSize = 100;
 
-  Settings() {}
+  Settings() = default;
 
-  ::base::TimeDelta period = ::base::TimeDelta::FromMilliseconds(
-      kDefaultPeriod);  // used only in subscriber
+  ::base::TimeDelta period =
+      ::base::TimeDelta::FromMilliseconds(kDefaultPeriod);
   Bytes buffer_size = Bytes::FromBytes(kDefaultMessageSize);
   bool is_dynamic_buffer = false;
   uint8_t queue_size = kDefaultQueueSize;
+  channel::Settings channel_settings;
 };
 
 }  // namespace communication

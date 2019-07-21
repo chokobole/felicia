@@ -61,14 +61,14 @@ void TCPClientSocket::Read(scoped_refptr<::net::GrowableIOBuffer> buffer,
                                       ::base::Unretained(this)));
 }
 
-void TCPClientSocket::OnWrite(int result) {
+void TCPClientSocket::OnWriteCheckingReset(int result) {
   if (result == ::net::ERR_CONNECTION_RESET) {
     socket_.reset();
   }
   Socket::OnWrite(result);
 }
 
-void TCPClientSocket::OnRead(int result) {
+void TCPClientSocket::OnReadCheckingClosed(int result) {
   if (result == 0) {
     result = ::net::ERR_CONNECTION_CLOSED;
     socket_.reset();

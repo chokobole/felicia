@@ -5,16 +5,25 @@
 
 namespace felicia {
 
+class SSLClientSocket;
 class SSLServerSocket;
 
 class SSLSocket : public StreamSocket {
  public:
   SSLSocket();
+  explicit SSLSocket(std::unique_ptr<StreamSocket> stream_socket);
   ~SSLSocket() override;
 
   bool IsSSLSocket() const override;
 
+  SSLClientSocket* ToSSLClientSocket();
   SSLServerSocket* ToSSLServerSocket();
+
+ protected:
+  void OnWriteCheckingReset(int result);
+  void OnReadCheckingClosed(int result);
+
+  std::unique_ptr<StreamSocket> stream_socket_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLSocket);
 };

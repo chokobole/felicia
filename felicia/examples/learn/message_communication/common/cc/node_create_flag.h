@@ -17,6 +17,7 @@ class NodeCreateFlag : public FlagParser::Delegate {
   const BoolFlag* is_publishing_node_flag() const {
     return is_publishing_node_flag_.get();
   }
+  const BoolFlag* is_use_ssl_flag() const { return use_ssl_flag_.get(); }
   const StringFlag* name_flag() const { return name_flag_.get(); }
   const StringFlag* topic_flag() const { return topic_flag_.get(); }
   const StringChoicesFlag* channel_type_flag() const {
@@ -27,15 +28,18 @@ class NodeCreateFlag : public FlagParser::Delegate {
 
   bool Validate() const override;
 
-  AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(is_publishing_node_flag_, name_flag_,
+  AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(is_publishing_node_flag_,
+                                          use_ssl_flag_, name_flag_,
                                           topic_flag_, channel_type_flag_)
 
  protected:
   bool is_publishing_node_;
+  bool use_ssl_;
   std::string name_;
   std::string topic_;
   std::string channel_type_;
   std::unique_ptr<BoolFlag> is_publishing_node_flag_;
+  std::unique_ptr<BoolFlag> use_ssl_flag_;
   std::unique_ptr<StringFlag> name_flag_;
   std::unique_ptr<StringFlag> topic_flag_;
   std::unique_ptr<StringChoicesFlag> channel_type_flag_;

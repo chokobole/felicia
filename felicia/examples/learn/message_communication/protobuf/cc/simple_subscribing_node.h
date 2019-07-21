@@ -10,7 +10,8 @@ namespace felicia {
 
 class SimpleSubscribingNode : public NodeLifecycle {
  public:
-  SimpleSubscribingNode(const std::string& topic) : topic_(topic) {}
+  SimpleSubscribingNode(const std::string& topic, bool use_ssl)
+      : topic_(topic), use_ssl_(use_ssl) {}
 
   void OnInit() override {
     std::cout << "SimpleSubscribingNode::OnInit()" << std::endl;
@@ -37,6 +38,7 @@ class SimpleSubscribingNode : public NodeLifecycle {
   void RequestSubscribe() {
     communication::Settings settings;
     settings.buffer_size = Bytes::FromBytes(512);
+    settings.channel_settings.tcp_settings.use_ssl = use_ssl_;
 
     subscriber_.RequestSubscribe(
         node_info_, topic_,
@@ -81,6 +83,7 @@ class SimpleSubscribingNode : public NodeLifecycle {
  private:
   NodeInfo node_info_;
   std::string topic_;
+  bool use_ssl_;
   Subscriber<MessageSpec> subscriber_;
 };
 }  // namespace felicia

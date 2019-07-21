@@ -24,24 +24,26 @@ int RealMain(int argc, char* argv[]) {
     return 1;
   }
 
-  ::base::FilePath cert_file_path =
-      ::base::FilePath(FILE_PATH_LITERAL("./felicia/examples/cert/server.crt"));
-  ::base::FilePath private_key_file_path =
-      ::base::FilePath(FILE_PATH_LITERAL("./felicia/examples/cert/server.key"));
-  std::unique_ptr<SSLServerContext> ssl_server_context =
-      SSLServerContext::NewSSLServerContext(cert_file_path,
-                                            private_key_file_path);
-
   NodeInfo node_info;
   node_info.set_name(delegate.name_flag()->value());
 
+  std::unique_ptr<SSLServerContext> ssl_server_context;
   if (delegate.is_publishing_node_flag()->value()) {
+    if (delegate.is_use_ssl_flag()->value()) {
+      ::base::FilePath cert_file_path = ::base::FilePath(
+          FILE_PATH_LITERAL("./felicia/examples/cert/server.crt"));
+      ::base::FilePath private_key_file_path = ::base::FilePath(
+          FILE_PATH_LITERAL("./felicia/examples/cert/server.key"));
+      ssl_server_context = SSLServerContext::NewSSLServerContext(
+          cert_file_path, private_key_file_path);
+    }
     master_proxy.RequestRegisterNode<SimplePublishingNode>(
         node_info, delegate.topic_flag()->value(),
         delegate.channel_type_flag()->value(), ssl_server_context.get());
   } else {
     master_proxy.RequestRegisterNode<SimpleSubscribingNode>(
-        node_info, delegate.topic_flag()->value());
+        node_info, delegate.topic_flag()->value(),
+        delegate.is_use_ssl_flag()->value());
   }
 
   master_proxy.Run();

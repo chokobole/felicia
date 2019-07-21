@@ -269,6 +269,7 @@ void Subscriber<MessageTy>::ConnectToPublisher() {
   }
 
   if (matched_channel_def.type() == ChannelDef::CHANNEL_TYPE_NONE) {
+    channel_.reset();
     on_error_callback_.Run(
         errors::Unavailable("Failed to connect to publisher."));
     return;

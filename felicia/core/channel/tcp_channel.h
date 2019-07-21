@@ -2,6 +2,7 @@
 #define FELICIA_CORE_CHANNEL_TCP_CHANNEL_H_
 
 #include "felicia/core/channel/channel.h"
+#include "felicia/core/channel/socket/ssl_client_socket.h"
 #include "felicia/core/channel/socket/ssl_server_context.h"
 #include "felicia/core/channel/socket/ssl_server_socket.h"
 #include "felicia/core/channel/socket/tcp_client_socket.h"
@@ -198,7 +199,24 @@ void TCPChannel<MessageTy>::Connect(const ChannelDef& channel_def,
 template <typename MessageTy>
 void TCPChannel<MessageTy>::OnConnect(StatusOnceCallback callback,
                                       const Status& s) {
-  std::move(callback).Run(s);
+#if !defined(FEL_NO_SSL)
+  if (settings_.use_ssl) {
+    TCPClientSocket* tcp_client_socket = this->channel_impl_.release()
+                                             ->ToSocket()
+                                             ->ToTCPSocket()
+                                             ->ToTCPClientSocket();
+    std::unique_ptr<StreamSocket> stream_socket(tcp_client_socket);
+    this->channel_impl_ =
+        std::make_unique<SSLClientSocket>(std::move(stream_socket));
+    SSLClientSocket* ssl_client_socket =
+        this->channel_impl_->ToSocket()->ToSSLSocket()->ToSSLClientSocket();
+    ssl_client_socket->Connect(std::move(callback));
+  } else {
+#endif
+    std::move(callback).Run(s);
+#if !defined(FEL_NO_SSL)
+  }
+#endif
 }
 
 }  // namespace felicia

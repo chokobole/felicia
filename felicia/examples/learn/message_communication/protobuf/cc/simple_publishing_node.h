@@ -46,9 +46,11 @@ class SimplePublishingNode : public NodeLifecycle {
   void RequestPublish() {
     communication::Settings settings;
     settings.buffer_size = Bytes::FromBytes(512);
-    settings.channel_settings.tcp_settings.use_ssl = true;
-    settings.channel_settings.tcp_settings.ssl_server_context =
-        ssl_server_context_;
+    if (ssl_server_context_) {
+      settings.channel_settings.tcp_settings.use_ssl = true;
+      settings.channel_settings.tcp_settings.ssl_server_context =
+          ssl_server_context_;
+    }
 
     publisher_.RequestPublish(
         node_info_, topic_, channel_type_, settings,
