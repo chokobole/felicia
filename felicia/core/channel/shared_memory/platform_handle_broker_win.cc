@@ -31,6 +31,11 @@ void PlatformHandleBroker::WaitForBroker(ChannelDef channel_def,
   ::base::string16 pipe_name =
       NamedPipeServer::GetPipeNameFromServiceName(service_name);
 
+  if (!::WaitNamedPipeW(pipe_name.c_str(), NMPWAIT_USE_DEFAULT_WAIT)) {
+    std::move(callback).Run(errors::Unavailable("Failed to WaitNamedPipeW."));
+    return;
+  }
+
   const DWORD kDesiredAccess = GENERIC_READ;
   // The SECURITY_ANONYMOUS flag means that the server side cannot impersonate
   // the client.
