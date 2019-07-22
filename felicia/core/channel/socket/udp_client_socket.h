@@ -5,7 +5,7 @@
 
 namespace felicia {
 
-class UDPClientSocket : public UDPSocket {
+class EXPORT UDPClientSocket : public UDPSocket {
  public:
   UDPClientSocket();
   ~UDPClientSocket();

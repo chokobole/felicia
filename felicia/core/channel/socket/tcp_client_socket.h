@@ -5,7 +5,7 @@
 
 namespace felicia {
 
-class TCPClientSocket : public TCPSocket {
+class EXPORT TCPClientSocket : public TCPSocket {
  public:
   TCPClientSocket();
   explicit TCPClientSocket(std::unique_ptr<::net::TCPSocket> socket);
