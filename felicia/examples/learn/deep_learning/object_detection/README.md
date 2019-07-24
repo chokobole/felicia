@@ -8,6 +8,10 @@ git clone https://github.com/tensorflow/models.git
 
 Follow the [instructions](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/installation.md).
 
+```bash
+pip install seaborn
+```
+
 ## Build
 
 ```bash

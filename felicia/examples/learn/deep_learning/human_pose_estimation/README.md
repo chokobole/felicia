@@ -10,16 +10,26 @@ git clone https://github.com/CMU-Perceptual-Computing-Lab/openpose.git
 
 Follow the [instructions](https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/doc/installation.md#installation).
 
+Don't forget to add option `-DBUILD_PYTHON=ON`.
+```bash
+mkdir build
+cd build
+# You can add optionally -DDOWNLOAD_BODY_MPI_MODEL=ON -DDOWNLOAD_BODY_COCO_MODEL=ON
+cmake .. -DBUILD_PYTHON=ON
+make -j
+sudo make install
+```
+
 ## Build
 
 ```bash
 bazel build //felicia/core/master/rpc:grpc_server_main
-bazel build //felicia/examples/learn/deep_learning/human_pose_estimation:human_pose_estimation
+bazel build //felicia/examples/learn/deep_learning/human_pose_estimation:human_pose_estimation_from_camera
 ```
 
 ## Run
 
 ```bash
 export PYTHONPATH=$PYTHONPATH:/usr/local/python
-LD_LIBRARY_PATH=/usr/local/lib bazel-bin/felicia/examples/learn/deep_learning/human_pose_estimation/human_pose_estimation --model /path/to/model
+LD_LIBRARY_PATH=/usr/local/lib bazel-bin/felicia/examples/learn/deep_learning/human_pose_estimation/human_pose_estimation_from_camera --model /path/to/model
 ```
