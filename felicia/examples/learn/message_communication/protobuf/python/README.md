@@ -155,8 +155,9 @@ def request_subscribe(self):
     settings.buffer_size = fel.Bytes.from_bytes(512)
 
     self.subscriber.request_subscribe(self.node_info, self.topic,
-                                      ChannelDef.TCP | ChannelDef.UDP, MessageSpec,
-                                      self.on_message, self.on_subscription_error,
+                                      ChannelDef.CHANNEL_TYPE_TCP |
+                                      ChannelDef.CHANNEL_TYPE_UDP,
+                                      MessageSpec, self.on_message, self.on_subscription_error,
                                       settings, self.on_request_subscribe)
 ```
 

@@ -3,6 +3,7 @@ from felicia.core.protobuf.channel_pb2 import ChannelDef
 
 from felicia.examples.learn.message_communication.protobuf.message_spec_pb2 import MessageSpec
 
+
 class SimpleSubscribingNode(fel.NodeLifecycle):
     def __init__(self, topic):
         super().__init__()
@@ -26,8 +27,9 @@ class SimpleSubscribingNode(fel.NodeLifecycle):
         settings.buffer_size = fel.Bytes.from_bytes(512)
 
         self.subscriber.request_subscribe(self.node_info, self.topic,
-                                          ChannelDef.TCP | ChannelDef.UDP, MessageSpec,
-                                          self.on_message, self.on_subscription_error,
+                                          ChannelDef.CHANNEL_TYPE_TCP |
+                                          ChannelDef.CHANNEL_TYPE_UDP,
+                                          MessageSpec, self.on_message, self.on_subscription_error,
                                           settings, self.on_request_subscribe)
 
         # fel.MasterProxy.post_delayed_task(

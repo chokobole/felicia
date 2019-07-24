@@ -96,7 +96,7 @@ def convert_to_image_with_bounding_boxes(image,
     return image_with_bounding_boxes
 
 
-class Inference(object):
+class ObjectDetection(object):
     def __init__(self):
         self.sesion = tf.Session(graph=detection_graph, config=config)
 

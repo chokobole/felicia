@@ -245,7 +245,7 @@ class HumanPoseEstimationNode(fel.NodeLifecycle):
             type_name = ImageWithHumansMessage.DESCRIPTOR.full_name
 
         self.publisher.request_publish(self.node_info, self.topic,
-                                       ChannelDef.TCP | ChannelDef.WS,
+                                       ChannelDef.CHANNEL_TYPE_TCP | ChannelDef.CHANNEL_TYPE_WS,
                                        type_name, settings, self.on_request_publish)
 
     def on_request_publish(self, status):
