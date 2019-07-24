@@ -36,6 +36,7 @@ class FlagParserDelegate(cli._FlagParserDelegate):
         return False
 
     def Validate(self):
+        self._collect_flags()
         return self.validate()
 
     def CollectUsages(self):
@@ -43,7 +44,7 @@ class FlagParserDelegate(cli._FlagParserDelegate):
 
     def collect_usages(self):
         self._collect_flags()
-        return ['[--help]'] + list(map(lambda x: x.usage(), self._flags))
+        return ['[--help]'] + list(map(lambda x: x.usage, self._flags))
 
     def Description(self):
         return self.description()
@@ -60,9 +61,9 @@ class FlagParserDelegate(cli._FlagParserDelegate):
         optionals = filter(lambda x: x.is_optional(), self._flags)
         return [
             (cli.TextStyle.blue("Positional arguments:"), list(
-                map(lambda x: x.help(), positionals)) if positionals is not None else []),
+                map(lambda x: x.help, positionals)) if positionals is not None else []),
             (cli.TextStyle.yellow("Optional arguments:"), list(
-                map(lambda x: x.help(), optionals)) if optionals is not None else [])
+                map(lambda x: x.help, optionals)) if optionals is not None else [])
         ]
 
     def __del__(self):
