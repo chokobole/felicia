@@ -11,6 +11,7 @@
 #include "felicia/drivers/camera/depth_camera_frame.h"
 #include "felicia/drivers/camera/stereo_camera_interface.h"
 #include "felicia/drivers/pointcloud/pointcloud_frame.h"
+#include "felicia/drivers/vendors/zed/zed_camera_descriptor.h"
 #include "felicia/drivers/vendors/zed/zed_capability.h"
 
 namespace felicia {
@@ -54,6 +55,9 @@ class ZedCamera : public StereoCameraInterface,
 
   ~ZedCamera();
 
+  static bool IsSameId(const std::string& device_id,
+                       const std::string& device_id2);
+
   // StereoCameraInterface methods
   Status Init() override;
   Status Start(const CameraFormat& requested_camera_format,
@@ -76,7 +80,7 @@ class ZedCamera : public StereoCameraInterface,
  private:
   friend class ZedCameraFactory;
 
-  ZedCamera(const CameraDescriptor& camera_descriptor);
+  ZedCamera(const ZedCameraDescriptor& camera_descriptor);
 
   void GetCameraSetting(::sl::CAMERA_SETTINGS camera_setting,
                         CameraSettingsModeValue* value);
@@ -96,9 +100,10 @@ class ZedCamera : public StereoCameraInterface,
   PointcloudFrame ConvertToPointcloudFrame(::sl::Mat cloud,
                                            ::base::TimeDelta timestamp);
 
-  static Status OpenCamera(const CameraDescriptor& camera_descriptor,
-                           ::sl::InitParameters& params, ScopedCamera* camera);
+  static Status OpenCamera(const int device_id, ::sl::InitParameters& params,
+                           ScopedCamera* camera);
 
+  int device_id_ = -1;
   ScopedCamera camera_;
   ::sl::InitParameters init_params_;
   ::sl::RuntimeParameters runtime_params_;

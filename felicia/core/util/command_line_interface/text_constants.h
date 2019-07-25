@@ -6,6 +6,7 @@
 namespace felicia {
 
 extern const std::string kRedError;
+extern const std::string kYellowWarning;
 extern const std::string kYellowOptions;
 extern const std::string kYellowCommands;
 

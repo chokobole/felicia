@@ -31,8 +31,8 @@ def _get_realsense_path(repository_ctx):
     return None
 
 def _realsense_configure_impl(repository_ctx):
-    realsense_import_lib_genrule = ""
     realsense_include_rule = ""
+    realsense_import_lib_genrule = ""
     realsense_import_dll_genrule = ""
 
     if is_windows(repository_ctx):

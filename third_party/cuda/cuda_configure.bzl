@@ -2,7 +2,6 @@ load(
     "//bazel:felicia_repository.bzl",
     "get_bin_path",
     "is_executable",
-    "is_linux",
     "symlink_genrule_for_dir",
 )
 load("//bazel:felicia_util.bzl", "red")
@@ -24,7 +23,10 @@ def _cuda_configure_impl(repository_ctx):
     top = None
     TARGET_SIZE_PREFIX = "#$ _TARGET_SIZE_="
     TOP_PREFIX = "#$ TOP="
-    for line in result.stderr.splitlines():
+
+    # On windows prints to stdout, on linux prints to stderr, though.
+    result_txt = result.stderr if len(result.stderr) > 0 else result.stdout
+    for line in result_txt.splitlines():
         if line.startswith(TARGET_SIZE_PREFIX):
             target_size_str = line[len(TARGET_SIZE_PREFIX):]
             if len(target_size_str) == 0:

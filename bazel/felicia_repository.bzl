@@ -34,7 +34,7 @@ def is_executable(repository_ctx, bin, env_var = None):
     bin_path = get_bin_path(repository_ctx, bin, env_var)
     if bin_path == None:
         return False
-    cmd = "test -x %s" % bin_path
+    cmd = "test -x \"%s\"" % bin_path
     bash_bin = get_bash_bin_path(repository_ctx)
     if bash_bin == None:
         return False

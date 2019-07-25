@@ -2,20 +2,38 @@ package(default_visibility = ["//visibility:public"])
 
 cc_import(
   name = "libsl_core",
-  # static_library = "zed_lib/libsl_core_static.a",
-  shared_library = "zed_lib/libsl_core.so",
+  interface_library = select({
+    ":windows": "zed_lib/sl_core64.lib",
+    "//conditions:default": "zed_lib/libsl_core.so",
+  }),
+  shared_library = select({
+    ":windows": "zed_bin/sl_core64.dll",
+    "//conditions:default": "zed_lib/libsl_core.so",
+  }),
 )
 
 cc_import(
   name = "libsl_input",
-  # static_library = "zed_lib/libsl_input_static.a",
-  shared_library = "zed_lib/libsl_input.so",
+  interface_library = select({
+    ":windows": "zed_lib/sl_input64.lib",
+    "//conditions:default": "zed_lib/libsl_input.so",
+  }),
+  shared_library = select({
+    ":windows": "zed_bin/sl_input64.dll",
+    "//conditions:default": "zed_lib/libsl_input.so",
+  }),
 )
 
 cc_import(
   name = "libsl_zed",
-  # static_library = "zed_lib/libsl_zed_static.a",
-  shared_library = "zed_lib/libsl_zed.so",
+  interface_library = select({
+    ":windows": "zed_lib/sl_zed64.lib",
+    "//conditions:default": "zed_lib/libsl_zed.so",
+  }),
+  shared_library = select({
+    ":windows": "zed_bin/sl_zed64.dll",
+    "//conditions:default": "zed_lib/libsl_zed.so",
+  }),
 )
 
 cc_import(
@@ -31,9 +49,18 @@ cc_library(
         ":libsl_core",
         ":libsl_input",
         ":libsl_zed",
-        ":libsl_svo",
-    ]
+    ] + select({
+      ":windows": [],
+      "//conditions:default": [":libsl_svo"],
+    })
+)
+
+config_setting(
+    name = "windows",
+    constraint_values = ["@bazel_tools//platforms:windows"],
+    visibility = ["//visibility:public"],
 )
 
 %{ZED_INCLUDE_GENRULE}
-%{ZED_LIB_GENRULE}
+%{ZED_IMPORT_LIB_GENRULE}
+%{ZED_IMPORT_DLL_GENRULE}

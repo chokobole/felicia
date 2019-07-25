@@ -107,8 +107,22 @@ ZedCamera::ScopedCamera::~ScopedCamera() {
   }
 }
 
-ZedCamera::ZedCamera(const CameraDescriptor& camera_descriptor)
+// static
+bool ZedCamera::IsSameId(const std::string& device_id,
+                         const std::string& device_id2) {
+#if defined(OS_WIN)
+  // (device_id looks like \\?usb#vid_...&pid_...&mi_...){...}...
+  // Pick inside parenthesis
+  return device_id.substr(0, device_id.find_first_of('{')) ==
+         device_id2.substr(0, device_id2.find_first_of('{'));
+#else
+  return device_id == device_id2;
+#endif
+}
+
+ZedCamera::ZedCamera(const ZedCameraDescriptor& camera_descriptor)
     : StereoCameraInterface(camera_descriptor),
+      device_id_(camera_descriptor.id()),
       thread_("ZedCameraThread"),
       is_stopping_(false) {}
 
@@ -117,7 +131,7 @@ ZedCamera::~ZedCamera() = default;
 Status ZedCamera::Init() {
   ScopedCamera camera;
   ::sl::InitParameters params;
-  Status s = OpenCamera(camera_descriptor_, params, &camera);
+  Status s = OpenCamera(device_id_, params, &camera);
   if (!s.ok()) return s;
 
   camera_ = std::move(camera);
@@ -158,7 +172,7 @@ Status ZedCamera::Start(const ZedCamera::StartParams& params) {
   depth_camera_format_.set_frame_rate(camera_format_.frame_rate());
   camera_->close();
   ScopedCamera camera;
-  Status s = OpenCamera(camera_descriptor_, init_params_, &camera);
+  Status s = OpenCamera(device_id_, init_params_, &camera);
   if (!s.ok()) return s;
 
   camera_ = std::move(camera);
@@ -397,25 +411,13 @@ void ZedCamera::DoStop(::base::WaitableEvent* event, Status* status) {
 }
 
 // static
-Status ZedCamera::OpenCamera(const CameraDescriptor& camera_descriptor,
-                             ::sl::InitParameters& params,
+Status ZedCamera::OpenCamera(int device_id, ::sl::InitParameters& params,
                              ZedCamera::ScopedCamera* camera) {
-  int id = -1;
-  std::vector<::sl::DeviceProperties> deviceList =
-      ::sl::Camera::getDeviceList();
-  for (auto& device : deviceList) {
-    if (device.camera_state == ::sl::CAMERA_STATE_AVAILABLE &&
-        strings::Equals(camera_descriptor.device_id(), device.path.c_str())) {
-      id = device.id;
-      break;
-    }
-  }
-
-  if (id == -1) {
+  if (device_id == ZedCameraDescriptor::kInvalidId) {
     return errors::InvalidArgument(
         "No avaiable camera from given camera_descriptor.");
   } else {
-    params.input.setFromCameraID(id);
+    params.input.setFromCameraID(device_id);
   }
 
   ::sl::ERROR_CODE err = camera->get()->open(params);

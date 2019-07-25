@@ -14,7 +14,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
                           const std::string& right_camera_topic,
                           const std::string& depth_topic,
                           const std::string& pointcloud_topic,
-                          const CameraDescriptor& camera_descriptor)
+                          const ZedCameraDescriptor& camera_descriptor)
       : left_camera_topic_(left_camera_topic),
         right_camera_topic_(right_camera_topic),
         depth_topic_(depth_topic),
@@ -265,7 +265,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
   std::string right_camera_topic_;
   std::string depth_topic_;
   std::string pointcloud_topic_;
-  CameraDescriptor camera_descriptor_;
+  ZedCameraDescriptor camera_descriptor_;
   Publisher<CameraFrameMessage> left_camera_publisher_;
   Publisher<CameraFrameMessage> right_camera_publisher_;
   Publisher<DepthCameraFrameMessage> depth_publisher_;

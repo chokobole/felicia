@@ -8,13 +8,13 @@ fel_cc_library(
     name = "realsense",
     srcs = if_has_realsense([
         "rs_camera.cc",
-        "rs_camera.h",
         "rs_camera_factory.cc",
         "rs_capability.cc",
         "rs_pixel_format.cc",
         "rs_pixel_format.h",
     ]),
     hdrs = if_has_realsense([
+        "rs_camera.h",
         "rs_camera_factory.h",
         "rs_capability.h",
         "rs_stream_info.h",

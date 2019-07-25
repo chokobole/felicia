@@ -8,11 +8,13 @@ fel_cc_library(
     name = "zed",
     srcs = if_has_zed([
         "zed_camera.cc",
-        "zed_camera.h",
+        "zed_camera_descriptor.cc",
         "zed_camera_factory.cc",
         "zed_capability.cc",
     ]),
     hdrs = if_has_zed([
+        "zed_camera.h",
+        "zed_camera_descriptor.h",
         "zed_camera_factory.h",
         "zed_capability.h",
     ]),

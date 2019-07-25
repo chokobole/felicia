@@ -23,6 +23,7 @@ class EXPORT CameraDescriptor {
 
   std::string ToString() const;
 
+ protected:
   std::string display_name_;
   std::string device_id_;
   std::string model_id_;

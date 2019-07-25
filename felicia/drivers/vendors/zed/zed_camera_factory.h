@@ -4,18 +4,20 @@
 #include "third_party/chromium/base/macros.h"
 
 #include "felicia/drivers/vendors/zed/zed_camera.h"
+#include "felicia/drivers/vendors/zed/zed_camera_descriptor.h"
 
 namespace felicia {
 
 class ZedCameraFactory {
  public:
   static std::unique_ptr<ZedCamera> NewStereoCamera(
-      const CameraDescriptor& camera_descriptor);
+      const ZedCameraDescriptor& camera_descriptor);
 
-  static Status GetCameraDescriptors(CameraDescriptors* camera_descriptors);
+  static Status GetCameraDescriptors(ZedCameraDescriptors* camera_descriptors);
 
   static Status GetSupportedCameraFormats(
-      const CameraDescriptor& camera_descriptor, CameraFormats* camera_formats);
+      const ZedCameraDescriptor& camera_descriptor,
+      CameraFormats* camera_formats);
 
   DISALLOW_COPY_AND_ASSIGN(ZedCameraFactory);
 };

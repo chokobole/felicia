@@ -15,7 +15,7 @@ int RealMain(int argc, char* argv[]) {
     return 1;
   }
 
-  CameraDescriptors camera_descriptors;
+  ZedCameraDescriptors camera_descriptors;
   Status s = ZedCameraFactory::GetCameraDescriptors(&camera_descriptors);
   if (!s.ok()) {
     std::cerr << kRedError << s << std::endl;
