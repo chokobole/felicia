@@ -30,6 +30,6 @@ class NodeCreateFlag(FlagParserDelegate):
     def validate(self):
         is_set = self.topic_flag.is_set()
         if not is_set:
-            print("{} tpoic is not set.".format(
+            print("{} topic is not set.".format(
                 cli.RED_ERROR), file=sys.stderr)
         return is_set
