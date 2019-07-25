@@ -89,7 +89,7 @@ void AddFlag(py::module& m, const char* name) {
       .def_property_readonly("long_name", &FlagTy::long_name)
       .def_property_readonly("name", &FlagTy::name)
       .def_property_readonly("usage", &FlagTy::usage)
-      .def_property_readonly("help", &FlagTy::help, py::arg("help_start") = 20)
+      .def_property_readonly("help", [](FlagTy& self) { return self.help(); })
       .def_property_readonly("value", &FlagTy::value)
       .def("is_positional", &FlagTy::is_positional)
       .def("is_optional", &FlagTy::is_optional)
