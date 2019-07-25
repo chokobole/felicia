@@ -20,7 +20,6 @@ class PyCallback<R(Args...)> {
       : func_(py::cast<std::function<void(Args...)>>(func)) {}
 
   R Invoke(Args... args) {
-    py::gil_scoped_acquire acquire;
     return func_(std::forward<Args>(args)...);
   }
 
@@ -35,7 +34,6 @@ class PyCallback<void(Args...)> {
       : func_(py::cast<std::function<void(Args...)>>(func)) {}
 
   void Invoke(Args... args) {
-    py::gil_scoped_acquire acquire;
     func_(std::forward<Args>(args)...);
   }
 
