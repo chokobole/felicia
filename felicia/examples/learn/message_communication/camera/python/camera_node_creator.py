@@ -1,7 +1,7 @@
 import sys
 
 # Should be before import felicia_py
-import felicia.examples.learn.message_communication.common.python.import_order_resolver
+import import_order_resolver
 import felicia_py as fel
 from felicia.core.protobuf.master_data_pb2 import NodeInfo
 import felicia_py.command_line_interface as cli

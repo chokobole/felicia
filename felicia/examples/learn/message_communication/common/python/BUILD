@@ -7,6 +7,7 @@ py_library(
 py_library(
     name = "import_order_resolver",
     srcs = ["import_order_resolver.py"],
+    imports = ["."],
     visibility = ["//felicia/examples:internal"],
 )
 
