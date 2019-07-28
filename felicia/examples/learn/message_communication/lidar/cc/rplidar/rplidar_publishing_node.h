@@ -44,7 +44,7 @@ class RPlidarPublishingNode : public NodeLifecycle {
 
   void OnError(const Status& s) override {
     std::cout << "RPlidarPublishingNode::OnError()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s;
+    LOG(ERROR) << s;
   }
 
   void RequestPublish() {

@@ -44,7 +44,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
 
   void OnError(const Status& s) override {
     std::cout << "RsCameraPublishingNode::OnError()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s;
+    LOG(ERROR) << s;
   }
 
   void RequestPublish() {
@@ -227,7 +227,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
     last_timestamp_ = imu_frame.timestamp();
   }
 
-  void OnCameraError(const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }
+  void OnCameraError(const Status& s) { LOG(ERROR) << s; }
 
   void OnPublishColor(ChannelDef::Type type, const Status& s) {
     LOG_IF(ERROR, !s.ok()) << s << " from " << ChannelDef::Type_Name(type);

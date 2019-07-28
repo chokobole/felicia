@@ -36,7 +36,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
 
   void OnError(const Status& s) override {
     std::cout << "ZedCameraPublishingNode::OnError()" << std::endl;
-    LOG_IF(ERROR, !s.ok()) << s;
+    LOG(ERROR) << s;
   }
 
   void RequestPublish() {
@@ -184,7 +184,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
                               ::base::Unretained(this)));
   }
 
-  void OnCameraError(const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }
+  void OnCameraError(const Status& s) { LOG(ERROR) << s; }
 
   void OnPublishLeftCamera(ChannelDef::Type type, const Status& s) {
     LOG_IF(ERROR, !s.ok()) << s << " from " << ChannelDef::Type_Name(type);
