@@ -5,7 +5,7 @@ import "felicia/core/protobuf/geometry.proto";
 package felicia;
 
 message ImuFrameMessage {
-  QuarternionMessage orientation = 1;
+  QuarternionfMessage orientation = 1;
   Vec3fMessage angular_velocity = 2;
   Vec3fMessage linear_acceleration = 3;
   int64 timestamp = 4;

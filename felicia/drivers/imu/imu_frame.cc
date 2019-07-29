@@ -12,7 +12,7 @@ ImuFrame::ImuFrame()
 ImuFrameMessage ImuFrame::ToImuFrameMessage() const {
   ImuFrameMessage message;
   *message.mutable_orientation() =
-      EigenQuarternionfToQuarternionMessage(orientation_);
+      EigenQuarternionfToQuarternionfMessage(orientation_);
   *message.mutable_angular_velocity() =
       EigenVec3fToVec3fMessage(angular_velocity_);
   *message.mutable_linear_acceleration() =

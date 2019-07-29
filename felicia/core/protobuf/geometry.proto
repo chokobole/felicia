@@ -2,11 +2,18 @@ syntax = "proto3";
 
 package felicia;
 
-message QuarternionMessage {
+message QuarternionfMessage {
   float w = 1;
   float x = 2;
   float y = 3;
   float z = 4;
+}
+
+message QuarterniondMessage {
+  double w = 1;
+  double x = 2;
+  double y = 3;
+  double z = 4;
 }
 
 message Vec3fMessage {
@@ -15,9 +22,20 @@ message Vec3fMessage {
   float z = 3;
 }
 
+message Vec3dMessage {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
 message PointfMessage {
   float x = 1;
   float y = 2;
+}
+
+message PointdMessage {
+  double x = 1;
+  double y = 2;
 }
 
 message Point3fMessage {
@@ -26,9 +44,46 @@ message Point3fMessage {
   float z = 3;
 }
 
+message Point3dMessage {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
+message PosefMessage {
+  float x = 1;
+  float y = 2;
+  float theta = 3;
+}
+
+message PosedMessage {
+  double x = 1;
+  double y = 2;
+  double theta = 3;
+}
+
+message Pose3fMessage {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+  float theta = 4;
+}
+
+message Pose3dMessage {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+  double theta = 4;
+}
+
 message RectfMessage {
   PointfMessage left_top = 1;
   PointfMessage right_bottom = 2;
+}
+
+message RectdMessage {
+  PointdMessage left_top = 1;
+  PointdMessage right_bottom = 2;
 }
 
 message QuadfMessage {
@@ -36,4 +91,11 @@ message QuadfMessage {
   PointfMessage right_top = 2;
   PointfMessage left_bottom = 3;
   PointfMessage right_bottom = 4;
+}
+
+message QuaddMessage {
+  PointdMessage left_top = 1;
+  PointdMessage right_top = 2;
+  PointdMessage left_bottom = 3;
+  PointdMessage right_bottom = 4;
 }
