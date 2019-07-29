@@ -5,6 +5,7 @@
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/lib/base/export.h"
+#include "felicia/core/lib/unit/geometry/point.h"
 #include "felicia/drivers/lidar/lidar_frame_message.pb.h"
 
 namespace felicia {
@@ -44,6 +45,8 @@ class EXPORT LidarFrame {
 
   LidarFrameMessage ToLidarFrameMessage() const;
   static LidarFrame FromLidarFrameMessage(const LidarFrameMessage& message);
+
+  void Project(std::vector<Pointf>* points);
 
  private:
   float angle_start_;
