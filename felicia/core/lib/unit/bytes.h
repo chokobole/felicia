@@ -46,7 +46,7 @@ class EXPORT Bytes {
     rv *= a;
     if (rv.IsValid()) return Bytes(rv.ValueOrDie());
     // Matched sign overflows. Mismatched sign underflows.
-    if ((bytes_ < 0) ^ (a < 0)) return Bytes();
+    if ((bytes_ < 0) ^ (a < 0)) return Bytes::Min();
     return Bytes::Max();
   }
   template <typename T>
@@ -55,8 +55,7 @@ class EXPORT Bytes {
     rv /= a;
     if (rv.IsValid()) return Bytes(rv.ValueOrDie());
     // Matched sign overflows. Mismatched sign underflows.
-    // Special case to catch divide by zero.
-    if ((bytes_ < 0) ^ (a <= 0)) return Bytes();
+    if ((bytes_ < 0) ^ (a < 0)) return Bytes::Min();
     return Bytes::Max();
   }
   template <typename T>

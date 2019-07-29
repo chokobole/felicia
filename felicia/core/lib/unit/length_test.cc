@@ -41,10 +41,12 @@ TEST(LengthTest, Operator) {
   EXPECT_EQ(3.742 * length, Length(amount * 3.742));
   EXPECT_EQ(length * std::numeric_limits<int64_t>::max(), Length::Max());
   EXPECT_EQ(std::numeric_limits<int64_t>::max() * length, Length::Max());
+  EXPECT_EQ(length * std::numeric_limits<int64_t>::min(), Length::Min());
+  EXPECT_EQ(std::numeric_limits<int64_t>::min() * length, Length::Min());
   EXPECT_EQ(length / 2, Length(amount / 2));
   EXPECT_EQ(length / 2.5, Length(amount / 2.5));
   EXPECT_EQ(length / -2.5, Length(amount / -2.5));
-  EXPECT_EQ(length / 0, Length());
+  EXPECT_EQ(length / 0, Length::Max());
   EXPECT_EQ(length / Length::FromMillimeter(50), 2);
   const int64_t amount2 = 35;
   Length length2 = Length::FromMillimeter(amount2);

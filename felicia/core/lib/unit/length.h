@@ -59,7 +59,7 @@ class EXPORT Length {
     rv *= a;
     if (rv.IsValid()) return Length(rv.ValueOrDie());
     // Matched sign overflows. Mismatched sign underflows.
-    if ((length_ < 0) ^ (a < 0)) return Length();
+    if ((length_ < 0) ^ (a < 0)) return Length::Min();
     return Length::Max();
   }
   template <typename T>
@@ -68,8 +68,7 @@ class EXPORT Length {
     rv /= a;
     if (rv.IsValid()) return Length(rv.ValueOrDie());
     // Matched sign overflows. Mismatched sign underflows.
-    // Special case to catch divide by zero.
-    if ((length_ < 0) ^ (a <= 0)) return Length();
+    if ((length_ < 0) ^ (a < 0)) return Length::Min();
     return Length::Max();
   }
   template <typename T>
