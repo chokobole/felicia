@@ -47,6 +47,7 @@ fel_cc_library(
         "unit/geometry/size.h",
         "unit/geometry/geometry_util.h",
         "unit/geometry/point.h",
+        "unit/geometry/pose.h",
         "unit/bytes.h",
         "unit/length.h",
         "unit/ui/color.h",
