@@ -1,6 +1,8 @@
 #ifndef FELICIA_CORE_LIB_UNIT_GEOMETRY_POINT_H_
 #define FELICIA_CORE_LIB_UNIT_GEOMETRY_POINT_H_
 
+#include "Eigen/Geometry"
+
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/protobuf/geometry.pb.h"
 
@@ -19,6 +21,12 @@ class Point {
     y_ = s * y_;
   }
 
+  T distance(const Point& other) {
+    T dx = (x_ - other.x_);
+    T dy = (y_ - other.y_);
+    return std::sqrt(dx * dx + dy * dy);
+  }
+
   void set_xy(T x, T y) {
     x_ = x;
     y_ = y;
@@ -28,6 +36,14 @@ class Point {
 
   constexpr T x() const { return x_; }
   constexpr T y() const { return y_; }
+
+  Point Transform(
+      const ::Eigen::Transform<T, 2, ::Eigen::Affine>& transform) const {
+    ::Eigen::Matrix<T, 2, 1> vec;
+    vec << x_, y_;
+    ::Eigen::Matrix<T, 2, 1> transformed = transform * vec;
+    return Point{transformed[0], transformed[1]};
+  }
 
  private:
   T x_;
@@ -60,6 +76,13 @@ class Point3 {
     z_ = s * z_;
   }
 
+  T distance(const Point3& other) {
+    T dx = (x_ - other.x_);
+    T dy = (y_ - other.y_);
+    T dz = (z_ - other.z_);
+    return std::sqrt(dx * dx + dy * dy + dz * dz);
+  }
+
   void set_xyz(T x, T y, T z) {
     x_ = x;
     y_ = y;
@@ -72,6 +95,14 @@ class Point3 {
   constexpr T x() const { return x_; }
   constexpr T y() const { return y_; }
   constexpr T z() const { return z_; }
+
+  Point3 Transform(
+      const ::Eigen::Transform<T, 3, ::Eigen::Affine>& transform) const {
+    ::Eigen::Matrix<T, 3, 1> vec;
+    vec << x_, y_, z_;
+    ::Eigen::Matrix<T, 3, 1> transformed = transform * vec;
+    return Point3{transformed[0], transformed[1], transformed[2]};
+  }
 
  private:
   T x_;

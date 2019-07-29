@@ -171,6 +171,7 @@ def fel_additional_deps():
         "//felicia:grpc++",
         "@com_google_protobuf//:protobuf",
         "@com_google_googletest//:gtest",
+        "@eigen",
     ]
 
 def fel_shared_library():
