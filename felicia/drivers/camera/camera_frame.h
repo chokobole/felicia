@@ -37,6 +37,7 @@ class EXPORT CameraFrame {
   ::base::TimeDelta timestamp() const;
 
   CameraFrameMessage ToCameraFrameMessage() const;
+  static CameraFrame FromCameraFrameMessage(const CameraFrameMessage& message);
 
  protected:
   std::unique_ptr<uint8_t[]> data_;

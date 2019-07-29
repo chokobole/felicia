@@ -12,6 +12,13 @@ namespace felicia {
 class EXPORT LidarFrame {
  public:
   LidarFrame();
+  LidarFrame(float angle_start, float angle_end, float angle_delta,
+             float time_delta, float scan_time, float range_min,
+             float range_max, std::vector<float>&& ranges,
+             std::vector<float> intensities,
+             ::base::TimeDelta timestamp) noexcept;
+  LidarFrame(LidarFrame&& other) noexcept;
+  LidarFrame&& operator=(LidarFrame&& other);
 
   void set_angle_start(float angle_start);
   float angle_start() const;
@@ -36,6 +43,7 @@ class EXPORT LidarFrame {
   const std::vector<float>& intensities() const;
 
   LidarFrameMessage ToLidarFrameMessage() const;
+  static LidarFrame FromLidarFrameMessage(const LidarFrameMessage& message);
 
  private:
   float angle_start_;
@@ -48,6 +56,8 @@ class EXPORT LidarFrame {
   std::vector<float> ranges_;
   std::vector<float> intensities_;
   ::base::TimeDelta timestamp_;
+
+  DISALLOW_COPY_AND_ASSIGN(LidarFrame);
 };
 
 typedef ::base::RepeatingCallback<void(const LidarFrame&)> LidarFrameCallback;

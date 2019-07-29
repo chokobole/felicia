@@ -9,18 +9,6 @@ ImuFrame::ImuFrame()
       angular_velocity_(::Eigen::Vector3f::Zero()),
       linear_acceleration_(::Eigen::Vector3f::Zero()) {}
 
-ImuFrameMessage ImuFrame::ToImuFrameMessage() const {
-  ImuFrameMessage message;
-  *message.mutable_orientation() =
-      EigenQuarternionfToQuarternionfMessage(orientation_);
-  *message.mutable_angular_velocity() =
-      EigenVec3fToVec3fMessage(angular_velocity_);
-  *message.mutable_linear_acceleration() =
-      EigenVec3fToVec3fMessage(linear_acceleration_);
-  message.set_timestamp(timestamp_.InMicroseconds());
-  return message;
-}
-
 void ImuFrame::set_orientation(float w, float x, float y, float z) {
   orientation_.w() = w;
   orientation_.x() = x;
@@ -71,5 +59,33 @@ void ImuFrame::set_timestamp(::base::TimeDelta timestamp) {
 }
 
 ::base::TimeDelta ImuFrame::timestamp() const { return timestamp_; }
+
+ImuFrameMessage ImuFrame::ToImuFrameMessage() const {
+  ImuFrameMessage message;
+  *message.mutable_orientation() =
+      EigenQuarternionfToQuarternionfMessage(orientation_);
+  *message.mutable_angular_velocity() =
+      EigenVec3fToVec3fMessage(angular_velocity_);
+  *message.mutable_linear_acceleration() =
+      EigenVec3fToVec3fMessage(linear_acceleration_);
+  message.set_timestamp(timestamp_.InMicroseconds());
+  return message;
+}
+
+// static
+ImuFrame ImuFrame::FromImuFrameMessage(const ImuFrameMessage& message) {
+  ImuFrame imu_frame;
+  const QuarternionfMessage& orientation = message.orientation();
+  imu_frame.set_orientation(orientation.w(), orientation.x(), orientation.y(),
+                            orientation.z());
+  const Vec3fMessage& angular_velocity = message.angular_velocity();
+  imu_frame.set_angulary_veilocity(angular_velocity.x(), angular_velocity.y(),
+                                   angular_velocity.z());
+  const Vec3fMessage& linear_acceleration = message.linear_acceleration();
+  imu_frame.set_angulary_veilocity(linear_acceleration.x(),
+                                   linear_acceleration.y(),
+                                   linear_acceleration.z());
+  return imu_frame;
+}
 
 }  // namespace felicia

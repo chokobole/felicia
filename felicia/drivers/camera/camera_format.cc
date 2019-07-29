@@ -122,6 +122,13 @@ CameraFormatMessage CameraFormat::ToCameraFormatMessage() const {
   return message;
 }
 
+// static
+CameraFormat CameraFormat::FromCameraFormatMessage(
+    const CameraFormatMessage& message) {
+  return CameraFormat{message.width(), message.height(), message.pixel_format(),
+                      message.frame_rate()};
+}
+
 bool CameraFormat::operator==(const CameraFormat& other) {
   return size_ == other.size_ && pixel_format_ == other.pixel_format_ &&
          frame_rate_ == other.frame_rate_;

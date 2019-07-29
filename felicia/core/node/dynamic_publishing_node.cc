@@ -12,9 +12,7 @@ void DynamicPublishingNode::OnDidCreate(const NodeInfo& node_info) {
   delegate_->OnDidCreate(this);
 }
 
-void DynamicPublishingNode::OnError(const Status& s) {
-  LOG(ERROR) << s;
-}
+void DynamicPublishingNode::OnError(const Status& s) { LOG(ERROR) << s; }
 
 void DynamicPublishingNode::RequestPublish(
     const std::string& message_type, const std::string& topic, int channel_defs,

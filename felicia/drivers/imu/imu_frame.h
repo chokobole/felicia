@@ -30,6 +30,7 @@ class EXPORT ImuFrame {
   ::base::TimeDelta timestamp() const;
 
   ImuFrameMessage ToImuFrameMessage() const;
+  static ImuFrame FromImuFrameMessage(const ImuFrameMessage& message);
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

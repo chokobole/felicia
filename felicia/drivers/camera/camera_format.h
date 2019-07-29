@@ -60,6 +60,8 @@ class EXPORT CameraFormat {
   libyuv::FourCC ToLibyuvPixelFormat() const;
 
   CameraFormatMessage ToCameraFormatMessage() const;
+  static CameraFormat FromCameraFormatMessage(
+      const CameraFormatMessage& message);
 
   bool operator==(const CameraFormat& other);
 

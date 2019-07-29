@@ -68,6 +68,19 @@ CameraFrameMessage CameraFrame::ToCameraFrameMessage() const {
   return message;
 }
 
+// static
+CameraFrame CameraFrame::FromCameraFrameMessage(
+    const CameraFrameMessage& message) {
+  const std::string& data = message.data();
+  std::unique_ptr<uint8_t[]> data_ptr(new uint8_t[data.length()]);
+  memcpy(data_ptr.get(), data.c_str(), data.length());
+
+  return CameraFrame{
+      std::move(data_ptr), data.length(),
+      CameraFormat::FromCameraFormatMessage(message.camera_format()),
+      ::base::TimeDelta::FromMicroseconds(message.timestamp())};
+}
+
 namespace {
 
 ::base::Optional<CameraFrame> ConvertToBGRA(const uint8_t* data,
