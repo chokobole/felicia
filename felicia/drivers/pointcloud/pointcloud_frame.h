@@ -14,6 +14,8 @@ class EXPORT PointcloudFrame {
  public:
   PointcloudFrame();
   PointcloudFrame(size_t points_size, size_t colors_size);
+  PointcloudFrame(std::vector<Point3f>&& points, std::vector<uint8_t>&& colors,
+                  ::base::TimeDelta timestamp) noexcept;
   PointcloudFrame(PointcloudFrame&& other) noexcept;
   PointcloudFrame& operator=(PointcloudFrame&& other);
 
@@ -26,10 +28,12 @@ class EXPORT PointcloudFrame {
   ::base::TimeDelta timestamp() const;
 
   PointcloudFrameMessage ToPointcloudFrameMessage() const;
+  static PointcloudFrame FromPointcloudFrameMessage(
+      const PointcloudFrameMessage& message);
 
  private:
-  std::unique_ptr<std::vector<Point3f>> points_;
-  std::unique_ptr<std::vector<uint8_t>> colors_;
+  std::vector<Point3f> points_;
+  std::vector<uint8_t> colors_;
   ::base::TimeDelta timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(PointcloudFrame);
