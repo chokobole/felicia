@@ -1,10 +1,11 @@
 #ifndef FELICIA_CORE_LIB_UNIT_LENGTH_H_
 #define FELICIA_CORE_LIB_UNIT_LENGTH_H_
 
-#include "felicia/core/lib/base/export.h"
-
 #include "third_party/chromium/base/numerics/safe_math.h"
 #include "third_party/chromium/base/strings/string_number_conversions.h"
+
+#include "felicia/core/lib/base/export.h"
+#include "felicia/core/lib/unit/unit_helper.h"
 
 namespace felicia {
 
@@ -17,7 +18,7 @@ class EXPORT Length {
   static constexpr double kFeet = 12.0 * kInch;
 
   Length();
-  Length(int64_t length);
+  explicit Length(int64_t length);
 
   static Length FromMillimeter(int64_t millimeter);
   static Length FromCentimeter(int64_t centimeter);
@@ -55,21 +56,11 @@ class EXPORT Length {
 
   template <typename T>
   Length operator*(T a) const {
-    ::base::CheckedNumeric<int64_t> rv(length_);
-    rv *= a;
-    if (rv.IsValid()) return Length(rv.ValueOrDie());
-    // Matched sign overflows. Mismatched sign underflows.
-    if ((length_ < 0) ^ (a < 0)) return Length::Min();
-    return Length::Max();
+    return Length(internal::SaturateMul(length_, a));
   }
   template <typename T>
   Length operator/(T a) const {
-    ::base::CheckedNumeric<int64_t> rv(length_);
-    rv /= a;
-    if (rv.IsValid()) return Length(rv.ValueOrDie());
-    // Matched sign overflows. Mismatched sign underflows.
-    if ((length_ < 0) ^ (a < 0)) return Length::Min();
-    return Length::Max();
+    return Length(internal::SaturateDiv(length_, a));
   }
   template <typename T>
   Length& operator*=(T a) {
@@ -85,9 +76,6 @@ class EXPORT Length {
   int64_t length() const;
 
  private:
-  static Length SaturateAdd(int64_t value, int64_t value2);
-  static Length SaturateSub(int64_t value, int64_t value2);
-  static Length FromProduct(int64_t value, int64_t positive_value);
   static Length FromDouble(double value);
 
   int64_t length_ = 0;  // in millimeters

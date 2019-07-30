@@ -51,6 +51,7 @@ fel_cc_library(
         "unit/bytes.h",
         "unit/length.h",
         "unit/ui/color.h",
+        "unit/unit_helper.h",
     ] + [":felicia_env"],
     deps = [
         "//felicia/core/protobuf:protos_all_cc",
@@ -72,6 +73,7 @@ fel_cc_test(
         "coordinate/coordinate_test.cc",
         "unit/bytes_test.cc",
         "unit/length_test.cc",
+        "unit/unit_helper_test.cc",
     ],
     deps = fel_shared_library() + [
         "@com_google_googletest//:gtest_main",

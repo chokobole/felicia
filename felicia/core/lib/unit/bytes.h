@@ -1,10 +1,11 @@
 #ifndef FELICIA_CORE_LIB_UNIT_BYTES_H_
 #define FELICIA_CORE_LIB_UNIT_BYTES_H_
 
-#include "felicia/core/lib/base/export.h"
-
 #include "third_party/chromium/base/numerics/safe_math.h"
 #include "third_party/chromium/base/strings/string_number_conversions.h"
+
+#include "felicia/core/lib/base/export.h"
+#include "felicia/core/lib/unit/unit_helper.h"
 
 namespace felicia {
 
@@ -15,7 +16,7 @@ class EXPORT Bytes {
   static constexpr int64_t kGigaBytes = 1000 * kMegaBytes;
 
   Bytes();
-  Bytes(int64_t bytes);
+  explicit Bytes(int64_t bytes);
 
   static Bytes FromBytes(int64_t bytes);
   static Bytes FromKilloBytes(int64_t killo_bytes);
@@ -42,21 +43,11 @@ class EXPORT Bytes {
 
   template <typename T>
   Bytes operator*(T a) const {
-    ::base::CheckedNumeric<int64_t> rv(bytes_);
-    rv *= a;
-    if (rv.IsValid()) return Bytes(rv.ValueOrDie());
-    // Matched sign overflows. Mismatched sign underflows.
-    if ((bytes_ < 0) ^ (a < 0)) return Bytes::Min();
-    return Bytes::Max();
+    return Bytes(internal::SaturateMul(bytes_, a));
   }
   template <typename T>
   Bytes operator/(T a) const {
-    ::base::CheckedNumeric<int64_t> rv(bytes_);
-    rv /= a;
-    if (rv.IsValid()) return Bytes(rv.ValueOrDie());
-    // Matched sign overflows. Mismatched sign underflows.
-    if ((bytes_ < 0) ^ (a < 0)) return Bytes::Min();
-    return Bytes::Max();
+    return Bytes(internal::SaturateDiv(bytes_, a));
   }
   template <typename T>
   Bytes& operator*=(T a) {
@@ -72,9 +63,6 @@ class EXPORT Bytes {
   int64_t bytes() const;
 
  private:
-  static Bytes SaturateAdd(int64_t value, int64_t value2);
-  static Bytes SaturateSub(int64_t value, int64_t value2);
-  static Bytes FromProduct(int64_t value, int64_t positive_value);
   static Bytes FromDouble(double value);
 
   int64_t bytes_ = 0;

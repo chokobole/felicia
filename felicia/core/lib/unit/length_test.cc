@@ -32,30 +32,4 @@ TEST(LengthTest, Construct) {
             Length::Max());
 }
 
-TEST(LengthTest, Operator) {
-  const int64_t amount = 100;
-  Length length = Length::FromMillimeter(amount);
-  EXPECT_EQ(length * 2, Length(amount * 2));
-  EXPECT_EQ(2 * length, Length(amount * 2));
-  EXPECT_EQ(length * 3.742, Length(amount * 3.742));
-  EXPECT_EQ(3.742 * length, Length(amount * 3.742));
-  EXPECT_EQ(length * std::numeric_limits<int64_t>::max(), Length::Max());
-  EXPECT_EQ(std::numeric_limits<int64_t>::max() * length, Length::Max());
-  EXPECT_EQ(length * std::numeric_limits<int64_t>::min(), Length::Min());
-  EXPECT_EQ(std::numeric_limits<int64_t>::min() * length, Length::Min());
-  EXPECT_EQ(length / 2, Length(amount / 2));
-  EXPECT_EQ(length / 2.5, Length(amount / 2.5));
-  EXPECT_EQ(length / -2.5, Length(amount / -2.5));
-  EXPECT_EQ(length / 0, Length::Max());
-  EXPECT_EQ(length / Length::FromMillimeter(50), 2);
-  const int64_t amount2 = 35;
-  Length length2 = Length::FromMillimeter(amount2);
-  EXPECT_EQ(length + length2, Length(amount + amount2));
-  EXPECT_EQ(length + Length::Max(), Length::Max());
-  EXPECT_EQ(length - length2, Length(amount - amount2));
-  EXPECT_EQ(length2 - length, Length(amount2 - amount));
-  EXPECT_EQ(length - Length::Max(),
-            Length(amount - std::numeric_limits<int64_t>::max()));
-}
-
 }  // namespace felicia

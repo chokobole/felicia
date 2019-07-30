@@ -13,10 +13,10 @@ bool Length::operator>(Length other) const { return length_ > other.length_; }
 bool Length::operator>=(Length other) const { return length_ >= other.length_; }
 
 Length Length::operator+(Length other) const {
-  return SaturateAdd(length_, other.length_);
+  return Length(internal::SaturateAdd(length_, other.length_));
 }
 Length Length::operator-(Length other) const {
-  return SaturateSub(length_, other.length_);
+  return Length(internal::SaturateSub(length_, other.length_));
 }
 Length& Length::operator+=(Length other) { return *this = (*this + other); }
 Length& Length::operator-=(Length other) { return *this = (*this - other); }
@@ -28,7 +28,7 @@ Length Length::FromMillimeter(int64_t millimeter) { return Length(millimeter); }
 
 // static
 Length Length::FromCentimeter(int64_t centimeter) {
-  return FromProduct(centimeter, kCentimeter);
+  return Length(internal::FromProduct(centimeter, kCentimeter));
 }
 
 // static
@@ -37,14 +37,16 @@ Length Length::FromCentimeterD(double centimeter) {
 }
 
 // static
-Length Length::FromMeter(int64_t meter) { return FromProduct(meter, kMeter); }
+Length Length::FromMeter(int64_t meter) {
+  return Length(internal::FromProduct(meter, kMeter));
+}
 
 // static
 Length Length::FromMeterD(double meter) { return FromDouble(meter * kMeter); }
 
 // static
 Length Length::FromKillometer(int64_t killometer) {
-  return FromProduct(killometer, kKillometer);
+  return Length(internal::FromProduct(killometer, kKillometer));
 }
 
 // static
@@ -83,32 +85,6 @@ double Length::InFeet() const { return length_ / kInch; }
 double Length::InInch() const { return length_ / kFeet; }
 
 int64_t Length::length() const { return length_; }
-
-// static
-Length Length::SaturateAdd(int64_t value, int64_t value2) {
-  ::base::CheckedNumeric<int64_t> rv(value);
-  rv += value2;
-  if (rv.IsValid()) return Length(rv.ValueOrDie());
-  return Length::Max();
-}
-
-// static
-Length Length::SaturateSub(int64_t value, int64_t value2) {
-  ::base::CheckedNumeric<int64_t> rv(value);
-  rv -= value2;
-  if (rv.IsValid()) return Length(rv.ValueOrDie());
-  return Length();
-}
-
-// static
-Length Length::FromProduct(int64_t value, int64_t multiplier) {
-  DCHECK(multiplier > 0);
-  return value > std::numeric_limits<int64_t>::max() / multiplier
-             ? Length::Max()
-             : value < std::numeric_limits<int64_t>::min() / multiplier
-                   ? Length::Min()
-                   : Length(value * multiplier);
-}
 
 // static
 Length Length::FromDouble(double value) {

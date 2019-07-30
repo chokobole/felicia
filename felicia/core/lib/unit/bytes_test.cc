@@ -29,30 +29,4 @@ TEST(BytesTest, Construct) {
             Bytes::Max());
 }
 
-TEST(BytesTest, Operator) {
-  const int64_t amount = 100;
-  Bytes bytes = Bytes::FromBytes(amount);
-  EXPECT_EQ(bytes * 2, Bytes(amount * 2));
-  EXPECT_EQ(2 * bytes, Bytes(amount * 2));
-  EXPECT_EQ(bytes * 3.742, Bytes(amount * 3.742));
-  EXPECT_EQ(3.742 * bytes, Bytes(amount * 3.742));
-  EXPECT_EQ(bytes * std::numeric_limits<int64_t>::max(), Bytes::Max());
-  EXPECT_EQ(std::numeric_limits<int64_t>::max() * bytes, Bytes::Max());
-  EXPECT_EQ(bytes * std::numeric_limits<int64_t>::min(), Bytes::Min());
-  EXPECT_EQ(std::numeric_limits<int64_t>::min() * bytes, Bytes::Min());
-  EXPECT_EQ(bytes / 2, Bytes(amount / 2));
-  EXPECT_EQ(bytes / 2.5, Bytes(amount / 2.5));
-  EXPECT_EQ(bytes / -2.5, Bytes(amount / -2.5));
-  EXPECT_EQ(bytes / 0, Bytes::Max());
-  EXPECT_EQ(bytes / Bytes::FromBytes(50), 2);
-  const int64_t amount2 = 35;
-  Bytes bytes2 = Bytes::FromBytes(amount2);
-  EXPECT_EQ(bytes + bytes2, Bytes(amount + amount2));
-  EXPECT_EQ(bytes + Bytes::Max(), Bytes::Max());
-  EXPECT_EQ(bytes - bytes2, Bytes(amount - amount2));
-  EXPECT_EQ(bytes2 - bytes, Bytes(amount2 - amount));
-  EXPECT_EQ(bytes - Bytes::Max(),
-            Bytes(amount - std::numeric_limits<int64_t>::max()));
-}
-
 }  // namespace felicia
