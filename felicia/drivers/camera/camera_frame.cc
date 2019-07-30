@@ -23,12 +23,7 @@ CameraFrame::CameraFrame(CameraFrame&& other) noexcept
       camera_format_(other.camera_format_),
       timestamp_(other.timestamp_) {}
 
-void CameraFrame::operator=(CameraFrame&& other) {
-  data_ = std::move(other.data_);
-  length_ = other.length_;
-  camera_format_ = other.camera_format_;
-  timestamp_ = other.timestamp_;
-}
+CameraFrame& CameraFrame::operator=(CameraFrame&& other) = default;
 
 CameraFrame::~CameraFrame() = default;
 

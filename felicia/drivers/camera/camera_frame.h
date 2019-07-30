@@ -21,7 +21,7 @@ class EXPORT CameraFrame {
   CameraFrame(std::unique_ptr<uint8_t[]> data, size_t length,
               CameraFormat camera_format, ::base::TimeDelta timestamp);
   CameraFrame(CameraFrame&& other) noexcept;
-  void operator=(CameraFrame&& other);
+  CameraFrame& operator=(CameraFrame&& other);
   ~CameraFrame();
 
   std::unique_ptr<uint8_t[]> data();

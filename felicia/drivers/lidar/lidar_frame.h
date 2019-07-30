@@ -19,7 +19,7 @@ class EXPORT LidarFrame {
              std::vector<float> intensities,
              ::base::TimeDelta timestamp) noexcept;
   LidarFrame(LidarFrame&& other) noexcept;
-  LidarFrame&& operator=(LidarFrame&& other);
+  LidarFrame& operator=(LidarFrame&& other);
 
   void set_angle_start(float angle_start);
   float angle_start() const;

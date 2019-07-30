@@ -20,11 +20,7 @@ PointcloudFrame::PointcloudFrame(PointcloudFrame&& other) noexcept
       colors_(std::move(other.colors_)),
       timestamp_(other.timestamp_) {}
 
-void PointcloudFrame::operator=(PointcloudFrame&& other) {
-  points_ = std::move(other.points_);
-  colors_ = std::move(other.colors_);
-  timestamp_ = other.timestamp_;
-}
+PointcloudFrame& PointcloudFrame::operator=(PointcloudFrame&& other) = default;
 
 void PointcloudFrame::AddPoint(float x, float y, float z) {
   points_->emplace_back(x, y, z);

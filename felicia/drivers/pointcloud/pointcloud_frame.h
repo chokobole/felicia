@@ -15,7 +15,7 @@ class EXPORT PointcloudFrame {
   PointcloudFrame();
   PointcloudFrame(size_t points_size, size_t colors_size);
   PointcloudFrame(PointcloudFrame&& other) noexcept;
-  void operator=(PointcloudFrame&& other);
+  PointcloudFrame& operator=(PointcloudFrame&& other);
 
   void AddPoint(float x, float y, float z);
   void AddPoint(const Point3f& point);

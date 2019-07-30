@@ -32,18 +32,7 @@ LidarFrame::LidarFrame(LidarFrame&& other) noexcept
       intensities_(std::move(other.intensities_)),
       timestamp_(other.timestamp_) {}
 
-LidarFrame&& LidarFrame::operator=(LidarFrame&& other) {
-  angle_start_ = angle_start_;
-  angle_end_ = angle_end_;
-  angle_delta_ = angle_delta_;
-  time_delta_ = time_delta_;
-  scan_time_ = scan_time_;
-  range_min_ = range_min_;
-  range_max_ = range_max_;
-  ranges_ = std::move(other.ranges_);
-  intensities_ = std::move(other.intensities_);
-  timestamp_ = timestamp_;
-}
+LidarFrame& LidarFrame::operator=(LidarFrame&& other) = default;
 
 void LidarFrame::set_angle_start(float angle_start) {
   angle_start_ = angle_start;
