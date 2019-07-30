@@ -7,7 +7,7 @@ namespace felicia {
 template <typename T>
 class DefaultValueTraits {
  public:
-  explicit DefaultValueTraits(T* dst, T default_value) : dst_(dst) {
+  DefaultValueTraits(T* dst, T default_value) : dst_(dst) {
     DCHECK(dst);
     set_value(default_value);
   }
