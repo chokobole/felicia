@@ -14,7 +14,7 @@ TEST(VectorTest, BasicOperation) {
 
   EXPECT_EQ(std::sqrt(13.0), vector.Norm());
   EXPECT_EQ(13.0, vector.SquaredNorm());
-  EXPECT_EQ(vector.Scale(1 / vector.SquaredNorm()), vector.Normalize());
+  EXPECT_EQ(vector.Scale(1 / vector.Norm()), vector.Normalize());
 }
 
 TEST(Vector3Test, BasicOperation) {
@@ -28,7 +28,7 @@ TEST(Vector3Test, BasicOperation) {
 
   EXPECT_EQ(std::sqrt(38.0), vector.Norm());
   EXPECT_EQ(38.0, vector.SquaredNorm());
-  EXPECT_EQ(vector.Scale(1 / vector.SquaredNorm()), vector.Normalize());
+  EXPECT_EQ(vector.Scale(1 / vector.Norm()), vector.Normalize());
 }
 
 }  // namespace felicia

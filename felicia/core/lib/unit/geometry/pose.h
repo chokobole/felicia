@@ -1,7 +1,9 @@
 #ifndef FELICIA_CORE_LIB_UNIT_GEOMETRY_POSE_H_
 #define FELICIA_CORE_LIB_UNIT_GEOMETRY_POSE_H_
 
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/unit/geometry/point.h"
+#include "felicia/core/lib/unit/geometry/quaternion.h"
 #include "felicia/core/lib/unit/geometry/vector.h"
 
 namespace felicia {
@@ -16,8 +18,8 @@ class Pose {
   constexpr Pose(const Pose& other) = default;
   Pose& operator=(const Pose& other) = default;
 
-  Point<T>& point() { return point_; }
-  const Point<T>& point() const { return point_; }
+  constexpr Point<T>& point() { return point_; }
+  constexpr const Point<T>& point() const { return point_; }
 
   void set_x(T x) { point_.set_y(x); }
   void set_y(T y) { point_.set_y(y); }
@@ -32,7 +34,7 @@ class Pose {
   }
 
   Pose Translate(const Vector<T>& vector) const {
-    return Pose{point_.Translate(vector), theta_};
+    return {point_.Translate(vector), theta_};
   }
   Pose& TranslateInPlace(const Vector<T>& vector) {
     point_.TranslateInPlace(vector);
@@ -45,12 +47,9 @@ class Pose {
     return *this;
   }
 
-  Pose Rotate(T theta) {
-    theta = internal::SaturateAdd(theta_, theta);
-    return Pose{point_, theta};
-  }
+  Pose Rotate(T theta) { return Pose{point_, theta_ + theta}; }
   Pose& RotateInPlace(T theta) {
-    theta_ = internal::SaturateAdd(theta_, theta);
+    theta_ += theta;
     return *this;
   }
 
@@ -72,64 +71,62 @@ inline bool operator!=(const Pose<T>& lhs, const Pose<T>& rhs) {
 typedef Pose<float> Posef;
 typedef Pose<double> Posed;
 
+EXPORT PosefMessage PosefToPosefMessage(const Posef& pose);
+EXPORT PosedMessage PosedToPosedMessage(const Posed& pose);
+EXPORT Posef PosefMessageToPosef(const PosefMessage& message);
+EXPORT Posed PosedMessageToPosed(const PosedMessage& message);
+
 template <typename T>
 class Pose3 {
  public:
   constexpr Pose3() = default;
-  constexpr Pose3(T x, T y, T z, T theta) : point_(x, y, z), theta_(theta) {}
-  constexpr Pose3(const Point3<T>& point, T theta)
-      : point_(point), theta_(theta) {}
+  constexpr Pose3(T x, T y, T z, const Quaternion<T>& orientation)
+      : point_(x, y, z), orientation_(orientation) {}
+  constexpr Pose3(const Point3<T>& point, const Quaternion<T>& orientation)
+      : point_(point), orientation_(orientation) {}
   constexpr Pose3(const Pose3& other) = default;
   Pose3& operator=(const Pose3& other) = default;
 
-  Point3<T>& point() { return point_; }
-  const Point3<T>& point() const { return point_; }
+  constexpr Point3<T>& point() { return point_; }
+  constexpr const Point3<T>& point() const { return point_; }
+  constexpr Quaternion<T>& orientation() { return orientation_; }
+  constexpr const Quaternion<T>& orientation() const { return orientation_; }
 
   void set_x(T x) { point_.set_y(x); }
   void set_y(T y) { point_.set_y(y); }
   void set_z(T z) { point_.set_z(z); }
-  void set_theta(T theta) { theta_ = theta; }
+  void set_orientation(T orientation) { orientation_ = orientation; }
 
   constexpr T x() const { return point_.x(); }
   constexpr T y() const { return point_.y(); }
   constexpr T z() const { return point_.z(); }
-  constexpr T theta() const { return theta_; }
 
   double Distance(const Pose3& other) const {
     return point_.Distance(other.point_);
   }
 
   Pose3 Translate(const Vector3<T>& vector) const {
-    return Pose3{point_.Translate(vector), theta_};
+    return {point_.Translate(vector), orientation_};
   }
   Pose3& TranslateInPlace(const Vector3<T>& vector) {
     point_.TranslateInPlace(vector);
     return *this;
   }
 
-  Pose3 Scale(T s) const { return Pose3{point_.Scale(s), theta_}; }
+  Pose3 Scale(T s) const { return Pose3{point_.Scale(s), orientation_}; }
   Pose3& ScaleInPlace(T s) {
     point_.ScaleInPlace(s);
     return *this;
   }
 
-  Pose3 Rotate(T theta) {
-    theta = internal::SaturateAdd(theta_, theta);
-    return Pose3{point_, theta};
-  }
-  Pose3& RotateInPlace(T theta) {
-    theta_ = internal::SaturateAdd(theta_, theta);
-    return *this;
-  }
-
  private:
   Point3<T> point_;
-  T theta_;
+  Quaternion<T> orientation_;
 };
 
 template <typename T>
 inline bool operator==(const Pose3<T>& lhs, const Pose3<T>& rhs) {
-  return lhs.point() == rhs.point() && lhs.theta() == rhs.theta();
+  return lhs.point() == rhs.point() && lhs.orientation() == rhs.orientation();
 }
 
 template <typename T>
@@ -139,6 +136,11 @@ inline bool operator!=(const Pose3<T>& lhs, const Pose3<T>& rhs) {
 
 typedef Pose3<float> Pose3f;
 typedef Pose3<double> Pose3d;
+
+EXPORT Pose3fMessage Pose3fToPose3fMessage(const Pose3f& pose);
+EXPORT Pose3dMessage Pose3dToPose3dMessage(const Pose3d& pose);
+EXPORT Pose3f Pose3fMessageToPose3f(const Pose3fMessage& message);
+EXPORT Pose3d Pose3dMessageToPose3d(const Pose3dMessage& message);
 
 }  // namespace felicia
 

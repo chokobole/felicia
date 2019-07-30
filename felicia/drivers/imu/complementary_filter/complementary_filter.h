@@ -44,18 +44,18 @@ class ComplementaryFilter : public ImuFilterInterface {
   void set_use_adaptive_gain(bool use_adaptive_gain);
   bool use_adaptive_gain() const;
 
-  ::Eigen::Quaternionf orientation() const override;
-  void UpdateAngularVelocity(float x, float y, float z,
+  Quaternionf orientation() const override;
+  void UpdateAngularVelocity(const Vector3f& angular_velocity,
                              ::base::TimeDelta timestamp) override;
-  void UpdateLinearAcceleration(float x, float y, float z) override;
+  void UpdateLinearAcceleration(const Vector3f& linear_acceleration) override;
 
  private:
   friend class ImuFilterFactory;
 
   ComplementaryFilter();
 
-  float GetAdaptiveGain(float alpha, float ax, float ay, float az);
-  void Interpolate(::Eigen::Quaternionf& q, float alpha);
+  float GetAdaptiveGain(float alpha, const Vector3f& a_vec);
+  Quaternionf Interpolate(const Quaternionf& q, float alpha);
 
   float gain_acc_ = 0.01;
   bool use_adaptive_gain_ = false;

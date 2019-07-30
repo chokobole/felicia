@@ -44,6 +44,7 @@ inline bool operator!=(const Size<T>& lhs, const Size<T>& rhs) {
 }
 
 typedef Size<int> Sizei;
+typedef Size<float> Sizef;
 typedef Size<double> Sized;
 
 }  // namespace felicia

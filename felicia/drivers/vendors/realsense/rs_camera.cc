@@ -490,17 +490,16 @@ void RsCamera::OnImuFrame(::rs2::frame frame) {
   ImuFrame imu_frame;
 
   rs2_vector vector = motion.get_motion_data();
-  Point3f point =
-      coordinate_.Convert(Point3f(vector.x, vector.y, vector.z),
+  Vector3f converted =
+      coordinate_.Convert(Vector3f(vector.x, vector.y, vector.z),
                           Coordinate::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP);
-  float x = point.x(), y = point.y(), z = point.z();
   ::base::TimeDelta timestamp = timestamper_.timestamp();
   if (stream == RS_GYRO.stream_type) {
-    imu_frame.set_angulary_veilocity(x, y, z);
-    imu_filter_->UpdateAngularVelocity(x, y, z, timestamp);
+    imu_frame.set_angulary_veilocity(converted);
+    imu_filter_->UpdateAngularVelocity(converted, timestamp);
   } else {
-    imu_frame.set_linear_acceleration(x, y, z);
-    imu_filter_->UpdateLinearAcceleration(x, y, z);
+    imu_frame.set_linear_acceleration(converted);
+    imu_filter_->UpdateLinearAcceleration(converted);
   }
   imu_frame.set_timestamp(timestamp);
   imu_frame.set_orientation(imu_filter_->orientation());

@@ -1,12 +1,14 @@
 #ifndef FELICIA_CORE_LIB_UNIT_GEOMETRY_POINT_H_
 #define FELICIA_CORE_LIB_UNIT_GEOMETRY_POINT_H_
 
-#include "Eigen/Geometry"
-
 #include "third_party/chromium/base/numerics/clamped_math.h"
+#include "third_party/chromium/base/strings/string_number_conversions.h"
+#include "third_party/chromium/base/strings/stringprintf.h"
 
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/unit/geometry/transform.h"
 #include "felicia/core/lib/unit/geometry/vector.h"
+#include "felicia/core/protobuf/geometry.pb.h"
 
 namespace felicia {
 
@@ -36,7 +38,7 @@ class Point {
   Point Translate(const Vector<T>& vec) const {
     T x = ::base::ClampAdd(x_, vec.x());
     T y = ::base::ClampAdd(y_, vec.y());
-    return Point{x, y};
+    return {x, y};
   }
   Point& TranslateInPlace(const Vector<T>& vec) {
     x_ = ::base::ClampAdd(x_, vec.x());
@@ -44,7 +46,7 @@ class Point {
     return *this;
   }
 
-  Point Scale(T s) const { return Point{x_ * s, y_ * s}; }
+  Point Scale(T s) const { return {x_ * s, y_ * s}; }
   Point& ScaleInPlace(T s) {
     x_ *= s;
     y_ *= s;
@@ -55,7 +57,7 @@ class Point {
     ::Eigen::Matrix<T, 2, 1> vec;
     vec << x_, y_;
     ::Eigen::Matrix<T, 2, 1> transformed = transform.transform() * vec;
-    return Point{transformed[0], transformed[1]};
+    return {transformed[0], transformed[1]};
   }
 
   Point operator+(const Vector<T>& vec) const { return Translate(vec); }
@@ -63,10 +65,15 @@ class Point {
   Vector<T> operator-(const Point& other) const {
     T x = ::base::ClampSub(x_, other.x_);
     T y = ::base::ClampSub(y_, other.y_);
-    return Vector<T>{x, y};
+    return {x, y};
   }
   Point operator*(T s) const { return Scale(s); }
   Point& operator*=(T s) { return ScaleInPlace(s); }
+
+  std::string ToString() const {
+    return ::base::StringPrintf("(%s, %s)", ::base::NumberToString(x_).c_str(),
+                                ::base::NumberToString(y_).c_str());
+  }
 
  private:
   T x_;
@@ -83,6 +90,11 @@ inline bool operator!=(const Point<T>& lhs, const Point<T>& rhs) {
   return !(lhs == rhs);
 }
 
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const Point<T>& point) {
+  return os << point.ToString();
+}
+
 template <typename T, typename U>
 inline Point<T> operator*(U a, const Point<T>& point) {
   return point * a;
@@ -90,6 +102,11 @@ inline Point<T> operator*(U a, const Point<T>& point) {
 
 typedef Point<float> Pointf;
 typedef Point<double> Pointd;
+
+EXPORT PointfMessage PointfToPointfMessage(const Pointf& point);
+EXPORT PointdMessage PointdToPointdMessage(const Pointd& point);
+EXPORT Pointf PointfMessageToPointf(const PointfMessage& message);
+EXPORT Pointd PointdMessageToPointd(const PointdMessage& message);
 
 template <typename T>
 class Point3 {
@@ -123,7 +140,7 @@ class Point3 {
     T x = ::base::ClampAdd(x_, vector.x());
     T y = ::base::ClampAdd(y_, vector.y());
     T z = ::base::ClampAdd(z_, vector.z());
-    return Point3{x, y, z};
+    return {x, y, z};
   }
   Point3& TranslateInPlace(const Vector3<T>& vector) {
     x_ = ::base::ClampAdd(x_, vector.x());
@@ -132,7 +149,7 @@ class Point3 {
     return *this;
   }
 
-  Point3 Scale(T s) const { return Point3{x_ * s, y_ * s, z_ * s}; }
+  Point3 Scale(T s) const { return {x_ * s, y_ * s, z_ * s}; }
   Point3& ScaleInPlace(T s) {
     x_ *= s;
     y_ *= s;
@@ -148,7 +165,7 @@ class Point3 {
     T x = ::base::ClampSub(x_, other.x_);
     T y = ::base::ClampSub(y_, other.y_);
     T z = ::base::ClampSub(z_, other.z_);
-    return Vector3<T>{x, y, z};
+    return {x, y, z};
   }
   Point3 operator*(T s) const { return Scale(s); }
   Point3& operator*=(T s) { return ScaleInPlace(s); }
@@ -157,7 +174,13 @@ class Point3 {
     ::Eigen::Matrix<T, 3, 1> vec;
     vec << x_, y_, z_;
     ::Eigen::Matrix<T, 3, 1> transformed = transform.transform() * vec;
-    return Point3{transformed[0], transformed[1], transformed[2]};
+    return {transformed[0], transformed[1], transformed[2]};
+  }
+
+  std::string ToString() const {
+    return ::base::StringPrintf(
+        "(%s, %s, %s)", ::base::NumberToString(x_).c_str(),
+        ::base::NumberToString(y_).c_str(), ::base::NumberToString(z_).c_str());
   }
 
  private:
@@ -176,6 +199,11 @@ inline bool operator!=(const Point3<T>& lhs, const Point3<T>& rhs) {
   return !(lhs == rhs);
 }
 
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const Point3<T>& point) {
+  return os << point.ToString();
+}
+
 template <typename T, typename U>
 inline Point3<T> operator*(U a, const Point3<T>& point) {
   return point * a;
@@ -183,6 +211,11 @@ inline Point3<T> operator*(U a, const Point3<T>& point) {
 
 typedef Point3<float> Point3f;
 typedef Point3<double> Point3d;
+
+EXPORT Point3fMessage Point3fToPoint3fMessage(const Point3f& point);
+EXPORT Point3dMessage Point3dToPoint3dMessage(const Point3d& point);
+EXPORT Point3f Point3fMessageToPoint3f(const Point3fMessage& message);
+EXPORT Point3d Point3dMessageToPoint3d(const Point3dMessage& message);
 
 }  // namespace felicia
 

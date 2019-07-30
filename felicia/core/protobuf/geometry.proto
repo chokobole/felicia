@@ -2,27 +2,37 @@ syntax = "proto3";
 
 package felicia;
 
-message QuarternionfMessage {
+message QuaternionfMessage {
   float w = 1;
   float x = 2;
   float y = 3;
   float z = 4;
 }
 
-message QuarterniondMessage {
+message QuaterniondMessage {
   double w = 1;
   double x = 2;
   double y = 3;
   double z = 4;
 }
 
-message Vec3fMessage {
+message VectorfMessage {
+  float x = 1;
+  float y = 2;
+}
+
+message VectordMessage {
+  double x = 1;
+  double y = 2;
+}
+
+message Vector3fMessage {
   float x = 1;
   float y = 2;
   float z = 3;
 }
 
-message Vec3dMessage {
+message Vector3dMessage {
   double x = 1;
   double y = 2;
   double z = 3;
@@ -51,29 +61,23 @@ message Point3dMessage {
 }
 
 message PosefMessage {
-  float x = 1;
-  float y = 2;
-  float theta = 3;
+  PointfMessage point = 1;
+  float theta = 2;
 }
 
 message PosedMessage {
-  double x = 1;
-  double y = 2;
-  double theta = 3;
+  PointdMessage point = 1;
+  double theta = 2;
 }
 
 message Pose3fMessage {
-  float x = 1;
-  float y = 2;
-  float z = 3;
-  float theta = 4;
+  Point3fMessage point = 1;
+  QuaternionfMessage orientation = 2;
 }
 
 message Pose3dMessage {
-  double x = 1;
-  double y = 2;
-  double z = 3;
-  double theta = 4;
+  Point3dMessage point = 1;
+  QuaterniondMessage orientation = 2;
 }
 
 message RectfMessage {

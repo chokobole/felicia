@@ -4,6 +4,7 @@
 #include "Eigen/Core"
 #include "Eigen/Geometry"
 
+#include "felicia/core/lib/unit/geometry/quaternion.h"
 #include "felicia/core/lib/unit/geometry/vector.h"
 
 namespace felicia {
@@ -85,9 +86,14 @@ class Transform3 {
   }
 
   // |angle| should be in radian.
-  Transform3& AddRotation(T angle, const Vector3<T>& vector) {
+  Transform3& AddRotation(T angle, const Vector3<T>& axis) {
     transform_ =
-        ::Eigen::AngleAxis<T>(angle, vector.ToEigenVector()) * transform_;
+        ::Eigen::AngleAxis<T>(angle, axis.ToEigenVector()) * transform_;
+    return *this;
+  }
+
+  Transform3& AddRotation(const Quaternion<T>& quaternion) {
+    transform_ = quaternion.ToEigenQuaternion() * transform_;
     return *this;
   }
 

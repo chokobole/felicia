@@ -50,12 +50,12 @@ bool ComplementaryFilter::use_adaptive_gain() const {
   return use_adaptive_gain_;
 }
 
-::Eigen::Quaternionf ComplementaryFilter::orientation() const {
+Quaternionf ComplementaryFilter::orientation() const {
   return orientation_.inverse();
 }
 
-void ComplementaryFilter::UpdateAngularVelocity(float x, float y, float z,
-                                                ::base::TimeDelta timestamp) {
+void ComplementaryFilter::UpdateAngularVelocity(
+    const Vector3f& angular_velocity, ::base::TimeDelta timestamp) {
   if (!has_measurement_ || last_timestamp_.is_zero()) {
     last_timestamp_ = timestamp;
     return;
@@ -63,71 +63,57 @@ void ComplementaryFilter::UpdateAngularVelocity(float x, float y, float z,
 
   double dt = (timestamp - last_timestamp_).InSecondsF();
 
-  ::Eigen::Quaternionf q;
-  q.w() = 0;
-  q.vec() = ::Eigen::Vector3f(x, y, z) * 0.5 * dt;
-
+  Quaternionf q;
+  q.set_vector(angular_velocity * 0.5 * dt);
+  q.set_w(0);
   q = orientation_ * q;
 
-  orientation_.vec() += q.vec();
-  orientation_.w() += q.w();
-  orientation_.normalize();
+  orientation_ += q;
+  orientation_.NormalizeInPlace();
 
   last_timestamp_ = timestamp;
 }
 
-void ComplementaryFilter::UpdateLinearAcceleration(float x, float y, float z) {
-  ::Eigen::Vector3f v;
-  v << x, y, z;
-  v.normalize();
+void ComplementaryFilter::UpdateLinearAcceleration(
+    const Vector3f& linear_acceleration) {
+  Vector3f a_vec = linear_acceleration.Normalize();
 
   if (!has_measurement_) {
-    if (z >= 0) {
-      double X = sqrt((v.z() + 1) * 0.5);
-      orientation_.w() = X;
-      orientation_.x() = -v.y() / (2 * X);
-      orientation_.y() = v.x() / (2 * X);
-      orientation_.z() = 0;
+    if (a_vec.z() >= 0) {
+      double X = sqrt((a_vec.z() + 1) * 0.5);
+      orientation_.set_xyzw(-a_vec.y() / (2 * X), a_vec.x() / (2 * X), 0, X);
     } else {
-      double X = sqrt((1 - v.z()) * 0.5);
-      orientation_.w() = -v.y() / (2 * X);
-      orientation_.x() = X;
-      orientation_.y() = 0;
-      orientation_.z() = v.x() / (2 * X);
+      double X = sqrt((1 - a_vec.z()) * 0.5);
+      orientation_.set_xyzw(X, 0, a_vec.x() / (2 * X), -a_vec.y() / (2 * X));
     }
 
     has_measurement_ = true;
   } else {
     // Acceleration reading rotated into the world frame by the inverse
     // predicted quaternion (predicted gravity):
-    ::Eigen::Quaternionf q;
-    q.vec() = v;
-    ::Eigen::Quaternionf rotated = orientation_.inverse() * q * orientation_;
+    Quaternionf q(a_vec, 0);
+    Quaternionf rotated = orientation_.inverse() * q * orientation_;
 
-    ::Eigen::Quaternionf acc_delta;
+    Quaternionf acc_delta;
     double v = sqrt((rotated.z() + 1) * 0.5);
-    acc_delta.w() = v;
-    acc_delta.x() = -rotated.y() / (2 * v);
-    acc_delta.y() = rotated.x() / (2 * v);
-    acc_delta.z() = 0;
+    acc_delta.set_xyzw(-rotated.y() / (2 * v), rotated.x() / (2 * v), 0, v);
 
     float gain;
     if (use_adaptive_gain_) {
-      gain = GetAdaptiveGain(gain_acc_, x, y, z);
+      gain = GetAdaptiveGain(gain_acc_, linear_acceleration);
     } else {
       gain = gain_acc_;
     }
 
-    Interpolate(acc_delta, gain);
+    acc_delta = Interpolate(acc_delta, gain);
 
     orientation_ = orientation_ * acc_delta;
-    orientation_.normalize();
+    orientation_.NormalizeInPlace();
   }
 }
 
-float ComplementaryFilter::GetAdaptiveGain(float alpha, float ax, float ay,
-                                           float az) {
-  double a_mag = sqrt(ax * ax + ay * ay + az * az);
+float ComplementaryFilter::GetAdaptiveGain(float alpha, const Vector3f& a_vec) {
+  double a_mag = a_vec.Norm();
   double error = fabs(a_mag - kGravity) / kGravity;
   constexpr double error1 = 0.1;
   constexpr double error2 = 0.2;
@@ -143,19 +129,14 @@ float ComplementaryFilter::GetAdaptiveGain(float alpha, float ax, float ay,
   return factor * alpha;
 }
 
-void ComplementaryFilter::Interpolate(::Eigen::Quaternionf& q, float alpha) {
+Quaternionf ComplementaryFilter::Interpolate(const Quaternionf& q,
+                                             float alpha) {
   // ∆qacc = (1 − α)qI + α∆qacc
+  Quaternionf identity;
   if (q.w() > 0.9) {
-    // Lerp (Linear interpolation):
-    q.w() = (1 - alpha) + alpha * q.w();
-    q.vec() *= alpha;
+    return identity.Lerp(q, alpha);
   } else {
-    // Slerp (Spherical linear interpolation):
-    double angle = acos(q.w());
-    double A = sin(angle * (1.0 - alpha)) / sin(angle);
-    double B = sin(angle * alpha) / sin(angle);
-    q.w() = A + B * q.w();
-    q.vec() *= B;
+    return identity.Slerp(q, alpha);
   }
 }
 

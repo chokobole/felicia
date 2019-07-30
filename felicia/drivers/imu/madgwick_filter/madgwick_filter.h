@@ -7,10 +7,10 @@ namespace felicia {
 
 class MadgwickFilter : public ImuFilterInterface {
  public:
-  ::Eigen::Quaternionf orientation() const override;
-  void UpdateAngularVelocity(float x, float y, float z,
+  Quaternionf orientation() const override;
+  void UpdateAngularVelocity(const Vector3f& angular_velocity,
                              ::base::TimeDelta timestamp) override;
-  void UpdateLinearAcceleration(float x, float y, float z) override;
+  void UpdateLinearAcceleration(const Vector3f& linear_acceleration) override;
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -22,7 +22,7 @@ class MadgwickFilter : public ImuFilterInterface {
   bool has_measurement_ = false;
   ::base::TimeDelta last_timestamp_;
   float beta_ = 0.1;
-  ::Eigen::Quaternionf gravity_;
+  Quaternionf gravity_;
   ::Eigen::Vector4f gradient_;
 };
 

@@ -38,6 +38,9 @@ class EXPORT Coordinate {
   template <typename T>
   Point3<T> Convert(const Point3<T>& point,
                     CoordinateSystem to_coordinate_system) const;
+  template <typename T>
+  Vector3<T> Convert(const Vector3<T>& vectord,
+                     CoordinateSystem to_coordinate_system) const;
 
  private:
   CoordinateSystem coordinate_system_;
@@ -75,6 +78,21 @@ Point3<T> Coordinate::Convert(const Point3<T>& point,
   return Point3<T>(values[c.x] * c.sign_x, values[c.y] * c.sign_y,
                    values[c.z] * c.sign_z);
 };
+
+template <typename T>
+Vector3<T> Coordinate::Convert(const Vector3<T>& vector,
+                               CoordinateSystem to_coordinate_system) const {
+  T values[3] = {vector.x(), vector.y(), vector.z()};
+
+  size_t from_coord = static_cast<size_t>(coordinate_system_);
+  size_t to_coord = static_cast<size_t>(to_coordinate_system);
+  size_t size = static_cast<size_t>(COORDINATE_SYSTEM_LAST);
+
+  auto& c = kConversionTable[size * from_coord + to_coord];
+
+  return Vector3<T>(values[c.x] * c.sign_x, values[c.y] * c.sign_y,
+                    values[c.z] * c.sign_z);
+}
 
 }  // namespace felicia
 

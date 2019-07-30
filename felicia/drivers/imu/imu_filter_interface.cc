@@ -2,21 +2,17 @@
 
 namespace felicia {
 
-ImuFilterInterface::ImuFilterInterface()
-    : orientation_(::Eigen::Quaternionf::Identity()) {}
+ImuFilterInterface::ImuFilterInterface() = default;
 
 ImuFilterInterface::~ImuFilterInterface() = default;
 
-void ImuFilterInterface::UpdateAngularVelocity(
-    const ::Eigen::Vector3f& angular_velocity, ::base::TimeDelta timestamp) {
-  UpdateAngularVelocity(angular_velocity.x(), angular_velocity.y(),
-                        angular_velocity.z(), timestamp);
+void ImuFilterInterface::UpdateAngularVelocity(float x, float y, float z,
+                                               ::base::TimeDelta timestamp) {
+  UpdateAngularVelocity(Vector3f{x, y, z}, timestamp);
 }
 
-void ImuFilterInterface::UpdateLinearAcceleration(
-    const ::Eigen::Vector3f& linear_acceleration) {
-  UpdateLinearAcceleration(linear_acceleration.x(), linear_acceleration.y(),
-                           linear_acceleration.z());
+void ImuFilterInterface::UpdateLinearAcceleration(float x, float y, float z) {
+  UpdateLinearAcceleration(Vector3f{x, y, z});
 }
 
 }  // namespace felicia

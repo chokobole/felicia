@@ -16,10 +16,14 @@ __attribute__((no_sanitize_address)) float InvSqrt(float x) {
   return y;
 }
 
-void Normalize(::Eigen::Quaternionf& q) {
-  float r = InvSqrt(q.squaredNorm());
-  q.vec() *= r;
-  q.w() *= r;
+void Normalize(Quaternionf& q) {
+  float r = InvSqrt(q.SquaredNorm());
+  q.ScaleInPlace(r);
+}
+
+void Normalize(Vector3f& v) {
+  float r = InvSqrt(v.SquaredNorm());
+  v.ScaleInPlace(r);
 }
 
 template <typename Type, int Row, int Col>
@@ -30,16 +34,14 @@ void Normalize(::Eigen::Matrix<Type, Row, Col>& v) {
 
 }  // namespace
 
-MadgwickFilter::MadgwickFilter() : gradient_(::Eigen::Vector4f::Zero()) {
-  gravity_.w() = 0;
-  gravity_.vec() = ::Eigen::Vector3f(0, 0, 1);
-}
+MadgwickFilter::MadgwickFilter()
+    : gravity_(0, 0, 1, 0), gradient_(::Eigen::Vector4f::Zero()) {}
 
-::Eigen::Quaternionf MadgwickFilter::orientation() const {
+Quaternionf MadgwickFilter::orientation() const {
   return orientation_.inverse();
 }
 
-void MadgwickFilter::UpdateAngularVelocity(float x, float y, float z,
+void MadgwickFilter::UpdateAngularVelocity(const Vector3f& angular_velocity,
                                            ::base::TimeDelta timestamp) {
   if (!has_measurement_ || last_timestamp_.is_zero()) {
     last_timestamp_ = timestamp;
@@ -48,52 +50,42 @@ void MadgwickFilter::UpdateAngularVelocity(float x, float y, float z,
 
   double dt = (timestamp - last_timestamp_).InSecondsF();
 
-  ::Eigen::Quaternionf q;
-  q.w() = 0;
-  q.vec() = ::Eigen::Vector3f(x, y, z) * 0.5;
-
+  Quaternionf q;
+  q.set_vector(angular_velocity.Scale(0.5));
+  q.set_w(0);
   q = orientation_ * q;
 
   if (!gradient_.isZero()) {
-    q.w() -= gradient_[0];
-    q.x() -= gradient_[1];
-    q.y() -= gradient_[2];
-    q.z() -= gradient_[3];
+    Quaternionf g(gradient_[1], gradient_[2], gradient_[3], gradient_[0]);
+    q -= g;
     gradient_.setZero();
   }
 
-  orientation_.vec() += q.vec() * dt;
-  orientation_.w() += q.w() * dt;
+  orientation_ += q.ScaleInPlace(static_cast<float>(dt));
   Normalize(orientation_);
 
   last_timestamp_ = timestamp;
 }
 
-void MadgwickFilter::UpdateLinearAcceleration(float x, float y, float z) {
-  ::Eigen::Vector3f v;
-  v << x, y, z;
+void MadgwickFilter::UpdateLinearAcceleration(
+    const Vector3f& linear_acceleration) {
+  Vector3f v = linear_acceleration;
   Normalize(v);
 
   if (!has_measurement_) {
-    if (z >= 0) {
+    if (v.z() >= 0) {
       double X = sqrt((v.z() + 1) * 0.5);
-      orientation_.w() = X;
-      orientation_.x() = -v.y() / (2 * X);
-      orientation_.y() = v.x() / (2 * X);
-      orientation_.z() = 0;
+      orientation_.set_xyzw(-v.y() / (2 * X), v.x() / (2 * X), 0, X);
     } else {
       double X = sqrt((1 - v.z()) * 0.5);
-      orientation_.w() = -v.y() / (2 * X);
-      orientation_.x() = X;
-      orientation_.y() = 0;
-      orientation_.z() = v.x() / (2 * X);
+      orientation_.set_xyzw(X, 0, v.x() / (2 * X), -v.y() / (2 * X));
     }
 
     has_measurement_ = true;
   } else {
     // Equation(12)
-    ::Eigen::Vector3f f =
-        (orientation_.inverse() * gravity_ * orientation_).vec() - v;
+    Vector3f f =
+        (orientation_.inverse() * gravity_ * orientation_).vector() - v;
 
     float q0 = orientation_.w();
     float q1 = orientation_.x();
@@ -105,7 +97,7 @@ void MadgwickFilter::UpdateLinearAcceleration(float x, float y, float z) {
     jacobian_T << -2 * q2, 2 * q1, 0, 2 * q3, 2 * q0, -4 * q1, -2 * q0, 2 * q3,
         -4 * q2, 2 * q1, 2 * q2, 0;
 
-    gradient_ = jacobian_T * f;
+    gradient_ = jacobian_T * f.ToEigenVector();
     Normalize(gradient_);
     gradient_ *= beta_;
   }

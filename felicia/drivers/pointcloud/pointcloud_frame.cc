@@ -1,7 +1,5 @@
 #include "felicia/drivers/pointcloud/pointcloud_frame.h"
 
-#include "felicia/core/lib/unit/geometry/geometry_util.h"
-
 namespace felicia {
 
 PointcloudFrame::PointcloudFrame() = default;
