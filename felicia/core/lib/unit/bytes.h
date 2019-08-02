@@ -1,7 +1,6 @@
 #ifndef FELICIA_CORE_LIB_UNIT_BYTES_H_
 #define FELICIA_CORE_LIB_UNIT_BYTES_H_
 
-#include "third_party/chromium/base/numerics/safe_math.h"
 #include "third_party/chromium/base/strings/string_number_conversions.h"
 
 #include "felicia/core/lib/base/export.h"
