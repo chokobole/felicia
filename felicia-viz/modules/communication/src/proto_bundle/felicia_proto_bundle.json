@@ -47,6 +47,115 @@
             }
           }
         },
+        "UDSEndPoint": {
+          "fields": {
+            "socketPath": {
+              "type": "string",
+              "id": 1
+            },
+            "useAbstractNamespace": {
+              "type": "bool",
+              "id": 2
+            }
+          }
+        },
+        "FDPair": {
+          "fields": {
+            "fd": {
+              "type": "int32",
+              "id": 1
+            },
+            "readonlyFd": {
+              "type": "int32",
+              "id": 2
+            }
+          }
+        },
+        "HandleWithProcessId": {
+          "fields": {
+            "handle": {
+              "type": "uint64",
+              "id": 1
+            },
+            "processId": {
+              "type": "uint64",
+              "id": 2
+            }
+          }
+        },
+        "ShmPlatformHandle": {
+          "fields": {
+            "fdPair": {
+              "type": "FDPair",
+              "id": 1
+            },
+            "machPort": {
+              "type": "uint64",
+              "id": 2
+            },
+            "handleWithProcessId": {
+              "type": "HandleWithProcessId",
+              "id": 3
+            }
+          }
+        },
+        "UngeussableToken": {
+          "fields": {
+            "high": {
+              "type": "uint64",
+              "id": 1
+            },
+            "low": {
+              "type": "uint64",
+              "id": 2
+            }
+          }
+        },
+        "BrokerEndPoint": {
+          "fields": {
+            "udsEndpoint": {
+              "type": "UDSEndPoint",
+              "id": 1
+            },
+            "serviceName": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "ShmEndPoint": {
+          "fields": {
+            "platformHandle": {
+              "type": "ShmPlatformHandle",
+              "id": 1
+            },
+            "mode": {
+              "type": "Mode",
+              "id": 2
+            },
+            "size": {
+              "type": "uint64",
+              "id": 3
+            },
+            "guid": {
+              "type": "UngeussableToken",
+              "id": 4
+            },
+            "brokerEndpoint": {
+              "type": "BrokerEndPoint",
+              "id": 5
+            }
+          },
+          "nested": {
+            "Mode": {
+              "values": {
+                "SHM_MODE_READ_ONLY": 0,
+                "SHM_MODE_WRITABLE": 1,
+                "SHM_MODE_UNSAFE": 2
+              }
+            }
+          }
+        },
         "ChannelDef": {
           "fields": {
             "type": {
@@ -56,15 +165,25 @@
             "ipEndpoint": {
               "type": "IPEndPoint",
               "id": 2
+            },
+            "udsEndpoint": {
+              "type": "UDSEndPoint",
+              "id": 3
+            },
+            "shmEndpoint": {
+              "type": "ShmEndPoint",
+              "id": 4
             }
           },
           "nested": {
             "Type": {
               "values": {
-                "NONE": 0,
-                "TCP": 1,
-                "UDP": 2,
-                "WS": 4
+                "CHANNEL_TYPE_NONE": 0,
+                "CHANNEL_TYPE_TCP": 1,
+                "CHANNEL_TYPE_UDP": 2,
+                "CHANNEL_TYPE_WS": 4,
+                "CHANNEL_TYPE_UDS": 8,
+                "CHANNEL_TYPE_SHM": 16
               }
             }
           }
@@ -105,7 +224,7 @@
             }
           }
         },
-        "QuarternionMessage": {
+        "QuaternionfMessage": {
           "fields": {
             "w": {
               "type": "float",
@@ -125,7 +244,51 @@
             }
           }
         },
-        "Vec3fMessage": {
+        "QuaterniondMessage": {
+          "fields": {
+            "w": {
+              "type": "double",
+              "id": 1
+            },
+            "x": {
+              "type": "double",
+              "id": 2
+            },
+            "y": {
+              "type": "double",
+              "id": 3
+            },
+            "z": {
+              "type": "double",
+              "id": 4
+            }
+          }
+        },
+        "VectorfMessage": {
+          "fields": {
+            "x": {
+              "type": "float",
+              "id": 1
+            },
+            "y": {
+              "type": "float",
+              "id": 2
+            }
+          }
+        },
+        "VectordMessage": {
+          "fields": {
+            "x": {
+              "type": "double",
+              "id": 1
+            },
+            "y": {
+              "type": "double",
+              "id": 2
+            }
+          }
+        },
+        "Vector3fMessage": {
           "fields": {
             "x": {
               "type": "float",
@@ -141,6 +304,22 @@
             }
           }
         },
+        "Vector3dMessage": {
+          "fields": {
+            "x": {
+              "type": "double",
+              "id": 1
+            },
+            "y": {
+              "type": "double",
+              "id": 2
+            },
+            "z": {
+              "type": "double",
+              "id": 3
+            }
+          }
+        },
         "PointfMessage": {
           "fields": {
             "x": {
@@ -149,6 +328,18 @@
             },
             "y": {
               "type": "float",
+              "id": 2
+            }
+          }
+        },
+        "PointdMessage": {
+          "fields": {
+            "x": {
+              "type": "double",
+              "id": 1
+            },
+            "y": {
+              "type": "double",
               "id": 2
             }
           }
@@ -169,6 +360,70 @@
             }
           }
         },
+        "Point3dMessage": {
+          "fields": {
+            "x": {
+              "type": "double",
+              "id": 1
+            },
+            "y": {
+              "type": "double",
+              "id": 2
+            },
+            "z": {
+              "type": "double",
+              "id": 3
+            }
+          }
+        },
+        "PosefMessage": {
+          "fields": {
+            "point": {
+              "type": "PointfMessage",
+              "id": 1
+            },
+            "theta": {
+              "type": "float",
+              "id": 2
+            }
+          }
+        },
+        "PosedMessage": {
+          "fields": {
+            "point": {
+              "type": "PointdMessage",
+              "id": 1
+            },
+            "theta": {
+              "type": "double",
+              "id": 2
+            }
+          }
+        },
+        "Pose3fMessage": {
+          "fields": {
+            "point": {
+              "type": "Point3fMessage",
+              "id": 1
+            },
+            "orientation": {
+              "type": "QuaternionfMessage",
+              "id": 2
+            }
+          }
+        },
+        "Pose3dMessage": {
+          "fields": {
+            "point": {
+              "type": "Point3dMessage",
+              "id": 1
+            },
+            "orientation": {
+              "type": "QuaterniondMessage",
+              "id": 2
+            }
+          }
+        },
         "RectfMessage": {
           "fields": {
             "leftTop": {
@@ -177,6 +432,18 @@
             },
             "rightBottom": {
               "type": "PointfMessage",
+              "id": 2
+            }
+          }
+        },
+        "RectdMessage": {
+          "fields": {
+            "leftTop": {
+              "type": "PointdMessage",
+              "id": 1
+            },
+            "rightBottom": {
+              "type": "PointdMessage",
               "id": 2
             }
           }
@@ -197,6 +464,26 @@
             },
             "rightBottom": {
               "type": "PointfMessage",
+              "id": 4
+            }
+          }
+        },
+        "QuaddMessage": {
+          "fields": {
+            "leftTop": {
+              "type": "PointdMessage",
+              "id": 1
+            },
+            "rightTop": {
+              "type": "PointdMessage",
+              "id": 2
+            },
+            "leftBottom": {
+              "type": "PointdMessage",
+              "id": 3
+            },
+            "rightBottom": {
+              "type": "PointdMessage",
               "id": 4
             }
           }
@@ -759,11 +1046,11 @@
         "CameraFormatMessage": {
           "fields": {
             "width": {
-              "type": "uint32",
+              "type": "int32",
               "id": 1
             },
             "height": {
-              "type": "uint32",
+              "type": "int32",
               "id": 2
             },
             "pixelFormat": {
@@ -927,15 +1214,15 @@
         "ImuFrameMessage": {
           "fields": {
             "orientation": {
-              "type": "QuarternionMessage",
+              "type": "QuaternionfMessage",
               "id": 1
             },
             "angularVelocity": {
-              "type": "Vec3fMessage",
+              "type": "Vector3fMessage",
               "id": 2
             },
             "linearAcceleration": {
-              "type": "Vec3fMessage",
+              "type": "Vector3fMessage",
               "id": 3
             },
             "timestamp": {

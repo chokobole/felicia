@@ -33,13 +33,13 @@ PROTO_TYPES[TOPIC_INFO] = TopicInfo;
 
 export function hasWSChannel(topicInfo) {
   return topicInfo.topicSource.channelDefs.some(channelDef => {
-    return ChannelDefType.valuesById[channelDef.type] === 'WS';
+    return ChannelDefType.valuesById[channelDef.type] === 'CHANNEL_TYPE_WS';
   });
 }
 
 export function findWSChannel(topicInfo) {
   return topicInfo.topicSource.channelDefs.find(channelDef => {
-    return ChannelDefType.valuesById[channelDef.type] === 'WS';
+    return ChannelDefType.valuesById[channelDef.type] === 'CHANNEL_TYPE_WS';
   });
 }
 
