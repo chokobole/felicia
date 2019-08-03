@@ -174,15 +174,15 @@ class Flag {
         : flag_(Flag{value_store}) {}
 
     Builder& SetShortName(const std::string& short_name) {
-      flag_.set_short_name(short_name);
+      CHECK(flag_.set_short_name(short_name));
       return *this;
     }
     Builder& SetLongName(const std::string& long_name) {
-      flag_.set_long_name(long_name);
+      CHECK(flag_.set_long_name(long_name));
       return *this;
     }
     Builder& SetName(const std::string& name) {
-      flag_.set_name(name);
+      CHECK(flag_.set_name(name));
       return *this;
     }
     Builder& SetHelp(const std::string& help) {
