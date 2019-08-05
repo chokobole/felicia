@@ -107,7 +107,7 @@ export default class ImuControlPanel extends Component {
   _fetchValues() {
     const { store } = this.props;
     const viewState = store.uiState.activeViewState.getState();
-    const { topic, frame } = viewState;
+    const { frame } = viewState;
 
     if (frame) {
       const { angularVelocity, linearAcceleration, timestamp } = frame;
@@ -116,7 +116,6 @@ export default class ImuControlPanel extends Component {
     }
 
     return {
-      topic,
       angularVelocity: this.angularVelocities.history(),
       linearAcceleration: this.linearAccelerations.history(),
       timestamp: frame ? frame.timestamp : '',

@@ -31,7 +31,7 @@ export default class ImuView extends PureComponent {
     const scene = new Scene(engine);
     scene.clearColor = backgroundColor;
 
-    const camera = new ArcRotateCamera('camera', 0, 0, 0, new Vector3.Zero(), scene);
+    const camera = new ArcRotateCamera('camera', 0, 0, 0, Vector3.Zero(), scene);
     camera.position = new Vector3(0, 0, -10);
     camera.attachControl(this.canvas, true);
 

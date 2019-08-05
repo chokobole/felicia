@@ -49,7 +49,7 @@ export default class CameraControlPanel extends Component {
   _fetchValues() {
     const { store } = this.props;
     const viewState = store.uiState.activeViewState.getState();
-    const { frame, topic } = viewState;
+    const { frame } = viewState;
 
     if (frame) {
       const { width, height, frameRate, pixelFormat, timestamp } = frame;
@@ -59,7 +59,6 @@ export default class CameraControlPanel extends Component {
         frameRate,
         pixelFormat: PixelFormat.valuesById[pixelFormat],
         timestamp,
-        topic,
       };
     }
     return {
@@ -68,7 +67,6 @@ export default class CameraControlPanel extends Component {
       frameRate: '',
       pixelFormat: '',
       timestamp: '',
-      topic,
     };
   }
 

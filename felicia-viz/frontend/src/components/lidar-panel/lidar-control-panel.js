@@ -52,7 +52,7 @@ export default class LidarControlPanel extends Component {
   _fetchValues() {
     const { store } = this.props;
     const viewState = store.uiState.activeViewState.getState();
-    const { topic, frame } = viewState;
+    const { frame } = viewState;
 
     if (frame) {
       const {
@@ -74,7 +74,6 @@ export default class LidarControlPanel extends Component {
         rangeMin,
         rangeMax,
         timestamp,
-        topic,
       };
     }
     return {
@@ -86,7 +85,6 @@ export default class LidarControlPanel extends Component {
       rangeMin: '',
       rangeMax: '',
       timestamp: '',
-      topic,
     };
   }
 

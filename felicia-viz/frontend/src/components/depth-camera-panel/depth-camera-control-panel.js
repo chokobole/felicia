@@ -70,7 +70,7 @@ export default class DepthCameraControlPanel extends Component {
   _fetchValues() {
     const { store } = this.props;
     const viewState = store.uiState.activeViewState.getState();
-    const { frame, topic, filter } = viewState;
+    const { frame, filter } = viewState;
 
     if (frame) {
       const { width, height, frameRate, pixelFormat, min, max, timestamp } = frame;
@@ -82,7 +82,6 @@ export default class DepthCameraControlPanel extends Component {
         min,
         max,
         timestamp,
-        topic,
         filter,
       };
     }
@@ -94,7 +93,6 @@ export default class DepthCameraControlPanel extends Component {
       min: '',
       max: '',
       timestamp: '',
-      topic,
       filter,
     };
   }

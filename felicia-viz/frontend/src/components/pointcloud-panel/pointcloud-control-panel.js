@@ -45,18 +45,16 @@ export default class PointcloudControlPanel extends Component {
   _fetchValues() {
     const { store } = this.props;
     const viewState = store.uiState.activeViewState.getState();
-    const { topic, frame } = viewState;
+    const { frame } = viewState;
 
     if (frame) {
       const { timestamp } = frame;
       return {
         timestamp,
-        topic,
       };
     }
     return {
       timestamp: '',
-      topic,
     };
   }
 

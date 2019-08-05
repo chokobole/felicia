@@ -68,10 +68,9 @@ export default class ImageWithBoundingBoxesControlPanel extends Component {
   _fetchValues() {
     const { store } = this.props;
     const viewState = store.uiState.activeViewState.getState();
-    const { topic, lineWidth, threshold } = viewState;
+    const { lineWidth, threshold } = viewState;
 
     return {
-      topic,
       lineWidth,
       threshold,
     };

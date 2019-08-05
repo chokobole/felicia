@@ -57,10 +57,9 @@ export default class ImageWithHumansControlPanel extends Component {
   _fetchValues() {
     const { store } = this.props;
     const viewState = store.uiState.activeViewState.getState();
-    const { topic, threshold } = viewState;
+    const { threshold } = viewState;
 
     return {
-      topic,
       threshold,
     };
   }
