@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
+import { ActionManager } from '@babylonjs/core/Actions/actionManager';
+import { ExecuteCodeAction } from '@babylonjs/core/Actions/directActions';
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Scene } from '@babylonjs/core/scene';
 import { Vector3, Color3 } from '@babylonjs/core/Maths/math';
@@ -10,12 +12,16 @@ import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { GridMaterial } from '@babylonjs/materials/grid';
 import '@babylonjs/core/Meshes/meshBuilder';
 
+import UI_TYPES from 'store/ui/ui-types';
+import OccupancyGridMap from './occupancy-grid-map';
+
 @inject('store')
 @observer
 export default class MainScene extends Component {
   static propTypes = {
     width: PropTypes.string,
     height: PropTypes.string,
+    store: PropTypes.object.isRequired,
   };
 
   static defaultProps = {
@@ -31,8 +37,8 @@ export default class MainScene extends Component {
     const scene = new Scene(engine);
     scene.clearColor = backgroundColor;
 
-    const camera = new ArcRotateCamera('camera', 0, 0, 5, new Vector3(0, -20, 10), scene);
-    camera.setTarget(Vector3.Zero());
+    const camera = new ArcRotateCamera('camera', 0, 0, 0, Vector3.Zero(), scene);
+    camera.position = new Vector3(0, -30, 30);
     camera.attachControl(this.canvas, true);
 
     const light = new HemisphericLight('light', new Vector3(0, 0, 1), scene);
@@ -44,8 +50,38 @@ export default class MainScene extends Component {
 
     const plane = Mesh.CreatePlane('plane', 10, scene, true, Mesh.DOUBLESIDE);
     plane.material = material;
+    const actionManager = new ActionManager(scene);
+    actionManager.registerAction(
+      new ExecuteCodeAction(
+        {
+          trigger: ActionManager.OnKeyDownTrigger,
+          parameter: 'c',
+        },
+        () => {
+          const { store } = this.props;
+          const { uiState } = store;
+          uiState.activeViewState.set(0, UI_TYPES.MainScene.name);
+        }
+      )
+    );
+    scene.actionManager = actionManager;
 
     engine.runRenderLoop(() => {
+      const { store } = this.props;
+      const viewState = store.uiState.findView(0);
+      const { map } = viewState;
+
+      if (map) {
+        const { size, resolution, origin, data } = map;
+        const { width, height } = size;
+        if (!this.map || (this.width !== width || this.height !== height)) {
+          this.map = new OccupancyGridMap('occupancy-grid-map', width, height, 1, scene);
+        }
+        this.map.setOrigin(origin);
+        this.map.setResolution(resolution);
+        this.map.update(width, height, data);
+      }
+
       scene.render();
     });
   }

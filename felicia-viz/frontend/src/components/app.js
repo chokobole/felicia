@@ -63,6 +63,7 @@ export default class App extends Component {
       <React.Fragment>
         {store.uiState.viewStates.map(viewState => {
           const uiType = UI_TYPES[viewState.type()];
+          if (viewState.id === 0) return null;
           return uiType.renderView(viewState.id);
         })}
       </React.Fragment>

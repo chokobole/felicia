@@ -2,7 +2,7 @@ import { observable, action } from 'mobx';
 
 import SUBSCRIBER from 'util/subscriber';
 
-export default class PanelState {
+export default class TopicSubscribable {
   @observable topics = new Map();
 
   constructor(id) {

@@ -50,10 +50,8 @@ export default class TopicDropdown extends Component {
     const topics = toJS(store.topicInfo.topics);
     const data = topics.reduce((obj, v) => {
       const { topic } = v;
-      if (hasWSChannel(v)) {
-        if (typeName === v.typeName) {
-          obj[topic] = topic; // eslint-disable-line no-param-reassign
-        }
+      if (hasWSChannel(v) && typeName === v.typeName) {
+        obj[topic] = topic; // eslint-disable-line no-param-reassign
       }
       return obj;
     }, {});

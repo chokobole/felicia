@@ -1,6 +1,6 @@
 import { observable, action } from 'mobx';
 
-import PanelState from './panel-state';
+import TopicSubscribable from 'store/topic-subscribable';
 
 export class PointcloudFrame {
   constructor(message) {
@@ -12,7 +12,7 @@ export class PointcloudFrame {
   }
 }
 
-export default class PointcloudPanelState extends PanelState {
+export default class PointcloudPanelState extends TopicSubscribable {
   @observable frame = null;
 
   @action update(message) {

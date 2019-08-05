@@ -1,6 +1,6 @@
 import { observable, action } from 'mobx';
 
-import PanelState from './panel-state';
+import TopicSubscribable from 'store/topic-subscribable';
 
 export class LidarFrame {
   constructor(message) {
@@ -30,7 +30,7 @@ export class LidarFrame {
   }
 }
 
-export default class LidarPanelState extends PanelState {
+export default class LidarPanelState extends TopicSubscribable {
   @observable frame = null;
 
   @action update(message) {

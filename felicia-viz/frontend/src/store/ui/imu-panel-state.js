@@ -1,7 +1,7 @@
 import { observable, action } from 'mobx';
 
+import TopicSubscribable from 'store/topic-subscribable';
 import { makeVector3, makeQuarternion } from 'util/babylon-util';
-import PanelState from './panel-state';
 
 export class ImuFrame {
   constructor(message) {
@@ -14,7 +14,7 @@ export class ImuFrame {
   }
 }
 
-export default class ImuPanelState extends PanelState {
+export default class ImuPanelState extends TopicSubscribable {
   @observable frame = null;
 
   @action update(message) {

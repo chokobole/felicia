@@ -13,6 +13,8 @@ export const LIDAR_FRAME_MESSAGE = 'felicia.LidarFrameMessage';
 export const POINTCLOUD_FRAME_MESSAGE = 'felicia.PointcloudFrameMessage';
 export const TOPIC_INFO = 'felicia.TopicInfo';
 
+export const OCCUPANCY_GRID_MAP_MESSAGE = 'felicia.OccupancyGridMapMessage';
+
 const ChannelDefType = FeliciaProtoRoot.lookupEnum('felicia.ChannelDef.Type');
 const TopicInfo = FeliciaProtoRoot.lookupType(TOPIC_INFO);
 export const PixelFormat = FeliciaProtoRoot.lookupEnum('felicia.PixelFormat');
@@ -30,6 +32,8 @@ PROTO_TYPES[IMU_FRAME_MESSAGE] = FeliciaProtoRoot.lookupType(IMU_FRAME_MESSAGE);
 PROTO_TYPES[LIDAR_FRAME_MESSAGE] = FeliciaProtoRoot.lookupType(LIDAR_FRAME_MESSAGE);
 PROTO_TYPES[POINTCLOUD_FRAME_MESSAGE] = FeliciaProtoRoot.lookupType(POINTCLOUD_FRAME_MESSAGE);
 PROTO_TYPES[TOPIC_INFO] = TopicInfo;
+
+PROTO_TYPES[OCCUPANCY_GRID_MAP_MESSAGE] = FeliciaProtoRoot.lookupType(OCCUPANCY_GRID_MAP_MESSAGE);
 
 export function hasWSChannel(topicInfo) {
   return topicInfo.topicSource.channelDefs.some(channelDef => {

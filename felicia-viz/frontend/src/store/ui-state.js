@@ -2,7 +2,7 @@ import { observable, action } from 'mobx';
 
 import { TOPIC_INFO, hasWSChannel } from '@felicia-viz/communication';
 
-import UI_TYPES from 'store/ui/ui-types';
+import UI_TYPES, { MainSceneType } from 'store/ui/ui-types';
 import SUBSCRIBER from 'util/subscriber';
 
 class ViewState {
@@ -50,6 +50,10 @@ export default class UIState {
   @observable activeViewState = new ViewState(this);
 
   id = 0;
+
+  constructor() {
+    this.addView(MainSceneType.name);
+  }
 
   @action addView(type) {
     const values = Object.values(UI_TYPES);

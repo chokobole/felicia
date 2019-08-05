@@ -1,6 +1,6 @@
 import { observable, action } from 'mobx';
 
-import PanelState from './panel-state';
+import TopicSubscribable from 'store/topic-subscribable';
 
 export class ImageWithBoundingBoxes {
   constructor(message) {
@@ -11,7 +11,7 @@ export class ImageWithBoundingBoxes {
   }
 }
 
-export default class ImageWithBoundingBoxesPanelState extends PanelState {
+export default class ImageWithBoundingBoxesPanelState extends TopicSubscribable {
   @observable frame = null;
 
   @observable lineWidth = 10;

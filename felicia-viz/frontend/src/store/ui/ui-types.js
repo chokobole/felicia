@@ -10,6 +10,7 @@ import ImageWithHumansPanel, {
 } from 'components/image-with-humans-panel';
 import ImuPanel, { ImuControlPanel } from 'components/imu-panel';
 import LidarPanel, { LidarControlPanel } from 'components/lidar-panel';
+import MainSceneControlPanel from 'components/main-scene-control-panel';
 import PointcloudPanel, { PointcloudControlPanel } from 'components/pointcloud-panel';
 import CameraPanelState from 'store/ui/camera-panel-state';
 import DepthCameraPanelState from 'store/ui/depth-camera-panel-state';
@@ -17,9 +18,24 @@ import ImageWithBoundingBoxesPanelState from 'store/ui/image-with-bounding-boxes
 import ImageWithHumansPanelState from 'store/ui/image-with-humans-panel-state';
 import ImuPanelState from 'store/ui/imu-panel-state';
 import LidarPanelState from 'store/ui/lidar-panel-state';
+import MainSceneState from 'store/ui/main-scene-state';
 import PointcloudPanelState from 'store/ui/pointcloud-panel-state';
 
 const UI_TYPES = {};
+
+export const MainSceneType = {
+  name: 'MainScene',
+  className: 'main-scene',
+  state: MainSceneState,
+  renderView: () => {
+    throw new Error('You called renderView of MainScene.');
+  },
+  renderControlView: () => {
+    return <MainSceneControlPanel />;
+  },
+};
+
+UI_TYPES[MainSceneType.name] = MainSceneType;
 
 export const CameraPanelType = {
   name: 'CameraPanel',

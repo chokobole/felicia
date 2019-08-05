@@ -224,6 +224,42 @@
             }
           }
         },
+        "SizeiMessage": {
+          "fields": {
+            "width": {
+              "type": "int32",
+              "id": 1
+            },
+            "height": {
+              "type": "int32",
+              "id": 2
+            }
+          }
+        },
+        "SizefMessage": {
+          "fields": {
+            "width": {
+              "type": "float",
+              "id": 1
+            },
+            "height": {
+              "type": "float",
+              "id": 2
+            }
+          }
+        },
+        "SizedMessage": {
+          "fields": {
+            "width": {
+              "type": "double",
+              "id": 1
+            },
+            "height": {
+              "type": "double",
+              "id": 2
+            }
+          }
+        },
         "QuaternionfMessage": {
           "fields": {
             "w": {
@@ -421,6 +457,70 @@
             "orientation": {
               "type": "QuaterniondMessage",
               "id": 2
+            }
+          }
+        },
+        "PosefWithTimestampMessage": {
+          "fields": {
+            "point": {
+              "type": "PointfMessage",
+              "id": 1
+            },
+            "theta": {
+              "type": "float",
+              "id": 2
+            },
+            "timestamp": {
+              "type": "int64",
+              "id": 3
+            }
+          }
+        },
+        "PosedWithTimestampMessage": {
+          "fields": {
+            "point": {
+              "type": "PointdMessage",
+              "id": 1
+            },
+            "theta": {
+              "type": "double",
+              "id": 2
+            },
+            "timestamp": {
+              "type": "int64",
+              "id": 3
+            }
+          }
+        },
+        "Pose3fWithTimestampMessage": {
+          "fields": {
+            "point": {
+              "type": "Point3fMessage",
+              "id": 1
+            },
+            "orientation": {
+              "type": "QuaternionfMessage",
+              "id": 2
+            },
+            "timestamp": {
+              "type": "int64",
+              "id": 3
+            }
+          }
+        },
+        "Pose3dWithTimestampMessage": {
+          "fields": {
+            "point": {
+              "type": "Point3dMessage",
+              "id": 1
+            },
+            "orientation": {
+              "type": "QuaterniondMessage",
+              "id": 2
+            },
+            "timestamp": {
+              "type": "int64",
+              "id": 3
             }
           }
         },
@@ -1290,6 +1390,30 @@
             "timestamp": {
               "type": "int64",
               "id": 3
+            }
+          }
+        },
+        "OccupancyGridMapMessage": {
+          "fields": {
+            "size": {
+              "type": "SizeiMessage",
+              "id": 1
+            },
+            "resolution": {
+              "type": "float",
+              "id": 2
+            },
+            "origin": {
+              "type": "PointfMessage",
+              "id": 3
+            },
+            "data": {
+              "type": "bytes",
+              "id": 4
+            },
+            "timestamp": {
+              "type": "int64",
+              "id": 5
             }
           }
         }

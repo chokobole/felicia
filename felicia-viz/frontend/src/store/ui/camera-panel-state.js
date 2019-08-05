@@ -1,6 +1,6 @@
 import { observable, action } from 'mobx';
 
-import PanelState from './panel-state';
+import TopicSubscribable from 'store/topic-subscribable';
 
 export class CameraFrame {
   constructor(message) {
@@ -17,7 +17,7 @@ export class CameraFrame {
   }
 }
 
-export default class CameraPanelState extends PanelState {
+export default class CameraPanelState extends TopicSubscribable {
   @observable frame = null;
 
   @action update(message) {
