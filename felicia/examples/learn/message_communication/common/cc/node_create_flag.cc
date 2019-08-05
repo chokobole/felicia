@@ -1,9 +1,6 @@
 #include "felicia/examples/learn/message_communication/common/cc/node_create_flag.h"
 
-#include <iostream>
-
 #include "felicia/core/protobuf/channel.pb.h"
-#include "felicia/core/util/command_line_interface/text_style.h"
 
 namespace felicia {
 
