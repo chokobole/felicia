@@ -46,7 +46,8 @@ class EXPORT LidarFrame {
   LidarFrameMessage ToLidarFrameMessage() const;
   static LidarFrame FromLidarFrameMessage(const LidarFrameMessage& message);
 
-  void Project(std::vector<Pointf>* points);
+  void Project(std::vector<Pointf>* points, float user_range_min,
+               float user_range_max) const;
 
  private:
   float angle_start_;

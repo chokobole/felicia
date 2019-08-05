@@ -127,11 +127,14 @@ LidarFrame LidarFrame::FromLidarFrameMessage(const LidarFrameMessage& message) {
                     ::base::TimeDelta::FromMicroseconds(message.timestamp())};
 }
 
-void LidarFrame::Project(std::vector<Pointf>* points) {
+void LidarFrame::Project(std::vector<Pointf>* points, float user_range_min,
+                         float user_range_max) const {
   // TODO: Implement using BLAS.
+  float range_min = std::max(user_range_min, range_min_);
+  float range_max = std::min(user_range_max, range_max_);
   for (size_t i = 0; i < ranges_.size(); ++i) {
     float range = ranges_[i];
-    if (range < range_min_ || range > range_max_) continue;
+    if (range < range_min || range > range_max) continue;
     const float radian = angle_start_ + angle_delta_ * i;
     points->emplace_back(range * std::cos(radian), range * std::sin(radian));
   }
