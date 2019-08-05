@@ -31,7 +31,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#define _USE_MATH_DEFINES
 #include "felicia/drivers/vendors/rplidar/rplidar.h"
 
 #include "third_party/chromium/base/bind.h"
@@ -41,12 +40,12 @@
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 #include "felicia/core/lib/error/errors.h"
+#include "felicia/core/lib/math/math_util.h"
 
 using namespace rp::standalone::rplidar;
 
 namespace felicia {
 
-#define DEG2RAD(x) ((x)*M_PI / 180.)
 #define WITH_RESULT(text, result) ::base::StringPrintf("%s: %X", text, result)
 
 RPlidar::RPlidar(const LidarEndpoint& lidar_endpoint)
@@ -249,46 +248,73 @@ void RPlidar::DoScan() {
     for (; end_node >= 0; --end_node) {
       if (nodes[end_node].dist_mm_q2 != 0) break;
     }
-    angle_start = DEG2RAD(getAngle(nodes[start_node]));
-    angle_end = DEG2RAD(getAngle(nodes[end_node]));
+    angle_start = degree_to_radian(getAngle(nodes[start_node]));
+    angle_end = degree_to_radian(getAngle(nodes[end_node]));
     count = end_node - start_node + 1;
   } else {
     // All the data is invalid
-    angle_start = DEG2RAD(0.0f);
-    angle_end = DEG2RAD(359.0f);
+    angle_start = degree_to_radian(0.0f);
+    angle_end = degree_to_radian(359.0f);
   }
 
+  LidarFrame lidar_frame =
+      ToLidarFrame(nodes, count, scan_time, angle_start, angle_end);
+  lidar_frame_callback_.Run(lidar_frame);
+}
+
+LidarFrame RPlidar::ToLidarFrame(rplidar_response_measurement_node_hq_t* nodes,
+                                 size_t node_count, double scan_time,
+                                 float angle_start, float angle_end) {
   LidarFrame lidar_frame;
-  lidar_frame.set_angle_start(angle_start);
-  lidar_frame.set_angle_end(angle_end);
-  if (count > 1) {
+  bool reversed = (angle_end > angle_start);
+  if (reversed) {
+    lidar_frame.set_angle_start(kPiFloat - angle_end);
+    lidar_frame.set_angle_end(kPiFloat - angle_start);
+  } else {
+    lidar_frame.set_angle_start(kPiFloat - angle_start);
+    lidar_frame.set_angle_end(kPiFloat - angle_end);
+  }
+
+  if (node_count > 1) {
     lidar_frame.set_angle_delta((angle_end - angle_start) /
-                                static_cast<float>(count - 1));
+                                static_cast<float>(node_count - 1));
   }
   lidar_frame.set_scan_time(scan_time);
-  if (count > 1) {
-    lidar_frame.set_time_delta(scan_time / static_cast<float>(count - 1));
+  if (node_count > 1) {
+    lidar_frame.set_time_delta(scan_time / static_cast<float>(node_count - 1));
   }
   lidar_frame.set_range_min(0.15);
   lidar_frame.set_range_max(scan_mode_.max_distance);
 
-  lidar_frame.intensities().resize(count);
-  lidar_frame.ranges().resize(count);
-  for (size_t i = 0; i < count; i++) {
-    float read_value = static_cast<float>(nodes[i].dist_mm_q2 / 4.0f / 1000);
-    if (read_value == 0.0) {
-      lidar_frame.ranges()[i] = std::numeric_limits<float>::infinity();
-    } else {
-      lidar_frame.ranges()[i] = read_value;
+  lidar_frame.intensities().resize(node_count);
+  lidar_frame.ranges().resize(node_count);
+  if (reversed) {
+    for (size_t i = 0; i < node_count; i++) {
+      float read_value = static_cast<float>(nodes[i].dist_mm_q2 / 4.0f / 1000);
+      if (read_value == 0.0) {
+        lidar_frame.ranges()[node_count - i - 1] =
+            std::numeric_limits<float>::infinity();
+      } else {
+        lidar_frame.ranges()[node_count - i - 1] = read_value;
+      }
+      lidar_frame.intensities()[node_count - i - 1] =
+          static_cast<float>(nodes[i].quality >> 2);
     }
-    lidar_frame.intensities()[i] = static_cast<float>(nodes[i].quality >> 2);
+  } else {
+    for (size_t i = 0; i < node_count; i++) {
+      float read_value = static_cast<float>(nodes[i].dist_mm_q2 / 4.0f / 1000);
+      if (read_value == 0.0) {
+        lidar_frame.ranges()[i] = std::numeric_limits<float>::infinity();
+      } else {
+        lidar_frame.ranges()[i] = read_value;
+      }
+      lidar_frame.intensities()[i] = static_cast<float>(nodes[i].quality >> 2);
+    }
   }
   lidar_frame.set_timestamp(timestamper_.timestamp());
-
-  lidar_frame_callback_.Run(lidar_frame);
+  return lidar_frame;
 }
 
-#undef DEG2RAD
 #undef WITH_RESULT
 
 }  // namespace felicia

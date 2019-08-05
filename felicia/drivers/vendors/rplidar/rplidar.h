@@ -36,6 +36,9 @@ class RPlidar : public LidarInterface, public ::base::SupportsWeakPtr<RPlidar> {
   Status DoStart(rp::standalone::rplidar::RplidarScanMode* scan_mode,
                  LidarFrameCallback lidar_frame_callback);
   void DoScan();
+  LidarFrame ToLidarFrame(rplidar_response_measurement_node_hq_t* nodes,
+                          size_t node_count, double scan_time,
+                          float angle_start, float angle_end);
 
   ::base::Thread thread_;
   Timestamper timestamper_;
