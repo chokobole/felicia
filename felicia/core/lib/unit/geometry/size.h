@@ -4,7 +4,9 @@
 #include "third_party/chromium/base/strings/string_number_conversions.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/unit/unit_helper.h"
+#include "felicia/core/protobuf/geometry.pb.h"
 
 namespace felicia {
 
@@ -103,6 +105,27 @@ std::ostream& operator<<(std::ostream& os, const Size<T>& size) {
 typedef Size<int> Sizei;
 typedef Size<float> Sizef;
 typedef Size<double> Sized;
+
+template <typename MessageType, typename T>
+MessageType SizeToSizeMessage(const Size<T>& size) {
+  MessageType message;
+  message.set_width(size.width());
+  message.set_height(size.height());
+  return message;
+}
+
+EXPORT SizeiMessage SizeiToSizeiMessage(const Sizei& size);
+EXPORT SizefMessage SizefToSizefMessage(const Sizef& size);
+EXPORT SizedMessage SizedToSizedMessage(const Sized& size);
+
+template <typename T, typename MessageType>
+Size<T> SizeMessageToSize(const MessageType& message) {
+  return {message.width(), message.height()};
+}
+
+EXPORT Sizei SizeiMessageToSizei(const SizeiMessage& message);
+EXPORT Sizef SizefMessageToSizef(const SizefMessage& message);
+EXPORT Sized SizedMessageToSized(const SizedMessage& message);
 
 }  // namespace felicia
 

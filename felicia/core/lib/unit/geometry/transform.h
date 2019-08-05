@@ -14,7 +14,8 @@ class Transform {
  public:
   typedef ::Eigen::Transform<T, 2, ::Eigen::Affine> EigenTransformType;
 
-  constexpr Transform() = default;
+  constexpr Transform()
+      : transform_(EigenTransformType::MatrixType::Identity()) {}
   constexpr explicit Transform(const EigenTransformType& transform)
       : transform_(transform) {}
   constexpr Transform(const Transform& other) = default;
@@ -22,8 +23,12 @@ class Transform {
 
   Transform inverse() const { return Transform{transform_.inverse()}; }
 
-  EigenTransformType& transform() { return transform_; }
-  const EigenTransformType& transform() const { return transform_; }
+  void set_transform(const EigenTransformType& transform) {
+    transform_ = transform;
+  }
+
+  EigenTransformType& ToEigenTransform() { return transform_; }
+  const EigenTransformType& ToEigenTransform() const { return transform_; }
 
   Transform& AddTranslate(T x, T y) {
     transform_ = ::Eigen::Translation<T, 2>(x, y) * transform_;
@@ -53,7 +58,7 @@ class Transform {
 
 template <typename T>
 inline bool operator==(const Transform<T>& lhs, const Transform<T>& rhs) {
-  return lhs.transform() == rhs.transform();
+  return lhs.ToEigenTransform() == rhs.ToEigenTransform();
 }
 
 template <typename T>
@@ -69,7 +74,8 @@ class Transform3 {
  public:
   typedef ::Eigen::Transform<T, 3, ::Eigen::Affine> EigenTransformType;
 
-  constexpr Transform3() = default;
+  constexpr Transform3()
+      : transform_(EigenTransformType::MatrixType::Identity()) {}
   constexpr explicit Transform3(const EigenTransformType& transform)
       : transform_(transform) {}
   constexpr Transform3(const Transform3& other) = default;
@@ -77,8 +83,12 @@ class Transform3 {
 
   Transform3 inverse() const { return Transform3{transform_.inverse()}; }
 
-  EigenTransformType& transform() { return transform_; }
-  const EigenTransformType& transform() const { return transform_; }
+  void set_transform(const EigenTransformType& transform) {
+    transform_ = transform;
+  }
+
+  EigenTransformType& ToEigenTransform() { return transform_; }
+  const EigenTransformType& ToEigenTransform() const { return transform_; }
 
   Transform3& AddTranslate(T x, T y, T z) {
     transform_ = ::Eigen::Translation<T, 3>(x, y, z) * transform_;
@@ -114,7 +124,7 @@ class Transform3 {
 
 template <typename T>
 inline bool operator==(const Transform3<T>& lhs, const Transform3<T>& rhs) {
-  return lhs.transform() == rhs.transform();
+  return lhs.ToEigenTransform() == rhs.ToEigenTransform();
 }
 
 template <typename T>

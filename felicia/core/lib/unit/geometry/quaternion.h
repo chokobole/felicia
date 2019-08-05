@@ -52,6 +52,11 @@ class Quaternion {
   constexpr T z() const { return z_; }
   constexpr T w() const { return w_; }
 
+  constexpr bool IsValid() const {
+    return !std::isnan(x_) && !std::isnan(y_) && !std::isnan(z_) &&
+           !std::isnan(w_);
+  }
+
   void set_vector(const Vector3<T>& vector) {
     x_ = vector.x();
     y_ = vector.y();
@@ -158,7 +163,7 @@ class Quaternion {
     T w = w_ * a;
     return {x, y, z, w};
   }
-  Quaternion& operator*(T a) {
+  Quaternion& operator*=(T a) {
     x_ *= a;
     y_ *= a;
     z_ *= a;
@@ -206,10 +211,26 @@ inline Quaternion<T> operator*(U a, const Quaternion<T>& quaternion) {
 typedef Quaternion<float> Quaternionf;
 typedef Quaternion<double> Quaterniond;
 
+template <typename MessageType, typename T>
+MessageType QuaternionToQuaternionMessage(const Quaternion<T>& quaternion) {
+  MessageType message;
+  message.set_w(quaternion.w());
+  message.set_x(quaternion.x());
+  message.set_y(quaternion.y());
+  message.set_z(quaternion.z());
+  return message;
+}
+
 EXPORT QuaternionfMessage
 QuaternionfToQuaternionfMessage(const Quaternionf& quaternion);
 EXPORT QuaterniondMessage
 QuaterniondToQuaterniondMessage(const Quaterniond& quaternion);
+
+template <typename T, typename MessageType>
+Quaternion<T> QuaternionMessageToQuaternion(const MessageType& message) {
+  return {message.x(), message.y(), message.z(), message.w()};
+}
+
 EXPORT Quaternionf
 QuaternionfMessageToQuaternionf(const QuaternionfMessage& message);
 EXPORT Quaterniond

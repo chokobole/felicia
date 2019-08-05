@@ -3,51 +3,83 @@
 namespace felicia {
 
 PosefMessage PosefToPosefMessage(const Posef& pose) {
-  PosefMessage message;
-  *message.mutable_point() = PointfToPointfMessage(pose.point());
-  message.set_theta(pose.theta());
-  return message;
+  return PoseToPoseMessage<PosefMessage, PointfMessage>(pose);
 }
 
 PosedMessage PosedToPosedMessage(const Posed& pose) {
-  PosedMessage message;
-  *message.mutable_point() = PointdToPointdMessage(pose.point());
-  message.set_theta(pose.theta());
-  return message;
+  return PoseToPoseMessage<PosedMessage, PointdMessage>(pose);
 }
 
 Posef PosefMessageToPosef(const PosefMessage& message) {
-  return {PointfMessageToPointf(message.point()), message.theta()};
+  return PoseMessageToPose<float>(message);
 }
 
 Posed PosedMessageToPosed(const PosedMessage& message) {
-  return {PointdMessageToPointd(message.point()), message.theta()};
+  return PoseMessageToPose<double>(message);
+}
+
+PosefWithTimestampMessage PosefToPosefWithTimestampMessage(
+    const Posef& pose, ::base::TimeDelta timestamp) {
+  return PoseToPoseWithTimestampMessage<PosefWithTimestampMessage,
+                                        PointfMessage>(pose, timestamp);
+}
+
+PosedWithTimestampMessage PosedToPosedWithTimestampMessage(
+    const Posed& pose, ::base::TimeDelta timestamp) {
+  return PoseToPoseWithTimestampMessage<PosedWithTimestampMessage,
+                                        PointdMessage>(pose, timestamp);
+}
+
+Posef PosefWithTimestampMessageToPosef(
+    const PosefWithTimestampMessage& message) {
+  return PoseWithTimestampMessageToPose<float>(message);
+}
+
+Posed PosedWithTimestampMessageToPosed(
+    const PosedWithTimestampMessage& message) {
+  return PoseWithTimestampMessageToPose<double>(message);
 }
 
 Pose3fMessage Pose3fToPose3fMessage(const Pose3f& pose) {
-  Pose3fMessage message;
-  *message.mutable_point() = Point3fToPoint3fMessage(pose.point());
-  *message.mutable_orientation() =
-      QuaternionfToQuaternionfMessage(pose.orientation());
-  return message;
+  return Pose3ToPose3Message<Pose3fMessage, Point3fMessage, QuaternionfMessage>(
+      pose);
 }
 
 Pose3dMessage Pose3dToPose3dMessage(const Pose3d& pose) {
-  Pose3dMessage message;
-  *message.mutable_point() = Point3dToPoint3dMessage(pose.point());
-  *message.mutable_orientation() =
-      QuaterniondToQuaterniondMessage(pose.orientation());
-  return message;
+  return Pose3ToPose3Message<Pose3dMessage, Point3dMessage, QuaterniondMessage>(
+      pose);
 }
 
 Pose3f Pose3fMessageToPose3f(const Pose3fMessage& message) {
-  return {Point3fMessageToPoint3f(message.point()),
-          QuaternionfMessageToQuaternionf(message.orientation())};
+  return Pose3MessageToPose3<float>(message);
 }
 
 Pose3d Pose3dMessageToPose3d(const Pose3dMessage& message) {
-  return {Point3dMessageToPoint3d(message.point()),
-          QuaterniondMessageToQuaterniond(message.orientation())};
+  return Pose3MessageToPose3<double>(message);
+}
+
+Pose3fWithTimestampMessage Pose3fToPose3fWithTimestampMessage(
+    const Pose3f& pose, ::base::TimeDelta timestamp) {
+  return Pose3ToPose3WithTimestampMessage<Pose3fWithTimestampMessage,
+                                          Point3fMessage, QuaternionfMessage>(
+      pose, timestamp);
+}
+
+Pose3dWithTimestampMessage Pose3dToPose3dWithTimestampMessage(
+    const Pose3d& pose, ::base::TimeDelta timestamp) {
+  return Pose3ToPose3WithTimestampMessage<Pose3dWithTimestampMessage,
+                                          Point3dMessage, QuaterniondMessage>(
+      pose, timestamp);
+}
+
+Pose3f Pose3fWithTimestampMessageToPose3f(
+    const Pose3fWithTimestampMessage& message) {
+  return Pose3WithTimestampMessageToPose3<float>(message);
+}
+
+Pose3d Pose3dWithTimestampMessageToPose3d(
+    const Pose3dWithTimestampMessage& message) {
+  return Pose3WithTimestampMessageToPose3<double>(message);
 }
 
 }  // namespace felicia

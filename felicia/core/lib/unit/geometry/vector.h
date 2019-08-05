@@ -31,6 +31,8 @@ class Vector {
   constexpr T x() const { return x_; }
   constexpr T y() const { return y_; }
 
+  constexpr bool IsValid() const { return !std::isnan(x_) && !std::isnan(y_); }
+
   double Norm() const { return std::sqrt(SquaredNorm()); }
   double SquaredNorm() const {
     return static_cast<double>(x_) * x_ + static_cast<double>(y_) * y_;
@@ -43,9 +45,9 @@ class Vector {
     return *this;
   }
 
-  Vector Normalize() const { return Scale(::base::ClampDiv(1.0, Norm())); }
+  Vector Normalize() const { return Scale(1.0 / Norm()); }
   Vector& NormalizeInplace() {
-    ScaleInPlace(::base::ClampDiv(1.0, Norm()));
+    ScaleInPlace(1.0 / Norm());
     return *this;
   }
 
@@ -70,7 +72,9 @@ class Vector {
     return *this;
   }
   Vector operator*(T a) const { return Scale(a); }
-  Vector& operator*(T a) { return ScaleInPlace(a); }
+  Vector& operator*=(T a) { return ScaleInPlace(a); }
+  Vector operator/(T a) const { return Scale(1.0 / a); }
+  Vector& operator/=(T a) const { return ScaleInPlace(1.0 / a); }
 
   std::string ToString() const {
     return ::base::StringPrintf("(%s, %s)", ::base::NumberToString(x_).c_str(),
@@ -78,8 +82,7 @@ class Vector {
   }
 
   EigenMatrixType ToEigenVector() const {
-    EigenMatrixType vec;
-    vec << x_, y_;
+    EigenMatrixType vec(x_, y_);
     return vec;
   }
 
@@ -106,8 +109,22 @@ std::ostream& operator<<(std::ostream& os, const Vector<T>& vector) {
 typedef Vector<float> Vectorf;
 typedef Vector<double> Vectord;
 
+template <typename MessageType, typename T>
+MessageType VectorToVectorMessage(const Vector<T>& vector) {
+  MessageType message;
+  message.set_x(vector.x());
+  message.set_y(vector.y());
+  return message;
+}
+
 EXPORT VectorfMessage VectorfToVectorfMessage(const Vectorf& vector);
 EXPORT VectordMessage VectordToVectordMessage(const Vectord& vector);
+
+template <typename T, typename MessageType>
+Vector<T> VectorMessageToVector(const MessageType& message) {
+  return {message.x(), message.y()};
+}
+
 EXPORT Vectorf VectorfMessageToVectorf(const VectorfMessage& message);
 EXPORT Vectord VectordMessageToVectord(const VectordMessage& message);
 
@@ -136,6 +153,10 @@ class Vector3 {
   constexpr T y() const { return y_; }
   constexpr T z() const { return z_; }
 
+  constexpr bool IsValid() const {
+    return !std::isnan(x_) && !std::isnan(y_) && !std::isnan(z_);
+  }
+
   double Norm() const { return std::sqrt(SquaredNorm()); }
   double SquaredNorm() const {
     return static_cast<double>(x_) * x_ + static_cast<double>(y_) * y_ +
@@ -150,9 +171,9 @@ class Vector3 {
     return *this;
   }
 
-  Vector3 Normalize() const { return Scale(::base::ClampDiv(1.0, Norm())); }
+  Vector3 Normalize() const { return Scale(1.0 / Norm()); }
   Vector3& NormalizeInplace() {
-    ScaleInPlace(::base::ClampDiv(1.0, Norm()));
+    ScaleInPlace(1.0 / Norm());
     return *this;
   }
 
@@ -181,7 +202,9 @@ class Vector3 {
     return *this;
   }
   Vector3 operator*(T a) const { return Scale(a); }
-  Vector3& operator*(T a) { return ScaleInPlace(a); }
+  Vector3& operator*=(T a) { return ScaleInPlace(a); }
+  Vector3 operator/(T a) const { return Scale(1 / a); }
+  Vector3& operator/=(T a) const { return ScaleInPlace(1 / a); }
 
   std::string ToString() const {
     return ::base::StringPrintf(
@@ -190,8 +213,7 @@ class Vector3 {
   }
 
   EigenMatrixType ToEigenVector() const {
-    EigenMatrixType vec;
-    vec << x_, y_, z_;
+    EigenMatrixType vec(x_, y_, z_);
     return vec;
   }
 
@@ -219,8 +241,23 @@ std::ostream& operator<<(std::ostream& os, const Vector3<T>& vector) {
 typedef Vector3<float> Vector3f;
 typedef Vector3<double> Vector3d;
 
+template <typename MessageType, typename T>
+MessageType Vector3ToVector3Message(const Vector3<T>& vector) {
+  MessageType message;
+  message.set_x(vector.x());
+  message.set_y(vector.y());
+  message.set_z(vector.z());
+  return message;
+}
+
 EXPORT Vector3fMessage Vector3fToVector3fMessage(const Vector3f& vector);
 EXPORT Vector3dMessage Vector3dToVector3dMessage(const Vector3d& vector);
+
+template <typename T, typename MessageType>
+Vector3<T> Vector3MessageToVector3(const MessageType& message) {
+  return {message.x(), message.y(), message.z()};
+}
+
 EXPORT Vector3f Vector3fMessageToVector3f(const Vector3fMessage& message);
 EXPORT Vector3d Vector3dMessageToVector3d(const Vector3dMessage& message);
 
