@@ -34,6 +34,8 @@ LidarFrame::LidarFrame(LidarFrame&& other) noexcept
 
 LidarFrame& LidarFrame::operator=(LidarFrame&& other) = default;
 
+LidarFrame::~LidarFrame() = default;
+
 void LidarFrame::set_angle_start(float angle_start) {
   angle_start_ = angle_start;
 }

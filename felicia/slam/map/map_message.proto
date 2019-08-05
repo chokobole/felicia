@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+import "felicia/core/protobuf/geometry.proto";
+
+package felicia;
+
+message OccupancyGridMapMessage {
+  // Map size
+  SizeiMessage size = 1;
+  // Length of the cell (in meter)
+  float resolution = 2;
+  // The world coordinate from the position (0, 0) of map coordinate.
+  PointfMessage origin = 3;
+  // Indicates the occupancy probability. It is in row-major order.
+  // Values are 1 byte unsigned integer and between 0 and 100.
+  // The values out of this range are regarded as unknown.
+  bytes data = 4;
+  int64 timestamp = 5;
+}
