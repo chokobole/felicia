@@ -14,6 +14,7 @@ export const POINTCLOUD_FRAME_MESSAGE = 'felicia.PointcloudFrameMessage';
 export const TOPIC_INFO = 'felicia.TopicInfo';
 
 export const OCCUPANCY_GRID_MAP_MESSAGE = 'felicia.OccupancyGridMapMessage';
+export const POSEF_WITH_TIMESTAMP_MESSAGE = 'felicia.PosefWithTimestampMessage';
 
 const ChannelDefType = FeliciaProtoRoot.lookupEnum('felicia.ChannelDef.Type');
 const TopicInfo = FeliciaProtoRoot.lookupType(TOPIC_INFO);
@@ -34,6 +35,9 @@ PROTO_TYPES[POINTCLOUD_FRAME_MESSAGE] = FeliciaProtoRoot.lookupType(POINTCLOUD_F
 PROTO_TYPES[TOPIC_INFO] = TopicInfo;
 
 PROTO_TYPES[OCCUPANCY_GRID_MAP_MESSAGE] = FeliciaProtoRoot.lookupType(OCCUPANCY_GRID_MAP_MESSAGE);
+PROTO_TYPES[POSEF_WITH_TIMESTAMP_MESSAGE] = FeliciaProtoRoot.lookupType(
+  POSEF_WITH_TIMESTAMP_MESSAGE
+);
 
 export function hasWSChannel(topicInfo) {
   return topicInfo.topicSource.channelDefs.some(channelDef => {

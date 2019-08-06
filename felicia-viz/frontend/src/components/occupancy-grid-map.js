@@ -2,12 +2,10 @@
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
-import { Vector3 } from '@babylonjs/core/Maths/math';
 
 export default class OccupancyGridMap {
   constructor(name, width, height, subdivision, scene) {
     const ground = Mesh.CreateGround(name, width, height, subdivision, scene, true);
-    ground.addRotation(Math.PI / 2, 0, 0).addRotation(0, Math.PI, 0);
     const dynamicTexture = new DynamicTexture(`${name}-dynamic-texture`, { width, height }, scene);
 
     const materialGround = new StandardMaterial(`${name}-mat`, scene);
@@ -21,27 +19,26 @@ export default class OccupancyGridMap {
     this.dynamicTexture = dynamicTexture;
   }
 
+  toMainSceneCoordinate() {
+    this.ground.addRotation(Math.PI / 2, 0, 0).addRotation(0, Math.PI, 0);
+  }
+
   setOrigin(origin) {
     if (this.origin && this.origin.x === origin.x && this.origin.y === origin.y) return;
     const x = -this.width / 2;
     const y = -this.height / 2;
     const deltaX = x - origin.x;
     const deltaY = y - origin.y;
-    this.ground.position = new Vector3(
-      this.ground.position.x + deltaX,
-      this.ground.position.y,
-      this.ground.position.z + deltaY
-    );
+    this.ground.position.x += deltaX;
+    this.ground.position.z += deltaY;
     this.origin = origin;
   }
 
   setResolution(resolution) {
     if (this.resolution && this.resolution === resolution) return;
-    this.ground.scaling = new Vector3(
-      this.ground.scaling.x * resolution,
-      this.ground.scaling.y * resolution,
-      this.ground.scaling.z * resolution
-    );
+    this.ground.scaling.x *= resolution;
+    this.ground.scaling.y *= resolution;
+    this.ground.scaling.z *= resolution;
     this.resolution = resolution;
   }
 

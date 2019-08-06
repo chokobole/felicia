@@ -13,7 +13,16 @@ import { GridMaterial } from '@babylonjs/materials/grid';
 import '@babylonjs/core/Meshes/meshBuilder';
 
 import UI_TYPES from 'store/ui/ui-types';
+import { drawAxis } from 'util/babylon-util';
 import OccupancyGridMap from './occupancy-grid-map';
+
+function toMainSceneCoordinate(target, pose) {
+  const { point, theta } = pose;
+  const { x, y } = point;
+  target.position.x = -x; // eslint-disable-line no-param-reassign
+  target.position.y = -y; // eslint-disable-line no-param-reassign
+  target.rotation.z = Math.PI / 2 + theta; // eslint-disable-line no-param-reassign
+}
 
 @inject('store')
 @observer
@@ -69,17 +78,25 @@ export default class MainScene extends Component {
     engine.runRenderLoop(() => {
       const { store } = this.props;
       const viewState = store.uiState.findView(0);
-      const { map } = viewState;
+      const { map, pose } = viewState;
 
       if (map) {
         const { size, resolution, origin, data } = map;
         const { width, height } = size;
         if (!this.map || (this.width !== width || this.height !== height)) {
           this.map = new OccupancyGridMap('occupancy-grid-map', width, height, 1, scene);
+          this.map.toMainSceneCoordinate();
         }
         this.map.setOrigin(origin);
         this.map.setResolution(resolution);
         this.map.update(width, height, data);
+      }
+
+      if (pose) {
+        if (!this.pose) {
+          this.pose = drawAxis(1, scene);
+        }
+        toMainSceneCoordinate(this.pose, pose);
       }
 
       scene.render();

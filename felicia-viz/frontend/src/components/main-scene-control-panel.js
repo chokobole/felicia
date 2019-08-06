@@ -3,7 +3,10 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import { Form } from '@streetscape.gl/monochrome';
 
-import { OCCUPANCY_GRID_MAP_MESSAGE } from '@felicia-viz/communication';
+import {
+  OCCUPANCY_GRID_MAP_MESSAGE,
+  POSEF_WITH_TIMESTAMP_MESSAGE,
+} from '@felicia-viz/communication';
 import { TopicList } from '@felicia-viz/ui';
 
 import { FORM_STYLE } from 'custom-styles';
@@ -21,7 +24,12 @@ export default class MainSceneControlPanel extends Component {
     mapTopics: {
       type: 'custom',
       render: self => {
-        return <TopicList {...self} typeNames={[OCCUPANCY_GRID_MAP_MESSAGE]} />;
+        return (
+          <TopicList
+            {...self}
+            typeNames={[OCCUPANCY_GRID_MAP_MESSAGE, POSEF_WITH_TIMESTAMP_MESSAGE]}
+          />
+        );
       },
     },
   };
