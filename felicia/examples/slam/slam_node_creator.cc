@@ -1,6 +1,6 @@
 #include "felicia/core/felicia_init.h"
 #include "felicia/core/master/master_proxy.h"
-#include "felicia/examples/slam/hecto_slam/hector_slam_node.h"
+#include "felicia/examples/slam/hector_slam/hector_slam_node.h"
 #include "felicia/examples/slam/slam_node_create_flag.h"
 
 namespace felicia {

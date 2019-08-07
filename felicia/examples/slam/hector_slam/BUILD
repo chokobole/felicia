@@ -21,8 +21,8 @@ fel_cc_library(
         "scan_matcher.h",
     ],
     deps = [
+        "//felicia/core/util",
         "//felicia/drivers/lidar",
         "//felicia/slam",
-        "//felicia/core/util",
     ],
 )

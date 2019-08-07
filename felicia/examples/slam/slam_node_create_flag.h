@@ -1,7 +1,7 @@
 #ifndef FELICIA_EXAMPLES_SLAM_SLAM_NODE_CREATE_FLAG_H_
 #define FELICIA_EXAMPLES_SLAM_SLAM_NODE_CREATE_FLAG_H_
 
-#include "felicia/examples/slam/hecto_slam/hector_slam_flag.h"
+#include "felicia/examples/slam/hector_slam/hector_slam_flag.h"
 
 namespace felicia {
 

@@ -30,9 +30,9 @@
 #define FELICIA_EXAMPLES_SLAM_HECTOR_SLAM_MULTI_RESOLUTION_GRID_MAP_H_
 
 #include "felicia/core/lib/unit/geometry/size.h"
-#include "felicia/examples/slam/hecto_slam/log_odds_occupancy_grid_map.h"
-#include "felicia/examples/slam/hecto_slam/point_container.h"
-#include "felicia/examples/slam/hecto_slam/scan_matcher.h"
+#include "felicia/examples/slam/hector_slam/log_odds_occupancy_grid_map.h"
+#include "felicia/examples/slam/hector_slam/point_container.h"
+#include "felicia/examples/slam/hector_slam/scan_matcher.h"
 
 namespace felicia {
 namespace hector_slam {

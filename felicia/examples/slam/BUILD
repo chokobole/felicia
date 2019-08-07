@@ -12,6 +12,6 @@ fel_cc_binary(
     ],
     deps = fel_shared_library() + [
         "//felicia/core:felicia_init",
-        "//felicia/examples/slam/hecto_slam:hector_slam_node",
+        "//felicia/examples/slam/hector_slam:hector_slam_node",
     ],
 )

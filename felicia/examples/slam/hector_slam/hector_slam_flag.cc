@@ -26,7 +26,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //=================================================================================================
 
-#include "felicia/examples/slam/hecto_slam/hector_slam_flag.h"
+#include "felicia/examples/slam/hector_slam/hector_slam_flag.h"
 
 namespace felicia {
 namespace hector_slam {

@@ -33,8 +33,8 @@
 #include "felicia/core/communication/subscriber.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/drivers/lidar/lidar_frame.h"
-#include "felicia/examples/slam/hecto_slam/hector_slam.h"
-#include "felicia/examples/slam/hecto_slam/hector_slam_flag.h"
+#include "felicia/examples/slam/hector_slam/hector_slam.h"
+#include "felicia/examples/slam/hector_slam/hector_slam_flag.h"
 
 namespace felicia {
 namespace hector_slam {

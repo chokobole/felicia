@@ -26,7 +26,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //=================================================================================================
 
-#include "felicia/examples/slam/hecto_slam/multi_resolution_grid_map.h"
+#include "felicia/examples/slam/hector_slam/multi_resolution_grid_map.h"
 
 namespace felicia {
 namespace hector_slam {
