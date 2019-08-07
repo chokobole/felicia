@@ -42,11 +42,12 @@ namespace hector_slam {
 class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
  public:
   HectorSlamNode(const std::string& lidar_topic, const std::string& map_topic,
-                 const std::string& pose_topic,
+                 const std::string& pose_topic, int fps,
                  const HectorSlamFlag& hector_slam_flag)
       : lidar_topic_(lidar_topic),
         map_topic_(map_topic),
         pose_topic_(pose_topic),
+        fps_(fps),
         hector_slam_flag_(hector_slam_flag) {}
 
   void OnInit() override {
@@ -83,7 +84,7 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
   void RequestSubscribe() {
     communication::Settings settings;
     settings.queue_size = 1;
-    settings.period = ::base::TimeDelta::FromMilliseconds(100);
+    settings.period = ::base::TimeDelta::FromSecondsD(1.0 / fps_);
     settings.is_dynamic_buffer = true;
 
     lidar_subscriber_.RequestSubscribe(
@@ -107,7 +108,9 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
     if (!pose_topic_.empty()) {
       pose_publisher_.RequestPublish(
           node_info_, pose_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
+              ChannelDef::CHANNEL_TYPE_WS,
+          settings,
           ::base::BindOnce(&HectorSlamNode::OnRequestPublish,
                            ::base::Unretained(this)));
     }
@@ -115,7 +118,9 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
     if (!map_topic_.empty()) {
       map_publisher_.RequestPublish(
           node_info_, map_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
+              ChannelDef::CHANNEL_TYPE_WS,
+          settings,
           ::base::BindOnce(&HectorSlamNode::OnRequestPublish,
                            ::base::Unretained(this)));
     }
@@ -164,6 +169,7 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
   const std::string lidar_topic_;
   const std::string map_topic_;
   const std::string pose_topic_;
+  const int fps_;
   const HectorSlamFlag& hector_slam_flag_;
   std::unique_ptr<HectorSlam> hector_slam_;
   Subscriber<LidarFrameMessage> lidar_subscriber_;

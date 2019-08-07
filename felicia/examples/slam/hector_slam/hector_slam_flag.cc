@@ -163,7 +163,7 @@ bool HectorSlamFlag::Parse(FlagParser& parser) {
 }
 
 bool HectorSlamFlag::Validate() const {
-  if (map_multi_res_levels_flag_ < 0) {
+  if (map_multi_res_levels_flag_ <= 0) {
     std::cerr << kRedError << "map_multi_res_levels should be positive."
               << std::endl;
     return false;
@@ -182,7 +182,7 @@ std::vector<std::string> HectorSlamFlag::CollectUsages() const {
   return usages;
 }
 
-std::string HectorSlamFlag::Description() const { return "Hector slam flags"; }
+std::string HectorSlamFlag::Description() const { return "HectorSLAM flags"; }
 
 std::vector<NamedHelpType> HectorSlamFlag::CollectNamedHelps() const {
   return {
