@@ -20,7 +20,7 @@ class SlamNodeCreateFlag : public FlagParser::Delegate {
   const StringFlag* map_topic_flag() const { return map_topic_flag_.get(); }
   const StringFlag* pose_topic_flag() const { return pose_topic_flag_.get(); }
 
-  const HectorSlamFlag& hector_slam_delegate() const {
+  const hector_slam::HectorSlamFlag& hector_slam_delegate() const {
     return hector_slam_delegate_;
   }
 
@@ -49,7 +49,7 @@ class SlamNodeCreateFlag : public FlagParser::Delegate {
   std::unique_ptr<StringFlag> pose_topic_flag_;
 
   SlamKind current_slam_kind_;
-  HectorSlamFlag hector_slam_delegate_;
+  hector_slam::HectorSlamFlag hector_slam_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SlamNodeCreateFlag);
 };
