@@ -37,9 +37,8 @@ Posef ScanMatcher<MapType>::Match(const Posef& pose,
     estimated = new_estimated.value();
   }
 
-  return {
-      map->ToWorldCoordinate(estimated.point()),
-      normalize_angle(estimated.theta(), 0.f, k2PiFloat)};
+  return {map->ToWorldCoordinate(estimated.point()),
+          normalize_angle(estimated.theta(), 0.f, k2PiFloat)};
 }
 
 template <typename MapType>

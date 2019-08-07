@@ -124,4 +124,51 @@ HectorSlamFlag::HectorSlamFlag() {
 
 HectorSlamFlag::~HectorSlamFlag() = default;
 
+bool HectorSlamFlag::Parse(FlagParser& parser) {
+  return PARSE_OPTIONAL_FLAG(
+      parser, map_resolution_flag_, map_size_flag_, map_start_x_flag_,
+      map_start_y_flag_, map_multi_res_levels_flag_,
+      map_update_distance_thresh_flag_, map_update_angle_thresh_flag_,
+      update_factor_free_flag_, update_factor_occupied_flag_,
+      laser_min_dist_flag_, laser_max_dist_flag_);
+}
+
+bool HectorSlamFlag::Validate() const {
+  if (map_multi_res_levels_flag_ < 0) {
+    std::cerr << kRedError << "map_multi_res_levels should be positive."
+              << std::endl;
+    return false;
+  }
+  return true;
+}
+
+std::vector<std::string> HectorSlamFlag::CollectUsages() const {
+  std::vector<std::string> usages;
+  usages.push_back("[--help]");
+  AddUsage(usages, map_resolution_flag_, map_size_flag_, map_start_x_flag_,
+           map_start_y_flag_, map_multi_res_levels_flag_,
+           map_update_distance_thresh_flag_, map_update_angle_thresh_flag_,
+           update_factor_free_flag_, update_factor_occupied_flag_,
+           laser_min_dist_flag_, laser_max_dist_flag_);
+  return usages;
+}
+
+std::string HectorSlamFlag::Description() const { return "Hector slam flags"; }
+
+std::vector<NamedHelpType> HectorSlamFlag::CollectNamedHelps() const {
+  return {
+      std::make_pair(
+          kYellowOptions,
+          std::vector<std::string>{
+              map_resolution_flag_->help(), map_size_flag_->help(),
+              map_start_x_flag_->help(), map_start_y_flag_->help(),
+              map_multi_res_levels_flag_->help(),
+              map_update_distance_thresh_flag_->help(),
+              map_update_angle_thresh_flag_->help(),
+              update_factor_free_flag_->help(),
+              update_factor_occupied_flag_->help(),
+              laser_min_dist_flag_->help(), laser_max_dist_flag_->help()}),
+  };
+}
+
 }  // namespace felicia

@@ -7,7 +7,7 @@
 
 namespace felicia {
 
-class HectorSlamFlag {
+class HectorSlamFlag : public FlagParser::Delegate {
  public:
   HectorSlamFlag();
   ~HectorSlamFlag();
@@ -44,9 +44,15 @@ class HectorSlamFlag {
     return laser_max_dist_flag_.get();
   }
 
- private:
-  friend class SlamNodeCreateFlag;
+  bool Parse(FlagParser& parser) override;
 
+  bool Validate() const override;
+
+  std::vector<std::string> CollectUsages() const override;
+  std::string Description() const override;
+  std::vector<NamedHelpType> CollectNamedHelps() const override;
+
+ private:
   float map_resolution_;
   int map_size_;
   float map_start_x_;

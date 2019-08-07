@@ -24,10 +24,12 @@ int RealMain(int argc, char* argv[]) {
 
   NodeInfo node_info;
   node_info.set_name(delegate.name_flag()->value());
-  master_proxy.RequestRegisterNode<HectorSlamNode>(
-      node_info, delegate.lidar_topic_flag()->value(),
-      delegate.map_topic_flag()->value(), delegate.pose_topic_flag()->value(),
-      delegate.hector_slam_flag());
+  if (delegate.slam_kind() == SlamNodeCreateFlag::SLAM_KIND_HECTOR_SLAM) {
+    master_proxy.RequestRegisterNode<HectorSlamNode>(
+        node_info, delegate.lidar_topic_flag()->value(),
+        delegate.map_topic_flag()->value(), delegate.pose_topic_flag()->value(),
+        delegate.hector_slam_delegate());
+  }
 
   master_proxy.Run();
 
