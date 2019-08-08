@@ -60,15 +60,14 @@ def on_request_publish(self, status):
         fel.log(fel.ERROR, status.error_message())
 
 def start_camera(self):
-    # You should set the camera format if you have any you want to run with.
-    s = self.camera.start(fel.drivers.CameraFormat(640, 480, PIXEL_FORMAT_BGR, 25),
-                          self.on_camera_frame, self.on_camera_error)
-    if s.ok():
-        # fel.MasterProxy.post_delayed_task(
-        #     self.request_unpublish, fel.TimeDelta.from_seconds(10))
-        pass
-    else:
-        fel.log(fel.ERROR, s.error_message())
+    pixel_format = PixelFormat.Value(
+        self.camera_flag.pixel_format_flag.value)
+    s = self.camera.start(
+        fel.drivers.CameraFormat(self.camera_flag.width_flag.value,
+                                    self.camera_flag.height_flag.value,
+                                    pixel_format,
+                                    self.camera_flag.fps_flag.value),
+        self.on_camera_frame, self.on_camera_error)
 ```
 
 And here you can request a `CameraFormat` you want to capture. You can check the supported formats of your camera by running command below or `CameraFactory.get_supported_camera_formats()`.

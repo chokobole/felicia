@@ -2,7 +2,10 @@
 
 namespace felicia {
 
-DepthCameraFlag::DepthCameraFlag() {
+DepthCameraFlag::DepthCameraFlag(int default_width, int default_height,
+                                 int default_fps, int default_pixel_format)
+    : CameraFlag(default_width, default_height, default_fps,
+                 default_pixel_format) {
   {
     StringFlag::Builder builder(MakeValueStore<std::string>(&color_topic_));
     auto flag = builder.SetLongName("--color_topic")
@@ -34,17 +37,14 @@ DepthCameraFlag::~DepthCameraFlag() = default;
 
 bool DepthCameraFlag::Parse(FlagParser& parser) {
   return PARSE_OPTIONAL_FLAG(parser, name_flag_, device_list_flag_,
-                             device_index_flag_, color_topic_flag_,
+                             device_index_flag_, width_flag_, height_flag_,
+                             fps_flag_, pixel_format_flag_, color_topic_flag_,
                              depth_topic_flag_, pointcloud_topic_flag_);
 }
 
 bool DepthCameraFlag::Validate() const {
-  if (device_list_flag_->is_set()) {
-    PrintDeviceListFlagHelp();
-    return true;
-  }
-
-  return CheckIfFlagWasSet(device_index_flag_);
+  if (CheckIfDeviceListFlagWasSet()) return true;
+  return CheckIfCameraFlagsValid(true);
 }
 
 }  // namespace felicia

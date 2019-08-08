@@ -5,9 +5,9 @@ from felicia.examples.learn.message_communication.protobuf.message_spec_pb2 impo
 
 
 class SimpleSubscribingNode(fel.NodeLifecycle):
-    def __init__(self, topic):
+    def __init__(self, node_create_flag):
         super().__init__()
-        self.topic = topic
+        self.topic = node_create_flag.topic_flag.value
         self.subscriber = fel.communication.Subscriber()
 
     def on_init(self):
@@ -28,7 +28,9 @@ class SimpleSubscribingNode(fel.NodeLifecycle):
 
         self.subscriber.request_subscribe(self.node_info, self.topic,
                                           ChannelDef.CHANNEL_TYPE_TCP |
-                                          ChannelDef.CHANNEL_TYPE_UDP,
+                                          ChannelDef.CHANNEL_TYPE_UDP |
+                                          ChannelDef.CHANNEL_TYPE_UDS |
+                                          ChannelDef.CHANNEL_TYPE_SHM,
                                           MessageSpec, self.on_message, self.on_subscription_error,
                                           settings, self.on_request_subscribe)
 

@@ -7,18 +7,19 @@ namespace felicia {
 
 class RsCameraFlag : public DepthCameraFlag {
  public:
-  RsCameraFlag();
+  RsCameraFlag(int default_width = kDefaultWidth,
+               int default_height = kDefaultHeight,
+               int default_fps = kDefaultFps);
   ~RsCameraFlag();
 
   const StringFlag* imu_topic_flag() const { return imu_topic_flag_.get(); }
 
   bool Parse(FlagParser& parser) override;
 
-  AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(name_flag_, device_list_flag_,
-                                          device_index_flag_, color_topic_flag_,
-                                          depth_topic_flag_,
-                                          pointcloud_topic_flag_,
-                                          imu_topic_flag_)
+  AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(
+      name_flag_, device_list_flag_, device_index_flag_, width_flag_,
+      height_flag_, fps_flag_, pixel_format_flag_, color_topic_flag_,
+      depth_topic_flag_, pointcloud_topic_flag_, imu_topic_flag_)
 
  private:
   std::string imu_topic_;

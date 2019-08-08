@@ -1,6 +1,6 @@
 import sys
 
-import import_order_resolver # Should be before import felicia_py
+import import_order_resolver  # Should be before import felicia_py
 import felicia_py as fel
 from felicia.core.protobuf.master_data_pb2 import NodeInfo
 import felicia_py.command_line_interface as cli
@@ -29,15 +29,10 @@ def main():
 
     if delegate.is_publshing_node_flag.value:
         fel.MasterProxy.request_register_node(
-            SimplePublishingNode,
-            node_info,
-            delegate.topic_flag.value,
-            delegate.channel_type_flag.value)
+            SimplePublishingNode, node_info, delegate)
     else:
         fel.MasterProxy.request_register_node(
-            SimpleSubscribingNode,
-            node_info,
-            delegate.topic_flag.value)
+            SimpleSubscribingNode, node_info, delegate)
 
     fel.MasterProxy.run()
 

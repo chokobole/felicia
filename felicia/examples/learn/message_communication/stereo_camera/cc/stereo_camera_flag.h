@@ -7,7 +7,10 @@ namespace felicia {
 
 class StereoCameraFlag : public CameraFlag {
  public:
-  StereoCameraFlag();
+  StereoCameraFlag(int default_width = kDefaultWidth,
+                   int default_height = kDefaultHeight,
+                   int default_fps = kDefaultFps,
+                   int pixel_format = kDefaultPixelFormat);
   ~StereoCameraFlag();
 
   const StringFlag* left_camera_topic_flag() const {
@@ -25,12 +28,10 @@ class StereoCameraFlag : public CameraFlag {
 
   bool Validate() const override;
 
-  AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(name_flag_, device_list_flag_,
-                                          device_index_flag_,
-                                          left_camera_topic_flag_,
-                                          right_camera_topic_flag_,
-                                          depth_topic_flag_,
-                                          pointcloud_topic_flag_)
+  AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(
+      name_flag_, device_list_flag_, device_index_flag_, width_flag_,
+      height_flag_, fps_flag_, pixel_format_flag_, left_camera_topic_flag_,
+      right_camera_topic_flag_, depth_topic_flag_, pointcloud_topic_flag_)
 
  protected:
   std::string left_camera_topic_;

@@ -4,14 +4,16 @@
 #include "felicia/core/communication/subscriber.h"
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/core/node/node_lifecycle.h"
+#include "felicia/examples/learn/message_communication/common/cc/node_create_flag.h"
 #include "felicia/examples/learn/message_communication/protobuf/message_spec.pb.h"
 
 namespace felicia {
 
 class SimpleSubscribingNode : public NodeLifecycle {
  public:
-  SimpleSubscribingNode(const std::string& topic, bool use_ssl)
-      : topic_(topic), use_ssl_(use_ssl) {}
+  explicit SimpleSubscribingNode(const NodeCreateFlag& node_create_flag)
+      : node_create_flag_(node_create_flag),
+        topic_(node_create_flag_.topic_flag()->value()) {}
 
   void OnInit() override {
     std::cout << "SimpleSubscribingNode::OnInit()" << std::endl;
@@ -38,7 +40,8 @@ class SimpleSubscribingNode : public NodeLifecycle {
   void RequestSubscribe() {
     communication::Settings settings;
     settings.buffer_size = Bytes::FromBytes(512);
-    settings.channel_settings.tcp_settings.use_ssl = use_ssl_;
+    settings.channel_settings.tcp_settings.use_ssl =
+        node_create_flag_.use_ssl_flag()->value();
 
     subscriber_.RequestSubscribe(
         node_info_, topic_,
@@ -82,8 +85,8 @@ class SimpleSubscribingNode : public NodeLifecycle {
 
  private:
   NodeInfo node_info_;
-  std::string topic_;
-  bool use_ssl_;
+  const NodeCreateFlag& node_create_flag_;
+  const std::string topic_;
   Subscriber<MessageSpec> subscriber_;
 };
 }  // namespace felicia

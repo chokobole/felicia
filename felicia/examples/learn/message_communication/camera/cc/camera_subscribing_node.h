@@ -4,12 +4,14 @@
 #include "felicia/core/communication/subscriber.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/drivers/camera/camera_frame_message.pb.h"
+#include "felicia/examples/learn/message_communication/common/cc/camera_flag.h"
 
 namespace felicia {
 
 class CameraSubscribingNode : public NodeLifecycle {
  public:
-  CameraSubscribingNode(const std::string& topic) : topic_(topic) {}
+  explicit CameraSubscribingNode(const CameraFlag& camera_flag)
+      : camera_flag_(camera_flag), topic_(camera_flag_.topic_flag()->value()) {}
 
   void OnInit() override {
     std::cout << "CameraSubscribingNode::OnInit()" << std::endl;
@@ -29,7 +31,8 @@ class CameraSubscribingNode : public NodeLifecycle {
   void RequestSubscribe() {
     communication::Settings settings;
     settings.queue_size = 1;
-    settings.period = ::base::TimeDelta::FromMilliseconds(100);
+    settings.period = ::base::TimeDelta::FromMilliseconds(
+        1.0 / camera_flag_.fps_flag()->value());
     settings.is_dynamic_buffer = true;
 
     subscriber_.RequestSubscribe(
@@ -82,7 +85,8 @@ class CameraSubscribingNode : public NodeLifecycle {
 
  private:
   NodeInfo node_info_;
-  std::string topic_;
+  const CameraFlag& camera_flag_;
+  const std::string topic_;
   Subscriber<CameraFrameMessage> subscriber_;
 };
 

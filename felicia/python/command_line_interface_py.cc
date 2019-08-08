@@ -88,6 +88,7 @@ void AddFlag(py::module& m, const char* name) {
       .def_property_readonly("short_name", &FlagTy::short_name)
       .def_property_readonly("long_name", &FlagTy::long_name)
       .def_property_readonly("name", &FlagTy::name)
+      .def_property_readonly("display_name", &FlagTy::display_name)
       .def_property_readonly("usage", &FlagTy::usage)
       .def_property_readonly("help", [](FlagTy& self) { return self.help(); })
       .def_property_readonly("value", &FlagTy::value)

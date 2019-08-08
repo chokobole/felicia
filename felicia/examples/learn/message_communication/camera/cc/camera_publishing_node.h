@@ -5,14 +5,17 @@
 #include "felicia/core/message/protobuf_util.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/drivers/camera/camera_factory.h"
+#include "felicia/examples/learn/message_communication/common/cc/camera_flag.h"
 
 namespace felicia {
 
 class CameraPublishingNode : public NodeLifecycle {
  public:
-  CameraPublishingNode(const std::string& topic,
+  CameraPublishingNode(const CameraFlag& camera_flag,
                        const CameraDescriptor& camera_descriptor)
-      : topic_(topic), camera_descriptor_(camera_descriptor) {}
+      : camera_flag_(camera_flag),
+        topic_(camera_flag_.topic_flag()->value()),
+        camera_descriptor_(camera_descriptor) {}
 
   void OnInit() override {
     std::cout << "CameraPublishingNode::OnInit()" << std::endl;
@@ -53,7 +56,9 @@ class CameraPublishingNode : public NodeLifecycle {
 
     publisher_.RequestPublish(
         node_info_, topic_,
-        ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
+        ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
+            ChannelDef::CHANNEL_TYPE_WS,
+        settings,
         ::base::BindOnce(&CameraPublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
   }
@@ -71,9 +76,13 @@ class CameraPublishingNode : public NodeLifecycle {
   }
 
   void StartCamera() {
-    // You should set the camera format if you have any you want to run with.
+    PixelFormat pixel_format;
+    PixelFormat_Parse(camera_flag_.pixel_format_flag()->value(), &pixel_format);
+
     Status s = camera_->Start(
-        CameraFormat(640, 480, PIXEL_FORMAT_BGR, 25),
+        CameraFormat(camera_flag_.width_flag()->value(),
+                     camera_flag_.height_flag()->value(), pixel_format,
+                     camera_flag_.fps_flag()->value()),
         ::base::BindRepeating(&CameraPublishingNode::OnCameraFrame,
                               ::base::Unretained(this)),
         ::base::BindRepeating(&CameraPublishingNode::OnCameraError,
@@ -131,7 +140,8 @@ class CameraPublishingNode : public NodeLifecycle {
 
  private:
   NodeInfo node_info_;
-  std::string topic_;
+  const CameraFlag& camera_flag_;
+  const std::string topic_;
   CameraDescriptor camera_descriptor_;
   Publisher<CameraFrameMessage> publisher_;
   std::unique_ptr<CameraInterface> camera_;

@@ -34,38 +34,38 @@
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/drivers/lidar/lidar_frame.h"
 #include "felicia/examples/slam/hector_slam/hector_slam.h"
-#include "felicia/examples/slam/hector_slam/hector_slam_flag.h"
+#include "felicia/examples/slam/slam_node_create_flag.h"
 
 namespace felicia {
 namespace hector_slam {
 
 class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
  public:
-  HectorSlamNode(const std::string& lidar_topic, const std::string& map_topic,
-                 const std::string& pose_topic, int fps,
-                 const HectorSlamFlag& hector_slam_flag)
-      : lidar_topic_(lidar_topic),
-        map_topic_(map_topic),
-        pose_topic_(pose_topic),
-        fps_(fps),
-        hector_slam_flag_(hector_slam_flag) {}
+  explicit HectorSlamNode(const SlamNodeCreateFlag& slam_node_create_flag)
+      : slam_node_create_flag_(slam_node_create_flag),
+        lidar_topic_(slam_node_create_flag_.lidar_topic_flag()->value()),
+        map_topic_(slam_node_create_flag_.map_topic_flag()->value()),
+        pose_topic_(slam_node_create_flag_.pose_topic_flag()->value()),
+        fps_(slam_node_create_flag_.fps_flag()->value()) {}
 
   void OnInit() override {
-    int map_size = hector_slam_flag_.map_size_flag()->value();
-    float map_resolution = hector_slam_flag_.map_resolution_flag()->value();
-    float map_start_x = hector_slam_flag_.map_start_x_flag()->value();
-    float map_start_y = hector_slam_flag_.map_start_y_flag()->value();
-    int levels = hector_slam_flag_.map_multi_res_levels_flag()->value();
+    const HectorSlamFlag& hector_slam_flag =
+        slam_node_create_flag_.hector_slam_delegate();
+    int map_size = hector_slam_flag.map_size_flag()->value();
+    float map_resolution = hector_slam_flag.map_resolution_flag()->value();
+    float map_start_x = hector_slam_flag.map_start_x_flag()->value();
+    float map_start_y = hector_slam_flag.map_start_y_flag()->value();
+    int levels = hector_slam_flag.map_multi_res_levels_flag()->value();
     float map_update_distance_thresh =
-        hector_slam_flag_.map_update_distance_thresh_flag()->value();
+        hector_slam_flag.map_update_distance_thresh_flag()->value();
     float map_update_angle_thresh =
-        hector_slam_flag_.map_update_angle_thresh_flag()->value();
+        hector_slam_flag.map_update_angle_thresh_flag()->value();
     float update_factor_free =
-        hector_slam_flag_.update_factor_free_flag()->value();
+        hector_slam_flag.update_factor_free_flag()->value();
     float update_factor_occupied =
-        hector_slam_flag_.update_factor_occupied_flag()->value();
-    float laser_min_dist = hector_slam_flag_.laser_min_dist_flag()->value();
-    float laser_max_dist = hector_slam_flag_.laser_max_dist_flag()->value();
+        hector_slam_flag.update_factor_occupied_flag()->value();
+    float laser_min_dist = hector_slam_flag.laser_min_dist_flag()->value();
+    float laser_max_dist = hector_slam_flag.laser_max_dist_flag()->value();
     hector_slam_ = std::make_unique<HectorSlam>(
         this, Sizei{map_size, map_size}, map_resolution,
         Pointf{map_start_x, map_start_y}, levels, map_update_distance_thresh,
@@ -166,11 +166,11 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
 
  private:
   NodeInfo node_info_;
+  const SlamNodeCreateFlag& slam_node_create_flag_;
   const std::string lidar_topic_;
   const std::string map_topic_;
   const std::string pose_topic_;
   const int fps_;
-  const HectorSlamFlag& hector_slam_flag_;
   std::unique_ptr<HectorSlam> hector_slam_;
   Subscriber<LidarFrameMessage> lidar_subscriber_;
   Publisher<PosefWithTimestampMessage> pose_publisher_;

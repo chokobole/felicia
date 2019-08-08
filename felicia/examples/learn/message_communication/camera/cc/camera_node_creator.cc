@@ -61,11 +61,11 @@ int RealMain(int argc, char* argv[]) {
 
   if (delegate.is_publishing_node_flag()->value()) {
     master_proxy.RequestRegisterNode<CameraPublishingNode>(
-        node_info, delegate.topic_flag()->value(),
+        node_info, delegate,
         camera_descriptors[delegate.device_index_flag()->value()]);
   } else {
-    master_proxy.RequestRegisterNode<CameraSubscribingNode>(
-        node_info, delegate.topic_flag()->value());
+    master_proxy.RequestRegisterNode<CameraSubscribingNode>(node_info,
+                                                            delegate);
   }
 
   master_proxy.Run();

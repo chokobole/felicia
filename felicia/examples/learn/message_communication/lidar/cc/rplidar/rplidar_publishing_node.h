@@ -6,6 +6,7 @@
 #include "felicia/core/communication/publisher.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/drivers/vendors/rplidar/rplidar_factory.h"
+#include "felicia/examples/learn/message_communication/lidar/cc/rplidar/rplidar_flag.h"
 
 namespace felicia {
 
@@ -18,13 +19,12 @@ void Shutdown(int signal);
 
 class RPlidarPublishingNode : public NodeLifecycle {
  public:
-  RPlidarPublishingNode(const std::string& topic,
-                        const std::string& channel_type,
-                        const LidarEndpoint& lidar_endpoint,
-                        const std::string& scan_mode)
-      : topic_(topic), lidar_endpoint_(lidar_endpoint), scan_mode_(scan_mode) {
-    ChannelDef::Type_Parse(channel_type, &channel_type_);
-  }
+  RPlidarPublishingNode(const RPLidarFlag& rplidar_flag,
+                        const LidarEndpoint& lidar_endpoint)
+      : rplidar_flag_(rplidar_flag),
+        topic_(rplidar_flag_.topic_flag()->value()),
+        scan_mode_(rplidar_flag_.scan_mode_flag()->value()),
+        lidar_endpoint_(lidar_endpoint) {}
 
   void OnInit() override {
     std::cout << "RPlidarPublishingNode::OnInit()" << std::endl;
@@ -53,8 +53,12 @@ class RPlidarPublishingNode : public NodeLifecycle {
     settings.is_dynamic_buffer = true;
     settings.channel_settings.ws_settings.permessage_deflate_enabled = false;
 
+    ChannelDef::Type channel_type;
+    ChannelDef::Type_Parse(rplidar_flag_.channel_type_flag()->value(),
+                           &channel_type);
+
     lidar_publisher_.RequestPublish(
-        node_info_, topic_, channel_type_ | ChannelDef::CHANNEL_TYPE_WS,
+        node_info_, topic_, channel_type | ChannelDef::CHANNEL_TYPE_WS,
         settings,
         ::base::BindOnce(&RPlidarPublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
@@ -155,10 +159,10 @@ class RPlidarPublishingNode : public NodeLifecycle {
 
  private:
   NodeInfo node_info_;
-  std::string topic_;
-  ChannelDef::Type channel_type_;
+  const RPLidarFlag& rplidar_flag_;
+  const std::string topic_;
+  const std::string scan_mode_;
   LidarEndpoint lidar_endpoint_;
-  std::string scan_mode_;
   std::unique_ptr<RPlidar> lidar_;
   Publisher<LidarFrameMessage> lidar_publisher_;
 };

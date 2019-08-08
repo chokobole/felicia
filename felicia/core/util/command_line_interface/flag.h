@@ -209,6 +209,11 @@ class Flag {
   const std::string& short_name() const { return short_name_; }
   const std::string& long_name() const { return long_name_; }
   const std::string& name() const { return name_; }
+  const std::string& display_name() const {
+    if (!name_.empty()) return name_;
+    if (!long_name_.empty()) return long_name_;
+    return short_name_;
+  }
   std::string usage() const;
   std::string help(int help_start = 20) const;
   bool is_positional() const { return !name_.empty(); }
@@ -475,19 +480,23 @@ bool Flag<T, Traits>::ParseValue(::base::StringPiece arg) {
 
 template <typename T>
 bool CheckIfFlagWasSet(T&& flag) {
-  bool ret = flag->is_set();
-  if (ret) return ret;
+  if (flag->is_set()) return true;
 
-  std::string name;
-  if (flag->is_positional()) {
-    name = flag->name();
-  } else {
-    name = flag->long_name();
+  std::cerr << kRedError << flag->display_name() << " was not set."
+            << std::endl;
+  return false;
+}
+
+template <typename T>
+bool CheckIfFlagPositive(T&& flag) {
+  if (!CheckIfFlagWasSet(std::forward<T&&>(flag))) return false;
+
+  if (flag->value() <= 0) {
+    std::cerr << kRedError << flag->display_name() << " should be positive."
+              << std::endl;
+    return false;
   }
-
-  std::cerr << kRedError << name << " was not set." << std::endl;
-
-  return ret;
+  return true;
 }
 
 EXPORT bool CheckIfOneOfFlagWasSet(std::vector<std::string>& names);

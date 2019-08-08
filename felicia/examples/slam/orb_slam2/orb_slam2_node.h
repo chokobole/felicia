@@ -8,24 +8,22 @@
 #include "felicia/drivers/camera/camera_frame.h"
 #include "felicia/examples/slam/orb_slam2/orb_slam2_flag.h"
 #include "felicia/examples/slam/orb_slam2/system.h"
+#include "felicia/examples/slam/slam_node_create_flag.h"
 
 namespace felicia {
 namespace orb_slam2 {
 
 class OrbSlam2Node : public NodeLifecycle, public System::Client {
  public:
-  OrbSlam2Node(const std::string& left_color_topic,
-               const std::string& right_color_topic,
-               const std::string& depth_topic, const std::string& map_topic,
-               const std::string& pose_topic, int fps,
-               const OrbSlam2Flag& orb_slam2_flag)
-      : left_color_topic_(left_color_topic),
-        right_color_topic_(right_color_topic),
-        depth_topic_(depth_topic),
-        map_topic_(map_topic),
-        pose_topic_(pose_topic),
-        fps_(fps),
-        orb_slam2_flag_(orb_slam2_flag) {}
+  explicit OrbSlam2Node(const SlamNodeCreateFlag& slam_node_create_flag)
+      : slam_node_create_flag_(slam_node_create_flag),
+        left_color_topic_(
+            slam_node_create_flag_.left_color_topic_flag()->value()),
+        right_color_topic_(
+            slam_node_create_flag_.right_color_topic_flag()->value()),
+        depth_topic_(slam_node_create_flag_.depth_topic_flag()->value()),
+        pose_topic_(slam_node_create_flag_.pose_topic_flag()->value()),
+        fps_(slam_node_create_flag_.fps_flag()->value()) {}
 
   void OnInit() override {
     orb_slam2::System::SensorType sensor_type;
@@ -38,9 +36,12 @@ class OrbSlam2Node : public NodeLifecycle, public System::Client {
     } else {
       NOTREACHED() << "Can't set sensor_type";
     }
-    const std::string& voc_path = orb_slam2_flag_.voc_path_flag()->value();
+
+    const OrbSlam2Flag& orb_slam2_flag =
+        slam_node_create_flag_.orb_slam2_delegate();
+    const std::string& voc_path = orb_slam2_flag.voc_path_flag()->value();
     const std::string& settings_path =
-        orb_slam2_flag_.settings_path_flag()->value();
+        orb_slam2_flag.settings_path_flag()->value();
 
     orb_slam2_ = std::make_unique<orb_slam2::System>(
         this, ::base::FilePath{ToFilePathString(voc_path)},
@@ -117,13 +118,13 @@ class OrbSlam2Node : public NodeLifecycle, public System::Client {
 
  private:
   NodeInfo node_info_;
+  const SlamNodeCreateFlag& slam_node_create_flag_;
   const std::string left_color_topic_;
   const std::string right_color_topic_;
   const std::string depth_topic_;
   const std::string map_topic_;
   const std::string pose_topic_;
   const int fps_;
-  const OrbSlam2Flag& orb_slam2_flag_;
   std::unique_ptr<orb_slam2::System> orb_slam2_;
   Subscriber<CameraFrameMessage> left_color_subscriber_;
   Publisher<PosefWithTimestampMessage> pose_publisher_;

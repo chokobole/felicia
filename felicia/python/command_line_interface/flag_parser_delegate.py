@@ -1,3 +1,5 @@
+import sys
+
 from six.moves import filter, map
 
 import felicia_py.command_line_interface as cli
@@ -65,6 +67,24 @@ class FlagParserDelegate(cli._FlagParserDelegate):
             (cli.TextStyle.yellow("Optional arguments:"), list(
                 map(lambda x: x.help, optionals)) if optionals is not None else [])
         ]
+
+    def check_if_flag_was_set(self, flag):
+        if flag.is_set():
+            return True
+
+        print("{} {} was not set.".format(
+            cli.RED_ERROR, flag.display_name), file=sys.stderr)
+        return False
+
+    def check_if_flag_positive(self, flag):
+        if not self.check_if_flag_was_set(flag):
+            return False
+
+        if flag.value <= 0:
+            print("{} {} should be positive.".format(
+                cli.RED_ERROR, flag.display_name), file=sys.stderr)
+            return False
+        return True
 
     def __del__(self):
         self._collect_flags()

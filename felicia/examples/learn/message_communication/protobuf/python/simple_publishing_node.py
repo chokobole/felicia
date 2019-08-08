@@ -5,10 +5,10 @@ from felicia.examples.learn.message_communication.protobuf.message_spec_pb2 impo
 
 
 class SimplePublishingNode(fel.NodeLifecycle):
-    def __init__(self, topic, channel_type):
+    def __init__(self, node_create_flag):
         super().__init__()
-        self.topic = topic
-        self.channel_def_type = ChannelDef.Type.Value(channel_type)
+        self.topic = node_create_flag.topic_flag.value
+        self.channel_def_type = ChannelDef.Type.Value(node_create_flag.channel_type_flag.value)
         self.publisher = fel.communication.Publisher()
         self.message_id = 0
         self.timestamper = fel.Timestamper()

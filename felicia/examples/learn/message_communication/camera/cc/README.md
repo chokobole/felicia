@@ -73,9 +73,13 @@ void OnRequestPublish(const Status& s) {
 }
 
 void StartCamera() {
-    // You should set the camera format if you have any you want to run with.
+    PixelFormat pixel_format;
+    PixelFormat_Parse(camera_flag_.pixel_format_flag()->value(), &pixel_format);
+
     Status s = camera_->Start(
-        CameraFormat(640, 480, PIXEL_FORMAT_BGR, 25),
+        CameraFormat(camera_flag_.width_flag()->value(),
+                     camera_flag_.height_flag()->value(), pixel_format,
+                     camera_flag_.fps_flag()->value()),
         ::base::BindRepeating(&CameraPublishingNode::OnCameraFrame,
                               ::base::Unretained(this)),
         ::base::BindRepeating(&CameraPublishingNode::OnCameraError,

@@ -2,7 +2,8 @@
 
 namespace felicia {
 
-RsCameraFlag::RsCameraFlag() {
+RsCameraFlag::RsCameraFlag(int default_width, int default_height,
+                           int default_fps) {
   {
     StringFlag::Builder builder(MakeValueStore<std::string>(&imu_topic_));
     auto flag = builder.SetLongName("--imu_topic")
@@ -15,10 +16,10 @@ RsCameraFlag::RsCameraFlag() {
 RsCameraFlag::~RsCameraFlag() = default;
 
 bool RsCameraFlag::Parse(FlagParser& parser) {
-  return PARSE_OPTIONAL_FLAG(parser, name_flag_, device_list_flag_,
-                             device_index_flag_, color_topic_flag_,
-                             depth_topic_flag_, pointcloud_topic_flag_,
-                             imu_topic_flag_);
+  return PARSE_OPTIONAL_FLAG(
+      parser, name_flag_, device_list_flag_, device_index_flag_, width_flag_,
+      height_flag_, fps_flag_, pixel_format_flag_, color_topic_flag_,
+      depth_topic_flag_, pointcloud_topic_flag_, imu_topic_flag_);
 }
 
 }  // namespace felicia

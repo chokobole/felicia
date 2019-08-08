@@ -5,20 +5,21 @@
 #include "felicia/core/message/protobuf_util.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/drivers/vendors/zed/zed_camera_factory.h"
+#include "felicia/examples/learn/message_communication/stereo_camera/cc/stereo_camera_flag.h"
 
 namespace felicia {
 
 class ZedCameraPublishingNode : public NodeLifecycle {
  public:
-  ZedCameraPublishingNode(const std::string& left_camera_topic,
-                          const std::string& right_camera_topic,
-                          const std::string& depth_topic,
-                          const std::string& pointcloud_topic,
+  ZedCameraPublishingNode(const StereoCameraFlag& stereo_camera_flag,
                           const ZedCameraDescriptor& camera_descriptor)
-      : left_camera_topic_(left_camera_topic),
-        right_camera_topic_(right_camera_topic),
-        depth_topic_(depth_topic),
-        pointcloud_topic_(pointcloud_topic),
+      : stereo_camera_flag_(stereo_camera_flag),
+        left_camera_topic_(
+            stereo_camera_flag_.left_camera_topic_flag()->value()),
+        right_camera_topic_(
+            stereo_camera_flag_.right_camera_topic_flag()->value()),
+        depth_topic_(stereo_camera_flag_.depth_topic_flag()->value()),
+        pointcloud_topic_(stereo_camera_flag_.pointcloud_topic_flag()->value()),
         camera_descriptor_(camera_descriptor) {}
 
   void OnInit() override {
@@ -48,7 +49,9 @@ class ZedCameraPublishingNode : public NodeLifecycle {
     if (!left_camera_topic_.empty()) {
       left_camera_publisher_.RequestPublish(
           node_info_, left_camera_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
+              ChannelDef::CHANNEL_TYPE_WS,
+          settings,
           ::base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
                            ::base::Unretained(this)));
     }
@@ -56,7 +59,9 @@ class ZedCameraPublishingNode : public NodeLifecycle {
     if (!right_camera_topic_.empty()) {
       right_camera_publisher_.RequestPublish(
           node_info_, right_camera_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
+              ChannelDef::CHANNEL_TYPE_WS,
+          settings,
           ::base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
                            ::base::Unretained(this)));
     }
@@ -64,7 +69,9 @@ class ZedCameraPublishingNode : public NodeLifecycle {
     if (!depth_topic_.empty()) {
       depth_publisher_.RequestPublish(
           node_info_, depth_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
+              ChannelDef::CHANNEL_TYPE_WS,
+          settings,
           ::base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
                            ::base::Unretained(this)));
     }
@@ -72,7 +79,9 @@ class ZedCameraPublishingNode : public NodeLifecycle {
     if (!pointcloud_topic_.empty()) {
       pointcloud_publisher_.RequestPublish(
           node_info_, pointcloud_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
+              ChannelDef::CHANNEL_TYPE_WS,
+          settings,
           ::base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
                            ::base::Unretained(this)));
     }
@@ -101,8 +110,14 @@ class ZedCameraPublishingNode : public NodeLifecycle {
 
   void StartCamera() {
     ZedCamera::StartParams params;
+    PixelFormat pixel_format;
+    PixelFormat_Parse(stereo_camera_flag_.pixel_format_flag()->value(),
+                      &pixel_format);
+
     params.requested_camera_format =
-        CameraFormat(1280, 760, PIXEL_FORMAT_BGRA, 30);
+        CameraFormat(stereo_camera_flag_.width_flag()->value(),
+                     stereo_camera_flag_.height_flag()->value(), pixel_format,
+                     stereo_camera_flag_.fps_flag()->value());
     params.status_callback = ::base::BindRepeating(
         &ZedCameraPublishingNode::OnCameraError, ::base::Unretained(this));
     if (!left_camera_topic_.empty()) {
@@ -261,10 +276,11 @@ class ZedCameraPublishingNode : public NodeLifecycle {
 
  private:
   NodeInfo node_info_;
-  std::string left_camera_topic_;
-  std::string right_camera_topic_;
-  std::string depth_topic_;
-  std::string pointcloud_topic_;
+  const StereoCameraFlag& stereo_camera_flag_;
+  const std::string left_camera_topic_;
+  const std::string right_camera_topic_;
+  const std::string depth_topic_;
+  const std::string pointcloud_topic_;
   ZedCameraDescriptor camera_descriptor_;
   Publisher<CameraFrameMessage> left_camera_publisher_;
   Publisher<CameraFrameMessage> right_camera_publisher_;

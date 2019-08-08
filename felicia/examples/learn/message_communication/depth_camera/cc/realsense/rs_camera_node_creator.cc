@@ -84,10 +84,7 @@ int RealMain(int argc, char* argv[]) {
   node_info.set_name(delegate.name_flag()->value());
 
   master_proxy.RequestRegisterNode<RsCameraPublishingNode>(
-      node_info, delegate.color_topic_flag()->value(),
-      delegate.depth_topic_flag()->value(),
-      delegate.pointcloud_topic_flag()->value(),
-      delegate.imu_topic_flag()->value(),
+      node_info, delegate,
       camera_descriptors[delegate.device_index_flag()->value()]);
 
   master_proxy.Run();

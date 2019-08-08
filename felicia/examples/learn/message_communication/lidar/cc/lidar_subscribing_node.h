@@ -4,12 +4,14 @@
 #include "felicia/core/communication/subscriber.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/drivers/lidar/lidar_frame_message.pb.h"
+#include "felicia/examples/learn/message_communication/lidar/cc/lidar_flag.h"
 
 namespace felicia {
 
 class LidarSubscribingNode : public NodeLifecycle {
  public:
-  LidarSubscribingNode(const std::string& topic) : topic_(topic) {}
+  LidarSubscribingNode(const LidarFlag& lidar_flag)
+      : lidar_flag_(lidar_flag), topic_(lidar_flag_.topic_flag()->value()) {}
 
   void OnInit() override {
     std::cout << "LidarSubscribingNode::OnInit()" << std::endl;
@@ -34,7 +36,8 @@ class LidarSubscribingNode : public NodeLifecycle {
 
     subscriber_.RequestSubscribe(
         node_info_, topic_,
-        ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_UDP,
+        ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_UDP |
+            ChannelDef::CHANNEL_TYPE_SHM,
         ::base::BindRepeating(&LidarSubscribingNode::OnMessage,
                               ::base::Unretained(this)),
         ::base::BindRepeating(&LidarSubscribingNode::OnSubscriptionError,
@@ -72,7 +75,8 @@ class LidarSubscribingNode : public NodeLifecycle {
 
  private:
   NodeInfo node_info_;
-  std::string topic_;
+  const LidarFlag& lidar_flag_;
+  const std::string topic_;
   Subscriber<LidarFrameMessage> subscriber_;
 };
 

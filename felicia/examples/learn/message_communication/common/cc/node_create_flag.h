@@ -17,7 +17,7 @@ class NodeCreateFlag : public FlagParser::Delegate {
   const BoolFlag* is_publishing_node_flag() const {
     return is_publishing_node_flag_.get();
   }
-  const BoolFlag* is_use_ssl_flag() const { return use_ssl_flag_.get(); }
+  const BoolFlag* use_ssl_flag() const { return use_ssl_flag_.get(); }
   const StringFlag* name_flag() const { return name_flag_.get(); }
   const StringFlag* topic_flag() const { return topic_flag_.get(); }
   const StringChoicesFlag* channel_type_flag() const {

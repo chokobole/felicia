@@ -41,13 +41,10 @@ int RealMain(int argc, char* argv[]) {
       lidar_endpoint = LidarEndpoint(
           ::net::IPEndPoint(address, delegate.tcp_port_flag()->value()));
     }
-    master_proxy.RequestRegisterNode<RPlidarPublishingNode>(
-        node_info, delegate.topic_flag()->value(),
-        delegate.channel_type_flag()->value(), lidar_endpoint,
-        delegate.scan_mode_flag()->value());
+    master_proxy.RequestRegisterNode<RPlidarPublishingNode>(node_info, delegate,
+                                                            lidar_endpoint);
   } else {
-    master_proxy.RequestRegisterNode<LidarSubscribingNode>(
-        node_info, delegate.topic_flag()->value());
+    master_proxy.RequestRegisterNode<LidarSubscribingNode>(node_info, delegate);
   }
 
   master_proxy.Run();

@@ -14,6 +14,7 @@ class Choices {
   static_assert(!std::is_same<T, bool>::value,
                 "Bool type should not be value_type of Choices");
 
+  Choices() = default;
   template <typename... Rest>
   Choices(Rest... rest) {
     internal::AddValue(values_, (T)rest...);
@@ -24,7 +25,10 @@ class Choices {
 
   const std::vector<T>& values() const { return values_; }
 
-  bool In(T value) const {
+  void Add(const T& value) { values_.push_back(value); }
+  void Add(T&& value) { values_.push_back(std::move(value)); }
+
+  bool In(const T& value) const {
     for (auto& value_ : values_) {
       if (internal::IsEqual(value, value_)) {
         return true;

@@ -18,13 +18,13 @@ class SlamNodeCreateFlag : public FlagParser::Delegate {
   ~SlamNodeCreateFlag();
 
   const StringFlag* name_flag() const { return name_flag_.get(); }
-  const StringFlag* left_color_topic() const {
+  const StringFlag* left_color_topic_flag() const {
     return left_color_topic_flag_.get();
   }
-  const StringFlag* right_color_topic() const {
+  const StringFlag* right_color_topic_flag() const {
     return right_color_topic_flag_.get();
   }
-  const StringFlag* depth_topic() const { return depth_topic_flag_.get(); }
+  const StringFlag* depth_topic_flag() const { return depth_topic_flag_.get(); }
   const StringFlag* lidar_topic_flag() const { return lidar_topic_flag_.get(); }
   const StringFlag* map_topic_flag() const { return map_topic_flag_.get(); }
   const StringFlag* pose_topic_flag() const { return pose_topic_flag_.get(); }

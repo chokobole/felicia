@@ -4,26 +4,19 @@
 #include "felicia/core/communication/publisher.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/drivers/vendors/realsense/rs_camera_factory.h"
+#include "felicia/examples/learn/message_communication/depth_camera/cc/realsense/rs_camera_flag.h"
 
 namespace felicia {
 
 class RsCameraPublishingNode : public NodeLifecycle {
  public:
-  RsCameraPublishingNode(const std::string& color_topic,
-                         const std::string& depth_topic,
-                         const std::string& pointcloud_topic,
-                         const std::string& imu_topic,
+  RsCameraPublishingNode(const RsCameraFlag& rs_camera_flag,
                          const CameraDescriptor& camera_descriptor)
-      : color_topic_(color_topic),
-        depth_topic_(depth_topic),
-        pointcloud_topic_(pointcloud_topic),
-        imu_topic_(imu_topic),
-        camera_descriptor_(camera_descriptor),
-        requested_color_format_(CameraFormat(640, 480, PIXEL_FORMAT_BGR, 30)),
-        requested_depth_format_(CameraFormat(640, 480, PIXEL_FORMAT_Z16, 30)),
-        requested_gyro_format_(ImuFormat(200)),
-        requested_accel_format_(ImuFormat(63)),
-        imu_filter_kind_(ImuFilterFactory::MADGWICK_FILTER_KIND) {
+      : rs_camera_flag_(rs_camera_flag),
+        color_topic_(rs_camera_flag_.color_topic_flag()->value()),
+        depth_topic_(rs_camera_flag_.depth_topic_flag()->value()),
+        pointcloud_topic_(rs_camera_flag_.pointcloud_topic_flag()->value()),
+        imu_topic_(rs_camera_flag_.imu_topic_flag()->value()) {
     CHECK(!(color_topic_.empty() && depth_topic_.empty() &&
             imu_topic_.empty() && pointcloud_topic_.empty()))
         << "At least one of topic should be not empty";
@@ -56,7 +49,9 @@ class RsCameraPublishingNode : public NodeLifecycle {
     if (!color_topic_.empty()) {
       color_publisher_.RequestPublish(
           node_info_, color_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
+              ChannelDef::CHANNEL_TYPE_WS,
+          settings,
           ::base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
                            ::base::Unretained(this)));
     }
@@ -64,7 +59,9 @@ class RsCameraPublishingNode : public NodeLifecycle {
     if (!depth_topic_.empty()) {
       depth_publisher_.RequestPublish(
           node_info_, depth_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
+              ChannelDef::CHANNEL_TYPE_WS,
+          settings,
           ::base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
                            ::base::Unretained(this)));
     }
@@ -72,7 +69,9 @@ class RsCameraPublishingNode : public NodeLifecycle {
     if (!pointcloud_topic_.empty()) {
       pointcloud_publisher_.RequestPublish(
           node_info_, pointcloud_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
+              ChannelDef::CHANNEL_TYPE_WS,
+          settings,
           ::base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
                            ::base::Unretained(this)));
     }
@@ -80,7 +79,9 @@ class RsCameraPublishingNode : public NodeLifecycle {
     if (!imu_topic_.empty()) {
       imu_publisher_.RequestPublish(
           node_info_, imu_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
+              ChannelDef::CHANNEL_TYPE_WS,
+          settings,
           ::base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
                            ::base::Unretained(this)));
     }
@@ -117,16 +118,23 @@ class RsCameraPublishingNode : public NodeLifecycle {
     params.status_callback = ::base::BindRepeating(
         &RsCameraPublishingNode::OnCameraError, ::base::Unretained(this));
 
-    params.requested_color_format = requested_color_format_;
-    params.requested_depth_format = requested_depth_format_;
     if (!color_topic_.empty()) {
-      params.requested_color_format = requested_color_format_;
+      PixelFormat pixel_format;
+      PixelFormat_Parse(rs_camera_flag_.pixel_format_flag()->value(),
+                        &pixel_format);
+      params.requested_color_format =
+          CameraFormat(rs_camera_flag_.width_flag()->value(),
+                       rs_camera_flag_.height_flag()->value(), pixel_format,
+                       rs_camera_flag_.fps_flag()->value());
       params.color_frame_callback = ::base::BindRepeating(
           &RsCameraPublishingNode::OnColorFrame, ::base::Unretained(this));
     }
 
     if (!depth_topic_.empty()) {
-      params.requested_depth_format = requested_depth_format_;
+      params.requested_depth_format =
+          CameraFormat(rs_camera_flag_.width_flag()->value(),
+                       rs_camera_flag_.height_flag()->value(), PIXEL_FORMAT_Z16,
+                       rs_camera_flag_.fps_flag()->value());
       params.depth_frame_callback = ::base::BindRepeating(
           &RsCameraPublishingNode::OnDepthFrame, ::base::Unretained(this));
     }
@@ -155,9 +163,9 @@ class RsCameraPublishingNode : public NodeLifecycle {
     }
 
     if (!imu_topic_.empty()) {
-      params.requested_accel_format = requested_accel_format_;
-      params.requested_gyro_format = requested_gyro_format_;
-      params.imu_filter_kind = imu_filter_kind_;
+      params.requested_accel_format = ImuFormat(63);
+      params.requested_gyro_format = ImuFormat(200);
+      params.imu_filter_kind = ImuFilterFactory::MADGWICK_FILTER_KIND;
       params.imu_frame_callback = ::base::BindRepeating(
           &RsCameraPublishingNode::OnImuFrame, ::base::Unretained(this));
     }
@@ -300,16 +308,12 @@ class RsCameraPublishingNode : public NodeLifecycle {
 
  private:
   NodeInfo node_info_;
-  std::string color_topic_;
-  std::string depth_topic_;
-  std::string pointcloud_topic_;
-  std::string imu_topic_;
+  const RsCameraFlag& rs_camera_flag_;
+  const std::string color_topic_;
+  const std::string depth_topic_;
+  const std::string pointcloud_topic_;
+  const std::string imu_topic_;
   CameraDescriptor camera_descriptor_;
-  CameraFormat requested_color_format_;
-  CameraFormat requested_depth_format_;
-  ImuFormat requested_gyro_format_;
-  ImuFormat requested_accel_format_;
-  ImuFilterFactory::ImuFilterKind imu_filter_kind_;
   Publisher<CameraFrameMessage> color_publisher_;
   Publisher<DepthCameraFrameMessage> depth_publisher_;
   Publisher<PointcloudFrameMessage> pointcloud_publisher_;

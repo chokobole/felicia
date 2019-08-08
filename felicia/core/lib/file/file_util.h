@@ -1,8 +1,8 @@
 #ifndef FELICIA_CORE_LIB_FILE_FILE_UTIL_H_
 #define FELICIA_CORE_LIB_FILE_FILE_UTIL_H_
 
-#include "third_party/chromium/build/build_config.h"
 #include "third_party/chromium/base/files/file_path.h"
+#include "third_party/chromium/build/build_config.h"
 
 #include "felicia/core/lib/base/export.h"
 

@@ -3,15 +3,16 @@ import sys
 import felicia_py as fel
 import felicia_py.command_line_interface as cli
 from felicia.core.protobuf.channel_pb2 import ChannelDef
-from felicia.core.protobuf.ui_pb2 import PIXEL_FORMAT_BGR
+from felicia.core.protobuf.ui_pb2 import PixelFormat
 from felicia.drivers.camera.camera_frame_message_pb2 import CameraFrameMessage
 from felicia.drivers.camera.camera_settings_message_pb2 import CameraSettingsInfoMessage
 
 
 class CameraPublishingNode(fel.NodeLifecycle):
-    def __init__(self, topic, camera_descriptor):
+    def __init__(self, camera_flag, camera_descriptor):
         super().__init__()
-        self.topic = topic
+        self.camera_flag = camera_flag
+        self.topic = camera_flag.topic_flag.value
         self.camera_descriptor = camera_descriptor
         self.publisher = fel.communication.Publisher()
 
@@ -50,7 +51,9 @@ class CameraPublishingNode(fel.NodeLifecycle):
         settings.queue_size = 1
         settings.is_dynamic_buffer = True
         self.publisher.request_publish(self.node_info, self.topic,
-                                       ChannelDef.CHANNEL_TYPE_TCP | ChannelDef.CHANNEL_TYPE_WS,
+                                       ChannelDef.CHANNEL_TYPE_TCP |
+                                       ChannelDef.CHANNEL_TYPE_SHM |
+                                       ChannelDef.CHANNEL_TYPE_WS,
                                        CameraFrameMessage.DESCRIPTOR.full_name,
                                        settings, self.on_request_publish)
 
@@ -62,9 +65,14 @@ class CameraPublishingNode(fel.NodeLifecycle):
             fel.log(fel.ERROR, status.error_message())
 
     def start_camera(self):
-        # You should set the camera format if you have any you want to run with.
-        s = self.camera.start(fel.drivers.CameraFormat(640, 480, PIXEL_FORMAT_BGR, 25),
-                              self.on_camera_frame, self.on_camera_error)
+        pixel_format = PixelFormat.Value(
+            self.camera_flag.pixel_format_flag.value)
+        s = self.camera.start(
+            fel.drivers.CameraFormat(self.camera_flag.width_flag.value,
+                                     self.camera_flag.height_flag.value,
+                                     pixel_format,
+                                     self.camera_flag.fps_flag.value),
+            self.on_camera_frame, self.on_camera_error)
         if s.ok():
             print("Camera format: {}".format(self.camera.camera_format()))
             # fel.MasterProxy.post_delayed_task(

@@ -1,5 +1,7 @@
 #include "felicia/examples/learn/message_communication/common/cc/node_create_flag.h"
 
+#include "third_party/chromium/base/strings/stringprintf.h"
+
 #include "felicia/core/protobuf/channel.pb.h"
 
 namespace felicia {
@@ -48,12 +50,14 @@ NodeCreateFlag::NodeCreateFlag() {
             ChannelDef_Type_Name(ChannelDef::CHANNEL_TYPE_UDS),
             ChannelDef_Type_Name(ChannelDef::CHANNEL_TYPE_SHM),
         }));
-    auto flag = builder.SetShortName("-c")
-                    .SetLongName("--channel_type")
-                    .SetHelp(
-                        "protocol to deliver message, it only works for "
-                        "publishing node")
-                    .Build();
+    auto flag =
+        builder.SetShortName("-c")
+            .SetLongName("--channel_type")
+            .SetHelp(::base::StringPrintf(
+                "protocol to deliver message, it only works for "
+                "publishing node (default: %s)",
+                ChannelDef_Type_Name(ChannelDef::CHANNEL_TYPE_TCP).c_str()))
+            .Build();
     channel_type_flag_ = std::make_unique<StringChoicesFlag>(flag);
   }
 }

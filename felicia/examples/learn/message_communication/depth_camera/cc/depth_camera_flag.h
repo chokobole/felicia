@@ -7,7 +7,10 @@ namespace felicia {
 
 class DepthCameraFlag : public CameraFlag {
  public:
-  DepthCameraFlag();
+  DepthCameraFlag(int default_width = kDefaultWidth,
+                  int default_height = kDefaultHeight,
+                  int default_fps = kDefaultFps,
+                  int default_pixel_format = kDefaultPixelFormat);
   ~DepthCameraFlag();
 
   const StringFlag* color_topic_flag() const { return color_topic_flag_.get(); }
@@ -21,7 +24,9 @@ class DepthCameraFlag : public CameraFlag {
   bool Validate() const override;
 
   AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(name_flag_, device_list_flag_,
-                                          device_index_flag_, color_topic_flag_,
+                                          device_index_flag_, width_flag_,
+                                          height_flag_, fps_flag_,
+                                          pixel_format_flag_, color_topic_flag_,
                                           depth_topic_flag_,
                                           pointcloud_topic_flag_)
 

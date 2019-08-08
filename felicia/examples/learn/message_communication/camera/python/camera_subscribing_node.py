@@ -4,9 +4,10 @@ from felicia.drivers.camera.camera_frame_message_pb2 import CameraFrameMessage
 
 
 class CameraSubscribingNode(fel.NodeLifecycle):
-    def __init__(self, topic):
+    def __init__(self, camera_flag):
         super().__init__()
-        self.topic = topic
+        self.camera_flag = camera_flag
+        self.topic = camera_flag.topic_flag.value
         self.subscriber = fel.communication.Subscriber()
 
     def on_init(self):
@@ -23,7 +24,7 @@ class CameraSubscribingNode(fel.NodeLifecycle):
 
     def request_subscribe(self):
         settings = fel.communication.Settings()
-        settings.period = fel.TimeDelta.from_milliseconds(100)
+        settings.period = fel.TimeDelta.from_milliseconds(1 / self.camera_flag.fps_flag.value)
         settings.is_dynamic_buffer = True
 
         self.subscriber.request_subscribe(self.node_info, self.topic, ChannelDef.CHANNEL_TYPE_TCP,

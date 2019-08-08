@@ -8,18 +8,18 @@
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/core/util/timestamp/timestamper.h"
+#include "felicia/examples/learn/message_communication/common/cc/node_create_flag.h"
 #include "felicia/examples/learn/message_communication/protobuf/message_spec.pb.h"
 
 namespace felicia {
 
 class SimplePublishingNode : public NodeLifecycle {
  public:
-  SimplePublishingNode(const std::string& topic,
-                       const std::string& channel_type,
+  SimplePublishingNode(const NodeCreateFlag& node_create_flag,
                        SSLServerContext* ssl_server_context)
-      : topic_(topic), ssl_server_context_(ssl_server_context) {
-    ChannelDef::Type_Parse(channel_type, &channel_type_);
-  }
+      : node_create_flag_(node_create_flag),
+        topic_(node_create_flag_.topic_flag()->value()),
+        ssl_server_context_(ssl_server_context) {}
 
   void OnInit() override {
     std::cout << "SimplePublishingNode::OnInit()" << std::endl;
@@ -52,8 +52,12 @@ class SimplePublishingNode : public NodeLifecycle {
           ssl_server_context_;
     }
 
+    ChannelDef::Type channel_type;
+    ChannelDef::Type_Parse(node_create_flag_.channel_type_flag()->value(),
+                           &channel_type);
+
     publisher_.RequestPublish(
-        node_info_, topic_, channel_type_, settings,
+        node_info_, topic_, channel_type, settings,
         ::base::BindOnce(&SimplePublishingNode::OnRequestPublish,
                          ::base::Unretained(this)));
   }
@@ -109,8 +113,8 @@ class SimplePublishingNode : public NodeLifecycle {
 
  private:
   NodeInfo node_info_;
-  std::string topic_;
-  ChannelDef::Type channel_type_;
+  const NodeCreateFlag& node_create_flag_;
+  const std::string topic_;
   Publisher<MessageSpec> publisher_;
   Timestamper timestamper_;
   SSLServerContext* ssl_server_context_;

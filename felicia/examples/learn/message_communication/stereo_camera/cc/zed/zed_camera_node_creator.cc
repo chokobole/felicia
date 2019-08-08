@@ -8,7 +8,7 @@ namespace felicia {
 int RealMain(int argc, char* argv[]) {
   FeliciaInit();
 
-  StereoCameraFlag delegate;
+  StereoCameraFlag delegate(1280, 760);
   FlagParser parser;
   parser.set_program_name("zed_camera_node_creator");
   if (!parser.Parse(argc, argv, &delegate)) {
@@ -59,10 +59,7 @@ int RealMain(int argc, char* argv[]) {
   node_info.set_name(delegate.name_flag()->value());
 
   master_proxy.RequestRegisterNode<ZedCameraPublishingNode>(
-      node_info, delegate.left_camera_topic_flag()->value(),
-      delegate.right_camera_topic_flag()->value(),
-      delegate.depth_topic_flag()->value(),
-      delegate.pointcloud_topic_flag()->value(),
+      node_info, delegate,
       camera_descriptors[delegate.device_index_flag()->value()]);
 
   master_proxy.Run();

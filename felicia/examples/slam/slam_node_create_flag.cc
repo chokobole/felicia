@@ -107,10 +107,7 @@ bool SlamNodeCreateFlag::Parse(FlagParser& parser) {
 }
 
 bool SlamNodeCreateFlag::Validate() const {
-  if (fps_ <= 0) {
-    std::cerr << kRedError << "fps should be positive." << std::endl;
-    return false;
-  }
+  if (!CheckIfFlagPositive(fps_flag_)) return false;
 
   switch (current_slam_kind_) {
     case SLAM_KIND_NONE:

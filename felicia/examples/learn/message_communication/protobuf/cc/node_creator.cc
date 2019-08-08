@@ -29,7 +29,7 @@ int RealMain(int argc, char* argv[]) {
 
   std::unique_ptr<SSLServerContext> ssl_server_context;
   if (delegate.is_publishing_node_flag()->value()) {
-    if (delegate.is_use_ssl_flag()->value()) {
+    if (delegate.use_ssl_flag()->value()) {
       ::base::FilePath cert_file_path = ::base::FilePath(
           FILE_PATH_LITERAL("./felicia/examples/cert/server.crt"));
       ::base::FilePath private_key_file_path = ::base::FilePath(
@@ -38,12 +38,10 @@ int RealMain(int argc, char* argv[]) {
           cert_file_path, private_key_file_path);
     }
     master_proxy.RequestRegisterNode<SimplePublishingNode>(
-        node_info, delegate.topic_flag()->value(),
-        delegate.channel_type_flag()->value(), ssl_server_context.get());
+        node_info, delegate, ssl_server_context.get());
   } else {
-    master_proxy.RequestRegisterNode<SimpleSubscribingNode>(
-        node_info, delegate.topic_flag()->value(),
-        delegate.is_use_ssl_flag()->value());
+    master_proxy.RequestRegisterNode<SimpleSubscribingNode>(node_info,
+                                                            delegate);
   }
 
   master_proxy.Run();

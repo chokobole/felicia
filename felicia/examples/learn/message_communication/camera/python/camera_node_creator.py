@@ -59,13 +59,11 @@ def main():
 
     if delegate.is_publshing_node_flag.value:
         fel.MasterProxy.request_register_node(
-            CameraPublishingNode, node_info,
-            delegate.topic_flag.value,
+            CameraPublishingNode, node_info, delegate,
             camera_descriptors[delegate.device_index_flag.value])
     else:
         fel.MasterProxy.request_register_node(
-            CameraSubscribingNode, node_info,
-            delegate.topic_flag.value)
+            CameraSubscribingNode, node_info, delegate)
 
     fel.MasterProxy.run()
 
