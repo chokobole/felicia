@@ -59,14 +59,13 @@ class MultiTopicSubscriberDelegate
   void OnNewMessage(const std::string& topic,
                     DynamicProtobufMessage&& message) override {
     std::cout << TextStyle::Green(
-                     ::base::StringPrintf("[TOPIC] %s", topic.c_str()))
+                     base::StringPrintf("[TOPIC] %s", topic.c_str()))
               << std::endl;
     std::cout << message.ToString() << std::endl;
   }
 
   void OnSubscriptionError(const std::string& topic, const Status& s) override {
-    std::cout << TextStyle::Red(
-                     ::base::StringPrintf("[TOPIC] %s", topic.c_str()))
+    std::cout << TextStyle::Red(base::StringPrintf("[TOPIC] %s", topic.c_str()))
               << std::endl;
     std::cerr << kRedError << "Subscription error: " << s << std::endl;
   }
@@ -77,8 +76,8 @@ class MultiTopicSubscriberDelegate
     } else {
       node_->Unsubscribe(
           topic_info.topic(),
-          ::base::BindOnce(&MultiTopicSubscriberDelegate::OnUnsubscribe,
-                           ::base::Unretained(this)));
+          base::BindOnce(&MultiTopicSubscriberDelegate::OnUnsubscribe,
+                         base::Unretained(this)));
     }
   }
 
@@ -122,7 +121,7 @@ void TopicSubscribeCommandDispatcher::Dispatch(
   communication::Settings settings;
   if (delegate.period_flag()->is_set())
     settings.period =
-        ::base::TimeDelta::FromMilliseconds(delegate.period_flag()->value());
+        base::TimeDelta::FromMilliseconds(delegate.period_flag()->value());
   if (delegate.queue_size_flag()->is_set())
     settings.queue_size = delegate.queue_size_flag()->value();
   settings.is_dynamic_buffer = true;

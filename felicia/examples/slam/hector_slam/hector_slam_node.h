@@ -84,19 +84,18 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
   void RequestSubscribe() {
     communication::Settings settings;
     settings.queue_size = 1;
-    settings.period = ::base::TimeDelta::FromSecondsD(1.0 / fps_);
+    settings.period = base::TimeDelta::FromSecondsD(1.0 / fps_);
     settings.is_dynamic_buffer = true;
 
     lidar_subscriber_.RequestSubscribe(
         node_info_, lidar_topic_,
         ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM,
-        ::base::BindRepeating(&HectorSlamNode::OnMessage,
-                              ::base::Unretained(this)),
-        ::base::BindRepeating(&HectorSlamNode::OnSubscriptionError,
-                              ::base::Unretained(this)),
+        base::BindRepeating(&HectorSlamNode::OnMessage, base::Unretained(this)),
+        base::BindRepeating(&HectorSlamNode::OnSubscriptionError,
+                            base::Unretained(this)),
         settings,
-        ::base::BindOnce(&HectorSlamNode::OnRequestSubscribe,
-                         ::base::Unretained(this)));
+        base::BindOnce(&HectorSlamNode::OnRequestSubscribe,
+                       base::Unretained(this)));
   }
 
   void RequestPublish() {
@@ -111,8 +110,8 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
           ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
               ChannelDef::CHANNEL_TYPE_WS,
           settings,
-          ::base::BindOnce(&HectorSlamNode::OnRequestPublish,
-                           ::base::Unretained(this)));
+          base::BindOnce(&HectorSlamNode::OnRequestPublish,
+                         base::Unretained(this)));
     }
 
     if (!map_topic_.empty()) {
@@ -121,8 +120,8 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
           ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
               ChannelDef::CHANNEL_TYPE_WS,
           settings,
-          ::base::BindOnce(&HectorSlamNode::OnRequestPublish,
-                           ::base::Unretained(this)));
+          base::BindOnce(&HectorSlamNode::OnRequestPublish,
+                         base::Unretained(this)));
     }
   }
 
@@ -137,23 +136,22 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
 
   void OnRequestPublish(const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }
 
-  void OnPoseUpdated(const Posef& pose, ::base::TimeDelta timestamp) override {
+  void OnPoseUpdated(const Posef& pose, base::TimeDelta timestamp) override {
     if (pose_topic_.empty()) return;
     if (!pose_publisher_.IsRegistered()) return;
-    pose_publisher_.Publish(
-        PosefToPosefWithTimestampMessage(pose, timestamp),
-        ::base::BindRepeating(&HectorSlamNode::OnPublishPose,
-                              ::base::Unretained(this)));
+    pose_publisher_.Publish(PosefToPosefWithTimestampMessage(pose, timestamp),
+                            base::BindRepeating(&HectorSlamNode::OnPublishPose,
+                                                base::Unretained(this)));
   }
 
   void OnMapUpdated(const MultiResolutionGridMap& map,
-                    ::base::TimeDelta timestamp) override {
+                    base::TimeDelta timestamp) override {
     if (map_topic_.empty()) return;
     if (!map_publisher_.IsRegistered()) return;
     OccupancyGridMapMessage message = map.ToOccupancyGridMapMessage(timestamp);
     map_publisher_.Publish(std::move(message),
-                           ::base::BindRepeating(&HectorSlamNode::OnPublishMap,
-                                                 ::base::Unretained(this)));
+                           base::BindRepeating(&HectorSlamNode::OnPublishMap,
+                                               base::Unretained(this)));
   }
 
   void OnPublishPose(ChannelDef::Type type, const Status& s) {

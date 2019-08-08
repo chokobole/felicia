@@ -14,12 +14,12 @@
 namespace felicia {
 
 // Indicates an invalid or missing timestamp.
-constexpr ::base::TimeDelta kNoTimestamp =
+constexpr base::TimeDelta kNoTimestamp =
     base::TimeDelta::FromMicroseconds(std::numeric_limits<int64_t>::min());
 
 // Represents an infinite stream duration.
-constexpr ::base::TimeDelta kInfiniteDuration =
-    ::base::TimeDelta::FromMicroseconds(std::numeric_limits<int64_t>::max());
+constexpr base::TimeDelta kInfiniteDuration =
+    base::TimeDelta::FromMicroseconds(std::numeric_limits<int64_t>::max());
 
 }  // namespace felicia
 

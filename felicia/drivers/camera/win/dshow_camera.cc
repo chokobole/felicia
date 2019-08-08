@@ -25,9 +25,9 @@ using Microsoft::WRL::ComPtr;
 
 namespace felicia {
 
-#define MESSAGE_WITH_HRESULT(text, hr)  \
-  ::base::StringPrintf("%s :%s.", text, \
-                       ::logging::SystemErrorCodeToString(hr).c_str())
+#define MESSAGE_WITH_HRESULT(text, hr) \
+  base::StringPrintf("%s :%s.", text,  \
+                     ::logging::SystemErrorCodeToString(hr).c_str())
 
 // Check if a Pin matches a category.
 bool PinMatchesCategory(IPin* pin, REFGUID category) {
@@ -137,7 +137,7 @@ Status DshowCamera::GetCameraDescriptors(
 
     if (FAILED(hr) || name.type() != VT_BSTR) continue;
 
-    const std::string device_name(::base::SysWideToUTF8(V_BSTR(name.ptr())));
+    const std::string device_name(base::SysWideToUTF8(V_BSTR(name.ptr())));
 
     name.Reset();
     hr = prop_bag->Read(L"DevicePath", name.Receive(), 0);
@@ -146,7 +146,7 @@ Status DshowCamera::GetCameraDescriptors(
       id = device_name;
     } else {
       DCHECK_EQ(name.type(), VT_BSTR);
-      id = ::base::SysWideToUTF8(V_BSTR(name.ptr()));
+      id = base::SysWideToUTF8(V_BSTR(name.ptr()));
     }
 
     const std::string model_id = GetDeviceModelId(id);
@@ -492,7 +492,7 @@ Status DshowCamera::GetCameraSettingsInfo(
 
 void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
                                 const CameraFormat& camera_format,
-                                ::base::TimeDelta timestamp) {
+                                base::TimeDelta timestamp) {
   if (camera_format_.pixel_format() != PixelFormat::PIXEL_FORMAT_MJPEG &&
       camera_format_.AllocationSize() != length) {
     status_callback_.Run(errors::InvalidNumberOfBytesInBuffer());
@@ -511,7 +511,7 @@ void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
                                            static_cast<size_t>(length),
                                            camera_format_, timestamp});
   } else {
-    ::base::Optional<CameraFrame> camera_frame = ConvertToRequestedPixelFormat(
+    base::Optional<CameraFrame> camera_frame = ConvertToRequestedPixelFormat(
         buffer, length, camera_format_, requested_pixel_format_, timestamp);
     if (camera_frame.has_value()) {
       camera_frame_callback_.Run(std::move(camera_frame.value()));

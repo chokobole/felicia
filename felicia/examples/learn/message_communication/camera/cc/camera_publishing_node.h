@@ -59,8 +59,8 @@ class CameraPublishingNode : public NodeLifecycle {
         ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
             ChannelDef::CHANNEL_TYPE_WS,
         settings,
-        ::base::BindOnce(&CameraPublishingNode::OnRequestPublish,
-                         ::base::Unretained(this)));
+        base::BindOnce(&CameraPublishingNode::OnRequestPublish,
+                       base::Unretained(this)));
   }
 
   void OnRequestPublish(const Status& s) {
@@ -68,8 +68,8 @@ class CameraPublishingNode : public NodeLifecycle {
     if (s.ok()) {
       MasterProxy& master_proxy = MasterProxy::GetInstance();
       master_proxy.PostTask(FROM_HERE,
-                            ::base::BindOnce(&CameraPublishingNode::StartCamera,
-                                             ::base::Unretained(this)));
+                            base::BindOnce(&CameraPublishingNode::StartCamera,
+                                           base::Unretained(this)));
     } else {
       LOG(ERROR) << s;
     }
@@ -83,18 +83,18 @@ class CameraPublishingNode : public NodeLifecycle {
         CameraFormat(camera_flag_.width_flag()->value(),
                      camera_flag_.height_flag()->value(), pixel_format,
                      camera_flag_.fps_flag()->value()),
-        ::base::BindRepeating(&CameraPublishingNode::OnCameraFrame,
-                              ::base::Unretained(this)),
-        ::base::BindRepeating(&CameraPublishingNode::OnCameraError,
-                              ::base::Unretained(this)));
+        base::BindRepeating(&CameraPublishingNode::OnCameraFrame,
+                            base::Unretained(this)),
+        base::BindRepeating(&CameraPublishingNode::OnCameraError,
+                            base::Unretained(this)));
     if (s.ok()) {
       std::cout << "Camera Fomrat: " << camera_->camera_format() << std::endl;
       // MasterProxy& master_proxy = MasterProxy::GetInstance();
       // master_proxy.PostDelayedTask(
       //     FROM_HERE,
-      //     ::base::BindOnce(&CameraPublishingNode::RequestUnpublish,
-      //                      ::base::Unretained(this)),
-      //     ::base::TimeDelta::FromSeconds(10));
+      //     base::BindOnce(&CameraPublishingNode::RequestUnpublish,
+      //                      base::Unretained(this)),
+      //     base::TimeDelta::FromSeconds(10));
     } else {
       LOG(ERROR) << s;
     }
@@ -104,8 +104,8 @@ class CameraPublishingNode : public NodeLifecycle {
     if (publisher_.IsUnregistered()) return;
 
     publisher_.Publish(camera_frame.ToCameraFrameMessage(),
-                       ::base::BindRepeating(&CameraPublishingNode::OnPublish,
-                                             ::base::Unretained(this)));
+                       base::BindRepeating(&CameraPublishingNode::OnPublish,
+                                           base::Unretained(this)));
   }
 
   void OnCameraError(const Status& s) { LOG(ERROR) << s; }
@@ -117,8 +117,8 @@ class CameraPublishingNode : public NodeLifecycle {
   void RequestUnpublish() {
     publisher_.RequestUnpublish(
         node_info_, topic_,
-        ::base::BindOnce(&CameraPublishingNode::OnRequestUnpublish,
-                         ::base::Unretained(this)));
+        base::BindOnce(&CameraPublishingNode::OnRequestUnpublish,
+                       base::Unretained(this)));
   }
 
   void OnRequestUnpublish(const Status& s) {
@@ -126,8 +126,8 @@ class CameraPublishingNode : public NodeLifecycle {
     if (s.ok()) {
       MasterProxy& master_proxy = MasterProxy::GetInstance();
       master_proxy.PostTask(FROM_HERE,
-                            ::base::BindOnce(&CameraPublishingNode::StopCamera,
-                                             ::base::Unretained(this)));
+                            base::BindOnce(&CameraPublishingNode::StopCamera,
+                                           base::Unretained(this)));
     } else {
       LOG(ERROR) << s;
     }

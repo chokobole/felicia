@@ -13,7 +13,7 @@ namespace felicia {
 
 // Implement IEnumPins.
 class TypeEnumerator final : public IEnumMediaTypes,
-                             public ::base::RefCounted<TypeEnumerator> {
+                             public base::RefCounted<TypeEnumerator> {
  public:
   explicit TypeEnumerator(PinBase* pin) : pin_(pin), index_(0) {}
 
@@ -95,7 +95,7 @@ class TypeEnumerator final : public IEnumMediaTypes,
   }
 
  private:
-  friend class ::base::RefCounted<TypeEnumerator>;
+  friend class base::RefCounted<TypeEnumerator>;
   ~TypeEnumerator() {}
 
   void FreeAllocatedMediaTypes(ULONG allocated, AM_MEDIA_TYPE** types) {

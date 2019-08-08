@@ -38,7 +38,7 @@ class Generator {
   }
 
  private:
-  ::base::flat_map<T, bool> pool_;
+  base::flat_map<T, bool> pool_;
 };
 
 }  // namespace felicia

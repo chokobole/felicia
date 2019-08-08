@@ -29,19 +29,19 @@ MasterProxy::MasterProxy()
     : heart_beat_signaller_(this)
 #if defined(OS_WIN)
       ,
-      scoped_com_initializer_(::base::win::ScopedCOMInitializer::kMTA)
+      scoped_com_initializer_(base::win::ScopedCOMInitializer::kMTA)
 #endif
 {
   if (g_on_background) {
-    thread_ = std::make_unique<::base::Thread>("MasterProxy");
+    thread_ = std::make_unique<base::Thread>("MasterProxy");
   } else {
     message_loop_ =
-        std::make_unique<::base::MessageLoop>(::base::MessageLoop::TYPE_IO);
-    run_loop_ = std::make_unique<::base::RunLoop>();
+        std::make_unique<base::MessageLoop>(base::MessageLoop::TYPE_IO);
+    run_loop_ = std::make_unique<base::RunLoop>();
   }
 
-  protobuf_loader_ = ProtobufLoader::Load(
-      ::base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
+  protobuf_loader_ =
+      ProtobufLoader::Load(base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
 }
 
 MasterProxy::~MasterProxy() = default;
@@ -51,7 +51,7 @@ void MasterProxy::SetBackground() { g_on_background = true; }
 
 // static
 MasterProxy& MasterProxy::GetInstance() {
-  static ::base::NoDestructor<MasterProxy> master_proxy;
+  static base::NoDestructor<MasterProxy> master_proxy;
   return *master_proxy;
 }
 
@@ -67,8 +67,8 @@ bool MasterProxy::IsBoundToCurrentThread() const {
   }
 }
 
-bool MasterProxy::PostTask(const ::base::Location& from_here,
-                           ::base::OnceClosure callback) {
+bool MasterProxy::PostTask(const base::Location& from_here,
+                           base::OnceClosure callback) {
   if (g_on_background) {
     return thread_->task_runner()->PostTask(from_here, std::move(callback));
   } else {
@@ -77,9 +77,9 @@ bool MasterProxy::PostTask(const ::base::Location& from_here,
   }
 }
 
-bool MasterProxy::PostDelayedTask(const ::base::Location& from_here,
-                                  ::base::OnceClosure callback,
-                                  ::base::TimeDelta delay) {
+bool MasterProxy::PostDelayedTask(const base::Location& from_here,
+                                  base::OnceClosure callback,
+                                  base::TimeDelta delay) {
   if (g_on_background) {
     return thread_->task_runner()->PostDelayedTask(from_here,
                                                    std::move(callback), delay);
@@ -108,10 +108,10 @@ Status MasterProxy::Start() {
 
   if (g_on_background) {
     thread_->StartWithOptions(
-        ::base::Thread::Options{::base::MessageLoop::TYPE_IO, 0});
+        base::Thread::Options{base::MessageLoop::TYPE_IO, 0});
   }
 
-  ::base::WaitableEvent* event = new ::base::WaitableEvent;
+  base::WaitableEvent* event = new base::WaitableEvent;
   Setup(event);
 
   event->Wait();
@@ -160,10 +160,10 @@ void MasterProxy::Run() {
   run_loop_->Run();
 }
 
-void MasterProxy::Setup(::base::WaitableEvent* event) {
+void MasterProxy::Setup(base::WaitableEvent* event) {
   if (!IsBoundToCurrentThread()) {
-    PostTask(FROM_HERE, ::base::BindOnce(&MasterProxy::Setup,
-                                         ::base::Unretained(this), event));
+    PostTask(FROM_HERE, base::BindOnce(&MasterProxy::Setup,
+                                       base::Unretained(this), event));
     return;
   }
 
@@ -186,21 +186,20 @@ void MasterProxy::RegisterClient() {
 #if defined(FEL_WIN_NO_GRPC)
   master_client_interface_->RegisterClientAsync(
       request, response,
-      ::base::BindOnce(&MasterProxy::OnRegisterClient, ::base::Unretained(this),
-                       nullptr, ::base::Owned(request),
-                       ::base::Owned(response)));
+      base::BindOnce(&MasterProxy::OnRegisterClient, base::Unretained(this),
+                     nullptr, base::Owned(request), base::Owned(response)));
 #else
-  ::base::WaitableEvent* event = new ::base::WaitableEvent;
+  base::WaitableEvent* event = new base::WaitableEvent;
   master_client_interface_->RegisterClientAsync(
       request, response,
-      ::base::BindOnce(&MasterProxy::OnRegisterClient, ::base::Unretained(this),
-                       event, ::base::Owned(request), ::base::Owned(response)));
+      base::BindOnce(&MasterProxy::OnRegisterClient, base::Unretained(this),
+                     event, base::Owned(request), base::Owned(response)));
   event->Wait();
   delete event;
 #endif
 }
 
-void MasterProxy::OnRegisterClient(::base::WaitableEvent* event,
+void MasterProxy::OnRegisterClient(base::WaitableEvent* event,
                                    RegisterClientRequest* request,
                                    RegisterClientResponse* response,
                                    const Status& s) {
@@ -223,8 +222,8 @@ void MasterProxy::OnRegisterNodeAsync(std::unique_ptr<NodeLifecycle> node,
                                       const Status& s) {
   if (!s.ok()) {
     Status new_status(s.error_code(),
-                      ::base::StringPrintf("Failed to register node : %s",
-                                           s.error_message().c_str()));
+                      base::StringPrintf("Failed to register node : %s",
+                                         s.error_message().c_str()));
     node->OnError(new_status);
     return;
   }

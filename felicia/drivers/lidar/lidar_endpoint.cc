@@ -7,7 +7,7 @@ namespace felicia {
 LidarEndpoint::LidarEndpoint() = default;
 LidarEndpoint::~LidarEndpoint() = default;
 
-LidarEndpoint::LidarEndpoint(::net::IPEndPoint ip_endpoint)
+LidarEndpoint::LidarEndpoint(net::IPEndPoint ip_endpoint)
     : type_(ChannelType::TCP), ip_endpoint_(ip_endpoint) {}
 
 LidarEndpoint::LidarEndpoint(const std::string& serial_port, float baudrate)
@@ -20,10 +20,10 @@ LidarEndpoint& LidarEndpoint::operator=(const LidarEndpoint& other) = default;
 
 std::string LidarEndpoint::ToString() const {
   if (type_ == LidarEndpoint::TCP) {
-    return ::base::StringPrintf("ip: %s port: %d", ip().c_str(), tcp_port());
+    return base::StringPrintf("ip: %s port: %d", ip().c_str(), tcp_port());
   } else {
-    return ::base::StringPrintf("port: %s baudrate: %.2f", serial_port_.c_str(),
-                                baudrate_);
+    return base::StringPrintf("port: %s baudrate: %.2f", serial_port_.c_str(),
+                              baudrate_);
   }
 }
 

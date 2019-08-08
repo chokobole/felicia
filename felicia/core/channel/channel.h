@@ -30,7 +30,7 @@ template <typename MessageTy>
 class ShmChannel;
 
 using SendMessageCallback =
-    ::base::RepeatingCallback<void(ChannelDef::Type, const Status&)>;
+    base::RepeatingCallback<void(ChannelDef::Type, const Status&)>;
 
 template <typename MessageTy>
 class Channel {
@@ -207,8 +207,8 @@ void Channel<MessageTy>::WriteImpl(const std::string& text,
     is_sending_ = true;
     send_callback_ = callback;
     channel_impl_->Write(send_buffer_.buffer(), send_buffer_.size(),
-                         ::base::BindOnce(&Channel<MessageTy>::OnSendMessage,
-                                          ::base::Unretained(this)));
+                         base::BindOnce(&Channel<MessageTy>::OnSendMessage,
+                                        base::Unretained(this)));
   } else {
     callback.Run(type(), errors::Unavailable(MessageIoErrorToString(err)));
   }
@@ -222,8 +222,8 @@ void Channel<MessageTy>::ReadImpl(MessageTy* message,
   message_ = message;
   receive_callback_ = std::move(callback);
   channel_impl_->Read(receive_buffer_.buffer(), sizeof(Header),
-                      ::base::BindOnce(&Channel<MessageTy>::OnReceiveHeader,
-                                       ::base::Unretained(this)));
+                      base::BindOnce(&Channel<MessageTy>::OnReceiveHeader,
+                                     base::Unretained(this)));
 }
 
 template <typename MessageTy>
@@ -252,8 +252,8 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
 
   receive_buffer_.set_offset(0);
   channel_impl_->Read(receive_buffer_.buffer(), header_.size(),
-                      ::base::BindOnce(&Channel<MessageTy>::OnReceiveMessage,
-                                       ::base::Unretained(this)));
+                      base::BindOnce(&Channel<MessageTy>::OnReceiveMessage,
+                                     base::Unretained(this)));
 }
 
 template <typename MessageTy>
@@ -271,10 +271,10 @@ void Channel<MessageTy>::OnReceiveMessage(const Status& s) {
   std::move(receive_callback_).Run(s);
 }
 
-// Convert |ip_endpoint()| of |channel_def| to ::net::IPEndPoint,
+// Convert |ip_endpoint()| of |channel_def| to net::IPEndPoint,
 // Returns Status::OK() if succeeded.
 EXPORT Status ToNetIPEndPoint(const ChannelDef& channel_def,
-                              ::net::IPEndPoint* ip_endpoint);
+                              net::IPEndPoint* ip_endpoint);
 
 // Convert EndPoint of |channel_def| to std::string
 EXPORT std::string EndPointToString(const ChannelDef& channel_def);

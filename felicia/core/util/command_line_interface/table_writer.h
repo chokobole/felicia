@@ -25,7 +25,7 @@ class EXPORT TableWriter {
     size_t width = 16;
   };
 
-  void SetElement(size_t row, size_t col, ::base::StringPiece element);
+  void SetElement(size_t row, size_t col, base::StringPiece element);
   std::string ToString() const;
 
  private:

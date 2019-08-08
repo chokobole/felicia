@@ -21,7 +21,7 @@ const size_t kVidPidSize = 4;
 
 AvfCamera::AvfCamera(const CameraDescriptor& camera_descriptor)
     : CameraInterface(camera_descriptor),
-      task_runner_(::base::ThreadTaskRunnerHandle::Get()),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       capture_device_(nil) {}
 
 AvfCamera::~AvfCamera() { DCHECK(task_runner_->BelongsToCurrentThread()); }
@@ -66,8 +66,8 @@ Status AvfCamera::Init() {
   NSString* deviceId = [NSString stringWithUTF8String:camera_descriptor_.device_id().c_str()];
   NSString* errorMessage = nil;
   if (![capture_device_ setCaptureDevice:deviceId errorMessage:&errorMessage]) {
-    return errors::Unavailable(::base::StringPrintf(
-        "Failed to set capture device: %s.", ::base::SysNSStringToUTF8(errorMessage).c_str()));
+    return errors::Unavailable(base::StringPrintf("Failed to set capture device: %s.",
+                                                  base::SysNSStringToUTF8(errorMessage).c_str()));
   }
 
   camera_state_.ToInitialized();
@@ -114,7 +114,7 @@ Status AvfCamera::Stop() {
 
   NSString* errorMessage = nil;
   if (![capture_device_ setCaptureDevice:nil errorMessage:&errorMessage])
-    LOG(ERROR) << ::base::SysNSStringToUTF8(errorMessage);
+    LOG(ERROR) << base::SysNSStringToUTF8(errorMessage);
 
   [capture_device_ setFrameReceiver:nil];
 
@@ -141,7 +141,7 @@ Status AvfCamera::SetCameraFormat(const CameraFormat& camera_format) {
 
 void AvfCamera::ReceiveFrame(const uint8_t* video_frame, int video_frame_length,
                              const CameraFormat& camera_format, int aspect_numerator,
-                             int aspect_denominator, ::base::TimeDelta timestamp) {
+                             int aspect_denominator, base::TimeDelta timestamp) {
   if (camera_format_.pixel_format() != PixelFormat::PIXEL_FORMAT_MJPEG &&
       camera_format_.AllocationSize() != video_frame_length) {
     status_callback_.Run(errors::InvalidNumberOfBytesInBuffer());
@@ -154,7 +154,7 @@ void AvfCamera::ReceiveFrame(const uint8_t* video_frame, int video_frame_length,
     camera_frame_callback_.Run(CameraFrame{std::move(data), static_cast<size_t>(video_frame_length),
                                            camera_format_, timestamp});
   } else {
-    ::base::Optional<CameraFrame> camera_frame = ConvertToRequestedPixelFormat(
+    base::Optional<CameraFrame> camera_frame = ConvertToRequestedPixelFormat(
         video_frame, video_frame_length, camera_format_, requested_pixel_format_, timestamp);
     if (camera_frame.has_value()) {
       camera_frame_callback_.Run(std::move(camera_frame.value()));

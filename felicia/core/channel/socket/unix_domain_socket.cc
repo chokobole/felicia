@@ -4,23 +4,23 @@ namespace felicia {
 
 UnixDomainSocket::UnixDomainSocket() = default;
 
-UnixDomainSocket::UnixDomainSocket(std::unique_ptr<::net::SocketPosix> socket)
+UnixDomainSocket::UnixDomainSocket(std::unique_ptr<net::SocketPosix> socket)
     : socket_(std::move(socket)) {}
 
 UnixDomainSocket::~UnixDomainSocket() = default;
 
 bool UnixDomainSocket::IsUnixDomainSocket() const { return true; }
 
-int UnixDomainSocket::Write(::net::IOBuffer* buf, int buf_len,
-                            ::net::CompletionOnceCallback callback) {
+int UnixDomainSocket::Write(net::IOBuffer* buf, int buf_len,
+                            net::CompletionOnceCallback callback) {
   DCHECK(socket_);
   return socket_->Write(
       buf, buf_len, std::move(callback),
-      ::net::DefineNetworkTrafficAnnotation("UnixDomainSocket", "Write"));
+      net::DefineNetworkTrafficAnnotation("UnixDomainSocket", "Write"));
 }
 
-int UnixDomainSocket::Read(::net::IOBuffer* buf, int buf_len,
-                           ::net::CompletionOnceCallback callback) {
+int UnixDomainSocket::Read(net::IOBuffer* buf, int buf_len,
+                           net::CompletionOnceCallback callback) {
   DCHECK(socket_);
   return socket_->Read(buf, buf_len, std::move(callback));
 }

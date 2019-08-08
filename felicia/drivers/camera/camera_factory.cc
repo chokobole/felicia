@@ -26,12 +26,12 @@ std::unique_ptr<CameraInterface> CameraFactory::NewCamera(
     const CameraDescriptor& descriptor) {
 #if defined(OS_WIN) && !BUILDFLAG(TRAVIS)
   if (MfCamera::PlatformSupportsMediaFoundation()) {
-    return ::base::WrapUnique(new MfCamera(descriptor));
+    return base::WrapUnique(new MfCamera(descriptor));
   } else {
-    return ::base::WrapUnique(new DshowCamera(descriptor));
+    return base::WrapUnique(new DshowCamera(descriptor));
   }
 #else
-  return ::base::WrapUnique(new Camera(descriptor));
+  return base::WrapUnique(new Camera(descriptor));
 #endif
 }
 

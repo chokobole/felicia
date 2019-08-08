@@ -21,9 +21,9 @@
 
 namespace felicia {
 
-class PipelineSyncer : public ::rs2::asynchronous_syncer {
+class PipelineSyncer : public rs2::asynchronous_syncer {
  public:
-  void operator()(::rs2::frame f) const { invoke(std::move(f)); }
+  void operator()(rs2::frame f) const { invoke(std::move(f)); }
 };
 
 class RsCamera : public DepthCameraInterface {
@@ -46,11 +46,11 @@ class RsCamera : public DepthCameraInterface {
       ZERO_ORDER_INVALIDATION,
     };
 
-    NamedFilter(Name name, std::shared_ptr<::rs2::filter> filter)
+    NamedFilter(Name name, std::shared_ptr<rs2::filter> filter)
         : name(name), filter(filter) {}
 
     Name name;
-    std::shared_ptr<::rs2::filter> filter;
+    std::shared_ptr<rs2::filter> filter;
   };
 
   struct StartParams {
@@ -91,53 +91,53 @@ class RsCamera : public DepthCameraInterface {
 
   Status Start(const StartParams& params);
 
-  StatusOr<::rs2::sensor> sensor(const RsStreamInfo& rs_stream_info);
+  StatusOr<rs2::sensor> sensor(const RsStreamInfo& rs_stream_info);
 
-  Status SetOption(::rs2::sensor& sensor, rs2_option option, float value);
-  Status GetOption(::rs2::sensor& sensor, rs2_option option, float* value);
-  Status GetOptionRange(::rs2::sensor& sensor, rs2_option option,
-                        ::rs2::option_range* option_range);
-  Status GetAllOptions(::rs2::sensor& sensor, std::vector<rs2_option>* options);
+  Status SetOption(rs2::sensor& sensor, rs2_option option, float value);
+  Status GetOption(rs2::sensor& sensor, rs2_option option, float* value);
+  Status GetOptionRange(rs2::sensor& sensor, rs2_option option,
+                        rs2::option_range* option_range);
+  Status GetAllOptions(rs2::sensor& sensor, std::vector<rs2_option>* options);
 
  private:
   friend class RsCameraFactory;
 
   RsCamera(const CameraDescriptor& camera_descriptor);
 
-  void GetCameraSetting(::rs2::sensor& sensor, rs2_option option,
+  void GetCameraSetting(rs2::sensor& sensor, rs2_option option,
                         CameraSettingsModeValue* value);
-  void GetCameraSetting(::rs2::sensor& sensor, rs2_option option,
+  void GetCameraSetting(rs2::sensor& sensor, rs2_option option,
                         CameraSettingsRangedValue* value);
 
-  void OnFrame(::rs2::frame frame);
-  void OnImuFrame(::rs2::frame frame);
+  void OnFrame(rs2::frame frame);
+  void OnImuFrame(rs2::frame frame);
 
-  void HandleVideoFrame(::rs2::video_frame frame, ::base::TimeDelta timestamp);
-  void HandlePoints(::rs2::points points, ::base::TimeDelta timestamp,
-                    const ::rs2::frameset& frameset);
+  void HandleVideoFrame(rs2::video_frame frame, base::TimeDelta timestamp);
+  void HandlePoints(rs2::points points, base::TimeDelta timestamp,
+                    const rs2::frameset& frameset);
 
-  ::base::Optional<CameraFrame> ConvertToRequestedPixelFormat(
-      ::rs2::video_frame color_frame, PixelFormat requested_pixel_format,
-      ::base::TimeDelta timestamp);
-  CameraFrame FromRsColorFrame(::rs2::video_frame color_frame,
-                               ::base::TimeDelta timestamp);
-  DepthCameraFrame FromRsDepthFrame(::rs2::depth_frame depth_frame,
-                                    ::base::TimeDelta timestamp);
+  base::Optional<CameraFrame> ConvertToRequestedPixelFormat(
+      rs2::video_frame color_frame, PixelFormat requested_pixel_format,
+      base::TimeDelta timestamp);
+  CameraFrame FromRsColorFrame(rs2::video_frame color_frame,
+                               base::TimeDelta timestamp);
+  DepthCameraFrame FromRsDepthFrame(rs2::depth_frame depth_frame,
+                                    base::TimeDelta timestamp);
 
   static Status CreateDevice(const CameraDescriptor& camera_descriptor,
-                             ::rs2::device* device);
+                             rs2::device* device);
 
-  static Status CreateCapabilityMap(::rs2::device device,
+  static Status CreateCapabilityMap(rs2::device device,
                                     RsCapabilityMap* rs_capability_map);
 
-  ::rs2::device device_;
+  rs2::device device_;
   PipelineSyncer syncer_;
   std::vector<NamedFilter> named_filters_;
 
   CameraFrame cached_color_frame_;
   float depth_scale_;
 
-  ::base::flat_map<RsStreamInfo, ::rs2::sensor> sensors_;
+  base::flat_map<RsStreamInfo, rs2::sensor> sensors_;
   RsCapabilityMap capability_map_;
 
   ImuFormat gyro_format_;

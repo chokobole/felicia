@@ -52,9 +52,9 @@ class OccupancyGridMap : public GridMap<CellType> {
               const std::vector<float>& intencities);
 
   OccupancyGridMapMessage ToOccupancyGridMapMessage(
-      ::base::TimeDelta timestamp) const;
+      base::TimeDelta timestamp) const;
 
-  void ToCsvFile(const ::base::FilePath& file_path) const;
+  void ToCsvFile(const base::FilePath& file_path) const;
 
  private:
   void Update(const Pointf& point, const Pointf& point2, float intencity);
@@ -173,7 +173,7 @@ void OccupancyGridMap<CellType>::Update(const Pointf& point,
 
 template <typename CellType>
 OccupancyGridMapMessage OccupancyGridMap<CellType>::ToOccupancyGridMapMessage(
-    ::base::TimeDelta timestamp) const {
+    base::TimeDelta timestamp) const {
   OccupancyGridMapMessage message;
   *message.mutable_size() = SizeiToSizeiMessage(this->size());
   message.set_resolution(this->resolution_);
@@ -185,9 +185,9 @@ OccupancyGridMapMessage OccupancyGridMap<CellType>::ToOccupancyGridMapMessage(
 
 template <typename CellType>
 void OccupancyGridMap<CellType>::ToCsvFile(
-    const ::base::FilePath& file_path) const {
-  ::base::File file(
-      file_path, ::base::File::FLAG_CREATE_ALWAYS | ::base::File::FLAG_WRITE);
+    const base::FilePath& file_path) const {
+  base::File file(file_path,
+                  base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   std::string data = ToMapData();
   std::string csv_data;
   csv_data.reserve(data.length() * 2);

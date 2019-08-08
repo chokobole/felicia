@@ -211,7 +211,7 @@ HRESULT SinkInputPin::Receive(IMediaSample* sample) {
     DLOG(WARNING) << "Wrong media sample length: " << length;
     observer_->FrameDropped(
         Status(felicia::error::Code::DATA_LOSS,
-               ::base::StringPrintf("Unexpected Sample Length(%d)", length)));
+               base::StringPrintf("Unexpected Sample Length(%d)", length)));
     return S_FALSE;
   }
 

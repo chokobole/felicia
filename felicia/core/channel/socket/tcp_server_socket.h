@@ -10,9 +10,9 @@ namespace felicia {
 
 class EXPORT TCPServerSocket : public TCPSocket {
  public:
-  using AcceptCallback = ::base::RepeatingCallback<void(const Status& s)>;
+  using AcceptCallback = base::RepeatingCallback<void(const Status& s)>;
   using AcceptOnceInterceptCallback =
-      ::base::OnceCallback<void(StatusOr<std::unique_ptr<::net::TCPSocket>>)>;
+      base::OnceCallback<void(StatusOr<std::unique_ptr<net::TCPSocket>>)>;
 
   TCPServerSocket();
   ~TCPServerSocket();
@@ -24,7 +24,7 @@ class EXPORT TCPServerSocket : public TCPSocket {
   void AcceptLoop(AcceptCallback callback);
   void AcceptOnceIntercept(AcceptOnceInterceptCallback callback);
 
-  void AddSocket(std::unique_ptr<::net::TCPSocket> socket);
+  void AddSocket(std::unique_ptr<net::TCPSocket> socket);
   void AddSocket(std::unique_ptr<StreamSocket> socket);
 
   // Socket methods
@@ -36,9 +36,9 @@ class EXPORT TCPServerSocket : public TCPSocket {
   // all the sockets, then callback with Status::OK(), otherwise callback
   // with the |write_result_|, which is recorded at every time finishing
   // write.
-  void Write(scoped_refptr<::net::IOBuffer> buffer, int size,
+  void Write(scoped_refptr<net::IOBuffer> buffer, int size,
              StatusOnceCallback callback) override;
-  void Read(scoped_refptr<::net::GrowableIOBuffer> buffer, int size,
+  void Read(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
             StatusOnceCallback callback) override;
 
  private:
@@ -52,8 +52,8 @@ class EXPORT TCPServerSocket : public TCPSocket {
   AcceptCallback accept_callback_;
   AcceptOnceInterceptCallback accept_once_intercept_callback_;
 
-  ::net::IPEndPoint accepted_endpoint_;
-  std::unique_ptr<::net::TCPSocket> accepted_socket_;
+  net::IPEndPoint accepted_endpoint_;
+  std::unique_ptr<net::TCPSocket> accepted_socket_;
   std::vector<std::unique_ptr<StreamSocket>> accepted_sockets_;
 
   StreamSocketBroadcaster broadcaster_;

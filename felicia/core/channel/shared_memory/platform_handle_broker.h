@@ -18,7 +18,7 @@
 namespace felicia {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-class PlatformHandleBroker : public ::base::PortProvider::Observer {
+class PlatformHandleBroker : public base::PortProvider::Observer {
 #elif defined(OS_WIN)
 class PlatformHandleBroker : public NamedPipeServer::Delegate {
 #else
@@ -28,12 +28,12 @@ class PlatformHandleBroker {
   static constexpr size_t kDataLen = 1024;
 
   struct Data {
-    ::base::subtle::PlatformSharedMemoryRegion::PlatformHandle platform_handle;
+    base::subtle::PlatformSharedMemoryRegion::PlatformHandle platform_handle;
     std::string data;
   };
 
-  using FillDataCallback = ::base::RepeatingCallback<void(Data*)>;
-  using ReceiveDataCallback = ::base::OnceCallback<void(StatusOr<Data>)>;
+  using FillDataCallback = base::RepeatingCallback<void(Data*)>;
+  using ReceiveDataCallback = base::OnceCallback<void(StatusOr<Data>)>;
 
   PlatformHandleBroker();
   ~PlatformHandleBroker();
@@ -42,7 +42,7 @@ class PlatformHandleBroker {
   void WaitForBroker(ChannelDef channel_def, ReceiveDataCallback callback);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  void OnReceivedTaskPort(::base::ProcessHandle process) override;
+  void OnReceivedTaskPort(base::ProcessHandle process) override;
 #elif defined(OS_WIN)
   void OnConnected() override;
 #endif
@@ -53,8 +53,8 @@ class PlatformHandleBroker {
 #else
   void OnBrokerConnect(const Status& s);
   void AcceptLoop();
-  void HandleAccept(StatusOr<std::unique_ptr<::net::SocketPosix>> status_or);
-  void OnBrokerAccept(StatusOr<std::unique_ptr<::net::SocketPosix>> status_or);
+  void HandleAccept(StatusOr<std::unique_ptr<net::SocketPosix>> status_or);
+  void OnBrokerAccept(StatusOr<std::unique_ptr<net::SocketPosix>> status_or);
   bool OnBrokerAuth(const UnixDomainServerSocket::Credentials& credentials);
 #endif
 

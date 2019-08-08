@@ -85,8 +85,8 @@ void WSChannel<MessageTy>::WriteImpl(const std::string& text,
   this->send_callback_ = callback;
   this->channel_impl_->Write(
       this->send_buffer_.buffer(), to_send,
-      ::base::BindOnce(&WSChannel<MessageTy>::OnSendMessage,
-                       ::base::Unretained(this)));
+      base::BindOnce(&WSChannel<MessageTy>::OnSendMessage,
+                     base::Unretained(this)));
 }
 
 template <typename MessageTy>

@@ -36,7 +36,7 @@ class GrpcMasterClient : public MasterClientInterface {
 #undef CLIENT_METHOD
 
  private:
-  ::Napi::ObjectReference grpc_master_client_;
+  Napi::ObjectReference grpc_master_client_;
 
   DISALLOW_COPY_AND_ASSIGN(GrpcMasterClient);
 };

@@ -10,7 +10,7 @@ namespace felicia {
 class ReadOnlySharedBuffer : public SharedBuffer {
  public:
   explicit ReadOnlySharedBuffer(
-      ::base::subtle::PlatformSharedMemoryRegion handle);
+      base::subtle::PlatformSharedMemoryRegion handle);
   ~ReadOnlySharedBuffer();
 
   bool IsReadOnlySharedBuffer() const override;
@@ -18,12 +18,12 @@ class ReadOnlySharedBuffer : public SharedBuffer {
   const char* data() const;
   size_t size() const;
 
-  ::base::subtle::Atomic32 ReadBegin() const;
-  bool ReadRetry(::base::subtle::Atomic32 version) const;
+  base::subtle::Atomic32 ReadBegin() const;
+  bool ReadRetry(base::subtle::Atomic32 version) const;
 
  private:
-  ::base::ReadOnlySharedMemoryRegion shared_memory_region_;
-  ::base::ReadOnlySharedMemoryMapping shared_memory_mapping_;
+  base::ReadOnlySharedMemoryRegion shared_memory_region_;
+  base::ReadOnlySharedMemoryMapping shared_memory_mapping_;
 
   const SerializedBuffer* buffer_;
 };

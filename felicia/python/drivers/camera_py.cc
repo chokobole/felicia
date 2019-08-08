@@ -94,12 +94,12 @@ void AddCamera(py::module& m) {
              py::function on_error_callback) {
             return self.Start(
                 camera_format,
-                ::base::BindRepeating(&PyCameraFrameCallback::Invoke,
-                                      ::base::Owned(new PyCameraFrameCallback(
-                                          on_camera_frame_callback))),
-                ::base::BindRepeating(
+                base::BindRepeating(&PyCameraFrameCallback::Invoke,
+                                    base::Owned(new PyCameraFrameCallback(
+                                        on_camera_frame_callback))),
+                base::BindRepeating(
                     &PyStatusCallback::Invoke,
-                    ::base::Owned(new PyStatusCallback(on_error_callback))));
+                    base::Owned(new PyStatusCallback(on_error_callback))));
           },
           py::call_guard<py::gil_scoped_release>())
       .def("stop", &CameraInterface::Stop,
@@ -149,7 +149,7 @@ void AddCamera(py::module& m) {
       .def(py::init(
           [](py::array_t<uint8_t, py::array::c_style | py::array::forcecast>
                  array,
-             CameraFormat camera_format, ::base::TimeDelta timestamp) {
+             CameraFormat camera_format, base::TimeDelta timestamp) {
             CheckIfValidPixelFormat(camera_format.pixel_format());
 
             std::unique_ptr<uint8_t[]> data(new uint8_t[array.size()]);

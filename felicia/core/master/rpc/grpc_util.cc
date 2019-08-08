@@ -11,7 +11,7 @@ std::shared_ptr<::grpc::Channel> ConnectGRPCService() {
   std::string ip = ResolveGRPCServiceIp().ToString();
   uint16_t port = ResolveGRPCServicePort();
   auto channel =
-      ::grpc::CreateChannel(::base::StringPrintf("%s:%d", ip.c_str(), port),
+      ::grpc::CreateChannel(base::StringPrintf("%s:%d", ip.c_str(), port),
                             ::grpc::InsecureChannelCredentials());
   if (!channel->WaitForConnected(
           gpr_time_add(gpr_now(GPR_CLOCK_REALTIME),

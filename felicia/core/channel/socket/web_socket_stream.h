@@ -12,12 +12,12 @@ class WebSocketStream {
   virtual ~WebSocketStream() = default;
 
   virtual int ReadFrames(
-      std::vector<std::unique_ptr<::net::WebSocketFrame>>* frames,
-      ::net::CompletionOnceCallback callback) = 0;
+      std::vector<std::unique_ptr<net::WebSocketFrame>>* frames,
+      net::CompletionOnceCallback callback) = 0;
 
   virtual int WriteFrames(
-      std::vector<std::unique_ptr<::net::WebSocketFrame>>* frames,
-      ::net::CompletionOnceCallback callback) = 0;
+      std::vector<std::unique_ptr<net::WebSocketFrame>>* frames,
+      net::CompletionOnceCallback callback) = 0;
 
   virtual void Close() = 0;
 };

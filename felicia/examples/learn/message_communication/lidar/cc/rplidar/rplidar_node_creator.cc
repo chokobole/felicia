@@ -32,14 +32,14 @@ int RealMain(int argc, char* argv[]) {
       lidar_endpoint = LidarEndpoint(delegate.serial_port_flag()->value(),
                                      delegate.baudrate_flag()->value());
     } else {
-      ::net::IPAddress address;
+      net::IPAddress address;
       bool valid = address.AssignFromIPLiteral(delegate.ip_flag()->value());
       if (!valid) {
         std::cerr << "IP is not valid " << delegate.ip_flag()->value()
                   << std::endl;
       }
       lidar_endpoint = LidarEndpoint(
-          ::net::IPEndPoint(address, delegate.tcp_port_flag()->value()));
+          net::IPEndPoint(address, delegate.tcp_port_flag()->value()));
     }
     master_proxy.RequestRegisterNode<RPlidarPublishingNode>(node_info, delegate,
                                                             lidar_endpoint);

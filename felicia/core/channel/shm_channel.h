@@ -56,8 +56,8 @@ void ShmChannel<MessageTy>::Connect(const ChannelDef& channel_def,
 
   connect_callback_ = std::move(callback);
   broker_.WaitForBroker(channel_def,
-                        ::base::BindOnce(&ShmChannel<MessageTy>::OnReceiveData,
-                                         ::base::Unretained(this)));
+                        base::BindOnce(&ShmChannel<MessageTy>::OnReceiveData,
+                                       base::Unretained(this)));
 }
 
 template <typename MessageTy>
@@ -66,8 +66,8 @@ StatusOr<ChannelDef> ShmChannel<MessageTy>::MakeReadOnlySharedMemory() {
   this->channel_impl_ =
       std::make_unique<SharedMemory>(settings_.shm_size.bytes());
 
-  return broker_.Setup(::base::BindRepeating(&ShmChannel<MessageTy>::FillData,
-                                             ::base::Unretained(this)));
+  return broker_.Setup(base::BindRepeating(&ShmChannel<MessageTy>::FillData,
+                                           base::Unretained(this)));
 }
 
 template <typename MessageTy>
@@ -131,8 +131,8 @@ void ShmChannel<MessageTy>::ReadImpl(MessageTy* message,
   this->receive_callback_ = std::move(callback);
   this->channel_impl_->Read(
       this->receive_buffer_.buffer(), this->receive_buffer_.capacity(),
-      ::base::BindOnce(&ShmChannel<MessageTy>::OnReceiveMessageWithHeader,
-                       ::base::Unretained(this)));
+      base::BindOnce(&ShmChannel<MessageTy>::OnReceiveMessageWithHeader,
+                     base::Unretained(this)));
 }
 
 template <typename MessageTy>

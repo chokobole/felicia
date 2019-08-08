@@ -16,7 +16,7 @@ class DynamicPublisherDelegate : public DynamicPublishingNode::Delegate {
       : message_type_(message_type),
         topic_(topic),
         message_(message),
-        delay_(::base::TimeDelta::FromMilliseconds(interval)) {
+        delay_(base::TimeDelta::FromMilliseconds(interval)) {
     ChannelDef::Type_Parse(channel_type, &channel_type_);
   }
 
@@ -49,8 +49,8 @@ class DynamicPublisherDelegate : public DynamicPublishingNode::Delegate {
     MasterProxy& master_proxy = MasterProxy::GetInstance();
     master_proxy.PostDelayedTask(
         FROM_HERE,
-        ::base::BindOnce(&DynamicPublisherDelegate::PublishMessageFromJson,
-                         ::base::Unretained(this)),
+        base::BindOnce(&DynamicPublisherDelegate::PublishMessageFromJson,
+                       base::Unretained(this)),
         delay_);
   }
 
@@ -59,7 +59,7 @@ class DynamicPublisherDelegate : public DynamicPublishingNode::Delegate {
   std::string topic_;
   ChannelDef::Type channel_type_;
   std::string message_;
-  ::base::TimeDelta delay_;
+  base::TimeDelta delay_;
   DynamicPublishingNode* node_;
 };
 

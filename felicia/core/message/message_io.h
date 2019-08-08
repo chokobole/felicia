@@ -21,9 +21,9 @@ template <typename T, typename SFINAE = void>
 class MessageIO;
 
 template <typename T>
-class MessageIO<T, std::enable_if_t<
-                       std::is_base_of<::google::protobuf::Message, T>::value ||
-                       std::is_same<DynamicProtobufMessage, T>::value>> {
+class MessageIO<
+    T, std::enable_if_t<std::is_base_of<google::protobuf::Message, T>::value ||
+                        std::is_same<DynamicProtobufMessage, T>::value>> {
  public:
   static MessageIoError SerializeToString(const T* proto, std::string* text) {
     if (!proto->SerializeToString(text))
@@ -55,7 +55,7 @@ class MessageIO<T, std::enable_if_t<
   }
 
   static MessageIoError AttachToBuffer(
-      const std::string& text, scoped_refptr<::net::GrowableIOBuffer> buffer,
+      const std::string& text, scoped_refptr<net::GrowableIOBuffer> buffer,
       int* size) {
     // This should be before return `ERR_NOT_ENOUGH_BUFFER`. Caller might use
     // this |size| to reallocate buffer.

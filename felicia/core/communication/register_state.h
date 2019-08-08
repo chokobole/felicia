@@ -30,7 +30,7 @@ class RegisterStateTraits {
     }
 
     NOTREACHED();
-    return ::base::EmptyString();
+    return base::EmptyString();
   }
 };
 
@@ -51,16 +51,16 @@ class RegisterState : public State<uint8_t, RegisterStateTraits> {
     return state_ == RegisterStateTraits::kUnregistered;
   }
 
-  ALWAYS_INLINE void ToRegistering(const ::base::Location& from_here) {
+  ALWAYS_INLINE void ToRegistering(const base::Location& from_here) {
     set_state(from_here, RegisterStateTraits::kRegistering);
   }
-  ALWAYS_INLINE void ToRegistered(const ::base::Location& from_here) {
+  ALWAYS_INLINE void ToRegistered(const base::Location& from_here) {
     set_state(from_here, RegisterStateTraits::kRegistered);
   }
-  ALWAYS_INLINE void ToUnregistering(const ::base::Location& from_here) {
+  ALWAYS_INLINE void ToUnregistering(const base::Location& from_here) {
     set_state(from_here, RegisterStateTraits::kUnregistering);
   }
-  ALWAYS_INLINE void ToUnregistered(const ::base::Location& from_here) {
+  ALWAYS_INLINE void ToUnregistered(const base::Location& from_here) {
     set_state(from_here, RegisterStateTraits::kUnregistered);
   }
 };

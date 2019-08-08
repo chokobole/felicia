@@ -29,11 +29,11 @@ Master::~Master() = default;
     }                                                                \
   } while (false)
 
-Master::Master() : thread_(std::make_unique<::base::Thread>("Master")) {}
+Master::Master() : thread_(std::make_unique<base::Thread>("Master")) {}
 
 void Master::Run() {
   thread_->StartWithOptions(
-      ::base::Thread::Options{::base::MessageLoop::TYPE_IO, 0});
+      base::Thread::Options{base::MessageLoop::TYPE_IO, 0});
 }
 
 void Master::Stop() { thread_->Stop(); }
@@ -63,8 +63,8 @@ void Master::RegisterClient(const RegisterClientRequest* arg,
   result->set_id(client->client_info().id());
   thread_->task_runner()->PostTask(
       FROM_HERE,
-      ::base::BindOnce(&Master::DoRegisterClient, ::base::Unretained(this),
-                       std::move(client), std::move(callback)));
+      base::BindOnce(&Master::DoRegisterClient, base::Unretained(this),
+                     std::move(client), std::move(callback)));
 }
 
 void Master::ListClients(const ListClientsRequest* arg,
@@ -72,7 +72,7 @@ void Master::ListClients(const ListClientsRequest* arg,
                          StatusOnceCallback callback) {
   const ClientFilter& client_filter = arg->client_filter();
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     if (client_filter.all()) {
       for (auto& it : client_map_) {
         *result->add_client_infos() = it.second->client_info();
@@ -116,9 +116,8 @@ void Master::RegisterNode(const RegisterNodeRequest* arg,
 
   *result->mutable_node_info() = node->node_info();
   thread_->task_runner()->PostTask(
-      FROM_HERE,
-      ::base::BindOnce(&Master::DoRegisterNode, ::base::Unretained(this),
-                       std::move(node), std::move(callback)));
+      FROM_HERE, base::BindOnce(&Master::DoRegisterNode, base::Unretained(this),
+                                std::move(node), std::move(callback)));
 }
 
 void Master::UnregisterNode(const UnregisterNodeRequest* arg,
@@ -129,16 +128,15 @@ void Master::UnregisterNode(const UnregisterNodeRequest* arg,
 
   thread_->task_runner()->PostTask(
       FROM_HERE,
-      ::base::BindOnce(&Master::DoUnregisterNode, ::base::Unretained(this),
-                       node_info, std::move(callback)));
+      base::BindOnce(&Master::DoUnregisterNode, base::Unretained(this),
+                     node_info, std::move(callback)));
 }
 
 void Master::ListNodes(const ListNodesRequest* arg, ListNodesResponse* result,
                        StatusOnceCallback callback) {
   thread_->task_runner()->PostTask(
-      FROM_HERE,
-      ::base::BindOnce(&Master::DoListNodes, ::base::Unretained(this), arg,
-                       result, std::move(callback)));
+      FROM_HERE, base::BindOnce(&Master::DoListNodes, base::Unretained(this),
+                                arg, result, std::move(callback)));
 }
 
 void Master::PublishTopic(const PublishTopicRequest* arg,
@@ -155,9 +153,8 @@ void Master::PublishTopic(const PublishTopicRequest* arg,
   }
 
   thread_->task_runner()->PostTask(
-      FROM_HERE,
-      ::base::BindOnce(&Master::DoPublishTopic, ::base::Unretained(this),
-                       node_info, topic_info, std::move(callback)));
+      FROM_HERE, base::BindOnce(&Master::DoPublishTopic, base::Unretained(this),
+                                node_info, topic_info, std::move(callback)));
 }
 
 void Master::UnpublishTopic(const UnpublishTopicRequest* arg,
@@ -169,8 +166,8 @@ void Master::UnpublishTopic(const UnpublishTopicRequest* arg,
   const std::string& topic = arg->topic();
   thread_->task_runner()->PostTask(
       FROM_HERE,
-      ::base::BindOnce(&Master::DoUnpublishTopic, ::base::Unretained(this),
-                       node_info, topic, std::move(callback)));
+      base::BindOnce(&Master::DoUnpublishTopic, base::Unretained(this),
+                     node_info, topic, std::move(callback)));
 }
 
 void Master::SubscribeTopic(const SubscribeTopicRequest* arg,
@@ -182,8 +179,8 @@ void Master::SubscribeTopic(const SubscribeTopicRequest* arg,
   const std::string& topic = arg->topic();
   thread_->task_runner()->PostTask(
       FROM_HERE,
-      ::base::BindOnce(&Master::DoSubscribeTopic, ::base::Unretained(this),
-                       node_info, topic, std::move(callback)));
+      base::BindOnce(&Master::DoSubscribeTopic, base::Unretained(this),
+                     node_info, topic, std::move(callback)));
 }
 
 void Master::UnsubscribeTopic(const UnsubscribeTopicRequest* arg,
@@ -195,8 +192,8 @@ void Master::UnsubscribeTopic(const UnsubscribeTopicRequest* arg,
   const std::string& topic = arg->topic();
   thread_->task_runner()->PostTask(
       FROM_HERE,
-      ::base::BindOnce(&Master::DoUnsubscribeTopic, ::base::Unretained(this),
-                       node_info, topic, std::move(callback)));
+      base::BindOnce(&Master::DoUnsubscribeTopic, base::Unretained(this),
+                     node_info, topic, std::move(callback)));
 }
 
 void Master::ListTopics(const ListTopicsRequest* arg,
@@ -219,7 +216,7 @@ void Master::DoRegisterClient(std::unique_ptr<Client> client,
   ClientInfo client_info = client->client_info();  // intend to copy
   uint32_t id = client_info.id();
   AddClient(id, std::move(client));
-  DLOG(INFO) << "[RegisterClient]: " << ::base::StringPrintf("client(%u)", id);
+  DLOG(INFO) << "[RegisterClient]: " << base::StringPrintf("client(%u)", id);
   std::move(callback).Run(Status::OK());
 
   DoCheckHeartBeat(client_info);
@@ -230,8 +227,8 @@ void Master::DoRegisterNode(std::unique_ptr<Node> node,
   DCHECK(thread_->task_runner()->BelongsToCurrentThread());
   bool is_watcher = node->node_info().watcher();
   DLOG(INFO) << "[RegisterNode]: "
-             << ::base::StringPrintf("node(%s)",
-                                     node->node_info().name().c_str());
+             << base::StringPrintf("node(%s)",
+                                   node->node_info().name().c_str());
   AddNode(std::move(node));
   std::move(callback).Run(Status::OK());
 
@@ -245,7 +242,7 @@ void Master::DoUnregisterNode(const NodeInfo& node_info,
   DCHECK(thread_->task_runner()->BelongsToCurrentThread());
   RemoveNode(node_info);
   DLOG(INFO) << "[UnregisterNode]: "
-             << ::base::StringPrintf("node(%s)", node_info.name().c_str());
+             << base::StringPrintf("node(%s)", node_info.name().c_str());
   std::move(callback).Run(Status::OK());
 }
 
@@ -253,10 +250,10 @@ void Master::DoListNodes(const ListNodesRequest* arg, ListNodesResponse* result,
                          StatusOnceCallback callback) {
   DCHECK(thread_->task_runner()->BelongsToCurrentThread());
   const NodeFilter& node_filter = arg->node_filter();
-  std::vector<::base::WeakPtr<Node>> nodes = FindNodes(node_filter);
+  std::vector<base::WeakPtr<Node>> nodes = FindNodes(node_filter);
   if (!node_filter.name().empty()) {
     auto pub_sub_topics = result->mutable_pub_sub_topics();
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     if (nodes.size() > 0) {
       auto node = nodes[0];
       if (node) {
@@ -273,7 +270,7 @@ void Master::DoListNodes(const ListNodesRequest* arg, ListNodesResponse* result,
       }
     }
   } else {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     for (auto node : nodes) {
       if (node) *result->add_node_infos() = node->node_info();
     }
@@ -288,13 +285,13 @@ void Master::DoPublishTopic(const NodeInfo& node_info,
   DCHECK(thread_->task_runner()->BelongsToCurrentThread());
   NodeFilter node_filter;
   node_filter.set_publishing_topic(topic_info.topic());
-  std::vector<::base::WeakPtr<Node>> publishing_nodes = FindNodes(node_filter);
+  std::vector<base::WeakPtr<Node>> publishing_nodes = FindNodes(node_filter);
   Reason reason;
   if (publishing_nodes.size() > 0) {
     reason = Reason::TopicAlreadyPublishing;
   } else {
-    ::base::WeakPtr<Node> node = FindNode(node_info);
-    ::base::AutoLock l(lock_);
+    base::WeakPtr<Node> node = FindNode(node_info);
+    base::AutoLock l(lock_);
     {
       if (node) {
         node->RegisterPublishingTopic(topic_info);
@@ -307,9 +304,9 @@ void Master::DoPublishTopic(const NodeInfo& node_info,
 
   if (reason == Reason::None) {
     DLOG(INFO) << "[PublishTopic]: "
-               << ::base::StringPrintf("topic(%s) from node(%s)",
-                                       topic_info.topic().c_str(),
-                                       node_info.name().c_str());
+               << base::StringPrintf("topic(%s) from node(%s)",
+                                     topic_info.topic().c_str(),
+                                     node_info.name().c_str());
     std::move(callback).Run(Status::OK());
     NotifyAllSubscribers(topic_info);
   } else if (reason == Reason::TopicAlreadyPublishing) {
@@ -323,11 +320,11 @@ void Master::DoUnpublishTopic(const NodeInfo& node_info,
                               const std::string& topic,
                               StatusOnceCallback callback) {
   DCHECK(thread_->task_runner()->BelongsToCurrentThread());
-  ::base::WeakPtr<Node> node = FindNode(node_info);
+  base::WeakPtr<Node> node = FindNode(node_info);
   TopicInfo topic_info;
   Reason reason;
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     if (node) {
       if (!node->IsPublishingTopic(topic)) {
         reason = Reason::TopicNotPublishingOnNode;
@@ -343,8 +340,8 @@ void Master::DoUnpublishTopic(const NodeInfo& node_info,
 
   if (reason == Reason::None) {
     DLOG(INFO) << "[UnpublishTopic]: "
-               << ::base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
-                                       node_info.name().c_str());
+               << base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
+                                     node_info.name().c_str());
     std::move(callback).Run(Status::OK());
     topic_info.set_status(TopicInfo::UNREGISTERED);
     NotifyAllSubscribers(topic_info);
@@ -359,10 +356,10 @@ void Master::DoSubscribeTopic(const NodeInfo& node_info,
                               const std::string& topic,
                               StatusOnceCallback callback) {
   DCHECK(thread_->task_runner()->BelongsToCurrentThread());
-  ::base::WeakPtr<Node> node = FindNode(node_info);
+  base::WeakPtr<Node> node = FindNode(node_info);
   Reason reason;
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     if (node) {
       if (node->IsSubsribingTopic(topic)) {
         reason = Reason::TopicAlreadySubscribingOnNode;
@@ -377,8 +374,8 @@ void Master::DoSubscribeTopic(const NodeInfo& node_info,
 
   if (reason == Reason::None) {
     DLOG(INFO) << "[SubscribeTopic]: "
-               << ::base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
-                                       node_info.name().c_str());
+               << base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
+                                     node_info.name().c_str());
     std::move(callback).Run(Status::OK());
     NotifySubscriber(topic, node_info);
   } else if (reason == Reason::TopicAlreadySubscribingOnNode) {
@@ -393,10 +390,10 @@ void Master::DoUnsubscribeTopic(const NodeInfo& node_info,
                                 const std::string& topic,
                                 StatusOnceCallback callback) {
   DCHECK(thread_->task_runner()->BelongsToCurrentThread());
-  ::base::WeakPtr<Node> node = FindNode(node_info);
+  base::WeakPtr<Node> node = FindNode(node_info);
   Reason reason;
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     if (node) {
       if (node->IsSubsribingTopic(topic)) {
         node->UnregisterSubscribingTopic(topic);
@@ -411,8 +408,8 @@ void Master::DoUnsubscribeTopic(const NodeInfo& node_info,
 
   if (reason == Reason::None) {
     DLOG(INFO) << "[UnsubscribeTopic]: "
-               << ::base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
-                                       node_info.name().c_str());
+               << base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
+                                     node_info.name().c_str());
     std::move(callback).Run(Status::OK());
   } else if (reason == Reason::TopicNotSubscribingOnNode) {
     std::move(callback).Run(
@@ -422,21 +419,21 @@ void Master::DoUnsubscribeTopic(const NodeInfo& node_info,
   }
 }
 
-::base::WeakPtr<Node> Master::FindNode(const NodeInfo& node_info) {
-  ::base::AutoLock l(lock_);
+base::WeakPtr<Node> Master::FindNode(const NodeInfo& node_info) {
+  base::AutoLock l(lock_);
   auto it = client_map_.find(node_info.client_id());
   if (it == client_map_.end()) return nullptr;
   return it->second->FindNode(node_info);
 }
 
-std::vector<::base::WeakPtr<Node>> Master::FindNodes(
+std::vector<base::WeakPtr<Node>> Master::FindNodes(
     const NodeFilter& node_filter) {
-  ::base::AutoLock l(lock_);
-  std::vector<::base::WeakPtr<Node>> nodes;
+  base::AutoLock l(lock_);
+  std::vector<base::WeakPtr<Node>> nodes;
   auto it = client_map_.begin();
   if (!node_filter.publishing_topic().empty()) {
     while (it != client_map_.end()) {
-      std::vector<::base::WeakPtr<Node>> tmp_nodes =
+      std::vector<base::WeakPtr<Node>> tmp_nodes =
           it->second->FindNodes(node_filter);
       nodes.insert(nodes.end(), tmp_nodes.begin(), tmp_nodes.end());
       // Because there can be only one publishing node.
@@ -445,7 +442,7 @@ std::vector<::base::WeakPtr<Node>> Master::FindNodes(
     }
   } else {
     while (it != client_map_.end()) {
-      std::vector<::base::WeakPtr<Node>> tmp_nodes =
+      std::vector<base::WeakPtr<Node>> tmp_nodes =
           it->second->FindNodes(node_filter);
       nodes.insert(nodes.end(), tmp_nodes.begin(), tmp_nodes.end());
       it++;
@@ -455,7 +452,7 @@ std::vector<::base::WeakPtr<Node>> Master::FindNodes(
 }
 
 std::vector<TopicInfo> Master::FindTopicInfos(const TopicFilter& topic_filter) {
-  ::base::AutoLock l(lock_);
+  base::AutoLock l(lock_);
   std::vector<TopicInfo> topic_infos;
   auto it = client_map_.begin();
   if (!topic_filter.topic().empty()) {
@@ -481,7 +478,7 @@ std::vector<TopicInfo> Master::FindTopicInfos(const TopicFilter& topic_filter) {
 
 void Master::AddClient(uint32_t id, std::unique_ptr<Client> client) {
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     client_map_.insert_or_assign(id, std::move(client));
     DLOG(INFO) << "Master::AddClient() " << id;
   }
@@ -492,7 +489,7 @@ void Master::RemoveClient(const ClientInfo& client_info) {
 
   std::vector<TopicInfo> topic_infos;
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     auto it = client_map_.find(id);
     TopicFilter topic_filter;
     topic_filter.set_all(true);
@@ -504,15 +501,15 @@ void Master::RemoveClient(const ClientInfo& client_info) {
   for (auto& topic_info : topic_infos) {
     topic_info.set_status(TopicInfo::UNREGISTERED);
     thread_->task_runner()->PostTask(
-        FROM_HERE, ::base::Bind(&Master::NotifyAllSubscribers,
-                                ::base::Unretained(this), topic_info));
+        FROM_HERE, base::Bind(&Master::NotifyAllSubscribers,
+                              base::Unretained(this), topic_info));
   }
 }
 
 void Master::AddNode(std::unique_ptr<Node> node) {
   uint32_t id = node->node_info().client_id();
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     auto it = client_map_.find(id);
     if (it != client_map_.end()) {
       DLOG(INFO) << "Master::AddNode() " << node->node_info().name();
@@ -524,7 +521,7 @@ void Master::AddNode(std::unique_ptr<Node> node) {
 void Master::RemoveNode(const NodeInfo& node_info) {
   uint32_t id = node_info.client_id();
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     auto it = client_map_.find(id);
     if (it != client_map_.end()) {
       it->second->RemoveNode(node_info);
@@ -534,12 +531,12 @@ void Master::RemoveNode(const NodeInfo& node_info) {
 }
 
 bool Master::CheckIfClientExists(uint32_t id) {
-  ::base::AutoLock l(lock_);
+  base::AutoLock l(lock_);
   return client_map_.find(id) != client_map_.end();
 }
 
 bool Master::CheckIfNodeExists(const NodeInfo& node_info) {
-  ::base::AutoLock l(lock_);
+  base::AutoLock l(lock_);
   auto it = client_map_.find(node_info.client_id());
   if (it == client_map_.end()) return false;
   return it->second->HasNode(node_info);
@@ -554,7 +551,7 @@ void Master::DoNotifySubscriber(const NodeInfo& subscribing_node_info,
 
   ChannelSource channel_source;
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     auto it = client_map_.find(subscribing_node_info.client_id());
     if (it == client_map_.end()) return;
     channel_source = it->second->client_info().topic_info_watcher_source();
@@ -565,18 +562,18 @@ void Master::DoNotifySubscriber(const NodeInfo& subscribing_node_info,
             ChannelDef::CHANNEL_TYPE_TCP);
 
   channel->Connect(channel_source.channel_defs(0),
-                   ::base::BindOnce(&Master::OnConnetToTopicInfoWatcher,
-                                    ::base::Unretained(this),
-                                    ::base::Passed(&channel), topic_info));
+                   base::BindOnce(&Master::OnConnetToTopicInfoWatcher,
+                                  base::Unretained(this),
+                                  base::Passed(&channel), topic_info));
 }
 
 void Master::NotifySubscriber(const std::string& topic,
                               const NodeInfo& subscribing_node_info) {
   NodeFilter node_filter;
   node_filter.set_publishing_topic(topic);
-  std::vector<::base::WeakPtr<Node>> publishing_nodes = FindNodes(node_filter);
+  std::vector<base::WeakPtr<Node>> publishing_nodes = FindNodes(node_filter);
   if (publishing_nodes.size() > 0) {
-    ::base::WeakPtr<Node> publishing_node = publishing_nodes[0];
+    base::WeakPtr<Node> publishing_node = publishing_nodes[0];
     if (publishing_node)
       DoNotifySubscriber(subscribing_node_info,
                          publishing_node->GetTopicInfo(topic));
@@ -586,10 +583,10 @@ void Master::NotifySubscriber(const std::string& topic,
 void Master::NotifyAllSubscribers(const TopicInfo& topic_info) {
   NodeFilter node_filter;
   node_filter.set_subscribing_topic(topic_info.topic());
-  std::vector<::base::WeakPtr<Node>> subscribing_nodes = FindNodes(node_filter);
+  std::vector<base::WeakPtr<Node>> subscribing_nodes = FindNodes(node_filter);
   node_filter.Clear();
   node_filter.set_watcher(true);
-  std::vector<::base::WeakPtr<Node>> watcher_nodes = FindNodes(node_filter);
+  std::vector<base::WeakPtr<Node>> watcher_nodes = FindNodes(node_filter);
   subscribing_nodes.insert(subscribing_nodes.end(), watcher_nodes.begin(),
                            watcher_nodes.end());
   {
@@ -603,12 +600,12 @@ void Master::NotifyAllSubscribers(const TopicInfo& topic_info) {
 void Master::NotifyWatcher() {
   NodeFilter node_filter;
   node_filter.set_watcher(true);
-  std::vector<::base::WeakPtr<Node>> watcher_nodes = FindNodes(node_filter);
+  std::vector<base::WeakPtr<Node>> watcher_nodes = FindNodes(node_filter);
   TopicFilter topic_filter;
   topic_filter.set_all(true);
   std::vector<TopicInfo> topic_infos = FindTopicInfos(topic_filter);
   if (watcher_nodes.size() > 0) {
-    ::base::WeakPtr<Node> watcher_node = watcher_nodes[0];
+    base::WeakPtr<Node> watcher_node = watcher_nodes[0];
     if (watcher_node) {
       for (TopicInfo& topic_info : topic_infos) {
         DoNotifySubscriber(watcher_node->node_info(), topic_info);
@@ -623,7 +620,7 @@ void Master::OnConnetToTopicInfoWatcher(
   if (s.ok()) {
     channel->SendMessage(
         topic_info,
-        ::base::BindRepeating([](ChannelDef::Type type, const Status& s) {
+        base::BindRepeating([](ChannelDef::Type type, const Status& s) {
           LOG_IF(ERROR, !s.ok()) << "Failed to send message: " << s;
         }));
   } else {
@@ -640,7 +637,7 @@ void Master::DoCheckHeartBeat(const ClientInfo& client_info) {
   // |listner| is released inside.
   HeartBeatListener* listener = new HeartBeatListener(
       client_info,
-      ::base::BindOnce(&Master::RemoveClient, ::base::Unretained(this)));
+      base::BindOnce(&Master::RemoveClient, base::Unretained(this)));
   listener->StartCheckHeartBeat();
 }
 

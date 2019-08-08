@@ -53,18 +53,18 @@ class Socket : public ChannelImpl {
 #endif
 
   virtual bool IsConnected() const = 0;
-  virtual int Write(::net::IOBuffer* buf, int buf_len,
-                    ::net::CompletionOnceCallback callback) = 0;
-  virtual int Read(::net::IOBuffer* buf, int buf_len,
-                   ::net::CompletionOnceCallback callback) = 0;
+  virtual int Write(net::IOBuffer* buf, int buf_len,
+                    net::CompletionOnceCallback callback) = 0;
+  virtual int Read(net::IOBuffer* buf, int buf_len,
+                   net::CompletionOnceCallback callback) = 0;
   virtual void Close() = 0;
 
-  void WriteRepeating(scoped_refptr<::net::IOBuffer> buffer, int size,
+  void WriteRepeating(scoped_refptr<net::IOBuffer> buffer, int size,
                       StatusOnceCallback callback,
-                      ::net::CompletionRepeatingCallback on_write_callback);
-  void ReadRepeating(scoped_refptr<::net::GrowableIOBuffer> buffer, int size,
+                      net::CompletionRepeatingCallback on_write_callback);
+  void ReadRepeating(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
                      StatusOnceCallback callback,
-                     ::net::CompletionRepeatingCallback on_read_callback);
+                     net::CompletionRepeatingCallback on_read_callback);
 
  protected:
   friend class StreamSocketBroadcaster;

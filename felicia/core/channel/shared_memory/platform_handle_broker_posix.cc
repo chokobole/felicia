@@ -35,7 +35,7 @@ void PlatformHandleBroker::WaitForBroker(ChannelDef channel_def,
   DCHECK(!broker_);
   DCHECK(!callback.is_null());
   DCHECK(receive_data_callback_.is_null());
-  ::net::UDSEndPoint uds_endpoint;
+  net::UDSEndPoint uds_endpoint;
   Status s = ToNetUDSEndPoint(channel_def.shm_endpoint().broker_endpoint(),
                               &uds_endpoint);
   if (!s.ok()) {
@@ -45,9 +45,9 @@ void PlatformHandleBroker::WaitForBroker(ChannelDef channel_def,
   receive_data_callback_ = std::move(callback);
   broker_ = std::make_unique<UnixDomainClientSocket>();
   UnixDomainClientSocket* client_socket = broker_->ToUnixDomainClientSocket();
-  client_socket->Connect(
-      uds_endpoint, ::base::BindOnce(&PlatformHandleBroker::OnBrokerConnect,
-                                     ::base::Unretained(this)));
+  client_socket->Connect(uds_endpoint,
+                         base::BindOnce(&PlatformHandleBroker::OnBrokerConnect,
+                                        base::Unretained(this)));
 }
 
 void PlatformHandleBroker::OnBrokerConnect(const Status& s) {
@@ -60,9 +60,9 @@ void PlatformHandleBroker::OnBrokerConnect(const Status& s) {
   }
 
   char buf[kDataLen];
-  std::vector<::base::ScopedFD> fds;
+  std::vector<base::ScopedFD> fds;
   ssize_t read =
-      ::base::UnixDomainSocket::RecvMsg(socket_fd, buf, kDataLen, &fds);
+      base::UnixDomainSocket::RecvMsg(socket_fd, buf, kDataLen, &fds);
   if (read < 0) {
     std::move(receive_data_callback_)
         .Run(errors::Unavailable("Failed to RecvMsg"));
@@ -71,8 +71,8 @@ void PlatformHandleBroker::OnBrokerConnect(const Status& s) {
 
   Data data;
   data.data = std::string(buf, read);
-  data.platform_handle.fd = ::base::kInvalidFd;
-  data.platform_handle.readonly_fd = ::base::kInvalidFd;
+  data.platform_handle.fd = base::kInvalidFd;
+  data.platform_handle.readonly_fd = base::kInvalidFd;
   if (fds.size() > 0) {
     data.platform_handle.fd = fds[0].release();
   }
@@ -86,14 +86,14 @@ void PlatformHandleBroker::OnBrokerConnect(const Status& s) {
 void PlatformHandleBroker::AcceptLoop() {
   UnixDomainServerSocket* server_socket = broker_->ToUnixDomainServerSocket();
   server_socket->AcceptOnceIntercept(
-      ::base::BindOnce(&PlatformHandleBroker::OnBrokerAccept,
-                       ::base::Unretained(this)),
-      ::base::BindRepeating(&PlatformHandleBroker::OnBrokerAuth,
-                            ::base::Unretained(this)));
+      base::BindOnce(&PlatformHandleBroker::OnBrokerAccept,
+                     base::Unretained(this)),
+      base::BindRepeating(&PlatformHandleBroker::OnBrokerAuth,
+                          base::Unretained(this)));
 }
 
 void PlatformHandleBroker::HandleAccept(
-    StatusOr<std::unique_ptr<::net::SocketPosix>> status_or) {
+    StatusOr<std::unique_ptr<net::SocketPosix>> status_or) {
   if (!status_or.ok()) {
     LOG(ERROR) << status_or.status();
     return;
@@ -114,17 +114,17 @@ void PlatformHandleBroker::HandleAccept(
 
   std::vector<int> fds;
   fds.push_back(data.platform_handle.fd);
-  if (data.platform_handle.readonly_fd != ::base::kInvalidFd)
+  if (data.platform_handle.readonly_fd != base::kInvalidFd)
     fds.push_back(data.platform_handle.readonly_fd);
 
-  if (!::base::UnixDomainSocket::SendMsg(socket_fd, data.data.c_str(),
-                                         data.data.length(), fds)) {
+  if (!base::UnixDomainSocket::SendMsg(socket_fd, data.data.c_str(),
+                                       data.data.length(), fds)) {
     PLOG(ERROR) << "Failed to SendMsg";
   }
 }
 
 void PlatformHandleBroker::OnBrokerAccept(
-    StatusOr<std::unique_ptr<::net::SocketPosix>> status_or) {
+    StatusOr<std::unique_ptr<net::SocketPosix>> status_or) {
   HandleAccept(std::move(status_or));
   AcceptLoop();
 }

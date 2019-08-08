@@ -46,7 +46,7 @@ class ComplementaryFilter : public ImuFilterInterface {
 
   Quaternionf orientation() const override;
   void UpdateAngularVelocity(const Vector3f& angular_velocity,
-                             ::base::TimeDelta timestamp) override;
+                             base::TimeDelta timestamp) override;
   void UpdateLinearAcceleration(const Vector3f& linear_acceleration) override;
 
  private:
@@ -61,7 +61,7 @@ class ComplementaryFilter : public ImuFilterInterface {
   bool use_adaptive_gain_ = false;
 
   bool has_measurement_ = false;
-  ::base::TimeDelta last_timestamp_;
+  base::TimeDelta last_timestamp_;
 };
 
 }  // namespace felicia

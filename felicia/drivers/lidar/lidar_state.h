@@ -23,7 +23,7 @@ class LidarStateTraits {
         return "Started";
     }
     NOTREACHED();
-    return ::base::EmptyString();
+    return base::EmptyString();
   }
 };
 

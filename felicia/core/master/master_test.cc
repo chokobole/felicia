@@ -18,18 +18,17 @@ namespace {
 
 void FillRandomTCPChannelDef(ChannelDef* channel_def) {
   IPEndPoint* ip_endpoint = channel_def->mutable_ip_endpoint();
-  ip_endpoint->set_ip(
-      net::HostIPAddress(net::HOST_IP_ONLY_ALLOW_IPV4).ToString());
+  ip_endpoint->set_ip(HostIPAddress(HOST_IP_ONLY_ALLOW_IPV4).ToString());
   ip_endpoint->set_port(
-      net::PickRandomPort(channel_def->type() == ChannelDef::CHANNEL_TYPE_TCP));
+      PickRandomPort(channel_def->type() == ChannelDef::CHANNEL_TYPE_TCP));
 }
 
-void ExpectOK(std::shared_ptr<::base::WaitableEvent> event, const Status& s) {
+void ExpectOK(std::shared_ptr<base::WaitableEvent> event, const Status& s) {
   EXPECT_TRUE(s.ok());
   event->Signal();
 }
 
-void ExpectChannelSourceNotValid(std::shared_ptr<::base::WaitableEvent> event,
+void ExpectChannelSourceNotValid(std::shared_ptr<base::WaitableEvent> event,
                                  const std::string& name,
                                  const ChannelSource& channel_source,
                                  const Status& s) {
@@ -38,28 +37,28 @@ void ExpectChannelSourceNotValid(std::shared_ptr<::base::WaitableEvent> event,
   event->Signal();
 }
 
-void ExpectClientNotRegistered(std::shared_ptr<::base::WaitableEvent> event,
+void ExpectClientNotRegistered(std::shared_ptr<base::WaitableEvent> event,
                                const Status& s) {
   Status expected = errors::ClientNotRegistered();
   EXPECT_TRUE(s == expected);
   event->Signal();
 }
 
-void ExpectNodeNotRegistered(std::shared_ptr<::base::WaitableEvent> event,
+void ExpectNodeNotRegistered(std::shared_ptr<base::WaitableEvent> event,
                              const NodeInfo& node_info, const Status& s) {
   Status expected = errors::NodeNotRegistered(node_info);
   EXPECT_TRUE(s == expected);
   event->Signal();
 }
 
-void ExpectNodeAlreadyRegistered(std::shared_ptr<::base::WaitableEvent> event,
+void ExpectNodeAlreadyRegistered(std::shared_ptr<base::WaitableEvent> event,
                                  const NodeInfo& node_info, const Status& s) {
   Status expected = errors::NodeAlreadyRegistered(node_info);
   EXPECT_TRUE(s == expected);
   event->Signal();
 }
 
-void ExpectTopicAlreadyPublishing(std::shared_ptr<::base::WaitableEvent> event,
+void ExpectTopicAlreadyPublishing(std::shared_ptr<base::WaitableEvent> event,
                                   const TopicInfo& topic_info,
                                   const Status& s) {
   Status expected = errors::TopicAlreadyPublishing(topic_info);
@@ -67,25 +66,26 @@ void ExpectTopicAlreadyPublishing(std::shared_ptr<::base::WaitableEvent> event,
   event->Signal();
 }
 
-void ExpectTopicNotPublishingOnNode(
-    std::shared_ptr<::base::WaitableEvent> event, const NodeInfo& node_info,
-    const std::string& topic, const Status& s) {
+void ExpectTopicNotPublishingOnNode(std::shared_ptr<base::WaitableEvent> event,
+                                    const NodeInfo& node_info,
+                                    const std::string& topic, const Status& s) {
   Status expected = errors::TopicNotPublishingOnNode(node_info, topic);
   EXPECT_TRUE(s == expected);
   event->Signal();
 }
 
 void ExpectTopicAlreadySubscribingOnNode(
-    std::shared_ptr<::base::WaitableEvent> event, const NodeInfo& node_info,
+    std::shared_ptr<base::WaitableEvent> event, const NodeInfo& node_info,
     const std::string& topic, const Status& s) {
   Status expected = errors::TopicAlreadySubscribingOnNode(node_info, topic);
   EXPECT_TRUE(s == expected);
   event->Signal();
 }
 
-void ExpectTopicNotSubscribingOnNode(
-    std::shared_ptr<::base::WaitableEvent> event, const NodeInfo& node_info,
-    const std::string& topic, const Status& s) {
+void ExpectTopicNotSubscribingOnNode(std::shared_ptr<base::WaitableEvent> event,
+                                     const NodeInfo& node_info,
+                                     const std::string& topic,
+                                     const Status& s) {
   Status expected = errors::TopicNotSubscribingOnNode(node_info, topic);
   EXPECT_TRUE(s == expected);
   event->Signal();
@@ -100,13 +100,13 @@ void ExpectTopicNotSubscribingOnNode(
 class MasterTest : public ::testing::Test {
  public:
   MasterTest()
-      : master_(::base::WrapUnique(new Master())),
+      : master_(base::WrapUnique(new Master())),
         publishing_node_name_("publisher"),
         subscribing_node_name_("subscriber"),
         topic_("topic"),
-        event_(std::make_shared<::base::WaitableEvent>(
-            ::base::WaitableEvent::ResetPolicy::AUTOMATIC,
-            ::base::WaitableEvent::InitialState::NOT_SIGNALED)) {
+        event_(std::make_shared<base::WaitableEvent>(
+            base::WaitableEvent::ResetPolicy::AUTOMATIC,
+            base::WaitableEvent::InitialState::NOT_SIGNALED)) {
     master_->SetCheckHeartBeatForTesting(false);
     master_->Run();
   }
@@ -124,7 +124,7 @@ class MasterTest : public ::testing::Test {
       DECLARE_REQUEST_AND_RESPONSE(RegisterNode);
       *request->mutable_node_info() = pub_node_info_;
       RegisterNode(request.get(), response.get(),
-                   ::base::BindOnce(&ExpectOK, event_));
+                   base::BindOnce(&ExpectOK, event_));
     }
 
     {
@@ -139,7 +139,7 @@ class MasterTest : public ::testing::Test {
       DECLARE_REQUEST_AND_RESPONSE(RegisterNode);
       *request->mutable_node_info() = sub_node_info_;
       RegisterNode(request.get(), response.get(),
-                   ::base::BindOnce(&ExpectOK, event_));
+                   base::BindOnce(&ExpectOK, event_));
     }
 
     {
@@ -147,7 +147,7 @@ class MasterTest : public ::testing::Test {
       *request->mutable_node_info() = sub_node_info_;
       *request->mutable_topic() = topic_;
       SubscribeTopic(request.get(), response.get(),
-                     ::base::BindOnce(&ExpectOK, event_));
+                     base::BindOnce(&ExpectOK, event_));
     }
   }
 
@@ -156,14 +156,14 @@ class MasterTest : public ::testing::Test {
       DECLARE_REQUEST_AND_RESPONSE(UnregisterNode);
       *request->mutable_node_info() = pub_node_info_;
       UnregisterNode(request.get(), response.get(),
-                     ::base::BindOnce(&ExpectOK, event_));
+                     base::BindOnce(&ExpectOK, event_));
     }
 
     {
       DECLARE_REQUEST_AND_RESPONSE(UnregisterNode);
       *request->mutable_node_info() = sub_node_info_;
       UnregisterNode(request.get(), response.get(),
-                     ::base::BindOnce(&ExpectOK, event_));
+                     base::BindOnce(&ExpectOK, event_));
     }
   }
 
@@ -201,7 +201,7 @@ class MasterTest : public ::testing::Test {
     *client_info.mutable_topic_info_watcher_source() =
         topic_info_watcher_source;
     *request->mutable_client_info() = client_info;
-    RegisterClient(request, response, ::base::BindOnce(&ExpectOK, event_));
+    RegisterClient(request, response, base::BindOnce(&ExpectOK, event_));
   }
 
   void PublishTopicForTesting(PublishTopicRequest* request,
@@ -216,7 +216,7 @@ class MasterTest : public ::testing::Test {
     *topic_source->add_channel_defs() = channel_def;
     *request->mutable_node_info() = node_info;
     *request->mutable_topic_info() = *topic_info;
-    PublishTopic(request, response, ::base::BindOnce(&ExpectOK, event_));
+    PublishTopic(request, response, base::BindOnce(&ExpectOK, event_));
   }
 
  protected:
@@ -228,7 +228,7 @@ class MasterTest : public ::testing::Test {
   TopicInfo topic_info_;
   NodeInfo pub_node_info_;
   NodeInfo sub_node_info_;
-  std::shared_ptr<::base::WaitableEvent> event_;
+  std::shared_ptr<base::WaitableEvent> event_;
 };  // namespace felicia
 
 TEST_F(MasterTest, RegisterClient) {
@@ -238,14 +238,14 @@ TEST_F(MasterTest, RegisterClient) {
   SetCheckHeartBeatForTesting(true);
 
   RegisterClient(request.get(), response.get(),
-                 ::base::BindOnce(&ExpectChannelSourceNotValid, event_,
-                                  "heart beat signaller",
-                                  client_info->heart_beat_signaller_source()));
+                 base::BindOnce(&ExpectChannelSourceNotValid, event_,
+                                "heart beat signaller",
+                                client_info->heart_beat_signaller_source()));
 }
 
 namespace {
 
-void OnListAllClients(std::shared_ptr<::base::WaitableEvent> event, uint32_t id,
+void OnListAllClients(std::shared_ptr<base::WaitableEvent> event, uint32_t id,
                       ListClientsResponse* response, const Status& s) {
   EXPECT_TRUE(s.ok());
   auto& client_infos = response->client_infos();
@@ -254,7 +254,7 @@ void OnListAllClients(std::shared_ptr<::base::WaitableEvent> event, uint32_t id,
   event->Signal();
 }
 
-void OnListClient(std::shared_ptr<::base::WaitableEvent> event, uint32_t id,
+void OnListClient(std::shared_ptr<base::WaitableEvent> event, uint32_t id,
                   ListClientsResponse* response, const Status& s) {
   EXPECT_TRUE(s.ok());
   auto& client_infos = response->client_infos();
@@ -273,7 +273,7 @@ TEST_F(MasterTest, ListClients) {
 
   ListClients(
       request.get(), response.get(),
-      ::base::BindOnce(&OnListAllClients, event_, client_id_, response.get()));
+      base::BindOnce(&OnListAllClients, event_, client_id_, response.get()));
 
   response->clear_client_infos();
   uint32_t id;
@@ -286,7 +286,7 @@ TEST_F(MasterTest, ListClients) {
   client_filter->set_id(id);
 
   ListClients(request.get(), response.get(),
-              ::base::BindOnce(&OnListClient, event_, id, response.get()));
+              base::BindOnce(&OnListClient, event_, id, response.get()));
 }
 
 TEST_F(MasterTest, RegisterNode) {
@@ -295,31 +295,31 @@ TEST_F(MasterTest, RegisterNode) {
   NodeInfo* node_info = request->mutable_node_info();
 
   RegisterNode(request.get(), response.get(),
-               ::base::BindOnce(&ExpectClientNotRegistered, event_));
+               base::BindOnce(&ExpectClientNotRegistered, event_));
 
   node_info->set_client_id(client_id_);
   node_info->set_name(publishing_node_name_);
 
   RegisterNode(
       request.get(), response.get(),
-      ::base::BindOnce(&ExpectNodeAlreadyRegistered, event_, *node_info));
+      base::BindOnce(&ExpectNodeAlreadyRegistered, event_, *node_info));
 
   node_info->clear_name();
 
   RegisterNode(request.get(), response.get(),
-               ::base::BindOnce(&ExpectOK, event_));
+               base::BindOnce(&ExpectOK, event_));
 }
 
-#define EXPECT_CHECK_NODE_EXISTS(Method, node_info)             \
-  Method(request.get(), response.get(),                         \
-         ::base::BindOnce(&ExpectClientNotRegistered, event_)); \
-  node_info->set_client_id(client_id_);                         \
-  Method(request.get(), response.get(),                         \
-         ::base::BindOnce(&ExpectNodeNotRegistered, event_, *node_info))
+#define EXPECT_CHECK_NODE_EXISTS(Method, node_info)           \
+  Method(request.get(), response.get(),                       \
+         base::BindOnce(&ExpectClientNotRegistered, event_)); \
+  node_info->set_client_id(client_id_);                       \
+  Method(request.get(), response.get(),                       \
+         base::BindOnce(&ExpectNodeNotRegistered, event_, *node_info))
 
 namespace {
 
-void OnListAllNodes(std::shared_ptr<::base::WaitableEvent> event,
+void OnListAllNodes(std::shared_ptr<base::WaitableEvent> event,
                     uint32_t client_id, const std::string& publishing_node_name,
                     const std::string& subscribing_node_name,
                     ListNodesResponse* response, const Status& s) {
@@ -333,7 +333,7 @@ void OnListAllNodes(std::shared_ptr<::base::WaitableEvent> event,
   event->Signal();
 }
 
-void OnListPublishingNodes(std::shared_ptr<::base::WaitableEvent> event,
+void OnListPublishingNodes(std::shared_ptr<base::WaitableEvent> event,
                            uint32_t client_id,
                            const std::string& publishing_node_name,
                            ListNodesResponse* response, const Status& s) {
@@ -345,7 +345,7 @@ void OnListPublishingNodes(std::shared_ptr<::base::WaitableEvent> event,
   event->Signal();
 }
 
-void OnListSubscribingNodes(std::shared_ptr<::base::WaitableEvent> event,
+void OnListSubscribingNodes(std::shared_ptr<base::WaitableEvent> event,
                             uint32_t client_id,
                             const std::string& subscribing_node_name,
                             ListNodesResponse* response, const Status& s) {
@@ -357,7 +357,7 @@ void OnListSubscribingNodes(std::shared_ptr<::base::WaitableEvent> event,
   event->Signal();
 }
 
-void OnListPubSubTopics(std::shared_ptr<::base::WaitableEvent> event,
+void OnListPubSubTopics(std::shared_ptr<base::WaitableEvent> event,
                         const std::string& topic, ListNodesResponse* response,
                         const Status& s) {
   EXPECT_TRUE(s.ok());
@@ -376,26 +376,26 @@ TEST_F(MasterTest, ListNodes) {
   NodeFilter* node_filter = request->mutable_node_filter();
   node_filter->set_all(true);
 
-  ListNodes(request.get(), response.get(),
-            ::base::BindOnce(&OnListAllNodes, event_, client_id_,
-                             publishing_node_name_, subscribing_node_name_,
-                             response.get()));
+  ListNodes(
+      request.get(), response.get(),
+      base::BindOnce(&OnListAllNodes, event_, client_id_, publishing_node_name_,
+                     subscribing_node_name_, response.get()));
 
   response->clear_node_infos();
   node_filter->Clear();
   node_filter->set_publishing_topic(topic_);
 
   ListNodes(request.get(), response.get(),
-            ::base::BindOnce(&OnListPublishingNodes, event_, client_id_,
-                             publishing_node_name_, response.get()));
+            base::BindOnce(&OnListPublishingNodes, event_, client_id_,
+                           publishing_node_name_, response.get()));
 
   response->clear_node_infos();
   node_filter->Clear();
   node_filter->set_subscribing_topic(topic_);
 
   ListNodes(request.get(), response.get(),
-            ::base::BindOnce(&OnListSubscribingNodes, event_, client_id_,
-                             subscribing_node_name_, response.get()));
+            base::BindOnce(&OnListSubscribingNodes, event_, client_id_,
+                           subscribing_node_name_, response.get()));
 
   response->clear_node_infos();
   node_filter->Clear();
@@ -403,7 +403,7 @@ TEST_F(MasterTest, ListNodes) {
 
   ListNodes(
       request.get(), response.get(),
-      ::base::BindOnce(&OnListPubSubTopics, event_, topic_, response.get()));
+      base::BindOnce(&OnListPubSubTopics, event_, topic_, response.get()));
 }
 
 TEST_F(MasterTest, PublishTopic) {
@@ -417,8 +417,8 @@ TEST_F(MasterTest, PublishTopic) {
   TopicInfo* topic_info = request->mutable_topic_info();
 
   PublishTopic(request.get(), response.get(),
-               ::base::BindOnce(&ExpectChannelSourceNotValid, event_,
-                                "topic source", topic_info->topic_source()));
+               base::BindOnce(&ExpectChannelSourceNotValid, event_,
+                              "topic source", topic_info->topic_source()));
 
   topic_info->set_topic(topic_);
   ChannelDef channel_def;
@@ -428,12 +428,12 @@ TEST_F(MasterTest, PublishTopic) {
 
   PublishTopic(
       request.get(), response.get(),
-      ::base::BindOnce(&ExpectTopicAlreadyPublishing, event_, *topic_info));
+      base::BindOnce(&ExpectTopicAlreadyPublishing, event_, *topic_info));
 
   topic_info->set_topic("topic2");
 
   PublishTopic(request.get(), response.get(),
-               ::base::BindOnce(&ExpectOK, event_));
+               base::BindOnce(&ExpectOK, event_));
 }
 
 TEST_F(MasterTest, UnpublishTopic) {
@@ -447,13 +447,13 @@ TEST_F(MasterTest, UnpublishTopic) {
   request->set_topic("topic2");
 
   UnpublishTopic(request.get(), response.get(),
-                 ::base::BindOnce(&ExpectTopicNotPublishingOnNode, event_,
-                                  *node_info, request->topic()));
+                 base::BindOnce(&ExpectTopicNotPublishingOnNode, event_,
+                                *node_info, request->topic()));
 
   request->set_topic(topic_);
 
   UnpublishTopic(request.get(), response.get(),
-                 ::base::BindOnce(&ExpectOK, event_));
+                 base::BindOnce(&ExpectOK, event_));
 }
 
 TEST_F(MasterTest, SubscribeTopic) {
@@ -467,13 +467,13 @@ TEST_F(MasterTest, SubscribeTopic) {
   request->set_topic(topic_);
 
   SubscribeTopic(request.get(), response.get(),
-                 ::base::BindOnce(&ExpectTopicAlreadySubscribingOnNode, event_,
-                                  *node_info, request->topic()));
+                 base::BindOnce(&ExpectTopicAlreadySubscribingOnNode, event_,
+                                *node_info, request->topic()));
 
   request->set_topic("topic2");
 
   SubscribeTopic(request.get(), response.get(),
-                 ::base::BindOnce(&ExpectOK, event_));
+                 base::BindOnce(&ExpectOK, event_));
 }
 
 TEST_F(MasterTest, UnsubscribeTopic) {
@@ -487,16 +487,16 @@ TEST_F(MasterTest, UnsubscribeTopic) {
   request->set_topic("topic2");
 
   UnsubscribeTopic(request.get(), response.get(),
-                   ::base::BindOnce(&ExpectTopicNotSubscribingOnNode, event_,
-                                    *node_info, request->topic()));
+                   base::BindOnce(&ExpectTopicNotSubscribingOnNode, event_,
+                                  *node_info, request->topic()));
 
   request->set_topic(topic_);
 
   UnsubscribeTopic(request.get(), response.get(),
-                   ::base::BindOnce(&ExpectOK, event_));
+                   base::BindOnce(&ExpectOK, event_));
 }
 
-void OnListAllTopics(std::shared_ptr<::base::WaitableEvent> event,
+void OnListAllTopics(std::shared_ptr<base::WaitableEvent> event,
                      const std::string& topic,
                      const ChannelSource& topic_source,
                      ListTopicsResponse* response, const Status& s) {
@@ -508,7 +508,7 @@ void OnListAllTopics(std::shared_ptr<::base::WaitableEvent> event,
   event->Signal();
 }
 
-void OnListTopic(std::shared_ptr<::base::WaitableEvent> event,
+void OnListTopic(std::shared_ptr<base::WaitableEvent> event,
                  ListTopicsResponse* response, const TopicInfo& topic_info,
                  const Status& s) {
   EXPECT_TRUE(s.ok());
@@ -527,8 +527,8 @@ TEST_F(MasterTest, ListTopics) {
   topic_filter->set_all(true);
 
   ListTopics(request.get(), response.get(),
-             ::base::BindOnce(&OnListAllTopics, event_, topic_,
-                              topic_info_.topic_source(), response.get()));
+             base::BindOnce(&OnListAllTopics, event_, topic_,
+                            topic_info_.topic_source(), response.get()));
 
   response->clear_topic_infos();
   std::string topic = "test2";
@@ -541,9 +541,8 @@ TEST_F(MasterTest, ListTopics) {
   topic_filter->Clear();
   topic_filter->set_topic(topic);
 
-  ListTopics(
-      request.get(), response.get(),
-      ::base::BindOnce(&OnListTopic, event_, response.get(), topic_info));
+  ListTopics(request.get(), response.get(),
+             base::BindOnce(&OnListTopic, event_, response.get(), topic_info));
 }
 
 #undef EXPECT_CHECK_NODE_EXISTS

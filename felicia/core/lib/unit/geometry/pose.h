@@ -107,7 +107,7 @@ EXPORT Posed PosedMessageToPosed(const PosedMessage& message);
 template <typename PoseWithTimestampMessageType, typename PointMessageType,
           typename T>
 PoseWithTimestampMessageType PoseToPoseWithTimestampMessage(
-    const Pose<T>& pose, ::base::TimeDelta timestamp) {
+    const Pose<T>& pose, base::TimeDelta timestamp) {
   PoseWithTimestampMessageType message;
   *message.mutable_point() =
       PointToPointMessage<PointMessageType>(pose.point());
@@ -116,10 +116,10 @@ PoseWithTimestampMessageType PoseToPoseWithTimestampMessage(
   return message;
 }
 
-EXPORT PosefWithTimestampMessage PosefToPosefWithTimestampMessage(
-    const Posef& pose, ::base::TimeDelta timestamp);
-EXPORT PosedWithTimestampMessage PosedToPosedWithTimestampMessage(
-    const Posed& pose, ::base::TimeDelta timestamp);
+EXPORT PosefWithTimestampMessage
+PosefToPosefWithTimestampMessage(const Posef& pose, base::TimeDelta timestamp);
+EXPORT PosedWithTimestampMessage
+PosedToPosedWithTimestampMessage(const Posed& pose, base::TimeDelta timestamp);
 
 template <typename T, typename MessageType>
 Pose<T> PoseWithTimestampMessageToPose(const MessageType& message) {
@@ -234,7 +234,7 @@ EXPORT Pose3d Pose3dMessageToPose3d(const Pose3dMessage& message);
 template <typename Pose3WithTimestampMessageType, typename Point3MessageType,
           typename QuaternionMessageType, typename T>
 Pose3WithTimestampMessageType Pose3ToPose3WithTimestampMessage(
-    const Pose3<T>& pose, ::base::TimeDelta timestamp) {
+    const Pose3<T>& pose, base::TimeDelta timestamp) {
   Pose3WithTimestampMessageType message;
   *message.mutable_point() =
       Point3ToPoint3Message<Point3MessageType>(pose.point());
@@ -245,9 +245,9 @@ Pose3WithTimestampMessageType Pose3ToPose3WithTimestampMessage(
 }
 
 EXPORT Pose3fWithTimestampMessage Pose3fToPose3fWithTimestampMessage(
-    const Pose3f& pose, ::base::TimeDelta timestamp);
+    const Pose3f& pose, base::TimeDelta timestamp);
 EXPORT Pose3dWithTimestampMessage Pose3dToPose3dWithTimestampMessage(
-    const Pose3d& pose, ::base::TimeDelta timestamp);
+    const Pose3d& pose, base::TimeDelta timestamp);
 
 template <typename T, typename MessageType>
 Pose3<T> Pose3WithTimestampMessageToPose3(const MessageType& message) {

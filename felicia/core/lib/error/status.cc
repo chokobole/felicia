@@ -23,8 +23,7 @@ namespace felicia {
 
 Status::Status() : error_code_(error::Code::OK) {}
 
-Status::Status(felicia::error::Code error_code,
-               ::base::StringPiece error_message)
+Status::Status(felicia::error::Code error_code, base::StringPiece error_message)
     : error_code_(error_code), error_message_(std::string(error_message)) {}
 
 Status::Status(const Status& status) = default;

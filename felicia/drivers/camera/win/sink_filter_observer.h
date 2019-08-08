@@ -26,7 +26,7 @@ class SinkFilterObserver {
   // |buffer| is only valid during this function call.
   virtual void FrameReceived(const uint8_t* buffer, int length,
                              const CameraFormat& format,
-                             ::base::TimeDelta timestamp) = 0;
+                             base::TimeDelta timestamp) = 0;
 
   virtual void FrameDropped(const Status& s) = 0;
 

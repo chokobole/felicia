@@ -10,7 +10,7 @@ namespace internal {
 
 template <typename T>
 T SaturateAdd(T value, T value2) {
-  ::base::CheckedNumeric<T> rv(value);
+  base::CheckedNumeric<T> rv(value);
   rv += value2;
   if (rv.IsValid()) return rv.ValueOrDie();
   // Positive RHS overflows. Negative RHS underflows.
@@ -20,7 +20,7 @@ T SaturateAdd(T value, T value2) {
 
 template <typename T>
 T SaturateSub(T value, T value2) {
-  ::base::CheckedNumeric<T> rv(value);
+  base::CheckedNumeric<T> rv(value);
   rv -= value2;
   if (rv.IsValid()) return rv.ValueOrDie();
   // Negative RHS overflows. Positive RHS underflows.
@@ -30,7 +30,7 @@ T SaturateSub(T value, T value2) {
 
 template <typename T, typename U>
 T SaturateMul(T value, U value2) {
-  ::base::CheckedNumeric<T> rv(value);
+  base::CheckedNumeric<T> rv(value);
   rv *= value2;
   if (rv.IsValid()) return rv.ValueOrDie();
   // Matched sign overflows. Mismatched sign underflows.
@@ -40,7 +40,7 @@ T SaturateMul(T value, U value2) {
 
 template <typename T, typename U>
 T SaturateDiv(T value, U value2) {
-  ::base::CheckedNumeric<T> rv(value);
+  base::CheckedNumeric<T> rv(value);
   rv /= value2;
   if (rv.IsValid()) return rv.ValueOrDie();
   // Matched sign overflows. Mismatched sign underflows.

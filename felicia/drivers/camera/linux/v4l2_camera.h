@@ -23,7 +23,7 @@
 namespace felicia {
 
 class V4l2Camera : public CameraInterface,
-                   public ::base::SupportsWeakPtr<V4l2Camera> {
+                   public base::SupportsWeakPtr<V4l2Camera> {
  public:
   ~V4l2Camera();
 
@@ -51,7 +51,7 @@ class V4l2Camera : public CameraInterface,
   Status InitMmap();
   Status ClearMmap();
   Status SetCameraFormat(const CameraFormat& camera_format);
-  void DoStop(::base::WaitableEvent* event, Status* status);
+  void DoStop(base::WaitableEvent* event, Status* status);
   void DoCapture();
 
   void GetCameraSetting(int control_id, CameraSettingsModeValue* value);
@@ -61,14 +61,14 @@ class V4l2Camera : public CameraInterface,
   static bool RunIoctl(int fd, int request, void* argp);
 
   static Status InitDevice(const CameraDescriptor& camera_descriptor,
-                           ::base::ScopedFD* fd);
+                           base::ScopedFD* fd);
   static std::vector<float> GetFrameRateList(int fd, uint32_t fourcc,
                                              uint32_t width, uint32_t height);
 
-  ::base::ScopedFD fd_;
+  base::ScopedFD fd_;
 
   std::vector<CameraBuffer> buffers_;
-  ::base::Thread thread_;
+  base::Thread thread_;
 
   Timestamper timestamper_;
 

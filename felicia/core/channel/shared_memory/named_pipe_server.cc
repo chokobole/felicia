@@ -30,13 +30,13 @@ constexpr base::char16 kDefaultSecurityDescriptor[] =
 }  // namespace
 
 // static
-::base::string16 NamedPipeServer::GetPipeNameFromServiceName(
+base::string16 NamedPipeServer::GetPipeNameFromServiceName(
     const std::string& service_name) {
-  return L"\\\\.\\pipe\\felicia." + ::base::UTF8ToUTF16(service_name);
+  return L"\\\\.\\pipe\\felicia." + base::UTF8ToUTF16(service_name);
 }
 
 // static
-::base::win::ScopedHandle NamedPipeServer::CreateNamedPipe(
+base::win::ScopedHandle NamedPipeServer::CreateNamedPipe(
     const std::string& service_name) {
   PSECURITY_DESCRIPTOR security_desc = nullptr;
   ULONG security_desc_len = 0;
@@ -52,8 +52,8 @@ constexpr base::char16 kDefaultSecurityDescriptor[] =
   const DWORD kPipeMode =
       PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_REJECT_REMOTE_CLIENTS;
 
-  ::base::string16 pipe_name = GetPipeNameFromServiceName(service_name);
-  return ::base::win::ScopedHandle(
+  base::string16 pipe_name = GetPipeNameFromServiceName(service_name);
+  return base::win::ScopedHandle(
       ::CreateNamedPipeW(pipe_name.c_str(), kOpenMode, kPipeMode,
                          1,     // Max instances.
                          4096,  // Out buffer size.

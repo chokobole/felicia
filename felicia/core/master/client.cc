@@ -16,7 +16,7 @@ namespace {
 
 struct RandUint32Traits {
   static uint32_t Generate() {
-    return ::base::RandGenerator(std::numeric_limits<uint32_t>::max());
+    return base::RandGenerator(std::numeric_limits<uint32_t>::max());
   };
 
   static constexpr uint32_t InvalidValue() {
@@ -25,8 +25,7 @@ struct RandUint32Traits {
 };
 
 Generator<uint32_t, RandUint32Traits>& GetIDGenerator() {
-  static ::base::NoDestructor<Generator<uint32_t, RandUint32Traits>>
-      id_generator;
+  static base::NoDestructor<Generator<uint32_t, RandUint32Traits>> id_generator;
   return *id_generator;
 }
 
@@ -43,7 +42,7 @@ std::unique_ptr<Client> Client::NewClient(const ClientInfo& client_info) {
   ClientInfo new_client_info;
   new_client_info.CopyFrom(client_info);
   new_client_info.set_id(id);
-  return ::base::WrapUnique(new Client(new_client_info));
+  return base::WrapUnique(new Client(new_client_info));
 }
 
 Client::Client(const ClientInfo& client_info) : client_info_(client_info) {}
@@ -70,7 +69,7 @@ bool Client::HasNode(const NodeInfo& node_info) const {
                       NodeNameChecker{node_info}) != nodes_.end();
 }
 
-::base::WeakPtr<Node> Client::FindNode(const NodeInfo& node_info) {
+base::WeakPtr<Node> Client::FindNode(const NodeInfo& node_info) {
   DFAKE_SCOPED_LOCK(add_remove_);
   auto it =
       std::find_if(nodes_.begin(), nodes_.end(), NodeNameChecker{node_info});
@@ -81,10 +80,10 @@ bool Client::HasNode(const NodeInfo& node_info) const {
   return (*it)->AsWeakPtr();
 }
 
-std::vector<::base::WeakPtr<Node>> Client::FindNodes(
+std::vector<base::WeakPtr<Node>> Client::FindNodes(
     const NodeFilter& node_filter) {
   DFAKE_SCOPED_LOCK(add_remove_);
-  std::vector<::base::WeakPtr<Node>> nodes;
+  std::vector<base::WeakPtr<Node>> nodes;
   if (node_filter.all()) {
     for (auto& node : nodes_) {
       nodes.push_back(node->AsWeakPtr());

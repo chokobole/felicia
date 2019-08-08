@@ -75,8 +75,8 @@ kern_return_t SendMachShmData(mach_port_t receiving_port,
   return kr;
 }
 
-::base::mac::ScopedMachSendRight ReceiveMachShmData(
-    mach_port_t port_to_listen_on, std::string* data) {
+base::mac::ScopedMachSendRight ReceiveMachShmData(mach_port_t port_to_listen_on,
+                                                  std::string* data) {
   MachReceiveShmDataMessage recv_msg;
   mach_msg_header_t* recv_hdr = &recv_msg.header;
   recv_hdr->msgh_local_port = port_to_listen_on;
@@ -90,13 +90,12 @@ kern_return_t SendMachShmData(mach_port_t receiving_port,
                port_to_listen_on,      // receive name
                MACH_MSG_TIMEOUT_NONE,  // no timeout, wait forever
                MACH_PORT_NULL);        // no notification port
-  if (kr != KERN_SUCCESS)
-    return ::base::mac::ScopedMachSendRight(MACH_PORT_NULL);
+  if (kr != KERN_SUCCESS) return base::mac::ScopedMachSendRight(MACH_PORT_NULL);
   if (recv_msg.header.msgh_id != 0)
-    return ::base::mac::ScopedMachSendRight(MACH_PORT_NULL);
+    return base::mac::ScopedMachSendRight(MACH_PORT_NULL);
   *data = std::string(reinterpret_cast<const char*>(recv_msg.data.address),
                       recv_msg.data.size);
-  return ::base::mac::ScopedMachSendRight(recv_msg.task_port.name);
+  return base::mac::ScopedMachSendRight(recv_msg.task_port.name);
 }
 
 PlatformHandleBroker::PlatformHandleBroker() = default;
@@ -133,7 +132,7 @@ void PlatformHandleBroker::WaitForBroker(ChannelDef channel_def,
 
   std::string service_name =
       channel_def.shm_endpoint().broker_endpoint().service_name();
-  ::base::mac::ScopedMachReceiveRight receiving_port(MakeReceivingPort());
+  base::mac::ScopedMachReceiveRight receiving_port(MakeReceivingPort());
   Status s =
       MachPortBroker::SendTaskPortToService(service_name, receiving_port.get());
   if (!s.ok()) {
@@ -142,7 +141,7 @@ void PlatformHandleBroker::WaitForBroker(ChannelDef channel_def,
   }
 
   Data data;
-  ::base::mac::ScopedMachSendRight platform_handle =
+  base::mac::ScopedMachSendRight platform_handle =
       ReceiveMachShmData(receiving_port.get(), &data.data);
   if (platform_handle.get() == MACH_PORT_NULL) {
     std::move(callback).Run(
@@ -155,7 +154,7 @@ void PlatformHandleBroker::WaitForBroker(ChannelDef channel_def,
   std::move(callback).Run(data);
 }
 
-void PlatformHandleBroker::OnReceivedTaskPort(::base::ProcessHandle process) {
+void PlatformHandleBroker::OnReceivedTaskPort(base::ProcessHandle process) {
   Data data;
   fill_data_callback_.Run(&data);
 

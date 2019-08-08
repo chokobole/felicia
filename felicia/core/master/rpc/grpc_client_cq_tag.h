@@ -22,7 +22,7 @@ limitations under the License.
 namespace felicia {
 
 // Represents a pending asynchronous client call as a tag that can be
-// stored in a `grpc::CompletionQueue`.
+// stored in a `::grpc::CompletionQueue`.
 class GrpcClientCQTag {
  public:
   GrpcClientCQTag() {}

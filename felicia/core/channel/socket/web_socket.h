@@ -25,7 +25,7 @@ class WebSocket : public StreamSocket {
     HandshakeHandler(WebSocket* websocket, const channel::WSSettings& settings);
     ~HandshakeHandler();
 
-    void Handle(std::unique_ptr<::net::TCPSocket> socket);
+    void Handle(std::unique_ptr<net::TCPSocket> socket);
 
     const std::vector<WebSocketExtensionInterface*>& accepted_extensions()
         const {
@@ -41,18 +41,18 @@ class WebSocket : public StreamSocket {
     bool Parse();
     bool Validate();
     void SendOK(const std::string& key, const std::string& extension);
-    void SendError(::net::HttpStatusCode code);
+    void SendError(net::HttpStatusCode code);
 
     void WriteResponse(std::unique_ptr<std::string> response);
     void OnWriteResponse(int result);
 
     WebSocket* websocket_;  // not owned
     channel::WSSettings settings_;
-    std::unique_ptr<::net::TCPSocket> socket_;
-    scoped_refptr<::net::GrowableIOBuffer> buffer_;
+    std::unique_ptr<net::TCPSocket> socket_;
+    scoped_refptr<net::GrowableIOBuffer> buffer_;
     Status status_;
-    ::base::CancelableOnceClosure timeout_;
-    ::base::flat_map<std::string, std::string> headers_;
+    base::CancelableOnceClosure timeout_;
+    base::flat_map<std::string, std::string> headers_;
     WebSocketExtension extension_;
     std::vector<WebSocketExtensionInterface*> accepted_extensions_;
 
@@ -64,16 +64,16 @@ class WebSocket : public StreamSocket {
 
   // Socket methods
   bool IsWebSocket() const override;
-  int Write(::net::IOBuffer* buf, int buf_len,
-            ::net::CompletionOnceCallback callback) override;
-  int Read(::net::IOBuffer* buf, int buf_len,
-           ::net::CompletionOnceCallback callback) override;
+  int Write(net::IOBuffer* buf, int buf_len,
+            net::CompletionOnceCallback callback) override;
+  int Read(net::IOBuffer* buf, int buf_len,
+           net::CompletionOnceCallback callback) override;
   void Close() override;
 
   WebSocketServer* ToWebSocketServer();
 
   virtual void OnHandshaked(
-      StatusOr<std::unique_ptr<::net::TCPSocket>> status_or) = 0;
+      StatusOr<std::unique_ptr<net::TCPSocket>> status_or) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocket);
 };

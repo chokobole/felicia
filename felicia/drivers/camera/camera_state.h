@@ -23,7 +23,7 @@ class CameraStateTraits {
         return "Started";
     }
     NOTREACHED();
-    return ::base::EmptyString();
+    return base::EmptyString();
   }
 };
 

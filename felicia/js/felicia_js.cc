@@ -6,7 +6,7 @@
 
 namespace felicia {
 
-::Napi::Object Init(::Napi::Env env, ::Napi::Object exports) {
+Napi::Object Init(Napi::Env env, Napi::Object exports) {
   JsStatus::Init(env, exports);
   communication::JsSettings::Init(env, exports);
   JsMasterProxy::Init(env, exports);

@@ -10,16 +10,16 @@ GrpcMasterClient::GrpcMasterClient(std::shared_ptr<::grpc::Channel> channel)
 GrpcMasterClient::~GrpcMasterClient() = default;
 
 Status GrpcMasterClient::Start() {
-  threads_.push_back(std::make_unique<::base::Thread>("RPC Loop1"));
-  threads_.push_back(std::make_unique<::base::Thread>("RPC Loop2"));
+  threads_.push_back(std::make_unique<base::Thread>("RPC Loop1"));
+  threads_.push_back(std::make_unique<base::Thread>("RPC Loop2"));
 
   std::for_each(threads_.begin(), threads_.end(),
-                [this](const std::unique_ptr<::base::Thread>& thread) {
+                [this](const std::unique_ptr<base::Thread>& thread) {
                   thread->Start();
                   thread->task_runner()->PostTask(
                       FROM_HERE,
-                      ::base::BindOnce(&GrpcMasterClient::HandleRpcsLoop,
-                                       ::base::Unretained(this)));
+                      base::BindOnce(&GrpcMasterClient::HandleRpcsLoop,
+                                     base::Unretained(this)));
                 });
 
   return Status::OK();

@@ -15,12 +15,12 @@ class EXPORT TaskRunnerInterface {
 
   virtual bool IsBoundToCurrentThread() const = 0;
 
-  virtual bool PostTask(const ::base::Location& from_here,
-                        ::base::OnceClosure callback) = 0;
+  virtual bool PostTask(const base::Location& from_here,
+                        base::OnceClosure callback) = 0;
 
-  virtual bool PostDelayedTask(const ::base::Location& from_here,
-                               ::base::OnceClosure callback,
-                               ::base::TimeDelta delay) = 0;
+  virtual bool PostDelayedTask(const base::Location& from_here,
+                               base::OnceClosure callback,
+                               base::TimeDelta delay) = 0;
 };
 
 }  // namespace felicia

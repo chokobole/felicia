@@ -18,9 +18,9 @@ class EXPORT UDPServerSocket : public UDPSocket {
   StatusOr<ChannelDef> Bind();
 
   // ChannelImpl methods
-  void Write(scoped_refptr<::net::IOBuffer> buffer, int size,
+  void Write(scoped_refptr<net::IOBuffer> buffer, int size,
              StatusOnceCallback callback) override;
-  void Read(scoped_refptr<::net::GrowableIOBuffer> buffer, int size,
+  void Read(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
             StatusOnceCallback callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(UDPServerSocket);

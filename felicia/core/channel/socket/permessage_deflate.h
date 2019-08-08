@@ -15,7 +15,7 @@ class PermessageDeflate : public WebSocketExtensionInterface {
   static constexpr const int kMinWindowBits = 8;
   static constexpr const int kMaxWindowBits = 15;
 
-  bool Negotiate(::base::StringTokenizer& params,
+  bool Negotiate(base::StringTokenizer& params,
                  const channel::WSSettings& settings,
                  std::string* response) override;
 
@@ -23,12 +23,12 @@ class PermessageDeflate : public WebSocketExtensionInterface {
 
   bool IsPerMessageDeflate() const override { return true; }
 
-  ::net::WebSocketDeflater::ContextTakeOverMode client_context_take_over_mode()
+  net::WebSocketDeflater::ContextTakeOverMode client_context_take_over_mode()
       const {
     return client_context_take_over_mode_;
   }
 
-  ::net::WebSocketDeflater::ContextTakeOverMode server_context_take_over_mode()
+  net::WebSocketDeflater::ContextTakeOverMode server_context_take_over_mode()
       const {
     return server_context_take_over_mode_;
   }
@@ -38,8 +38,8 @@ class PermessageDeflate : public WebSocketExtensionInterface {
   int server_max_window_bits() const { return server_max_window_bits_; }
 
  private:
-  ::net::WebSocketDeflater::ContextTakeOverMode client_context_take_over_mode_;
-  ::net::WebSocketDeflater::ContextTakeOverMode server_context_take_over_mode_;
+  net::WebSocketDeflater::ContextTakeOverMode client_context_take_over_mode_;
+  net::WebSocketDeflater::ContextTakeOverMode server_context_take_over_mode_;
   int client_max_window_bits_;
   int server_max_window_bits_;
 };

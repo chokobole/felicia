@@ -42,7 +42,7 @@ Quaternionf MadgwickFilter::orientation() const {
 }
 
 void MadgwickFilter::UpdateAngularVelocity(const Vector3f& angular_velocity,
-                                           ::base::TimeDelta timestamp) {
+                                           base::TimeDelta timestamp) {
   if (!has_measurement_ || last_timestamp_.is_zero()) {
     last_timestamp_ = timestamp;
     return;

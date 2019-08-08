@@ -48,8 +48,8 @@ class MfCamera : public CameraInterface {
 
   // Captured new video data.
   void OnIncomingCapturedData(const uint8_t* data, int length,
-                              ::base::TimeTicks reference_time,
-                              ::base::TimeDelta timestamp);
+                              base::TimeTicks reference_time,
+                              base::TimeDelta timestamp);
   void OnFrameDropped(const Status& s);
   void OnEvent(IMFMediaEvent* media_event);
 

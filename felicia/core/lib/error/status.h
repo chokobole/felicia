@@ -31,7 +31,7 @@ class EXPORT Status {
  public:
   // Create a success status.
   Status();
-  Status(felicia::error::Code error_code, ::base::StringPiece error_message);
+  Status(felicia::error::Code error_code, base::StringPiece error_message);
 
   // Convenience static method.
   static Status OK();
@@ -59,8 +59,8 @@ class EXPORT Status {
 EXPORT std::ostream& operator<<(std::ostream& os, const Status& x);
 
 // Convenient typedef for a closure passing a Status.
-typedef ::base::RepeatingCallback<void(const Status&)> StatusCallback;
-typedef ::base::OnceCallback<void(const Status&)> StatusOnceCallback;
+typedef base::RepeatingCallback<void(const Status&)> StatusCallback;
+typedef base::OnceCallback<void(const Status&)> StatusOnceCallback;
 
 }  // namespace felicia
 

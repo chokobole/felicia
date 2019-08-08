@@ -32,7 +32,7 @@ GrpcMasterService::GrpcMasterService(Master* master,
 void GrpcMasterService::Shutdown() {
   bool did_shutdown = false;
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     if (!is_shutdown_) {
       LOG(INFO) << "Shutting down GrpcMasterService.";
       is_shutdown_ = true;
@@ -50,7 +50,7 @@ void GrpcMasterService::Shutdown() {
 
 #define ENQUEUE_REQUEST(method, supports_cancel)                              \
   do {                                                                        \
-    ::base::AutoLock l(lock_);                                                \
+    base::AutoLock l(lock_);                                                  \
     if (!is_shutdown_) {                                                      \
       Call<GrpcMasterService, grpc::MasterService::AsyncService,              \
            method##Request, method##Response>::                               \
@@ -101,7 +101,7 @@ void OnHandleRequest(CallTy* call, const Status& status) {
       MasterCall<method##Request, method##Response>* call) {                 \
     master_->method(                                                         \
         &call->request_, &call->response_,                                   \
-        ::base::BindOnce(                                                    \
+        base::BindOnce(                                                      \
             &OnHandleRequest<MasterCall<method##Request, method##Response>>, \
             call));                                                          \
     ENQUEUE_REQUEST(method, supports_cancel);                                \

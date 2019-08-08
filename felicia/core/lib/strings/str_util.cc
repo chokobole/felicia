@@ -11,7 +11,7 @@
 namespace felicia {
 namespace strings {
 
-bool ConsumePrefix(::base::StringPiece* s, ::base::StringPiece expected) {
+bool ConsumePrefix(base::StringPiece* s, base::StringPiece expected) {
   if (StartsWith(*s, expected)) {
     s->remove_prefix(expected.size());
     return true;
@@ -19,7 +19,7 @@ bool ConsumePrefix(::base::StringPiece* s, ::base::StringPiece expected) {
   return false;
 }
 
-bool ConsumeSuffix(::base::StringPiece* s, ::base::StringPiece expected) {
+bool ConsumeSuffix(base::StringPiece* s, base::StringPiece expected) {
   if (EndsWith(*s, expected)) {
     s->remove_suffix(expected.size());
     return true;
@@ -27,21 +27,21 @@ bool ConsumeSuffix(::base::StringPiece* s, ::base::StringPiece expected) {
   return false;
 }
 
-bool StartsWith(::base::StringPiece s, ::base::StringPiece expected) {
-  return ::base::StartsWith(s, expected, ::base::CompareCase::SENSITIVE);
+bool StartsWith(base::StringPiece s, base::StringPiece expected) {
+  return base::StartsWith(s, expected, base::CompareCase::SENSITIVE);
 }
 
-bool EndsWith(::base::StringPiece s, ::base::StringPiece expected) {
-  return ::base::EndsWith(s, expected, ::base::CompareCase::SENSITIVE);
+bool EndsWith(base::StringPiece s, base::StringPiece expected) {
+  return base::EndsWith(s, expected, base::CompareCase::SENSITIVE);
 }
 
-bool Equals(::base::StringPiece s, ::base::StringPiece expected) {
-  return ::base::EqualsASCII(ASCIIToUTF16(s), expected);
+bool Equals(base::StringPiece s, base::StringPiece expected) {
+  return base::EqualsASCII(ASCIIToUTF16(s), expected);
 }
 
-StringComparator::StringComparator(::base::StringPiece text) : text_(text) {}
+StringComparator::StringComparator(base::StringPiece text) : text_(text) {}
 
-bool StringComparator::operator()(const ::base::StringPiece text) {
+bool StringComparator::operator()(const base::StringPiece text) {
   return Equals(text_, text);
 }
 

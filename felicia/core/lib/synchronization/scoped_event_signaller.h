@@ -6,12 +6,12 @@
 namespace felicia {
 
 struct ScopedEventSignaller {
-  ScopedEventSignaller(::base::WaitableEvent* event) : event(event) {}
+  ScopedEventSignaller(base::WaitableEvent* event) : event(event) {}
   ~ScopedEventSignaller() {
     if (event) event->Signal();
   }
 
-  ::base::WaitableEvent* event;
+  base::WaitableEvent* event;
 };
 
 }  // namespace felicia

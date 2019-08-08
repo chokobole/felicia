@@ -9,30 +9,30 @@
 
 namespace felicia {
 
-class JsMasterProxy : public ::Napi::ObjectWrap<JsMasterProxy> {
+class JsMasterProxy : public Napi::ObjectWrap<JsMasterProxy> {
  public:
-  static void Init(::Napi::Env env, ::Napi::Object exports);
-  JsMasterProxy(const ::Napi::CallbackInfo& info);
+  static void Init(Napi::Env env, Napi::Object exports);
+  JsMasterProxy(const Napi::CallbackInfo& info);
 
   static napi_env CurrentEnv();
 
-  static void SetBackground(const ::Napi::CallbackInfo& info);
+  static void SetBackground(const Napi::CallbackInfo& info);
 
 #if defined(FEL_WIN_NO_GRPC)
-  static ::Napi::Value StartGrpcMasterClient(const ::Napi::CallbackInfo& info);
-  static ::Napi::Value is_client_info_set(const ::Napi::CallbackInfo& info);
+  static Napi::Value StartGrpcMasterClient(const Napi::CallbackInfo& info);
+  static Napi::Value is_client_info_set(const Napi::CallbackInfo& info);
 #endif
 
-  static ::Napi::Value Start(const ::Napi::CallbackInfo& info);
-  static ::Napi::Value Stop(const ::Napi::CallbackInfo& info);
+  static Napi::Value Start(const Napi::CallbackInfo& info);
+  static Napi::Value Stop(const Napi::CallbackInfo& info);
 
-  static void Run(const ::Napi::CallbackInfo& info);
+  static void Run(const Napi::CallbackInfo& info);
 
   static void RequestRegisterTopicInfoWatcherNode(
-      const ::Napi::CallbackInfo& info);
+      const Napi::CallbackInfo& info);
 
  private:
-  static ::Napi::FunctionReference constructor_;
+  static Napi::FunctionReference constructor_;
 };
 
 }  // namespace felicia

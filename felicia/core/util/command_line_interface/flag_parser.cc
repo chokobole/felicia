@@ -25,7 +25,7 @@ std::vector<std::string> FlagParser::Delegate::CollectUsages() const {
   return {};
 }
 std::string FlagParser::Delegate::Description() const {
-  return ::base::EmptyString();
+  return base::EmptyString();
 }
 std::vector<NamedHelpType> FlagParser::Delegate::CollectNamedHelps() const {
   return {};
@@ -67,7 +67,7 @@ bool FlagParser::Parse(int argc, char** argv, Delegate* delegate) {
   return true;
 }
 
-::base::StringPiece FlagParser::current() { return argv_[current_idx_]; }
+base::StringPiece FlagParser::current() { return argv_[current_idx_]; }
 
 void FlagParser::Proceed() {
   if (current_idx_ < argc_) current_idx_++;

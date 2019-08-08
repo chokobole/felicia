@@ -15,7 +15,7 @@ static constexpr const char* kTopic = "topic";
 CliFlag::CliFlag() : current_command_(COMMAND_SELF) {
   {
     StringChoicesFlag::Builder builder(MakeValueStore<std::string>(
-        &command_, ::base::EmptyString(),
+        &command_, base::EmptyString(),
         Choices<std::string>{kClient, kNode, kTopic}));
     auto flag = builder.SetName("COMMAND").Build();
     command_flag_ = std::make_unique<StringChoicesFlag>(flag);
@@ -35,7 +35,7 @@ bool CliFlag::Parse(FlagParser& parser) {
         } else if (strings::Equals(command_, kTopic)) {
           current_command_ = COMMAND_TOPIC;
         }
-        parser.set_program_name(::base::StringPrintf(
+        parser.set_program_name(base::StringPrintf(
             "%s %s", parser.program_name().c_str(), command_.c_str()));
         return true;
       }

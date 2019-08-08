@@ -13,7 +13,7 @@ namespace felicia {
 
 // Implement IEnumPins.
 class PinEnumerator final : public IEnumPins,
-                            public ::base::RefCounted<PinEnumerator> {
+                            public base::RefCounted<PinEnumerator> {
  public:
   explicit PinEnumerator(FilterBase* filter) : filter_(filter), index_(0) {}
 

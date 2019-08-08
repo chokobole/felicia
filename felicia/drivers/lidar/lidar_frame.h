@@ -17,7 +17,7 @@ class EXPORT LidarFrame {
              float time_delta, float scan_time, float range_min,
              float range_max, std::vector<float>&& ranges,
              std::vector<float> intensities,
-             ::base::TimeDelta timestamp) noexcept;
+             base::TimeDelta timestamp) noexcept;
   LidarFrame(LidarFrame&& other) noexcept;
   LidarFrame& operator=(LidarFrame&& other);
   ~LidarFrame();
@@ -36,8 +36,8 @@ class EXPORT LidarFrame {
   float range_min() const;
   void set_range_max(float range_max);
   float range_max() const;
-  void set_timestamp(::base::TimeDelta timestamp);
-  ::base::TimeDelta timestamp() const;
+  void set_timestamp(base::TimeDelta timestamp);
+  base::TimeDelta timestamp() const;
 
   std::vector<float>& ranges();
   const std::vector<float>& ranges() const;
@@ -60,12 +60,12 @@ class EXPORT LidarFrame {
   float range_max_;
   std::vector<float> ranges_;
   std::vector<float> intensities_;
-  ::base::TimeDelta timestamp_;
+  base::TimeDelta timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(LidarFrame);
 };
 
-typedef ::base::RepeatingCallback<void(const LidarFrame&)> LidarFrameCallback;
+typedef base::RepeatingCallback<void(const LidarFrame&)> LidarFrameCallback;
 
 }  // namespace felicia
 

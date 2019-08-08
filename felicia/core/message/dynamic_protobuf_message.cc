@@ -53,15 +53,15 @@ DynamicProtobufMessage& DynamicProtobufMessage::operator=(
 
 DynamicProtobufMessage::~DynamicProtobufMessage() { delete message_; }
 
-::google::protobuf::Message* DynamicProtobufMessage::message() {
+google::protobuf::Message* DynamicProtobufMessage::message() {
   return message_;
 }
 
-const ::google::protobuf::Message* DynamicProtobufMessage::message() const {
+const google::protobuf::Message* DynamicProtobufMessage::message() const {
   return message_;
 }
 
-void DynamicProtobufMessage::Reset(::google::protobuf::Message* message) {
+void DynamicProtobufMessage::Reset(google::protobuf::Message* message) {
   DCHECK(message);
   delete message_;
   message_ = message;
@@ -69,23 +69,23 @@ void DynamicProtobufMessage::Reset(::google::protobuf::Message* message) {
 
 std::string DynamicProtobufMessage::GetTypeName() const {
   if (message_) return message_->GetTypeName();
-  return ::base::EmptyString();
+  return base::EmptyString();
 }
 
 std::string DynamicProtobufMessage::ToString() const {
-  if (!message_) return ::base::EmptyString();
+  if (!message_) return base::EmptyString();
   return protobuf::ProtobufMessageToString(*message_);
 }
 
 std::string DynamicProtobufMessage::DebugString() const {
-  if (!message_) return ::base::EmptyString();
+  if (!message_) return base::EmptyString();
   return message_->DebugString();
 }
 
 Status DynamicProtobufMessage::MessageToJsonString(std::string* text) const {
   if (!message_) return errors::NotFound("message is null.");
-  ::google::protobuf::util::Status status =
-      ::google::protobuf::util::MessageToJsonString(*message_, text);
+  google::protobuf::util::Status status =
+      google::protobuf::util::MessageToJsonString(*message_, text);
   return Status(static_cast<felicia::error::Code>(status.error_code()),
                 status.error_message().as_string());
 }

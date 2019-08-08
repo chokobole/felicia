@@ -79,9 +79,9 @@ void CommandDispatcher::Dispatch(const ClientListFlag& delegate) const {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.ListClientsAsync(
       request, response,
-      ::base::BindOnce(&CommandDispatcher::OnListClientsAsync,
-                       ::base::Unretained(this), ::base::Owned(request),
-                       ::base::Owned(response)));
+      base::BindOnce(&CommandDispatcher::OnListClientsAsync,
+                     base::Unretained(this), base::Owned(request),
+                     base::Owned(response)));
 }
 
 void CommandDispatcher::OnListClientsAsync(ListClientsRequest* request,
@@ -103,7 +103,7 @@ void CommandDispatcher::OnListClientsAsync(ListClientsRequest* request,
                     .Build();
   size_t row = 0;
   for (auto& client_info : client_infos) {
-    writer.SetElement(row, 0, ::base::NumberToString(client_info.id()));
+    writer.SetElement(row, 0, base::NumberToString(client_info.id()));
     const ChannelSource& hbs_channel_source =
         client_info.heart_beat_signaller_source();
     writer.SetElement(row, 1,
@@ -150,9 +150,9 @@ void CommandDispatcher::Dispatch(const NodeListFlag& delegate) const {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.ListNodesAsync(
       request, response,
-      ::base::BindOnce(&CommandDispatcher::OnListNodesAsync,
-                       ::base::Unretained(this), ::base::Owned(request),
-                       ::base::Owned(response)));
+      base::BindOnce(&CommandDispatcher::OnListNodesAsync,
+                     base::Unretained(this), base::Owned(request),
+                     base::Owned(response)));
 }
 
 void CommandDispatcher::OnListNodesAsync(ListNodesRequest* request,
@@ -194,7 +194,7 @@ void CommandDispatcher::OnListNodesAsync(ListNodesRequest* request,
     size_t row = 0;
     for (auto& node_info : node_infos) {
       writer.SetElement(row, 0, node_info.name());
-      writer.SetElement(row, 1, ::base::NumberToString(node_info.client_id()));
+      writer.SetElement(row, 1, base::NumberToString(node_info.client_id()));
       row++;
     }
 
@@ -235,9 +235,9 @@ void CommandDispatcher::Dispatch(const TopicListFlag& delegate) const {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.ListTopicsAsync(
       request, response,
-      ::base::BindOnce(&CommandDispatcher::OnListTopicsAsync,
-                       ::base::Unretained(this), ::base::Owned(request),
-                       ::base::Owned(response)));
+      base::BindOnce(&CommandDispatcher::OnListTopicsAsync,
+                     base::Unretained(this), base::Owned(request),
+                     base::Owned(response)));
 }
 
 void CommandDispatcher::Dispatch(const TopicPublishFlag& delegate) const {
@@ -288,10 +288,10 @@ void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
 
     MasterProxy& master_proxy = MasterProxy::GetInstance();
 
-    const ::google::protobuf::Message* message =
+    const google::protobuf::Message* message =
         master_proxy.protobuf_loader()->NewMessage(topic_info.type_name());
 
-    std::cout << ::base::StringPrintf(
+    std::cout << base::StringPrintf(
                      "TYPE: %s\n"
                      "FORMAT: %s\n"
                      "CHANNEL_SOURCE: %s\n",

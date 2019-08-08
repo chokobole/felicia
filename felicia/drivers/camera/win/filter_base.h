@@ -22,7 +22,7 @@
 
 namespace felicia {
 
-class FilterBase : public IBaseFilter, public ::base::RefCounted<FilterBase> {
+class FilterBase : public IBaseFilter, public base::RefCounted<FilterBase> {
  public:
   FilterBase();
 
@@ -64,7 +64,7 @@ class FilterBase : public IBaseFilter, public ::base::RefCounted<FilterBase> {
   STDMETHOD(GetClassID)(CLSID* class_id) override = 0;
 
  protected:
-  friend class ::base::RefCounted<FilterBase>;
+  friend class base::RefCounted<FilterBase>;
   virtual ~FilterBase();
 
  private:

@@ -52,9 +52,9 @@ class MultiResolutionGridMap {
   float scale_to_map() const;
 
   OccupancyGridMapMessage ToOccupancyGridMapMessage(
-      ::base::TimeDelta timestamp) const;
+      base::TimeDelta timestamp) const;
 
-  void ToCsvFile(const ::base::FilePath& file_path) const;
+  void ToCsvFile(const base::FilePath& file_path) const;
 
  private:
   std::vector<std::unique_ptr<LogOddsOccupancyGridMap>> maps_;

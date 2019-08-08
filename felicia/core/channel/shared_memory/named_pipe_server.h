@@ -11,7 +11,7 @@
 
 namespace felicia {
 
-class EXPORT NamedPipeServer : public ::base::win::ObjectWatcher::Delegate {
+class EXPORT NamedPipeServer : public base::win::ObjectWatcher::Delegate {
  public:
   class Delegate {
    public:
@@ -20,9 +20,9 @@ class EXPORT NamedPipeServer : public ::base::win::ObjectWatcher::Delegate {
     virtual void OnConnected() = 0;
   };
 
-  static ::base::string16 GetPipeNameFromServiceName(
+  static base::string16 GetPipeNameFromServiceName(
       const std::string& service_name);
-  static ::base::win::ScopedHandle CreateNamedPipe(
+  static base::win::ScopedHandle CreateNamedPipe(
       const std::string& service_name);
 
   explicit NamedPipeServer(Delegate* delegate);
@@ -40,11 +40,11 @@ class EXPORT NamedPipeServer : public ::base::win::ObjectWatcher::Delegate {
 
   Delegate* delegate_;
 
-  ::base::win::ScopedHandle pipe_handle_;
+  base::win::ScopedHandle pipe_handle_;
   OVERLAPPED connect_overlapped_;
   OVERLAPPED write_overlapped_;
 
-  ::base::win::ObjectWatcher connect_watcher_;
+  base::win::ObjectWatcher connect_watcher_;
 
   std::string service_name_;
 };

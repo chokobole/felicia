@@ -38,13 +38,13 @@ class Point {
   }
 
   Point Translate(const Vector<T>& vec) const {
-    T x = ::base::ClampAdd(x_, vec.x());
-    T y = ::base::ClampAdd(y_, vec.y());
+    T x = base::ClampAdd(x_, vec.x());
+    T y = base::ClampAdd(y_, vec.y());
     return {x, y};
   }
   Point& TranslateInPlace(const Vector<T>& vec) {
-    x_ = ::base::ClampAdd(x_, vec.x());
-    y_ = ::base::ClampAdd(y_, vec.y());
+    x_ = base::ClampAdd(x_, vec.x());
+    y_ = base::ClampAdd(y_, vec.y());
     return *this;
   }
 
@@ -64,8 +64,8 @@ class Point {
   Point operator+(const Vector<T>& vec) const { return Translate(vec); }
   Point& operator+=(const Vector<T>& vec) { return TranslateInPlace(vec); }
   Vector<T> operator-(const Point& other) const {
-    T x = ::base::ClampSub(x_, other.x_);
-    T y = ::base::ClampSub(y_, other.y_);
+    T x = base::ClampSub(x_, other.x_);
+    T y = base::ClampSub(y_, other.y_);
     return {x, y};
   }
   Point operator*(T s) const { return Scale(s); }
@@ -74,8 +74,8 @@ class Point {
   Point& operator/=(T s) { return ScaleInPlace(1.0 / s); }
 
   std::string ToString() const {
-    return ::base::StringPrintf("(%s, %s)", ::base::NumberToString(x_).c_str(),
-                                ::base::NumberToString(y_).c_str());
+    return base::StringPrintf("(%s, %s)", base::NumberToString(x_).c_str(),
+                              base::NumberToString(y_).c_str());
   }
 
  private:
@@ -158,15 +158,15 @@ class Point3 {
   }
 
   Point3 Translate(const Vector3<T>& vector) const {
-    T x = ::base::ClampAdd(x_, vector.x());
-    T y = ::base::ClampAdd(y_, vector.y());
-    T z = ::base::ClampAdd(z_, vector.z());
+    T x = base::ClampAdd(x_, vector.x());
+    T y = base::ClampAdd(y_, vector.y());
+    T z = base::ClampAdd(z_, vector.z());
     return {x, y, z};
   }
   Point3& TranslateInPlace(const Vector3<T>& vector) {
-    x_ = ::base::ClampAdd(x_, vector.x());
-    y_ = ::base::ClampAdd(y_, vector.y());
-    z_ = ::base::ClampAdd(z_, vector.z());
+    x_ = base::ClampAdd(x_, vector.x());
+    y_ = base::ClampAdd(y_, vector.y());
+    z_ = base::ClampAdd(z_, vector.z());
     return *this;
   }
 
@@ -183,9 +183,9 @@ class Point3 {
     return TranslateInPlace(vector);
   }
   Vector3<T> operator-(const Point3& other) const {
-    T x = ::base::ClampSub(x_, other.x_);
-    T y = ::base::ClampSub(y_, other.y_);
-    T z = ::base::ClampSub(z_, other.z_);
+    T x = base::ClampSub(x_, other.x_);
+    T y = base::ClampSub(y_, other.y_);
+    T z = base::ClampSub(z_, other.z_);
     return {x, y, z};
   }
   Point3 operator*(T s) const { return Scale(s); }
@@ -200,9 +200,9 @@ class Point3 {
   }
 
   std::string ToString() const {
-    return ::base::StringPrintf(
-        "(%s, %s, %s)", ::base::NumberToString(x_).c_str(),
-        ::base::NumberToString(y_).c_str(), ::base::NumberToString(z_).c_str());
+    return base::StringPrintf("(%s, %s, %s)", base::NumberToString(x_).c_str(),
+                              base::NumberToString(y_).c_str(),
+                              base::NumberToString(z_).c_str());
   }
 
  private:

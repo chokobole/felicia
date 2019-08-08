@@ -67,8 +67,8 @@ void OnRequestPublish(const Status& s) {
   if (s.ok()) {
     MasterProxy& master_proxy = MasterProxy::GetInstance();
     master_proxy.PostTask(FROM_HERE,
-                          ::base::BindOnce(&CameraPublishingNode::StartCamera,
-                                            ::base::Unretained(this)));
+                          base::BindOnce(&CameraPublishingNode::StartCamera,
+                                            base::Unretained(this)));
   }
 }
 
@@ -80,10 +80,10 @@ void StartCamera() {
         CameraFormat(camera_flag_.width_flag()->value(),
                      camera_flag_.height_flag()->value(), pixel_format,
                      camera_flag_.fps_flag()->value()),
-        ::base::BindRepeating(&CameraPublishingNode::OnCameraFrame,
-                              ::base::Unretained(this)),
-        ::base::BindRepeating(&CameraPublishingNode::OnCameraError,
-                              ::base::Unretained(this)));
+        base::BindRepeating(&CameraPublishingNode::OnCameraFrame,
+                              base::Unretained(this)),
+        base::BindRepeating(&CameraPublishingNode::OnCameraError,
+                              base::Unretained(this)));
 }
 ```
 
@@ -117,8 +117,8 @@ void OnRequestUnpublish(const Status& s) {
   if (s.ok()) {
     MasterProxy& master_proxy = MasterProxy::GetInstance();
     master_proxy.PostTask(FROM_HERE,
-                          ::base::BindOnce(&CameraPublishingNode::StopCamera,
-                                            ::base::Unretained(this)));
+                          base::BindOnce(&CameraPublishingNode::StopCamera,
+                                            base::Unretained(this)));
   } else {
     LOG(ERROR) << s;
   }

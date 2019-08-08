@@ -60,8 +60,8 @@ class RPlidarPublishingNode : public NodeLifecycle {
     lidar_publisher_.RequestPublish(
         node_info_, topic_, channel_type | ChannelDef::CHANNEL_TYPE_WS,
         settings,
-        ::base::BindOnce(&RPlidarPublishingNode::OnRequestPublish,
-                         ::base::Unretained(this)));
+        base::BindOnce(&RPlidarPublishingNode::OnRequestPublish,
+                       base::Unretained(this)));
   }
 
   void OnRequestPublish(const Status& s) {
@@ -88,8 +88,8 @@ class RPlidarPublishingNode : public NodeLifecycle {
           if (scan_mode.scan_mode == scan_mode_) {
             s = lidar_->Start(
                 scan_mode,
-                ::base::BindRepeating(&RPlidarPublishingNode::OnLidarFrame,
-                                      ::base::Unretained(this)));
+                base::BindRepeating(&RPlidarPublishingNode::OnLidarFrame,
+                                    base::Unretained(this)));
             started = true;
             break;
           }
@@ -98,8 +98,8 @@ class RPlidarPublishingNode : public NodeLifecycle {
     }
 
     if (!started) {
-      s = lidar_->Start(::base::BindRepeating(
-          &RPlidarPublishingNode::OnLidarFrame, ::base::Unretained(this)));
+      s = lidar_->Start(base::BindRepeating(
+          &RPlidarPublishingNode::OnLidarFrame, base::Unretained(this)));
     }
 
     if (s.ok()) {
@@ -115,9 +115,9 @@ class RPlidarPublishingNode : public NodeLifecycle {
       // MasterProxy& master_proxy = MasterProxy::GetInstance();
       // master_proxy.PostDelayedTask(
       //     FROM_HERE,
-      //     ::base::BindOnce(&RPlidarPublishingNode::RequestUnpublish,
-      //                      ::base::Unretained(this)),
-      //     ::base::TimeDelta::FromSeconds(10));
+      //     base::BindOnce(&RPlidarPublishingNode::RequestUnpublish,
+      //                      base::Unretained(this)),
+      //     base::TimeDelta::FromSeconds(10));
     } else {
       LOG(ERROR) << s;
     }
@@ -128,8 +128,8 @@ class RPlidarPublishingNode : public NodeLifecycle {
 
     lidar_publisher_.Publish(
         lidar_frame.ToLidarFrameMessage(),
-        ::base::BindRepeating(&RPlidarPublishingNode::OnPublishLidarFrame,
-                              ::base::Unretained(this)));
+        base::BindRepeating(&RPlidarPublishingNode::OnPublishLidarFrame,
+                            base::Unretained(this)));
   }
 
   void OnPublishLidarFrame(ChannelDef::Type type, const Status& s) {
@@ -139,8 +139,8 @@ class RPlidarPublishingNode : public NodeLifecycle {
   void RequestUnpublish() {
     lidar_publisher_.RequestUnpublish(
         node_info_, topic_,
-        ::base::BindOnce(&RPlidarPublishingNode::OnRequestUnpublish,
-                         ::base::Unretained(this)));
+        base::BindOnce(&RPlidarPublishingNode::OnRequestUnpublish,
+                       base::Unretained(this)));
   }
 
   void OnRequestUnpublish(const Status& s) {

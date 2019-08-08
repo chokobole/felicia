@@ -10,7 +10,7 @@ namespace felicia {
 
 namespace {
 
-::base::TimeDelta g_heart_beat_duration = ::base::TimeDelta();
+base::TimeDelta g_heart_beat_duration = base::TimeDelta();
 
 }  // namespace
 
@@ -21,7 +21,7 @@ HeartBeatSignaller::HeartBeatSignaller(
 void HeartBeatSignaller::Start() {
   DCHECK(!channel_);
 
-  if (g_heart_beat_duration == ::base::TimeDelta()) {
+  if (g_heart_beat_duration == base::TimeDelta()) {
     g_heart_beat_duration = GetHeartBeatDuration();
   }
 
@@ -39,13 +39,13 @@ void HeartBeatSignaller::Start() {
 void HeartBeatSignaller::AcceptLoop() {
   if (!task_runner_interface_->IsBoundToCurrentThread()) {
     task_runner_interface_->PostTask(
-        FROM_HERE, ::base::BindOnce(&HeartBeatSignaller::AcceptLoop,
-                                    ::base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&HeartBeatSignaller::AcceptLoop,
+                                  base::Unretained(this)));
     return;
   }
   TCPChannel<HeartBeat>* tcp_channel = channel_->ToTCPChannel();
-  tcp_channel->AcceptLoop(::base::BindRepeating(&HeartBeatSignaller::OnAccept,
-                                                ::base::Unretained(this)));
+  tcp_channel->AcceptLoop(base::BindRepeating(&HeartBeatSignaller::OnAccept,
+                                              base::Unretained(this)));
 }
 
 void HeartBeatSignaller::OnAccept(const Status& s) {
@@ -61,15 +61,15 @@ void HeartBeatSignaller::Signal() {
   HeartBeat heart_beat;
   heart_beat.set_ok(true);
   channel_->SendMessage(heart_beat,
-                        ::base::BindRepeating(&HeartBeatSignaller::OnSignal,
-                                              ::base::Unretained(this)));
+                        base::BindRepeating(&HeartBeatSignaller::OnSignal,
+                                            base::Unretained(this)));
 }
 
 void HeartBeatSignaller::OnSignal(ChannelDef::Type type, const Status& s) {
   if (s.ok() || trial_ <= kMaximumTrial) {
     task_runner_interface_->PostDelayedTask(
         FROM_HERE,
-        ::base::BindOnce(&HeartBeatSignaller::Signal, ::base::Unretained(this)),
+        base::BindOnce(&HeartBeatSignaller::Signal, base::Unretained(this)),
         g_heart_beat_duration);
   } else {
     LOG(ERROR) << "Failed to send heart...";

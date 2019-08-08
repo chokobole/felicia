@@ -65,7 +65,7 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
   // SinkFilterObserver methods
   void FrameReceived(const uint8_t* buffer, int length,
                      const CameraFormat& format,
-                     ::base::TimeDelta timestamp) override;
+                     base::TimeDelta timestamp) override;
 
   void FrameDropped(const Status& s) override;
 

@@ -3,7 +3,7 @@
 namespace felicia {
 
 void ChannelBuffer::EnsureBuffer() {
-  if (!buffer_) buffer_ = ::base::MakeRefCounted<::net::GrowableIOBuffer>();
+  if (!buffer_) buffer_ = base::MakeRefCounted<net::GrowableIOBuffer>();
 }
 
 void ChannelBuffer::SetCapacity(Bytes bytes) { SetCapacity(bytes.bytes()); }
@@ -38,9 +38,7 @@ char* ChannelBuffer::StartOfBuffer() {
   return buffer_->StartOfBuffer();
 }
 
-scoped_refptr<::net::GrowableIOBuffer> ChannelBuffer::buffer() {
-  return buffer_;
-}
+scoped_refptr<net::GrowableIOBuffer> ChannelBuffer::buffer() { return buffer_; }
 
 void ChannelBuffer::EnableDynamicBuffer() { is_dynamic_ = true; }
 

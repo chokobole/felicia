@@ -42,7 +42,7 @@ class ValueStore {
   value_type value() const { return traits_.value(); }
   bool is_set() const { return traits_.is_set(); }
 
-  std::string usage() const { return ::base::EmptyString(); }
+  std::string usage() const { return base::EmptyString(); }
 
   // This is for python binding. Do not call from c++ side.
   void release() { traits_.release(); }
@@ -246,9 +246,8 @@ class Flag {
   // Return true when succeeds to set value at |value_store_|.
   bool set_value(value_type value) { return value_store_.set_value(value); }
 
-  bool ConsumeEqualOrProceed(FlagParser& parser,
-                             ::base::StringPiece* arg) const;
-  bool ParseValue(::base::StringPiece arg);
+  bool ConsumeEqualOrProceed(FlagParser& parser, base::StringPiece* arg) const;
+  bool ParseValue(base::StringPiece arg);
 
   std::string short_name_;
   std::string long_name_;
@@ -257,12 +256,11 @@ class Flag {
   ValueStore<T, Traits> value_store_;
 };
 
-EXPORT bool ContainsOnlyAsciiAlphaOrDigitOrUndderscore(
-    ::base::StringPiece text);
+EXPORT bool ContainsOnlyAsciiAlphaOrDigitOrUndderscore(base::StringPiece text);
 
 template <typename T, typename Traits>
 bool Flag<T, Traits>::set_short_name(const std::string& short_name) {
-  ::base::StringPiece text = short_name;
+  base::StringPiece text = short_name;
   if (!strings::ConsumePrefix(&text, "-")) return false;
   if (!ContainsOnlyAsciiAlphaOrDigitOrUndderscore(text)) return false;
 
@@ -272,7 +270,7 @@ bool Flag<T, Traits>::set_short_name(const std::string& short_name) {
 
 template <typename T, typename Traits>
 bool Flag<T, Traits>::set_long_name(const std::string& long_name) {
-  ::base::StringPiece text = long_name;
+  base::StringPiece text = long_name;
   if (!strings::ConsumePrefix(&text, "--")) return false;
   CHECK(!strings::Equals(text, "help"));
   if (!ContainsOnlyAsciiAlphaOrDigitOrUndderscore(text)) return false;
@@ -283,7 +281,7 @@ bool Flag<T, Traits>::set_long_name(const std::string& long_name) {
 
 template <typename T, typename Traits>
 bool Flag<T, Traits>::set_name(const std::string& name) {
-  ::base::StringPiece text = name;
+  base::StringPiece text = name;
   if (!ContainsOnlyAsciiAlphaOrDigitOrUndderscore(text)) return false;
 
   name_ = std::string(name);
@@ -314,7 +312,7 @@ std::string Flag<T, Traits>::usage() const {
 
 #define APPEND_AND_DECREASE_LENGTH(ss, text, len) \
   ss << text;                                     \
-  len -= ::base::StringPiece(text).length()
+  len -= base::StringPiece(text).length()
 
 #define ALIGN_AT_INDEX_AND_APPEND(ss, text, len, index) \
   if (len <= 0) {                                       \
@@ -348,8 +346,8 @@ std::string Flag<T, Traits>::help(int help_start) const {
   ALIGN_AT_INDEX_AND_APPEND(ss, help_, remain_len, help_start);
 }
 
-EXPORT std::string MakeNamedHelpText(::base::StringPiece name,
-                                     ::base::StringPiece help,
+EXPORT std::string MakeNamedHelpText(base::StringPiece name,
+                                     base::StringPiece help,
                                      int help_start = 20);
 
 namespace {
@@ -362,9 +360,9 @@ class ValueParser<T, std::enable_if_t<std::is_integral<T>::value &&
                                       std::is_signed<T>::value &&
                                       !std::is_same<T, int64_t>::value>> {
  public:
-  static bool ParseValue(::base::StringPiece arg, T* value) {
+  static bool ParseValue(base::StringPiece arg, T* value) {
     int value_tmp;
-    bool ret = ::base::StringToInt(arg, &value_tmp);
+    bool ret = base::StringToInt(arg, &value_tmp);
     *value = static_cast<T>(value_tmp);
     return ret;
   }
@@ -376,9 +374,9 @@ class ValueParser<T, std::enable_if_t<std::is_integral<T>::value &&
                                       !std::is_same<T, bool>::value &&
                                       !std::is_same<T, uint64_t>::value>> {
  public:
-  static bool ParseValue(::base::StringPiece arg, T* value) {
+  static bool ParseValue(base::StringPiece arg, T* value) {
     unsigned value_tmp;
-    bool ret = ::base::StringToUint(arg, &value_tmp);
+    bool ret = base::StringToUint(arg, &value_tmp);
     *value = static_cast<T>(value_tmp);
     return ret;
   }
@@ -387,9 +385,9 @@ class ValueParser<T, std::enable_if_t<std::is_integral<T>::value &&
 template <typename T>
 class ValueParser<T, std::enable_if_t<std::is_floating_point<T>::value>> {
  public:
-  static bool ParseValue(::base::StringPiece arg, T* value) {
+  static bool ParseValue(base::StringPiece arg, T* value) {
     double value_tmp;
-    bool ret = ::base::StringToDouble(std::string(arg), &value_tmp);
+    bool ret = base::StringToDouble(std::string(arg), &value_tmp);
     *value = static_cast<T>(value_tmp);
     return ret;
   }
@@ -398,23 +396,23 @@ class ValueParser<T, std::enable_if_t<std::is_floating_point<T>::value>> {
 template <>
 class ValueParser<int64_t> {
  public:
-  static bool ParseValue(::base::StringPiece arg, int64_t* value) {
-    return ::base::StringToInt64(arg, value);
+  static bool ParseValue(base::StringPiece arg, int64_t* value) {
+    return base::StringToInt64(arg, value);
   }
 };
 
 template <>
 class ValueParser<uint64_t> {
  public:
-  static bool ParseValue(::base::StringPiece arg, uint64_t* value) {
-    return ::base::StringToUint64(arg, value);
+  static bool ParseValue(base::StringPiece arg, uint64_t* value) {
+    return base::StringToUint64(arg, value);
   }
 };
 
 template <>
 class ValueParser<bool> {
  public:
-  static bool ParseValue(::base::StringPiece arg, bool* value) {
+  static bool ParseValue(base::StringPiece arg, bool* value) {
     *value = true;
     return true;
   }
@@ -423,7 +421,7 @@ class ValueParser<bool> {
 template <>
 class ValueParser<std::string> {
  public:
-  static bool ParseValue(::base::StringPiece arg, std::string* value) {
+  static bool ParseValue(base::StringPiece arg, std::string* value) {
     if (arg.length() == 0) return false;
     *value = std::string(arg);
     return true;
@@ -434,7 +432,7 @@ class ValueParser<std::string> {
 
 template <typename T, typename Traits>
 bool Flag<T, Traits>::Parse(FlagParser& parser) {
-  ::base::StringPiece arg = parser.current();
+  base::StringPiece arg = parser.current();
   if (!long_name_.empty()) {
     if (strings::ConsumePrefix(&arg, long_name_)) {
       if (!Is<bool>() && !ConsumeEqualOrProceed(parser, &arg)) return false;
@@ -461,7 +459,7 @@ bool Flag<T, Traits>::Parse(FlagParser& parser) {
 
 template <typename T, typename Traits>
 bool Flag<T, Traits>::ConsumeEqualOrProceed(FlagParser& parser,
-                                            ::base::StringPiece* arg) const {
+                                            base::StringPiece* arg) const {
   if (strings::ConsumePrefix(arg, "=")) return true;
   if (!arg->empty()) return false;
   parser.Proceed();
@@ -470,7 +468,7 @@ bool Flag<T, Traits>::ConsumeEqualOrProceed(FlagParser& parser,
 }
 
 template <typename T, typename Traits>
-bool Flag<T, Traits>::ParseValue(::base::StringPiece arg) {
+bool Flag<T, Traits>::ParseValue(base::StringPiece arg) {
   value_type value;
   if (ValueParser<value_type>::ParseValue(arg, &value)) {
     return set_value(value);

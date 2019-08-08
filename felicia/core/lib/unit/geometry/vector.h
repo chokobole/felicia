@@ -52,23 +52,23 @@ class Vector {
   }
 
   Vector operator+(const Vector& other) const {
-    T x = ::base::ClampAdd(x_, other.x_);
-    T y = ::base::ClampAdd(y_, other.y_);
+    T x = base::ClampAdd(x_, other.x_);
+    T y = base::ClampAdd(y_, other.y_);
     return {x, y};
   }
   Vector& operator+=(const Vector& other) {
-    x_ = ::base::ClampAdd(x_, other.x_);
-    y_ = ::base::ClampAdd(y_, other.y_);
+    x_ = base::ClampAdd(x_, other.x_);
+    y_ = base::ClampAdd(y_, other.y_);
     return *this;
   }
   Vector operator-(const Vector& other) const {
-    T x = ::base::ClampSub(x_, other.x_);
-    T y = ::base::ClampSub(y_, other.y_);
+    T x = base::ClampSub(x_, other.x_);
+    T y = base::ClampSub(y_, other.y_);
     return {x, y};
   }
   Vector& operator-=(const Vector& other) {
-    x_ = ::base::ClampSub(x_, other.x_);
-    y_ = ::base::ClampSub(y_, other.y_);
+    x_ = base::ClampSub(x_, other.x_);
+    y_ = base::ClampSub(y_, other.y_);
     return *this;
   }
   Vector operator*(T a) const { return Scale(a); }
@@ -77,8 +77,8 @@ class Vector {
   Vector& operator/=(T a) const { return ScaleInPlace(1.0 / a); }
 
   std::string ToString() const {
-    return ::base::StringPrintf("(%s, %s)", ::base::NumberToString(x_).c_str(),
-                                ::base::NumberToString(y_).c_str());
+    return base::StringPrintf("(%s, %s)", base::NumberToString(x_).c_str(),
+                              base::NumberToString(y_).c_str());
   }
 
   EigenMatrixType ToEigenVector() const {
@@ -178,27 +178,27 @@ class Vector3 {
   }
 
   Vector3 operator+(const Vector3& other) const {
-    T x = ::base::ClampAdd(x_, other.x_);
-    T y = ::base::ClampAdd(y_, other.y_);
-    T z = ::base::ClampAdd(z_, other.z_);
+    T x = base::ClampAdd(x_, other.x_);
+    T y = base::ClampAdd(y_, other.y_);
+    T z = base::ClampAdd(z_, other.z_);
     return {x, y, z};
   }
   Vector3& operator+=(const Vector3& other) {
-    x_ = ::base::ClampAdd(x_, other.x_);
-    y_ = ::base::ClampAdd(y_, other.y_);
-    z_ = ::base::ClampAdd(z_, other.z_);
+    x_ = base::ClampAdd(x_, other.x_);
+    y_ = base::ClampAdd(y_, other.y_);
+    z_ = base::ClampAdd(z_, other.z_);
     return *this;
   }
   Vector3 operator-(const Vector3& other) const {
-    T x = ::base::ClampSub(x_, other.x_);
-    T y = ::base::ClampSub(y_, other.y_);
-    T z = ::base::ClampSub(z_, other.z_);
+    T x = base::ClampSub(x_, other.x_);
+    T y = base::ClampSub(y_, other.y_);
+    T z = base::ClampSub(z_, other.z_);
     return {x, y, z};
   }
   Vector3& operator-=(const Vector3& other) {
-    x_ = ::base::ClampSub(x_, other.x_);
-    y_ = ::base::ClampSub(y_, other.y_);
-    z_ = ::base::ClampSub(z_, other.z_);
+    x_ = base::ClampSub(x_, other.x_);
+    y_ = base::ClampSub(y_, other.y_);
+    z_ = base::ClampSub(z_, other.z_);
     return *this;
   }
   Vector3 operator*(T a) const { return Scale(a); }
@@ -207,9 +207,9 @@ class Vector3 {
   Vector3& operator/=(T a) const { return ScaleInPlace(1 / a); }
 
   std::string ToString() const {
-    return ::base::StringPrintf(
-        "(%s, %s, %s)", ::base::NumberToString(x_).c_str(),
-        ::base::NumberToString(y_).c_str(), ::base::NumberToString(z_).c_str());
+    return base::StringPrintf("(%s, %s, %s)", base::NumberToString(x_).c_str(),
+                              base::NumberToString(y_).c_str(),
+                              base::NumberToString(z_).c_str());
   }
 
   EigenMatrixType ToEigenVector() const {

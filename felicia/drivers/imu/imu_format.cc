@@ -13,7 +13,7 @@ ImuFormat::ImuFormat(const ImuFormat& other) = default;
 ImuFormat& ImuFormat::operator=(const ImuFormat& other) = default;
 
 std::string ImuFormat::ToString() const {
-  return ::base::StringPrintf("%.2fHz", frame_rate_);
+  return base::StringPrintf("%.2fHz", frame_rate_);
 }
 
 float ImuFormat::frame_rate() const { return frame_rate_; }

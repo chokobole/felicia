@@ -51,7 +51,7 @@ struct RsCapability {
 };
 
 using RsCapabilityList = std::list<RsCapability>;
-using RsCapabilityMap = ::base::flat_map<RsStreamInfo, RsCapabilityList>;
+using RsCapabilityMap = base::flat_map<RsStreamInfo, RsCapabilityList>;
 
 const RsCapability* GetBestMatchedCapability(
     const CameraFormat& requested, const RsCapabilityList& capabilities);

@@ -56,7 +56,7 @@ WebSocketBasicStream::Adapter::~Adapter() = default;
 
 WebSocketBasicStream::WebSocketBasicStream(std::unique_ptr<Adapter> connection)
     : read_buffer_(
-          ::base::MakeRefCounted<net::IOBufferWithSize>(kReadBufferSize)),
+          base::MakeRefCounted<net::IOBufferWithSize>(kReadBufferSize)),
       connection_(std::move(connection)) {}
 
 WebSocketBasicStream::~WebSocketBasicStream() { Close(); }

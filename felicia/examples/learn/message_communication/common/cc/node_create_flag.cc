@@ -53,7 +53,7 @@ NodeCreateFlag::NodeCreateFlag() {
     auto flag =
         builder.SetShortName("-c")
             .SetLongName("--channel_type")
-            .SetHelp(::base::StringPrintf(
+            .SetHelp(base::StringPrintf(
                 "protocol to deliver message, it only works for "
                 "publishing node (default: %s)",
                 ChannelDef_Type_Name(ChannelDef::CHANNEL_TYPE_TCP).c_str()))

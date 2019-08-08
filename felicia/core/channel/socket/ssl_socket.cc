@@ -22,7 +22,7 @@ SSLServerSocket* SSLSocket::ToSSLServerSocket() {
 }
 
 void SSLSocket::OnWriteCheckingReset(int result) {
-  if (result == ::net::ERR_CONNECTION_RESET) {
+  if (result == net::ERR_CONNECTION_RESET) {
     stream_socket_.reset();
   }
   Socket::OnWrite(result);
@@ -30,7 +30,7 @@ void SSLSocket::OnWriteCheckingReset(int result) {
 
 void SSLSocket::OnReadCheckingClosed(int result) {
   if (result == 0) {
-    result = ::net::ERR_CONNECTION_CLOSED;
+    result = net::ERR_CONNECTION_CLOSED;
     stream_socket_.reset();
   }
   Socket::OnRead(result);

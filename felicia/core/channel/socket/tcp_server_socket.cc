@@ -17,35 +17,35 @@ TCPServerSocket::accepted_sockets() const {
 bool TCPServerSocket::IsServer() const { return true; }
 
 StatusOr<ChannelDef> TCPServerSocket::Listen() {
-  auto server_socket = std::make_unique<::net::TCPSocket>(nullptr);
+  auto server_socket = std::make_unique<net::TCPSocket>(nullptr);
 
-  int rv = server_socket->Open(::net::ADDRESS_FAMILY_IPV4);
-  if (rv != ::net::OK) {
-    return errors::NetworkError(::net::ErrorToString(rv));
+  int rv = server_socket->Open(net::ADDRESS_FAMILY_IPV4);
+  if (rv != net::OK) {
+    return errors::NetworkError(net::ErrorToString(rv));
   }
 
-  uint16_t port = net::PickRandomPort(true);
-  ::net::IPAddress address(0, 0, 0, 0);
-  ::net::IPEndPoint server_endpoint(address, port);
+  uint16_t port = PickRandomPort(true);
+  net::IPAddress address(0, 0, 0, 0);
+  net::IPEndPoint server_endpoint(address, port);
   rv = server_socket->Bind(server_endpoint);
-  if (rv != ::net::OK) {
-    return errors::NetworkError(::net::ErrorToString(rv));
+  if (rv != net::OK) {
+    return errors::NetworkError(net::ErrorToString(rv));
   }
 
   rv = server_socket->SetDefaultOptionsForServer();
-  if (rv != ::net::OK) {
-    return errors::NetworkError(::net::ErrorToString(rv));
+  if (rv != net::OK) {
+    return errors::NetworkError(net::ErrorToString(rv));
   }
 
   rv = server_socket->Listen(5);
-  if (rv != ::net::OK) {
-    return errors::NetworkError(::net::ErrorToString(rv));
+  if (rv != net::OK) {
+    return errors::NetworkError(net::ErrorToString(rv));
   }
 
   socket_ = std::move(server_socket);
 
   return ToChannelDef(
-      ::net::IPEndPoint(net::HostIPAddress(net::HOST_IP_ONLY_ALLOW_IPV4), port),
+      net::IPEndPoint(HostIPAddress(HOST_IP_ONLY_ALLOW_IPV4), port),
       ChannelDef::CHANNEL_TYPE_TCP);
 }
 
@@ -66,7 +66,7 @@ void TCPServerSocket::AcceptOnceIntercept(
   DoAccept();
 }
 
-void TCPServerSocket::AddSocket(std::unique_ptr<::net::TCPSocket> socket) {
+void TCPServerSocket::AddSocket(std::unique_ptr<net::TCPSocket> socket) {
   accepted_sockets_.push_back(
       std::make_unique<TCPClientSocket>(std::move(socket)));
 }
@@ -82,16 +82,16 @@ bool TCPServerSocket::IsConnected() const {
   return false;
 }
 
-void TCPServerSocket::Write(scoped_refptr<::net::IOBuffer> buffer, int size,
+void TCPServerSocket::Write(scoped_refptr<net::IOBuffer> buffer, int size,
                             StatusOnceCallback callback) {
   DCHECK(write_callback_.is_null());
   write_callback_ = std::move(callback);
   broadcaster_.Broadcast(
       buffer, size,
-      ::base::BindOnce(&TCPServerSocket::OnWrite, ::base::Unretained(this)));
+      base::BindOnce(&TCPServerSocket::OnWrite, base::Unretained(this)));
 }
 
-void TCPServerSocket::Read(scoped_refptr<::net::GrowableIOBuffer> buffer,
+void TCPServerSocket::Read(scoped_refptr<net::GrowableIOBuffer> buffer,
                            int size, StatusOnceCallback callback) {
   NOTREACHED() << "You read data from ServerSocket, if you need, please use "
                   "TCPServerSokcet::AcceptOnceIntercept.";
@@ -100,27 +100,27 @@ void TCPServerSocket::Read(scoped_refptr<::net::GrowableIOBuffer> buffer,
 int TCPServerSocket::DoAccept() {
   int result = socket_->Accept(
       &accepted_socket_, &accepted_endpoint_,
-      ::base::BindOnce(&TCPServerSocket::OnAccept, ::base::Unretained(this)));
-  if (result != ::net::ERR_IO_PENDING) HandleAccpetResult(result);
+      base::BindOnce(&TCPServerSocket::OnAccept, base::Unretained(this)));
+  if (result != net::ERR_IO_PENDING) HandleAccpetResult(result);
   return result;
 }
 
 void TCPServerSocket::DoAcceptLoop() {
-  int result = ::net::OK;
-  while (result == ::net::OK) {
+  int result = net::OK;
+  while (result == net::OK) {
     result = DoAccept();
   }
 }
 
 void TCPServerSocket::HandleAccpetResult(int result) {
-  DCHECK_NE(result, ::net::ERR_IO_PENDING);
+  DCHECK_NE(result, net::ERR_IO_PENDING);
 
   if (result < 0) {
     if (accept_once_intercept_callback_) {
       std::move(accept_once_intercept_callback_)
-          .Run(errors::NetworkError(::net::ErrorToString(result)));
+          .Run(errors::NetworkError(net::ErrorToString(result)));
     } else if (accept_callback_) {
-      accept_callback_.Run(errors::NetworkError(::net::ErrorToString(result)));
+      accept_callback_.Run(errors::NetworkError(net::ErrorToString(result)));
     }
     return;
   }

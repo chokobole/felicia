@@ -10,9 +10,9 @@ namespace felicia {
 std::unique_ptr<ImuFilterInterface> ImuFilterFactory::NewImuFilter(
     ImuFilterKind kind) {
   if (kind == COMPLEMENTARY_FILTER_KIND) {
-    return ::base::WrapUnique(new ComplementaryFilter());
+    return base::WrapUnique(new ComplementaryFilter());
   } else if (kind == MADGWICK_FILTER_KIND) {
-    return ::base::WrapUnique(new MadgwickFilter());
+    return base::WrapUnique(new MadgwickFilter());
   }
 
   return nullptr;

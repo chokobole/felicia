@@ -28,7 +28,7 @@ void PlatformHandleBroker::WaitForBroker(ChannelDef channel_def,
 
   const std::string& service_name =
       channel_def.shm_endpoint().broker_endpoint().service_name();
-  ::base::string16 pipe_name =
+  base::string16 pipe_name =
       NamedPipeServer::GetPipeNameFromServiceName(service_name);
 
   if (!::WaitNamedPipeW(pipe_name.c_str(), NMPWAIT_USE_DEFAULT_WAIT)) {
@@ -40,7 +40,7 @@ void PlatformHandleBroker::WaitForBroker(ChannelDef channel_def,
   // The SECURITY_ANONYMOUS flag means that the server side cannot impersonate
   // the client.
   const DWORD kFlags = SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS;
-  ::base::win::ScopedHandle pipe_handle(
+  base::win::ScopedHandle pipe_handle(
       ::CreateFileW(pipe_name.c_str(), kDesiredAccess, 0, nullptr,
                     OPEN_EXISTING, kFlags, nullptr));
 

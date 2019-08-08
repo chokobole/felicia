@@ -24,18 +24,18 @@ class EXPORT WebSocketServer : public WebSocket {
   bool IsConnected() const override;
 
   // ChannelImpl methods
-  void Write(scoped_refptr<::net::IOBuffer> buffer, int size,
+  void Write(scoped_refptr<net::IOBuffer> buffer, int size,
              StatusOnceCallback callback) override;
-  void Read(scoped_refptr<::net::GrowableIOBuffer> buffer, int size,
+  void Read(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
             StatusOnceCallback callback) override;
 
   // WebSocket methods
   void OnHandshaked(
-      StatusOr<std::unique_ptr<::net::TCPSocket>> status_or) override;
+      StatusOr<std::unique_ptr<net::TCPSocket>> status_or) override;
 
  private:
   void DoAcceptOnce();
-  void OnAccept(StatusOr<std::unique_ptr<::net::TCPSocket>> status_or);
+  void OnAccept(StatusOr<std::unique_ptr<net::TCPSocket>> status_or);
 
   TCPServerSocket::AcceptCallback accept_callback_;
   std::unique_ptr<TCPServerSocket> tcp_server_socket_;

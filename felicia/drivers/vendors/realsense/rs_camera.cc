@@ -14,8 +14,8 @@ namespace felicia {
 namespace errors {
 
 Status NotSupportedOption(rs2_option option) {
-  return errors::NotFound(::base::StringPrintf("%s is not supported",
-                                               rs2_option_to_string(option)));
+  return errors::NotFound(
+      base::StringPrintf("%s is not supported", rs2_option_to_string(option)));
 }
 
 }  // namespace errors
@@ -33,7 +33,7 @@ Status RsCamera::Init() {
   Status s = RsCamera::CreateDevice(camera_descriptor_, &device_);
   if (!s.ok()) return s;
 
-  std::vector<::rs2::sensor> sensors = device_.query_sensors();
+  std::vector<rs2::sensor> sensors = device_.query_sensors();
   for (auto&& sensor : sensors) {
     std::string module_name = sensor.get_info(RS2_CAMERA_INFO_NAME);
     if ("Stereo Module" == module_name) {
@@ -41,12 +41,12 @@ Status RsCamera::Init() {
       sensors_[RS_INFRA1] = sensor;
       sensors_[RS_INFRA2] = sensor;
 
-      depth_scale_ = sensor.as<::rs2::depth_sensor>().get_depth_scale();
+      depth_scale_ = sensor.as<rs2::depth_sensor>().get_depth_scale();
     } else if ("Coded-Light Depth Sensor" == module_name) {
       sensors_[RS_DEPTH] = sensor;
       sensors_[RS_INFRA1] = sensor;
 
-      depth_scale_ = sensor.as<::rs2::depth_sensor>().get_depth_scale();
+      depth_scale_ = sensor.as<rs2::depth_sensor>().get_depth_scale();
       LOG(ERROR) << "Not Implemented yet for module : " << module_name;
     } else if ("RGB Camera" == module_name) {
       sensors_[RS_COLOR] = sensor;
@@ -103,19 +103,19 @@ Status RsCamera::Start(const RsCamera::StartParams& params) {
     return errors::InvalidArgument("There's no callback to receive frame.");
   }
 
-  std::function<void(::rs2::frame)> frame_callback_function;
-  std::function<void(::rs2::frame)> imu_callback_function;
+  std::function<void(rs2::frame)> frame_callback_function;
+  std::function<void(rs2::frame)> imu_callback_function;
 
   if (params.named_filters.size() > 0) {
     frame_callback_function = syncer_;
-    auto frame_callback_inner = [this](::rs2::frame frame) { OnFrame(frame); };
+    auto frame_callback_inner = [this](rs2::frame frame) { OnFrame(frame); };
     syncer_.start(frame_callback_inner);
   } else if (has_color_callback || has_depth_callback) {
     frame_callback_function = [this](rs2::frame frame) { OnFrame(frame); };
   }
 
   if (has_imu_callback) {
-    imu_callback_function = [this](::rs2::frame frame) { OnImuFrame(frame); };
+    imu_callback_function = [this](rs2::frame frame) { OnImuFrame(frame); };
   }
 
   bool imu_started = false;
@@ -159,7 +159,7 @@ Status RsCamera::Start(const RsCamera::StartParams& params) {
                  .get_stream_profiles()[found_gyro_capability->stream_index]});
         sensor.second.start(imu_callback_function);
       }
-    } catch (::rs2::error e) {
+    } catch (rs2::error e) {
       return Status(error::UNAVAILABLE, e.what());
     }
   }
@@ -196,7 +196,7 @@ Status RsCamera::Stop() {
       try {
         sensor.second.stop();
         sensor.second.close();
-      } catch (::rs2::error e) {
+      } catch (rs2::error e) {
         return Status(error::UNAVAILABLE, e.what());
       }
     }
@@ -213,7 +213,7 @@ Status RsCamera::Stop() {
   return Status::OK();
 }
 
-StatusOr<::rs2::sensor> RsCamera::sensor(const RsStreamInfo& rs_stream_info) {
+StatusOr<rs2::sensor> RsCamera::sensor(const RsStreamInfo& rs_stream_info) {
   auto it = sensors_.find(rs_stream_info);
   if (it == sensors_.end()) {
     return errors::NotFound("No sensor");
@@ -228,7 +228,7 @@ Status RsCamera::SetCameraSettings(const CameraSettings& camera_settings) {
 
   auto status_or = sensor(RS_COLOR);
   if (!status_or.ok()) return status_or.status();
-  ::rs2::sensor& s = status_or.ValueOrDie();
+  rs2::sensor& s = status_or.ValueOrDie();
 
   if (camera_settings.has_white_balance_mode()) {
     const float value =
@@ -309,7 +309,7 @@ Status RsCamera::SetCameraSettings(const CameraSettings& camera_settings) {
   return Status::OK();
 }
 
-Status RsCamera::SetOption(::rs2::sensor& sensor, rs2_option option,
+Status RsCamera::SetOption(rs2::sensor& sensor, rs2_option option,
                            float value) {
   if (!sensor.supports(option)) {
     return errors::NotSupportedOption(option);
@@ -318,16 +318,16 @@ Status RsCamera::SetOption(::rs2::sensor& sensor, rs2_option option,
   try {
     sensor.set_option(option, value);
     return Status::OK();
-  } catch (const ::rs2::error& e) {
+  } catch (const rs2::error& e) {
     return errors::Unavailable(
-        ::base::StringPrintf("Failed to set_option(%s): %s.",
-                             rs2_option_to_string(option), e.what()));
+        base::StringPrintf("Failed to set_option(%s): %s.",
+                           rs2_option_to_string(option), e.what()));
   }
 
   return errors::Internal("Not reached");
 }
 
-Status RsCamera::GetOption(::rs2::sensor& sensor, rs2_option option,
+Status RsCamera::GetOption(rs2::sensor& sensor, rs2_option option,
                            float* value) {
   if (!sensor.supports(option)) {
     return errors::NotSupportedOption(option);
@@ -336,17 +336,17 @@ Status RsCamera::GetOption(::rs2::sensor& sensor, rs2_option option,
   try {
     *value = sensor.get_option(option);
     return Status::OK();
-  } catch (const ::rs2::error& e) {
+  } catch (const rs2::error& e) {
     return errors::Unavailable(
-        ::base::StringPrintf("Failed to get_option(%s): %s.",
-                             rs2_option_to_string(option), e.what()));
+        base::StringPrintf("Failed to get_option(%s): %s.",
+                           rs2_option_to_string(option), e.what()));
   }
 
   return errors::Internal("Not reached");
 }
 
-Status RsCamera::GetOptionRange(::rs2::sensor& sensor, rs2_option option,
-                                ::rs2::option_range* option_range) {
+Status RsCamera::GetOptionRange(rs2::sensor& sensor, rs2_option option,
+                                rs2::option_range* option_range) {
   if (!sensor.supports(option)) {
     return errors::NotSupportedOption(option);
   }
@@ -354,10 +354,10 @@ Status RsCamera::GetOptionRange(::rs2::sensor& sensor, rs2_option option,
   try {
     *option_range = sensor.get_option_range(option);
     return Status::OK();
-  } catch (const ::rs2::error& e) {
+  } catch (const rs2::error& e) {
     return errors::Unavailable(
-        ::base::StringPrintf("Failed to get_option_range(%s): %s.",
-                             rs2_option_to_string(option), e.what()));
+        base::StringPrintf("Failed to get_option_range(%s): %s.",
+                           rs2_option_to_string(option), e.what()));
   }
 
   return errors::Internal("Not reached");
@@ -371,7 +371,7 @@ Status RsCamera::GetCameraSettingsInfo(
 
   auto status_or = sensor(RS_COLOR);
   if (!status_or.ok()) return status_or.status();
-  ::rs2::sensor& s = status_or.ValueOrDie();
+  rs2::sensor& s = status_or.ValueOrDie();
 
   GetCameraSetting(s, RS2_OPTION_ENABLE_AUTO_WHITE_BALANCE,
                    camera_settings->mutable_white_balance_mode());
@@ -394,7 +394,7 @@ Status RsCamera::GetCameraSettingsInfo(
   return Status::OK();
 }
 
-Status RsCamera::GetAllOptions(::rs2::sensor& sensor,
+Status RsCamera::GetAllOptions(rs2::sensor& sensor,
                                std::vector<rs2_option>* options) {
   DCHECK(options->empty());
   for (int i = 0; i < static_cast<int>(RS2_OPTION_COUNT); ++i) {
@@ -415,9 +415,9 @@ CameraSettingsMode ValueToMode(float value) {
 
 }  // namespace
 
-void RsCamera::GetCameraSetting(::rs2::sensor& sensor, rs2_option option,
+void RsCamera::GetCameraSetting(rs2::sensor& sensor, rs2_option option,
                                 CameraSettingsModeValue* value) {
-  ::rs2::option_range option_range;
+  rs2::option_range option_range;
   if (!GetOptionRange(sensor, option, &option_range).ok()) {
     value->Clear();
     return;
@@ -434,9 +434,9 @@ void RsCamera::GetCameraSetting(::rs2::sensor& sensor, rs2_option option,
   value->set_current(ValueToMode(v));
 }
 
-void RsCamera::GetCameraSetting(::rs2::sensor& sensor, rs2_option option,
+void RsCamera::GetCameraSetting(rs2::sensor& sensor, rs2_option option,
                                 CameraSettingsRangedValue* value) {
-  ::rs2::option_range option_range;
+  rs2::option_range option_range;
   if (!GetOptionRange(sensor, option, &option_range).ok()) {
     value->Clear();
     return;
@@ -454,10 +454,10 @@ void RsCamera::GetCameraSetting(::rs2::sensor& sensor, rs2_option option,
   value->set_current(static_cast<int64_t>(v));
 }
 
-void RsCamera::OnFrame(::rs2::frame frame) {
-  ::base::TimeDelta timestamp = timestamper_.timestamp();
-  if (frame.is<::rs2::frameset>()) {
-    auto frameset = frame.as<::rs2::frameset>();
+void RsCamera::OnFrame(rs2::frame frame) {
+  base::TimeDelta timestamp = timestamper_.timestamp();
+  if (frame.is<rs2::frameset>()) {
+    auto frameset = frame.as<rs2::frameset>();
 
     for (auto& named_filter : named_filters_) {
       frameset = named_filter.filter->process(frameset);
@@ -465,24 +465,24 @@ void RsCamera::OnFrame(::rs2::frame frame) {
 
     if (!pointcloud_frame_callback_.is_null()) {
       for (auto frame : frameset) {
-        if (frame.is<::rs2::points>()) {
-          HandlePoints(frame.as<::rs2::points>(), timestamp, frameset);
+        if (frame.is<rs2::points>()) {
+          HandlePoints(frame.as<rs2::points>(), timestamp, frameset);
           break;
         }
       }
     }
 
     for (auto frame : frameset) {
-      if (frame.is<::rs2::video_frame>()) {
-        HandleVideoFrame(frame.as<::rs2::video_frame>(), timestamp);
+      if (frame.is<rs2::video_frame>()) {
+        HandleVideoFrame(frame.as<rs2::video_frame>(), timestamp);
       }
     }
-  } else if (frame.is<::rs2::video_frame>()) {
-    HandleVideoFrame(frame.as<::rs2::video_frame>(), timestamp);
+  } else if (frame.is<rs2::video_frame>()) {
+    HandleVideoFrame(frame.as<rs2::video_frame>(), timestamp);
   }
 }
 
-void RsCamera::OnImuFrame(::rs2::frame frame) {
+void RsCamera::OnImuFrame(rs2::frame frame) {
   if (imu_frame_callback_.is_null()) return;
 
   auto motion = frame.as<rs2::motion_frame>();
@@ -493,7 +493,7 @@ void RsCamera::OnImuFrame(::rs2::frame frame) {
   Vector3f converted =
       coordinate_.Convert(Vector3f(vector.x, vector.y, vector.z),
                           Coordinate::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP);
-  ::base::TimeDelta timestamp = timestamper_.timestamp();
+  base::TimeDelta timestamp = timestamper_.timestamp();
   if (stream == RS_GYRO.stream_type) {
     imu_frame.set_angulary_veilocity(converted);
     imu_filter_->UpdateAngularVelocity(converted, timestamp);
@@ -507,13 +507,13 @@ void RsCamera::OnImuFrame(::rs2::frame frame) {
   imu_frame_callback_.Run(imu_frame);
 }
 
-void RsCamera::HandleVideoFrame(::rs2::video_frame frame,
-                                ::base::TimeDelta timestamp) {
-  if (frame.is<::rs2::depth_frame>()) {
+void RsCamera::HandleVideoFrame(rs2::video_frame frame,
+                                base::TimeDelta timestamp) {
+  if (frame.is<rs2::depth_frame>()) {
     if (depth_frame_callback_.is_null()) return;
 
     depth_frame_callback_.Run(
-        FromRsDepthFrame(frame.as<::rs2::depth_frame>(), timestamp));
+        FromRsDepthFrame(frame.as<rs2::depth_frame>(), timestamp));
   } else {
     if (color_frame_callback_.is_null()) return;
 
@@ -523,7 +523,7 @@ void RsCamera::HandleVideoFrame(::rs2::video_frame frame,
                cached_color_frame_.data_ptr()) {
       color_frame_callback_.Run(std::move(cached_color_frame_));
     } else {
-      ::base::Optional<CameraFrame> color_frame = ConvertToRequestedPixelFormat(
+      base::Optional<CameraFrame> color_frame = ConvertToRequestedPixelFormat(
           frame, requested_pixel_format_, timestamp);
       if (color_frame.has_value()) {
         color_frame_callback_.Run(std::move(color_frame.value()));
@@ -535,8 +535,8 @@ void RsCamera::HandleVideoFrame(::rs2::video_frame frame,
   }
 }
 
-void RsCamera::HandlePoints(::rs2::points points, ::base::TimeDelta timestamp,
-                            const ::rs2::frameset& frameset) {
+void RsCamera::HandlePoints(rs2::points points, base::TimeDelta timestamp,
+                            const rs2::frameset& frameset) {
   if (pointcloud_frame_callback_.is_null()) return;
 
   auto pc_filter_iter = std::find_if(
@@ -661,9 +661,9 @@ void RsCamera::HandlePoints(::rs2::points points, ::base::TimeDelta timestamp,
   pointcloud_frame_callback_.Run(std::move(pointcloud_frame));
 }
 
-::base::Optional<CameraFrame> RsCamera::ConvertToRequestedPixelFormat(
-    ::rs2::video_frame color_frame, PixelFormat requested_pixel_format,
-    ::base::TimeDelta timestamp) {
+base::Optional<CameraFrame> RsCamera::ConvertToRequestedPixelFormat(
+    rs2::video_frame color_frame, PixelFormat requested_pixel_format,
+    base::TimeDelta timestamp) {
   const uint8_t* data =
       reinterpret_cast<const uint8_t*>(color_frame.get_data());
   size_t length = color_format_.AllocationSize();
@@ -671,8 +671,8 @@ void RsCamera::HandlePoints(::rs2::points points, ::base::TimeDelta timestamp,
       data, length, color_format_, requested_pixel_format, timestamp);
 }
 
-CameraFrame RsCamera::FromRsColorFrame(::rs2::video_frame color_frame,
-                                       ::base::TimeDelta timestamp) {
+CameraFrame RsCamera::FromRsColorFrame(rs2::video_frame color_frame,
+                                       base::TimeDelta timestamp) {
   size_t length = color_format_.AllocationSize();
   std::unique_ptr<uint8_t[]> new_color_frame(new uint8_t[length]);
   memcpy(new_color_frame.get(), color_frame.get_data(), length);
@@ -680,8 +680,8 @@ CameraFrame RsCamera::FromRsColorFrame(::rs2::video_frame color_frame,
                      timestamp};
 }
 
-DepthCameraFrame RsCamera::FromRsDepthFrame(::rs2::depth_frame depth_frame,
-                                            ::base::TimeDelta timestamp) {
+DepthCameraFrame RsCamera::FromRsDepthFrame(rs2::depth_frame depth_frame,
+                                            base::TimeDelta timestamp) {
   size_t size = depth_format_.width() * depth_format_.height();
   size_t allocation_size = depth_format_.AllocationSize();
   std::unique_ptr<uint8_t[]> new_depth_frame(new uint8_t[allocation_size]);
@@ -703,8 +703,8 @@ DepthCameraFrame RsCamera::FromRsDepthFrame(::rs2::depth_frame depth_frame,
 
 // static
 Status RsCamera::CreateDevice(const CameraDescriptor& camera_descriptor,
-                              ::rs2::device* device) {
-  ::rs2::context context;
+                              rs2::device* device) {
+  rs2::context context;
   auto list = context.query_devices();
   for (auto&& dev : list) {
     const char* physical_port = dev.get_info(RS2_CAMERA_INFO_PHYSICAL_PORT);
@@ -714,21 +714,20 @@ Status RsCamera::CreateDevice(const CameraDescriptor& camera_descriptor,
     }
   }
 
-  return Status(error::NOT_FOUND,
-                ::base::StrCat({"No mathcing device with ",
-                                camera_descriptor.ToString()}));
+  return Status(error::NOT_FOUND, base::StrCat({"No mathcing device with ",
+                                                camera_descriptor.ToString()}));
 }
 
 // static
-Status RsCamera::CreateCapabilityMap(::rs2::device device,
+Status RsCamera::CreateCapabilityMap(rs2::device device,
                                      RsCapabilityMap* rs_capability_map) {
-  std::vector<::rs2::sensor> sensors = device.query_sensors();
+  std::vector<rs2::sensor> sensors = device.query_sensors();
   for (auto&& sensor : sensors) {
-    std::vector<::rs2::stream_profile> profiles = sensor.get_stream_profiles();
+    std::vector<rs2::stream_profile> profiles = sensor.get_stream_profiles();
     for (size_t i = 0; i < profiles.size(); ++i) {
-      ::rs2::stream_profile profile = profiles[i];
-      if (profile.is<::rs2::video_stream_profile>()) {
-        auto video_profile = profile.as<::rs2::video_stream_profile>();
+      rs2::stream_profile profile = profiles[i];
+      if (profile.is<rs2::video_stream_profile>()) {
+        auto video_profile = profile.as<rs2::video_stream_profile>();
 
         if (video_profile.stream_type() == RS2_STREAM_INFRARED ||
             video_profile.stream_type() == RS2_STREAM_FISHEYE) {
@@ -747,8 +746,8 @@ Status RsCamera::CreateCapabilityMap(::rs2::device device,
             i, CameraFormat{video_profile.width(), video_profile.height(),
                             FromRs2Format(video_profile.format()),
                             static_cast<float>(video_profile.fps())});
-      } else if (profile.is<::rs2::motion_stream_profile>()) {
-        auto motion_profile = profile.as<::rs2::motion_stream_profile>();
+      } else if (profile.is<rs2::motion_stream_profile>()) {
+        auto motion_profile = profile.as<rs2::motion_stream_profile>();
 
         if (motion_profile.stream_type() == RS2_STREAM_POSE) {
           LOG(ERROR) << "Not supported yet for the stream type : "

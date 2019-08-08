@@ -11,15 +11,15 @@ namespace {
 
 static constexpr int64_t kDefeaultHeartBeatDuration = 1000;
 
-::base::TimeDelta g_heart_beat_duration = ::base::TimeDelta();
+base::TimeDelta g_heart_beat_duration = base::TimeDelta();
 
 }  // namespace
 
-::base::TimeDelta GetHeartBeatDuration() {
+base::TimeDelta GetHeartBeatDuration() {
   int64_t duration = kDefeaultHeartBeatDuration;
   const char* duration_str = getenv("FEL_HEART_BEAT_DURATION");
   if (duration_str) {
-    if (::base::StringToInt64(duration_str, &duration)) {
+    if (base::StringToInt64(duration_str, &duration)) {
       if (duration < 0) {
         LOG(WARNING) << "Duration cannot be negative " << duration
                      << ", set to default value " << kDefeaultHeartBeatDuration;
@@ -28,7 +28,7 @@ static constexpr int64_t kDefeaultHeartBeatDuration = 1000;
     }
   }
 
-  return ::base::TimeDelta::FromMilliseconds(duration);
+  return base::TimeDelta::FromMilliseconds(duration);
 }
 
 HeartBeatListener::HeartBeatListener(const ClientInfo& client_info,
@@ -42,7 +42,7 @@ HeartBeatListener::~HeartBeatListener() {
 }
 
 void HeartBeatListener::StartCheckHeartBeat() {
-  if (g_heart_beat_duration == ::base::TimeDelta()) {
+  if (g_heart_beat_duration == base::TimeDelta()) {
     g_heart_beat_duration = GetHeartBeatDuration();
   }
 
@@ -56,8 +56,8 @@ void HeartBeatListener::StartCheckHeartBeat() {
   channel_->SetReceiveBufferSize(kHeartBeatBytes);
 
   channel_->Connect(client_info_.heart_beat_signaller_source().channel_defs(0),
-                    ::base::BindOnce(&HeartBeatListener::DoCheckHeartBeat,
-                                     ::base::Unretained(this)));
+                    base::BindOnce(&HeartBeatListener::DoCheckHeartBeat,
+                                   base::Unretained(this)));
 }
 
 void HeartBeatListener::DoCheckHeartBeat(const Status& s) {
@@ -73,14 +73,14 @@ void HeartBeatListener::DoCheckHeartBeat(const Status& s) {
 
 void HeartBeatListener::TryReceiveHeartBeat() {
   if (timeout_.IsCancelled()) {
-    timeout_.Reset(::base::BindOnce(&HeartBeatListener::KillSelf,
-                                    ::base::Unretained(this)));
-    ::base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    timeout_.Reset(
+        base::BindOnce(&HeartBeatListener::KillSelf, base::Unretained(this)));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, timeout_.callback(), kMultiplier * g_heart_beat_duration);
   }
   channel_->ReceiveMessage(
       &heart_beat_,
-      ::base::BindOnce(&HeartBeatListener::OnAlive, ::base::Unretained(this)));
+      base::BindOnce(&HeartBeatListener::OnAlive, base::Unretained(this)));
 }
 
 void HeartBeatListener::OnAlive(const Status& s) {
@@ -92,10 +92,10 @@ void HeartBeatListener::OnAlive(const Status& s) {
     return;
   }
 
-  ::base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      ::base::BindOnce(&HeartBeatListener::TryReceiveHeartBeat,
-                       ::base::Unretained(this)),
+      base::BindOnce(&HeartBeatListener::TryReceiveHeartBeat,
+                     base::Unretained(this)),
       g_heart_beat_duration);
 }
 

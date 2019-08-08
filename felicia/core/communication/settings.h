@@ -16,8 +16,7 @@ struct Settings {
 
   Settings() = default;
 
-  ::base::TimeDelta period =
-      ::base::TimeDelta::FromMilliseconds(kDefaultPeriod);
+  base::TimeDelta period = base::TimeDelta::FromMilliseconds(kDefaultPeriod);
   Bytes buffer_size = Bytes::FromBytes(kDefaultMessageSize);
   bool is_dynamic_buffer = false;
   uint8_t queue_size = kDefaultQueueSize;

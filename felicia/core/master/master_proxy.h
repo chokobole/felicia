@@ -40,12 +40,12 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
   // TaskRunnerInterface methods
   bool IsBoundToCurrentThread() const override;
 
-  bool PostTask(const ::base::Location& from_here,
-                ::base::OnceClosure callback) override;
+  bool PostTask(const base::Location& from_here,
+                base::OnceClosure callback) override;
 
-  bool PostDelayedTask(const ::base::Location& from_here,
-                       ::base::OnceClosure callback,
-                       ::base::TimeDelta delay) override;
+  bool PostDelayedTask(const base::Location& from_here,
+                       base::OnceClosure callback,
+                       base::TimeDelta delay) override;
 
 #if defined(FEL_WIN_NO_GRPC)
   Status StartGrpcMasterClient();
@@ -93,17 +93,17 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
                              StatusOnceCallback callback) override;
 
  private:
-  friend class ::base::NoDestructor<MasterProxy>;
+  friend class base::NoDestructor<MasterProxy>;
   friend class PyMasterProxy;
   friend class TopicInfoWatcherNode;
   MasterProxy();
   ~MasterProxy();
 
-  void Setup(::base::WaitableEvent* event);
+  void Setup(base::WaitableEvent* event);
 
   void RegisterClient();
 
-  void OnRegisterClient(::base::WaitableEvent* event,
+  void OnRegisterClient(base::WaitableEvent* event,
                         RegisterClientRequest* request,
                         RegisterClientResponse* response, const Status& s);
 
@@ -111,9 +111,9 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
                            RegisterNodeRequest* request,
                            RegisterNodeResponse* response, const Status& s);
 
-  std::unique_ptr<::base::MessageLoop> message_loop_;
-  std::unique_ptr<::base::RunLoop> run_loop_;
-  std::unique_ptr<::base::Thread> thread_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::Thread> thread_;
   std::unique_ptr<MasterClientInterface> master_client_interface_;
 
   ClientInfo client_info_;
@@ -126,7 +126,7 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
   std::unique_ptr<ProtobufLoader> protobuf_loader_;
 
 #if defined(OS_WIN)
-  ::base::win::ScopedCOMInitializer scoped_com_initializer_;
+  base::win::ScopedCOMInitializer scoped_com_initializer_;
 #endif
 
 #if defined(FEL_WIN_NO_GRPC)
@@ -150,9 +150,9 @@ MasterProxy::RequestRegisterNode(const NodeInfo& node_info, Args&&... args) {
   node->OnInit();
   RegisterNodeAsync(
       request, response,
-      ::base::BindOnce(&MasterProxy::OnRegisterNodeAsync,
-                       ::base::Unretained(this), ::base::Passed(&node),
-                       ::base::Owned(request), ::base::Owned(response)));
+      base::BindOnce(&MasterProxy::OnRegisterNodeAsync, base::Unretained(this),
+                     base::Passed(&node), base::Owned(request),
+                     base::Owned(response)));
 }
 
 }  // namespace felicia

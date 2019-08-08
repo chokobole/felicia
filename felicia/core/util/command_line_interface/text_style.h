@@ -10,7 +10,7 @@ namespace felicia {
 
 class EXPORT TextStyle {
  public:
-#define STYLE_METHOD(Style) static std::string Style(::base::StringPiece text);
+#define STYLE_METHOD(Style) static std::string Style(base::StringPiece text);
 
   STYLE_METHOD(Red)
   STYLE_METHOD(Green)
@@ -21,7 +21,7 @@ class EXPORT TextStyle {
 #undef STYLE_METHOD
 
  private:
-  static std::string ApplyStyle(const char* style, ::base::StringPiece text);
+  static std::string ApplyStyle(const char* style, base::StringPiece text);
 
   static constexpr const char* kRed = "\033[91m";
   static constexpr const char* kGreen = "\033[32m";

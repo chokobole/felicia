@@ -13,7 +13,7 @@ class WebSocketChannelBroadcaster {
       std::vector<std::unique_ptr<WebSocketChannel>>* channels);
   ~WebSocketChannelBroadcaster();
 
-  void Broadcast(scoped_refptr<::net::IOBuffer> buffer, int size,
+  void Broadcast(scoped_refptr<net::IOBuffer> buffer, int size,
                  StatusOnceCallback callback);
 
  private:

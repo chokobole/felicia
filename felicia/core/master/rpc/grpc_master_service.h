@@ -59,7 +59,7 @@ class GrpcMasterService {
   std::unique_ptr<::grpc::ServerCompletionQueue> cq_;
   grpc::MasterService::AsyncService master_service_;
 
-  ::base::Lock lock_;
+  base::Lock lock_;
   bool is_shutdown_ GUARDED_BY(lock_);
   ::grpc::Alarm* shutdown_alarm_ = nullptr;
 };

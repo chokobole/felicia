@@ -37,8 +37,7 @@ class AvfCamera : public CameraInterface, public FrameReceiver {
   // FrameReceiver methods
   void ReceiveFrame(const uint8_t* video_frame, int video_frame_length,
                     const CameraFormat& camera_format, int aspect_numerator,
-                    int aspect_denominator,
-                    ::base::TimeDelta timestamp) override;
+                    int aspect_denominator, base::TimeDelta timestamp) override;
 
   void ReceiveError(const Status& status) override;
 
@@ -51,9 +50,9 @@ class AvfCamera : public CameraInterface, public FrameReceiver {
 
   static std::string GetDeviceModelId(const std::string& device_id);
 
-  const scoped_refptr<::base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  ::base::scoped_nsobject<AvfCameraDelegate> capture_device_;
+  base::scoped_nsobject<AvfCameraDelegate> capture_device_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AvfCamera);
 };

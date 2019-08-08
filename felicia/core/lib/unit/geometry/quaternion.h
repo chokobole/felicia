@@ -83,9 +83,9 @@ class Quaternion {
     return *this;
   }
 
-  Quaternion Normalize() const { return Scale(::base::ClampDiv(1.0, Norm())); }
+  Quaternion Normalize() const { return Scale(base::ClampDiv(1.0, Norm())); }
   Quaternion& NormalizeInPlace() {
-    ScaleInPlace(::base::ClampDiv(1.0, Norm()));
+    ScaleInPlace(base::ClampDiv(1.0, Norm()));
     return *this;
   }
 
@@ -172,10 +172,10 @@ class Quaternion {
   }
 
   std::string ToString() const {
-    return ::base::StringPrintf(
-        "(%s, %s, %s, %s)", ::base::NumberToString(x_).c_str(),
-        ::base::NumberToString(y_).c_str(), ::base::NumberToString(z_).c_str(),
-        ::base::NumberToString(w_).c_str());
+    return base::StringPrintf(
+        "(%s, %s, %s, %s)", base::NumberToString(x_).c_str(),
+        base::NumberToString(y_).c_str(), base::NumberToString(z_).c_str(),
+        base::NumberToString(w_).c_str());
   }
 
   EigenQuaternionType ToEigenQuaternion() const { return {w_, x_, y_, z_}; }

@@ -10,7 +10,7 @@ class WritableSharedBuffer;
 
 class SharedBuffer {
  public:
-  typedef ::device::SharedMemorySeqLockBuffer<char*> SerializedBuffer;
+  typedef device::SharedMemorySeqLockBuffer<char*> SerializedBuffer;
 
   virtual ~SharedBuffer() = default;
 

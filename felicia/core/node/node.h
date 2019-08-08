@@ -13,7 +13,7 @@
 
 namespace felicia {
 
-class Node : public ::base::SupportsWeakPtr<Node> {
+class Node : public base::SupportsWeakPtr<Node> {
  public:
   // Return a new node unless a |node_info| contains name and there is
   // already registered with a given name. If so, return nullptr.
@@ -41,7 +41,7 @@ class Node : public ::base::SupportsWeakPtr<Node> {
   explicit Node(const NodeInfo& node_info);
 
   NodeInfo node_info_;
-  ::base::flat_map<std::string, TopicInfo> topic_info_map_;
+  base::flat_map<std::string, TopicInfo> topic_info_map_;
   std::vector<std::string> subscribing_topics_;
 
   DISALLOW_COPY_AND_ASSIGN(Node);

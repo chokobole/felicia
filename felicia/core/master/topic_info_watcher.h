@@ -17,8 +17,7 @@ extern Bytes kTopicInfoBytes;
 
 class TopicInfoWatcher {
  public:
-  using NewTopicInfoCallback =
-      ::base::RepeatingCallback<void(const TopicInfo&)>;
+  using NewTopicInfoCallback = base::RepeatingCallback<void(const TopicInfo&)>;
 
   TopicInfoWatcher();
 
@@ -46,7 +45,7 @@ class TopicInfoWatcher {
   TopicInfo topic_info_;
   std::unique_ptr<Channel<TopicInfo>> server_channel_;
   std::unique_ptr<TCPChannel<TopicInfo>> channel_;
-  ::base::flat_map<std::string, NewTopicInfoCallback> callback_map_;
+  base::flat_map<std::string, NewTopicInfoCallback> callback_map_;
   NewTopicInfoCallback all_topic_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TopicInfoWatcher);

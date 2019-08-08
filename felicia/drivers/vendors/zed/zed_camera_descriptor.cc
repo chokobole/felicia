@@ -26,8 +26,8 @@ ZedCameraDescriptor& ZedCameraDescriptor::operator=(
 int ZedCameraDescriptor::id() const { return id_; }
 
 std::string ZedCameraDescriptor::ToString() const {
-  return ::base::StrCat(
-      {CameraDescriptor::ToString(), "id: ", ::base::NumberToString(id_)});
+  return base::StrCat(
+      {CameraDescriptor::ToString(), "id: ", base::NumberToString(id_)});
 }
 
 std::ostream& operator<<(std::ostream& os,

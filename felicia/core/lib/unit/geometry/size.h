@@ -66,14 +66,13 @@ class Size {
   }
 
   std::string ToString() const {
-    return ::base::StringPrintf("(%s, %s)",
-                                ::base::NumberToString(width_).c_str(),
-                                ::base::NumberToString(height_).c_str());
+    return base::StringPrintf("(%s, %s)", base::NumberToString(width_).c_str(),
+                              base::NumberToString(height_).c_str());
   }
 
  private:
-  constexpr ::base::CheckedNumeric<double> CheckedArea() const {
-    ::base::CheckedNumeric<double> checked_area = width();
+  constexpr base::CheckedNumeric<double> CheckedArea() const {
+    base::CheckedNumeric<double> checked_area = width();
     checked_area *= height();
     return checked_area;
   }

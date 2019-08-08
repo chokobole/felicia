@@ -17,7 +17,7 @@
 namespace felicia {
 
 class ZedCamera : public StereoCameraInterface,
-                  public ::base::SupportsWeakPtr<ZedCamera> {
+                  public base::SupportsWeakPtr<ZedCamera> {
  public:
   class ScopedCamera {
    public:
@@ -27,14 +27,14 @@ class ZedCamera : public StereoCameraInterface,
 
     ~ScopedCamera();
 
-    const ::sl::Camera* operator->() const { return get(); }
-    ::sl::Camera* operator->() { return get(); }
+    const sl::Camera* operator->() const { return get(); }
+    sl::Camera* operator->() { return get(); }
 
-    const ::sl::Camera* get() const { return camera_.get(); }
-    ::sl::Camera* get() { return camera_.get(); }
+    const sl::Camera* get() const { return camera_.get(); }
+    sl::Camera* get() { return camera_.get(); }
 
    private:
-    std::unique_ptr<::sl::Camera> camera_;
+    std::unique_ptr<sl::Camera> camera_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedCamera);
   };
@@ -43,8 +43,8 @@ class ZedCamera : public StereoCameraInterface,
   // and |camera_resolution|.
   struct StartParams {
     CameraFormat requested_camera_format;
-    ::sl::InitParameters init_params;
-    ::sl::RuntimeParameters runtime_params;
+    sl::InitParameters init_params;
+    sl::RuntimeParameters runtime_params;
 
     CameraFrameCallback left_camera_frame_callback;
     CameraFrameCallback right_camera_frame_callback;
@@ -73,49 +73,48 @@ class ZedCamera : public StereoCameraInterface,
 
   Status Start(const StartParams& params);
 
-  ::sl::Camera* camera() { return camera_.get(); }
+  sl::Camera* camera() { return camera_.get(); }
 
-  const ::sl::Camera* camera() const { return camera_.get(); }
+  const sl::Camera* camera() const { return camera_.get(); }
 
  private:
   friend class ZedCameraFactory;
 
   ZedCamera(const ZedCameraDescriptor& camera_descriptor);
 
-  void GetCameraSetting(::sl::CAMERA_SETTINGS camera_setting,
+  void GetCameraSetting(sl::CAMERA_SETTINGS camera_setting,
                         CameraSettingsModeValue* value);
-  void GetCameraSetting(::sl::CAMERA_SETTINGS camera_setting,
+  void GetCameraSetting(sl::CAMERA_SETTINGS camera_setting,
                         CameraSettingsRangedValue* value);
 
   void DoGrab();
-  void DoStop(::base::WaitableEvent* event, Status* s);
+  void DoStop(base::WaitableEvent* event, Status* s);
 
-  CameraFrame ConvertToCameraFrame(::sl::Mat image,
-                                   ::base::TimeDelta timestamp);
+  CameraFrame ConvertToCameraFrame(sl::Mat image, base::TimeDelta timestamp);
 
-  DepthCameraFrame ConvertToDepthCameraFrame(::sl::Mat image,
-                                             ::base::TimeDelta timestamp,
+  DepthCameraFrame ConvertToDepthCameraFrame(sl::Mat image,
+                                             base::TimeDelta timestamp,
                                              float min, float max);
 
-  PointcloudFrame ConvertToPointcloudFrame(::sl::Mat cloud,
-                                           ::base::TimeDelta timestamp);
+  PointcloudFrame ConvertToPointcloudFrame(sl::Mat cloud,
+                                           base::TimeDelta timestamp);
 
-  static Status OpenCamera(const int device_id, ::sl::InitParameters& params,
+  static Status OpenCamera(const int device_id, sl::InitParameters& params,
                            ScopedCamera* camera);
 
   int device_id_ = -1;
   ScopedCamera camera_;
-  ::sl::InitParameters init_params_;
-  ::sl::RuntimeParameters runtime_params_;
+  sl::InitParameters init_params_;
+  sl::RuntimeParameters runtime_params_;
 
   DepthCameraFrameCallback depth_camera_frame_callback_;
   PointcloudFrameCallback pointcloud_frame_callback_;
 
-  ::base::Thread thread_;
-  ::base::Lock lock_;
+  base::Thread thread_;
+  base::Lock lock_;
   bool is_stopping_ GUARDED_BY(lock_);
 
-  ::base::TimeDelta last_timestamp_;  // It's used to control pointcloud rate.
+  base::TimeDelta last_timestamp_;  // It's used to control pointcloud rate.
 
   Coordinate coordinate_;
 

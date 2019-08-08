@@ -11,7 +11,7 @@ PointcloudFrame::PointcloudFrame(size_t points_size, size_t colors_size) {
 
 PointcloudFrame::PointcloudFrame(std::vector<Point3f>&& points,
                                  std::vector<uint8_t>&& colors,
-                                 ::base::TimeDelta timestamp) noexcept
+                                 base::TimeDelta timestamp) noexcept
     : points_(std::move(points)),
       colors_(std::move(colors)),
       timestamp_(timestamp) {}
@@ -39,11 +39,11 @@ void PointcloudFrame::AddPointAndColor(float x, float y, float z, uint8_t r,
   colors_.push_back(b);
 }
 
-void PointcloudFrame::set_timestamp(::base::TimeDelta timestamp) {
+void PointcloudFrame::set_timestamp(base::TimeDelta timestamp) {
   timestamp_ = timestamp;
 }
 
-::base::TimeDelta PointcloudFrame::timestamp() const { return timestamp_; }
+base::TimeDelta PointcloudFrame::timestamp() const { return timestamp_; }
 
 PointcloudFrameMessage PointcloudFrame::ToPointcloudFrameMessage() const {
   PointcloudFrameMessage message;
@@ -68,7 +68,7 @@ PointcloudFrame PointcloudFrame::FromPointcloudFrameMessage(
 
   return PointcloudFrame{
       std::move(points), std::move(colors),
-      ::base::TimeDelta::FromMicroseconds(message.timestamp())};
+      base::TimeDelta::FromMicroseconds(message.timestamp())};
 }
 
 }  // namespace felicia

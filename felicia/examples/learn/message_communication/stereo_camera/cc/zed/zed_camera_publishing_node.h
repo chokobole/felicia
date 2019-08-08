@@ -52,8 +52,8 @@ class ZedCameraPublishingNode : public NodeLifecycle {
           ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
               ChannelDef::CHANNEL_TYPE_WS,
           settings,
-          ::base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
-                           ::base::Unretained(this)));
+          base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
+                         base::Unretained(this)));
     }
 
     if (!right_camera_topic_.empty()) {
@@ -62,8 +62,8 @@ class ZedCameraPublishingNode : public NodeLifecycle {
           ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
               ChannelDef::CHANNEL_TYPE_WS,
           settings,
-          ::base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
-                           ::base::Unretained(this)));
+          base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
+                         base::Unretained(this)));
     }
 
     if (!depth_topic_.empty()) {
@@ -72,8 +72,8 @@ class ZedCameraPublishingNode : public NodeLifecycle {
           ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
               ChannelDef::CHANNEL_TYPE_WS,
           settings,
-          ::base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
-                           ::base::Unretained(this)));
+          base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
+                         base::Unretained(this)));
     }
 
     if (!pointcloud_topic_.empty()) {
@@ -82,8 +82,8 @@ class ZedCameraPublishingNode : public NodeLifecycle {
           ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
               ChannelDef::CHANNEL_TYPE_WS,
           settings,
-          ::base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
-                           ::base::Unretained(this)));
+          base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
+                         base::Unretained(this)));
     }
   }
 
@@ -101,8 +101,8 @@ class ZedCameraPublishingNode : public NodeLifecycle {
 
       MasterProxy& master_proxy = MasterProxy::GetInstance();
       master_proxy.PostTask(
-          FROM_HERE, ::base::BindOnce(&ZedCameraPublishingNode::StartCamera,
-                                      ::base::Unretained(this)));
+          FROM_HERE, base::BindOnce(&ZedCameraPublishingNode::StartCamera,
+                                    base::Unretained(this)));
     } else {
       LOG(ERROR) << s;
     }
@@ -118,33 +118,30 @@ class ZedCameraPublishingNode : public NodeLifecycle {
         CameraFormat(stereo_camera_flag_.width_flag()->value(),
                      stereo_camera_flag_.height_flag()->value(), pixel_format,
                      stereo_camera_flag_.fps_flag()->value());
-    params.status_callback = ::base::BindRepeating(
-        &ZedCameraPublishingNode::OnCameraError, ::base::Unretained(this));
+    params.status_callback = base::BindRepeating(
+        &ZedCameraPublishingNode::OnCameraError, base::Unretained(this));
     if (!left_camera_topic_.empty()) {
-      params.left_camera_frame_callback =
-          ::base::BindRepeating(&ZedCameraPublishingNode::OnLeftCameraFrame,
-                                ::base::Unretained(this));
+      params.left_camera_frame_callback = base::BindRepeating(
+          &ZedCameraPublishingNode::OnLeftCameraFrame, base::Unretained(this));
     }
     if (!right_camera_topic_.empty()) {
-      params.right_camera_frame_callback =
-          ::base::BindRepeating(&ZedCameraPublishingNode::OnRightCameraFrame,
-                                ::base::Unretained(this));
+      params.right_camera_frame_callback = base::BindRepeating(
+          &ZedCameraPublishingNode::OnRightCameraFrame, base::Unretained(this));
     }
     if (!depth_topic_.empty()) {
-      params.init_params.coordinate_units = ::sl::UNIT_MILLIMETER;
+      params.init_params.coordinate_units = sl::UNIT_MILLIMETER;
       params.init_params.coordinate_system =
-          ::sl::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP;
-      params.depth_camera_frame_callback = ::base::BindRepeating(
-          &ZedCameraPublishingNode::OnDepthFrame, ::base::Unretained(this));
+          sl::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP;
+      params.depth_camera_frame_callback = base::BindRepeating(
+          &ZedCameraPublishingNode::OnDepthFrame, base::Unretained(this));
     }
     if (!pointcloud_topic_.empty()) {
       // overwrite, because pointcloud calcuation is more complicated.
-      params.init_params.coordinate_units = ::sl::UNIT_METER;
+      params.init_params.coordinate_units = sl::UNIT_METER;
       params.init_params.coordinate_system =
-          ::sl::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP;
-      params.pointcloud_frame_callback =
-          ::base::BindRepeating(&ZedCameraPublishingNode::OnPointcloudFrame,
-                                ::base::Unretained(this));
+          sl::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP;
+      params.pointcloud_frame_callback = base::BindRepeating(
+          &ZedCameraPublishingNode::OnPointcloudFrame, base::Unretained(this));
     }
 
     Status s = camera_->Start(params);
@@ -155,9 +152,9 @@ class ZedCameraPublishingNode : public NodeLifecycle {
       // MasterProxy& master_proxy = MasterProxy::GetInstance();
       // master_proxy.PostDelayedTask(
       //     FROM_HERE,
-      //     ::base::BindOnce(&ZedCameraPublishingNode::RequestUnpublish,
-      //                      ::base::Unretained(this)),
-      //     ::base::TimeDelta::FromSeconds(10));
+      //     base::BindOnce(&ZedCameraPublishingNode::RequestUnpublish,
+      //                      base::Unretained(this)),
+      //     base::TimeDelta::FromSeconds(10));
     } else {
       LOG(ERROR) << s;
     }
@@ -168,8 +165,8 @@ class ZedCameraPublishingNode : public NodeLifecycle {
 
     left_camera_publisher_.Publish(
         camera_frame.ToCameraFrameMessage(),
-        ::base::BindRepeating(&ZedCameraPublishingNode::OnPublishLeftCamera,
-                              ::base::Unretained(this)));
+        base::BindRepeating(&ZedCameraPublishingNode::OnPublishLeftCamera,
+                            base::Unretained(this)));
   }
 
   void OnRightCameraFrame(CameraFrame camera_frame) {
@@ -177,8 +174,8 @@ class ZedCameraPublishingNode : public NodeLifecycle {
 
     right_camera_publisher_.Publish(
         camera_frame.ToCameraFrameMessage(),
-        ::base::BindRepeating(&ZedCameraPublishingNode::OnPublishRightCamera,
-                              ::base::Unretained(this)));
+        base::BindRepeating(&ZedCameraPublishingNode::OnPublishRightCamera,
+                            base::Unretained(this)));
   }
 
   void OnDepthFrame(DepthCameraFrame depth_camera_frame) {
@@ -186,8 +183,8 @@ class ZedCameraPublishingNode : public NodeLifecycle {
 
     depth_publisher_.Publish(
         depth_camera_frame.ToDepthCameraFrameMessage(),
-        ::base::BindRepeating(&ZedCameraPublishingNode::OnPublishDepth,
-                              ::base::Unretained(this)));
+        base::BindRepeating(&ZedCameraPublishingNode::OnPublishDepth,
+                            base::Unretained(this)));
   }
 
   void OnPointcloudFrame(PointcloudFrame pointcloud_frame) {
@@ -195,8 +192,8 @@ class ZedCameraPublishingNode : public NodeLifecycle {
 
     pointcloud_publisher_.Publish(
         pointcloud_frame.ToPointcloudFrameMessage(),
-        ::base::BindRepeating(&ZedCameraPublishingNode::OnPublishPointcloud,
-                              ::base::Unretained(this)));
+        base::BindRepeating(&ZedCameraPublishingNode::OnPublishPointcloud,
+                            base::Unretained(this)));
   }
 
   void OnCameraError(const Status& s) { LOG(ERROR) << s; }
@@ -221,29 +218,29 @@ class ZedCameraPublishingNode : public NodeLifecycle {
     if (!left_camera_topic_.empty()) {
       left_camera_publisher_.RequestUnpublish(
           node_info_, left_camera_topic_,
-          ::base::BindOnce(&ZedCameraPublishingNode::OnRequestUnpublish,
-                           ::base::Unretained(this)));
+          base::BindOnce(&ZedCameraPublishingNode::OnRequestUnpublish,
+                         base::Unretained(this)));
     }
 
     if (!right_camera_topic_.empty()) {
       right_camera_publisher_.RequestUnpublish(
           node_info_, right_camera_topic_,
-          ::base::BindOnce(&ZedCameraPublishingNode::OnRequestUnpublish,
-                           ::base::Unretained(this)));
+          base::BindOnce(&ZedCameraPublishingNode::OnRequestUnpublish,
+                         base::Unretained(this)));
     }
 
     if (!depth_topic_.empty()) {
       depth_publisher_.RequestUnpublish(
           node_info_, depth_topic_,
-          ::base::BindOnce(&ZedCameraPublishingNode::OnRequestUnpublish,
-                           ::base::Unretained(this)));
+          base::BindOnce(&ZedCameraPublishingNode::OnRequestUnpublish,
+                         base::Unretained(this)));
     }
 
     if (!pointcloud_topic_.empty()) {
       pointcloud_publisher_.RequestUnpublish(
           node_info_, pointcloud_topic_,
-          ::base::BindOnce(&ZedCameraPublishingNode::OnRequestUnpublish,
-                           ::base::Unretained(this)));
+          base::BindOnce(&ZedCameraPublishingNode::OnRequestUnpublish,
+                         base::Unretained(this)));
     }
   }
 
@@ -261,9 +258,9 @@ class ZedCameraPublishingNode : public NodeLifecycle {
         return;
 
       MasterProxy& master_proxy = MasterProxy::GetInstance();
-      master_proxy.PostTask(
-          FROM_HERE, ::base::BindOnce(&ZedCameraPublishingNode::StopCamera,
-                                      ::base::Unretained(this)));
+      master_proxy.PostTask(FROM_HERE,
+                            base::BindOnce(&ZedCameraPublishingNode::StopCamera,
+                                           base::Unretained(this)));
     } else {
       LOG(ERROR) << s;
     }

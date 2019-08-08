@@ -11,14 +11,14 @@ namespace felicia {
 class SharedMemory : public ChannelImpl {
  public:
   explicit SharedMemory(size_t size);
-  explicit SharedMemory(::base::subtle::PlatformSharedMemoryRegion handle);
+  explicit SharedMemory(base::subtle::PlatformSharedMemoryRegion handle);
   ~SharedMemory();
 
   bool IsSharedMemory() const override { return true; }
 
-  void Write(scoped_refptr<::net::IOBuffer> buffer, int size,
+  void Write(scoped_refptr<net::IOBuffer> buffer, int size,
              StatusOnceCallback callback) override;
-  void Read(scoped_refptr<::net::GrowableIOBuffer> buffer, int size,
+  void Read(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
             StatusOnceCallback callback) override;
 
   size_t BufferSize() const;
@@ -28,7 +28,7 @@ class SharedMemory : public ChannelImpl {
 
  private:
   std::unique_ptr<SharedBuffer> buffer_;
-  ::base::subtle::Atomic32 last_version_;  // Used when read the data
+  base::subtle::Atomic32 last_version_;  // Used when read the data
 };
 
 }  // namespace felicia

@@ -10,7 +10,7 @@ static const char* kOrb2Slam = "OrbSlam2";
 SlamNodeCreateFlag::SlamNodeCreateFlag() : current_slam_kind_(SLAM_KIND_NONE) {
   {
     StringChoicesFlag::Builder builder(
-        MakeValueStore(&slam_kind_, ::base::EmptyString(),
+        MakeValueStore(&slam_kind_, base::EmptyString(),
                        Choices<std::string>{kHectorSlam, kOrb2Slam}));
     auto flag =
         builder.SetLongName("--slam_kind").SetHelp("slam kind to run").Build();

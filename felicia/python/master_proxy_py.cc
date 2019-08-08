@@ -65,8 +65,8 @@ void PyMasterProxy::RequestRegisterNode(py::function constructor,
   node->OnInit();
   master_proxy.RegisterNodeAsync(
       request, response,
-      ::base::BindOnce(&PyMasterProxy::OnRegisterNodeAsync, object, request,
-                       response));
+      base::BindOnce(&PyMasterProxy::OnRegisterNodeAsync, object, request,
+                     response));
 }
 
 // static
@@ -78,15 +78,15 @@ void PyMasterProxy::OnRegisterNodeAsync(py::object object,
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(
         FROM_HERE,
-        ::base::BindOnce(&PyMasterProxy::OnRegisterNodeAsync, object,
-                         ::base::Owned(request), ::base::Owned(response), s));
+        base::BindOnce(&PyMasterProxy::OnRegisterNodeAsync, object,
+                       base::Owned(request), base::Owned(response), s));
     return;
   }
 
   if (!s.ok()) {
     Status new_status(s.error_code(),
-                      ::base::StringPrintf("Failed to register node : %s",
-                                           s.error_message().c_str()));
+                      base::StringPrintf("Failed to register node : %s",
+                                         s.error_message().c_str()));
     NodeLifecycle* node = object.cast<NodeLifecycle*>();
     node->OnError(new_status);
     return;
@@ -113,18 +113,18 @@ void AddMasterProxy(py::module& m) {
             MasterProxy& master_proxy = MasterProxy::GetInstance();
             master_proxy.PostTask(
                 FROM_HERE,
-                ::base::BindOnce(&PyClosure::Invoke,
-                                 ::base::Owned(new PyClosure(callback))));
+                base::BindOnce(&PyClosure::Invoke,
+                               base::Owned(new PyClosure(callback))));
           },
           py::call_guard<py::gil_scoped_release>())
       .def_static(
           "post_delayed_task",
-          [](py::function callback, ::base::TimeDelta delay) {
+          [](py::function callback, base::TimeDelta delay) {
             MasterProxy& master_proxy = MasterProxy::GetInstance();
             master_proxy.PostDelayedTask(
                 FROM_HERE,
-                ::base::BindOnce(&PyClosure::Invoke,
-                                 ::base::Owned(new PyClosure(callback))),
+                base::BindOnce(&PyClosure::Invoke,
+                               base::Owned(new PyClosure(callback))),
                 delay);
           },
           py::call_guard<py::gil_scoped_release>());

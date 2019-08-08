@@ -7,7 +7,7 @@ ImuFilterInterface::ImuFilterInterface() = default;
 ImuFilterInterface::~ImuFilterInterface() = default;
 
 void ImuFilterInterface::UpdateAngularVelocity(float x, float y, float z,
-                                               ::base::TimeDelta timestamp) {
+                                               base::TimeDelta timestamp) {
   UpdateAngularVelocity(Vector3f{x, y, z}, timestamp);
 }
 

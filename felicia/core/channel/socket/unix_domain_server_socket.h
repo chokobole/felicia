@@ -26,10 +26,10 @@ class UnixDomainServerSocket : public UnixDomainSocket {
     gid_t group_id;
   };
 
-  using AcceptCallback = ::base::RepeatingCallback<void(const Status& s)>;
+  using AcceptCallback = base::RepeatingCallback<void(const Status& s)>;
   using AcceptOnceInterceptCallback =
-      ::base::OnceCallback<void(StatusOr<std::unique_ptr<::net::SocketPosix>>)>;
-  using AuthCallback = ::base::RepeatingCallback<bool(const Credentials&)>;
+      base::OnceCallback<void(StatusOr<std::unique_ptr<net::SocketPosix>>)>;
+  using AuthCallback = base::RepeatingCallback<bool(const Credentials&)>;
 
   UnixDomainServerSocket();
   ~UnixDomainServerSocket();
@@ -52,9 +52,9 @@ class UnixDomainServerSocket : public UnixDomainSocket {
   // all the sockets, then callback with Status::OK(), otherwise callback
   // with the |write_result_|, which is recorded at every time finishing
   // write.
-  void Write(scoped_refptr<::net::IOBuffer> buffer, int size,
+  void Write(scoped_refptr<net::IOBuffer> buffer, int size,
              StatusOnceCallback callback) override;
-  void Read(scoped_refptr<::net::GrowableIOBuffer> buffer, int size,
+  void Read(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
             StatusOnceCallback callback) override;
 
  private:
@@ -65,14 +65,14 @@ class UnixDomainServerSocket : public UnixDomainSocket {
 
   void OnWrite(const Status& s);
 
-  static bool GetPeerCredentials(::net::SocketDescriptor socket,
+  static bool GetPeerCredentials(net::SocketDescriptor socket,
                                  Credentials* credentials);
 
   AcceptCallback accept_callback_;
   AcceptOnceInterceptCallback accept_once_intercept_callback_;
   AuthCallback auth_callback_;
 
-  std::unique_ptr<::net::SocketPosix> accepted_socket_;
+  std::unique_ptr<net::SocketPosix> accepted_socket_;
   std::vector<std::unique_ptr<StreamSocket>> accepted_sockets_;
 
   StreamSocketBroadcaster broadcaster_;

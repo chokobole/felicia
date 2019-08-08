@@ -22,23 +22,23 @@ void DynamicPublishingNode::RequestPublish(
 
   publisher_->RequestPublish(
       node_info_, topic, channel_defs, settings,
-      ::base::BindOnce(&DynamicPublishingNode::OnRequestPublish,
-                       ::base::Unretained(this)));
+      base::BindOnce(&DynamicPublishingNode::OnRequestPublish,
+                     base::Unretained(this)));
 }
 
 void DynamicPublishingNode::RequestUnpublish(const std::string& topic) {
   publisher_->RequestUnpublish(
       node_info_, topic,
-      ::base::BindOnce(&DynamicPublishingNode::OnRequestUnpublish,
-                       ::base::Unretained(this)));
+      base::BindOnce(&DynamicPublishingNode::OnRequestUnpublish,
+                     base::Unretained(this)));
 }
 
 void DynamicPublishingNode::PublishMessageFromJson(
     const std::string& json_message) {
   publisher_->PublishFromJson(
       json_message,
-      ::base::BindRepeating(&DynamicPublishingNode::Delegate::OnPublish,
-                            ::base::Unretained(delegate_.get())));
+      base::BindRepeating(&DynamicPublishingNode::Delegate::OnPublish,
+                          base::Unretained(delegate_.get())));
 }
 
 void DynamicPublishingNode::OnRequestPublish(const Status& s) {

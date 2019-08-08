@@ -14,7 +14,7 @@ class EXPORT ImuFrame {
  public:
   ImuFrame();
   ImuFrame(const Quaternionf& orientation, const Vector3f& angular_velocity,
-           const Vector3f& linear_acceleration, ::base::TimeDelta timestamp);
+           const Vector3f& linear_acceleration, base::TimeDelta timestamp);
 
   void set_orientation(float w, float x, float y, float z);
   void set_angulary_veilocity(float x, float y, float z);
@@ -28,8 +28,8 @@ class EXPORT ImuFrame {
   const Vector3f& angular_velocity() const;
   const Vector3f& linear_acceleration() const;
 
-  void set_timestamp(::base::TimeDelta timestamp);
-  ::base::TimeDelta timestamp() const;
+  void set_timestamp(base::TimeDelta timestamp);
+  base::TimeDelta timestamp() const;
 
   ImuFrameMessage ToImuFrameMessage() const;
   static ImuFrame FromImuFrameMessage(const ImuFrameMessage& message);
@@ -38,10 +38,10 @@ class EXPORT ImuFrame {
   Quaternionf orientation_;
   Vector3f angular_velocity_;
   Vector3f linear_acceleration_;
-  ::base::TimeDelta timestamp_;
+  base::TimeDelta timestamp_;
 };
 
-typedef ::base::RepeatingCallback<void(const ImuFrame&)> ImuFrameCallback;
+typedef base::RepeatingCallback<void(const ImuFrame&)> ImuFrameCallback;
 
 }  // namespace felicia
 

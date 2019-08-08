@@ -16,7 +16,7 @@ class EXPORT LidarEndpoint {
 
   LidarEndpoint();
   ~LidarEndpoint();
-  explicit LidarEndpoint(::net::IPEndPoint ip_endpoint);
+  explicit LidarEndpoint(net::IPEndPoint ip_endpoint);
   LidarEndpoint(const std::string& seiral_port, float baudrate);
 
   LidarEndpoint(const LidarEndpoint& other);
@@ -36,7 +36,7 @@ class EXPORT LidarEndpoint {
 
  private:
   ChannelType type_;
-  ::net::IPEndPoint ip_endpoint_;
+  net::IPEndPoint ip_endpoint_;
   std::string serial_port_;
   float baudrate_;
 };

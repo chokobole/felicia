@@ -29,12 +29,12 @@ class ChannelBuffer {
   // Same with above.
   bool SetEnoughCapacityIfDynamic(int capacity);
 
-  scoped_refptr<::net::GrowableIOBuffer> buffer();
+  scoped_refptr<net::GrowableIOBuffer> buffer();
 
  private:
   void EnsureBuffer();
 
-  scoped_refptr<::net::GrowableIOBuffer> buffer_;
+  scoped_refptr<net::GrowableIOBuffer> buffer_;
   bool is_dynamic_ = false;
 };
 

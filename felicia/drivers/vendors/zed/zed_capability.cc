@@ -10,16 +10,16 @@ CameraFormat ConvertToCameraFormat(const ZedCapability& capability) {
   camera_format.set_frame_rate(capability.frame_rate);
 
   switch (capability.resolution) {
-    case ::sl::RESOLUTION_HD2K:
+    case sl::RESOLUTION_HD2K:
       camera_format.SetSize(2208, 1242);
       break;
-    case ::sl::RESOLUTION_HD1080:
+    case sl::RESOLUTION_HD1080:
       camera_format.SetSize(1920, 1080);
       break;
-    case ::sl::RESOLUTION_HD720:
+    case sl::RESOLUTION_HD720:
       camera_format.SetSize(1280, 720);
       break;
-    case ::sl::RESOLUTION_VGA:
+    case sl::RESOLUTION_VGA:
       camera_format.SetSize(672, 376);
       break;
     default:

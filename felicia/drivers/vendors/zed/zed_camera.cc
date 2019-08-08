@@ -11,77 +11,77 @@
 namespace felicia {
 
 #define MESSAGE_WITH_ERROR_CODE(text, err) \
-  ::base::StringPrintf("%s :%s.", text, ::sl::toString(err).c_str())
+  base::StringPrintf("%s :%s.", text, sl::toString(err).c_str())
 
 namespace {
 
-uint16_t InMillimeter(::sl::UNIT unit, float value) {
+uint16_t InMillimeter(sl::UNIT unit, float value) {
   Length length;
   switch (unit) {
-    case ::sl::UNIT_MILLIMETER:
+    case sl::UNIT_MILLIMETER:
       length = Length::FromMillimeter(static_cast<int64_t>(value));
       break;
-    case ::sl::UNIT_CENTIMETER:
+    case sl::UNIT_CENTIMETER:
       length = Length::FromCentimeterD(value);
       break;
-    case ::sl::UNIT_METER:
+    case sl::UNIT_METER:
       length = Length::FromMeterD(value);
       break;
-    case ::sl::UNIT_INCH:
+    case sl::UNIT_INCH:
       length = Length::FromInchD(value);
       break;
-    case ::sl::UNIT_FOOT:
+    case sl::UNIT_FOOT:
       length = Length::FromFeetD(value);
       break;
     default:
-      NOTREACHED() << "Invalid unit" << ::sl::toString(unit);
+      NOTREACHED() << "Invalid unit" << sl::toString(unit);
       break;
   }
   return static_cast<uint16_t>(length.InMillimeter());
 }
 
-float InMeter(::sl::UNIT unit, float value) {
+float InMeter(sl::UNIT unit, float value) {
   Length length;
   switch (unit) {
-    case ::sl::UNIT_MILLIMETER:
+    case sl::UNIT_MILLIMETER:
       length = Length::FromMillimeter(static_cast<int64_t>(value));
       break;
-    case ::sl::UNIT_CENTIMETER:
+    case sl::UNIT_CENTIMETER:
       length = Length::FromCentimeterD(value);
       break;
-    case ::sl::UNIT_METER:
+    case sl::UNIT_METER:
       length = Length::FromMeterD(value);
       break;
-    case ::sl::UNIT_INCH:
+    case sl::UNIT_INCH:
       length = Length::FromInchD(value);
       break;
-    case ::sl::UNIT_FOOT:
+    case sl::UNIT_FOOT:
       length = Length::FromFeetD(value);
       break;
     default:
-      NOTREACHED() << "Invalid unit" << ::sl::toString(unit);
+      NOTREACHED() << "Invalid unit" << sl::toString(unit);
       break;
   }
   return static_cast<float>(length.InMeter());
 }
 
-Coordinate ToCoordinate(::sl::COORDINATE_SYSTEM coordinate_system) {
+Coordinate ToCoordinate(sl::COORDINATE_SYSTEM coordinate_system) {
   switch (coordinate_system) {
-    case ::sl::COORDINATE_SYSTEM_IMAGE:
+    case sl::COORDINATE_SYSTEM_IMAGE:
       return Coordinate();
-    case ::sl::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP:
+    case sl::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP:
       return Coordinate(Coordinate::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP);
-    case ::sl::COORDINATE_SYSTEM_LEFT_HANDED_Z_UP:
+    case sl::COORDINATE_SYSTEM_LEFT_HANDED_Z_UP:
       return Coordinate(Coordinate::COORDINATE_SYSTEM_LEFT_HANDED_Z_UP);
-    case ::sl::COORDINATE_SYSTEM_RIGHT_HANDED_Y_UP:
+    case sl::COORDINATE_SYSTEM_RIGHT_HANDED_Y_UP:
       return Coordinate(Coordinate::COORDINATE_SYSTEM_RIGHT_HANDED_Y_UP);
-    case ::sl::COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP:
+    case sl::COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP:
       return Coordinate(Coordinate::COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP);
-    case ::sl::COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP_X_FWD:
+    case sl::COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP_X_FWD:
       return Coordinate(Coordinate::COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP_X_FWD);
     default:
       NOTREACHED() << "Invalid coordinate system"
-                   << ::sl::toString(coordinate_system);
+                   << sl::toString(coordinate_system);
       return Coordinate();
   }
 }
@@ -89,7 +89,7 @@ Coordinate ToCoordinate(::sl::COORDINATE_SYSTEM coordinate_system) {
 }  // namespace
 
 ZedCamera::ScopedCamera::ScopedCamera()
-    : camera_(std::make_unique<::sl::Camera>()) {}
+    : camera_(std::make_unique<sl::Camera>()) {}
 
 ZedCamera::ScopedCamera::ScopedCamera(ZedCamera::ScopedCamera&& other)
     : camera_(std::move(other.camera_)) {}
@@ -130,7 +130,7 @@ ZedCamera::~ZedCamera() = default;
 
 Status ZedCamera::Init() {
   ScopedCamera camera;
-  ::sl::InitParameters params;
+  sl::InitParameters params;
   Status s = OpenCamera(device_id_, params, &camera);
   if (!s.ok()) return s;
 
@@ -185,7 +185,7 @@ Status ZedCamera::Start(const ZedCamera::StartParams& params) {
   runtime_params_ = params.runtime_params;
   camera_state_.ToStarted();
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     is_stopping_ = false;
   }
   if (!depth_camera_frame_callback_.is_null()) {
@@ -199,7 +199,7 @@ Status ZedCamera::Start(const ZedCamera::StartParams& params) {
     DoGrab();
   } else {
     thread_.task_runner()->PostTask(
-        FROM_HERE, ::base::BindOnce(&ZedCamera::DoGrab, AsWeakPtr()));
+        FROM_HERE, base::BindOnce(&ZedCamera::DoGrab, AsWeakPtr()));
   }
 
   return Status::OK();
@@ -211,17 +211,16 @@ Status ZedCamera::Stop() {
   }
 
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     is_stopping_ = true;
   }
   Status s;
   if (thread_.task_runner()->BelongsToCurrentThread()) {
     DoStop(nullptr, &s);
   } else {
-    ::base::WaitableEvent* event = new ::base::WaitableEvent();
+    base::WaitableEvent* event = new base::WaitableEvent();
     thread_.task_runner()->PostTask(
-        FROM_HERE,
-        ::base::BindOnce(&ZedCamera::DoStop, AsWeakPtr(), event, &s));
+        FROM_HERE, base::BindOnce(&ZedCamera::DoStop, AsWeakPtr(), event, &s));
     event->Wait();
     delete event;
   }
@@ -246,50 +245,50 @@ Status ZedCamera::SetCameraSettings(const CameraSettings& camera_settings) {
     int value =
         camera_settings.white_balance_mode() == CAMERA_SETTINGS_MODE_AUTO ? 1
                                                                           : 0;
-    camera_->setCameraSettings(::sl::CAMERA_SETTINGS_AUTO_WHITEBALANCE, value);
+    camera_->setCameraSettings(sl::CAMERA_SETTINGS_AUTO_WHITEBALANCE, value);
   }
 
   if (camera_settings.has_color_temperature()) {
     bool can_set = false;
     {
       int value =
-          camera_->getCameraSettings(::sl::CAMERA_SETTINGS_AUTO_WHITEBALANCE);
+          camera_->getCameraSettings(sl::CAMERA_SETTINGS_AUTO_WHITEBALANCE);
       can_set = value == 1;
     }
     if (can_set) {
       int value = camera_settings.color_temperature();
-      camera_->setCameraSettings(::sl::CAMERA_SETTINGS_WHITEBALANCE, value);
+      camera_->setCameraSettings(sl::CAMERA_SETTINGS_WHITEBALANCE, value);
     }
   }
 
   if (camera_settings.has_exposure_time()) {
     int value = camera_settings.exposure_time();
-    camera_->setCameraSettings(::sl::CAMERA_SETTINGS_EXPOSURE, value);
+    camera_->setCameraSettings(sl::CAMERA_SETTINGS_EXPOSURE, value);
   }
 
   if (camera_settings.has_brightness()) {
     int value = camera_settings.brightness();
-    camera_->setCameraSettings(::sl::CAMERA_SETTINGS_BRIGHTNESS, value);
+    camera_->setCameraSettings(sl::CAMERA_SETTINGS_BRIGHTNESS, value);
   }
 
   if (camera_settings.has_contrast()) {
     int value = camera_settings.contrast();
-    camera_->setCameraSettings(::sl::CAMERA_SETTINGS_CONTRAST, value);
+    camera_->setCameraSettings(sl::CAMERA_SETTINGS_CONTRAST, value);
   }
 
   if (camera_settings.has_saturation()) {
     int value = camera_settings.saturation();
-    camera_->setCameraSettings(::sl::CAMERA_SETTINGS_SATURATION, value);
+    camera_->setCameraSettings(sl::CAMERA_SETTINGS_SATURATION, value);
   }
 
   if (camera_settings.has_hue()) {
     int value = camera_settings.hue();
-    camera_->setCameraSettings(::sl::CAMERA_SETTINGS_HUE, value);
+    camera_->setCameraSettings(sl::CAMERA_SETTINGS_HUE, value);
   }
 
   if (camera_settings.has_gain()) {
     int value = camera_settings.gain();
-    camera_->setCameraSettings(::sl::CAMERA_SETTINGS_GAIN, value);
+    camera_->setCameraSettings(sl::CAMERA_SETTINGS_GAIN, value);
   }
 
   return Status::OK();
@@ -300,20 +299,20 @@ Status ZedCamera::GetCameraSettingsInfo(
   if (camera_state_.IsStopped()) {
     return camera_state_.InvalidStateError();
   }
-  GetCameraSetting(::sl::CAMERA_SETTINGS_AUTO_WHITEBALANCE,
+  GetCameraSetting(sl::CAMERA_SETTINGS_AUTO_WHITEBALANCE,
                    camera_settings->mutable_white_balance_mode());
-  GetCameraSetting(::sl::CAMERA_SETTINGS_WHITEBALANCE,
+  GetCameraSetting(sl::CAMERA_SETTINGS_WHITEBALANCE,
                    camera_settings->mutable_color_temperature());
-  GetCameraSetting(::sl::CAMERA_SETTINGS_EXPOSURE,
+  GetCameraSetting(sl::CAMERA_SETTINGS_EXPOSURE,
                    camera_settings->mutable_exposure_time());
-  GetCameraSetting(::sl::CAMERA_SETTINGS_BRIGHTNESS,
+  GetCameraSetting(sl::CAMERA_SETTINGS_BRIGHTNESS,
                    camera_settings->mutable_brightness());
-  GetCameraSetting(::sl::CAMERA_SETTINGS_CONTRAST,
+  GetCameraSetting(sl::CAMERA_SETTINGS_CONTRAST,
                    camera_settings->mutable_contrast());
-  GetCameraSetting(::sl::CAMERA_SETTINGS_SATURATION,
+  GetCameraSetting(sl::CAMERA_SETTINGS_SATURATION,
                    camera_settings->mutable_saturation());
-  GetCameraSetting(::sl::CAMERA_SETTINGS_HUE, camera_settings->mutable_hue());
-  GetCameraSetting(::sl::CAMERA_SETTINGS_GAIN, camera_settings->mutable_gain());
+  GetCameraSetting(sl::CAMERA_SETTINGS_HUE, camera_settings->mutable_hue());
+  GetCameraSetting(sl::CAMERA_SETTINGS_GAIN, camera_settings->mutable_gain());
   return Status::OK();
 }
 
@@ -326,7 +325,7 @@ CameraSettingsMode ValueToMode(int value) {
 
 }  // namespace
 
-void ZedCamera::GetCameraSetting(::sl::CAMERA_SETTINGS camera_setting,
+void ZedCamera::GetCameraSetting(sl::CAMERA_SETTINGS camera_setting,
                                  CameraSettingsModeValue* value) {
   int ret = camera_->getCameraSettings(camera_setting);
   if (ret == -1) {
@@ -338,7 +337,7 @@ void ZedCamera::GetCameraSetting(::sl::CAMERA_SETTINGS camera_setting,
   value->set_current(ValueToMode(ret));
 }
 
-void ZedCamera::GetCameraSetting(::sl::CAMERA_SETTINGS camera_setting,
+void ZedCamera::GetCameraSetting(sl::CAMERA_SETTINGS camera_setting,
                                  CameraSettingsRangedValue* value) {
   int ret = camera_->getCameraSettings(camera_setting);
   if (ret == -1) {
@@ -351,35 +350,35 @@ void ZedCamera::GetCameraSetting(::sl::CAMERA_SETTINGS camera_setting,
 void ZedCamera::DoGrab() {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     if (is_stopping_) return;
   }
 
-  ::sl::ERROR_CODE err = camera_->grab(runtime_params_);
-  if (err != ::sl::SUCCESS && err != ::sl::ERROR_CODE_NOT_A_NEW_FRAME) {
+  sl::ERROR_CODE err = camera_->grab(runtime_params_);
+  if (err != sl::SUCCESS && err != sl::ERROR_CODE_NOT_A_NEW_FRAME) {
     status_callback_.Run(
         errors::Unavailable(MESSAGE_WITH_ERROR_CODE("Failed to grab", err)));
     return;
   }
 
-  ::base::TimeDelta timestamp = ::base::TimeDelta::FromNanoseconds(
-      camera_->getTimestamp(::sl::TIME_REFERENCE_CURRENT));
+  base::TimeDelta timestamp = base::TimeDelta::FromNanoseconds(
+      camera_->getTimestamp(sl::TIME_REFERENCE_CURRENT));
 
   if (!left_camera_frame_callback_.is_null()) {
-    ::sl::Mat image;
-    camera_->retrieveImage(image, ::sl::VIEW_LEFT);
+    sl::Mat image;
+    camera_->retrieveImage(image, sl::VIEW_LEFT);
     CameraFrame camera_frame = ConvertToCameraFrame(image, timestamp);
     left_camera_frame_callback_.Run(std::move(camera_frame));
   }
   if (!right_camera_frame_callback_.is_null()) {
-    ::sl::Mat image;
-    camera_->retrieveImage(image, ::sl::VIEW_RIGHT);
+    sl::Mat image;
+    camera_->retrieveImage(image, sl::VIEW_RIGHT);
     CameraFrame camera_frame = ConvertToCameraFrame(image, timestamp);
     right_camera_frame_callback_.Run(std::move(camera_frame));
   }
   if (!depth_camera_frame_callback_.is_null()) {
-    ::sl::Mat image;
-    camera_->retrieveMeasure(image, ::sl::MEASURE_DEPTH);
+    sl::Mat image;
+    camera_->retrieveMeasure(image, sl::MEASURE_DEPTH);
     float min = camera_->getDepthMinRangeValue();
     float max = camera_->getDepthMaxRangeValue();
     DepthCameraFrame depth_camera_frame =
@@ -387,10 +386,10 @@ void ZedCamera::DoGrab() {
     depth_camera_frame_callback_.Run(std::move(depth_camera_frame));
   }
   if (!pointcloud_frame_callback_.is_null()) {
-    ::base::TimeDelta delta = timestamp - last_timestamp_;
-    if (delta > ::base::TimeDelta::FromSeconds(1)) {
-      ::sl::Mat cloud;
-      camera_->retrieveMeasure(cloud, ::sl::MEASURE_XYZRGBA);
+    base::TimeDelta delta = timestamp - last_timestamp_;
+    if (delta > base::TimeDelta::FromSeconds(1)) {
+      sl::Mat cloud;
+      camera_->retrieveMeasure(cloud, sl::MEASURE_XYZRGBA);
       PointcloudFrame pointcloud_frame =
           ConvertToPointcloudFrame(cloud, timestamp);
       pointcloud_frame_callback_.Run(std::move(pointcloud_frame));
@@ -399,10 +398,10 @@ void ZedCamera::DoGrab() {
   }
 
   thread_.task_runner()->PostTask(
-      FROM_HERE, ::base::BindOnce(&ZedCamera::DoGrab, AsWeakPtr()));
+      FROM_HERE, base::BindOnce(&ZedCamera::DoGrab, AsWeakPtr()));
 }
 
-void ZedCamera::DoStop(::base::WaitableEvent* event, Status* status) {
+void ZedCamera::DoStop(base::WaitableEvent* event, Status* status) {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
 
   camera_->close();
@@ -411,7 +410,7 @@ void ZedCamera::DoStop(::base::WaitableEvent* event, Status* status) {
 }
 
 // static
-Status ZedCamera::OpenCamera(int device_id, ::sl::InitParameters& params,
+Status ZedCamera::OpenCamera(int device_id, sl::InitParameters& params,
                              ZedCamera::ScopedCamera* camera) {
   if (device_id == ZedCameraDescriptor::kInvalidId) {
     return errors::InvalidArgument(
@@ -420,57 +419,58 @@ Status ZedCamera::OpenCamera(int device_id, ::sl::InitParameters& params,
     params.input.setFromCameraID(device_id);
   }
 
-  ::sl::ERROR_CODE err = camera->get()->open(params);
-  if (err != ::sl::SUCCESS) {
+  sl::ERROR_CODE err = camera->get()->open(params);
+  if (err != sl::SUCCESS) {
     return errors::Unavailable(
         MESSAGE_WITH_ERROR_CODE("Failed to open camera", err));
   }
   return Status::OK();
 }
 
-CameraFrame ZedCamera::ConvertToCameraFrame(::sl::Mat image,
-                                            ::base::TimeDelta timestamp) {
+CameraFrame ZedCamera::ConvertToCameraFrame(sl::Mat image,
+                                            base::TimeDelta timestamp) {
   size_t size = image.getStepBytes() * image.getHeight();
   std::unique_ptr<uint8_t[]> data(new uint8_t[size]);
-  ::sl::MAT_TYPE data_type = image.getDataType();
+  sl::MAT_TYPE data_type = image.getDataType();
 
   switch (data_type) {
-    case ::sl::MAT_TYPE_32F_C1:
-      memcpy(data.get(), image.getPtr<::sl::float1>(), size);
+    case sl::MAT_TYPE_32F_C1:
+      memcpy(data.get(), image.getPtr<sl::float1>(), size);
       break;
-    case ::sl::MAT_TYPE_32F_C2:
-      memcpy(data.get(), image.getPtr<::sl::float2>(), size);
+    case sl::MAT_TYPE_32F_C2:
+      memcpy(data.get(), image.getPtr<sl::float2>(), size);
       break;
-    case ::sl::MAT_TYPE_32F_C3:
-      memcpy(data.get(), image.getPtr<::sl::float3>(), size);
+    case sl::MAT_TYPE_32F_C3:
+      memcpy(data.get(), image.getPtr<sl::float3>(), size);
       break;
-    case ::sl::MAT_TYPE_32F_C4:
-      memcpy(data.get(), image.getPtr<::sl::float4>(), size);
+    case sl::MAT_TYPE_32F_C4:
+      memcpy(data.get(), image.getPtr<sl::float4>(), size);
       break;
-    case ::sl::MAT_TYPE_8U_C1:
-      memcpy(data.get(), image.getPtr<::sl::uchar1>(), size);
+    case sl::MAT_TYPE_8U_C1:
+      memcpy(data.get(), image.getPtr<sl::uchar1>(), size);
       break;
-    case ::sl::MAT_TYPE_8U_C2:
-      memcpy(data.get(), image.getPtr<::sl::uchar2>(), size);
+    case sl::MAT_TYPE_8U_C2:
+      memcpy(data.get(), image.getPtr<sl::uchar2>(), size);
       break;
-    case ::sl::MAT_TYPE_8U_C3:
-      memcpy(data.get(), image.getPtr<::sl::uchar3>(), size);
+    case sl::MAT_TYPE_8U_C3:
+      memcpy(data.get(), image.getPtr<sl::uchar3>(), size);
       break;
-    case ::sl::MAT_TYPE_8U_C4:
-      memcpy(data.get(), image.getPtr<::sl::uchar4>(), size);
+    case sl::MAT_TYPE_8U_C4:
+      memcpy(data.get(), image.getPtr<sl::uchar4>(), size);
       break;
   }
 
   return CameraFrame(std::move(data), size, camera_format_, timestamp);
 }
 
-DepthCameraFrame ZedCamera::ConvertToDepthCameraFrame(
-    ::sl::Mat image, ::base::TimeDelta timestamp, float min, float max) {
+DepthCameraFrame ZedCamera::ConvertToDepthCameraFrame(sl::Mat image,
+                                                      base::TimeDelta timestamp,
+                                                      float min, float max) {
   size_t size = image.getWidth() * image.getHeight();
   size_t allocation_size = 2 * size;
   std::unique_ptr<uint8_t[]> data(new uint8_t[allocation_size]);
-  ::sl::float1* image_ptr = image.getPtr<::sl::float1>();
-  if (init_params_.coordinate_units == ::sl::UNIT_MILLIMETER) {
+  sl::float1* image_ptr = image.getPtr<sl::float1>();
+  if (init_params_.coordinate_units == sl::UNIT_MILLIMETER) {
     for (size_t i = 0; i < size; ++i) {
       const size_t data_idx = i << 1;
       uint16_t value = static_cast<int64_t>(*(image_ptr++));
@@ -491,9 +491,9 @@ DepthCameraFrame ZedCamera::ConvertToDepthCameraFrame(
   return DepthCameraFrame(std::move(frame), min, max);
 }
 
-PointcloudFrame ZedCamera::ConvertToPointcloudFrame(
-    ::sl::Mat cloud, ::base::TimeDelta timestamp) {
-  const float* cloud_ptr = cloud.getPtr<::sl::float4>()->ptr();
+PointcloudFrame ZedCamera::ConvertToPointcloudFrame(sl::Mat cloud,
+                                                    base::TimeDelta timestamp) {
+  const float* cloud_ptr = cloud.getPtr<sl::float4>()->ptr();
   size_t size = cloud.getWidth() * cloud.getHeight();
   PointcloudFrame frame(size, 3 * size);
   struct Color8_4 {
@@ -502,9 +502,9 @@ PointcloudFrame ZedCamera::ConvertToPointcloudFrame(
     uint8_t b;
     uint8_t a;
   };
-  if (init_params_.coordinate_units == ::sl::UNIT_METER &&
+  if (init_params_.coordinate_units == sl::UNIT_METER &&
       init_params_.coordinate_system ==
-          ::sl::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP) {
+          sl::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP) {
     for (size_t i = 0; i < size; ++i) {
       const size_t cloud_ptr_idx = i << 2;
       Color8_4 c = bit_cast<Color8_4>(cloud_ptr[cloud_ptr_idx + 3]);

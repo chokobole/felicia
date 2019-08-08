@@ -7,7 +7,7 @@ ImuFrame::ImuFrame() = default;
 ImuFrame::ImuFrame(const Quaternionf& orientation,
                    const Vector3f& angular_velocity,
                    const Vector3f& linear_acceleration,
-                   ::base::TimeDelta timestamp)
+                   base::TimeDelta timestamp)
     : orientation_(orientation),
       angular_velocity_(angular_velocity),
       linear_acceleration_(linear_acceleration),
@@ -45,11 +45,11 @@ const Vector3f& ImuFrame::linear_acceleration() const {
   return linear_acceleration_;
 }
 
-void ImuFrame::set_timestamp(::base::TimeDelta timestamp) {
+void ImuFrame::set_timestamp(base::TimeDelta timestamp) {
   timestamp_ = timestamp;
 }
 
-::base::TimeDelta ImuFrame::timestamp() const { return timestamp_; }
+base::TimeDelta ImuFrame::timestamp() const { return timestamp_; }
 
 ImuFrameMessage ImuFrame::ToImuFrameMessage() const {
   ImuFrameMessage message;
@@ -68,7 +68,7 @@ ImuFrame ImuFrame::FromImuFrameMessage(const ImuFrameMessage& message) {
   return {QuaternionfMessageToQuaternionf(message.orientation()),
           Vector3fMessageToVector3f(message.angular_velocity()),
           Vector3fMessageToVector3f(message.angular_velocity()),
-          ::base::TimeDelta::FromMicroseconds(message.timestamp())};
+          base::TimeDelta::FromMicroseconds(message.timestamp())};
 }
 
 }  // namespace felicia

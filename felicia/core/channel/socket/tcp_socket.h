@@ -13,22 +13,22 @@ class TCPServerSocket;
 class TCPSocket : public StreamSocket {
  public:
   TCPSocket();
-  explicit TCPSocket(std::unique_ptr<::net::TCPSocket> socket);
+  explicit TCPSocket(std::unique_ptr<net::TCPSocket> socket);
   ~TCPSocket() override;
 
   // Socket methods
   bool IsTCPSocket() const override;
-  int Write(::net::IOBuffer* buf, int buf_len,
-            ::net::CompletionOnceCallback callback) override;
-  int Read(::net::IOBuffer* buf, int buf_len,
-           ::net::CompletionOnceCallback callback) override;
+  int Write(net::IOBuffer* buf, int buf_len,
+            net::CompletionOnceCallback callback) override;
+  int Read(net::IOBuffer* buf, int buf_len,
+           net::CompletionOnceCallback callback) override;
   void Close() override;
 
   TCPClientSocket* ToTCPClientSocket();
   TCPServerSocket* ToTCPServerSocket();
 
  protected:
-  std::unique_ptr<::net::TCPSocket> socket_;
+  std::unique_ptr<net::TCPSocket> socket_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPSocket);
 };

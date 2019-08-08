@@ -14,8 +14,8 @@ TopicInfoWatcherNode::~TopicInfoWatcherNode() = default;
 void TopicInfoWatcherNode::OnInit() {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.topic_info_watcher_.RegisterAllTopicCallback(
-      ::base::BindRepeating(&TopicInfoWatcherNode::Delegate::OnNewTopicInfo,
-                            ::base::Unretained(delegate_.get())));
+      base::BindRepeating(&TopicInfoWatcherNode::Delegate::OnNewTopicInfo,
+                          base::Unretained(delegate_.get())));
 }
 
 void TopicInfoWatcherNode::OnDidCreate(const NodeInfo& node_info) {

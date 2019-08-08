@@ -31,19 +31,19 @@ class CameraSubscribingNode : public NodeLifecycle {
   void RequestSubscribe() {
     communication::Settings settings;
     settings.queue_size = 1;
-    settings.period = ::base::TimeDelta::FromMilliseconds(
+    settings.period = base::TimeDelta::FromMilliseconds(
         1.0 / camera_flag_.fps_flag()->value());
     settings.is_dynamic_buffer = true;
 
     subscriber_.RequestSubscribe(
         node_info_, topic_, ChannelDef::CHANNEL_TYPE_TCP,
-        ::base::BindRepeating(&CameraSubscribingNode::OnMessage,
-                              ::base::Unretained(this)),
-        ::base::BindRepeating(&CameraSubscribingNode::OnSubscriptionError,
-                              ::base::Unretained(this)),
+        base::BindRepeating(&CameraSubscribingNode::OnMessage,
+                            base::Unretained(this)),
+        base::BindRepeating(&CameraSubscribingNode::OnSubscriptionError,
+                            base::Unretained(this)),
         settings,
-        ::base::BindOnce(&CameraSubscribingNode::OnRequestSubscribe,
-                         ::base::Unretained(this)));
+        base::BindOnce(&CameraSubscribingNode::OnRequestSubscribe,
+                       base::Unretained(this)));
   }
 
   void OnMessage(CameraFrameMessage&& message) {
@@ -74,8 +74,8 @@ class CameraSubscribingNode : public NodeLifecycle {
   void RequestUnsubscribe() {
     subscriber_.RequestUnsubscribe(
         node_info_, topic_,
-        ::base::BindOnce(&CameraSubscribingNode::OnRequestUnsubscribe,
-                         ::base::Unretained(this)));
+        base::BindOnce(&CameraSubscribingNode::OnRequestUnsubscribe,
+                       base::Unretained(this)));
   }
 
   void OnRequestUnsubscribe(const Status& s) {

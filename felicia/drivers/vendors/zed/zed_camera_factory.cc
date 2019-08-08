@@ -13,7 +13,7 @@ namespace felicia {
 // static
 std::unique_ptr<ZedCamera> ZedCameraFactory::NewStereoCamera(
     const ZedCameraDescriptor& camera_descriptor) {
-  return ::base::WrapUnique(new ZedCamera(camera_descriptor));
+  return base::WrapUnique(new ZedCamera(camera_descriptor));
 }
 
 // static
@@ -43,10 +43,9 @@ Status ZedCameraFactory::GetCameraDescriptors(
     }
   }
 #else
-  std::vector<::sl::DeviceProperties> deviceList =
-      ::sl::Camera::getDeviceList();
+  std::vector<sl::DeviceProperties> deviceList = sl::Camera::getDeviceList();
   for (auto& device : deviceList) {
-    if (device.camera_state == ::sl::CAMERA_STATE_AVAILABLE) {
+    if (device.camera_state == sl::CAMERA_STATE_AVAILABLE) {
       for (auto& nt_camera_descriptor : nt_camera_descriptors) {
         if (ZedCamera::IsSameId(nt_camera_descriptor.device_id(),
                                 device.path.c_str())) {

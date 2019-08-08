@@ -44,7 +44,7 @@ class TestImpl {
 
   std::string string_return(const std::string& v) {
     std::cout << "string_return" << std::endl;
-    return ::base::StrCat({v, " world"});
+    return base::StrCat({v, " world"});
   }
 
   const std::string& string_ref_return(const std::string& v) {
@@ -66,83 +66,83 @@ class TestImpl {
 
   static std::string s_string_return(const std::string& v) {
     std::cout << "s_string_return" << std::endl;
-    return ::base::StrCat({v, " world"});
+    return base::StrCat({v, " world"});
   }
 
  private:
   std::string text = "thank you";
 };
 
-class Test : public ::Napi::ObjectWrap<Test> {
+class Test : public Napi::ObjectWrap<Test> {
  public:
-  static void Init(::Napi::Env env, ::Napi::Object exports);
-  Test(const ::Napi::CallbackInfo& info);
+  static void Init(Napi::Env env, Napi::Object exports);
+  Test(const Napi::CallbackInfo& info);
 
-  void void_return(const ::Napi::CallbackInfo& info) {
+  void void_return(const Napi::CallbackInfo& info) {
     return TypedCall(info, &TestImpl::void_return, &test_impl_);
   }
 
-  ::Napi::Value bool_return(const ::Napi::CallbackInfo& info) {
+  Napi::Value bool_return(const Napi::CallbackInfo& info) {
     return TypedCall(info, &TestImpl::bool_return, &test_impl_);
   }
 
-  ::Napi::Value short_return(const ::Napi::CallbackInfo& info) {
+  Napi::Value short_return(const Napi::CallbackInfo& info) {
     return TypedCall(info, &TestImpl::short_return, &test_impl_);
   }
 
-  ::Napi::Value int_return(const ::Napi::CallbackInfo& info) {
+  Napi::Value int_return(const Napi::CallbackInfo& info) {
     return TypedCall(info, &TestImpl::int_return, &test_impl_);
   }
 
-  ::Napi::Value float_return(const ::Napi::CallbackInfo& info) {
+  Napi::Value float_return(const Napi::CallbackInfo& info) {
     return TypedCall(info, &TestImpl::float_return, &test_impl_);
   }
 
-  ::Napi::Value double_return(const ::Napi::CallbackInfo& info) {
+  Napi::Value double_return(const Napi::CallbackInfo& info) {
     return TypedCall(info, &TestImpl::double_return, &test_impl_);
   }
 
-  ::Napi::Value const_char_ptr_return(const ::Napi::CallbackInfo& info) {
+  Napi::Value const_char_ptr_return(const Napi::CallbackInfo& info) {
     return TypedCall(info, &TestImpl::const_char_ptr_return, &test_impl_);
   }
 
-  ::Napi::Value string_ref_return(const ::Napi::CallbackInfo& info) {
+  Napi::Value string_ref_return(const Napi::CallbackInfo& info) {
     return TypedCall(info, &TestImpl::string_ref_return, &test_impl_);
   }
 
-  ::Napi::Value string_return(const ::Napi::CallbackInfo& info) {
+  Napi::Value string_return(const Napi::CallbackInfo& info) {
     return TypedCall(info, &TestImpl::string_return, &test_impl_);
   }
 
-  static void s_void_return(const ::Napi::CallbackInfo& info) {
+  static void s_void_return(const Napi::CallbackInfo& info) {
     return TypedCall(info, &TestImpl::s_void_return);
   }
 
-  static ::Napi::Value s_int_return(const ::Napi::CallbackInfo& info) {
+  static Napi::Value s_int_return(const Napi::CallbackInfo& info) {
     return TypedCall(info, &TestImpl::s_int_return);
   }
 
-  static ::Napi::Value s_double_return(const ::Napi::CallbackInfo& info) {
+  static Napi::Value s_double_return(const Napi::CallbackInfo& info) {
     return TypedCall(info, &TestImpl::s_double_return);
   }
 
-  static ::Napi::Value s_string_return(const ::Napi::CallbackInfo& info) {
+  static Napi::Value s_string_return(const Napi::CallbackInfo& info) {
     return TypedCall(info, &TestImpl::s_string_return);
   }
 
  private:
-  static ::Napi::FunctionReference constructor_;
+  static Napi::FunctionReference constructor_;
 
   TestImpl test_impl_;
 };
 
-::Napi::FunctionReference Test::constructor_;
+Napi::FunctionReference Test::constructor_;
 
 // static
-void Test::Init(::Napi::Env env, ::Napi::Object exports) {
-  ::Napi::HandleScope scope(env);
+void Test::Init(Napi::Env env, Napi::Object exports) {
+  Napi::HandleScope scope(env);
 
-  ::Napi::Function func = DefineClass(
+  Napi::Function func = DefineClass(
       env, "Test",
       {
           InstanceMethod("void_return", &Test::void_return),
@@ -161,20 +161,20 @@ void Test::Init(::Napi::Env env, ::Napi::Object exports) {
 
       });
 
-  constructor_ = ::Napi::Persistent(func);
+  constructor_ = Napi::Persistent(func);
   constructor_.SuppressDestruct();
 
   exports.Set("Test", func);
 }
 
-Test::Test(const ::Napi::CallbackInfo& info) : ::Napi::ObjectWrap<Test>(info) {
-  ::Napi::Env env = info.Env();
-  ::Napi::HandleScope scope(env);
+Test::Test(const Napi::CallbackInfo& info) : Napi::ObjectWrap<Test>(info) {
+  Napi::Env env = info.Env();
+  Napi::HandleScope scope(env);
 
   test_impl_ = TestImpl();
 }
 
-::Napi::Object Init(::Napi::Env env, ::Napi::Object exports) {
+Napi::Object Init(Napi::Env env, Napi::Object exports) {
   Test::Init(env, exports);
 
   return exports;

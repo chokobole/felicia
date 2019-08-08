@@ -36,7 +36,7 @@ namespace felicia {
 // * `UntypedCall<Service>`: The base class represents a call that
 //   could be associated with any of the methods on a service of type
 //   `Service`. Also defines a `Tag` nested class that can be used as
-//   the tag in a `grpc::CompletionQueue`.  Each class that
+//   the tag in a `::grpc::CompletionQueue`.  Each class that
 //   instantiates `Service` should have a completion queue polling
 //   loop that knows about `UntypedCall<Service>::Tag` objects, and
 //   invokes their `OnCompleted()` method to continue processing.
@@ -72,7 +72,7 @@ namespace felicia {
 
 // Represents a pending request with unknown message types.
 template <class Service>
-class UntypedCall : public ::base::RefCountedThreadSafe<UntypedCall<Service>> {
+class UntypedCall : public base::RefCountedThreadSafe<UntypedCall<Service>> {
  public:
   // The implementation of this method should use `service` to handle
   // an incoming request, and (perhaps asynchronously) send the
@@ -89,7 +89,7 @@ class UntypedCall : public ::base::RefCountedThreadSafe<UntypedCall<Service>> {
   // This method will be called either (i) when the server is notified
   // that the request has been canceled, or (ii) when the request completes
   // normally. The implementation should distinguish these cases by querying
-  // the `grpc::ServerContext` associated with the request.
+  // the `::grpc::ServerContext` associated with the request.
   virtual void RequestCancelled(Service* service, bool ok) = 0;
 
   // Associates a tag in a `::grpc::CompletionQueue` with a callback
@@ -126,7 +126,7 @@ class UntypedCall : public ::base::RefCountedThreadSafe<UntypedCall<Service>> {
   };
 
  protected:
-  friend class ::base::RefCountedThreadSafe<UntypedCall<Service>>;
+  friend class base::RefCountedThreadSafe<UntypedCall<Service>>;
   virtual ~UntypedCall() {}
 };
 
@@ -165,7 +165,7 @@ class Call : UntypedCall<Service> {
 
   void RequestCancelled(Service* service, bool ok) override {
     if (ctx_.IsCancelled()) {
-      ::base::AutoLock l(lock_);
+      base::AutoLock l(lock_);
       if (cancel_callback_) {
         std::move(cancel_callback_).Run();
       }
@@ -174,14 +174,14 @@ class Call : UntypedCall<Service> {
 
   // Registers `callback` as the function that should be called if and when this
   // call is canceled by the client.
-  void SetCancelCallback(::base::OnceCallback<void()> callback) {
-    ::base::AutoLock l(lock_);
+  void SetCancelCallback(base::OnceCallback<void()> callback) {
+    base::AutoLock l(lock_);
     cancel_callback_ = std::move(callback);
   }
 
   // Clears any cancellation callback that has been registered for this call.
   void ClearCancelCallback() {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     cancel_callback_ = nullptr;
   }
 
@@ -238,7 +238,7 @@ class Call : UntypedCall<Service> {
   }
 
  private:
-  friend class ::base::RefCountedThreadSafe<UntypedCall<Service>>;
+  friend class base::RefCountedThreadSafe<UntypedCall<Service>>;
   virtual ~Call() {}
 
   // Creates a completion queue tag for handling cancellation by the client.
@@ -260,8 +260,8 @@ class Call : UntypedCall<Service> {
   Tag response_sent_tag_{this, Tag::kResponseSent};
   Tag cancelled_tag_{this, Tag::kCancelled};
 
-  ::base::Lock lock_;
-  ::base::OnceCallback<void()> cancel_callback_ GUARDED_BY(lock_);
+  base::Lock lock_;
+  base::OnceCallback<void()> cancel_callback_ GUARDED_BY(lock_);
 };
 
 }  // namespace felicia

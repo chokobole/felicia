@@ -13,7 +13,7 @@ namespace felicia {
 template <typename MessageTy>
 class TCPChannel : public Channel<MessageTy> {
  public:
-  using AcceptOnceInterceptCallback = ::base::OnceCallback<void(
+  using AcceptOnceInterceptCallback = base::OnceCallback<void(
       StatusOr<std::unique_ptr<TCPChannel<MessageTy>>>)>;
 
   TCPChannel(const channel::TCPSettings& settings = channel::TCPSettings());
@@ -40,10 +40,10 @@ class TCPChannel : public Channel<MessageTy> {
   void DoAcceptLoop();
 
   // This is callback called from AcceptLoop
-  void OnAccept(StatusOr<std::unique_ptr<::net::TCPSocket>> status_or);
+  void OnAccept(StatusOr<std::unique_ptr<net::TCPSocket>> status_or);
   // This is callback called from AcceptOnceIntercept
   void OnAccept2(AcceptOnceInterceptCallback callback,
-                 StatusOr<std::unique_ptr<::net::TCPSocket>> status_or);
+                 StatusOr<std::unique_ptr<net::TCPSocket>> status_or);
 
 #if !defined(FEL_NO_SSL)
   void OnHandshake(const Status& s);
@@ -102,33 +102,32 @@ void TCPChannel<MessageTy>::AcceptOnceIntercept(
   TCPServerSocket* server_socket =
       this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPServerSocket();
   server_socket->AcceptOnceIntercept(
-      ::base::BindOnce(&TCPChannel<MessageTy>::OnAccept2,
-                       ::base::Unretained(this), std::move(callback)));
+      base::BindOnce(&TCPChannel<MessageTy>::OnAccept2, base::Unretained(this),
+                     std::move(callback)));
 }
 
 template <typename MessageTy>
 void TCPChannel<MessageTy>::DoAcceptLoop() {
   TCPServerSocket* server_socket =
       this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPServerSocket();
-  server_socket->AcceptOnceIntercept(::base::BindOnce(
-      &TCPChannel<MessageTy>::OnAccept, ::base::Unretained(this)));
+  server_socket->AcceptOnceIntercept(
+      base::BindOnce(&TCPChannel<MessageTy>::OnAccept, base::Unretained(this)));
 }
 
 template <typename MessageTy>
 void TCPChannel<MessageTy>::OnAccept(
-    StatusOr<std::unique_ptr<::net::TCPSocket>> status_or) {
+    StatusOr<std::unique_ptr<net::TCPSocket>> status_or) {
   DCHECK(!accept_callback_.is_null());
   if (status_or.ok()) {
-    std::unique_ptr<::net::TCPSocket> socket =
-        std::move(status_or.ValueOrDie());
+    std::unique_ptr<net::TCPSocket> socket = std::move(status_or.ValueOrDie());
 #if !defined(FEL_NO_SSL)
     if (settings_.use_ssl) {
       DCHECK(!ssl_server_socket_);
       DCHECK(settings_.ssl_server_context);
       ssl_server_socket_ = settings_.ssl_server_context->CreateSSLServerSocket(
           std::make_unique<TCPClientSocket>(std::move(socket)));
-      ssl_server_socket_->Handshake(::base::BindOnce(
-          &TCPChannel<MessageTy>::OnHandshake, ::base::Unretained(this)));
+      ssl_server_socket_->Handshake(base::BindOnce(
+          &TCPChannel<MessageTy>::OnHandshake, base::Unretained(this)));
       return;
     } else {
 #endif
@@ -164,7 +163,7 @@ void TCPChannel<MessageTy>::OnHandshake(const Status& s) {
 template <typename MessageTy>
 void TCPChannel<MessageTy>::OnAccept2(
     AcceptOnceInterceptCallback callback,
-    StatusOr<std::unique_ptr<::net::TCPSocket>> status_or) {
+    StatusOr<std::unique_ptr<net::TCPSocket>> status_or) {
   if (status_or.ok()) {
     auto channel = std::make_unique<TCPChannel<MessageTy>>();
     channel->channel_impl_ =
@@ -180,7 +179,7 @@ void TCPChannel<MessageTy>::Connect(const ChannelDef& channel_def,
                                     StatusOnceCallback callback) {
   DCHECK(!this->channel_impl_);
   DCHECK(!callback.is_null());
-  ::net::IPEndPoint ip_endpoint;
+  net::IPEndPoint ip_endpoint;
   Status s = ToNetIPEndPoint(channel_def, &ip_endpoint);
   if (!s.ok()) {
     std::move(callback).Run(s);
@@ -191,9 +190,8 @@ void TCPChannel<MessageTy>::Connect(const ChannelDef& channel_def,
   TCPClientSocket* client_socket =
       this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPClientSocket();
   client_socket->Connect(
-      ip_endpoint,
-      ::base::BindOnce(&TCPChannel<MessageTy>::OnConnect,
-                       ::base::Unretained(this), std::move(callback)));
+      ip_endpoint, base::BindOnce(&TCPChannel<MessageTy>::OnConnect,
+                                  base::Unretained(this), std::move(callback)));
 }
 
 template <typename MessageTy>

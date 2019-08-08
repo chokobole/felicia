@@ -34,7 +34,7 @@ CameraFlag::CameraFlag(int default_width, int default_height, int default_fps,
     IntDefaultFlag::Builder builder(MakeValueStore(&width_, default_width));
     auto flag = builder.SetShortName("-w")
                     .SetLongName("--width")
-                    .SetHelp(::base::StringPrintf(
+                    .SetHelp(base::StringPrintf(
                         "camera frame width (default: %d)", default_width))
                     .Build();
     width_flag_ = std::make_unique<IntDefaultFlag>(flag);
@@ -43,7 +43,7 @@ CameraFlag::CameraFlag(int default_width, int default_height, int default_fps,
     IntDefaultFlag::Builder builder(MakeValueStore(&height_, default_height));
     auto flag = builder.SetShortName("-h")
                     .SetLongName("--height")
-                    .SetHelp(::base::StringPrintf(
+                    .SetHelp(base::StringPrintf(
                         "camera frame height (default: %d)", default_height))
                     .Build();
     height_flag_ = std::make_unique<IntDefaultFlag>(flag);
@@ -52,7 +52,7 @@ CameraFlag::CameraFlag(int default_width, int default_height, int default_fps,
     IntDefaultFlag::Builder builder(MakeValueStore(&fps_, default_fps));
     auto flag = builder.SetShortName("-f")
                     .SetLongName("--fps")
-                    .SetHelp(::base::StringPrintf(
+                    .SetHelp(base::StringPrintf(
                         "frame per second (default: %d)", default_fps))
                     .Build();
     fps_flag_ = std::make_unique<IntDefaultFlag>(flag);
@@ -80,7 +80,7 @@ CameraFlag::CameraFlag(int default_width, int default_height, int default_fps,
                              PixelFormat_Name(PIXEL_FORMAT_RGB),
                              PixelFormat_Name(PIXEL_FORMAT_RGBA)}));
     auto flag = builder.SetLongName("--pixel_format")
-                    .SetHelp(::base::StringPrintf(
+                    .SetHelp(base::StringPrintf(
                         "pixel_format (default: %s)",
                         PixelFormat_Name(final_default_pixel_format).c_str()))
                     .Build();

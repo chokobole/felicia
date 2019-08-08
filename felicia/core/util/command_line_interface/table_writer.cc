@@ -21,7 +21,7 @@ TableWriter::Column::Column(const Column& other) = default;
 TableWriter::Column::~Column() = default;
 
 void TableWriter::SetElement(size_t row, size_t col,
-                             ::base::StringPiece element) {
+                             base::StringPiece element) {
   if (elements_.size() <= row) {
     elements_.resize(row + 1);
   }
@@ -46,7 +46,7 @@ std::string TableWriter::ToString() const {
       if (element.length() > heads_[idx].width - 1) {
         if (heads_[idx].width > 4) {
           content =
-              ::base::StrCat({element.substr(0, heads_[idx].width - 4), "..."});
+              base::StrCat({element.substr(0, heads_[idx].width - 4), "..."});
         } else {
           DLOG(WARNING) << "Maybe you should set enough header width... "
                         << heads_[idx].title << "(" << heads_[idx].width << ")";

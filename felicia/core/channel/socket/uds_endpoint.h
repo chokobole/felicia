@@ -37,15 +37,15 @@ class UDSEndPoint {
 
 namespace felicia {
 
-// Convert |uds_endpoint()| of |channel_def| to ::net::UDSEndPoint,
+// Convert |uds_endpoint()| of |channel_def| to net::UDSEndPoint,
 // Returns Status::OK() if succeeded.
 Status ToNetUDSEndPoint(const ChannelDef& channel_def,
-                        ::net::UDSEndPoint* uds_endpoint);
+                        net::UDSEndPoint* uds_endpoint);
 
-// Convert |uds_endpoint() of |broker_endpoint| to ::net::UDSEndPoint,
+// Convert |uds_endpoint() of |broker_endpoint| to net::UDSEndPoint,
 // Returns Status::OK() if succeeded.
 Status ToNetUDSEndPoint(const BrokerEndPoint& broker_endpoint,
-                        ::net::UDSEndPoint* uds_endpoint);
+                        net::UDSEndPoint* uds_endpoint);
 
 }  // namespace felicia
 

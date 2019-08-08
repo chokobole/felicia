@@ -24,7 +24,7 @@
 
 namespace felicia {
 
-class MachPortBroker : public ::base::PortProvider {
+class MachPortBroker : public base::PortProvider {
  public:
   static Status SendTaskPortToService(const std::string& service_name,
                                       mach_port_t port_to_send);
@@ -47,7 +47,7 @@ class MachPortBroker : public ::base::PortProvider {
   base::Lock& GetLock() { return lock_; }
 
   // Implement |base::PortProvider|.
-  mach_port_t TaskForPid(::base::ProcessHandle process) const override;
+  mach_port_t TaskForPid(base::ProcessHandle process) const override;
 
  private:
   // Message handler that is invoked on |dispatch_source_| when an
@@ -65,11 +65,11 @@ class MachPortBroker : public ::base::PortProvider {
   std::unique_ptr<base::DispatchSourceMach> dispatch_source_;
 
   // Stores mach info for every process in the broker.
-  typedef std::map<::base::ProcessHandle, mach_port_t> MachMap;
+  typedef std::map<base::ProcessHandle, mach_port_t> MachMap;
   MachMap mach_map_;
 
   // Mutex that guards |mach_map_|.
-  mutable ::base::Lock lock_;
+  mutable base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(MachPortBroker);
 };

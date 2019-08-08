@@ -27,17 +27,17 @@ struct RandNameTraits {
     text.resize(kNameLength);
 
     for (size_t i = 0; i < kNameLength; ++i) {
-      text[i] = alphadigit[::base::RandGenerator(len)];
+      text[i] = alphadigit[base::RandGenerator(len)];
     }
 
     return text;
   };
 
-  static std::string InvalidValue() { return ::base::EmptyString(); }
+  static std::string InvalidValue() { return base::EmptyString(); }
 };
 
 Generator<std::string, RandNameTraits>& GetNameGenerator() {
-  static ::base::NoDestructor<Generator<std::string, RandNameTraits>>
+  static base::NoDestructor<Generator<std::string, RandNameTraits>>
       name_generator;
   return *name_generator;
 }
@@ -50,7 +50,7 @@ std::unique_ptr<Node> Node::NewNode(const NodeInfo& node_info) {
       return nullptr;
     } else {
       GetNameGenerator().Add(node_info.name());
-      return ::base::WrapUnique(new Node(node_info));
+      return base::WrapUnique(new Node(node_info));
     }
   }
 
@@ -63,7 +63,7 @@ std::unique_ptr<Node> Node::NewNode(const NodeInfo& node_info) {
   NodeInfo new_node_info;
   new_node_info.CopyFrom(node_info);
   new_node_info.set_name(name);
-  return ::base::WrapUnique(new Node(new_node_info));
+  return base::WrapUnique(new Node(new_node_info));
 }
 
 Node::Node(const NodeInfo& node_info) : node_info_(node_info) {}

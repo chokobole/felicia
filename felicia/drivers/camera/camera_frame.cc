@@ -10,8 +10,7 @@ namespace felicia {
 CameraFrame::CameraFrame() = default;
 
 CameraFrame::CameraFrame(std::unique_ptr<uint8_t[]> data, size_t length,
-                         CameraFormat camera_format,
-                         ::base::TimeDelta timestamp)
+                         CameraFormat camera_format, base::TimeDelta timestamp)
     : data_(std::move(data)),
       length_(length),
       camera_format_(camera_format),
@@ -47,11 +46,11 @@ PixelFormat CameraFrame::pixel_format() const {
   return camera_format_.pixel_format();
 }
 
-void CameraFrame::set_timestamp(::base::TimeDelta timestamp) {
+void CameraFrame::set_timestamp(base::TimeDelta timestamp) {
   timestamp_ = timestamp;
 }
 
-::base::TimeDelta CameraFrame::timestamp() const { return timestamp_; }
+base::TimeDelta CameraFrame::timestamp() const { return timestamp_; }
 
 CameraFrameMessage CameraFrame::ToCameraFrameMessage() const {
   CameraFrameMessage message;
@@ -73,15 +72,15 @@ CameraFrame CameraFrame::FromCameraFrameMessage(
   return CameraFrame{
       std::move(data_ptr), data.length(),
       CameraFormat::FromCameraFormatMessage(message.camera_format()),
-      ::base::TimeDelta::FromMicroseconds(message.timestamp())};
+      base::TimeDelta::FromMicroseconds(message.timestamp())};
 }
 
 namespace {
 
-::base::Optional<CameraFrame> ConvertToBGRA(const uint8_t* data,
-                                            size_t data_length,
-                                            CameraFormat camera_format,
-                                            ::base::TimeDelta timestamp) {
+base::Optional<CameraFrame> ConvertToBGRA(const uint8_t* data,
+                                          size_t data_length,
+                                          CameraFormat camera_format,
+                                          base::TimeDelta timestamp) {
   PixelFormat pixel_format = camera_format.pixel_format();
   libyuv::FourCC src_format;
 
@@ -90,7 +89,7 @@ namespace {
   }
 
   src_format = camera_format.ToLibyuvPixelFormat();
-  if (src_format == libyuv::FOURCC_ANY) return ::base::nullopt;
+  if (src_format == libyuv::FOURCC_ANY) return base::nullopt;
 
   const int width = camera_format.width();
   const int height = camera_format.height();
@@ -102,7 +101,7 @@ namespace {
                             0 /* crop_x_pos */, 0 /* crop_y_pos */, width,
                             height, width, height,
                             libyuv::RotationMode::kRotate0, src_format) != 0) {
-    return ::base::nullopt;
+    return base::nullopt;
   }
 
   return CameraFrame(std::move(tmp_bgra), length, bgra_camera_format,
@@ -111,17 +110,17 @@ namespace {
 
 }  // namespace
 
-::base::Optional<CameraFrame> ConvertToRequestedPixelFormat(
+base::Optional<CameraFrame> ConvertToRequestedPixelFormat(
     const uint8_t* data, size_t data_length, CameraFormat camera_format,
-    PixelFormat requested_pixel_format, ::base::TimeDelta timestamp) {
+    PixelFormat requested_pixel_format, base::TimeDelta timestamp) {
   if (requested_pixel_format == PIXEL_FORMAT_MJPEG) {
-    return ::base::nullopt;
+    return base::nullopt;
   } else if (requested_pixel_format == PIXEL_FORMAT_BGRA) {
     return ConvertToBGRA(data, data_length, camera_format, timestamp);
   } else {
     auto bgra_camera_frame_opt =
         ConvertToBGRA(data, data_length, camera_format, timestamp);
-    if (!bgra_camera_frame_opt.has_value()) return ::base::nullopt;
+    if (!bgra_camera_frame_opt.has_value()) return base::nullopt;
 
     CameraFrame bgra_camera_frame = std::move(bgra_camera_frame_opt.value());
     const uint8_t* bgra_data = bgra_camera_frame.data_ptr();
@@ -181,7 +180,7 @@ namespace {
       default:
         break;
     }
-    if (ret != 0) return ::base::nullopt;
+    if (ret != 0) return base::nullopt;
 
     return CameraFrame(std::move(tmp_camera_frame), length, camera_format,
                        timestamp);

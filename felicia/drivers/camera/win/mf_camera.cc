@@ -24,9 +24,9 @@ using Microsoft::WRL::ComPtr;
 
 namespace felicia {
 
-#define MESSAGE_WITH_HRESULT(text, hr)  \
-  ::base::StringPrintf("%s :%s.", text, \
-                       ::logging::SystemErrorCodeToString(hr).c_str())
+#define MESSAGE_WITH_HRESULT(text, hr) \
+  base::StringPrintf("%s :%s.", text,  \
+                     ::logging::SystemErrorCodeToString(hr).c_str())
 
 namespace {
 
@@ -174,7 +174,7 @@ HRESULT ConvertToVideoSinkMediaType(IMFMediaType* source_media_type,
 }  // namespace
 
 class MFVideoCallback final
-    : public ::base::RefCountedThreadSafe<MFVideoCallback>,
+    : public base::RefCountedThreadSafe<MFVideoCallback>,
       public IMFCaptureEngineOnSampleCallback,
       public IMFCaptureEngineOnEventCallback {
  public:
@@ -198,12 +198,12 @@ class MFVideoCallback final
   }
 
   STDMETHOD_(ULONG, AddRef)() override {
-    ::base::RefCountedThreadSafe<MFVideoCallback>::AddRef();
+    base::RefCountedThreadSafe<MFVideoCallback>::AddRef();
     return 1U;
   }
 
   STDMETHOD_(ULONG, Release)() override {
-    ::base::RefCountedThreadSafe<MFVideoCallback>::Release();
+    base::RefCountedThreadSafe<MFVideoCallback>::Release();
     return 1U;
   }
 
@@ -403,7 +403,7 @@ Status MfCamera::Start(const CameraFormat& requested_camera_format,
                        StatusCallback status_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  ::base::AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   if (!camera_state_.IsInitialized()) {
     return camera_state_.InvalidStateError();
@@ -514,7 +514,7 @@ Status MfCamera::Start(const CameraFormat& requested_camera_format,
 Status MfCamera::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  ::base::AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   if (!camera_state_.IsStarted()) {
     return camera_state_.InvalidStateError();
@@ -767,9 +767,9 @@ void MfCamera::GetCameraSetting(long property, CameraSettingsRangedValue* value,
 }
 
 void MfCamera::OnIncomingCapturedData(const uint8_t* data, int length,
-                                      ::base::TimeTicks reference_time,
-                                      ::base::TimeDelta timestamp) {
-  ::base::AutoLock lock(lock_);
+                                      base::TimeTicks reference_time,
+                                      base::TimeDelta timestamp) {
+  base::AutoLock lock(lock_);
 
   if (camera_format_.pixel_format() != PixelFormat::PIXEL_FORMAT_MJPEG &&
       camera_format_.AllocationSize() != length) {
@@ -784,7 +784,7 @@ void MfCamera::OnIncomingCapturedData(const uint8_t* data, int length,
                                            static_cast<size_t>(length),
                                            camera_format_, timestamp});
   } else {
-    ::base::Optional<CameraFrame> camera_frame = ConvertToRequestedPixelFormat(
+    base::Optional<CameraFrame> camera_frame = ConvertToRequestedPixelFormat(
         data, length, camera_format_, requested_pixel_format_, timestamp);
     if (camera_frame.has_value()) {
       camera_frame_callback_.Run(std::move(camera_frame.value()));
@@ -796,12 +796,12 @@ void MfCamera::OnIncomingCapturedData(const uint8_t* data, int length,
 }
 
 void MfCamera::OnFrameDropped(const Status& s) {
-  ::base::AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   status_callback_.Run(s);
 }
 
 void MfCamera::OnEvent(IMFMediaEvent* media_event) {
-  ::base::AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
 
   HRESULT hr;
   media_event->GetStatus(&hr);
@@ -812,7 +812,7 @@ void MfCamera::OnEvent(IMFMediaEvent* media_event) {
 }
 
 HRESULT MfCamera::ExecuteHresultCallbackWithRetries(
-    ::base::RepeatingCallback<HRESULT()> callback) {
+    base::RepeatingCallback<HRESULT()> callback) {
   // Retry callback execution on MF_E_INVALIDREQUEST.
   // MF_E_INVALIDREQUEST is not documented in MediaFoundation documentation.
   // It could mean that MediaFoundation or the underlying device can be in a
@@ -824,8 +824,8 @@ HRESULT MfCamera::ExecuteHresultCallbackWithRetries(
   do {
     hr = callback.Run();
     if (FAILED(hr))
-      ::base::PlatformThread::Sleep(
-          ::base::TimeDelta::FromMilliseconds(retry_delay_in_ms_));
+      base::PlatformThread::Sleep(
+          base::TimeDelta::FromMilliseconds(retry_delay_in_ms_));
 
     // Give up after some amount of time
   } while (hr == MF_E_INVALIDREQUEST && retry_count++ < max_retry_count_);
@@ -836,11 +836,11 @@ HRESULT MfCamera::ExecuteHresultCallbackWithRetries(
 HRESULT MfCamera::GetDeviceStreamCount(IMFCaptureSource* source, DWORD* count) {
   // Sometimes, GetDeviceStreamCount returns an
   // undocumented MF_E_INVALIDREQUEST. Retrying solves the issue.
-  return ExecuteHresultCallbackWithRetries(::base::BindRepeating(
+  return ExecuteHresultCallbackWithRetries(base::BindRepeating(
       [](IMFCaptureSource* source, DWORD* count) {
         return source->GetDeviceStreamCount(count);
       },
-      ::base::Unretained(source), count));
+      base::Unretained(source), count));
 }
 
 HRESULT MfCamera::GetDeviceStreamCategory(
@@ -848,12 +848,12 @@ HRESULT MfCamera::GetDeviceStreamCategory(
     MF_CAPTURE_ENGINE_STREAM_CATEGORY* stream_category) {
   // We believe that GetDeviceStreamCategory could be affected by the same
   // behaviour of GetDeviceStreamCount and GetAvailableDeviceMediaType
-  return ExecuteHresultCallbackWithRetries(::base::BindRepeating(
+  return ExecuteHresultCallbackWithRetries(base::BindRepeating(
       [](IMFCaptureSource* source, DWORD stream_index,
          MF_CAPTURE_ENGINE_STREAM_CATEGORY* stream_category) {
         return source->GetDeviceStreamCategory(stream_index, stream_category);
       },
-      ::base::Unretained(source), stream_index, stream_category));
+      base::Unretained(source), stream_index, stream_category));
 }
 
 HRESULT MfCamera::GetAvailableDeviceMediaType(IMFCaptureSource* source,
@@ -862,13 +862,13 @@ HRESULT MfCamera::GetAvailableDeviceMediaType(IMFCaptureSource* source,
                                               IMFMediaType** type) {
   // Rarely, for some unknown reason, GetAvailableDeviceMediaType returns an
   // undocumented MF_E_INVALIDREQUEST. Retrying solves the issue.
-  return ExecuteHresultCallbackWithRetries(::base::BindRepeating(
+  return ExecuteHresultCallbackWithRetries(base::BindRepeating(
       [](IMFCaptureSource* source, DWORD stream_index, DWORD media_type_index,
          IMFMediaType** type) {
         return source->GetAvailableDeviceMediaType(stream_index,
                                                    media_type_index, type);
       },
-      ::base::Unretained(source), stream_index, media_type_index, type));
+      base::Unretained(source), stream_index, media_type_index, type));
 }
 
 HRESULT MfCamera::FillCapabilities(IMFCaptureSource* source, bool photo,

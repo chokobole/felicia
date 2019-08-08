@@ -24,7 +24,7 @@ namespace felicia {
 template <typename MessageTy>
 class Subscriber {
  public:
-  using OnMessageCallback = ::base::RepeatingCallback<void(MessageTy&&)>;
+  using OnMessageCallback = base::RepeatingCallback<void(MessageTy&&)>;
 
   Subscriber() = default;
   virtual ~Subscriber() { DCHECK(IsStopped()) << subscriber_state_.ToString(); }
@@ -88,7 +88,7 @@ class Subscriber {
   MessageTy message_;
   Pool<MessageTy, uint8_t> message_queue_;
   TopicInfo topic_info_;
-  ::base::Optional<TopicInfo> topic_info_to_update_;
+  base::Optional<TopicInfo> topic_info_to_update_;
   int channel_types_;
   std::unique_ptr<Channel<MessageTy>> channel_;
   int channel_type_ = 0;
@@ -126,13 +126,12 @@ void Subscriber<MessageTy>::RequestSubscribe(
 
   master_proxy.SubscribeTopicAsync(
       request, response,
-      ::base::BindOnce(&Subscriber<MessageTy>::OnSubscribeTopicAsync,
-                       ::base::Unretained(this), ::base::Owned(request),
-                       ::base::Owned(response), channel_types,
-                       on_message_callback, on_error_callback, settings,
-                       std::move(callback)),
-      ::base::BindRepeating(&Subscriber<MessageTy>::OnFindPublisher,
-                            ::base::Unretained(this)));
+      base::BindOnce(&Subscriber<MessageTy>::OnSubscribeTopicAsync,
+                     base::Unretained(this), base::Owned(request),
+                     base::Owned(response), channel_types, on_message_callback,
+                     on_error_callback, settings, std::move(callback)),
+      base::BindRepeating(&Subscriber<MessageTy>::OnFindPublisher,
+                          base::Unretained(this)));
 }
 
 template <typename MessageTy>
@@ -155,9 +154,9 @@ void Subscriber<MessageTy>::RequestUnsubscribe(const NodeInfo& node_info,
 
   master_proxy.UnsubscribeTopicAsync(
       request, response,
-      ::base::BindOnce(&Subscriber<MessageTy>::OnUnubscribeTopicAsync,
-                       ::base::Unretained(this), ::base::Owned(request),
-                       ::base::Owned(response), std::move(callback)));
+      base::BindOnce(&Subscriber<MessageTy>::OnUnubscribeTopicAsync,
+                     base::Unretained(this), base::Owned(request),
+                     base::Owned(response), std::move(callback)));
 }
 
 template <typename MessageTy>
@@ -212,8 +211,8 @@ void Subscriber<MessageTy>::OnFindPublisher(const TopicInfo& topic_info) {
   DCHECK(master_proxy.IsBoundToCurrentThread());
   if (IsRegistering() || IsUnregistering() || IsStopping()) {
     master_proxy.PostTask(
-        FROM_HERE, ::base::BindOnce(&Subscriber<MessageTy>::OnFindPublisher,
-                                    ::base::Unretained(this), topic_info));
+        FROM_HERE, base::BindOnce(&Subscriber<MessageTy>::OnFindPublisher,
+                                  base::Unretained(this), topic_info));
     return;
   }
 
@@ -278,10 +277,9 @@ void Subscriber<MessageTy>::ConnectToPublisher() {
   channel_ = ChannelFactory::NewChannel<MessageTy>(matched_channel_def.type(),
                                                    settings_.channel_settings);
 
-  channel_->Connect(
-      matched_channel_def,
-      ::base::BindOnce(&Subscriber<MessageTy>::OnConnectToPublisher,
-                       ::base::Unretained(this)));
+  channel_->Connect(matched_channel_def,
+                    base::BindOnce(&Subscriber<MessageTy>::OnConnectToPublisher,
+                                   base::Unretained(this)));
 }
 
 template <typename MessageTy>
@@ -306,8 +304,8 @@ void Subscriber<MessageTy>::StartMessageLoop() {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(
-        FROM_HERE, ::base::BindOnce(&Subscriber<MessageTy>::StartMessageLoop,
-                                    ::base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&Subscriber<MessageTy>::StartMessageLoop,
+                                  base::Unretained(this)));
     return;
   }
 
@@ -316,8 +314,8 @@ void Subscriber<MessageTy>::StartMessageLoop() {
   if (IsStopping()) {
     master_proxy.PostDelayedTask(
         FROM_HERE,
-        ::base::BindOnce(&Subscriber<MessageTy>::StartMessageLoop,
-                         ::base::Unretained(this)),
+        base::BindOnce(&Subscriber<MessageTy>::StartMessageLoop,
+                       base::Unretained(this)),
         settings_.period);
     return;
   }
@@ -335,9 +333,8 @@ void Subscriber<MessageTy>::StopMessageLoop(StatusOnceCallback callback) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(
-        FROM_HERE,
-        ::base::BindOnce(&Subscriber<MessageTy>::StopMessageLoop,
-                         ::base::Unretained(this), std::move(callback)));
+        FROM_HERE, base::BindOnce(&Subscriber<MessageTy>::StopMessageLoop,
+                                  base::Unretained(this), std::move(callback)));
     return;
   }
 
@@ -356,8 +353,8 @@ void Subscriber<MessageTy>::ReceiveMessageLoop() {
   if (IsStopping() || IsStopped()) return;
 
   channel_->ReceiveMessage(
-      &message_, ::base::BindOnce(&Subscriber<MessageTy>::OnReceiveMessage,
-                                  ::base::Unretained(this)));
+      &message_, base::BindOnce(&Subscriber<MessageTy>::OnReceiveMessage,
+                                base::Unretained(this)));
 }
 
 template <typename MessageTy>
@@ -369,8 +366,8 @@ void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
     message_queue_.push(message_);
   } else {
     Status new_status(s.error_code(),
-                      ::base::StringPrintf("Failed to receive a message: %s",
-                                           s.error_message().c_str()));
+                      base::StringPrintf("Failed to receive a message: %s",
+                                         s.error_message().c_str()));
     on_error_callback_.Run(new_status);
     if (channel_->IsTCPChannel() && !channel_->ToTCPChannel()->IsConnected()) {
       StopMessageLoop(StatusOnceCallback{});
@@ -387,8 +384,8 @@ void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
     MasterProxy& master_proxy = MasterProxy::GetInstance();
     master_proxy.PostDelayedTask(
         FROM_HERE,
-        ::base::BindOnce(&Subscriber<MessageTy>::ReceiveMessageLoop,
-                         ::base::Unretained(this)),
+        base::BindOnce(&Subscriber<MessageTy>::ReceiveMessageLoop,
+                       base::Unretained(this)),
         settings_.period);
   } else {
     ReceiveMessageLoop();
@@ -409,15 +406,14 @@ void Subscriber<MessageTy>::NotifyMessageLoop() {
   if (IsStopping() && message_queue_.empty()) {
     master_proxy.PostDelayedTask(
         FROM_HERE,
-        ::base::BindOnce(&Subscriber<MessageTy>::Stop,
-                         ::base::Unretained(this)),
-        settings_.period + ::base::TimeDelta::FromMilliseconds(
+        base::BindOnce(&Subscriber<MessageTy>::Stop, base::Unretained(this)),
+        settings_.period + base::TimeDelta::FromMilliseconds(
                                100));  // Add some offset for safe close.
   } else {
     master_proxy.PostDelayedTask(
         FROM_HERE,
-        ::base::BindOnce(&Subscriber<MessageTy>::NotifyMessageLoop,
-                         ::base::Unretained(this)),
+        base::BindOnce(&Subscriber<MessageTy>::NotifyMessageLoop,
+                       base::Unretained(this)),
         settings_.period);
   }
 }

@@ -19,7 +19,7 @@ class EXPORT CameraFrame {
  public:
   CameraFrame();
   CameraFrame(std::unique_ptr<uint8_t[]> data, size_t length,
-              CameraFormat camera_format, ::base::TimeDelta timestamp);
+              CameraFormat camera_format, base::TimeDelta timestamp);
   CameraFrame(CameraFrame&& other) noexcept;
   CameraFrame& operator=(CameraFrame&& other);
   ~CameraFrame();
@@ -33,8 +33,8 @@ class EXPORT CameraFrame {
   float frame_rate() const;
   PixelFormat pixel_format() const;
 
-  void set_timestamp(::base::TimeDelta time);
-  ::base::TimeDelta timestamp() const;
+  void set_timestamp(base::TimeDelta time);
+  base::TimeDelta timestamp() const;
 
   CameraFrameMessage ToCameraFrameMessage() const;
   static CameraFrame FromCameraFrameMessage(const CameraFrameMessage& message);
@@ -43,16 +43,16 @@ class EXPORT CameraFrame {
   std::unique_ptr<uint8_t[]> data_;
   size_t length_;
   CameraFormat camera_format_;
-  ::base::TimeDelta timestamp_;
+  base::TimeDelta timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(CameraFrame);
 };
 
-EXPORT ::base::Optional<CameraFrame> ConvertToRequestedPixelFormat(
+EXPORT base::Optional<CameraFrame> ConvertToRequestedPixelFormat(
     const uint8_t* data, size_t data_length, CameraFormat camera_format,
-    PixelFormat requested_pixel_format, ::base::TimeDelta timestamp);
+    PixelFormat requested_pixel_format, base::TimeDelta timestamp);
 
-typedef ::base::RepeatingCallback<void(CameraFrame)> CameraFrameCallback;
+typedef base::RepeatingCallback<void(CameraFrame)> CameraFrameCallback;
 
 }  // namespace felicia
 

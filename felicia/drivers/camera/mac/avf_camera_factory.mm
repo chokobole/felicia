@@ -8,7 +8,7 @@ namespace felicia {
 
 // static
 std::unique_ptr<CameraInterface> CameraFactory::NewCamera(const CameraDescriptor& descriptor) {
-  return ::base::WrapUnique(new AvfCamera(descriptor));
+  return base::WrapUnique(new AvfCamera(descriptor));
 }
 
 // static

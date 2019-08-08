@@ -24,14 +24,14 @@ class WritableSharedBuffer : public SharedBuffer {
   char* data();
   size_t size() const;
 
-  ::base::ReadOnlySharedMemoryRegion DuplicateSharedMemoryRegion() const;
+  base::ReadOnlySharedMemoryRegion DuplicateSharedMemoryRegion() const;
 
   void WriteBegin();
   void WriteEnd();
 
  private:
-  ::base::ReadOnlySharedMemoryRegion shared_memory_region_;
-  ::base::WritableSharedMemoryMapping shared_memory_mapping_;
+  base::ReadOnlySharedMemoryRegion shared_memory_region_;
+  base::WritableSharedMemoryMapping shared_memory_mapping_;
 
   SerializedBuffer* buffer_;
 };

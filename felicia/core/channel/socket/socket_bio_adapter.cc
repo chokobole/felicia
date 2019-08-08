@@ -25,7 +25,7 @@ SocketBIOAdapter::SocketBIOAdapter(StreamSocket* socket,
       read_result_(0),
       write_buffer_capacity_(write_buffer_capacity),
       write_buffer_used_(0),
-      write_error_(::net::OK),
+      write_error_(net::OK),
       delegate_(delegate),
       weak_factory_(this) {
   bio_.reset(BIO_new(&kBIOMethod));

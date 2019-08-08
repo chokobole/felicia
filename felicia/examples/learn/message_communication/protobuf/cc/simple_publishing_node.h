@@ -33,9 +33,9 @@ class SimplePublishingNode : public NodeLifecycle {
     // MasterProxy& master_proxy = MasterProxy::GetInstance();
     // master_proxy.PostDelayedTask(
     //     FROM_HERE,
-    //     ::base::BindOnce(&SimplePublishingNode::RequestUnpublish,
-    //                      ::base::Unretained(this)),
-    //     ::base::TimeDelta::FromSeconds(10));
+    //     base::BindOnce(&SimplePublishingNode::RequestUnpublish,
+    //                      base::Unretained(this)),
+    //     base::TimeDelta::FromSeconds(10));
   }
 
   void OnError(const Status& s) override {
@@ -58,8 +58,8 @@ class SimplePublishingNode : public NodeLifecycle {
 
     publisher_.RequestPublish(
         node_info_, topic_, channel_type, settings,
-        ::base::BindOnce(&SimplePublishingNode::OnRequestPublish,
-                         ::base::Unretained(this)));
+        base::BindOnce(&SimplePublishingNode::OnRequestPublish,
+                       base::Unretained(this)));
   }
 
   void OnRequestPublish(const Status& s) {
@@ -70,16 +70,16 @@ class SimplePublishingNode : public NodeLifecycle {
 
   void RepeatingPublish() {
     publisher_.Publish(GenerateMessage(),
-                       ::base::BindRepeating(&SimplePublishingNode::OnPublish,
-                                             ::base::Unretained(this)));
+                       base::BindRepeating(&SimplePublishingNode::OnPublish,
+                                           base::Unretained(this)));
 
     if (!publisher_.IsUnregistered()) {
       MasterProxy& master_proxy = MasterProxy::GetInstance();
       master_proxy.PostDelayedTask(
           FROM_HERE,
-          ::base::BindOnce(&SimplePublishingNode::RepeatingPublish,
-                           ::base::Unretained(this)),
-          ::base::TimeDelta::FromSeconds(1));
+          base::BindOnce(&SimplePublishingNode::RepeatingPublish,
+                         base::Unretained(this)),
+          base::TimeDelta::FromSeconds(1));
     }
   }
 
@@ -91,7 +91,7 @@ class SimplePublishingNode : public NodeLifecycle {
 
   MessageSpec GenerateMessage() {
     static int id = 0;
-    ::base::TimeDelta timestamp = timestamper_.timestamp();
+    base::TimeDelta timestamp = timestamper_.timestamp();
     MessageSpec message_spec;
     message_spec.set_id(id++);
     message_spec.set_timestamp(timestamp.InMicroseconds());
@@ -102,8 +102,8 @@ class SimplePublishingNode : public NodeLifecycle {
   void RequestUnpublish() {
     publisher_.RequestUnpublish(
         node_info_, topic_,
-        ::base::BindOnce(&SimplePublishingNode::OnRequestUnpublish,
-                         ::base::Unretained(this)));
+        base::BindOnce(&SimplePublishingNode::OnRequestUnpublish,
+                       base::Unretained(this)));
   }
 
   void OnRequestUnpublish(const Status& s) {

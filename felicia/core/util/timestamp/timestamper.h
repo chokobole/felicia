@@ -15,10 +15,10 @@ class EXPORT Timestamper {
   Timestamper();
   ~Timestamper();
 
-  ::base::TimeDelta timestamp();
+  base::TimeDelta timestamp();
 
  protected:
-  ::base::TimeTicks base_time_ref_;
+  base::TimeTicks base_time_ref_;
 };
 
 // Used by multi thread task which needs timestamp. It ensures only one thread
@@ -28,7 +28,7 @@ class EXPORT ThreadSafeTimestamper {
   ThreadSafeTimestamper();
   ~ThreadSafeTimestamper();
 
-  ::base::TimeDelta timestamp();
+  base::TimeDelta timestamp();
 
  private:
   std::atomic<int64_t> base_time_in_ms_{0};

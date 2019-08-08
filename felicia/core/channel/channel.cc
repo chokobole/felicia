@@ -10,30 +10,30 @@
 namespace felicia {
 
 Status ToNetIPEndPoint(const ChannelDef& channel_def,
-                       ::net::IPEndPoint* ip_endpoint) {
+                       net::IPEndPoint* ip_endpoint) {
   if (!channel_def.has_ip_endpoint()) {
     return errors::InvalidArgument(
         "channel_def doesn't contain an IPEndPoint.");
   }
 
-  ::net::IPAddress ip;
+  net::IPAddress ip;
   if (!ip.AssignFromIPLiteral(channel_def.ip_endpoint().ip())) {
     return errors::InvalidArgument("Failed to convert to IPAddress.");
   }
 
-  *ip_endpoint = ::net::IPEndPoint(ip, channel_def.ip_endpoint().port());
+  *ip_endpoint = net::IPEndPoint(ip, channel_def.ip_endpoint().port());
   return Status::OK();
 }
 
 std::string EndPointToString(const ChannelDef& channel_def) {
   if (channel_def.has_ip_endpoint()) {
-    ::net::IPEndPoint ip_endpoint;
+    net::IPEndPoint ip_endpoint;
     if (ToNetIPEndPoint(channel_def, &ip_endpoint).ok()) {
       return ip_endpoint.ToString();
     }
   } else if (channel_def.has_uds_endpoint()) {
 #if defined(OS_POSIX)
-    ::net::UDSEndPoint uds_endpoint;
+    net::UDSEndPoint uds_endpoint;
     if (ToNetUDSEndPoint(channel_def, &uds_endpoint).ok()) {
       return uds_endpoint.ToString();
     }
@@ -42,7 +42,7 @@ std::string EndPointToString(const ChannelDef& channel_def) {
     return channel_def.shm_endpoint().DebugString();
   }
 
-  return ::base::EmptyString();
+  return base::EmptyString();
 }
 
 bool IsValidChannelDef(const ChannelDef& channel_def) {
@@ -50,11 +50,11 @@ bool IsValidChannelDef(const ChannelDef& channel_def) {
   if (type == ChannelDef::CHANNEL_TYPE_TCP ||
       type == ChannelDef::CHANNEL_TYPE_UDP ||
       type == ChannelDef::CHANNEL_TYPE_WS) {
-    ::net::IPEndPoint ip_endpoint;
+    net::IPEndPoint ip_endpoint;
     return ToNetIPEndPoint(channel_def, &ip_endpoint).ok();
   } else if (type == ChannelDef::CHANNEL_TYPE_UDS) {
 #if defined(OS_POSIX)
-    ::net::UDSEndPoint uds_endpoint;
+    net::UDSEndPoint uds_endpoint;
     return ToNetUDSEndPoint(channel_def, &uds_endpoint).ok();
 #endif
   } else if (type == ChannelDef::CHANNEL_TYPE_SHM) {
@@ -73,9 +73,9 @@ bool IsValidChannelSource(const ChannelSource& channel_source) {
 }
 
 bool IsSameChannelDef(const ChannelDef& c, const ChannelDef& c2) {
-  ::net::IPEndPoint ip_endpoint;
+  net::IPEndPoint ip_endpoint;
   if (!ToNetIPEndPoint(c, &ip_endpoint).ok()) return false;
-  ::net::IPEndPoint ip_endpoint2;
+  net::IPEndPoint ip_endpoint2;
   if (!ToNetIPEndPoint(c2, &ip_endpoint2).ok()) return false;
 
   return ip_endpoint == ip_endpoint2;

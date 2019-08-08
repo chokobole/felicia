@@ -26,8 +26,8 @@ const std::string& CameraDescriptor::device_id() const { return device_id_; }
 const std::string& CameraDescriptor::model_id() const { return model_id_; }
 
 std::string CameraDescriptor::ToString() const {
-  return ::base::StrCat({"display_name: ", display_name_,
-                         " device_id: ", device_id_, " model_id: ", model_id_});
+  return base::StrCat({"display_name: ", display_name_,
+                       " device_id: ", device_id_, " model_id: ", model_id_});
 }
 
 std::ostream& operator<<(std::ostream& os,

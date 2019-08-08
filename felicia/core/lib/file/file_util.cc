@@ -29,9 +29,9 @@ bool SetBlocking(int fd, int blocking) {
 }
 #endif
 
-::base::FilePath::StringType ToFilePathString(const std::string& file_path) {
+base::FilePath::StringType ToFilePathString(const std::string& file_path) {
 #if defined(OS_WIN)
-  return ::base::UTF8ToUTF16(file_path);
+  return base::UTF8ToUTF16(file_path);
 #else
   return file_path;
 #endif

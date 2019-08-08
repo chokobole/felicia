@@ -101,12 +101,11 @@ float MultiResolutionGridMap::scale_to_map() const {
 }
 
 OccupancyGridMapMessage MultiResolutionGridMap::ToOccupancyGridMapMessage(
-    ::base::TimeDelta timestamp) const {
+    base::TimeDelta timestamp) const {
   return maps_[0]->ToOccupancyGridMapMessage(timestamp);
 }
 
-void MultiResolutionGridMap::ToCsvFile(
-    const ::base::FilePath& file_path) const {
+void MultiResolutionGridMap::ToCsvFile(const base::FilePath& file_path) const {
   maps_[0]->ToCsvFile(file_path);
 }
 

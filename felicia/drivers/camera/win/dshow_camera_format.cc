@@ -47,7 +47,7 @@ PixelFormat CameraFormat::FromDshowMediaSubtype(const GUID& sub_type) {
 
 #ifndef NDEBUG
   WCHAR guid_str[128];
-  StringFromGUID2(sub_type, guid_str, ::base::size(guid_str));
+  StringFromGUID2(sub_type, guid_str, base::size(guid_str));
   DLOG(WARNING) << "Unsupported format: " << guid_str;
 #endif
 

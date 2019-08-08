@@ -38,9 +38,9 @@ class GrpcAsyncClientCall : public GrpcClientCQTag {
 
     if (!s.ok()) {
       s = Status(s.error_code(),
-                 ::base::StrCat({s.error_message(),
-                                 "\nAdditional GRPC error information:\n",
-                                 context_.debug_error_string()}));
+                 base::StrCat({s.error_message(),
+                               "\nAdditional GRPC error information:\n",
+                               context_.debug_error_string()}));
     }
 
     std::move(done_).Run(s);

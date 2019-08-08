@@ -21,7 +21,7 @@ class State {
   State(const State& other) : state_(other.state_) {}
   void operator=(const State& other) { state_ = other.state_; }
 
-  ALWAYS_INLINE void set_state(const ::base::Location& from_here, T state) {
+  ALWAYS_INLINE void set_state(const base::Location& from_here, T state) {
     DLOG(INFO) << from_here.ToString() << ": " << Traits::ToString(state_)
                << " -> " << Traits::ToString(state);
     state_ = state;
@@ -34,7 +34,7 @@ class State {
   ALWAYS_INLINE Status InvalidStateError() const {
     std::string text = ToString();
     return errors::Aborted(
-        ::base::StringPrintf("Invalid state(%s)", text.c_str()));
+        base::StringPrintf("Invalid state(%s)", text.c_str()));
   }
 
  protected:

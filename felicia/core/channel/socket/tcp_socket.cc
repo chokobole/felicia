@@ -4,7 +4,7 @@ namespace felicia {
 
 TCPSocket::TCPSocket() = default;
 
-TCPSocket::TCPSocket(std::unique_ptr<::net::TCPSocket> socket)
+TCPSocket::TCPSocket(std::unique_ptr<net::TCPSocket> socket)
     : socket_(std::move(socket)) {}
 
 TCPSocket::~TCPSocket() = default;
@@ -21,16 +21,16 @@ TCPServerSocket* TCPSocket::ToTCPServerSocket() {
   return reinterpret_cast<TCPServerSocket*>(this);
 }
 
-int TCPSocket::Write(::net::IOBuffer* buf, int buf_len,
-                     ::net::CompletionOnceCallback callback) {
+int TCPSocket::Write(net::IOBuffer* buf, int buf_len,
+                     net::CompletionOnceCallback callback) {
   DCHECK(socket_);
   return socket_->Write(
       buf, buf_len, std::move(callback),
-      ::net::DefineNetworkTrafficAnnotation("TCPSocket", "Write"));
+      net::DefineNetworkTrafficAnnotation("TCPSocket", "Write"));
 }
 
-int TCPSocket::Read(::net::IOBuffer* buf, int buf_len,
-                    ::net::CompletionOnceCallback callback) {
+int TCPSocket::Read(net::IOBuffer* buf, int buf_len,
+                    net::CompletionOnceCallback callback) {
   DCHECK(socket_);
   return socket_->Read(buf, buf_len, std::move(callback));
 }

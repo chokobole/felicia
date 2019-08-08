@@ -18,7 +18,7 @@ class FrameReceiver {
   virtual void ReceiveFrame(const uint8_t* video_frame, int video_frame_length,
                             const CameraFormat& camera_format,
                             int aspect_numerator, int aspect_denominator,
-                            ::base::TimeDelta timestamp) = 0;
+                            base::TimeDelta timestamp) = 0;
 
   // Forwarder to CameraInterface::status_callback_.
   virtual void ReceiveError(const Status& status) = 0;

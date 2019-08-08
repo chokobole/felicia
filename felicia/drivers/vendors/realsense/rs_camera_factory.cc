@@ -10,15 +10,15 @@ namespace felicia {
 // static
 std::unique_ptr<RsCamera> RsCameraFactory::NewDepthCamera(
     const CameraDescriptor& descriptor) {
-  return ::base::WrapUnique(new RsCamera(descriptor));
+  return base::WrapUnique(new RsCamera(descriptor));
 }
 
 // static
 Status RsCameraFactory::GetCameraDescriptors(
     CameraDescriptors* camera_descriptors) {
   DCHECK(camera_descriptors->empty());
-  ::rs2::context context;
-  ::rs2::device_list list = context.query_devices();
+  rs2::context context;
+  rs2::device_list list = context.query_devices();
   for (auto&& dev : list) {
     const char* device_name = dev.get_info(RS2_CAMERA_INFO_NAME);
     const char* physical_port = dev.get_info(RS2_CAMERA_INFO_PHYSICAL_PORT);
@@ -35,7 +35,7 @@ Status RsCameraFactory::GetSupportedCapabilities(
     const CameraDescriptor& camera_descriptor,
     RsCapabilityMap* rs_capability_map) {
   DCHECK(rs_capability_map->empty());
-  ::rs2::device device;
+  rs2::device device;
   Status s = RsCamera::CreateDevice(camera_descriptor, &device);
   if (!s.ok()) return s;
 

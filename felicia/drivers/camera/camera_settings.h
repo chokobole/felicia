@@ -31,18 +31,18 @@ class EXPORT CameraSettings {
 #undef DECLARE_NAMED_VALUE_METHOD
 
  private:
-  ::base::Optional<CameraSettingsMode> white_balance_mode_;
-  ::base::Optional<CameraSettingsMode> exposure_mode_;
-  ::base::Optional<int64_t> exposure_compensation_;
-  ::base::Optional<int64_t> exposure_time_;
-  ::base::Optional<int64_t> color_temperature_;
-  ::base::Optional<int64_t> brightness_;
-  ::base::Optional<int64_t> contrast_;
-  ::base::Optional<int64_t> saturation_;
-  ::base::Optional<int64_t> sharpness_;
-  ::base::Optional<int64_t> hue_;
-  ::base::Optional<int64_t> gain_;
-  ::base::Optional<int64_t> gamma_;
+  base::Optional<CameraSettingsMode> white_balance_mode_;
+  base::Optional<CameraSettingsMode> exposure_mode_;
+  base::Optional<int64_t> exposure_compensation_;
+  base::Optional<int64_t> exposure_time_;
+  base::Optional<int64_t> color_temperature_;
+  base::Optional<int64_t> brightness_;
+  base::Optional<int64_t> contrast_;
+  base::Optional<int64_t> saturation_;
+  base::Optional<int64_t> sharpness_;
+  base::Optional<int64_t> hue_;
+  base::Optional<int64_t> gain_;
+  base::Optional<int64_t> gamma_;
 };
 
 }  // namespace felicia

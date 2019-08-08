@@ -47,7 +47,7 @@ class EXPORT GrpcMasterClient : public MasterClientInterface {
  private:
   std::unique_ptr<grpc::MasterService::Stub> stub_;
   ::grpc::CompletionQueue cq_;
-  std::vector<std::unique_ptr<::base::Thread>> threads_;
+  std::vector<std::unique_ptr<base::Thread>> threads_;
 
   DISALLOW_COPY_AND_ASSIGN(GrpcMasterClient);
 };

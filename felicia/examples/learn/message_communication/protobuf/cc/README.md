@@ -120,8 +120,8 @@ void RequestPublish() {
 
   publisher_.RequestPublish(
         node_info_, topic_, channel_type_, settings,
-        ::base::BindOnce(&SimplePublishingNode::OnRequestPublish,
-                         ::base::Unretained(this)));
+        base::BindOnce(&SimplePublishingNode::OnRequestPublish,
+                         base::Unretained(this)));
 }
 ```
 
@@ -138,16 +138,16 @@ void OnRequestPublish(const Status& s) {
 
 void RepeatingPublish() {
   publisher_.Publish(GenerateMessage(),
-                     ::base::BindOnce(&SimplePublishingNode::OnPublish,
-                                      ::base::Unretained(this)));
+                     base::BindOnce(&SimplePublishingNode::OnPublish,
+                                      base::Unretained(this)));
 
   if (!publisher_.IsUnregistered()) {
     MasterProxy& master_proxy = MasterProxy::GetInstance();
     master_proxy.PostDelayedTask(
         FROM_HERE,
-        ::base::BindOnce(&SimplePublishingNode::RepeatingPublish,
-                          ::base::Unretained(this)),
-        ::base::TimeDelta::FromSeconds(1));
+        base::BindOnce(&SimplePublishingNode::RepeatingPublish,
+                          base::Unretained(this)),
+        base::TimeDelta::FromSeconds(1));
   }
 }
 
@@ -162,8 +162,8 @@ To use `Unpublish` method, you have to do like below.
 ```c++
 publisher_.RequestUnpublish(
         node_info_, topic_,
-        ::base::BindOnce(&SimplePublishingNode::OnRequestUnpublish,
-                         ::base::Unretained(this)));
+        base::BindOnce(&SimplePublishingNode::OnRequestUnpublish,
+                         base::Unretained(this)));
 ```
 
 Same with above, if request is successfully delivered to the server, then callback
@@ -187,13 +187,13 @@ void RequestSubscribe() {
       node_info_, topic_,
       ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_UDP |
             ChannelDef::CHANNEL_TYPE_UDS | ChannelDef::CHANNEL_TYPE_SHM,
-      ::base::BindRepeating(&SimpleSubscribingNode::OnMessage,
-                            ::base::Unretained(this)),
-      ::base::BindRepeating(&SimpleSubscribingNode::OnSubscriptionError,
-                            ::base::Unretained(this)),
+      base::BindRepeating(&SimpleSubscribingNode::OnMessage,
+                            base::Unretained(this)),
+      base::BindRepeating(&SimpleSubscribingNode::OnSubscriptionError,
+                            base::Unretained(this)),
       settings,
-      ::base::BindOnce(&SimpleSubscribingNode::OnRequestSubscribe,
-                        ::base::Unretained(this)));
+      base::BindOnce(&SimpleSubscribingNode::OnRequestSubscribe,
+                        base::Unretained(this)));
 }
 ```
 
@@ -210,8 +210,8 @@ struct Settings {
 
   Settings() = default;
 
-  ::base::TimeDelta period =
-      ::base::TimeDelta::FromMilliseconds(kDefaultPeriod);
+  base::TimeDelta period =
+      base::TimeDelta::FromMilliseconds(kDefaultPeriod);
   Bytes buffer_size = Bytes::FromBytes(kDefaultMessageSize);
   bool is_dynamic_buffer = false;
   uint8_t queue_size = kDefaultQueueSize;
@@ -228,8 +228,8 @@ To `Unsubscribe`, it's also very similar.
 void RequestUnsubscribe() {
   subscriber_.RequestUnsubscribe(
       node_info_, topic_,
-      ::base::BindOnce(&SimpleSubscribingNode::OnRequestUnsubscribe,
-                        ::base::Unretained(this)));
+      base::BindOnce(&SimpleSubscribingNode::OnRequestUnsubscribe,
+                        base::Unretained(this)));
 }
 
 void OnRequestUnsubscribe(const Status& s) {

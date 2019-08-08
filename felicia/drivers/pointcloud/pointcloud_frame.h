@@ -15,7 +15,7 @@ class EXPORT PointcloudFrame {
   PointcloudFrame();
   PointcloudFrame(size_t points_size, size_t colors_size);
   PointcloudFrame(std::vector<Point3f>&& points, std::vector<uint8_t>&& colors,
-                  ::base::TimeDelta timestamp) noexcept;
+                  base::TimeDelta timestamp) noexcept;
   PointcloudFrame(PointcloudFrame&& other) noexcept;
   PointcloudFrame& operator=(PointcloudFrame&& other);
 
@@ -24,8 +24,8 @@ class EXPORT PointcloudFrame {
   void AddPointAndColor(float x, float y, float z, uint8_t r, uint8_t g,
                         uint8_t b);
 
-  void set_timestamp(::base::TimeDelta time);
-  ::base::TimeDelta timestamp() const;
+  void set_timestamp(base::TimeDelta time);
+  base::TimeDelta timestamp() const;
 
   PointcloudFrameMessage ToPointcloudFrameMessage() const;
   static PointcloudFrame FromPointcloudFrameMessage(
@@ -34,13 +34,12 @@ class EXPORT PointcloudFrame {
  private:
   std::vector<Point3f> points_;
   std::vector<uint8_t> colors_;
-  ::base::TimeDelta timestamp_;
+  base::TimeDelta timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(PointcloudFrame);
 };
 
-typedef ::base::RepeatingCallback<void(PointcloudFrame)>
-    PointcloudFrameCallback;
+typedef base::RepeatingCallback<void(PointcloudFrame)> PointcloudFrameCallback;
 
 }  // namespace felicia
 

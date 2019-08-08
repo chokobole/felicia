@@ -17,7 +17,7 @@ extern Bytes kHeartBeatBytes;
 class HeartBeatListener {
  public:
   using OnDisconnectCallback =
-      ::base::OnceCallback<void(const ClientInfo& client_info)>;
+      base::OnceCallback<void(const ClientInfo& client_info)>;
 
   explicit HeartBeatListener(const ClientInfo& client_info,
                              OnDisconnectCallback callback);
@@ -44,13 +44,13 @@ class HeartBeatListener {
   HeartBeat heart_beat_;
   std::unique_ptr<Channel<HeartBeat>> channel_;
 
-  ::base::CancelableOnceClosure timeout_;
+  base::CancelableOnceClosure timeout_;
   static constexpr uint8_t kMultiplier = 5;
 
   DISALLOW_COPY_AND_ASSIGN(HeartBeatListener);
 };
 
-::base::TimeDelta GetHeartBeatDuration();
+base::TimeDelta GetHeartBeatDuration();
 
 }  // namespace felicia
 

@@ -12,7 +12,7 @@ class StreamSocketBroadcaster {
       std::vector<std::unique_ptr<StreamSocket>>* sockets);
   ~StreamSocketBroadcaster();
 
-  void Broadcast(scoped_refptr<::net::IOBuffer> buffer, int size,
+  void Broadcast(scoped_refptr<net::IOBuffer> buffer, int size,
                  StatusOnceCallback callback);
 
  private:

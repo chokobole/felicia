@@ -19,13 +19,13 @@ Posed PosedMessageToPosed(const PosedMessage& message) {
 }
 
 PosefWithTimestampMessage PosefToPosefWithTimestampMessage(
-    const Posef& pose, ::base::TimeDelta timestamp) {
+    const Posef& pose, base::TimeDelta timestamp) {
   return PoseToPoseWithTimestampMessage<PosefWithTimestampMessage,
                                         PointfMessage>(pose, timestamp);
 }
 
 PosedWithTimestampMessage PosedToPosedWithTimestampMessage(
-    const Posed& pose, ::base::TimeDelta timestamp) {
+    const Posed& pose, base::TimeDelta timestamp) {
   return PoseToPoseWithTimestampMessage<PosedWithTimestampMessage,
                                         PointdMessage>(pose, timestamp);
 }
@@ -59,14 +59,14 @@ Pose3d Pose3dMessageToPose3d(const Pose3dMessage& message) {
 }
 
 Pose3fWithTimestampMessage Pose3fToPose3fWithTimestampMessage(
-    const Pose3f& pose, ::base::TimeDelta timestamp) {
+    const Pose3f& pose, base::TimeDelta timestamp) {
   return Pose3ToPose3WithTimestampMessage<Pose3fWithTimestampMessage,
                                           Point3fMessage, QuaternionfMessage>(
       pose, timestamp);
 }
 
 Pose3dWithTimestampMessage Pose3dToPose3dWithTimestampMessage(
-    const Pose3d& pose, ::base::TimeDelta timestamp) {
+    const Pose3d& pose, base::TimeDelta timestamp) {
   return Pose3ToPose3WithTimestampMessage<Pose3dWithTimestampMessage,
                                           Point3dMessage, QuaterniondMessage>(
       pose, timestamp);

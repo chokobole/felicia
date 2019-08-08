@@ -40,7 +40,7 @@ void TopicInfoWatcher::Start() {
 void TopicInfoWatcher::DoAccept() {
   TCPChannel<TopicInfo>* tcp_channel = server_channel_->ToTCPChannel();
   tcp_channel->AcceptOnceIntercept(
-      ::base::BindOnce(&TopicInfoWatcher::OnAccept, ::base::Unretained(this)));
+      base::BindOnce(&TopicInfoWatcher::OnAccept, base::Unretained(this)));
 }
 
 void TopicInfoWatcher::OnAccept(
@@ -58,8 +58,8 @@ void TopicInfoWatcher::WatchNewTopicInfo() {
   channel_->SetReceiveBufferSize(kTopicInfoBytes);
 
   channel_->ReceiveMessage(&topic_info_,
-                           ::base::BindOnce(&TopicInfoWatcher::OnNewTopicInfo,
-                                            ::base::Unretained(this)));
+                           base::BindOnce(&TopicInfoWatcher::OnNewTopicInfo,
+                                          base::Unretained(this)));
 }
 
 void TopicInfoWatcher::OnNewTopicInfo(const Status& s) {

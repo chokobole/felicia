@@ -90,11 +90,11 @@ std::string ExtractFileNameFromDeviceId(const std::string& device_id) {
 class DevVideoFilePathsDeviceProvider {
  public:
   void GetDeviceIds(std::vector<std::string>* target_container) {
-    const ::base::FilePath path("/dev/");
-    ::base::FileEnumerator enumerator(path, false, base::FileEnumerator::FILES,
-                                      "video*");
+    const base::FilePath path("/dev/");
+    base::FileEnumerator enumerator(path, false, base::FileEnumerator::FILES,
+                                    "video*");
     while (!enumerator.Next().empty()) {
-      const ::base::FileEnumerator::FileInfo info = enumerator.GetInfo();
+      const base::FileEnumerator::FileInfo info = enumerator.GetInfo();
       target_container->emplace_back(path.value() + info.GetName().value());
     }
   }
@@ -103,7 +103,7 @@ class DevVideoFilePathsDeviceProvider {
     const std::string file_name = ExtractFileNameFromDeviceId(device_id);
     std::string usb_id;
     const std::string vid_path =
-        ::base::StringPrintf(kVidPathTemplate, file_name.c_str());
+        base::StringPrintf(kVidPathTemplate, file_name.c_str());
     if (!ReadIdFile(vid_path, &usb_id)) return usb_id;
 
     usb_id.append(":");
@@ -117,11 +117,11 @@ class DevVideoFilePathsDeviceProvider {
   std::string GetDeviceDisplayName(const std::string& device_id) {
     const std::string file_name = ExtractFileNameFromDeviceId(device_id);
     const std::string interface_path =
-        ::base::StringPrintf(kInterfacePathTemplate, file_name.c_str());
+        base::StringPrintf(kInterfacePathTemplate, file_name.c_str());
     std::string display_name;
-    if (!::base::ReadFileToStringWithMaxSize(::base::FilePath(interface_path),
-                                             &display_name,
-                                             kMaxInterfaceNameSize)) {
+    if (!base::ReadFileToStringWithMaxSize(base::FilePath(interface_path),
+                                           &display_name,
+                                           kMaxInterfaceNameSize)) {
       return std::string();
     }
     return display_name;
@@ -143,7 +143,7 @@ Status V4l2Camera::GetCameraDescriptors(CameraDescriptors* camera_descriptors) {
   std::vector<std::string> filepaths;
   device_provider.GetDeviceIds(&filepaths);
   for (auto& unique_id : filepaths) {
-    ::base::ScopedFD fd(HANDLE_EINTR(open(unique_id.c_str(), O_RDONLY)));
+    base::ScopedFD fd(HANDLE_EINTR(open(unique_id.c_str(), O_RDONLY)));
     if (!fd.is_valid()) {
       DLOG(ERROR) << "Couldn't open " << unique_id;
       continue;
@@ -170,7 +170,7 @@ Status V4l2Camera::GetSupportedCameraFormats(
     const CameraDescriptor& camera_descriptor, CameraFormats* camera_formats) {
   DCHECK(camera_formats->empty());
 
-  ::base::ScopedFD fd;
+  base::ScopedFD fd;
   Status s = InitDevice(camera_descriptor, &fd);
   if (!s.ok()) return s;
 
@@ -270,7 +270,7 @@ Status V4l2Camera::Start(const CameraFormat& requested_camera_format,
     DoCapture();
   } else {
     thread_.task_runner()->PostTask(
-        FROM_HERE, ::base::BindOnce(&V4l2Camera::DoCapture, AsWeakPtr()));
+        FROM_HERE, base::BindOnce(&V4l2Camera::DoCapture, AsWeakPtr()));
   }
 
   return Status::OK();
@@ -285,10 +285,9 @@ Status V4l2Camera::Stop() {
   if (thread_.task_runner()->BelongsToCurrentThread()) {
     DoStop(nullptr, &s);
   } else {
-    ::base::WaitableEvent* event = new ::base::WaitableEvent();
+    base::WaitableEvent* event = new base::WaitableEvent();
     thread_.task_runner()->PostTask(
-        FROM_HERE,
-        ::base::BindOnce(&V4l2Camera::DoStop, AsWeakPtr(), event, &s));
+        FROM_HERE, base::BindOnce(&V4l2Camera::DoStop, AsWeakPtr(), event, &s));
     event->Wait();
     delete event;
   }
@@ -553,7 +552,7 @@ Status V4l2Camera::SetCameraFormat(const CameraFormat& camera_format) {
   return Status::OK();
 }
 
-void V4l2Camera::DoStop(::base::WaitableEvent* event, Status* status) {
+void V4l2Camera::DoStop(base::WaitableEvent* event, Status* status) {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
   ScopedEventSignaller signaller(event);
 
@@ -603,17 +602,16 @@ void V4l2Camera::DoCapture() {
   } else {
     CameraBuffer& camera_buffer = buffers_[buffer.index];
     camera_buffer.set_payload(buffer.bytesused);
-    ::base::TimeDelta timestamp = timestamper_.timestamp();
+    base::TimeDelta timestamp = timestamper_.timestamp();
     if (requested_pixel_format_ == camera_format_.pixel_format()) {
       std::unique_ptr<uint8_t[]> data(new uint8_t[camera_buffer.payload()]);
       memcpy(data.get(), camera_buffer.start(), camera_buffer.payload());
       camera_frame_callback_.Run(CameraFrame{
           std::move(data), camera_buffer.payload(), camera_format_, timestamp});
     } else {
-      ::base::Optional<CameraFrame> camera_frame =
-          ConvertToRequestedPixelFormat(camera_buffer.start(),
-                                        camera_buffer.payload(), camera_format_,
-                                        requested_pixel_format_, timestamp);
+      base::Optional<CameraFrame> camera_frame = ConvertToRequestedPixelFormat(
+          camera_buffer.start(), camera_buffer.payload(), camera_format_,
+          requested_pixel_format_, timestamp);
       if (camera_frame.has_value()) {
         camera_frame_callback_.Run(std::move(camera_frame.value()));
       } else {
@@ -630,7 +628,7 @@ void V4l2Camera::DoCapture() {
   }
 
   thread_.task_runner()->PostTask(
-      FROM_HERE, ::base::BindOnce(&V4l2Camera::DoCapture, AsWeakPtr()));
+      FROM_HERE, base::BindOnce(&V4l2Camera::DoCapture, AsWeakPtr()));
 }
 
 namespace {
@@ -714,12 +712,12 @@ bool V4l2Camera::RunIoctl(int fd, int request, void* argp) {
 
 // static
 Status V4l2Camera::InitDevice(const CameraDescriptor& camera_descriptor,
-                              ::base::ScopedFD* fd) {
+                              base::ScopedFD* fd) {
   const std::string& device_id = camera_descriptor.device_id();
-  ::base::ScopedFD fd_temp(HANDLE_EINTR(open(device_id.c_str(), O_RDWR)));
-  if (fd_temp == ::base::kInvalidPlatformFile)
+  base::ScopedFD fd_temp(HANDLE_EINTR(open(device_id.c_str(), O_RDWR)));
+  if (fd_temp == base::kInvalidPlatformFile)
     return errors::Unavailable(
-        ::base::StringPrintf("Failed to open %s.", device_id.c_str()));
+        base::StringPrintf("Failed to open %s.", device_id.c_str()));
 
   v4l2_capability cap;
   if (!(DoIoctl(fd_temp.get(), VIDIOC_QUERYCAP, &cap) == 0) &&

@@ -19,7 +19,7 @@ SharedMemory* ChannelImpl::ToSharedMemory() {
   return reinterpret_cast<SharedMemory*>(this);
 }
 
-ChannelDef ToChannelDef(const ::net::IPEndPoint& ip_endpoint,
+ChannelDef ToChannelDef(const net::IPEndPoint& ip_endpoint,
                         ChannelDef::Type type) {
   DCHECK(type == ChannelDef::CHANNEL_TYPE_TCP ||
          type == ChannelDef::CHANNEL_TYPE_UDP ||

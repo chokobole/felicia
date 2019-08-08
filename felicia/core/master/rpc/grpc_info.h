@@ -6,7 +6,7 @@
 
 namespace felicia {
 
-EXPORT ::net::IPAddress ResolveGRPCServiceIp();
+EXPORT net::IPAddress ResolveGRPCServiceIp();
 
 EXPORT uint16_t ResolveGRPCServicePort();
 

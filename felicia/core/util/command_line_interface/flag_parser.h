@@ -127,7 +127,7 @@ class EXPORT FlagParser {
   void PrintDescription(Delegate* delegate);
   void PrintHelp(Delegate* delegate);
 
-  ::base::StringPiece current();
+  base::StringPiece current();
   void Proceed();
 
   std::string program_name_;

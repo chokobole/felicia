@@ -17,7 +17,7 @@ class WebSocketExtensionInterface {
  public:
   WebSocketExtensionInterface();
   virtual ~WebSocketExtensionInterface();
-  virtual bool Negotiate(::base::StringTokenizer& params,
+  virtual bool Negotiate(base::StringTokenizer& params,
                          const channel::WSSettings& settings,
                          std::string* response) = 0;
   virtual void AppendResponse(std::string* response) const = 0;
@@ -38,7 +38,7 @@ class WebSocketExtension {
       std::vector<WebSocketExtensionInterface*>* accepted_extensions);
 
  private:
-  ::base::flat_map<std::string, std::unique_ptr<WebSocketExtensionInterface>>
+  base::flat_map<std::string, std::unique_ptr<WebSocketExtensionInterface>>
       extensions_;
 };
 

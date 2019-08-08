@@ -21,15 +21,15 @@ class EXPORT SSLServerContext {
   ~SSLServerContext();
 
   static std::unique_ptr<SSLServerContext> NewSSLServerContext(
-      const ::base::FilePath& cert_file_path,
-      const ::base::FilePath& private_key_file_path);
+      const base::FilePath& cert_file_path,
+      const base::FilePath& private_key_file_path);
 
  private:
   friend class SSLServerSocket;
   template <typename T>
   friend class TCPChannel;
-  SSLServerContext(const ::base::FilePath& cert_file_path,
-                   const ::base::FilePath& private_key_file_path);
+  SSLServerContext(const base::FilePath& cert_file_path,
+                   const base::FilePath& private_key_file_path);
 
   std::unique_ptr<SSLServerSocket> CreateSSLServerSocket(
       std::unique_ptr<StreamSocket> stream_socket);

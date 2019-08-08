@@ -77,10 +77,10 @@ class EXPORT Master {
 
   // Find the node whose |node_info| is same with a given |node_info|. This is
   // thread-safe.
-  ::base::WeakPtr<Node> FindNode(const NodeInfo& node_info);
+  base::WeakPtr<Node> FindNode(const NodeInfo& node_info);
   // Find the nodes which meet the given condition |node_filter|. This is
   // thread-safe.
-  std::vector<::base::WeakPtr<Node>> FindNodes(const NodeFilter& node_filter);
+  std::vector<base::WeakPtr<Node>> FindNodes(const NodeFilter& node_filter);
   // Find the topics infos which meet the give condition |topic_filter|. This
   // is thread-safe.
   std::vector<TopicInfo> FindTopicInfos(const TopicFilter& topic_filter);
@@ -123,10 +123,10 @@ class EXPORT Master {
 
   Master();
 
-  std::unique_ptr<::base::Thread> thread_;
+  std::unique_ptr<base::Thread> thread_;
 
-  ::base::Lock lock_;
-  ::base::flat_map<uint32_t, std::unique_ptr<Client>> client_map_
+  base::Lock lock_;
+  base::flat_map<uint32_t, std::unique_ptr<Client>> client_map_
       GUARDED_BY(lock_);
 
   bool check_heart_beat_ = true;

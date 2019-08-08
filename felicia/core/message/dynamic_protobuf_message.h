@@ -18,10 +18,10 @@ class EXPORT DynamicProtobufMessage {
   DynamicProtobufMessage& operator=(DynamicProtobufMessage&& other);
   ~DynamicProtobufMessage();
 
-  ::google::protobuf::Message* message();
-  const ::google::protobuf::Message* message() const;
+  google::protobuf::Message* message();
+  const google::protobuf::Message* message() const;
 
-  void Reset(::google::protobuf::Message* message);
+  void Reset(google::protobuf::Message* message);
 
   std::string ToString() const;
   std::string DebugString() const;
@@ -33,7 +33,7 @@ class EXPORT DynamicProtobufMessage {
   bool ParseFromArray(const char* data, size_t size);
 
  private:
-  ::google::protobuf::Message* message_ = nullptr;
+  google::protobuf::Message* message_ = nullptr;
 };
 
 }  // namespace felicia

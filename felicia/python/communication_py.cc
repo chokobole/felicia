@@ -71,9 +71,8 @@ void AddCommunication(py::module& m) {
 
             self.RequestPublish(
                 node_info, topic, channel_types, settings,
-                ::base::BindOnce(
-                    &PyStatusCallback::Invoke,
-                    ::base::Owned(new PyStatusCallback(callback))));
+                base::BindOnce(&PyStatusCallback::Invoke,
+                               base::Owned(new PyStatusCallback(callback))));
           },
           py::call_guard<py::gil_scoped_release>())
       .def("publish",
@@ -89,9 +88,9 @@ void AddCommunication(py::module& m) {
 
              py::gil_scoped_release release;
              self.PublishFromSerialized(
-                 text, ::base::BindRepeating(
+                 text, base::BindRepeating(
                            &PySendMessageCallback::Invoke,
-                           ::base::Owned(new PySendMessageCallback(callback))));
+                           base::Owned(new PySendMessageCallback(callback))));
            })
       .def(
           "request_unpublish",
@@ -99,9 +98,8 @@ void AddCommunication(py::module& m) {
              const std::string& topic, py::function callback) {
             self.RequestUnpublish(
                 node_info, topic,
-                ::base::BindOnce(
-                    &PyStatusCallback::Invoke,
-                    ::base::Owned(new PyStatusCallback(callback))));
+                base::BindOnce(&PyStatusCallback::Invoke,
+                               base::Owned(new PyStatusCallback(callback))));
           },
           py::call_guard<py::gil_scoped_release>());
 
@@ -122,17 +120,16 @@ void AddCommunication(py::module& m) {
              const communication::Settings& settings, py::function callback) {
             self.RequestSubscribe(
                 node_info, topic, channel_types,
-                ::base::BindRepeating(
+                base::BindRepeating(
                     &PyMessageCallback::Invoke,
-                    ::base::Owned(new PyMessageCallback(mesage_prototype,
-                                                        on_message_callback))),
-                ::base::BindRepeating(
+                    base::Owned(new PyMessageCallback(mesage_prototype,
+                                                      on_message_callback))),
+                base::BindRepeating(
                     &PyStatusCallback::Invoke,
-                    ::base::Owned(new PyStatusCallback(on_error_callback))),
+                    base::Owned(new PyStatusCallback(on_error_callback))),
                 settings,
-                ::base::BindOnce(
-                    &PyStatusCallback::Invoke,
-                    ::base::Owned(new PyStatusCallback(callback))));
+                base::BindOnce(&PyStatusCallback::Invoke,
+                               base::Owned(new PyStatusCallback(callback))));
           },
           py::call_guard<py::gil_scoped_release>())
       .def(
@@ -141,9 +138,8 @@ void AddCommunication(py::module& m) {
              const std::string& topic, py::function callback) {
             self.RequestUnsubscribe(
                 node_info, topic,
-                ::base::BindOnce(
-                    &PyStatusCallback::Invoke,
-                    ::base::Owned(new PyStatusCallback(callback))));
+                base::BindOnce(&PyStatusCallback::Invoke,
+                               base::Owned(new PyStatusCallback(callback))));
           },
           py::call_guard<py::gil_scoped_release>());
 }

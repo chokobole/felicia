@@ -11,7 +11,7 @@ StreamSocketBroadcaster::StreamSocketBroadcaster(
 
 StreamSocketBroadcaster::~StreamSocketBroadcaster() = default;
 
-void StreamSocketBroadcaster::Broadcast(scoped_refptr<::net::IOBuffer> buffer,
+void StreamSocketBroadcaster::Broadcast(scoped_refptr<net::IOBuffer> buffer,
                                         int size, StatusOnceCallback callback) {
   DCHECK_EQ(0, to_write_count_);
   DCHECK_EQ(0, written_count_);
@@ -23,7 +23,7 @@ void StreamSocketBroadcaster::Broadcast(scoped_refptr<::net::IOBuffer> buffer,
 
   if (sockets_->size() == 0) {
     std::move(callback).Run(errors::NetworkError(
-        ::net::ErrorToString(::net::ERR_SOCKET_NOT_CONNECTED)));
+        net::ErrorToString(net::ERR_SOCKET_NOT_CONNECTED)));
     return;
   }
 
@@ -31,16 +31,16 @@ void StreamSocketBroadcaster::Broadcast(scoped_refptr<::net::IOBuffer> buffer,
   callback_ = std::move(callback);
   auto it = sockets_->begin();
   while (it != sockets_->end()) {
-    scoped_refptr<::net::DrainableIOBuffer> write_buffer =
-        ::base::MakeRefCounted<::net::DrainableIOBuffer>(
-            buffer, static_cast<size_t>(size));
+    scoped_refptr<net::DrainableIOBuffer> write_buffer =
+        base::MakeRefCounted<net::DrainableIOBuffer>(buffer,
+                                                     static_cast<size_t>(size));
     while (write_buffer->BytesRemaining() > 0) {
       int rv =
           (*it)->Write(write_buffer.get(), write_buffer->BytesRemaining(),
-                       ::base::BindOnce(&StreamSocketBroadcaster::OnWrite,
-                                        ::base::Unretained(this), (*it).get()));
+                       base::BindOnce(&StreamSocketBroadcaster::OnWrite,
+                                      base::Unretained(this), (*it).get()));
 
-      if (rv == ::net::ERR_IO_PENDING) break;
+      if (rv == net::ERR_IO_PENDING) break;
 
       if (rv >= 0) {
         write_buffer->DidConsume(rv);
@@ -57,8 +57,8 @@ void StreamSocketBroadcaster::Broadcast(scoped_refptr<::net::IOBuffer> buffer,
 }
 
 void StreamSocketBroadcaster::OnWrite(StreamSocket* socket, int result) {
-  if (result == ::net::ERR_CONNECTION_RESET ||
-      (socket->IsStreamSocket() && result == ::net::ERR_FAILED)) {
+  if (result == net::ERR_CONNECTION_RESET ||
+      (socket->IsStreamSocket() && result == net::ERR_FAILED)) {
     socket->Close();
     has_closed_sockets_ = true;
   }
@@ -66,7 +66,7 @@ void StreamSocketBroadcaster::OnWrite(StreamSocket* socket, int result) {
   written_count_++;
   if (result < 0) {
     LOG(ERROR) << "StreamSocketBroadcaster::OnWrite: "
-               << ::net::ErrorToString(result);
+               << net::ErrorToString(result);
     write_result_ = result;
   }
   if (to_write_count_ == written_count_) {

@@ -79,8 +79,7 @@ class DynamicSubscribingNode : public NodeLifecycle {
   std::unique_ptr<OneTopicDelegate> one_topic_delegate_;
   std::unique_ptr<MultiTopicDelegate> multi_topic_delegate_;
   NodeInfo node_info_;
-  ::base::flat_map<std::string, std::unique_ptr<DynamicSubscriber>>
-      subscribers_;
+  base::flat_map<std::string, std::unique_ptr<DynamicSubscriber>> subscribers_;
 
   DISALLOW_COPY_AND_ASSIGN(DynamicSubscribingNode);
 };

@@ -51,12 +51,12 @@ namespace felicia {
 namespace {
 
 Status ToNetUDSEndPoint(const UDSEndPoint& uds_endpoint,
-                        ::net::UDSEndPoint* net_uds_endpoint) {
+                        net::UDSEndPoint* net_uds_endpoint) {
   net_uds_endpoint->set_socket_path(uds_endpoint.socket_path());
   net_uds_endpoint->set_use_abstract_namespace(
       uds_endpoint.use_abstract_namespace());
 
-  ::net::SockaddrStorage address;
+  net::SockaddrStorage address;
   if (!net_uds_endpoint->ToSockAddrStorage(&address)) {
     return errors::InvalidArgument("Failed to convert to SockAddrStorage.");
   }
@@ -67,7 +67,7 @@ Status ToNetUDSEndPoint(const UDSEndPoint& uds_endpoint,
 }  // namespace
 
 Status ToNetUDSEndPoint(const ChannelDef& channel_def,
-                        ::net::UDSEndPoint* uds_endpoint) {
+                        net::UDSEndPoint* uds_endpoint) {
   if (!channel_def.has_uds_endpoint()) {
     return errors::InvalidArgument(
         "channel_def doesn't contain a UDSEndPoint.");
@@ -78,7 +78,7 @@ Status ToNetUDSEndPoint(const ChannelDef& channel_def,
 }
 
 Status ToNetUDSEndPoint(const BrokerEndPoint& broker_endpoint,
-                        ::net::UDSEndPoint* uds_endpoint) {
+                        net::UDSEndPoint* uds_endpoint) {
   if (!broker_endpoint.has_uds_endpoint()) {
     return errors::InvalidArgument(
         "broker_endpoint doesn't contain a UDSEndPoint.");

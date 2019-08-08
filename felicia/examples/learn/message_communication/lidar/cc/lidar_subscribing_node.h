@@ -31,20 +31,20 @@ class LidarSubscribingNode : public NodeLifecycle {
   void RequestSubscribe() {
     communication::Settings settings;
     settings.queue_size = 1;
-    settings.period = ::base::TimeDelta::FromMilliseconds(100);
+    settings.period = base::TimeDelta::FromMilliseconds(100);
     settings.is_dynamic_buffer = true;
 
     subscriber_.RequestSubscribe(
         node_info_, topic_,
         ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_UDP |
             ChannelDef::CHANNEL_TYPE_SHM,
-        ::base::BindRepeating(&LidarSubscribingNode::OnMessage,
-                              ::base::Unretained(this)),
-        ::base::BindRepeating(&LidarSubscribingNode::OnSubscriptionError,
-                              ::base::Unretained(this)),
+        base::BindRepeating(&LidarSubscribingNode::OnMessage,
+                            base::Unretained(this)),
+        base::BindRepeating(&LidarSubscribingNode::OnSubscriptionError,
+                            base::Unretained(this)),
         settings,
-        ::base::BindOnce(&LidarSubscribingNode::OnRequestSubscribe,
-                         ::base::Unretained(this)));
+        base::BindOnce(&LidarSubscribingNode::OnRequestSubscribe,
+                       base::Unretained(this)));
   }
 
   void OnMessage(LidarFrameMessage&& message) {
@@ -64,8 +64,8 @@ class LidarSubscribingNode : public NodeLifecycle {
   void RequestUnsubscribe() {
     subscriber_.RequestUnsubscribe(
         node_info_, topic_,
-        ::base::BindOnce(&LidarSubscribingNode::OnRequestUnsubscribe,
-                         ::base::Unretained(this)));
+        base::BindOnce(&LidarSubscribingNode::OnRequestUnsubscribe,
+                       base::Unretained(this)));
   }
 
   void OnRequestUnsubscribe(const Status& s) {

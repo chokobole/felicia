@@ -17,16 +17,15 @@ bool WebSocketExtension::Negotiate(
     const std::string& extensions, const channel::WSSettings& settings,
     std::string* response,
     std::vector<WebSocketExtensionInterface*>* accepted_extensions) {
-  ::base::StringTokenizer extension(extensions.cbegin(), extensions.cend(),
-                                    ",");
+  base::StringTokenizer extension(extensions.cbegin(), extensions.cend(), ",");
   while (extension.GetNext()) {
-    ::base::StringTokenizer params(extension.token_begin(),
-                                   extension.token_end(), ";");
+    base::StringTokenizer params(extension.token_begin(), extension.token_end(),
+                                 ";");
 
     if (!params.GetNext()) return false;
 
-    ::base::StringPiece key = ::base::TrimWhitespaceASCII(
-        params.token_piece(), ::base::TrimPositions::TRIM_ALL);
+    base::StringPiece key = base::TrimWhitespaceASCII(
+        params.token_piece(), base::TrimPositions::TRIM_ALL);
 
     auto it = extensions_.find(key);
     if (it == extensions_.end()) {

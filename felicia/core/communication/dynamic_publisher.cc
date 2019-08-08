@@ -18,9 +18,9 @@ void DynamicPublisher::PublishFromJson(const std::string& json_message,
                                        SendMessageCallback callback) {
   DCHECK(message_prototype_.message());
 
-  ::google::protobuf::util::Status status =
-      ::google::protobuf::util::JsonStringToMessage(
-          json_message, message_prototype_.message());
+  google::protobuf::util::Status status =
+      google::protobuf::util::JsonStringToMessage(json_message,
+                                                  message_prototype_.message());
   if (!status.ok()) {
     callback.Run(ChannelDef::CHANNEL_TYPE_NONE,
                  Status(static_cast<felicia::error::Code>(status.error_code()),

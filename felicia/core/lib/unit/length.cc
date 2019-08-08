@@ -88,11 +88,11 @@ int64_t Length::length() const { return length_; }
 
 // static
 Length Length::FromDouble(double value) {
-  return Length(::base::saturated_cast<int64_t>(value));
+  return Length(base::saturated_cast<int64_t>(value));
 }
 
 std::ostream& operator<<(std::ostream& os, Length length) {
-  os << ::base::NumberToString(length.length()) << " millimeter";
+  os << base::NumberToString(length.length()) << " millimeter";
   return os;
 }
 

@@ -27,9 +27,9 @@ class SimpleSubscribingNode : public NodeLifecycle {
     // MasterProxy& master_proxy = MasterProxy::GetInstance();
     // master_proxy.PostDelayedTask(
     //     FROM_HERE,
-    //     ::base::BindOnce(&SimpleSubscribingNode::RequestUnsubscribe,
-    //                      ::base::Unretained(this)),
-    //     ::base::TimeDelta::FromSeconds(10));
+    //     base::BindOnce(&SimpleSubscribingNode::RequestUnsubscribe,
+    //                      base::Unretained(this)),
+    //     base::TimeDelta::FromSeconds(10));
   }
 
   void OnError(const Status& s) override {
@@ -47,13 +47,13 @@ class SimpleSubscribingNode : public NodeLifecycle {
         node_info_, topic_,
         ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_UDP |
             ChannelDef::CHANNEL_TYPE_UDS | ChannelDef::CHANNEL_TYPE_SHM,
-        ::base::BindRepeating(&SimpleSubscribingNode::OnMessage,
-                              ::base::Unretained(this)),
-        ::base::BindRepeating(&SimpleSubscribingNode::OnSubscriptionError,
-                              ::base::Unretained(this)),
+        base::BindRepeating(&SimpleSubscribingNode::OnMessage,
+                            base::Unretained(this)),
+        base::BindRepeating(&SimpleSubscribingNode::OnSubscriptionError,
+                            base::Unretained(this)),
         settings,
-        ::base::BindOnce(&SimpleSubscribingNode::OnRequestSubscribe,
-                         ::base::Unretained(this)));
+        base::BindOnce(&SimpleSubscribingNode::OnRequestSubscribe,
+                       base::Unretained(this)));
   }
 
   void OnMessage(MessageSpec&& message) {
@@ -74,8 +74,8 @@ class SimpleSubscribingNode : public NodeLifecycle {
   void RequestUnsubscribe() {
     subscriber_.RequestUnsubscribe(
         node_info_, topic_,
-        ::base::BindOnce(&SimpleSubscribingNode::OnRequestUnsubscribe,
-                         ::base::Unretained(this)));
+        base::BindOnce(&SimpleSubscribingNode::OnRequestUnsubscribe,
+                       base::Unretained(this)));
   }
 
   void OnRequestUnsubscribe(const Status& s) {

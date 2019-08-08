@@ -12,7 +12,7 @@ namespace felicia {
 EXPORT bool SetBlocking(int fd, int blocking);
 #endif
 
-EXPORT ::base::FilePath::StringType ToFilePathString(
+EXPORT base::FilePath::StringType ToFilePathString(
     const std::string& file_path);
 
 }  // namespace felicia

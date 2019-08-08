@@ -78,9 +78,9 @@ class Publisher {
     return message.GetTypeName();
   }
 
-  ::base::Lock lock_;
+  base::Lock lock_;
   std::unique_ptr<Pool<MessageTy, uint8_t>> message_queue_ GUARDED_BY(lock_);
-  ::base::TimeDelta period_;
+  base::TimeDelta period_;
   std::vector<std::unique_ptr<Channel<MessageTy>>> channels_;
 
   communication::RegisterState register_state_;
@@ -96,9 +96,9 @@ void Publisher<MessageTy>::RequestPublish(
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(
         FROM_HERE,
-        ::base::BindOnce(&Publisher<MessageTy>::RequestPublish,
-                         ::base::Unretained(this), node_info, topic,
-                         channel_types, settings, std::move(callback)));
+        base::BindOnce(&Publisher<MessageTy>::RequestPublish,
+                       base::Unretained(this), node_info, topic, channel_types,
+                       settings, std::move(callback)));
     return;
   }
 
@@ -109,7 +109,7 @@ void Publisher<MessageTy>::RequestPublish(
 
   register_state_.ToRegistering(FROM_HERE);
 
-  ::base::StackVector<ChannelDef, ChannelDef::Type_ARRAYSIZE> channel_defs;
+  base::StackVector<ChannelDef, ChannelDef::Type_ARRAYSIZE> channel_defs;
   int channel_type = 1;
   while (channel_type <= channel_types) {
     if (channel_type & channel_types) {
@@ -143,16 +143,16 @@ void Publisher<MessageTy>::RequestPublish(
 
   master_proxy.PublishTopicAsync(
       request, response,
-      ::base::BindOnce(&Publisher<MessageTy>::OnPublishTopicAsync,
-                       ::base::Unretained(this), ::base::Owned(request),
-                       ::base::Owned(response), settings, std::move(callback)));
+      base::BindOnce(&Publisher<MessageTy>::OnPublishTopicAsync,
+                     base::Unretained(this), base::Owned(request),
+                     base::Owned(response), settings, std::move(callback)));
 }
 
 template <typename MessageTy>
 void Publisher<MessageTy>::Publish(const MessageTy& message,
                                    SendMessageCallback callback) {
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     if (message_queue_) message_queue_->push(message);
   }
 
@@ -163,7 +163,7 @@ template <typename MessageTy>
 void Publisher<MessageTy>::Publish(MessageTy&& message,
                                    SendMessageCallback callback) {
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     if (message_queue_) message_queue_->push(std::move(message));
   }
 
@@ -189,9 +189,9 @@ void Publisher<MessageTy>::RequestUnpublish(const NodeInfo& node_info,
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.UnpublishTopicAsync(
       request, response,
-      ::base::BindOnce(&Publisher<MessageTy>::OnUnpublishTopicAsync,
-                       ::base::Unretained(this), ::base::Owned(request),
-                       ::base::Owned(response), std::move(callback)));
+      base::BindOnce(&Publisher<MessageTy>::OnUnpublishTopicAsync,
+                     base::Unretained(this), base::Owned(request),
+                     base::Owned(response), std::move(callback)));
 }
 
 template <typename MessageTy>
@@ -205,7 +205,7 @@ StatusOr<ChannelDef> Publisher<MessageTy>::Setup(
   if (channel->IsTCPChannel()) {
     TCPChannel<MessageTy>* tcp_channel = channel->ToTCPChannel();
     status_or = tcp_channel->Listen();
-    tcp_channel->AcceptLoop(::base::BindRepeating(
+    tcp_channel->AcceptLoop(base::BindRepeating(
         [](const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }));
   } else if (channel->IsUDPChannel()) {
     UDPChannel<MessageTy>* udp_channel = channel->ToUDPChannel();
@@ -215,7 +215,7 @@ StatusOr<ChannelDef> Publisher<MessageTy>::Setup(
   else if (channel->IsWSChannel()) {
     WSChannel<MessageTy>* ws_channel = channel->ToWSChannel();
     status_or = ws_channel->Listen();
-    ws_channel->AcceptLoop(::base::BindRepeating(
+    ws_channel->AcceptLoop(base::BindRepeating(
         [](const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }));
   }
 #endif
@@ -223,7 +223,7 @@ StatusOr<ChannelDef> Publisher<MessageTy>::Setup(
   else if (channel->IsUDSChannel()) {
     UDSChannel<MessageTy>* uds_channel = channel->ToUDSChannel();
     status_or = uds_channel->BindAndListen();
-    uds_channel->AcceptLoop(::base::BindRepeating([](const Status& s) {
+    uds_channel->AcceptLoop(base::BindRepeating([](const Status& s) {
                               LOG_IF(ERROR, !s.ok()) << s;
                             }),
                             settings.uds_settings.auth_callback);
@@ -255,7 +255,7 @@ void Publisher<MessageTy>::OnPublishTopicAsync(
 
   period_ = settings.period;
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     message_queue_ =
         std::make_unique<Pool<MessageTy, uint8_t>>(settings.queue_size);
   }
@@ -301,8 +301,8 @@ void Publisher<MessageTy>::SendMesasge(SendMessageCallback callback) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(FROM_HERE,
-                          ::base::BindOnce(&Publisher<MessageTy>::SendMesasge,
-                                           ::base::Unretained(this), callback));
+                          base::BindOnce(&Publisher<MessageTy>::SendMesasge,
+                                         base::Unretained(this), callback));
     return;
   }
 
@@ -318,7 +318,7 @@ void Publisher<MessageTy>::SendMesasge(SendMessageCallback callback) {
 
   std::string seriazlied;
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     if (message_queue_ && !message_queue_->empty()) {
       MessageIoError err = MessageIO<MessageTy>::SerializeToString(
           &message_queue_->front(), &seriazlied);
@@ -340,8 +340,8 @@ void Publisher<MessageTy>::SendMesasge(SendMessageCallback callback) {
 
   master_proxy.PostDelayedTask(
       FROM_HERE,
-      ::base::BindOnce(&Publisher<MessageTy>::SendMesasge,
-                       ::base::Unretained(this), callback),
+      base::BindOnce(&Publisher<MessageTy>::SendMesasge, base::Unretained(this),
+                     callback),
       period_);
 }
 
@@ -350,15 +350,15 @@ void Publisher<MessageTy>::Release() {
   DCHECK(IsUnregistered());
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(FROM_HERE,
-                          ::base::BindOnce(&Publisher<MessageTy>::Release,
-                                           ::base::Unretained(this)));
+    master_proxy.PostTask(
+        FROM_HERE,
+        base::BindOnce(&Publisher<MessageTy>::Release, base::Unretained(this)));
     return;
   }
 
   channels_.clear();
   {
-    ::base::AutoLock l(lock_);
+    base::AutoLock l(lock_);
     message_queue_.reset();
   }
 }

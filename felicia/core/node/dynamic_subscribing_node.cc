@@ -39,7 +39,7 @@ void DynamicSubscribingNode::RequestSubscribe(
     const std::string& topic, const communication::Settings& settings) {
   if (subscribers_.find(topic) != subscribers_.end()) {
     one_topic_delegate_->OnRequestSubscribe(errors::AlreadyExists(
-        ::base::StrCat({"Already registered with topic", topic})));
+        base::StrCat({"Already registered with topic", topic})));
     return;
   }
 
@@ -48,15 +48,15 @@ void DynamicSubscribingNode::RequestSubscribe(
   subscriber->RequestSubscribe(
       node_info_, topic,
       ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_UDP,
-      ::base::BindRepeating(
+      base::BindRepeating(
           &DynamicSubscribingNode::OneTopicDelegate::OnNewMessage,
-          ::base::Unretained(one_topic_delegate_.get())),
-      ::base::BindRepeating(
+          base::Unretained(one_topic_delegate_.get())),
+      base::BindRepeating(
           &DynamicSubscribingNode::OneTopicDelegate::OnSubscriptionError,
-          ::base::Unretained(one_topic_delegate_.get())),
+          base::Unretained(one_topic_delegate_.get())),
       settings,
-      ::base::BindOnce(&DynamicSubscribingNode::OnRequestSubscribe,
-                       ::base::Unretained(this), topic));
+      base::BindOnce(&DynamicSubscribingNode::OnRequestSubscribe,
+                     base::Unretained(this), topic));
 
   subscribers_[topic] = std::move(subscriber);
 }
@@ -76,8 +76,8 @@ void DynamicSubscribingNode::RequestUnubscribe(const std::string& topic) {
 
   (*it).second->RequestUnsubscribe(
       node_info_, topic,
-      ::base::BindOnce(&DynamicSubscribingNode::OnRequestUnsubscribe,
-                       ::base::Unretained(this), topic));
+      base::BindOnce(&DynamicSubscribingNode::OnRequestUnsubscribe,
+                     base::Unretained(this), topic));
 }
 
 void DynamicSubscribingNode::OnRequestUnsubscribe(const std::string& topic,
@@ -95,8 +95,8 @@ void DynamicSubscribingNode::Subscribe(
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(
         FROM_HERE,
-        ::base::BindOnce(&DynamicSubscribingNode::Subscribe,
-                         ::base::Unretained(this), topic_info, settings));
+        base::BindOnce(&DynamicSubscribingNode::Subscribe,
+                       base::Unretained(this), topic_info, settings));
     return;
   }
 
@@ -106,8 +106,8 @@ void DynamicSubscribingNode::Subscribe(
     if (!it->second->IsStopped()) {
       master_proxy.PostTask(
           FROM_HERE,
-          ::base::BindOnce(&DynamicSubscribingNode::Subscribe,
-                           ::base::Unretained(this), topic_info, settings));
+          base::BindOnce(&DynamicSubscribingNode::Subscribe,
+                         base::Unretained(this), topic_info, settings));
       return;
     }
   }
@@ -115,12 +115,12 @@ void DynamicSubscribingNode::Subscribe(
   auto subscriber = std::make_unique<DynamicSubscriber>();
 
   subscriber->Subscribe(
-      ::base::BindRepeating(
+      base::BindRepeating(
           &DynamicSubscribingNode::MultiTopicDelegate::OnNewMessage,
-          ::base::Unretained(multi_topic_delegate_.get()), topic),
-      ::base::BindRepeating(
+          base::Unretained(multi_topic_delegate_.get()), topic),
+      base::BindRepeating(
           &DynamicSubscribingNode::MultiTopicDelegate::OnSubscriptionError,
-          ::base::Unretained(multi_topic_delegate_.get()), topic),
+          base::Unretained(multi_topic_delegate_.get()), topic),
       settings);
   subscriber->OnFindPublisher(topic_info);
 
@@ -131,8 +131,8 @@ void DynamicSubscribingNode::UpdateTopicInfo(const TopicInfo& topic_info) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(
-        FROM_HERE, ::base::BindOnce(&DynamicSubscribingNode::UpdateTopicInfo,
-                                    ::base::Unretained(this), topic_info));
+        FROM_HERE, base::BindOnce(&DynamicSubscribingNode::UpdateTopicInfo,
+                                  base::Unretained(this), topic_info));
     return;
   }
 
@@ -151,8 +151,8 @@ void DynamicSubscribingNode::Unsubscribe(const std::string& topic,
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(
         FROM_HERE,
-        ::base::BindOnce(&DynamicSubscribingNode::Unsubscribe,
-                         ::base::Unretained(this), topic, std::move(callback)));
+        base::BindOnce(&DynamicSubscribingNode::Unsubscribe,
+                       base::Unretained(this), topic, std::move(callback)));
     return;
   }
 
@@ -161,8 +161,8 @@ void DynamicSubscribingNode::Unsubscribe(const std::string& topic,
 
   it->second->Unsubscribe(
       topic,
-      ::base::BindOnce(&DynamicSubscribingNode::OnUnsubscribe,
-                       ::base::Unretained(this), topic, std::move(callback)));
+      base::BindOnce(&DynamicSubscribingNode::OnUnsubscribe,
+                     base::Unretained(this), topic, std::move(callback)));
 }
 
 void DynamicSubscribingNode::OnUnsubscribe(const std::string& topic,

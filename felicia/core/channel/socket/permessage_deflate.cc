@@ -21,7 +21,7 @@ constexpr const char* kServerMaxWindowBits = "server_max_window_bits";
 
 #define VALIDATE_IF_HAVE_VALUE(key, value, out_value)                        \
   if (!value.empty()) {                                                      \
-    if (::base::StringToInt(value, reinterpret_cast<int*>(&out_value))) {    \
+    if (base::StringToInt(value, reinterpret_cast<int*>(&out_value))) {      \
       if (out_value < kMinWindowBits || out_value > kMaxWindowBits) {        \
         DLOG(ERROR) << "Value should be between " << kMinWindowBits << " ~ " \
                     << kMaxWindowBits << " for " << key << " but got "       \
@@ -33,14 +33,14 @@ constexpr const char* kServerMaxWindowBits = "server_max_window_bits";
     }                                                                        \
   }
 
-bool PermessageDeflate::Negotiate(::base::StringTokenizer& params,
+bool PermessageDeflate::Negotiate(base::StringTokenizer& params,
                                   const channel::WSSettings& settings,
                                   std::string* response) {
   DCHECK(settings.permessage_deflate_enabled);
   client_context_take_over_mode_ =
-      ::net::WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT;
+      net::WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT;
   server_context_take_over_mode_ =
-      ::net::WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT;
+      net::WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT;
   client_max_window_bits_ = kMaxWindowBits;
   server_max_window_bits_ = settings.server_max_window_bits;
 
@@ -49,14 +49,14 @@ bool PermessageDeflate::Negotiate(::base::StringTokenizer& params,
     std::string::const_iterator param_end = params.token_end();
 
     std::string::const_iterator end = std::find(param_begin, param_end, '=');
-    ::base::StringPiece key = ::base::TrimWhitespaceASCII(
-        ::base::StringPiece(&*param_begin, std::distance(param_begin, end)),
-        ::base::TrimPositions::TRIM_ALL);
-    ::base::StringPiece value = ::base::EmptyString();
+    base::StringPiece key = base::TrimWhitespaceASCII(
+        base::StringPiece(&*param_begin, std::distance(param_begin, end)),
+        base::TrimPositions::TRIM_ALL);
+    base::StringPiece value = base::EmptyString();
     if (param_end != end) {
-      value = ::base::TrimWhitespaceASCII(
-          ::base::StringPiece(&*(end + 1), std::distance(end + 1, param_end)),
-          ::base::TrimPositions::TRIM_ALL);
+      value = base::TrimWhitespaceASCII(
+          base::StringPiece(&*(end + 1), std::distance(end + 1, param_end)),
+          base::TrimPositions::TRIM_ALL);
 
       if (strings::ConsumePrefix(&value, "\"")) {
         if (!strings::ConsumeSuffix(&value, "\"")) {
@@ -88,17 +88,17 @@ bool PermessageDeflate::Negotiate(::base::StringTokenizer& params,
 }
 
 void PermessageDeflate::AppendResponse(std::string* response) const {
-  ::base::StringAppendF(response, "%s", kKey);
+  base::StringAppendF(response, "%s", kKey);
   if (client_context_take_over_mode_ ==
-      ::net::WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT) {
-    ::base::StringAppendF(response, "; %s", kClientNoContextTakeover);
+      net::WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT) {
+    base::StringAppendF(response, "; %s", kClientNoContextTakeover);
   }
   if (server_context_take_over_mode_ ==
-      ::net::WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT) {
-    ::base::StringAppendF(response, "; %s", kServerNoContextTakeover);
+      net::WebSocketDeflater::DO_NOT_TAKE_OVER_CONTEXT) {
+    base::StringAppendF(response, "; %s", kServerNoContextTakeover);
   }
-  ::base::StringAppendF(response, "; %s=%d", kServerMaxWindowBits,
-                        server_max_window_bits_);
+  base::StringAppendF(response, "; %s=%d", kServerMaxWindowBits,
+                      server_max_window_bits_);
 }
 
 #undef CHECK_NO_VALUE

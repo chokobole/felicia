@@ -14,7 +14,7 @@ Status GrpcServer::Init() {
   std::string ip = ResolveGRPCServiceIp().ToString();
   uint16_t port = ResolveGRPCServicePort();
   std::cout << "Running on " << ip << ":" << port << "..." << std::endl;
-  std::string server_address(::base::StringPrintf("[::]:%d", port));
+  std::string server_address(base::StringPrintf("[::]:%d", port));
 
   ::grpc::ServerBuilder builder;
   builder.AddListeningPort(server_address, ::grpc::InsecureServerCredentials());
@@ -34,19 +34,18 @@ Status GrpcServer::Init() {
 Status GrpcServer::Start() {
   master_->Run();
 
-  std::vector<std::unique_ptr<::base::Thread>> threads;
-  threads.push_back(std::make_unique<::base::Thread>("RPC Loop1"));
-  threads.push_back(std::make_unique<::base::Thread>("RPC Loop2"));
+  std::vector<std::unique_ptr<base::Thread>> threads;
+  threads.push_back(std::make_unique<base::Thread>("RPC Loop1"));
+  threads.push_back(std::make_unique<base::Thread>("RPC Loop2"));
 
-  std::for_each(
-      threads.begin(), threads.end(),
-      [this](const std::unique_ptr<::base::Thread>& thread) {
-        thread->Start();
-        thread->task_runner()->PostTask(
-            FROM_HERE,
-            ::base::BindOnce(&GrpcMasterService::HandleRpcsLoop,
-                             ::base::Unretained(master_service_.get())));
-      });
+  std::for_each(threads.begin(), threads.end(),
+                [this](const std::unique_ptr<base::Thread>& thread) {
+                  thread->Start();
+                  thread->task_runner()->PostTask(
+                      FROM_HERE,
+                      base::BindOnce(&GrpcMasterService::HandleRpcsLoop,
+                                     base::Unretained(master_service_.get())));
+                });
 
   return Status::OK();
 }

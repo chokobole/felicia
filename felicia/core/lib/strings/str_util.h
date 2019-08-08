@@ -10,29 +10,29 @@ namespace strings {
 
 // If |s| starts with |expected|, consume it and return true.
 // Otherwise, return false.
-EXPORT bool ConsumePrefix(::base::StringPiece* s, ::base::StringPiece expected);
+EXPORT bool ConsumePrefix(base::StringPiece* s, base::StringPiece expected);
 
 // If |s| ends with |expected|, remove it and return true.
 // Otherwise, return false.
-EXPORT bool ConsumeSuffix(::base::StringPiece* s, ::base::StringPiece expected);
+EXPORT bool ConsumeSuffix(base::StringPiece* s, base::StringPiece expected);
 
 // If |s| starts with |expected|, return true. Otherwise, return false.
-EXPORT bool StartsWith(::base::StringPiece s, ::base::StringPiece expected);
+EXPORT bool StartsWith(base::StringPiece s, base::StringPiece expected);
 
 // If |s| ends with |expected|, return true. Otherwise, return false.
-EXPORT bool EndsWith(::base::StringPiece s, ::base::StringPiece expected);
+EXPORT bool EndsWith(base::StringPiece s, base::StringPiece expected);
 
 // If |s| equals to |expected|, return true. Otherwise, return false.
-EXPORT bool Equals(::base::StringPiece s, ::base::StringPiece expected);
+EXPORT bool Equals(base::StringPiece s, base::StringPiece expected);
 
 class EXPORT StringComparator {
  public:
-  explicit StringComparator(::base::StringPiece text);
+  explicit StringComparator(base::StringPiece text);
 
-  bool operator()(const ::base::StringPiece text);
+  bool operator()(const base::StringPiece text);
 
  private:
-  ::base::StringPiece text_;
+  base::StringPiece text_;
 };
 
 EXPORT std::string BoolToString(bool b);

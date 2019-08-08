@@ -46,7 +46,7 @@ using namespace rp::standalone::rplidar;
 
 namespace felicia {
 
-#define WITH_RESULT(text, result) ::base::StringPrintf("%s: %X", text, result)
+#define WITH_RESULT(text, result) base::StringPrintf("%s: %X", text, result)
 
 RPlidar::RPlidar(const LidarEndpoint& lidar_endpoint)
     : LidarInterface(lidar_endpoint), thread_("RPlidarThread") {}
@@ -60,10 +60,10 @@ Status RPlidar::Init() {
 
   std::unique_ptr<RPlidarDriver> driver;
   if (lidar_endpoint_.type() == LidarEndpoint::TCP) {
-    driver = ::base::WrapUnique(RPlidarDriver::CreateDriver(DRIVER_TYPE_TCP));
+    driver = base::WrapUnique(RPlidarDriver::CreateDriver(DRIVER_TYPE_TCP));
   } else {
     driver =
-        ::base::WrapUnique(RPlidarDriver::CreateDriver(DRIVER_TYPE_SERIALPORT));
+        base::WrapUnique(RPlidarDriver::CreateDriver(DRIVER_TYPE_SERIALPORT));
   }
 
   if (!driver) {
@@ -80,7 +80,7 @@ Status RPlidar::Init() {
   }
 
   if (IS_FAIL(result)) {
-    return errors::Unavailable(::base::StrCat(
+    return errors::Unavailable(base::StrCat(
         {"Failed to connect to the endpoint", lidar_endpoint_.ToString()}));
   }
 
@@ -88,14 +88,14 @@ Status RPlidar::Init() {
   result = driver->getDeviceInfo(devinfo);
   if (IS_OK(result)) {
     std::string text;
-    ::base::StringAppendF(&text, "%s", "RPLIDAR S/N: ");
+    base::StringAppendF(&text, "%s", "RPLIDAR S/N: ");
     for (int i = 0; i < 16; ++i) {
-      ::base::StringAppendF(&text, "%02X", devinfo.serialnum[i]);
+      base::StringAppendF(&text, "%02X", devinfo.serialnum[i]);
     }
-    ::base::StringAppendF(&text, "\nFirmware Ver: %d.%02d\nHardware Rev: %d",
-                          devinfo.firmware_version >> 8,
-                          devinfo.firmware_version & 0xFF,
-                          devinfo.hardware_version);
+    base::StringAppendF(&text, "\nFirmware Ver: %d.%02d\nHardware Rev: %d",
+                        devinfo.firmware_version >> 8,
+                        devinfo.firmware_version & 0xFF,
+                        devinfo.hardware_version);
     LOG(INFO) << text;
   } else {
     return errors::Unavailable(WITH_RESULT("Failed to getDeviceInfo", result));
@@ -108,9 +108,9 @@ Status RPlidar::Init() {
       LOG(WARNING) << "getHealth " << healthinfo.error_code;
     } else if (healthinfo.status == RPLIDAR_STATUS_ERROR) {
       return errors::Unavailable(
-          ::base::StringPrintf("rplidar internal error detected (%x). Please "
-                               "reboot the device to retry.",
-                               healthinfo.error_code));
+          base::StringPrintf("rplidar internal error detected (%x). Please "
+                             "reboot the device to retry.",
+                             healthinfo.error_code));
     }
   } else {
     return errors::Unavailable(WITH_RESULT("Failed to getHealth", result));
@@ -173,7 +173,7 @@ void RPlidar::DoScanOnce() {
     DoScan();
   } else {
     thread_.task_runner()->PostTask(
-        FROM_HERE, ::base::BindOnce(&RPlidar::DoScan, AsWeakPtr()));
+        FROM_HERE, base::BindOnce(&RPlidar::DoScan, AsWeakPtr()));
   }
 }
 
@@ -184,7 +184,7 @@ void RPlidar::DoScanLoop() {
 
   if (!is_stopping_) {
     thread_.task_runner()->PostTask(
-        FROM_HERE, ::base::BindOnce(&RPlidar::DoScanLoop, AsWeakPtr()));
+        FROM_HERE, base::BindOnce(&RPlidar::DoScanLoop, AsWeakPtr()));
   }
 }
 
@@ -229,12 +229,12 @@ float getAngle(const rplidar_response_measurement_node_hq_t& node) {
 void RPlidar::DoScan() {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
   rplidar_response_measurement_node_hq_t nodes[360 * 8];
-  size_t count = ::base::size(nodes);
+  size_t count = base::size(nodes);
 
-  ::base::TimeTicks start_scan_time = ::base::TimeTicks::Now();
+  base::TimeTicks start_scan_time = base::TimeTicks::Now();
   u_result result = driver_->grabScanDataHq(nodes, count);
   if (result != RESULT_OK) return;
-  ::base::TimeTicks end_scan_time = ::base::TimeTicks::Now();
+  base::TimeTicks end_scan_time = base::TimeTicks::Now();
   double scan_time = (end_scan_time - start_scan_time).InSecondsF();
 
   result = driver_->ascendScanData(nodes, count);

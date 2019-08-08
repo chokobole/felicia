@@ -30,9 +30,9 @@ int RealMain(int argc, char* argv[]) {
   std::unique_ptr<SSLServerContext> ssl_server_context;
   if (delegate.is_publishing_node_flag()->value()) {
     if (delegate.use_ssl_flag()->value()) {
-      ::base::FilePath cert_file_path = ::base::FilePath(
+      base::FilePath cert_file_path = base::FilePath(
           FILE_PATH_LITERAL("./felicia/examples/cert/server.crt"));
-      ::base::FilePath private_key_file_path = ::base::FilePath(
+      base::FilePath private_key_file_path = base::FilePath(
           FILE_PATH_LITERAL("./felicia/examples/cert/server.key"));
       ssl_server_context = SSLServerContext::NewSSLServerContext(
           cert_file_path, private_key_file_path);

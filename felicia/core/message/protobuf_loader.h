@@ -17,7 +17,7 @@ namespace felicia {
 class EXPORT ProtobufLoader {
  public:
   class EXPORT ErrorCollector
-      : public ::google::protobuf::DescriptorPool::ErrorCollector {
+      : public google::protobuf::DescriptorPool::ErrorCollector {
     void AddError(
         const std::string& filename, const std::string& element_name,
         const google::protobuf::Message* descriptor,
@@ -35,17 +35,17 @@ class EXPORT ProtobufLoader {
 
   ~ProtobufLoader();
 
-  static std::unique_ptr<ProtobufLoader> Load(const ::base::FilePath& path);
+  static std::unique_ptr<ProtobufLoader> Load(const base::FilePath& path);
 
-  const ::google::protobuf::Message* NewMessage(const std::string& type_name);
+  const google::protobuf::Message* NewMessage(const std::string& type_name);
 
  private:
-  ProtobufLoader(::google::protobuf::compiler::DiskSourceTree* source_tree);
+  ProtobufLoader(google::protobuf::compiler::DiskSourceTree* source_tree);
 
-  ::google::protobuf::compiler::SourceTreeDescriptorDatabase
+  google::protobuf::compiler::SourceTreeDescriptorDatabase
       source_tree_database_;
-  ::google::protobuf::DescriptorPool descriptor_pool_;
-  ::google::protobuf::DynamicMessageFactory message_factory_;
+  google::protobuf::DescriptorPool descriptor_pool_;
+  google::protobuf::DynamicMessageFactory message_factory_;
 
   ErrorCollector error_collector_;
 

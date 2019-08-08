@@ -16,12 +16,12 @@ class EXPORT ImuFilterInterface {
 
   virtual Quaternionf orientation() const = 0;
   virtual void UpdateAngularVelocity(const Vector3f& angular_velocity,
-                                     ::base::TimeDelta timestamp) = 0;
+                                     base::TimeDelta timestamp) = 0;
   virtual void UpdateLinearAcceleration(
       const Vector3f& linear_acceleration) = 0;
 
   void UpdateAngularVelocity(float x, float y, float z,
-                             ::base::TimeDelta timestamp);
+                             base::TimeDelta timestamp);
   void UpdateLinearAcceleration(float x, float y, float z);
 
  protected:

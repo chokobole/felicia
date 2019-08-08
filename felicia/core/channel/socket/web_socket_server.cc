@@ -35,8 +35,8 @@ void WebSocketServer::AcceptLoop(TCPServerSocket::AcceptCallback callback) {
 }
 
 void WebSocketServer::DoAcceptOnce() {
-  tcp_server_socket_->AcceptOnceIntercept(::base::BindRepeating(
-      &WebSocketServer::OnAccept, ::base::Unretained(this)));
+  tcp_server_socket_->AcceptOnceIntercept(
+      base::BindRepeating(&WebSocketServer::OnAccept, base::Unretained(this)));
 }
 
 bool WebSocketServer::IsServer() const { return true; }
@@ -48,18 +48,18 @@ bool WebSocketServer::IsConnected() const {
   return false;
 }
 
-void WebSocketServer::Write(scoped_refptr<::net::IOBuffer> buffer, int size,
+void WebSocketServer::Write(scoped_refptr<net::IOBuffer> buffer, int size,
                             StatusOnceCallback callback) {
   broadcaster_.Broadcast(std::move(buffer), size, std::move(callback));
 }
 
-void WebSocketServer::Read(scoped_refptr<::net::GrowableIOBuffer> buffer,
+void WebSocketServer::Read(scoped_refptr<net::GrowableIOBuffer> buffer,
                            int size, StatusOnceCallback callback) {
   NOTREACHED() << "You read data from ServerSocket";
 }
 
 void WebSocketServer::OnAccept(
-    StatusOr<std::unique_ptr<::net::TCPSocket>> status_or) {
+    StatusOr<std::unique_ptr<net::TCPSocket>> status_or) {
   if (status_or.ok()) {
     handshake_handler_.Handle(std::move(status_or.ValueOrDie()));
   } else {
@@ -69,7 +69,7 @@ void WebSocketServer::OnAccept(
 }
 
 void WebSocketServer::OnHandshaked(
-    StatusOr<std::unique_ptr<::net::TCPSocket>> status_or) {
+    StatusOr<std::unique_ptr<net::TCPSocket>> status_or) {
   if (status_or.ok()) {
     auto connection =
         std::make_unique<TCPSocketAdapter>(std::move(status_or.ValueOrDie()));

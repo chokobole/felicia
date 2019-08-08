@@ -70,7 +70,7 @@ void UDPChannel<MessageTy>::Connect(const ChannelDef& channel_def,
                                     StatusOnceCallback callback) {
   DCHECK(!this->channel_impl_);
   DCHECK(!callback.is_null());
-  ::net::IPEndPoint ip_endpoint;
+  net::IPEndPoint ip_endpoint;
   Status s = ToNetIPEndPoint(channel_def, &ip_endpoint);
   if (!s.ok()) {
     std::move(callback).Run(s);
@@ -91,8 +91,8 @@ void UDPChannel<MessageTy>::ReadImpl(MessageTy* message,
   this->receive_callback_ = std::move(callback);
   this->channel_impl_->Read(
       this->receive_buffer_.buffer(), this->receive_buffer_.capacity(),
-      ::base::BindOnce(&UDPChannel<MessageTy>::OnReceiveMessageWithHeader,
-                       ::base::Unretained(this)));
+      base::BindOnce(&UDPChannel<MessageTy>::OnReceiveMessageWithHeader,
+                     base::Unretained(this)));
 }
 
 template <typename MessageTy>

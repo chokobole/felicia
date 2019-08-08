@@ -11,12 +11,12 @@ namespace felicia {
 class UnixDomainClientSocket : public UnixDomainSocket {
  public:
   UnixDomainClientSocket();
-  explicit UnixDomainClientSocket(std::unique_ptr<::net::SocketPosix> socket);
+  explicit UnixDomainClientSocket(std::unique_ptr<net::SocketPosix> socket);
   ~UnixDomainClientSocket();
 
   int socket_fd() const;
 
-  void Connect(const ::net::UDSEndPoint& uds_endpoint,
+  void Connect(const net::UDSEndPoint& uds_endpoint,
                StatusOnceCallback callback);
 
   // Socket methods
@@ -24,9 +24,9 @@ class UnixDomainClientSocket : public UnixDomainSocket {
   bool IsConnected() const override;
 
   // ChannelImpl methods
-  void Write(scoped_refptr<::net::IOBuffer> buffer, int size,
+  void Write(scoped_refptr<net::IOBuffer> buffer, int size,
              StatusOnceCallback callback) override;
-  void Read(scoped_refptr<::net::GrowableIOBuffer> buffer, int size,
+  void Read(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
             StatusOnceCallback callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(UnixDomainClientSocket);

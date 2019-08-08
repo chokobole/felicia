@@ -12,7 +12,7 @@
 
 namespace felicia {
 
-class RPlidar : public LidarInterface, public ::base::SupportsWeakPtr<RPlidar> {
+class RPlidar : public LidarInterface, public base::SupportsWeakPtr<RPlidar> {
  public:
   ~RPlidar();
 
@@ -40,7 +40,7 @@ class RPlidar : public LidarInterface, public ::base::SupportsWeakPtr<RPlidar> {
                           size_t node_count, double scan_time,
                           float angle_start, float angle_end);
 
-  ::base::Thread thread_;
+  base::Thread thread_;
   Timestamper timestamper_;
   bool is_stopping_ = false;
 

@@ -13,22 +13,22 @@ class UnixDomainServerSocket;
 class UnixDomainSocket : public StreamSocket {
  public:
   UnixDomainSocket();
-  explicit UnixDomainSocket(std::unique_ptr<::net::SocketPosix> socket);
+  explicit UnixDomainSocket(std::unique_ptr<net::SocketPosix> socket);
   ~UnixDomainSocket();
 
   // Socket mehtods
   bool IsUnixDomainSocket() const override;
-  int Write(::net::IOBuffer* buf, int buf_len,
-            ::net::CompletionOnceCallback callback) override;
-  int Read(::net::IOBuffer* buf, int buf_len,
-           ::net::CompletionOnceCallback callback) override;
+  int Write(net::IOBuffer* buf, int buf_len,
+            net::CompletionOnceCallback callback) override;
+  int Read(net::IOBuffer* buf, int buf_len,
+           net::CompletionOnceCallback callback) override;
   void Close() override;
 
   UnixDomainClientSocket* ToUnixDomainClientSocket();
   UnixDomainServerSocket* ToUnixDomainServerSocket();
 
  protected:
-  std::unique_ptr<::net::SocketPosix> socket_;
+  std::unique_ptr<net::SocketPosix> socket_;
 
   DISALLOW_COPY_AND_ASSIGN(UnixDomainSocket);
 };

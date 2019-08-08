@@ -42,9 +42,9 @@ class HectorSlam {
     virtual ~Client() = default;
 
     virtual void OnPoseUpdated(const Posef& pose,
-                               ::base::TimeDelta timestamp) = 0;
+                               base::TimeDelta timestamp) = 0;
     virtual void OnMapUpdated(const MultiResolutionGridMap& map,
-                              ::base::TimeDelta timestamp) = 0;
+                              base::TimeDelta timestamp) = 0;
   };
 
   HectorSlam(Client* client, Sizei map_size, float map_resolution,

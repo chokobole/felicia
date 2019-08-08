@@ -66,11 +66,11 @@ Bytes Bytes::Min() { return Bytes(std::numeric_limits<int64_t>::min()); }
 
 // static
 Bytes Bytes::FromDouble(double value) {
-  return Bytes(::base::saturated_cast<int64_t>(value));
+  return Bytes(base::saturated_cast<int64_t>(value));
 }
 
 std::ostream& operator<<(std::ostream& os, Bytes bytes) {
-  os << ::base::NumberToString(bytes.bytes()) << " bytes";
+  os << base::NumberToString(bytes.bytes()) << " bytes";
   return os;
 }
 

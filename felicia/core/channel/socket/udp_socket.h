@@ -17,10 +17,10 @@ class UDPSocket : public DatagramSocket {
 
   // Socket methods
   bool IsUDPSocket() const override;
-  int Write(::net::IOBuffer* buf, int buf_len,
-            ::net::CompletionOnceCallback callback) override;
-  int Read(::net::IOBuffer* buf, int buf_len,
-           ::net::CompletionOnceCallback callback) override;
+  int Write(net::IOBuffer* buf, int buf_len,
+            net::CompletionOnceCallback callback) override;
+  int Read(net::IOBuffer* buf, int buf_len,
+           net::CompletionOnceCallback callback) override;
   void Close() override;
 
   // DatagramSocket methods
@@ -30,8 +30,8 @@ class UDPSocket : public DatagramSocket {
   UDPServerSocket* ToUDPServerSocket();
 
  protected:
-  std::unique_ptr<::net::UDPSocket> socket_;
-  ::net::IPEndPoint multicast_ip_endpoint_;
+  std::unique_ptr<net::UDPSocket> socket_;
+  net::IPEndPoint multicast_ip_endpoint_;
 
   DISALLOW_COPY_AND_ASSIGN(UDPSocket);
 };

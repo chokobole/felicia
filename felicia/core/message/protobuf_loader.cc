@@ -9,7 +9,7 @@
 namespace felicia {
 
 ProtobufLoader::ProtobufLoader(
-    ::google::protobuf::compiler::DiskSourceTree* source_tree)
+    google::protobuf::compiler::DiskSourceTree* source_tree)
     : source_tree_database_(source_tree),
       descriptor_pool_(&source_tree_database_, &error_collector_) {}
 
@@ -17,24 +17,24 @@ ProtobufLoader::~ProtobufLoader() {}
 
 // static
 std::unique_ptr<ProtobufLoader> ProtobufLoader::Load(
-    const ::base::FilePath& root_path) {
-  ::base::FilePath root_path_with_separator = root_path.AsEndingWithSeparator();
+    const base::FilePath& root_path) {
+  base::FilePath root_path_with_separator = root_path.AsEndingWithSeparator();
   std::string root_path_canonicalized;
-  ::base::ReplaceChars(root_path_with_separator.MaybeAsASCII(), "\\", "/",
-                       &root_path_canonicalized);
+  base::ReplaceChars(root_path_with_separator.MaybeAsASCII(), "\\", "/",
+                     &root_path_canonicalized);
 
-  ::google::protobuf::compiler::DiskSourceTree source_tree;
+  google::protobuf::compiler::DiskSourceTree source_tree;
   source_tree.MapPath("", root_path_canonicalized);
 
   ProtobufLoader* loader = new ProtobufLoader(&source_tree);
-  ::base::FileEnumerator enumerator(
-      root_path_with_separator, true, ::base::FileEnumerator::FILES,
+  base::FileEnumerator enumerator(
+      root_path_with_separator, true, base::FileEnumerator::FILES,
       FILE_PATH_LITERAL("*.proto"),
-      ::base::FileEnumerator::FolderSearchPolicy::ALL);
+      base::FileEnumerator::FolderSearchPolicy::ALL);
 
   for (auto path = enumerator.Next(); !path.empty(); path = enumerator.Next()) {
     std::string path_canonicalized;
-    ::base::ReplaceChars(path.MaybeAsASCII(), "\\", "/", &path_canonicalized);
+    base::ReplaceChars(path.MaybeAsASCII(), "\\", "/", &path_canonicalized);
     auto relative_path =
         path_canonicalized.substr(root_path_canonicalized.length());
     if (!strings::StartsWith(relative_path, "felicia/")) continue;
@@ -42,12 +42,12 @@ std::unique_ptr<ProtobufLoader> ProtobufLoader::Load(
     loader->descriptor_pool_.FindFileByName(relative_path);
   }
 
-  return ::base::WrapUnique(std::move(loader));
+  return base::WrapUnique(std::move(loader));
 }
 
-const ::google::protobuf::Message* ProtobufLoader::NewMessage(
+const google::protobuf::Message* ProtobufLoader::NewMessage(
     const std::string& type_name) {
-  const ::google::protobuf::Descriptor* descriptor =
+  const google::protobuf::Descriptor* descriptor =
       descriptor_pool_.FindMessageTypeByName(type_name);
   if (!descriptor) {
     LOG(ERROR) << "Failed to find message type: " << type_name;

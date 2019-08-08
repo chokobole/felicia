@@ -7,7 +7,7 @@ namespace felicia {
 UnixDomainClientSocket::UnixDomainClientSocket() = default;
 
 UnixDomainClientSocket::UnixDomainClientSocket(
-    std::unique_ptr<::net::SocketPosix> socket)
+    std::unique_ptr<net::SocketPosix> socket)
     : UnixDomainSocket(std::move(socket)) {}
 
 UnixDomainClientSocket::~UnixDomainClientSocket() = default;
@@ -16,41 +16,41 @@ int UnixDomainClientSocket::socket_fd() const {
   if (socket_) {
     return socket_->socket_fd();
   }
-  return ::net::kInvalidSocket;
+  return net::kInvalidSocket;
 }
 
-void UnixDomainClientSocket::Connect(const ::net::UDSEndPoint& uds_endpoint,
+void UnixDomainClientSocket::Connect(const net::UDSEndPoint& uds_endpoint,
                                      StatusOnceCallback callback) {
   DCHECK(!socket_);
   DCHECK(!callback.is_null());
 
-  ::net::SockaddrStorage address;
+  net::SockaddrStorage address;
   if (!uds_endpoint.ToSockAddrStorage(&address)) {
     std::move(callback).Run(
-        errors::NetworkError(::net::ErrorToString(::net::ERR_ADDRESS_INVALID)));
+        errors::NetworkError(net::ErrorToString(net::ERR_ADDRESS_INVALID)));
     return;
   }
 
-  auto client_socket = std::make_unique<::net::SocketPosix>();
+  auto client_socket = std::make_unique<net::SocketPosix>();
 
   int rv = client_socket->Open(AF_UNIX);
-  if (rv != ::net::OK) {
-    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
+  if (rv != net::OK) {
+    std::move(callback).Run(errors::NetworkError(net::ErrorToString(rv)));
     return;
   }
 
-  rv = client_socket->Connect(
-      address, ::base::BindOnce(&UnixDomainClientSocket::OnConnect,
-                                ::base::Unretained(this)));
-  if (rv != ::net::OK && rv != ::net::ERR_IO_PENDING) {
-    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(rv)));
+  rv = client_socket->Connect(address,
+                              base::BindOnce(&UnixDomainClientSocket::OnConnect,
+                                             base::Unretained(this)));
+  if (rv != net::OK && rv != net::ERR_IO_PENDING) {
+    std::move(callback).Run(errors::NetworkError(net::ErrorToString(rv)));
     return;
   }
 
   connect_callback_ = std::move(callback);
   socket_ = std::move(client_socket);
 
-  if (rv == ::net::OK) {
+  if (rv == net::OK) {
     std::move(connect_callback_).Run(Status::OK());
   }
 }
@@ -61,18 +61,18 @@ bool UnixDomainClientSocket::IsConnected() const {
   return socket_ && socket_->IsConnected();
 }
 
-void UnixDomainClientSocket::Write(scoped_refptr<::net::IOBuffer> buffer,
+void UnixDomainClientSocket::Write(scoped_refptr<net::IOBuffer> buffer,
                                    int size, StatusOnceCallback callback) {
   WriteRepeating(buffer, size, std::move(callback),
-                 ::base::BindRepeating(&UnixDomainClientSocket::OnWrite,
-                                       ::base::Unretained(this)));
+                 base::BindRepeating(&UnixDomainClientSocket::OnWrite,
+                                     base::Unretained(this)));
 }
 
-void UnixDomainClientSocket::Read(scoped_refptr<::net::GrowableIOBuffer> buffer,
+void UnixDomainClientSocket::Read(scoped_refptr<net::GrowableIOBuffer> buffer,
                                   int size, StatusOnceCallback callback) {
   ReadRepeating(buffer, size, std::move(callback),
-                ::base::BindRepeating(&UnixDomainClientSocket::OnRead,
-                                      ::base::Unretained(this)));
+                base::BindRepeating(&UnixDomainClientSocket::OnRead,
+                                    base::Unretained(this)));
 }
 
 }  // namespace felicia

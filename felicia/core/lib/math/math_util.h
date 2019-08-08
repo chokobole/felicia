@@ -5,10 +5,10 @@
 
 namespace felicia {
 
-constexpr const double kPiDouble = ::base::kPiDouble;
-constexpr const double k2PiDouble = ::base::kPiDouble * 2.0;
-constexpr const float kPiFloat = ::base::kPiFloat;
-constexpr const float k2PiFloat = ::base::kPiFloat * 2.f;
+constexpr const double kPiDouble = base::kPiDouble;
+constexpr const double k2PiDouble = base::kPiDouble * 2.0;
+constexpr const float kPiFloat = base::kPiFloat;
+constexpr const float k2PiFloat = base::kPiFloat * 2.f;
 
 template <typename T>
 constexpr T sign(T value) {

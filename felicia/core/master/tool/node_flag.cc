@@ -14,7 +14,7 @@ static constexpr const char* kLs = "ls";
 NodeFlag::NodeFlag() : current_command_(COMMAND_SELF) {
   {
     StringChoicesFlag::Builder builder(MakeValueStore<std::string>(
-        &command_, ::base::EmptyString(), Choices<std::string>{kLs}));
+        &command_, base::EmptyString(), Choices<std::string>{kLs}));
     auto flag = builder.SetName("COMMAND").Build();
     command_flag_ = std::make_unique<StringChoicesFlag>(flag);
   }
@@ -28,8 +28,8 @@ bool NodeFlag::Parse(FlagParser& parser) {
       if (command_flag_->Parse(parser)) {
         if (strings::Equals(command_, kLs)) {
           current_command_ = COMMAND_LIST;
-          parser.set_program_name(::base::StringPrintf(
-              "%s %s", parser.program_name().c_str(), kLs));
+          parser.set_program_name(
+              base::StringPrintf("%s %s", parser.program_name().c_str(), kLs));
         }
         return true;
       }

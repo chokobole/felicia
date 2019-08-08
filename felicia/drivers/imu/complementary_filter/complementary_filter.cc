@@ -55,7 +55,7 @@ Quaternionf ComplementaryFilter::orientation() const {
 }
 
 void ComplementaryFilter::UpdateAngularVelocity(
-    const Vector3f& angular_velocity, ::base::TimeDelta timestamp) {
+    const Vector3f& angular_velocity, base::TimeDelta timestamp) {
   if (!has_measurement_ || last_timestamp_.is_zero()) {
     last_timestamp_ = timestamp;
     return;

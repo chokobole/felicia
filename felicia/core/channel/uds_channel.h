@@ -11,7 +11,7 @@ namespace felicia {
 template <typename MessageTy>
 class UDSChannel : public Channel<MessageTy> {
  public:
-  using AcceptOnceInterceptCallback = ::base::OnceCallback<void(
+  using AcceptOnceInterceptCallback = base::OnceCallback<void(
       StatusOr<std::unique_ptr<UDSChannel<MessageTy>>>)>;
 
   UDSChannel();
@@ -39,7 +39,7 @@ class UDSChannel : public Channel<MessageTy> {
 
  private:
   void OnAccept(AcceptOnceInterceptCallback callback,
-                StatusOr<std::unique_ptr<::net::SocketPosix>> status_or);
+                StatusOr<std::unique_ptr<net::SocketPosix>> status_or);
 
   DISALLOW_COPY_AND_ASSIGN(UDSChannel);
 };
@@ -90,15 +90,15 @@ void UDSChannel<MessageTy>::AcceptOnceIntercept(
   UnixDomainServerSocket* server_socket = this->channel_impl_->ToSocket()
                                               ->ToUnixDomainSocket()
                                               ->ToUnixDomainServerSocket();
-  server_socket->AcceptOnceIntercept(::base::BindOnce(
-      &UDSChannel<MessageTy>::OnAccept, ::base::Unretained(this),
-      std::move(accept_once_intercept_callback), auth_callback));
+  server_socket->AcceptOnceIntercept(
+      base::BindOnce(&UDSChannel<MessageTy>::OnAccept, base::Unretained(this),
+                     std::move(accept_once_intercept_callback), auth_callback));
 }
 
 template <typename MessageTy>
 void UDSChannel<MessageTy>::OnAccept(
     AcceptOnceInterceptCallback callback,
-    StatusOr<std::unique_ptr<::net::SocketPosix>> status_or) {
+    StatusOr<std::unique_ptr<net::SocketPosix>> status_or) {
   if (status_or.ok()) {
     auto channel = std::make_unique<UDSChannel<MessageTy>>();
     channel->channel_impl_ = std::make_unique<UnixDomainClientSocket>(
@@ -114,7 +114,7 @@ void UDSChannel<MessageTy>::Connect(const ChannelDef& channel_def,
                                     StatusOnceCallback callback) {
   DCHECK(!this->channel_impl_);
   DCHECK(!callback.is_null());
-  ::net::UDSEndPoint uds_endpoint;
+  net::UDSEndPoint uds_endpoint;
   Status s = ToNetUDSEndPoint(channel_def, &uds_endpoint);
   if (!s.ok()) {
     std::move(callback).Run(s);

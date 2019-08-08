@@ -8,20 +8,19 @@ namespace felicia {
 class EXPORT TCPClientSocket : public TCPSocket {
  public:
   TCPClientSocket();
-  explicit TCPClientSocket(std::unique_ptr<::net::TCPSocket> socket);
+  explicit TCPClientSocket(std::unique_ptr<net::TCPSocket> socket);
   ~TCPClientSocket();
 
-  void Connect(const ::net::IPEndPoint& ip_endpoint,
-               StatusOnceCallback callback);
+  void Connect(const net::IPEndPoint& ip_endpoint, StatusOnceCallback callback);
 
   // Socket methods
   bool IsClient() const override;
   bool IsConnected() const override;
 
   // ChannelImpl methods
-  void Write(scoped_refptr<::net::IOBuffer> buffer, int size,
+  void Write(scoped_refptr<net::IOBuffer> buffer, int size,
              StatusOnceCallback callback) override;
-  void Read(scoped_refptr<::net::GrowableIOBuffer> buffer, int size,
+  void Read(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
             StatusOnceCallback callback) override;
 
  private:

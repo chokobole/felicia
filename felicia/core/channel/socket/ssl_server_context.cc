@@ -14,9 +14,9 @@ SSLServerContext::~SSLServerContext() = default;
 
 // static
 std::unique_ptr<SSLServerContext> SSLServerContext::NewSSLServerContext(
-    const ::base::FilePath& cert_file_path,
-    const ::base::FilePath& private_key_file_path) {
-  return ::base::WrapUnique(
+    const base::FilePath& cert_file_path,
+    const base::FilePath& private_key_file_path) {
+  return base::WrapUnique(
       new SSLServerContext(cert_file_path, private_key_file_path));
 }
 
@@ -26,8 +26,8 @@ std::unique_ptr<SSLServerSocket> SSLServerContext::CreateSSLServerSocket(
 }
 
 SSLServerContext::SSLServerContext(
-    const ::base::FilePath& cert_file_path,
-    const ::base::FilePath& private_key_file_path) {
+    const base::FilePath& cert_file_path,
+    const base::FilePath& private_key_file_path) {
   crypto::EnsureOpenSSLInit();
   ssl_ctx_.reset(SSL_CTX_new(TLS_server_method()));
   SSL_CTX_set_session_cache_mode(ssl_ctx_.get(), SSL_SESS_CACHE_SERVER);

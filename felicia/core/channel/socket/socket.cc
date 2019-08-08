@@ -63,20 +63,19 @@ UnixDomainSocket* Socket::ToUnixDomainSocket() {
 #endif
 
 void Socket::WriteRepeating(
-    scoped_refptr<::net::IOBuffer> buffer, int size,
-    StatusOnceCallback callback,
-    ::net::CompletionRepeatingCallback on_write_callback) {
+    scoped_refptr<net::IOBuffer> buffer, int size, StatusOnceCallback callback,
+    net::CompletionRepeatingCallback on_write_callback) {
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
   write_callback_ = std::move(callback);
-  scoped_refptr<::net::DrainableIOBuffer> write_buffer =
-      ::base::MakeRefCounted<::net::DrainableIOBuffer>(
-          buffer, static_cast<size_t>(size));
+  scoped_refptr<net::DrainableIOBuffer> write_buffer =
+      base::MakeRefCounted<net::DrainableIOBuffer>(buffer,
+                                                   static_cast<size_t>(size));
   while (write_buffer->BytesRemaining() > 0) {
     int rv = Write(write_buffer.get(), write_buffer->BytesRemaining(),
                    on_write_callback);
 
-    if (rv == ::net::ERR_IO_PENDING) break;
+    if (rv == net::ERR_IO_PENDING) break;
 
     if (rv > 0) {
       write_buffer->DidConsume(rv);
@@ -89,10 +88,9 @@ void Socket::WriteRepeating(
   }
 }
 
-void Socket::ReadRepeating(
-    scoped_refptr<::net::GrowableIOBuffer> buffer, int size,
-    StatusOnceCallback callback,
-    ::net::CompletionRepeatingCallback on_read_callback) {
+void Socket::ReadRepeating(scoped_refptr<net::GrowableIOBuffer> buffer,
+                           int size, StatusOnceCallback callback,
+                           net::CompletionRepeatingCallback on_read_callback) {
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
   read_callback_ = std::move(callback);
@@ -100,7 +98,7 @@ void Socket::ReadRepeating(
   while (to_read > 0) {
     int rv = Read(buffer.get(), to_read, on_read_callback);
 
-    if (rv == ::net::ERR_IO_PENDING) break;
+    if (rv == net::ERR_IO_PENDING) break;
 
     if (rv > 0) {
       buffer->set_offset(buffer->offset() + rv);
@@ -131,7 +129,7 @@ void Socket::CallbackWithStatus(StatusOnceCallback callback, int result) {
   if (result >= 0) {
     std::move(callback).Run(Status::OK());
   } else {
-    std::move(callback).Run(errors::NetworkError(::net::ErrorToString(result)));
+    std::move(callback).Run(errors::NetworkError(net::ErrorToString(result)));
   }
 }
 

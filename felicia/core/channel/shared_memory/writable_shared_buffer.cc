@@ -10,8 +10,8 @@
 namespace felicia {
 
 WritableSharedBuffer::WritableSharedBuffer(size_t size) {
-  ::base::MappedReadOnlyRegion mapped_region =
-      ::base::ReadOnlySharedMemoryRegion::Create(size);
+  base::MappedReadOnlyRegion mapped_region =
+      base::ReadOnlySharedMemoryRegion::Create(size);
   CHECK(mapped_region.IsValid());
   shared_memory_region_ = std::move(mapped_region.region);
   shared_memory_mapping_ = std::move(mapped_region.mapping);
@@ -33,7 +33,7 @@ size_t WritableSharedBuffer::size() const {
   return shared_memory_region_.GetSize() - sizeof(SerializedBuffer);
 }
 
-::base::ReadOnlySharedMemoryRegion
+base::ReadOnlySharedMemoryRegion
 WritableSharedBuffer::DuplicateSharedMemoryRegion() const {
   return shared_memory_region_.Duplicate();
 }

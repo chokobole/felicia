@@ -25,7 +25,7 @@ class SubscriberStateTraits {
     }
 
     NOTREACHED();
-    return ::base::EmptyString();
+    return base::EmptyString();
   }
 };
 
@@ -43,13 +43,13 @@ class SubscriberState : public State<uint8_t, SubscriberStateTraits> {
     return state_ == SubscriberStateTraits::kStopping;
   }
 
-  ALWAYS_INLINE void ToStarted(const ::base::Location& from_here) {
+  ALWAYS_INLINE void ToStarted(const base::Location& from_here) {
     set_state(from_here, SubscriberStateTraits::kStarted);
   }
-  ALWAYS_INLINE void ToStopping(const ::base::Location& from_here) {
+  ALWAYS_INLINE void ToStopping(const base::Location& from_here) {
     set_state(from_here, SubscriberStateTraits::kStopping);
   }
-  ALWAYS_INLINE void ToStopped(const ::base::Location& from_here) {
+  ALWAYS_INLINE void ToStopped(const base::Location& from_here) {
     set_state(from_here, SubscriberStateTraits::kStopped);
   }
 };

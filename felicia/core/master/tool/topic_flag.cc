@@ -16,7 +16,7 @@ static const char* kSubscribe = "subscribe";
 TopicFlag::TopicFlag() : current_command_(COMMAND_SELF) {
   {
     StringChoicesFlag::Builder builder(MakeValueStore<std::string>(
-        &command_, ::base::EmptyString(),
+        &command_, base::EmptyString(),
         Choices<std::string>{kLs, kPublish, kSubscribe}));
     auto flag = builder.SetName("COMMAND").Build();
     command_flag_ = std::make_unique<StringChoicesFlag>(flag);
@@ -36,7 +36,7 @@ bool TopicFlag::Parse(FlagParser& parser) {
         } else if (strings::Equals(command_, kSubscribe)) {
           current_command_ = COMMAND_SUBSCRIBE;
         }
-        parser.set_program_name(::base::StringPrintf(
+        parser.set_program_name(base::StringPrintf(
             "%s %s", parser.program_name().c_str(), command_.c_str()));
         return true;
       }

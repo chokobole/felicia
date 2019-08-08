@@ -255,8 +255,8 @@ Sizei PlaneSize(CameraFormat camera_format, size_t plane) {
     // Align to multiple-of-two size overall. This ensures that non-subsampled
     // planes can be addressed by pixel with the same scaling as the subsampled
     // planes.
-    width = ::base::bits::Align(width, 2);
-    height = ::base::bits::Align(height, 2);
+    width = base::bits::Align(width, 2);
+    height = base::bits::Align(height, 2);
   }
 
   const Sizei subsample = SampleSize(camera_format, plane);

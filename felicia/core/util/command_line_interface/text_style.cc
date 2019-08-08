@@ -2,9 +2,9 @@
 
 namespace felicia {
 
-#define STYLE_METHOD(Style)                                \
-  std::string TextStyle::Style(::base::StringPiece text) { \
-    return ApplyStyle(k##Style, text);                     \
+#define STYLE_METHOD(Style)                              \
+  std::string TextStyle::Style(base::StringPiece text) { \
+    return ApplyStyle(k##Style, text);                   \
   }
 
 STYLE_METHOD(Red)
@@ -16,8 +16,8 @@ STYLE_METHOD(Bold)
 #undef STYLE_METHOD
 
 // static
-std::string TextStyle::ApplyStyle(const char* style, ::base::StringPiece text) {
-  return ::base::StrCat({style, text.data(), kNone});
+std::string TextStyle::ApplyStyle(const char* style, base::StringPiece text) {
+  return base::StrCat({style, text.data(), kNone});
 }
 
 }  // namespace felicia

@@ -46,13 +46,13 @@ Status MachPortBroker::SendTaskPortToService(const std::string& service_name,
                                              mach_port_t port_to_send) {
   // Look up the named MachPortBroker port that's been registered with the
   // bootstrap server.
-  ::base::mac::ScopedMachSendRight port;
+  base::mac::ScopedMachSendRight port;
   kern_return_t kr = bootstrap_look_up(bootstrap_port, service_name.c_str(),
-                                       ::base::mac::ScopedMachSendRight::Receiver(port).get());
+                                       base::mac::ScopedMachSendRight::Receiver(port).get());
   if (kr != KERN_SUCCESS) {
     BOOTSTRAP_LOG(ERROR, kr) << "bootstrap_look_up " << service_name;
     return errors::NotFound(
-        ::base::StringPrintf("Failed to boostrap_look_up: %s.", service_name.c_str()));
+        base::StringPrintf("Failed to boostrap_look_up: %s.", service_name.c_str()));
   }
 
   // Create the check in message. This will copy a send right on this process'
@@ -78,7 +78,7 @@ Status MachPortBroker::SendTaskPortToService(const std::string& service_name,
 }
 
 mach_port_t MachPortBroker::TaskForPid(base::ProcessHandle pid) const {
-  ::base::AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   MachPortBroker::MachMap::const_iterator it = mach_map_.find(pid);
   if (it == mach_map_.end()) return MACH_PORT_NULL;
   return it->second;
@@ -92,22 +92,22 @@ Status MachPortBroker::Init() {
   DCHECK(server_port_.get() == MACH_PORT_NULL);
 
   // Check in with launchd and publish the service name.
-  std::string service_name = ::base::StringPrintf(
-      "%s.felicia.%d.%I64u", ::base::mac::BaseBundleID(), getpid(), ::base::RandUint64());
+  std::string service_name = base::StringPrintf("%s.felicia.%d.%I64u", base::mac::BaseBundleID(),
+                                                getpid(), base::RandUint64());
   kern_return_t kr =
       bootstrap_check_in(bootstrap_port, service_name.c_str(),
-                         ::base::mac::ScopedMachReceiveRight::Receiver(server_port_).get());
+                         base::mac::ScopedMachReceiveRight::Receiver(server_port_).get());
   if (kr != KERN_SUCCESS) {
     BOOTSTRAP_LOG(ERROR, kr) << "bootstrap_check_in " << service_name;
     return errors::Unavailable(
-        ::base::StringPrintf("Failed to bootstrap_check_in: %s.", service_name.c_str()));
+        base::StringPrintf("Failed to bootstrap_check_in: %s.", service_name.c_str()));
   }
 
   service_name_ = service_name;
 
   // Start the dispatch source.
-  std::string queue_name = ::base::StringPrintf("%s.MachPortBroker", ::base::mac::BaseBundleID());
-  dispatch_source_.reset(new ::base::DispatchSourceMach(queue_name.c_str(), server_port_.get(), ^{
+  std::string queue_name = base::StringPrintf("%s.MachPortBroker", base::mac::BaseBundleID());
+  dispatch_source_.reset(new base::DispatchSourceMach(queue_name.c_str(), server_port_.get(), ^{
     HandleRequest();
   }));
   dispatch_source_->Resume();
@@ -142,7 +142,7 @@ void MachPortBroker::HandleRequest() {
   }
 
   // Destroy any rights that this class does not take ownership of.
-  ::base::ScopedMachMsgDestroy scoped_msg(&msg.header);
+  base::ScopedMachMsgDestroy scoped_msg(&msg.header);
 
   // Validate that the received message is what is expected.
   if ((msg.header.msgh_bits & MACH_MSGH_BITS_COMPLEX) == 0 ||
@@ -162,7 +162,7 @@ void MachPortBroker::HandleRequest() {
 
   // Take the lock and update the broker information.
   {
-    ::base::AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     if (AddTaskPort(pid, task_port)) {
       scoped_msg.Disarm();
     }

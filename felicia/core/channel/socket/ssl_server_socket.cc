@@ -155,8 +155,8 @@ void SSLServerSocket::Close() { stream_socket_->Close(); }
 void SSLServerSocket::Write(scoped_refptr<net::IOBuffer> buffer, int size,
                             StatusOnceCallback callback) {
   int result = Write(buffer.get(), size,
-                     ::base::BindOnce(&SSLServerSocket::OnWriteCheckingReset,
-                                      ::base::Unretained(this)));
+                     base::BindOnce(&SSLServerSocket::OnWriteCheckingReset,
+                                    base::Unretained(this)));
   if (result == net::ERR_IO_PENDING) {
     write_callback_ = std::move(callback);
   } else {
@@ -167,8 +167,8 @@ void SSLServerSocket::Write(scoped_refptr<net::IOBuffer> buffer, int size,
 void SSLServerSocket::Read(scoped_refptr<net::GrowableIOBuffer> buffer,
                            int size, StatusOnceCallback callback) {
   int result = Read(buffer.get(), size,
-                    ::base::BindOnce(&SSLServerSocket::OnReadCheckingClosed,
-                                     ::base::Unretained(this)));
+                    base::BindOnce(&SSLServerSocket::OnReadCheckingClosed,
+                                   base::Unretained(this)));
   if (result == net::ERR_IO_PENDING) {
     read_callback_ = std::move(callback);
   } else {

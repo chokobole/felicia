@@ -48,9 +48,9 @@ class ScanMatcher {
               MapType* map, int max_iterations);
 
  private:
-  ::base::Optional<Posef> Estimate(const Posef& pose,
-                                   const std::vector<Pointf>& points,
-                                   MapType* map);
+  base::Optional<Posef> Estimate(const Posef& pose,
+                                 const std::vector<Pointf>& points,
+                                 MapType* map);
 };
 
 template <typename MapType>
@@ -61,7 +61,7 @@ Posef ScanMatcher<MapType>::Match(const Posef& pose,
 
   Posef estimated{map->ToMapCoordinate(pose.point()), pose.theta()};
   for (int i = 0; i <= max_iterations; ++i) {
-    ::base::Optional<Posef> new_estimated = Estimate(estimated, points, map);
+    base::Optional<Posef> new_estimated = Estimate(estimated, points, map);
     if (!new_estimated.has_value()) break;
     estimated = new_estimated.value();
   }
@@ -71,7 +71,7 @@ Posef ScanMatcher<MapType>::Match(const Posef& pose,
 }
 
 template <typename MapType>
-::base::Optional<Posef> ScanMatcher<MapType>::Estimate(
+base::Optional<Posef> ScanMatcher<MapType>::Estimate(
     const Posef& pose, const std::vector<Pointf>& points, MapType* map) {
   // Please refer to section 4 from
   // http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.302.2579&rep=rep1&type=pdf
@@ -127,7 +127,7 @@ template <typename MapType>
     return estimated;
   }
 
-  return ::base::nullopt;
+  return base::nullopt;
 }
 
 }  // namespace hector_slam

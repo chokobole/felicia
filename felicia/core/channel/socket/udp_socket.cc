@@ -7,15 +7,15 @@ UDPSocket::~UDPSocket() = default;
 
 bool UDPSocket::IsUDPSocket() const { return true; }
 
-int UDPSocket::Write(::net::IOBuffer* buf, int buf_len,
-                     ::net::CompletionOnceCallback callback) {
+int UDPSocket::Write(net::IOBuffer* buf, int buf_len,
+                     net::CompletionOnceCallback callback) {
   DCHECK(socket_);
   return socket_->SendTo(buf, buf_len, multicast_ip_endpoint_,
                          std::move(callback));
 }
 
-int UDPSocket::Read(::net::IOBuffer* buf, int buf_len,
-                    ::net::CompletionOnceCallback callback) {
+int UDPSocket::Read(net::IOBuffer* buf, int buf_len,
+                    net::CompletionOnceCallback callback) {
   DCHECK(socket_);
   return socket_->Read(buf, buf_len, std::move(callback));
 }
