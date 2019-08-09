@@ -9,7 +9,7 @@ namespace felicia {
 
 CameraFrame::CameraFrame() = default;
 
-CameraFrame::CameraFrame(std::unique_ptr<uint8_t[]> data, size_t length,
+CameraFrame::CameraFrame(std::unique_ptr<uint8_t> data, size_t length,
                          const CameraFormat& camera_format, base::TimeDelta timestamp)
     : data_(std::move(data)),
       length_(length),
@@ -26,7 +26,7 @@ CameraFrame& CameraFrame::operator=(CameraFrame&& other) = default;
 
 CameraFrame::~CameraFrame() = default;
 
-std::unique_ptr<uint8_t[]> CameraFrame::data() { return std::move(data_); }
+std::unique_ptr<uint8_t> CameraFrame::data() { return std::move(data_); }
 
 const uint8_t* CameraFrame::data_ptr() const { return data_.get(); }
 
@@ -66,7 +66,7 @@ CameraFrameMessage CameraFrame::ToCameraFrameMessage() const {
 CameraFrame CameraFrame::FromCameraFrameMessage(
     const CameraFrameMessage& message) {
   const std::string& data = message.data();
-  std::unique_ptr<uint8_t[]> data_ptr(new uint8_t[data.length()]);
+  std::unique_ptr<uint8_t> data_ptr(new uint8_t[data.length()]);
   memcpy(data_ptr.get(), data.c_str(), data.length());
 
   return CameraFrame{
@@ -126,7 +126,7 @@ base::Optional<CameraFrame> ConvertToBGRA(const uint8_t* data,
   CameraFormat bgra_camera_format(width, height, PIXEL_FORMAT_BGRA,
                                   camera_format.frame_rate());
   size_t length = bgra_camera_format.AllocationSize();
-  std::unique_ptr<uint8_t[]> tmp_bgra(new uint8_t[length]);
+  std::unique_ptr<uint8_t> tmp_bgra(new uint8_t[length]);
   if (libyuv::ConvertToARGB(data, data_length, tmp_bgra.get(), width * 4,
                             0 /* crop_x_pos */, 0 /* crop_y_pos */, width,
                             height, width, height,
@@ -159,7 +159,7 @@ base::Optional<CameraFrame> ConvertToRequestedPixelFormat(
     CameraFormat camera_format = bgra_camera_frame.camera_format();
     camera_format.set_pixel_format(requested_pixel_format);
     size_t length = camera_format.AllocationSize();
-    std::unique_ptr<uint8_t[]> tmp_camera_frame(new uint8_t[length]);
+    std::unique_ptr<uint8_t> tmp_camera_frame(new uint8_t[length]);
 
     int ret = -1;
     switch (requested_pixel_format) {

@@ -604,7 +604,7 @@ void V4l2Camera::DoCapture() {
     camera_buffer.set_payload(buffer.bytesused);
     base::TimeDelta timestamp = timestamper_.timestamp();
     if (requested_pixel_format_ == camera_format_.pixel_format()) {
-      std::unique_ptr<uint8_t[]> data(new uint8_t[camera_buffer.payload()]);
+      std::unique_ptr<uint8_t> data(new uint8_t[camera_buffer.payload()]);
       memcpy(data.get(), camera_buffer.start(), camera_buffer.payload());
       camera_frame_callback_.Run(CameraFrame{
           std::move(data), camera_buffer.payload(), camera_format_, timestamp});

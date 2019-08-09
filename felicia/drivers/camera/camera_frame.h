@@ -22,13 +22,13 @@ namespace felicia {
 class EXPORT CameraFrame {
  public:
   CameraFrame();
-  CameraFrame(std::unique_ptr<uint8_t[]> data, size_t length,
+  CameraFrame(std::unique_ptr<uint8_t> data, size_t length,
               const CameraFormat& camera_format, base::TimeDelta timestamp);
   CameraFrame(CameraFrame&& other) noexcept;
   CameraFrame& operator=(CameraFrame&& other);
   ~CameraFrame();
 
-  std::unique_ptr<uint8_t[]> data();
+  std::unique_ptr<uint8_t> data();
   const uint8_t* data_ptr() const;
   size_t length() const;
   const CameraFormat& camera_format() const;
@@ -51,7 +51,7 @@ class EXPORT CameraFrame {
 #endif
 
  protected:
-  std::unique_ptr<uint8_t[]> data_;
+  std::unique_ptr<uint8_t> data_;
   size_t length_;
   CameraFormat camera_format_;
   base::TimeDelta timestamp_;

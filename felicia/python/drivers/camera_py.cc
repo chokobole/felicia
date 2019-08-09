@@ -140,7 +140,7 @@ void AddCamera(py::module& m) {
               NotHaveFixedSizedChannelPixelFormat();
             }
 
-            std::unique_ptr<uint8_t[]> data(new uint8_t[array.size()]);
+            std::unique_ptr<uint8_t> data(new uint8_t[array.size()]);
             memcpy(data.get(), array.data(), array.size());
             return CameraFrame(std::move(data), array.size(), camera_format,
                                timestamp);

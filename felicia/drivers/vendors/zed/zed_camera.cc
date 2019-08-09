@@ -430,7 +430,7 @@ Status ZedCamera::OpenCamera(int device_id, sl::InitParameters& params,
 CameraFrame ZedCamera::ConvertToCameraFrame(sl::Mat image,
                                             base::TimeDelta timestamp) {
   size_t size = image.getStepBytes() * image.getHeight();
-  std::unique_ptr<uint8_t[]> data(new uint8_t[size]);
+  std::unique_ptr<uint8_t> data(new uint8_t[size]);
   sl::MAT_TYPE data_type = image.getDataType();
 
   switch (data_type) {
@@ -468,22 +468,23 @@ DepthCameraFrame ZedCamera::ConvertToDepthCameraFrame(sl::Mat image,
                                                       float min, float max) {
   size_t size = image.getWidth() * image.getHeight();
   size_t allocation_size = 2 * size;
-  std::unique_ptr<uint8_t[]> data(new uint8_t[allocation_size]);
+  std::unique_ptr<uint8_t> data(new uint8_t[allocation_size]);
   sl::float1* image_ptr = image.getPtr<sl::float1>();
+  uint8_t* data_ptr = data.get();
   if (init_params_.coordinate_units == sl::UNIT_MILLIMETER) {
     for (size_t i = 0; i < size; ++i) {
       const size_t data_idx = i << 1;
       uint16_t value = static_cast<int64_t>(*(image_ptr++));
-      data[data_idx] = static_cast<uint8_t>(value & UINT8_MAX);
-      data[data_idx + 1] = static_cast<uint8_t>(value >> 8);
+      data_ptr[data_idx] = static_cast<uint8_t>(value & UINT8_MAX);
+      data_ptr[data_idx + 1] = static_cast<uint8_t>(value >> 8);
     }
   } else {
     for (size_t i = 0; i < size; ++i) {
       const size_t data_idx = i << 1;
       uint16_t value =
           InMillimeter(init_params_.coordinate_units, *(image_ptr++));
-      data[data_idx] = static_cast<uint8_t>(value & UINT8_MAX);
-      data[data_idx + 1] = static_cast<uint8_t>(value >> 8);
+      data_ptr[data_idx] = static_cast<uint8_t>(value & UINT8_MAX);
+      data_ptr[data_idx + 1] = static_cast<uint8_t>(value >> 8);
     }
   }
   CameraFrame frame(std::move(data), allocation_size, depth_camera_format_,
