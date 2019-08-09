@@ -36,7 +36,8 @@ class CameraSubscribingNode : public NodeLifecycle {
     settings.is_dynamic_buffer = true;
 
     subscriber_.RequestSubscribe(
-        node_info_, topic_, ChannelDef::CHANNEL_TYPE_TCP,
+        node_info_, topic_,
+        ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM,
         base::BindRepeating(&CameraSubscribingNode::OnMessage,
                             base::Unretained(this)),
         base::BindRepeating(&CameraSubscribingNode::OnSubscriptionError,
