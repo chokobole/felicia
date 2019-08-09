@@ -16,7 +16,8 @@ class RsCameraPublishingNode : public NodeLifecycle {
         color_topic_(rs_camera_flag_.color_topic_flag()->value()),
         depth_topic_(rs_camera_flag_.depth_topic_flag()->value()),
         pointcloud_topic_(rs_camera_flag_.pointcloud_topic_flag()->value()),
-        imu_topic_(rs_camera_flag_.imu_topic_flag()->value()) {
+        imu_topic_(rs_camera_flag_.imu_topic_flag()->value()),
+        camera_descriptor_(camera_descriptor) {
     CHECK(!(color_topic_.empty() && depth_topic_.empty() &&
             imu_topic_.empty() && pointcloud_topic_.empty()))
         << "At least one of topic should be not empty";
