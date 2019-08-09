@@ -9,7 +9,7 @@
 namespace felicia {
 namespace camera_internal {
 
-EXPORT size_t AllocationSize(CameraFormat camera_format);
+EXPORT size_t AllocationSize(const CameraFormat& camera_format);
 
 }  // namespace camera_internal
 }  // namespace felicia

@@ -16,8 +16,8 @@ class EXPORT DepthCameraInterface : public CameraInterfaceBase {
                        DepthCameraFrameCallback depth_frame_callback,
                        StatusCallback status_callback) = 0;
 
-  CameraFormat color_format() const;
-  CameraFormat depth_format() const;
+  const CameraFormat& color_format() const;
+  const CameraFormat& depth_format() const;
 
  protected:
   CameraFormat color_format_;

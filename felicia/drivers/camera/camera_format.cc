@@ -50,6 +50,23 @@ void CameraFormat::set_frame_rate(float frame_rate) {
   frame_rate_ = frame_rate;
 }
 
+bool CameraFormat::HasFixedSizedChannelPixelFormat() const {
+  switch (pixel_format_) {
+    case PIXEL_FORMAT_BGRA:
+    case PIXEL_FORMAT_BGR:
+    case PIXEL_FORMAT_BGRX:
+    case PIXEL_FORMAT_Y8:
+    case PIXEL_FORMAT_Y16:
+    case PIXEL_FORMAT_RGBA:
+    case PIXEL_FORMAT_RGBX:
+    case PIXEL_FORMAT_ARGB:
+    case PIXEL_FORMAT_Z16:
+      return true;
+    default:
+      return false;
+  }
+}
+
 libyuv::FourCC CameraFormat::ToLibyuvPixelFormat() const {
   switch (pixel_format_) {
     case PIXEL_FORMAT_I420:

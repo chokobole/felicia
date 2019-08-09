@@ -19,7 +19,7 @@ class EXPORT CameraFrame {
  public:
   CameraFrame();
   CameraFrame(std::unique_ptr<uint8_t[]> data, size_t length,
-              CameraFormat camera_format, base::TimeDelta timestamp);
+              const CameraFormat& camera_format, base::TimeDelta timestamp);
   CameraFrame(CameraFrame&& other) noexcept;
   CameraFrame& operator=(CameraFrame&& other);
   ~CameraFrame();
@@ -49,7 +49,7 @@ class EXPORT CameraFrame {
 };
 
 EXPORT base::Optional<CameraFrame> ConvertToRequestedPixelFormat(
-    const uint8_t* data, size_t data_length, CameraFormat camera_format,
+    const uint8_t* data, size_t data_length, const CameraFormat& camera_format,
     PixelFormat requested_pixel_format, base::TimeDelta timestamp);
 
 typedef base::RepeatingCallback<void(CameraFrame)> CameraFrameCallback;

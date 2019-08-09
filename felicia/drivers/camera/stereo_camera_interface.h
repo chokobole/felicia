@@ -16,7 +16,7 @@ class EXPORT StereoCameraInterface : public CameraInterfaceBase {
                        DepthCameraFrameCallback depth_camera_frame_callback,
                        StatusCallback status_callback) = 0;
 
-  CameraFormat camera_format() const;
+  const CameraFormat& camera_format() const;
 
  protected:
   CameraFormat camera_format_;

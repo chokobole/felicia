@@ -6,11 +6,11 @@ DepthCameraInterface::DepthCameraInterface(
     const CameraDescriptor& camera_descriptor)
     : CameraInterfaceBase(camera_descriptor) {}
 
-CameraFormat DepthCameraInterface::color_format() const {
+const CameraFormat& DepthCameraInterface::color_format() const {
   return color_format_;
 }
 
-CameraFormat DepthCameraInterface::depth_format() const {
+const CameraFormat& DepthCameraInterface::depth_format() const {
   return depth_format_;
 }
 

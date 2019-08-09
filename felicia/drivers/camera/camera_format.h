@@ -44,6 +44,8 @@ class EXPORT CameraFormat {
   float frame_rate() const;
   void set_frame_rate(float frame_rate);
 
+  bool HasFixedSizedChannelPixelFormat() const;
+
 #if defined(OS_LINUX)
   uint32_t ToV4l2PixelFormat() const;
   static PixelFormat FromV4l2PixelFormat(uint32_t v4l2_pixel_format);

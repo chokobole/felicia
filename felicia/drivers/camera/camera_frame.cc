@@ -10,7 +10,7 @@ namespace felicia {
 CameraFrame::CameraFrame() = default;
 
 CameraFrame::CameraFrame(std::unique_ptr<uint8_t[]> data, size_t length,
-                         CameraFormat camera_format, base::TimeDelta timestamp)
+                         const CameraFormat& camera_format, base::TimeDelta timestamp)
     : data_(std::move(data)),
       length_(length),
       camera_format_(camera_format),
@@ -79,7 +79,7 @@ namespace {
 
 base::Optional<CameraFrame> ConvertToBGRA(const uint8_t* data,
                                           size_t data_length,
-                                          CameraFormat camera_format,
+                                          const CameraFormat& camera_format,
                                           base::TimeDelta timestamp) {
   PixelFormat pixel_format = camera_format.pixel_format();
   libyuv::FourCC src_format;
@@ -111,7 +111,7 @@ base::Optional<CameraFrame> ConvertToBGRA(const uint8_t* data,
 }  // namespace
 
 base::Optional<CameraFrame> ConvertToRequestedPixelFormat(
-    const uint8_t* data, size_t data_length, CameraFormat camera_format,
+    const uint8_t* data, size_t data_length, const CameraFormat& camera_format,
     PixelFormat requested_pixel_format, base::TimeDelta timestamp) {
   if (requested_pixel_format == PIXEL_FORMAT_MJPEG) {
     return base::nullopt;

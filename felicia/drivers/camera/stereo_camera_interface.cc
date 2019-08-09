@@ -6,7 +6,7 @@ StereoCameraInterface::StereoCameraInterface(
     const CameraDescriptor& camera_descriptor)
     : CameraInterfaceBase(camera_descriptor) {}
 
-CameraFormat StereoCameraInterface::camera_format() const {
+const CameraFormat& StereoCameraInterface::camera_format() const {
   return camera_format_;
 }
 

@@ -18,29 +18,15 @@ namespace felicia {
 
 using PyCameraFrameCallback = PyCallback<void(CameraFrame)>;
 
-void CheckIfValidPixelFormat(PixelFormat pixel_format) {
-  switch (pixel_format) {
-    case PIXEL_FORMAT_MJPEG:
-    case PIXEL_FORMAT_UNKNOWN:
-    case PixelFormat_INT_MIN_SENTINEL_DO_NOT_USE_:
-    case PixelFormat_INT_MAX_SENTINEL_DO_NOT_USE_:
-      PyErr_SetString(PyExc_TypeError, "Invalid argument");
-      break;
-    case PIXEL_FORMAT_I420:
-    case PIXEL_FORMAT_NV12:
-    case PIXEL_FORMAT_NV21:
-      PyErr_SetString(PyExc_NotImplementedError,
-                      "Not implemented yet for PIXEL_FORMAT_I420, "
-                      "PIXEL_FORMAT_NV12 or PIXEL_FORMAT_NV21");
-      break;
-    default:
-      break;
-  }
+namespace {
 
-  if (PyErr_Occurred()) {
-    throw py::error_already_set();
-  }
+void NotHaveFixedSizedChannelPixelFormat() {
+  PyErr_SetString(PyExc_TypeError,
+                  "pixel_format doens't have a fixed sized channel.");
+  throw py::error_already_set();
 }
+
+}  // namespace
 
 void AddCamera(py::module& m) {
   py::class_<CameraSettings>(m, "CameraSettings")
@@ -149,8 +135,10 @@ void AddCamera(py::module& m) {
       .def(py::init(
           [](py::array_t<uint8_t, py::array::c_style | py::array::forcecast>
                  array,
-             CameraFormat camera_format, base::TimeDelta timestamp) {
-            CheckIfValidPixelFormat(camera_format.pixel_format());
+             const CameraFormat& camera_format, base::TimeDelta timestamp) {
+            if (!camera_format.HasFixedSizedChannelPixelFormat()) {
+              NotHaveFixedSizedChannelPixelFormat();
+            }
 
             std::unique_ptr<uint8_t[]> data(new uint8_t[array.size()]);
             memcpy(data.get(), array.data(), array.size());
@@ -166,7 +154,9 @@ void AddCamera(py::module& m) {
       .def_property_readonly("timestamp", &CameraFrame::timestamp)
       .def("to_camera_frame_message", &CameraFrame::ToCameraFrameMessage)
       .def_buffer([](CameraFrame& camera_frame) {
-        CheckIfValidPixelFormat(camera_frame.pixel_format());
+        if (!camera_frame.camera_format().HasFixedSizedChannelPixelFormat()) {
+          NotHaveFixedSizedChannelPixelFormat();
+        }
 
         int width = camera_frame.width();
         int height = camera_frame.height();

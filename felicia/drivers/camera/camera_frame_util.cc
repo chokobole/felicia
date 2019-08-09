@@ -33,7 +33,7 @@ enum {
 
 // If it is required to allocate aligned to multiple-of-two size overall for the
 // frame of pixel |camera_format|.
-bool RequiresEvenSizeAllocation(CameraFormat camera_format) {
+bool RequiresEvenSizeAllocation(const CameraFormat& camera_format) {
   PixelFormat pixel_format = camera_format.pixel_format();
   switch (pixel_format) {
     case PIXEL_FORMAT_BGRA:
@@ -79,7 +79,7 @@ bool RequiresEvenSizeAllocation(CameraFormat camera_format) {
 }
 
 // static
-size_t NumPlanes(CameraFormat camera_format) {
+size_t NumPlanes(const CameraFormat& camera_format) {
   PixelFormat pixel_format = camera_format.pixel_format();
   switch (pixel_format) {
     case PIXEL_FORMAT_UYVY:
@@ -128,12 +128,12 @@ size_t NumPlanes(CameraFormat camera_format) {
   return 0;
 }
 
-bool IsValidPlane(size_t plane, CameraFormat camera_format) {
+bool IsValidPlane(size_t plane, const CameraFormat& camera_format) {
   DCHECK_LE(NumPlanes(camera_format), static_cast<size_t>(kMaxPlanes));
   return (plane < NumPlanes(camera_format));
 }
 
-Sizei SampleSize(CameraFormat camera_format, size_t plane) {
+Sizei SampleSize(const CameraFormat& camera_format, size_t plane) {
   DCHECK(IsValidPlane(plane, camera_format));
   PixelFormat pixel_format = camera_format.pixel_format();
 
@@ -192,7 +192,7 @@ Sizei SampleSize(CameraFormat camera_format, size_t plane) {
   return Sizei();
 }
 
-int BytesPerElement(CameraFormat camera_format, size_t plane) {
+int BytesPerElement(const CameraFormat& camera_format, size_t plane) {
   DCHECK(IsValidPlane(plane, camera_format));
 
   PixelFormat pixel_format = camera_format.pixel_format();
@@ -246,7 +246,7 @@ int BytesPerElement(CameraFormat camera_format, size_t plane) {
   return 0;
 }
 
-Sizei PlaneSize(CameraFormat camera_format, size_t plane) {
+Sizei PlaneSize(const CameraFormat& camera_format, size_t plane) {
   DCHECK(IsValidPlane(plane, camera_format));
 
   int width = camera_format.width();
@@ -269,7 +269,7 @@ Sizei PlaneSize(CameraFormat camera_format, size_t plane) {
 
 }  // namespace
 
-size_t AllocationSize(CameraFormat camera_format) {
+size_t AllocationSize(const CameraFormat& camera_format) {
   size_t total = 0;
   for (size_t i = 0; i < NumPlanes(camera_format); ++i)
     total += PlaneSize(camera_format, i).area();
