@@ -30,4 +30,30 @@ DepthCameraFrameMessage DepthCameraFrame::ToDepthCameraFrameMessage() const {
   return message;
 }
 
+// static
+DepthCameraFrame DepthCameraFrame::FromDepthCameraFrameMessage(
+    const DepthCameraFrameMessage& message) {
+  return {CameraFrame::FromCameraFrameMessage(message.frame()), message.min(),
+          message.max()};
+}
+
+// static
+DepthCameraFrame DepthCameraFrame::FromDepthCameraFrameMessage(
+    DepthCameraFrameMessage&& message) {
+  float min = message.min();
+  float max = message.max();
+  return {CameraFrame::FromCameraFrameMessage(std::move(message.frame())), min,
+          max};
+}
+
+#if defined(HAS_OPENCV)
+// static
+DepthCameraFrame DepthCameraFrame::FromCvMat(cv::Mat mat,
+                                             const CameraFormat& camera_format,
+                                             base::TimeDelta timestamp,
+                                             float min, float max) {
+  return {CameraFrame::FromCvMat(mat, camera_format, timestamp), min, max};
+}
+#endif
+
 }  // namespace felicia

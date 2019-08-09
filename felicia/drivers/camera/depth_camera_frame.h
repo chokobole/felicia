@@ -15,6 +15,15 @@ class EXPORT DepthCameraFrame : public CameraFrame {
   ~DepthCameraFrame();
 
   DepthCameraFrameMessage ToDepthCameraFrameMessage() const;
+  static DepthCameraFrame FromDepthCameraFrameMessage(
+      const DepthCameraFrameMessage& message);
+  static DepthCameraFrame FromDepthCameraFrameMessage(
+      DepthCameraFrameMessage&& message);
+
+#if defined(HAS_OPENCV)
+  static DepthCameraFrame FromCvMat(cv::Mat mat, const CameraFormat& camera_format,
+                                    base::TimeDelta timestamp, float min, float max);
+#endif
 
  private:
   float min_;

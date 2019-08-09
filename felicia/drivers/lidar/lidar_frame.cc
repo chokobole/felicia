@@ -117,16 +117,16 @@ LidarFrame LidarFrame::FromLidarFrameMessage(const LidarFrameMessage& message) {
     intensities.push_back(intencity);
   }
 
-  return LidarFrame{message.angle_start(),
-                    message.angle_end(),
-                    message.angle_delta(),
-                    message.time_delta(),
-                    message.scan_time(),
-                    message.range_min(),
-                    message.range_max(),
-                    std::move(ranges),
-                    std::move(intensities),
-                    base::TimeDelta::FromMicroseconds(message.timestamp())};
+  return {message.angle_start(),
+          message.angle_end(),
+          message.angle_delta(),
+          message.time_delta(),
+          message.scan_time(),
+          message.range_min(),
+          message.range_max(),
+          std::move(ranges),
+          std::move(intensities),
+          base::TimeDelta::FromMicroseconds(message.timestamp())};
 }
 
 void LidarFrame::Project(std::vector<Pointf>* points, float user_range_min,

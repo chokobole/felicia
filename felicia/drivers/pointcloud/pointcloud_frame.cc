@@ -66,9 +66,8 @@ PointcloudFrame PointcloudFrame::FromPointcloudFrameMessage(
   colors.resize(colors_data.length() / sizeof(uint8_t));
   memcpy(colors.data(), colors_data.c_str(), colors_data.length());
 
-  return PointcloudFrame{
-      std::move(points), std::move(colors),
-      base::TimeDelta::FromMicroseconds(message.timestamp())};
+  return {std::move(points), std::move(colors),
+          base::TimeDelta::FromMicroseconds(message.timestamp())};
 }
 
 }  // namespace felicia

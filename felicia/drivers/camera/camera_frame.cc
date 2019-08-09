@@ -3,6 +3,7 @@
 #include "libyuv.h"
 #include "third_party/chromium/base/logging.h"
 
+#include "felicia/core/lib/memory/memory_util.h"
 #include "felicia/drivers/camera/camera_frame_util.h"
 
 namespace felicia {
@@ -10,7 +11,8 @@ namespace felicia {
 CameraFrame::CameraFrame() = default;
 
 CameraFrame::CameraFrame(std::unique_ptr<uint8_t> data, size_t length,
-                         const CameraFormat& camera_format, base::TimeDelta timestamp)
+                         const CameraFormat& camera_format,
+                         base::TimeDelta timestamp)
     : data_(std::move(data)),
       length_(length),
       camera_format_(camera_format),
@@ -69,18 +71,30 @@ CameraFrame CameraFrame::FromCameraFrameMessage(
   std::unique_ptr<uint8_t> data_ptr(new uint8_t[data.length()]);
   memcpy(data_ptr.get(), data.c_str(), data.length());
 
-  return CameraFrame{
-      std::move(data_ptr), data.length(),
-      CameraFormat::FromCameraFormatMessage(message.camera_format()),
-      base::TimeDelta::FromMicroseconds(message.timestamp())};
+  return {std::move(data_ptr), data.length(),
+          CameraFormat::FromCameraFormatMessage(message.camera_format()),
+          base::TimeDelta::FromMicroseconds(message.timestamp())};
+}
+
+// static
+CameraFrame CameraFrame::FromCameraFrameMessage(CameraFrameMessage&& message) {
+  std::string* data = message.release_data();
+  size_t length = data->length();
+  std::unique_ptr<uint8_t> data_ptr = StdStringToUniquePtr<uint8_t>(*data);
+
+  return {std::move(data_ptr), length,
+          CameraFormat::FromCameraFormatMessage(message.camera_format()),
+          base::TimeDelta::FromMicroseconds(message.timestamp())};
 }
 
 #if defined(HAS_OPENCV)
 namespace {
 
 int ToCvType(const CameraFrame* camera_frame) {
-  if (!camera_frame->camera_format().HasFixedSizedChannelPixelFormat()) return -1;
-  int channel = camera_frame->length() / (camera_frame->width() * camera_frame->height());
+  if (!camera_frame->camera_format().HasFixedSizedChannelPixelFormat())
+    return -1;
+  int channel =
+      camera_frame->length() / (camera_frame->width() * camera_frame->height());
   return CV_MAKETYPE(CV_8U, channel);
 }
 
@@ -91,7 +105,7 @@ bool CameraFrame::ToCvMat(cv::Mat* out) {
   if (type == -1) return false;
 
   uint8_t* data = data_.release();
-  *out = cv::Mat{camera_format_.width(), camera_format_.height(), type, data};
+  *out = cv::Mat{camera_format_.height(), camera_format_.width(), type, data};
   return true;
 }
 
@@ -99,9 +113,20 @@ bool CameraFrame::CloneToCvMat(cv::Mat* out) const {
   int type = ToCvType(this);
   if (type == -1) return false;
 
-  *out = cv::Mat{camera_format_.width(), camera_format_.height(), type};
+  *out = cv::Mat{camera_format_.height(), camera_format_.width(), type};
   memcpy(out->data, data_.get(), length_);
   return true;
+}
+
+// static
+CameraFrame CameraFrame::FromCvMat(cv::Mat mat,
+                                   const CameraFormat& camera_format,
+                                   base::TimeDelta timestamp) {
+  size_t length = mat.rows * mat.cols * mat.dims;
+  std::unique_ptr<uint8_t> data_ptr(new uint8_t[length]);
+  memcpy(data_ptr.get(), mat.data, length);
+
+  return {std::move(data_ptr), length, camera_format, timestamp};
 }
 #endif
 
