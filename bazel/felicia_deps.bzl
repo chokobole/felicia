@@ -6,20 +6,22 @@ load(
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//bazel:felicia_repository.bzl", "http_archive_per_os")
 load("//third_party/cc:cc_configure.bzl", "cc_configure")
+load("//third_party/cuda:cuda_configure.bzl", "cuda_configure")
 load("//third_party/env:env_configure.bzl", "env_configure")
+load("//third_party/opencv:opencv_configure.bzl", "opencv_configure")
 load("//third_party/py:python_configure.bzl", "python_configure")
 load("//third_party/realsense:realsense_configure.bzl", "realsense_configure")
 load("//third_party/zed:zed_configure.bzl", "zed_configure")
-load("//third_party/cuda:cuda_configure.bzl", "cuda_configure")
 
 def load_deps():
     """Loads dependencies need to compile and test the felicia."""
     cc_configure(name = "cc")
+    cuda_configure(name = "cuda")
     env_configure(name = "env")
+    opencv_configure(name = "opencv")
     python_configure(name = "local_config_python")
     realsense_configure(name = "realsense")
     zed_configure(name = "zed")
-    cuda_configure(name = "cuda")
 
     # Needed by protobuf
     http_archive(

@@ -156,6 +156,14 @@ config_setting(
 )
 
 config_setting(
+    name = "has_opencv",
+    define_values = {
+        "has_opencv": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
     name = "has_realsense",
     define_values = {
         "has_realsense": "true",

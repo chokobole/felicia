@@ -3,6 +3,10 @@
 
 #include <memory>
 
+#if defined(HAS_OPENCV)
+#include "opencv2/core.hpp"
+#endif
+
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/optional.h"
 #include "third_party/chromium/base/time/time.h"
@@ -38,6 +42,13 @@ class EXPORT CameraFrame {
 
   CameraFrameMessage ToCameraFrameMessage() const;
   static CameraFrame FromCameraFrameMessage(const CameraFrameMessage& message);
+
+#if defined(HAS_OPENCV)
+  // Ownership is moved to |out|, Returns true if it is success to move.
+  bool ToCvMat(cv::Mat* out);
+  // Clone to |out|, Returns true if it is success to clone.
+  bool CloneToCvMat(cv::Mat* out) const;
+#endif
 
  protected:
   std::unique_ptr<uint8_t[]> data_;

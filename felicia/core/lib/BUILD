@@ -1,4 +1,8 @@
-load("//bazel:felicia.bzl", "fel_shared_library")
+load(
+    "//bazel:felicia.bzl",
+    "fel_shared_library",
+    "if_has_opencv",
+)
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
@@ -60,6 +64,9 @@ fel_cc_library(
         "unit/ui/color.h",
         "unit/unit_helper.h",
     ] + [":felicia_env"],
+    defines = if_has_opencv([
+        "HAS_OPENCV",
+    ]),
     deps = [
         "//felicia/core/protobuf:protos_all_cc",
         "//third_party/chromium/base",
@@ -67,7 +74,9 @@ fel_cc_library(
         "//third_party/chromium/net",
         "@com_google_googletest//:gtest",
         "@eigen",
-    ],
+    ] + if_has_opencv([
+        "@opencv",
+    ]),
 )
 
 fel_cc_test(

@@ -75,6 +75,36 @@ CameraFrame CameraFrame::FromCameraFrameMessage(
       base::TimeDelta::FromMicroseconds(message.timestamp())};
 }
 
+#if defined(HAS_OPENCV)
+namespace {
+
+int ToCvType(const CameraFrame* camera_frame) {
+  if (!camera_frame->camera_format().HasFixedSizedChannelPixelFormat()) return -1;
+  int channel = camera_frame->length() / (camera_frame->width() * camera_frame->height());
+  return CV_MAKETYPE(CV_8U, channel);
+}
+
+}  // namespace
+
+bool CameraFrame::ToCvMat(cv::Mat* out) {
+  int type = ToCvType(this);
+  if (type == -1) return false;
+
+  uint8_t* data = data_.release();
+  *out = cv::Mat{camera_format_.width(), camera_format_.height(), type, data};
+  return true;
+}
+
+bool CameraFrame::CloneToCvMat(cv::Mat* out) const {
+  int type = ToCvType(this);
+  if (type == -1) return false;
+
+  *out = cv::Mat{camera_format_.width(), camera_format_.height(), type};
+  memcpy(out->data, data_.get(), length_);
+  return true;
+}
+#endif
+
 namespace {
 
 base::Optional<CameraFrame> ConvertToBGRA(const uint8_t* data,

@@ -145,6 +145,12 @@ def if_not_win_no_grpc(a):
         "//conditions:default": a,
     })
 
+def if_has_opencv(a):
+    return select({
+        "//felicia:has_opencv": a,
+        "//conditions:default": [],
+    })
+
 def if_has_realsense(a):
     return select({
         "//felicia:has_realsense": a,
