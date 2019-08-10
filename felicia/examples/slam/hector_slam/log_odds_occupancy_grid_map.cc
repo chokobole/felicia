@@ -48,7 +48,6 @@ void LogOddsCell::MarkFree(float v) { value_ += v; }
 float LogOddsCell::Value() const {
   float odds = exp(value_);
   float value = odds / (odds + 1.0f);
-  CHECK(!std::isnan(value));
   return value;
 }
 

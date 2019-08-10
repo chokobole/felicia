@@ -31,7 +31,9 @@ class Vector {
   constexpr T x() const { return x_; }
   constexpr T y() const { return y_; }
 
-  constexpr bool IsValid() const { return !std::isnan(x_) && !std::isnan(y_); }
+  constexpr bool IsValid() const {
+    return std::isfinite(x_) && std::isfinite(y_);
+  }
 
   double Norm() const { return std::sqrt(SquaredNorm()); }
   double SquaredNorm() const {
@@ -154,7 +156,7 @@ class Vector3 {
   constexpr T z() const { return z_; }
 
   constexpr bool IsValid() const {
-    return !std::isnan(x_) && !std::isnan(y_) && !std::isnan(z_);
+    return std::isfinite(x_) && std::isfinite(y_) && std::isfinite(z_);
   }
 
   double Norm() const { return std::sqrt(SquaredNorm()); }

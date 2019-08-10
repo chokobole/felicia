@@ -33,7 +33,7 @@ class Pose {
   constexpr T theta() const { return theta_; }
 
   constexpr bool IsValid() const {
-    return point_.IsValid() && !std::isnan(theta_);
+    return point_.IsValid() && std::isfinite(theta_);
   }
 
   double Distance(const Pose& other) const {

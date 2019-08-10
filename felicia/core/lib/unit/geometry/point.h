@@ -30,7 +30,9 @@ class Point {
   constexpr T x() const { return x_; }
   constexpr T y() const { return y_; }
 
-  constexpr bool IsValid() const { return !std::isnan(x_) && !std::isnan(y_); }
+  constexpr bool IsValid() const {
+    return std::isfinite(x_) && std::isfinite(y_);
+  }
 
   double Distance(const Point& other) const {
     Vector<T> vec = operator-(other);
@@ -149,7 +151,7 @@ class Point3 {
   constexpr T z() const { return z_; }
 
   constexpr bool IsValid() const {
-    return !std::isnan(x_) && !std::isnan(y_) && !std::isnan(z_);
+    return std::isfinite(x_) && std::isfinite(y_) && std::isfinite(z_);
   }
 
   double Distance(const Point3& other) const {

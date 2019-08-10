@@ -53,8 +53,8 @@ class Quaternion {
   constexpr T w() const { return w_; }
 
   constexpr bool IsValid() const {
-    return !std::isnan(x_) && !std::isnan(y_) && !std::isnan(z_) &&
-           !std::isnan(w_);
+    return std::isfinite(x_) && std::isfinite(y_) && std::isfinite(z_) &&
+           std::isfinite(w_);
   }
 
   void set_vector(const Vector3<T>& vector) {
