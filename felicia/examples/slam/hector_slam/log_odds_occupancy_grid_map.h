@@ -56,7 +56,7 @@ class LogOddsCell {
   float value_;
 };
 
-class LogOddsCellContainer : public GridMap<LogOddsCell>::CellContainer {
+class LogOddsCellContainer : public slam::GridMap<LogOddsCell>::CellContainer {
  public:
   explicit LogOddsCellContainer(Sizei size);
 
@@ -76,7 +76,7 @@ class LogOddsCellContainer : public GridMap<LogOddsCell>::CellContainer {
   DISALLOW_COPY_AND_ASSIGN(LogOddsCellContainer);
 };
 
-class LogOddsOccupancyGridMap : public OccupancyGridMap<LogOddsCell> {
+class LogOddsOccupancyGridMap : public slam::OccupancyGridMap<LogOddsCell> {
  public:
   LogOddsOccupancyGridMap(std::unique_ptr<LogOddsCellContainer> cell_container,
                           float resolution, const Pointf& origin,

@@ -14,6 +14,7 @@
 #include "felicia/slam/map/map_message.pb.h"
 
 namespace felicia {
+namespace slam {
 
 template <typename CellType>
 class OccupancyGridMap : public GridMap<CellType> {
@@ -202,6 +203,7 @@ void OccupancyGridMap<CellType>::ToCsvFile(
   file.Write(0, csv_data.c_str(), csv_data.length());
 }
 
+}  // namespace slam
 }  // namespace felicia
 
 #endif  // FELICIA_SLAM_MAP_OCCUPANCY_GRID_MAP_H_

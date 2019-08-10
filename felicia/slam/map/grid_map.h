@@ -10,6 +10,7 @@
 #include "felicia/core/lib/unit/geometry/transform.h"
 
 namespace felicia {
+namespace slam {
 
 template <typename CellType>
 class GridMap {
@@ -99,6 +100,7 @@ class GridMap {
   DISALLOW_COPY_AND_ASSIGN(GridMap<CellType>);
 };
 
+}  // namespace slam
 }  // namespace felicia
 
 #endif  // FELICIA_SLAM_MAP_GRID_MAP_H_

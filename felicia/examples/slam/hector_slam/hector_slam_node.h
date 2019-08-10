@@ -149,7 +149,8 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
                     base::TimeDelta timestamp) override {
     if (map_topic_.empty()) return;
     if (!map_publisher_.IsRegistered()) return;
-    OccupancyGridMapMessage message = map.ToOccupancyGridMapMessage(timestamp);
+    slam::OccupancyGridMapMessage message =
+        map.ToOccupancyGridMapMessage(timestamp);
     map_publisher_.Publish(std::move(message),
                            base::BindRepeating(&HectorSlamNode::OnPublishMap,
                                                base::Unretained(this)));
@@ -173,7 +174,7 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
   std::unique_ptr<HectorSlam> hector_slam_;
   Subscriber<drivers::LidarFrameMessage> lidar_subscriber_;
   Publisher<PosefWithTimestampMessage> pose_publisher_;
-  Publisher<OccupancyGridMapMessage> map_publisher_;
+  Publisher<slam::OccupancyGridMapMessage> map_publisher_;
 };
 
 }  // namespace hector_slam
