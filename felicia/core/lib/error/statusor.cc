@@ -27,7 +27,7 @@ void Helper::HandleInvalidStatusCtorArg(Status* status) {
       "An OK status is not a valid constructor argument to StatusOr<T>";
   LOG(ERROR) << kMessage;
   // Fall back to tensorflow::error::INTERNAL.
-  *status = ::felicia::errors::Internal(kMessage);
+  *status = felicia::errors::Internal(kMessage);
 }
 
 void Helper::Crash(const Status& status) {

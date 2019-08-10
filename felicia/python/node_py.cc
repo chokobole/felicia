@@ -1,7 +1,7 @@
 #include "felicia/python/node_py.h"
 #include "felicia/python/type_conversion/protobuf.h"
 
-SUPPORT_PROTOBUF_TYPE_CAST(::felicia::NodeInfo, NodeInfo,
+SUPPORT_PROTOBUF_TYPE_CAST(felicia::NodeInfo, NodeInfo,
                            felicia.core.protobuf.master_data_pb2)
 
 namespace felicia {

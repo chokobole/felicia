@@ -9,9 +9,9 @@
 #include "felicia/python/type_conversion/callback.h"
 #include "felicia/python/type_conversion/protobuf.h"
 
-SUPPORT_PROTOBUF_ENUM_TYPE_CAST(::felicia::PixelFormat, PixelFormat)
+SUPPORT_PROTOBUF_ENUM_TYPE_CAST(felicia::PixelFormat, PixelFormat)
 
-SUPPORT_PROTOBUF_TYPE_CAST(::felicia::drivers::CameraFrameMessage,
+SUPPORT_PROTOBUF_TYPE_CAST(felicia::drivers::CameraFrameMessage,
                            CameraFrameMessage,
                            felicia.drivers.camera.camera_frame_message_pb2)
 

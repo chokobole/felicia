@@ -5,15 +5,15 @@
 
 namespace py = pybind11;
 
-SUPPORT_PROTOBUF_TYPE_CAST(::felicia::Test, Test,
+SUPPORT_PROTOBUF_TYPE_CAST(felicia::Test, Test,
                            felicia.python.type_conversion.test.test_pb2)
 
 namespace pybind11 {
 namespace detail {
 template <>
-struct type_caster<::felicia::Test2> {
+struct type_caster<felicia::Test2> {
  public:
-  PYBIND11_TYPE_CASTER(::felicia::Test2, _("::felicia::Test2"));
+  PYBIND11_TYPE_CASTER(felicia::Test2, _("felicia::Test2"));
 
   bool load(handle src, bool convert) {
     auto obj = py::reinterpret_borrow<py::object>(src);
@@ -23,7 +23,7 @@ struct type_caster<::felicia::Test2> {
     return !PyErr_Occurred();
   }
 
-  static handle cast(const ::felicia::Test2& src,
+  static handle cast(const felicia::Test2& src,
                      return_value_policy /* policy */, handle /* parent */) {
     pybind11::object object =
         pybind11::module::import("felicia.python.type_conversion.test.test_pb2")

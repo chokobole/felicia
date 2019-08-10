@@ -13,7 +13,7 @@ using Camera = felicia::drivers::V4l2Camera;
 #if !BUILDFLAG(TRAVIS)
 #include "felicia/drivers/camera/win/mf_camera.h"
 #else
-using Camera = ::felicia::drivers::DshowCamera;
+using Camera = felicia::drivers::DshowCamera;
 #endif  // !BUILDFLAG(TRAVIS)
 #else
 #error Not supported platform!

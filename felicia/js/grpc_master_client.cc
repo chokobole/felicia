@@ -14,7 +14,7 @@ namespace felicia {
 
 namespace errors {
 
-inline ::felicia::Status NotUnderJsExecutionEnvironment() {
+inline felicia::Status NotUnderJsExecutionEnvironment() {
   return Status(felicia::error::ABORTED,
                 "GrpcMasterClient is not under js execution environemnt.");
 }

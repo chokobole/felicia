@@ -5,11 +5,11 @@
 #include "felicia/python/type_conversion/callback.h"
 #include "felicia/python/type_conversion/protobuf.h"
 
-SUPPORT_PROTOBUF_TYPE_CAST(::felicia::ChannelDef, ChannelDef,
+SUPPORT_PROTOBUF_TYPE_CAST(felicia::ChannelDef, ChannelDef,
                            felicia.core.protobuf.channel_pb2)
-SUPPORT_PROTOBUF_TYPE_CAST(::felicia::NodeInfo, NodeInfo,
+SUPPORT_PROTOBUF_TYPE_CAST(felicia::NodeInfo, NodeInfo,
                            felicia.core.protobuf.master_data_pb2)
-SUPPORT_PROTOBUF_ENUM_TYPE_CAST(::felicia::ChannelDef::Type, ChannelDef.Type)
+SUPPORT_PROTOBUF_ENUM_TYPE_CAST(felicia::ChannelDef::Type, ChannelDef.Type)
 
 namespace felicia {
 

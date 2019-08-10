@@ -7,7 +7,7 @@ namespace felicia {
 namespace drivers {
 namespace errors {
 
-inline ::felicia::Status NoImuCapability() {
+inline felicia::Status NoImuCapability() {
   return felicia::errors::NotFound("No imu capability.");
 }
 

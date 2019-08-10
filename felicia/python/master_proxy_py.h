@@ -11,7 +11,7 @@ namespace py = pybind11;
 
 namespace felicia {
 
-// This class is a wrapper for ::felicia::MasterProxy to open apis for python
+// This class is a wrapper for felicia::MasterProxy to open apis for python
 // side.
 class PyMasterProxy {
  public:

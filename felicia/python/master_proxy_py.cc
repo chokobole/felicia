@@ -10,7 +10,7 @@
 #include "felicia/python/type_conversion/callback.h"
 #include "felicia/python/type_conversion/protobuf.h"
 
-SUPPORT_PROTOBUF_TYPE_CAST(::felicia::NodeInfo, NodeInfo,
+SUPPORT_PROTOBUF_TYPE_CAST(felicia::NodeInfo, NodeInfo,
                            felicia.core.protobuf.master_data_pb2)
 
 namespace felicia {
@@ -36,11 +36,11 @@ Status PyMasterProxy::Stop() { return MasterProxy::GetInstance().Stop(); }
 void PyMasterProxy::Run() {
 #ifdef OS_POSIX
   // To handle general case when POSIX ask the process to quit.
-  std::signal(SIGTERM, &::felicia::Shutdown);
+  std::signal(SIGTERM, &felicia::Shutdown);
   // To handle Ctrl + C.
-  std::signal(SIGINT, &::felicia::Shutdown);
+  std::signal(SIGINT, &felicia::Shutdown);
   // To handle when the terminal is closed.
-  std::signal(SIGHUP, &::felicia::Shutdown);
+  std::signal(SIGHUP, &felicia::Shutdown);
 #endif
   MasterProxy::GetInstance().Run();
 }

@@ -105,11 +105,11 @@ class RPlidarPublishingNode : public NodeLifecycle {
     if (s.ok()) {
 #ifdef OS_POSIX
       // To handle general case when POSIX ask the process to quit.
-      std::signal(SIGTERM, &::felicia::Shutdown);
+      std::signal(SIGTERM, &felicia::Shutdown);
       // To handle Ctrl + C.
-      std::signal(SIGINT, &::felicia::Shutdown);
+      std::signal(SIGINT, &felicia::Shutdown);
       // To handle when the terminal is closed.
-      std::signal(SIGHUP, &::felicia::Shutdown);
+      std::signal(SIGHUP, &felicia::Shutdown);
 #endif
       lidar_->DoScanLoop();
       // MasterProxy& master_proxy = MasterProxy::GetInstance();
