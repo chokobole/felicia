@@ -4,6 +4,7 @@
 #include "felicia/drivers/camera/camera_interface_base.h"
 
 namespace felicia {
+namespace drivers {
 
 class EXPORT CameraInterface : public CameraInterfaceBase {
  public:
@@ -22,6 +23,7 @@ class EXPORT CameraInterface : public CameraInterfaceBase {
   CameraFrameCallback camera_frame_callback_;
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_CAMERA_INTERFACE_H_

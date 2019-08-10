@@ -6,6 +6,7 @@
 #include "felicia/drivers/camera/win/sink_filter.h"
 
 namespace felicia {
+namespace drivers {
 
 namespace {
 
@@ -54,4 +55,5 @@ PixelFormat CameraFormat::FromDshowMediaSubtype(const GUID& sub_type) {
   return PIXEL_FORMAT_UNKNOWN;
 }
 
+}  // namespace drivers
 }  // namespace felicia

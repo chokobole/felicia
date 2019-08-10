@@ -1,6 +1,7 @@
 #include "felicia/drivers/imu/imu_filter_interface.h"
 
 namespace felicia {
+namespace drivers {
 
 ImuFilterInterface::ImuFilterInterface() = default;
 
@@ -15,4 +16,5 @@ void ImuFilterInterface::UpdateLinearAcceleration(float x, float y, float z) {
   UpdateLinearAcceleration(Vector3f{x, y, z});
 }
 
+}  // namespace drivers
 }  // namespace felicia

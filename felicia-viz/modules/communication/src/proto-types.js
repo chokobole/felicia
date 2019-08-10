@@ -4,13 +4,13 @@ import feliciaProtobufJson from './proto_bundle/felicia_proto_bundle.json';
 
 const FeliciaProtoRoot = protobuf.Root.fromJSON(feliciaProtobufJson);
 
-export const CAMERA_FRAME_MESSAGE = 'felicia.CameraFrameMessage';
-export const DEPTH_CAMERA_FRAME_MESSAGE = 'felicia.DepthCameraFrameMessage';
+export const CAMERA_FRAME_MESSAGE = 'felicia.drivers.CameraFrameMessage';
+export const DEPTH_CAMERA_FRAME_MESSAGE = 'felicia.drivers.DepthCameraFrameMessage';
 export const IMAGE_WITH_BOUNDING_BOXES_MESSAGE = 'felicia.ImageWithBoundingBoxesMessage';
 export const IMAGE_WITH_HUMANS_MESSAGE = 'felicia.ImageWithHumansMessage';
-export const IMU_FRAME_MESSAGE = 'felicia.ImuFrameMessage';
-export const LIDAR_FRAME_MESSAGE = 'felicia.LidarFrameMessage';
-export const POINTCLOUD_FRAME_MESSAGE = 'felicia.PointcloudFrameMessage';
+export const IMU_FRAME_MESSAGE = 'felicia.drivers.ImuFrameMessage';
+export const LIDAR_FRAME_MESSAGE = 'felicia.drivers.LidarFrameMessage';
+export const POINTCLOUD_FRAME_MESSAGE = 'felicia.drivers.PointcloudFrameMessage';
 export const TOPIC_INFO = 'felicia.TopicInfo';
 
 export const OCCUPANCY_GRID_MAP_MESSAGE = 'felicia.OccupancyGridMapMessage';

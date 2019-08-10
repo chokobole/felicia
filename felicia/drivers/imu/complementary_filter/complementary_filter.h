@@ -36,6 +36,7 @@
 #include "felicia/drivers/imu/imu_filter_interface.h"
 
 namespace felicia {
+namespace drivers {
 
 class ComplementaryFilter : public ImuFilterInterface {
  public:
@@ -64,6 +65,7 @@ class ComplementaryFilter : public ImuFilterInterface {
   base::TimeDelta last_timestamp_;
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_IMU_COMPLEMENTARY_FILTER_COMPLEMENTARY_FILTER_H_

@@ -23,6 +23,7 @@ using base::win::ScopedCoMem;
 using Microsoft::WRL::ComPtr;
 
 namespace felicia {
+namespace drivers {
 
 #define MESSAGE_WITH_HRESULT(text, hr) \
   base::StringPrintf("%s :%s.", text,  \
@@ -325,14 +326,15 @@ Status MfCamera::GetSupportedCameraFormats(
   ComPtr<IMFMediaSource> source;
   if (!CreateVideoCaptureDeviceMediaFoundation(camera_descriptor,
                                                source.GetAddressOf())) {
-    return errors::Unavailable("Failed to create video capture device.");
+    return felicia::errors::Unavailable(
+        "Failed to create video capture device.");
   }
 
   ComPtr<IMFSourceReader> reader;
   HRESULT hr = MFCreateSourceReaderFromMediaSource(source.Get(), NULL,
                                                    reader.GetAddressOf());
   if (FAILED(hr)) {
-    return errors::Unauthenticated(MESSAGE_WITH_HRESULT(
+    return felicia::errors::Unavailable(MESSAGE_WITH_HRESULT(
         "Failed to MFCreateSourceReaderFromMediaSource", hr));
   }
 
@@ -372,7 +374,7 @@ Status MfCamera::Init() {
 
   HRESULT hr = CreateCaptureEngine(engine_.GetAddressOf());
   if (FAILED(hr)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to create CaptureEngine", hr));
   }
 
@@ -382,14 +384,15 @@ Status MfCamera::Init() {
 
   if (!CreateVideoCaptureDeviceMediaFoundation(camera_descriptor_,
                                                source_.GetAddressOf())) {
-    return errors::Unavailable("Failed to create video capture device.");
+    return felicia::errors::Unavailable(
+        "Failed to create video capture device.");
   }
 
   video_callback_ = new MFVideoCallback(this);
   hr = engine_->Initialize(video_callback_.get(), attributes.Get(), nullptr,
                            source_.Get());
   if (FAILED(hr)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to Initialize", hr));
   }
 
@@ -412,13 +415,14 @@ Status MfCamera::Start(const CameraFormat& requested_camera_format,
   ComPtr<IMFCaptureSource> source;
   HRESULT hr = engine_->GetSource(source.GetAddressOf());
   if (FAILED(hr)) {
-    return errors::Unavailable(MESSAGE_WITH_HRESULT("Failed to GetSource", hr));
+    return felicia::errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to GetSource", hr));
   }
 
   CapabilityList video_capabilities;
   hr = FillCapabilities(source.Get(), false, &video_capabilities);
   if (FAILED(hr)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to FillVideoCapabilities", hr));
   }
 
@@ -434,14 +438,14 @@ Status MfCamera::Start(const CameraFormat& requested_camera_format,
                                    found_capability.media_type_index,
                                    source_video_media_type.GetAddressOf());
   if (FAILED(hr)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to GetAvailableDeviceMediaType", hr));
   }
 
   hr = source->SetCurrentDeviceMediaType(found_capability.stream_index,
                                          source_video_media_type.Get());
   if (FAILED(hr)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to SetCurrentDeviceMediaType", hr));
   }
 
@@ -452,33 +456,34 @@ Status MfCamera::Start(const CameraFormat& requested_camera_format,
   hr = engine_->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW,
                         sink.GetAddressOf());
   if (FAILED(hr)) {
-    return errors::Unavailable(MESSAGE_WITH_HRESULT("Failed to GetSink", hr));
+    return felicia::errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to GetSink", hr));
   }
 
   ComPtr<IMFCapturePreviewSink> preview_sink;
   hr = sink->QueryInterface(IID_PPV_ARGS(preview_sink.GetAddressOf()));
   if (FAILED(hr)) {
-    return errors::Unavailable(MESSAGE_WITH_HRESULT(
+    return felicia::errors::Unavailable(MESSAGE_WITH_HRESULT(
         "Failed to query CapturePreviewSink interface", hr));
   }
 
   hr = preview_sink->RemoveAllStreams();
   if (FAILED(hr)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to RemoveAllStreams", hr));
   }
 
   ComPtr<IMFMediaType> sink_video_media_type;
   hr = MFCreateMediaType(sink_video_media_type.GetAddressOf());
   if (FAILED(hr)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to create SinkVideoMediaType", hr));
   }
 
   hr = ConvertToVideoSinkMediaType(source_video_media_type.Get(),
                                    sink_video_media_type.Get());
   if (FAILED(hr)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to ConvertToVideoSinkMediaType", hr));
   }
 
@@ -487,19 +492,20 @@ Status MfCamera::Start(const CameraFormat& requested_camera_format,
                                sink_video_media_type.Get(), NULL,
                                &dw_sink_stream_index);
   if (FAILED(hr)) {
-    return errors::Unavailable(MESSAGE_WITH_HRESULT("Failed to AddStream", hr));
+    return felicia::errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to AddStream", hr));
   }
 
   hr = preview_sink->SetSampleCallback(dw_sink_stream_index,
                                        video_callback_.get());
   if (FAILED(hr)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to SetSampleCallback", hr));
   }
 
   hr = engine_->StartPreview();
   if (FAILED(hr)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to StartPreview", hr));
   }
 
@@ -522,7 +528,7 @@ Status MfCamera::Stop() {
 
   HRESULT hr = engine_->StopPreview();
   if (FAILED(hr)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to StopPreview", hr));
   }
 
@@ -807,7 +813,7 @@ void MfCamera::OnEvent(IMFMediaEvent* media_event) {
   media_event->GetStatus(&hr);
 
   if (FAILED(hr))
-    status_callback_.Run(errors::Unavailable(
+    status_callback_.Run(felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("MediaEventStatusFailed", hr)));
 }
 
@@ -922,13 +928,13 @@ Status MfCamera::InitializeVideoAndCameraControls() {
   HRESULT hr =
       source_->QueryInterface(IID_PPV_ARGS(camera_control_.GetAddressOf()));
   if (FAILED(hr)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to query IAMCameraControl interface", hr));
   }
 
   hr = source_->QueryInterface(IID_PPV_ARGS(video_control_.GetAddressOf()));
   if (FAILED(hr)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to query IAMVideoProcAmp interface", hr));
   }
 
@@ -941,16 +947,18 @@ Status MfCamera::GetCameraFormatFromSourceMediaType(
   GUID major_type_guid;
   HRESULT hr = source_media_type->GetGUID(MF_MT_MAJOR_TYPE, &major_type_guid);
   if (FAILED(hr)) {
-    return errors::Unavailable(MESSAGE_WITH_HRESULT("Failed to GetGUID", hr));
+    return felicia::errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to GetGUID", hr));
   }
 
   if (major_type_guid != MFMediaType_Image) {
-    if (photo) return errors::InvalidArgument("MediaType not matched.");
+    if (photo)
+      return felicia::errors::InvalidArgument("MediaType not matched.");
     UINT32 numerator, denominator;
     hr = MFGetAttributeRatio(source_media_type, MF_MT_FRAME_RATE, &numerator,
                              &denominator);
     if (FAILED(hr)) {
-      return errors::Unavailable(
+      return felicia::errors::Unavailable(
           MESSAGE_WITH_HRESULT("Failed to MFGetAttributeRatio", hr));
     }
     camera_format->set_frame_rate(
@@ -960,7 +968,8 @@ Status MfCamera::GetCameraFormatFromSourceMediaType(
   GUID sub_type_guid;
   hr = source_media_type->GetGUID(MF_MT_SUBTYPE, &sub_type_guid);
   if (FAILED(hr)) {
-    return errors::Unavailable(MESSAGE_WITH_HRESULT("Failed to GetGUID", hr));
+    return felicia::errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to GetGUID", hr));
   }
 
   camera_format->set_pixel_format(
@@ -969,7 +978,7 @@ Status MfCamera::GetCameraFormatFromSourceMediaType(
   UINT32 width, height;
   hr = MFGetAttributeSize(source_media_type, MF_MT_FRAME_SIZE, &width, &height);
   if (FAILED(hr)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to MFGetAttributeSize", hr));
   }
   camera_format->SetSize(width, height);
@@ -979,4 +988,5 @@ Status MfCamera::GetCameraFormatFromSourceMediaType(
 
 #undef MESSAGE_WITH_HRESULT
 
+}  // namespace drivers
 }  // namespace felicia

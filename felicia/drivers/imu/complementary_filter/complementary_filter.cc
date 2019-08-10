@@ -33,6 +33,7 @@
 #include "felicia/drivers/imu/complementary_filter/complementary_filter.h"
 
 namespace felicia {
+namespace drivers {
 
 constexpr double kGravity = 9.81;
 
@@ -140,4 +141,5 @@ Quaternionf ComplementaryFilter::Interpolate(const Quaternionf& q,
   }
 }
 
+}  // namespace drivers
 }  // namespace felicia

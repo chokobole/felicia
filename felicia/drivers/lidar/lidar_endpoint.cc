@@ -3,6 +3,7 @@
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 namespace felicia {
+namespace drivers {
 
 LidarEndpoint::LidarEndpoint() = default;
 LidarEndpoint::~LidarEndpoint() = default;
@@ -45,4 +46,5 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
+}  // namespace drivers
 }  // namespace felicia

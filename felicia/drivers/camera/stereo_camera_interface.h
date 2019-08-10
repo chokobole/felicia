@@ -5,6 +5,7 @@
 #include "felicia/drivers/camera/depth_camera_frame.h"
 
 namespace felicia {
+namespace drivers {
 
 class EXPORT StereoCameraInterface : public CameraInterfaceBase {
  public:
@@ -28,6 +29,7 @@ class EXPORT StereoCameraInterface : public CameraInterfaceBase {
   DepthCameraFrameCallback depth_camera_frame_callback_;
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_STEREO_CAMERA_INTERFACE_H_

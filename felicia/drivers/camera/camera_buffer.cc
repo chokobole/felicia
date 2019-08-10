@@ -1,6 +1,7 @@
 #include "felicia/drivers/camera/camera_buffer.h"
 
 namespace felicia {
+namespace drivers {
 
 CameraBuffer::CameraBuffer(uint8_t* start, size_t length)
     : start_(start), length_(length) {}
@@ -13,4 +14,5 @@ size_t CameraBuffer::payload() const { return payload_; }
 void CameraBuffer::set_payload(size_t payload) { payload_ = payload; }
 size_t CameraBuffer::length() const { return length_; }
 
+}  // namespace drivers
 }  // namespace felicia

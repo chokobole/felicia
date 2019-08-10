@@ -9,6 +9,7 @@
 #include "felicia/core/lib/base/export.h"
 
 namespace felicia {
+namespace drivers {
 
 class EXPORT CameraBuffer {
  public:
@@ -28,6 +29,7 @@ class EXPORT CameraBuffer {
   size_t length_;
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_CAMERA_BUFFER_H_

@@ -7,6 +7,7 @@
 #include "felicia/drivers/vendors/zed/zed_camera_descriptor.h"
 
 namespace felicia {
+namespace drivers {
 
 class ZedCameraFactory {
  public:
@@ -22,6 +23,7 @@ class ZedCameraFactory {
   DISALLOW_COPY_AND_ASSIGN(ZedCameraFactory);
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_VENDORS_ZED_ZED_CAMERA_FACTORY_H_

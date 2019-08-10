@@ -24,6 +24,7 @@ using base::win::ScopedVariant;
 using Microsoft::WRL::ComPtr;
 
 namespace felicia {
+namespace drivers {
 
 #define MESSAGE_WITH_HRESULT(text, hr) \
   base::StringPrintf("%s :%s.", text,  \
@@ -182,51 +183,51 @@ Status DshowCamera::Init() {
   HRESULT hr = GetDeviceFilter(camera_descriptor_.device_id(),
                                capture_filter_.GetAddressOf());
   if (FAILED(hr))
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to create capture filter", hr));
 
   output_capture_pin_ = GetPin(capture_filter_.Get(), PINDIR_OUTPUT,
                                PIN_CATEGORY_CAPTURE, GUID_NULL);
   if (!output_capture_pin_.Get())
-    return errors::Unavailable("Failed to get capture output pin.");
+    return felicia::errors::Unavailable("Failed to get capture output pin.");
 
   // Create the sink filter used for receiving Captured frames.
   sink_filter_ = new SinkFilter(this);
   if (sink_filter_.get() == NULL)
-    return errors::Unavailable("Failed to create sink filter.");
+    return felicia::errors::Unavailable("Failed to create sink filter.");
 
   input_sink_pin_ = sink_filter_->GetPin(0);
 
   hr = ::CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER,
                           IID_PPV_ARGS(&graph_builder_));
   if (FAILED(hr))
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to create the Capture Graph Builder", hr));
 
   hr = ::CoCreateInstance(CLSID_CaptureGraphBuilder2, NULL, CLSCTX_INPROC,
                           IID_PPV_ARGS(&capture_graph_builder_));
   if (FAILED(hr))
-    return errors::Unavailable(MESSAGE_WITH_HRESULT(
+    return felicia::errors::Unavailable(MESSAGE_WITH_HRESULT(
         "Failed to give graph to capture graph builder", hr));
 
   hr = capture_graph_builder_->SetFiltergraph(graph_builder_.Get());
   if (FAILED(hr))
-    return errors::Unavailable(MESSAGE_WITH_HRESULT(
+    return felicia::errors::Unavailable(MESSAGE_WITH_HRESULT(
         "Failed to give graph to capture graph builder", hr));
 
   hr = graph_builder_.CopyTo(media_control_.GetAddressOf());
   if (FAILED(hr))
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to create media control builder", hr));
 
   hr = graph_builder_->AddFilter(capture_filter_.Get(), NULL);
   if (FAILED(hr))
-    return errors::Unavailable(MESSAGE_WITH_HRESULT(
+    return felicia::errors::Unavailable(MESSAGE_WITH_HRESULT(
         "Failed to add the capture device to the graph", hr));
 
   hr = graph_builder_->AddFilter(sink_filter_.get(), NULL);
   if (FAILED(hr))
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to add the sink filter to the graph", hr));
 
   camera_state_.ToInitialized();
@@ -259,14 +260,14 @@ Status DshowCamera::Start(const CameraFormat& requested_camera_format,
   ComPtr<IAMStreamConfig> stream_config;
   HRESULT hr = output_capture_pin_.CopyTo(stream_config.GetAddressOf());
   if (FAILED(hr)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to get IAMStreamConfig", hr));
   }
 
   int count = 0, size = 0;
   hr = stream_config->GetNumberOfCapabilities(&count, &size);
   if (FAILED(hr)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to GetNumberOfCapabilities", hr));
   }
 
@@ -279,7 +280,7 @@ Status DshowCamera::Start(const CameraFormat& requested_camera_format,
   hr = stream_config->GetStreamCaps(found_capability.media_type_index,
                                     media_type.Receive(), caps.get());
   if (hr != S_OK) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to GetStreamCaps", hr));
   }
 
@@ -290,7 +291,8 @@ Status DshowCamera::Start(const CameraFormat& requested_camera_format,
   // Order the capture device to use this format.
   hr = stream_config->SetFormat(media_type.get());
   if (hr != S_OK) {
-    return errors::Unavailable(MESSAGE_WITH_HRESULT("Failed to SetFormat", hr));
+    return felicia::errors::Unavailable(
+        MESSAGE_WITH_HRESULT("Failed to SetFormat", hr));
   }
 
   requested_pixel_format_ = requested_camera_format.pixel_format();
@@ -308,18 +310,18 @@ Status DshowCamera::Start(const CameraFormat& requested_camera_format,
   }
 
   if (FAILED(hr))
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to connect the CaptureGraph", hr));
 
   hr = media_control_->Pause();
   if (FAILED(hr))
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to pause the capture device", hr));
 
   // Start capturing.
   hr = media_control_->Run();
   if (FAILED(hr))
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to run the capture device", hr));
 
   camera_frame_callback_ = camera_frame_callback;
@@ -337,7 +339,7 @@ Status DshowCamera::Stop() {
 
   HRESULT hr = media_control_->Stop();
   if (FAILED(hr)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to stop the capture device", hr));
   }
 
@@ -731,13 +733,13 @@ Status DshowCamera::InitializeVideoAndCameraControls() {
   ComPtr<IKsTopologyInfo> info;
   HRESULT hr = capture_filter_.CopyTo(info.GetAddressOf());
   if (FAILED(hr))
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to obtain the topology info", hr));
 
   DWORD num_nodes = 0;
   hr = info->get_NumNodes(&num_nodes);
   if (FAILED(hr))
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_HRESULT("Failed to obtain the number of nodes.", hr));
 
   // Every UVC camera is expected to have a single ICameraControl and a single
@@ -749,7 +751,7 @@ Status DshowCamera::InitializeVideoAndCameraControls() {
       hr = info->CreateNodeInstance(i, IID_PPV_ARGS(&camera_control_));
       if (SUCCEEDED(hr)) break;
       if (FAILED(hr))
-        return errors::Unavailable(
+        return felicia::errors::Unavailable(
             MESSAGE_WITH_HRESULT("Failed to retrieve the ICameraControl.", hr));
     }
   }
@@ -759,7 +761,7 @@ Status DshowCamera::InitializeVideoAndCameraControls() {
       hr = info->CreateNodeInstance(i, IID_PPV_ARGS(&video_control_));
       if (SUCCEEDED(hr)) break;
       if (FAILED(hr))
-        return errors::Unavailable(
+        return felicia::errors::Unavailable(
             MESSAGE_WITH_HRESULT("Failed to retrieve the IVideoProcAmp.", hr));
     }
   }
@@ -767,7 +769,7 @@ Status DshowCamera::InitializeVideoAndCameraControls() {
   if (video_control_ && camera_control_) {
     return Status::OK();
   } else {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         "video_control_ or camera_control_ is not initialized.");
   }
 }
@@ -963,4 +965,5 @@ HRESULT DshowCamera::GetOptionValue(tagVideoProcAmpProperty tag, long* value,
 
 #undef MESSAGE_WITH_HRESULT
 
+}  // namespace drivers
 }  // namespace felicia

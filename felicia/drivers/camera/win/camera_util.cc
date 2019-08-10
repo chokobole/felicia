@@ -1,6 +1,7 @@
 #include "felicia/drivers/camera/win/camera_util.h"
 
 namespace felicia {
+namespace drivers {
 
 namespace {
 
@@ -32,4 +33,5 @@ std::string GetDeviceModelId(const std::string& device_id) {
   return id_vendor + ":" + id_product;
 }
 
+}  // namespace drivers
 }  // namespace felicia

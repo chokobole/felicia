@@ -2,7 +2,7 @@
 
 syntax = "proto3";
 
-package felicia;
+package felicia.drivers;
 
 message LidarFrameMessage {
   float angle_start = 1;  // start angle of the scan [rad]

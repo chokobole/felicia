@@ -3,6 +3,7 @@
 #include "third_party/chromium/base/strings/strcat.h"
 
 namespace felicia {
+namespace drivers {
 
 CameraDescriptor::CameraDescriptor() = default;
 
@@ -44,4 +45,5 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
+}  // namespace drivers
 }  // namespace felicia

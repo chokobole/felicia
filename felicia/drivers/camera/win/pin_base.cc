@@ -10,6 +10,7 @@
 #include "third_party/chromium/base/logging.h"
 
 namespace felicia {
+namespace drivers {
 
 // Implement IEnumPins.
 class TypeEnumerator final : public IEnumMediaTypes,
@@ -264,4 +265,5 @@ STDMETHODIMP_(ULONG) PinBase::Release() {
 
 PinBase::~PinBase() {}
 
+}  // namespace drivers
 }  // namespace felicia

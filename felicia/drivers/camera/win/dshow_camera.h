@@ -21,6 +21,7 @@
 #include "felicia/drivers/camera/win/sink_filter.h"
 
 namespace felicia {
+namespace drivers {
 
 class DshowCamera : public CameraInterface, SinkFilterObserver {
  public:
@@ -127,6 +128,7 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
   DISALLOW_IMPLICIT_CONSTRUCTORS(DshowCamera);
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAEMRA_WIN_DSHOW_CAMERA_H_

@@ -18,6 +18,7 @@
 #include "felicia/drivers/camera/camera_format.h"
 
 namespace felicia {
+namespace drivers {
 
 struct Capability {
   Capability(int media_type_index, const CameraFormat& format)
@@ -56,6 +57,7 @@ typedef std::list<Capability> CapabilityList;
 const Capability& GetBestMatchedCapability(const CameraFormat& requested,
                                            const CapabilityList& capabilities);
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_WIN_CAPABILITY_LIST_H_

@@ -1143,253 +1143,257 @@
             }
           }
         },
-        "CameraFormatMessage": {
-          "fields": {
-            "width": {
-              "type": "int32",
-              "id": 1
+        "drivers": {
+          "nested": {
+            "CameraFormatMessage": {
+              "fields": {
+                "width": {
+                  "type": "int32",
+                  "id": 1
+                },
+                "height": {
+                  "type": "int32",
+                  "id": 2
+                },
+                "pixelFormat": {
+                  "type": "PixelFormat",
+                  "id": 3
+                },
+                "frameRate": {
+                  "type": "float",
+                  "id": 4
+                }
+              }
             },
-            "height": {
-              "type": "int32",
-              "id": 2
+            "CameraFrameMessage": {
+              "fields": {
+                "data": {
+                  "type": "bytes",
+                  "id": 1
+                },
+                "cameraFormat": {
+                  "type": "CameraFormatMessage",
+                  "id": 2
+                },
+                "timestamp": {
+                  "type": "int64",
+                  "id": 3
+                }
+              }
             },
-            "pixelFormat": {
-              "type": "PixelFormat",
-              "id": 3
+            "CameraSettingsRangedValue": {
+              "fields": {
+                "min": {
+                  "type": "int64",
+                  "id": 1
+                },
+                "max": {
+                  "type": "int64",
+                  "id": 2
+                },
+                "step": {
+                  "type": "uint64",
+                  "id": 3
+                },
+                "default": {
+                  "type": "int64",
+                  "id": 4
+                },
+                "current": {
+                  "type": "int64",
+                  "id": 5
+                },
+                "flags": {
+                  "type": "uint32",
+                  "id": 6
+                }
+              }
             },
-            "frameRate": {
-              "type": "float",
-              "id": 4
-            }
-          }
-        },
-        "CameraFrameMessage": {
-          "fields": {
-            "data": {
-              "type": "bytes",
-              "id": 1
+            "CameraSettingsMode": {
+              "values": {
+                "CAMERA_SETTINGS_MODE_NONE": 0,
+                "CAMERA_SETTINGS_MODE_AUTO": 1,
+                "CAMERA_SETTINGS_MODE_MANUAL": 2
+              }
             },
-            "cameraFormat": {
-              "type": "CameraFormatMessage",
-              "id": 2
+            "CameraSettingsModeValue": {
+              "fields": {
+                "modes": {
+                  "rule": "repeated",
+                  "type": "CameraSettingsMode",
+                  "id": 1
+                },
+                "default": {
+                  "type": "CameraSettingsMode",
+                  "id": 2
+                },
+                "current": {
+                  "type": "CameraSettingsMode",
+                  "id": 3
+                },
+                "flags": {
+                  "type": "uint32",
+                  "id": 4
+                }
+              }
             },
-            "timestamp": {
-              "type": "int64",
-              "id": 3
-            }
-          }
-        },
-        "CameraSettingsRangedValue": {
-          "fields": {
-            "min": {
-              "type": "int64",
-              "id": 1
+            "CameraSettingsInfoMessage": {
+              "fields": {
+                "whiteBalanceMode": {
+                  "type": "CameraSettingsModeValue",
+                  "id": 1
+                },
+                "exposureMode": {
+                  "type": "CameraSettingsModeValue",
+                  "id": 2
+                },
+                "exposureCompensation": {
+                  "type": "CameraSettingsRangedValue",
+                  "id": 3
+                },
+                "exposureTime": {
+                  "type": "CameraSettingsRangedValue",
+                  "id": 4
+                },
+                "colorTemperature": {
+                  "type": "CameraSettingsRangedValue",
+                  "id": 5
+                },
+                "brightness": {
+                  "type": "CameraSettingsRangedValue",
+                  "id": 6
+                },
+                "contrast": {
+                  "type": "CameraSettingsRangedValue",
+                  "id": 7
+                },
+                "saturation": {
+                  "type": "CameraSettingsRangedValue",
+                  "id": 8
+                },
+                "sharpness": {
+                  "type": "CameraSettingsRangedValue",
+                  "id": 9
+                },
+                "hue": {
+                  "type": "CameraSettingsRangedValue",
+                  "id": 10
+                },
+                "gain": {
+                  "type": "CameraSettingsRangedValue",
+                  "id": 11
+                },
+                "gamma": {
+                  "type": "CameraSettingsRangedValue",
+                  "id": 12
+                }
+              }
             },
-            "max": {
-              "type": "int64",
-              "id": 2
+            "DepthCameraFrameMessage": {
+              "fields": {
+                "frame": {
+                  "type": "CameraFrameMessage",
+                  "id": 1
+                },
+                "min": {
+                  "type": "float",
+                  "id": 2
+                },
+                "max": {
+                  "type": "float",
+                  "id": 3
+                }
+              }
             },
-            "step": {
-              "type": "uint64",
-              "id": 3
+            "ImuFormatMessage": {
+              "fields": {
+                "frameRate": {
+                  "type": "float",
+                  "id": 1
+                }
+              }
             },
-            "default": {
-              "type": "int64",
-              "id": 4
+            "ImuFrameMessage": {
+              "fields": {
+                "orientation": {
+                  "type": "QuaternionfMessage",
+                  "id": 1
+                },
+                "angularVelocity": {
+                  "type": "Vector3fMessage",
+                  "id": 2
+                },
+                "linearAcceleration": {
+                  "type": "Vector3fMessage",
+                  "id": 3
+                },
+                "timestamp": {
+                  "type": "int64",
+                  "id": 4
+                }
+              }
             },
-            "current": {
-              "type": "int64",
-              "id": 5
+            "LidarFrameMessage": {
+              "fields": {
+                "angleStart": {
+                  "type": "float",
+                  "id": 1
+                },
+                "angleEnd": {
+                  "type": "float",
+                  "id": 2
+                },
+                "angleDelta": {
+                  "type": "float",
+                  "id": 3
+                },
+                "timeDelta": {
+                  "type": "float",
+                  "id": 4
+                },
+                "scanTime": {
+                  "type": "float",
+                  "id": 5
+                },
+                "rangeMin": {
+                  "type": "float",
+                  "id": 6
+                },
+                "rangeMax": {
+                  "type": "float",
+                  "id": 7
+                },
+                "ranges": {
+                  "rule": "repeated",
+                  "type": "float",
+                  "id": 8
+                },
+                "intensities": {
+                  "rule": "repeated",
+                  "type": "float",
+                  "id": 9
+                },
+                "timestamp": {
+                  "type": "int64",
+                  "id": 10
+                }
+              }
             },
-            "flags": {
-              "type": "uint32",
-              "id": 6
-            }
-          }
-        },
-        "CameraSettingsMode": {
-          "values": {
-            "CAMERA_SETTINGS_MODE_NONE": 0,
-            "CAMERA_SETTINGS_MODE_AUTO": 1,
-            "CAMERA_SETTINGS_MODE_MANUAL": 2
-          }
-        },
-        "CameraSettingsModeValue": {
-          "fields": {
-            "modes": {
-              "rule": "repeated",
-              "type": "CameraSettingsMode",
-              "id": 1
-            },
-            "default": {
-              "type": "CameraSettingsMode",
-              "id": 2
-            },
-            "current": {
-              "type": "CameraSettingsMode",
-              "id": 3
-            },
-            "flags": {
-              "type": "uint32",
-              "id": 4
-            }
-          }
-        },
-        "CameraSettingsInfoMessage": {
-          "fields": {
-            "whiteBalanceMode": {
-              "type": "CameraSettingsModeValue",
-              "id": 1
-            },
-            "exposureMode": {
-              "type": "CameraSettingsModeValue",
-              "id": 2
-            },
-            "exposureCompensation": {
-              "type": "CameraSettingsRangedValue",
-              "id": 3
-            },
-            "exposureTime": {
-              "type": "CameraSettingsRangedValue",
-              "id": 4
-            },
-            "colorTemperature": {
-              "type": "CameraSettingsRangedValue",
-              "id": 5
-            },
-            "brightness": {
-              "type": "CameraSettingsRangedValue",
-              "id": 6
-            },
-            "contrast": {
-              "type": "CameraSettingsRangedValue",
-              "id": 7
-            },
-            "saturation": {
-              "type": "CameraSettingsRangedValue",
-              "id": 8
-            },
-            "sharpness": {
-              "type": "CameraSettingsRangedValue",
-              "id": 9
-            },
-            "hue": {
-              "type": "CameraSettingsRangedValue",
-              "id": 10
-            },
-            "gain": {
-              "type": "CameraSettingsRangedValue",
-              "id": 11
-            },
-            "gamma": {
-              "type": "CameraSettingsRangedValue",
-              "id": 12
-            }
-          }
-        },
-        "DepthCameraFrameMessage": {
-          "fields": {
-            "frame": {
-              "type": "CameraFrameMessage",
-              "id": 1
-            },
-            "min": {
-              "type": "float",
-              "id": 2
-            },
-            "max": {
-              "type": "float",
-              "id": 3
-            }
-          }
-        },
-        "ImuFormatMessage": {
-          "fields": {
-            "frameRate": {
-              "type": "float",
-              "id": 1
-            }
-          }
-        },
-        "ImuFrameMessage": {
-          "fields": {
-            "orientation": {
-              "type": "QuaternionfMessage",
-              "id": 1
-            },
-            "angularVelocity": {
-              "type": "Vector3fMessage",
-              "id": 2
-            },
-            "linearAcceleration": {
-              "type": "Vector3fMessage",
-              "id": 3
-            },
-            "timestamp": {
-              "type": "int64",
-              "id": 4
-            }
-          }
-        },
-        "LidarFrameMessage": {
-          "fields": {
-            "angleStart": {
-              "type": "float",
-              "id": 1
-            },
-            "angleEnd": {
-              "type": "float",
-              "id": 2
-            },
-            "angleDelta": {
-              "type": "float",
-              "id": 3
-            },
-            "timeDelta": {
-              "type": "float",
-              "id": 4
-            },
-            "scanTime": {
-              "type": "float",
-              "id": 5
-            },
-            "rangeMin": {
-              "type": "float",
-              "id": 6
-            },
-            "rangeMax": {
-              "type": "float",
-              "id": 7
-            },
-            "ranges": {
-              "rule": "repeated",
-              "type": "float",
-              "id": 8
-            },
-            "intensities": {
-              "rule": "repeated",
-              "type": "float",
-              "id": 9
-            },
-            "timestamp": {
-              "type": "int64",
-              "id": 10
-            }
-          }
-        },
-        "PointcloudFrameMessage": {
-          "fields": {
-            "points": {
-              "type": "bytes",
-              "id": 1
-            },
-            "colors": {
-              "type": "bytes",
-              "id": 2
-            },
-            "timestamp": {
-              "type": "int64",
-              "id": 3
+            "PointcloudFrameMessage": {
+              "fields": {
+                "points": {
+                  "type": "bytes",
+                  "id": 1
+                },
+                "colors": {
+                  "type": "bytes",
+                  "id": 2
+                },
+                "timestamp": {
+                  "type": "int64",
+                  "id": 3
+                }
+              }
             }
           }
         },

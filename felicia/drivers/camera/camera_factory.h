@@ -9,6 +9,7 @@
 #include "felicia/drivers/camera/camera_interface.h"
 
 namespace felicia {
+namespace drivers {
 
 class EXPORT CameraFactory {
  public:
@@ -23,6 +24,7 @@ class EXPORT CameraFactory {
   DISALLOW_COPY_AND_ASSIGN(CameraFactory);
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_CAMERA_FACTORY_H_

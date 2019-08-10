@@ -1,6 +1,7 @@
 #include "felicia/drivers/camera/depth_camera_frame.h"
 
 namespace felicia {
+namespace drivers {
 
 DepthCameraFrame::DepthCameraFrame() = default;
 
@@ -56,4 +57,5 @@ DepthCameraFrame DepthCameraFrame::FromCvMat(cv::Mat mat,
 }
 #endif
 
+}  // namespace drivers
 }  // namespace felicia

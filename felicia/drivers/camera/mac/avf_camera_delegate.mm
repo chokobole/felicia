@@ -88,8 +88,8 @@ void ExtractBaseAddressAndLength(char** base_address, size_t* length,
   return deviceNames;
 }
 
-+ (void)getDevice:(const felicia::CameraDescriptor&)camera_descriptor
-    supportedFormats:(felicia::CameraFormats*)camera_formats {
++ (void)getDevice:(const felicia::drivers::CameraDescriptor&)camera_descriptor
+    supportedFormats:(felicia::drivers::CameraFormats*)camera_formats {
   NSArray* devices = [AVCaptureDevice devices];
   AVCaptureDevice* device = nil;
   for (device in devices) {
@@ -99,14 +99,15 @@ void ExtractBaseAddressAndLength(char** base_address, size_t* length,
   for (AVCaptureDeviceFormat* format in device.formats) {
     // MediaSubType is a CMPixelFormatType but can be used as CVPixelFormatType
     // as well according to CMFormatDescription.h
-    const felicia::PixelFormat pixelFormat = felicia::CameraFormat::FromAVFoundationPixelFormat(
-        CMFormatDescriptionGetMediaSubType([format formatDescription]));
+    const felicia::PixelFormat pixelFormat =
+        felicia::drivers::CameraFormat::FromAVFoundationPixelFormat(
+            CMFormatDescriptionGetMediaSubType([format formatDescription]));
 
     CMVideoDimensions dimensions =
         CMVideoFormatDescriptionGetDimensions([format formatDescription]);
 
     for (AVFrameRateRange* frameRate in [format videoSupportedFrameRateRanges]) {
-      felicia::CameraFormat camera_format = felicia::CameraFormat(
+      felicia::drivers::CameraFormat camera_format = felicia::drivers::CameraFormat(
           dimensions.width, dimensions.height, pixelFormat, frameRate.maxFrameRate);
       camera_formats->push_back(camera_format);
       DVLOG(2) << camera_descriptor.display_name() << " " << camera_format.ToString();
@@ -116,7 +117,7 @@ void ExtractBaseAddressAndLength(char** base_address, size_t* length,
 
 #pragma mark Public methods
 
-- (id)initWithFrameReceiver:(felicia::FrameReceiver*)frameReceiver {
+- (id)initWithFrameReceiver:(felicia::drivers::FrameReceiver*)frameReceiver {
   if ((self = [super init])) {
     DCHECK(main_thread_checker_.CalledOnValidThread());
     DCHECK(frameReceiver);
@@ -132,7 +133,7 @@ void ExtractBaseAddressAndLength(char** base_address, size_t* length,
   [super dealloc];
 }
 
-- (void)setFrameReceiver:(felicia::FrameReceiver*)frameReceiver {
+- (void)setFrameReceiver:(felicia::drivers::FrameReceiver*)frameReceiver {
   base::AutoLock lock(lock_);
   frameReceiver_ = frameReceiver;
 }
@@ -197,11 +198,11 @@ void ExtractBaseAddressAndLength(char** base_address, size_t* length,
   return YES;
 }
 
-- (BOOL)getCameraFormat:(felicia::CameraFormat*)cameraFormat {
+- (BOOL)getCameraFormat:(felicia::drivers::CameraFormat*)cameraFormat {
   if (was_set_) {
-    *cameraFormat = felicia::CameraFormat(
-        frameWidth_, frameHeight_, felicia::CameraFormat::FromAVFoundationPixelFormat(fourcc_),
-        frameRate_);
+    *cameraFormat = felicia::drivers::CameraFormat(
+        frameWidth_, frameHeight_,
+        felicia::drivers::CameraFormat::FromAVFoundationPixelFormat(fourcc_), frameRate_);
     return YES;
   }
 
@@ -211,9 +212,9 @@ void ExtractBaseAddressAndLength(char** base_address, size_t* length,
   const CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(formatDescription);
   const CMTime maxFrameDuration = [captureDevice_ activeVideoMaxFrameDuration];
   const float maxFrameRate = maxFrameDuration.timescale / double(maxFrameDuration.value);
-  *cameraFormat = felicia::CameraFormat(
+  *cameraFormat = felicia::drivers::CameraFormat(
       felicia::Sizei(static_cast<int>(dimensions.width), static_cast<int>(dimensions.height)),
-      felicia::CameraFormat::FromAVFoundationPixelFormat(fourcc), maxFrameRate);
+      felicia::drivers::CameraFormat::FromAVFoundationPixelFormat(fourcc), maxFrameRate);
 
   return YES;
 }
@@ -257,14 +258,16 @@ void ExtractBaseAddressAndLength(char** base_address, size_t* length,
   if ([captureConnection respondsToSelector:@selector(isVideoMinFrameDurationSupported)] &&
       [captureConnection isVideoMinFrameDurationSupported]) {
     [captureConnection
-        setVideoMinFrameDuration:CMTimeMake(felicia::kFrameRatePrecision,
-                                            (int)(frameRate * felicia::kFrameRatePrecision))];
+        setVideoMinFrameDuration:CMTimeMake(
+                                     felicia::drivers::kFrameRatePrecision,
+                                     (int)(frameRate * felicia::drivers::kFrameRatePrecision))];
   }
   if ([captureConnection respondsToSelector:@selector(isVideoMaxFrameDurationSupported)] &&
       [captureConnection isVideoMaxFrameDurationSupported]) {
     [captureConnection
-        setVideoMaxFrameDuration:CMTimeMake(felicia::kFrameRatePrecision,
-                                            (int)(frameRate * felicia::kFrameRatePrecision))];
+        setVideoMaxFrameDuration:CMTimeMake(
+                                     felicia::drivers::kFrameRatePrecision,
+                                     (int)(frameRate * felicia::drivers::kFrameRatePrecision))];
   }
   return YES;
 }
@@ -302,9 +305,9 @@ void ExtractBaseAddressAndLength(char** base_address, size_t* length,
   const CMFormatDescriptionRef formatDescription = CMSampleBufferGetFormatDescription(sampleBuffer);
   const FourCharCode fourcc = CMFormatDescriptionGetMediaSubType(formatDescription);
   const CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(formatDescription);
-  const felicia::CameraFormat cameraFormat(
+  const felicia::drivers::CameraFormat cameraFormat(
       felicia::Sizei(static_cast<int>(dimensions.width), static_cast<int>(dimensions.height)),
-      felicia::CameraFormat::FromAVFoundationPixelFormat(fourcc), frameRate_);
+      felicia::drivers::CameraFormat::FromAVFoundationPixelFormat(fourcc), frameRate_);
 
   // We have certain format expectation for capture output:
   // For MJPEG, |sampleBuffer| is expected to always be a CVBlockBuffer.
@@ -339,7 +342,7 @@ void ExtractBaseAddressAndLength(char** base_address, size_t* length,
             ? base::TimeDelta::FromMicroseconds(cm_timestamp.value *
                                                 base::TimeTicks::kMicrosecondsPerSecond /
                                                 cm_timestamp.timescale)
-            : felicia::kNoTimestamp;
+            : felicia::drivers::kNoTimestamp;
 
     if (frameReceiver_ && baseAddress) {
       frameReceiver_->ReceiveFrame(reinterpret_cast<uint8_t*>(baseAddress), frameSize, cameraFormat,

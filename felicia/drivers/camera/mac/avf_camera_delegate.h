@@ -44,7 +44,7 @@
   bool was_set_;
 
   base::Lock lock_;  // Protects concurrent setting and using |frameReceiver_|.
-  felicia::FrameReceiver* frameReceiver_;  // weak.
+  felicia::drivers::FrameReceiver* frameReceiver_;  // weak.
 
   base::scoped_nsobject<AVCaptureSession> captureSession_;
 
@@ -65,15 +65,15 @@
 + (NSDictionary*)deviceNames;
 
 // Retrieve the capture supported formats for a given device |descriptor|.
-+ (void)getDevice:(const felicia::CameraDescriptor&)camera_descriptor
-    supportedFormats:(felicia::CameraFormats*)camera_formats;
++ (void)getDevice:(const felicia::drivers::CameraDescriptor&)camera_descriptor
+    supportedFormats:(felicia::drivers::CameraFormats*)camera_formats;
 
 // Initializes the instance and the underlying capture session and registers the
 // frame receiver.
-- (id)initWithFrameReceiver:(felicia::FrameReceiver*)frameReceiver;
+- (id)initWithFrameReceiver:(felicia::drivers::FrameReceiver*)frameReceiver;
 
 // Sets the frame receiver.
-- (void)setFrameReceiver:(felicia::FrameReceiver*)frameReceiver;
+- (void)setFrameReceiver:(felicia::drivers::FrameReceiver*)frameReceiver;
 
 // Sets which capture device to use by name, retrieved via |deviceNames|. Once
 // the deviceId is known, the library objects are created if needed and
@@ -85,7 +85,7 @@
 - (BOOL)setCaptureDevice:(NSString*)deviceId errorMessage:(NSString**)outMessage;
 
 // Retrieves the capture properties. Return YES on success, else NO.
-- (BOOL)getCameraFormat:(felicia::CameraFormat*)cameraFormat;
+- (BOOL)getCameraFormat:(felicia::drivers::CameraFormat*)cameraFormat;
 
 // Configures the capture properties for the capture session and the video data
 // output; this means it MUST be called after setCaptureDevice:. Return YES on

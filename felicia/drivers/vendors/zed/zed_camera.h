@@ -15,6 +15,7 @@
 #include "felicia/drivers/vendors/zed/zed_capability.h"
 
 namespace felicia {
+namespace drivers {
 
 class ZedCamera : public StereoCameraInterface,
                   public base::SupportsWeakPtr<ZedCamera> {
@@ -121,6 +122,7 @@ class ZedCamera : public StereoCameraInterface,
   DISALLOW_IMPLICIT_CONSTRUCTORS(ZedCamera);
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_VENDORS_ZED_CAMERA_H_

@@ -6,6 +6,7 @@
 #include "felicia/drivers/imu/madgwick_filter/madgwick_filter.h"
 
 namespace felicia {
+namespace drivers {
 
 std::unique_ptr<ImuFilterInterface> ImuFilterFactory::NewImuFilter(
     ImuFilterKind kind) {
@@ -18,4 +19,5 @@ std::unique_ptr<ImuFilterInterface> ImuFilterFactory::NewImuFilter(
   return nullptr;
 }
 
+}  // namespace drivers
 }  // namespace felicia

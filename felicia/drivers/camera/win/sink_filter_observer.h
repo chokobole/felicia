@@ -19,6 +19,7 @@
 #include "felicia/drivers/camera/camera_format.h"
 
 namespace felicia {
+namespace drivers {
 
 class SinkFilterObserver {
  public:
@@ -34,6 +35,7 @@ class SinkFilterObserver {
   virtual ~SinkFilterObserver();
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_WIN_SINK_FILTER_OBSERVER_H_

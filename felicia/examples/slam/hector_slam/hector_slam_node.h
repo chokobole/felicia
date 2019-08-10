@@ -125,8 +125,9 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
     }
   }
 
-  void OnMessage(LidarFrameMessage&& message) {
-    LidarFrame lidar_frame = LidarFrame::FromLidarFrameMessage(message);
+  void OnMessage(drivers::LidarFrameMessage&& message) {
+    drivers::LidarFrame lidar_frame =
+        drivers::LidarFrame::FromLidarFrameMessage(message);
     hector_slam_->Update(std::move(lidar_frame));
   }
 
@@ -170,7 +171,7 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
   const std::string pose_topic_;
   const int fps_;
   std::unique_ptr<HectorSlam> hector_slam_;
-  Subscriber<LidarFrameMessage> lidar_subscriber_;
+  Subscriber<drivers::LidarFrameMessage> lidar_subscriber_;
   Publisher<PosefWithTimestampMessage> pose_publisher_;
   Publisher<OccupancyGridMapMessage> map_publisher_;
 };

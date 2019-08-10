@@ -12,6 +12,7 @@
 #include "third_party/chromium/base/logging.h"
 
 namespace felicia {
+namespace drivers {
 
 bool InitializeMediaFoundation() {
   static const bool success = MFStartup(MF_VERSION, MFSTARTUP_LITE) == S_OK;
@@ -20,4 +21,5 @@ bool InitializeMediaFoundation() {
   return success;
 }
 
+}  // namespace drivers
 }  // namespace felicia

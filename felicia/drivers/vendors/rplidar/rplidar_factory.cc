@@ -3,6 +3,7 @@
 #include "third_party/chromium/base/memory/ptr_util.h"
 
 namespace felicia {
+namespace drivers {
 
 // static
 std::unique_ptr<RPlidar> RPlidarFactory::NewLidar(
@@ -10,4 +11,5 @@ std::unique_ptr<RPlidar> RPlidarFactory::NewLidar(
   return base::WrapUnique(new RPlidar(lidar_endpoint));
 }
 
+}  // namespace drivers
 }  // namespace felicia

@@ -20,7 +20,7 @@ void Shutdown(int signal);
 class RPlidarPublishingNode : public NodeLifecycle {
  public:
   RPlidarPublishingNode(const RPLidarFlag& rplidar_flag,
-                        const LidarEndpoint& lidar_endpoint)
+                        const drivers::LidarEndpoint& lidar_endpoint)
       : rplidar_flag_(rplidar_flag),
         topic_(rplidar_flag_.topic_flag()->value()),
         scan_mode_(rplidar_flag_.scan_mode_flag()->value()),
@@ -28,7 +28,7 @@ class RPlidarPublishingNode : public NodeLifecycle {
 
   void OnInit() override {
     std::cout << "RPlidarPublishingNode::OnInit()" << std::endl;
-    lidar_ = RPlidarFactory::NewLidar(lidar_endpoint_);
+    lidar_ = drivers::RPlidarFactory::NewLidar(lidar_endpoint_);
     Status s = lidar_->Init();
     CHECK(s.ok()) << s;
   }
@@ -123,7 +123,7 @@ class RPlidarPublishingNode : public NodeLifecycle {
     }
   }
 
-  void OnLidarFrame(const LidarFrame& lidar_frame) {
+  void OnLidarFrame(const drivers::LidarFrame& lidar_frame) {
     if (lidar_publisher_.IsUnregistered()) return;
 
     lidar_publisher_.Publish(
@@ -162,9 +162,9 @@ class RPlidarPublishingNode : public NodeLifecycle {
   const RPLidarFlag& rplidar_flag_;
   const std::string topic_;
   const std::string scan_mode_;
-  LidarEndpoint lidar_endpoint_;
-  std::unique_ptr<RPlidar> lidar_;
-  Publisher<LidarFrameMessage> lidar_publisher_;
+  drivers::LidarEndpoint lidar_endpoint_;
+  std::unique_ptr<drivers::RPlidar> lidar_;
+  Publisher<drivers::LidarFrameMessage> lidar_publisher_;
 };
 
 #ifdef OS_POSIX

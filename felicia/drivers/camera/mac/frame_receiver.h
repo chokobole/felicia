@@ -8,6 +8,7 @@
 #include "felicia/drivers/camera/camera_format.h"
 
 namespace felicia {
+namespace drivers {
 
 class FrameReceiver {
  public:
@@ -24,6 +25,7 @@ class FrameReceiver {
   virtual void ReceiveError(const Status& status) = 0;
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_MAC_FRAME_RECEIVER_H_

@@ -4,6 +4,7 @@
 #include "felicia/core/lib/base/state.h"
 
 namespace felicia {
+namespace drivers {
 
 class LidarStateTraits {
  public:
@@ -48,6 +49,7 @@ class LidarState : public State<uint8_t, LidarStateTraits> {
   ALWAYS_INLINE void ToStarted() { set_state(LidarStateTraits::kStarted); }
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_LIDAR_LIDAR_STATE_H_

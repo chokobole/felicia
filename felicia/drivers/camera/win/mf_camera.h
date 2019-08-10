@@ -22,6 +22,7 @@
 #include "felicia/drivers/camera/win/capability_list.h"
 
 namespace felicia {
+namespace drivers {
 
 class MFVideoCallback;
 
@@ -109,6 +110,7 @@ class MfCamera : public CameraInterface {
   DISALLOW_IMPLICIT_CONSTRUCTORS(MfCamera);
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_WIN_MF_CAMERA_H_

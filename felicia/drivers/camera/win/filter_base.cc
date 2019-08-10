@@ -10,6 +10,7 @@
 #pragma comment(lib, "strmiids.lib")
 
 namespace felicia {
+namespace drivers {
 
 // Implement IEnumPins.
 class PinEnumerator final : public IEnumPins,
@@ -163,4 +164,5 @@ ULONG STDMETHODCALLTYPE FilterBase::Release() {
 
 FilterBase::~FilterBase() {}
 
+}  // namespace drivers
 }  // namespace felicia

@@ -11,6 +11,7 @@
 #include "felicia/drivers/lidar/lidar_interface.h"
 
 namespace felicia {
+namespace drivers {
 
 class RPlidar : public LidarInterface, public base::SupportsWeakPtr<RPlidar> {
  public:
@@ -50,6 +51,7 @@ class RPlidar : public LidarInterface, public base::SupportsWeakPtr<RPlidar> {
   DISALLOW_IMPLICIT_CONSTRUCTORS(RPlidar);
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_VENDORS_RPLIDAR_H_

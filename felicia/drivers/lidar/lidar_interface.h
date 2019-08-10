@@ -8,6 +8,7 @@
 #include "felicia/drivers/lidar/lidar_state.h"
 
 namespace felicia {
+namespace drivers {
 
 class EXPORT LidarInterface {
  public:
@@ -30,6 +31,7 @@ class EXPORT LidarInterface {
   StatusCallback status_callback_;
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_LIDAR_LIDAR_INTERFACE_H_

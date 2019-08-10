@@ -22,6 +22,7 @@
 #include "felicia/drivers/camera/win/sink_filter_observer.h"
 
 namespace felicia {
+namespace drivers {
 
 // Define GUID for I420. This is the color format we would like to support but
 // it is not defined in the DirectShow SDK.
@@ -84,6 +85,7 @@ class __declspec(uuid("88cdbbdc-a73b-4afa-acbf-15d5e2ce12c3")) SinkFilter
   DISALLOW_IMPLICIT_CONSTRUCTORS(SinkFilter);
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_WIN_SINK_FILTER_H_

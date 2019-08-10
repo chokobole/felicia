@@ -5,6 +5,7 @@
 #include "felicia/drivers/camera/camera_descriptor.h"
 
 namespace felicia {
+namespace drivers {
 
 class EXPORT ZedCameraDescriptor : public CameraDescriptor {
  public:
@@ -35,6 +36,7 @@ EXPORT std::ostream& operator<<(std::ostream& os,
 EXPORT std::ostream& operator<<(std::ostream& os,
                                 const ZedCameraDescriptors& camera_descriptors);
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_VENDORS_ZED_ZED_CAMERA_DESCRIPTOR_H_

@@ -17,6 +17,7 @@ typedef uint32_t FourCharCode;
 #include "felicia/drivers/camera/camera_format_message.pb.h"
 
 namespace felicia {
+namespace drivers {
 
 const int kFrameRatePrecision = 10000;
 
@@ -92,6 +93,7 @@ EXPORT bool CompareCapability(const CameraFormat& requested,
 EXPORT const CameraFormat& GetBestMatchedCameraFormat(
     const CameraFormat& requested, const CameraFormats& camera_formats);
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_CAMERA_FORMAT_H_

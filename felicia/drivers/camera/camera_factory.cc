@@ -7,19 +7,20 @@
 #include "felicia/core/lib/felicia_env.h"
 #if defined(OS_LINUX)
 #include "felicia/drivers/camera/linux/v4l2_camera.h"
-using Camera = felicia::V4l2Camera;
+using Camera = felicia::drivers::V4l2Camera;
 #elif defined(OS_WIN)
 #include "felicia/drivers/camera/win/dshow_camera.h"
 #if !BUILDFLAG(TRAVIS)
 #include "felicia/drivers/camera/win/mf_camera.h"
 #else
-using Camera = ::felicia::DshowCamera;
+using Camera = ::felicia::drivers::DshowCamera;
 #endif  // !BUILDFLAG(TRAVIS)
 #else
 #error Not supported platform!
 #endif
 
 namespace felicia {
+namespace drivers {
 
 // static
 std::unique_ptr<CameraInterface> CameraFactory::NewCamera(
@@ -67,6 +68,7 @@ Status CameraFactory::GetSupportedCameraFormats(
 #endif
 }
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // #if !defined(OS_MACOSX)

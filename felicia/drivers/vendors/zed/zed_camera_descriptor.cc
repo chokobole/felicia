@@ -4,6 +4,7 @@
 #include "third_party/chromium/base/strings/string_number_conversions.h"
 
 namespace felicia {
+namespace drivers {
 
 int ZedCameraDescriptor::kInvalidId = -1;
 
@@ -43,4 +44,6 @@ std::ostream& operator<<(std::ostream& os,
   }
   return os;
 }
+
+}  // namespace drivers
 }  // namespace felicia

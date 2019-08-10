@@ -11,10 +11,12 @@
 
 SUPPORT_PROTOBUF_ENUM_TYPE_CAST(::felicia::PixelFormat, PixelFormat)
 
-SUPPORT_PROTOBUF_TYPE_CAST(::felicia::CameraFrameMessage, CameraFrameMessage,
+SUPPORT_PROTOBUF_TYPE_CAST(::felicia::drivers::CameraFrameMessage,
+                           CameraFrameMessage,
                            felicia.drivers.camera.camera_frame_message_pb2)
 
 namespace felicia {
+namespace drivers {
 
 using PyCameraFrameCallback = PyCallback<void(CameraFrame)>;
 
@@ -193,4 +195,5 @@ void AddCamera(py::module& m) {
                   });
 }
 
+}  // namespace drivers
 }  // namespace felicia

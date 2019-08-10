@@ -45,6 +45,7 @@
 using namespace rp::standalone::rplidar;
 
 namespace felicia {
+namespace drivers {
 
 #define WITH_RESULT(text, result) base::StringPrintf("%s: %X", text, result)
 
@@ -67,7 +68,7 @@ Status RPlidar::Init() {
   }
 
   if (!driver) {
-    return errors::Unavailable("Failed to create driver");
+    return felicia::errors::Unavailable("Failed to create driver");
   }
 
   u_result result;
@@ -80,7 +81,7 @@ Status RPlidar::Init() {
   }
 
   if (IS_FAIL(result)) {
-    return errors::Unavailable(base::StrCat(
+    return felicia::errors::Unavailable(base::StrCat(
         {"Failed to connect to the endpoint", lidar_endpoint_.ToString()}));
   }
 
@@ -98,7 +99,8 @@ Status RPlidar::Init() {
                         devinfo.hardware_version);
     LOG(INFO) << text;
   } else {
-    return errors::Unavailable(WITH_RESULT("Failed to getDeviceInfo", result));
+    return felicia::errors::Unavailable(
+        WITH_RESULT("Failed to getDeviceInfo", result));
   }
 
   rplidar_response_device_health_t healthinfo;
@@ -107,13 +109,14 @@ Status RPlidar::Init() {
     if (healthinfo.status == RPLIDAR_STATUS_WARNING) {
       LOG(WARNING) << "getHealth " << healthinfo.error_code;
     } else if (healthinfo.status == RPLIDAR_STATUS_ERROR) {
-      return errors::Unavailable(
+      return felicia::errors::Unavailable(
           base::StringPrintf("rplidar internal error detected (%x). Please "
                              "reboot the device to retry.",
                              healthinfo.error_code));
     }
   } else {
-    return errors::Unavailable(WITH_RESULT("Failed to getHealth", result));
+    return felicia::errors::Unavailable(
+        WITH_RESULT("Failed to getHealth", result));
   }
 
   driver_ = std::move(driver);
@@ -142,11 +145,12 @@ Status RPlidar::Stop() {
 
   u_result result = driver_->stop();
   if (IS_FAIL(result)) {
-    return errors::Unavailable(WITH_RESULT("Failed to stop", result));
+    return felicia::errors::Unavailable(WITH_RESULT("Failed to stop", result));
   }
   result = driver_->stopMotor();
   if (IS_FAIL(result)) {
-    return errors::Unavailable(WITH_RESULT("Failed to stopMotor", result));
+    return felicia::errors::Unavailable(
+        WITH_RESULT("Failed to stopMotor", result));
   }
 
   lidar_state_.ToStopped();
@@ -162,7 +166,7 @@ Status RPlidar::GetSupportedScanModes(
 
   u_result result = driver_->getAllSupportedScanModes(*scan_modes);
   if (IS_FAIL(result)) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         WITH_RESULT("Failed to getAllSupportedScanModes", result));
   }
   return Status::OK();
@@ -196,7 +200,8 @@ Status RPlidar::DoStart(RplidarScanMode* scan_mode,
 
   u_result result = driver_->startMotor();
   if (IS_FAIL(result)) {
-    return errors::Unavailable(WITH_RESULT("Failed to startMotor", result));
+    return felicia::errors::Unavailable(
+        WITH_RESULT("Failed to startMotor", result));
   }
 
   if (scan_mode) {
@@ -209,7 +214,8 @@ Status RPlidar::DoStart(RplidarScanMode* scan_mode,
   }
 
   if (IS_FAIL(result)) {
-    return errors::Unavailable(WITH_RESULT("Failed to startScan", result));
+    return felicia::errors::Unavailable(
+        WITH_RESULT("Failed to startScan", result));
   }
 
   lidar_frame_callback_ = lidar_frame_callback;
@@ -317,4 +323,5 @@ LidarFrame RPlidar::ToLidarFrame(rplidar_response_measurement_node_hq_t* nodes,
 
 #undef WITH_RESULT
 
+}  // namespace drivers
 }  // namespace felicia

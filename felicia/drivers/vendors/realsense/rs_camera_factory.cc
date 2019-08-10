@@ -6,6 +6,7 @@
 #include "felicia/core/lib/strings/str_util.h"
 
 namespace felicia {
+namespace drivers {
 
 // static
 std::unique_ptr<RsCamera> RsCameraFactory::NewDepthCamera(
@@ -42,4 +43,5 @@ Status RsCameraFactory::GetSupportedCapabilities(
   return RsCamera::CreateCapabilityMap(device, rs_capability_map);
 }
 
+}  // namespace drivers
 }  // namespace felicia

@@ -48,7 +48,7 @@ HectorSlam::HectorSlam(Client* client, Sizei map_size, float map_resolution,
       laser_min_dist_(laser_min_dist),
       laser_max_dist_(laser_max_dist) {}
 
-void HectorSlam::Update(LidarFrame&& lidar_frame) {
+void HectorSlam::Update(drivers::LidarFrame&& lidar_frame) {
   std::vector<Pointf> points;
   lidar_frame.Project(&points, laser_min_dist_, laser_max_dist_);
 

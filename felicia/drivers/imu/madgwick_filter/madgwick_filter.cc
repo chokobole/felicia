@@ -1,6 +1,7 @@
 #include "felicia/drivers/imu/madgwick_filter/madgwick_filter.h"
 
 namespace felicia {
+namespace drivers {
 
 namespace {
 
@@ -103,4 +104,5 @@ void MadgwickFilter::UpdateLinearAcceleration(
   }
 }
 
+}  // namespace drivers
 }  // namespace felicia

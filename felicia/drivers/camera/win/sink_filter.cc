@@ -12,6 +12,7 @@
 #include "felicia/drivers/camera/win/sink_input_pin.h"
 
 namespace felicia {
+namespace drivers {
 
 SinkFilterObserver::~SinkFilterObserver() {}
 
@@ -38,4 +39,5 @@ STDMETHODIMP SinkFilter::GetClassID(CLSID* clsid) {
 
 SinkFilter::~SinkFilter() { input_pin_->SetOwner(NULL); }
 
+}  // namespace drivers
 }  // namespace felicia

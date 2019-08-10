@@ -47,7 +47,7 @@ class LidarSubscribingNode : public NodeLifecycle {
                        base::Unretained(this)));
   }
 
-  void OnMessage(LidarFrameMessage&& message) {
+  void OnMessage(drivers::LidarFrameMessage&& message) {
     std::cout << "LidarSubscribingNode::OnMessage()" << std::endl;
   }
 
@@ -77,7 +77,7 @@ class LidarSubscribingNode : public NodeLifecycle {
   NodeInfo node_info_;
   const LidarFlag& lidar_flag_;
   const std::string topic_;
-  Subscriber<LidarFrameMessage> subscriber_;
+  Subscriber<drivers::LidarFrameMessage> subscriber_;
 };
 
 }  // namespace felicia

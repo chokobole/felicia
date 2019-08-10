@@ -15,6 +15,7 @@
 #include "felicia/drivers/camera/timestamp_constants.h"
 
 namespace felicia {
+namespace drivers {
 
 // In device identifiers, the USB VID and PID are stored in 4 bytes each.
 const size_t kVidPidSize = 4;
@@ -61,13 +62,13 @@ Status AvfCamera::Init() {
 
   capture_device_.reset([[AvfCameraDelegate alloc] initWithFrameReceiver:this]);
 
-  if (!capture_device_) return errors::Unavailable("Failed to init capture device.");
+  if (!capture_device_) return felicia::errors::Unavailable("Failed to init capture device.");
 
   NSString* deviceId = [NSString stringWithUTF8String:camera_descriptor_.device_id().c_str()];
   NSString* errorMessage = nil;
   if (![capture_device_ setCaptureDevice:deviceId errorMessage:&errorMessage]) {
-    return errors::Unavailable(base::StringPrintf("Failed to set capture device: %s.",
-                                                  base::SysNSStringToUTF8(errorMessage).c_str()));
+    return felicia::errors::Unavailable(base::StringPrintf(
+        "Failed to set capture device: %s.", base::SysNSStringToUTF8(errorMessage).c_str()));
   }
 
   camera_state_.ToInitialized();
@@ -94,7 +95,7 @@ Status AvfCamera::Start(const CameraFormat& requested_camera_format,
   requested_pixel_format_ = requested_camera_format.pixel_format();
 
   if (![capture_device_ startCapture]) {
-    return errors::Unavailable("Failed to start capture.");
+    return felicia::errors::Unavailable("Failed to start capture.");
   }
 
   camera_frame_callback_ = camera_frame_callback;
@@ -177,4 +178,5 @@ std::string AvfCamera::GetDeviceModelId(const std::string& device_id) {
   return id_vendor + ":" + id_product;
 }
 
+}  // namespace drivers
 }  // namespace felicia

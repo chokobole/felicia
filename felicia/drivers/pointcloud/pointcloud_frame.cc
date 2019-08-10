@@ -1,6 +1,7 @@
 #include "felicia/drivers/pointcloud/pointcloud_frame.h"
 
 namespace felicia {
+namespace drivers {
 
 PointcloudFrame::PointcloudFrame() = default;
 
@@ -70,4 +71,5 @@ PointcloudFrame PointcloudFrame::FromPointcloudFrameMessage(
           base::TimeDelta::FromMicroseconds(message.timestamp())};
 }
 
+}  // namespace drivers
 }  // namespace felicia

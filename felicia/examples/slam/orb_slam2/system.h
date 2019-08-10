@@ -50,7 +50,7 @@ class System {
   System(Client* client, const ::base::FilePath& voc_path,
          const ::base::FilePath& settings_path, SensorType sensor_type);
 
-  void TrackMonocular(CameraFrame&& camera_frame);
+  void TrackMonocular(drivers::CameraFrame&& camera_frame);
 
  private:
   Client* client_;  // not owned;

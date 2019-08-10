@@ -3,6 +3,7 @@
 #include "third_party/chromium/base/logging.h"
 
 namespace felicia {
+namespace drivers {
 
 const RsCapability* GetBestMatchedCapability(
     const CameraFormat& requested, const RsCapabilityList& capabilities) {
@@ -42,4 +43,5 @@ const RsCapability* GetBestMatchedCapability(
   return best_match;
 }
 
+}  // namespace drivers
 }  // namespace felicia

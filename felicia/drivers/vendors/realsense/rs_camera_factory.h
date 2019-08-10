@@ -7,6 +7,7 @@
 #include "felicia/drivers/vendors/realsense/rs_stream_info.h"
 
 namespace felicia {
+namespace drivers {
 
 class RsCameraFactory {
  public:
@@ -22,6 +23,7 @@ class RsCameraFactory {
   DISALLOW_COPY_AND_ASSIGN(RsCameraFactory);
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_VENDORS_REALSENSE_RS_CAMERA_FACTORY_H_

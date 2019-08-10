@@ -7,6 +7,7 @@
 #include "felicia/drivers/camera/camera_frame_util.h"
 
 namespace felicia {
+namespace drivers {
 
 CameraFrame::CameraFrame() = default;
 
@@ -242,4 +243,5 @@ base::Optional<CameraFrame> ConvertToRequestedPixelFormat(
   }
 }
 
+}  // namespace drivers
 }  // namespace felicia

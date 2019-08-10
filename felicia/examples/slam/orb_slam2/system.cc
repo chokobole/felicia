@@ -27,7 +27,7 @@ System::System(Client* client, const ::base::FilePath& voc_path,
                const ::base::FilePath& settings_path, SensorType sensor_type)
     : client_(client), sensor_type_(sensor_type) {}
 
-void System::TrackMonocular(CameraFrame&& camera_frame) {}
+void System::TrackMonocular(drivers::CameraFrame&& camera_frame) {}
 
 }  // namespace orb_slam2
 }  // namespace felicia

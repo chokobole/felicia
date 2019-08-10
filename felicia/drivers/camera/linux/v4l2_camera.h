@@ -21,6 +21,7 @@
 #include "felicia/drivers/camera/camera_interface.h"
 
 namespace felicia {
+namespace drivers {
 
 class V4l2Camera : public CameraInterface,
                    public base::SupportsWeakPtr<V4l2Camera> {
@@ -75,6 +76,7 @@ class V4l2Camera : public CameraInterface,
   DISALLOW_IMPLICIT_CONSTRUCTORS(V4l2Camera);
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_LINUX_V4L2_CAMERA_H_

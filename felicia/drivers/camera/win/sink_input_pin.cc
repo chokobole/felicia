@@ -22,6 +22,7 @@
 #include "felicia/drivers/camera/timestamp_constants.h"
 
 namespace felicia {
+namespace drivers {
 
 const REFERENCE_TIME kSecondsToReferenceTime = 10000000;
 
@@ -236,4 +237,5 @@ HRESULT SinkInputPin::Receive(IMediaSample* sample) {
 
 SinkInputPin::~SinkInputPin() {}
 
+}  // namespace drivers
 }  // namespace felicia

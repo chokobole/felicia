@@ -9,6 +9,7 @@
 #define FELICIA_DRIVERS_CAMERA_WIN_MF_INITIALIZER_H_
 
 namespace felicia {
+namespace drivers {
 
 // Makes sure MFStartup() is called exactly once.  Returns true if Media
 // Foundation is available and has been initialized successfully.  Note that it
@@ -16,6 +17,7 @@ namespace felicia {
 // https://en.wikipedia.org/wiki/Windows_7_editions#Special-purpose_editions.
 bool InitializeMediaFoundation();
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_WIN_MF_INITIALIZER_H_

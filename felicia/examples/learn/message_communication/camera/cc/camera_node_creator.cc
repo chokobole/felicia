@@ -16,8 +16,8 @@ int RealMain(int argc, char* argv[]) {
     return 1;
   }
 
-  CameraDescriptors camera_descriptors;
-  Status s = CameraFactory::GetCameraDescriptors(&camera_descriptors);
+  drivers::CameraDescriptors camera_descriptors;
+  Status s = drivers::CameraFactory::GetCameraDescriptors(&camera_descriptors);
   if (!s.ok()) {
     std::cerr << kRedError << s << std::endl;
     return 1;
@@ -34,8 +34,8 @@ int RealMain(int argc, char* argv[]) {
 
   if (delegate.device_list_flag()->value()) {
     if (delegate.device_index_flag()->is_set()) {
-      CameraFormats camera_formats;
-      s = CameraFactory::GetSupportedCameraFormats(
+      drivers::CameraFormats camera_formats;
+      s = drivers::CameraFactory::GetSupportedCameraFormats(
           camera_descriptors[delegate.device_index_flag()->value()],
           &camera_formats);
       if (!s.ok()) {

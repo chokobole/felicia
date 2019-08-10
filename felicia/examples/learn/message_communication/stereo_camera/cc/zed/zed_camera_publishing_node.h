@@ -12,7 +12,7 @@ namespace felicia {
 class ZedCameraPublishingNode : public NodeLifecycle {
  public:
   ZedCameraPublishingNode(const StereoCameraFlag& stereo_camera_flag,
-                          const ZedCameraDescriptor& camera_descriptor)
+                          const drivers::ZedCameraDescriptor& camera_descriptor)
       : stereo_camera_flag_(stereo_camera_flag),
         left_camera_topic_(
             stereo_camera_flag_.left_camera_topic_flag()->value()),
@@ -24,7 +24,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
 
   void OnInit() override {
     std::cout << "ZedCameraPublishingNode::OnInit()" << std::endl;
-    camera_ = ZedCameraFactory::NewStereoCamera(camera_descriptor_);
+    camera_ = drivers::ZedCameraFactory::NewStereoCamera(camera_descriptor_);
     Status s = camera_->Init();
     CHECK(s.ok()) << s;
   }
@@ -109,15 +109,15 @@ class ZedCameraPublishingNode : public NodeLifecycle {
   }
 
   void StartCamera() {
-    ZedCamera::StartParams params;
+    drivers::ZedCamera::StartParams params;
     PixelFormat pixel_format;
     PixelFormat_Parse(stereo_camera_flag_.pixel_format_flag()->value(),
                       &pixel_format);
 
-    params.requested_camera_format =
-        CameraFormat(stereo_camera_flag_.width_flag()->value(),
-                     stereo_camera_flag_.height_flag()->value(), pixel_format,
-                     stereo_camera_flag_.fps_flag()->value());
+    params.requested_camera_format = drivers::CameraFormat(
+        stereo_camera_flag_.width_flag()->value(),
+        stereo_camera_flag_.height_flag()->value(), pixel_format,
+        stereo_camera_flag_.fps_flag()->value());
     params.status_callback = base::BindRepeating(
         &ZedCameraPublishingNode::OnCameraError, base::Unretained(this));
     if (!left_camera_topic_.empty()) {
@@ -160,7 +160,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
     }
   }
 
-  void OnLeftCameraFrame(CameraFrame camera_frame) {
+  void OnLeftCameraFrame(drivers::CameraFrame camera_frame) {
     if (left_camera_publisher_.IsUnregistered()) return;
 
     left_camera_publisher_.Publish(
@@ -169,7 +169,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
                             base::Unretained(this)));
   }
 
-  void OnRightCameraFrame(CameraFrame camera_frame) {
+  void OnRightCameraFrame(drivers::CameraFrame camera_frame) {
     if (right_camera_publisher_.IsUnregistered()) return;
 
     right_camera_publisher_.Publish(
@@ -178,7 +178,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
                             base::Unretained(this)));
   }
 
-  void OnDepthFrame(DepthCameraFrame depth_camera_frame) {
+  void OnDepthFrame(drivers::DepthCameraFrame depth_camera_frame) {
     if (depth_publisher_.IsUnregistered()) return;
 
     depth_publisher_.Publish(
@@ -187,7 +187,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
                             base::Unretained(this)));
   }
 
-  void OnPointcloudFrame(PointcloudFrame pointcloud_frame) {
+  void OnPointcloudFrame(drivers::PointcloudFrame pointcloud_frame) {
     if (pointcloud_publisher_.IsUnregistered()) return;
 
     pointcloud_publisher_.Publish(
@@ -278,12 +278,12 @@ class ZedCameraPublishingNode : public NodeLifecycle {
   const std::string right_camera_topic_;
   const std::string depth_topic_;
   const std::string pointcloud_topic_;
-  ZedCameraDescriptor camera_descriptor_;
-  Publisher<CameraFrameMessage> left_camera_publisher_;
-  Publisher<CameraFrameMessage> right_camera_publisher_;
-  Publisher<DepthCameraFrameMessage> depth_publisher_;
-  Publisher<PointcloudFrameMessage> pointcloud_publisher_;
-  std::unique_ptr<ZedCamera> camera_;
+  drivers::ZedCameraDescriptor camera_descriptor_;
+  Publisher<drivers::CameraFrameMessage> left_camera_publisher_;
+  Publisher<drivers::CameraFrameMessage> right_camera_publisher_;
+  Publisher<drivers::DepthCameraFrameMessage> depth_publisher_;
+  Publisher<drivers::PointcloudFrameMessage> pointcloud_publisher_;
+  std::unique_ptr<drivers::ZedCamera> camera_;
 };
 
 }  // namespace felicia

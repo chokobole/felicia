@@ -5,6 +5,7 @@
 #include "felicia/drivers/camera/mac/avf_camera.h"
 
 namespace felicia {
+namespace drivers {
 
 // static
 std::unique_ptr<CameraInterface> CameraFactory::NewCamera(const CameraDescriptor& descriptor) {
@@ -24,4 +25,5 @@ Status CameraFactory::GetSupportedCameraFormats(const CameraDescriptor& camera_d
   return AvfCamera::GetSupportedCameraFormats(camera_descriptor, camera_formats);
 }
 
+}  // namespace drivers
 }  // namespace felicia

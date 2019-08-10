@@ -6,6 +6,7 @@
 #include "third_party/chromium/base/stl_util.h"
 
 namespace felicia {
+namespace drivers {
 
 namespace {
 
@@ -62,4 +63,5 @@ PixelFormat CameraFormat::FromMfMediaSubtype(const GUID& sub_type) {
   return PIXEL_FORMAT_UNKNOWN;
 }
 
+}  // namespace drivers
 }  // namespace felicia

@@ -4,6 +4,7 @@
 #include <librealsense2/rs.hpp>
 
 namespace felicia {
+namespace drivers {
 
 struct RsStreamInfo {
   RsStreamInfo() = default;
@@ -37,6 +38,7 @@ const RsStreamInfo RS_GYRO{RS2_STREAM_GYRO, 0};
 const RsStreamInfo RS_ACCEL{RS2_STREAM_ACCEL, 0};
 const RsStreamInfo RS_POSE{RS2_STREAM_POSE, 0};
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_VENDORS_REALSENSE_RS_STREAM_INFO_H_

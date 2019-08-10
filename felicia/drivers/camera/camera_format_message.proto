@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "felicia/core/protobuf/ui.proto";
 
-package felicia;
+package felicia.drivers;
 
 message CameraFormatMessage {
   int32 width = 1;

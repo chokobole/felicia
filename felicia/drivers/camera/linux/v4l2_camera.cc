@@ -25,6 +25,7 @@
 #include "felicia/drivers/camera/camera_errors.h"
 
 namespace felicia {
+namespace drivers {
 
 namespace {
 
@@ -251,14 +252,14 @@ Status V4l2Camera::Start(const CameraFormat& requested_camera_format,
     FillV4L2Buffer(&buffer, i);
 
     if (DoIoctl(fd_.get(), VIDIOC_QBUF, &buffer) < 0) {
-      return errors::Unavailable(
+      return felicia::errors::Unavailable(
           "Failed to enqueue V4L2 buffer to the driver.");
     }
   }
 
   v4l2_buf_type capture_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if (DoIoctl(fd_.get(), VIDIOC_STREAMON, &capture_type) < 0) {
-    return errors::Unavailable("Failed to stream on.");
+    return felicia::errors::Unavailable("Failed to stream on.");
   }
 
   thread_.Start();
@@ -485,7 +486,7 @@ Status V4l2Camera::InitMmap() {
   FillV4L2RequestBuffer(&requestbuffers, kNumVideoBuffers);
 
   if (DoIoctl(fd_.get(), VIDIOC_REQBUFS, &requestbuffers) < 0) {
-    return errors::Unavailable("Failed to request mmap buffers.");
+    return felicia::errors::Unavailable("Failed to request mmap buffers.");
   }
 
   for (unsigned int i = 0; i < requestbuffers.count; ++i) {
@@ -493,13 +494,13 @@ Status V4l2Camera::InitMmap() {
     FillV4L2Buffer(&buffer, i);
 
     if (DoIoctl(fd_.get(), VIDIOC_QUERYBUF, &buffer) < 0) {
-      return errors::Unavailable("Failed to query buffers.");
+      return felicia::errors::Unavailable("Failed to query buffers.");
     }
 
     void* const start = mmap(nullptr, buffer.length, PROT_READ | PROT_WRITE,
                              MAP_SHARED, fd_.get(), buffer.m.offset);
     if (start == MAP_FAILED) {
-      return errors::Unavailable("Failed to mmap buffers.");
+      return felicia::errors::Unavailable("Failed to mmap buffers.");
     }
     buffers_.emplace_back(static_cast<uint8_t*>(start), buffer.length);
   }
@@ -523,7 +524,7 @@ Status V4l2Camera::SetCameraFormat(const CameraFormat& camera_format) {
   FillV4L2Format(&format, camera_format.width(), camera_format.height(),
                  camera_format.ToV4l2PixelFormat());
   if (DoIoctl(fd_.get(), VIDIOC_S_FMT, &format) < 0) {
-    return errors::Unavailable("Failed to set v4l2 format.");
+    return felicia::errors::Unavailable("Failed to set v4l2 format.");
   }
 
   v4l2_streamparm streamparm = {};
@@ -558,7 +559,7 @@ void V4l2Camera::DoStop(base::WaitableEvent* event, Status* status) {
 
   v4l2_buf_type capture_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if (DoIoctl(fd_.get(), VIDIOC_STREAMOFF, &capture_type) < 0) {
-    *status = errors::Unavailable("Failed to stream off.");
+    *status = felicia::errors::Unavailable("Failed to stream off.");
     return;
   }
 
@@ -571,7 +572,7 @@ void V4l2Camera::DoStop(base::WaitableEvent* event, Status* status) {
   v4l2_requestbuffers requestbuffers;
   FillV4L2RequestBuffer(&requestbuffers, 0);
   if (DoIoctl(fd_.get(), VIDIOC_REQBUFS, &requestbuffers) < 0) {
-    *status = errors::Unavailable("Failed to request mmap buffers.");
+    *status = felicia::errors::Unavailable("Failed to request mmap buffers.");
     return;
   }
 
@@ -583,8 +584,8 @@ void V4l2Camera::DoCapture() {
   v4l2_buffer buffer;
   FillV4L2Buffer(&buffer, 0);
   if (DoIoctl(fd_.get(), VIDIOC_DQBUF, &buffer) < 0) {
-    status_callback_.Run(
-        errors::Unavailable("Failed to dequeue V4L2 buffer from the driver."));
+    status_callback_.Run(felicia::errors::Unavailable(
+        "Failed to dequeue V4L2 buffer from the driver."));
     return;
   }
 
@@ -594,7 +595,8 @@ void V4l2Camera::DoCapture() {
   bool buf_error_flag_set = false;
 #endif
   if (buf_error_flag_set) {
-    status_callback_.Run(errors::Unavailable("V4l2 Error flag was set."));
+    status_callback_.Run(
+        felicia::errors::Unavailable("V4l2 Error flag was set."));
   } else if (camera_format_.pixel_format() != PixelFormat::PIXEL_FORMAT_MJPEG &&
              buffer.bytesused != camera_format_.AllocationSize()) {
     buffer.bytesused = 0;
@@ -622,8 +624,8 @@ void V4l2Camera::DoCapture() {
   }
 
   if (DoIoctl(fd_.get(), VIDIOC_QBUF, &buffer) < 0) {
-    status_callback_.Run(
-        errors::Unavailable("Failed to enqueue V4L2 buffer to the driver."));
+    status_callback_.Run(felicia::errors::Unavailable(
+        "Failed to enqueue V4L2 buffer to the driver."));
     return;
   }
 
@@ -716,7 +718,7 @@ Status V4l2Camera::InitDevice(const CameraDescriptor& camera_descriptor,
   const std::string& device_id = camera_descriptor.device_id();
   base::ScopedFD fd_temp(HANDLE_EINTR(open(device_id.c_str(), O_RDWR)));
   if (fd_temp == base::kInvalidPlatformFile)
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         base::StringPrintf("Failed to open %s.", device_id.c_str()));
 
   v4l2_capability cap;
@@ -761,4 +763,5 @@ std::vector<float> V4l2Camera::GetFrameRateList(int fd, uint32_t fourcc,
   return frame_rates;
 }
 
+}  // namespace drivers
 }  // namespace felicia

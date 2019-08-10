@@ -1,6 +1,7 @@
 #include "felicia/drivers/lidar/lidar_frame.h"
 
 namespace felicia {
+namespace drivers {
 
 LidarFrame::LidarFrame() = default;
 
@@ -142,4 +143,5 @@ void LidarFrame::Project(std::vector<Pointf>* points, float user_range_min,
   }
 }
 
+}  // namespace drivers
 }  // namespace felicia

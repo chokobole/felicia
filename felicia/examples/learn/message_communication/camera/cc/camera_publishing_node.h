@@ -12,23 +12,23 @@ namespace felicia {
 class CameraPublishingNode : public NodeLifecycle {
  public:
   CameraPublishingNode(const CameraFlag& camera_flag,
-                       const CameraDescriptor& camera_descriptor)
+                       const drivers::CameraDescriptor& camera_descriptor)
       : camera_flag_(camera_flag),
         topic_(camera_flag_.topic_flag()->value()),
         camera_descriptor_(camera_descriptor) {}
 
   void OnInit() override {
     std::cout << "CameraPublishingNode::OnInit()" << std::endl;
-    camera_ = CameraFactory::NewCamera(camera_descriptor_);
+    camera_ = drivers::CameraFactory::NewCamera(camera_descriptor_);
     Status s = camera_->Init();
     CHECK(s.ok()) << s;
 
     // You can set camera settings here.
-    CameraSettings camera_settings;
+    drivers::CameraSettings camera_settings;
     s = camera_->SetCameraSettings(camera_settings);
     LOG_IF(ERROR, !s.ok()) << s;
 
-    CameraSettingsInfoMessage message;
+    drivers::CameraSettingsInfoMessage message;
     s = camera_->GetCameraSettingsInfo(&message);
     if (s.ok()) {
       std::cout << protobuf::ProtobufMessageToString(message) << std::endl;
@@ -80,9 +80,9 @@ class CameraPublishingNode : public NodeLifecycle {
     PixelFormat_Parse(camera_flag_.pixel_format_flag()->value(), &pixel_format);
 
     Status s = camera_->Start(
-        CameraFormat(camera_flag_.width_flag()->value(),
-                     camera_flag_.height_flag()->value(), pixel_format,
-                     camera_flag_.fps_flag()->value()),
+        drivers::CameraFormat(camera_flag_.width_flag()->value(),
+                              camera_flag_.height_flag()->value(), pixel_format,
+                              camera_flag_.fps_flag()->value()),
         base::BindRepeating(&CameraPublishingNode::OnCameraFrame,
                             base::Unretained(this)),
         base::BindRepeating(&CameraPublishingNode::OnCameraError,
@@ -100,7 +100,7 @@ class CameraPublishingNode : public NodeLifecycle {
     }
   }
 
-  void OnCameraFrame(CameraFrame camera_frame) {
+  void OnCameraFrame(drivers::CameraFrame camera_frame) {
     if (publisher_.IsUnregistered()) return;
 
     publisher_.Publish(camera_frame.ToCameraFrameMessage(),
@@ -142,9 +142,9 @@ class CameraPublishingNode : public NodeLifecycle {
   NodeInfo node_info_;
   const CameraFlag& camera_flag_;
   const std::string topic_;
-  CameraDescriptor camera_descriptor_;
-  Publisher<CameraFrameMessage> publisher_;
-  std::unique_ptr<CameraInterface> camera_;
+  drivers::CameraDescriptor camera_descriptor_;
+  Publisher<drivers::CameraFrameMessage> publisher_;
+  std::unique_ptr<drivers::CameraInterface> camera_;
 };
 
 }  // namespace felicia

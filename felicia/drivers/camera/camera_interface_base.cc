@@ -1,6 +1,7 @@
 #include "felicia/drivers/camera/camera_interface_base.h"
 
 namespace felicia {
+namespace drivers {
 
 CameraInterfaceBase::CameraInterfaceBase(
     const CameraDescriptor& camera_descriptor)
@@ -10,12 +11,12 @@ CameraInterfaceBase::~CameraInterfaceBase() = default;
 
 Status CameraInterfaceBase::SetCameraSettings(
     const CameraSettings& camera_settings) {
-  return errors::Unimplemented("Not implemented yet.");
+  return felicia::errors::Unimplemented("Not implemented yet.");
 }
 
 Status CameraInterfaceBase::GetCameraSettingsInfo(
     CameraSettingsInfoMessage* camera_settings) {
-  return errors::Unimplemented("Not implemented yet.");
+  return felicia::errors::Unimplemented("Not implemented yet.");
 }
 
 bool CameraInterfaceBase::IsInitialized() const {
@@ -30,4 +31,5 @@ bool CameraInterfaceBase::IsStopped() const {
   return camera_state_.IsStopped();
 }
 
+}  // namespace drivers
 }  // namespace felicia

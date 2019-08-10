@@ -19,6 +19,7 @@
 #include "third_party/chromium/base/memory/ref_counted.h"
 
 namespace felicia {
+namespace drivers {
 
 class PinBase : public IPin,
                 public IMemInputPin,
@@ -107,6 +108,7 @@ class PinBase : public IPin,
   IBaseFilter* owner_;
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_WIN_PIN_BASE_H_

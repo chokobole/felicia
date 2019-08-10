@@ -7,6 +7,7 @@
 #include "felicia/drivers/imu/imu_format_message.pb.h"
 
 namespace felicia {
+namespace drivers {
 
 class EXPORT ImuFormat {
  public:
@@ -38,6 +39,7 @@ using ImuFormats = std::vector<ImuFormat>;
 EXPORT bool CompareCapability(const ImuFormat& requested, const ImuFormat& lhs,
                               const ImuFormat& rhs);
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_IMU_IMU_FORMAT_H_

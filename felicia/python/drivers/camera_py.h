@@ -8,6 +8,7 @@
 namespace py = pybind11;
 
 namespace felicia {
+namespace drivers {
 
 class PyCameraInterface : public CameraInterface {
  public:
@@ -62,6 +63,7 @@ class PyCameraInterface : public CameraInterface {
 
 void AddCamera(py::module& m);
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_PYTHON_DRIVERS_CAMERA_PY_H_

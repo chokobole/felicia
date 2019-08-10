@@ -5,6 +5,7 @@
 #include "felicia/drivers/camera/depth_camera_frame_message.pb.h"
 
 namespace felicia {
+namespace drivers {
 
 class EXPORT DepthCameraFrame : public CameraFrame {
  public:
@@ -21,8 +22,10 @@ class EXPORT DepthCameraFrame : public CameraFrame {
       DepthCameraFrameMessage&& message);
 
 #if defined(HAS_OPENCV)
-  static DepthCameraFrame FromCvMat(cv::Mat mat, const CameraFormat& camera_format,
-                                    base::TimeDelta timestamp, float min, float max);
+  static DepthCameraFrame FromCvMat(cv::Mat mat,
+                                    const CameraFormat& camera_format,
+                                    base::TimeDelta timestamp, float min,
+                                    float max);
 #endif
 
  private:
@@ -35,6 +38,7 @@ class EXPORT DepthCameraFrame : public CameraFrame {
 typedef base::RepeatingCallback<void(DepthCameraFrame)>
     DepthCameraFrameCallback;
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_CAMERA_FRAME_H_

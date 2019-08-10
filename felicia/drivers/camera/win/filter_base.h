@@ -21,6 +21,7 @@
 #include "third_party/chromium/base/memory/ref_counted.h"
 
 namespace felicia {
+namespace drivers {
 
 class FilterBase : public IBaseFilter, public base::RefCounted<FilterBase> {
  public:
@@ -74,6 +75,7 @@ class FilterBase : public IBaseFilter, public base::RefCounted<FilterBase> {
   DISALLOW_COPY_AND_ASSIGN(FilterBase);
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_WIN_FILTER_BASE_H_

@@ -6,6 +6,7 @@
 #include "felicia/core/lib/base/export.h"
 
 namespace felicia {
+namespace drivers {
 
 class EXPORT LidarEndpoint {
  public:
@@ -44,6 +45,7 @@ class EXPORT LidarEndpoint {
 EXPORT std::ostream& operator<<(std::ostream& os,
                                 const LidarEndpoint& lidar_endpoint);
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_LIDAR_LIDAR_ENDPOINT_H_

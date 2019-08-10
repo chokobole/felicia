@@ -93,8 +93,9 @@ class OrbSlam2Node : public NodeLifecycle, public System::Client {
     }
   }
 
-  void OnLeftColorMessage(CameraFrameMessage&& message) {
-    CameraFrame camera_frame = CameraFrame::FromCameraFrameMessage(message);
+  void OnLeftColorMessage(drivers::CameraFrameMessage&& message) {
+    drivers::CameraFrame camera_frame =
+        drivers::CameraFrame::FromCameraFrameMessage(message);
     orb_slam2_->TrackMonocular(std::move(camera_frame));
   }
 
@@ -126,7 +127,7 @@ class OrbSlam2Node : public NodeLifecycle, public System::Client {
   const std::string pose_topic_;
   const int fps_;
   std::unique_ptr<orb_slam2::System> orb_slam2_;
-  Subscriber<CameraFrameMessage> left_color_subscriber_;
+  Subscriber<drivers::CameraFrameMessage> left_color_subscriber_;
   Publisher<PosefWithTimestampMessage> pose_publisher_;
 };
 

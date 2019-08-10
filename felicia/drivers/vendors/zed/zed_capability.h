@@ -6,6 +6,7 @@
 #include "felicia/drivers/camera/camera_format.h"
 
 namespace felicia {
+namespace drivers {
 
 struct ZedCapability {
   sl::RESOLUTION resolution;
@@ -24,6 +25,7 @@ CameraFormat ConvertToCameraFormat(const ZedCapability& capability);
 
 const ZedCapability* GetBestMatchedCapability(const CameraFormat& requested);
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_VENDORS_ZED_ZED_CAPABILITY_H_

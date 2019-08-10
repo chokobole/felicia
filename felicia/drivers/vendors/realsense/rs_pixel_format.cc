@@ -3,6 +3,7 @@
 #include "third_party/chromium/base/logging.h"
 
 namespace felicia {
+namespace drivers {
 
 namespace {
 
@@ -41,4 +42,5 @@ rs2_format ToRs2Format(PixelFormat pixel_format) {
   return RS2_FORMAT_ANY;
 }
 
+}  // namespace drivers
 }  // namespace felicia

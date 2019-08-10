@@ -7,6 +7,7 @@
 #include "felicia/drivers/camera/camera_settings_message.pb.h"
 
 namespace felicia {
+namespace drivers {
 
 class EXPORT CameraSettings {
  public:
@@ -45,6 +46,7 @@ class EXPORT CameraSettings {
   base::Optional<int64_t> gamma_;
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_CAMERA_SETTINGS_H_

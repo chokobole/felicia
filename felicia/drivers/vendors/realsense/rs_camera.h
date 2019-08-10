@@ -20,6 +20,7 @@
 #include "felicia/drivers/vendors/realsense/rs_capability.h"
 
 namespace felicia {
+namespace drivers {
 
 class PipelineSyncer : public rs2::asynchronous_syncer {
  public:
@@ -152,6 +153,7 @@ class RsCamera : public DepthCameraInterface {
   DISALLOW_IMPLICIT_CONSTRUCTORS(RsCamera);
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_VENDORS_REALSENSE_RS_CAMERA_H_

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package felicia;
+package felicia.drivers;
 
 message ImuFormatMessage {
   float frame_rate = 1;

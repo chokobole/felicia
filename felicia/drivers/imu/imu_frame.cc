@@ -1,6 +1,7 @@
 #include "felicia/drivers/imu/imu_frame.h"
 
 namespace felicia {
+namespace drivers {
 
 ImuFrame::ImuFrame() = default;
 
@@ -71,4 +72,5 @@ ImuFrame ImuFrame::FromImuFrameMessage(const ImuFrameMessage& message) {
           base::TimeDelta::FromMicroseconds(message.timestamp())};
 }
 
+}  // namespace drivers
 }  // namespace felicia

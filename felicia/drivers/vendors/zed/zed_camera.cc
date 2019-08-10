@@ -9,6 +9,7 @@
 #include "felicia/drivers/camera/camera_errors.h"
 
 namespace felicia {
+namespace drivers {
 
 #define MESSAGE_WITH_ERROR_CODE(text, err) \
   base::StringPrintf("%s :%s.", text, sl::toString(err).c_str())
@@ -356,8 +357,8 @@ void ZedCamera::DoGrab() {
 
   sl::ERROR_CODE err = camera_->grab(runtime_params_);
   if (err != sl::SUCCESS && err != sl::ERROR_CODE_NOT_A_NEW_FRAME) {
-    status_callback_.Run(
-        errors::Unavailable(MESSAGE_WITH_ERROR_CODE("Failed to grab", err)));
+    status_callback_.Run(felicia::errors::Unavailable(
+        MESSAGE_WITH_ERROR_CODE("Failed to grab", err)));
     return;
   }
 
@@ -413,7 +414,7 @@ void ZedCamera::DoStop(base::WaitableEvent* event, Status* status) {
 Status ZedCamera::OpenCamera(int device_id, sl::InitParameters& params,
                              ZedCamera::ScopedCamera* camera) {
   if (device_id == ZedCameraDescriptor::kInvalidId) {
-    return errors::InvalidArgument(
+    return felicia::errors::InvalidArgument(
         "No avaiable camera from given camera_descriptor.");
   } else {
     params.input.setFromCameraID(device_id);
@@ -421,7 +422,7 @@ Status ZedCamera::OpenCamera(int device_id, sl::InitParameters& params,
 
   sl::ERROR_CODE err = camera->get()->open(params);
   if (err != sl::SUCCESS) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         MESSAGE_WITH_ERROR_CODE("Failed to open camera", err));
   }
   return Status::OK();
@@ -535,4 +536,5 @@ PointcloudFrame ZedCamera::ConvertToPointcloudFrame(sl::Mat cloud,
 
 #undef MESSAGE_WITH_ERROR_CODE
 
+}  // namespace drivers
 }  // namespace felicia

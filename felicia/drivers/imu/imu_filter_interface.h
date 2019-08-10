@@ -8,6 +8,7 @@
 #include "felicia/core/lib/unit/geometry/vector.h"
 
 namespace felicia {
+namespace drivers {
 
 class EXPORT ImuFilterInterface {
  public:
@@ -28,6 +29,7 @@ class EXPORT ImuFilterInterface {
   Quaternionf orientation_;
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_IMU_IMU_FILTER_INTERFACE_H_

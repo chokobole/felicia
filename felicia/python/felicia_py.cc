@@ -214,7 +214,7 @@ PYBIND11_MODULE(felicia_py, m) {
   AddChannel(m);
   AddCommunication(m);
   AddCommandLineInterface(m);
-  AddDrivers(m);
+  drivers::AddDrivers(m);
 }
 
 }  // namespace felicia

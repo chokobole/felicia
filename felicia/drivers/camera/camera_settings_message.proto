@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package felicia;
+package felicia.drivers;
 
 message CameraSettingsRangedValue {
   int64 min = 1;

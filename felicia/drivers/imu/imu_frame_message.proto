@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "felicia/core/protobuf/geometry.proto";
 
-package felicia;
+package felicia.drivers;
 
 message ImuFrameMessage {
   QuaternionfMessage orientation = 1;

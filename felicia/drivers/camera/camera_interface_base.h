@@ -10,6 +10,7 @@
 #include "felicia/drivers/camera/camera_state.h"
 
 namespace felicia {
+namespace drivers {
 
 class EXPORT CameraInterfaceBase {
  public:
@@ -34,6 +35,7 @@ class EXPORT CameraInterfaceBase {
   StatusCallback status_callback_;
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_CAMERA_INTERFACE_BASE_H_

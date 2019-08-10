@@ -7,7 +7,7 @@ namespace felicia {
 
 namespace {
 
-void Print(const RsCapabilityList& rs_capabilities) {
+void Print(const drivers::RsCapabilityList& rs_capabilities) {
   size_t i = 0;
   for (auto& rs_capability : rs_capabilities) {
     std::cout << "[" << i << "] ";
@@ -20,7 +20,7 @@ void Print(const RsCapabilityList& rs_capabilities) {
   }
 }
 
-void Print(const RsCapabilityMap& rs_capability_map) {
+void Print(const drivers::RsCapabilityMap& rs_capability_map) {
   for (auto& v : rs_capability_map) {
     std::cout << v.first.stream_type << "(" << v.first.stream_index << ")"
               << std::endl;
@@ -40,8 +40,9 @@ int RealMain(int argc, char* argv[]) {
     return 1;
   }
 
-  CameraDescriptors camera_descriptors;
-  Status s = RsCameraFactory::GetCameraDescriptors(&camera_descriptors);
+  drivers::CameraDescriptors camera_descriptors;
+  Status s =
+      drivers::RsCameraFactory::GetCameraDescriptors(&camera_descriptors);
   if (!s.ok()) {
     std::cerr << kRedError << s << std::endl;
     return 1;
@@ -58,8 +59,8 @@ int RealMain(int argc, char* argv[]) {
 
   if (delegate.device_list_flag()->value()) {
     if (delegate.device_index_flag()->is_set()) {
-      RsCapabilityMap rs_capability_map;
-      Status s = RsCameraFactory::GetSupportedCapabilities(
+      drivers::RsCapabilityMap rs_capability_map;
+      Status s = drivers::RsCameraFactory::GetSupportedCapabilities(
           camera_descriptors[delegate.device_index_flag()->value()],
           &rs_capability_map);
       if (!s.ok()) {

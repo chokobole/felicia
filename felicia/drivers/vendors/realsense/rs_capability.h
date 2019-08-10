@@ -10,6 +10,7 @@
 #include "felicia/drivers/vendors/realsense/rs_stream_info.h"
 
 namespace felicia {
+namespace drivers {
 
 struct RsCapability {
   RsCapability(int stream_index, const CameraFormat& format)
@@ -59,6 +60,7 @@ const RsCapability* GetBestMatchedCapability(
 const RsCapability* GetBestMatchedCapability(
     const ImuFormat& requested, const RsCapabilityList& capabilities);
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_VENDORS_REALSENSE_RS_CAPABILITY_H_

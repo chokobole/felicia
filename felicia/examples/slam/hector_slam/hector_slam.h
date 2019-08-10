@@ -53,7 +53,7 @@ class HectorSlam {
              float update_factor_free, float update_factor_occupied,
              float laser_min_dist, float laser_max_dist);
 
-  void Update(LidarFrame&& lidar_frame);
+  void Update(drivers::LidarFrame&& lidar_frame);
 
  private:
   Client* client_;

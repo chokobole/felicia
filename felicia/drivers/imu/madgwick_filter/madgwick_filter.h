@@ -4,6 +4,7 @@
 #include "felicia/drivers/imu/imu_filter_interface.h"
 
 namespace felicia {
+namespace drivers {
 
 class MadgwickFilter : public ImuFilterInterface {
  public:
@@ -26,6 +27,7 @@ class MadgwickFilter : public ImuFilterInterface {
   ::Eigen::Vector4f gradient_;
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_IMU_MADGWICK_FILTER_MADGWICK_FILTER_H_

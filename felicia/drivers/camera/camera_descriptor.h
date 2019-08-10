@@ -7,6 +7,7 @@
 #include "felicia/core/lib/base/export.h"
 
 namespace felicia {
+namespace drivers {
 
 class EXPORT CameraDescriptor {
  public:
@@ -37,6 +38,7 @@ EXPORT std::ostream& operator<<(std::ostream& os,
 EXPORT std::ostream& operator<<(std::ostream& os,
                                 const CameraDescriptors& camera_descriptors);
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_CAMERA_DESCRIPTOR_H_

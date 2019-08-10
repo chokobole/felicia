@@ -9,6 +9,7 @@
 #include "felicia/drivers/imu/imu_frame_message.pb.h"
 
 namespace felicia {
+namespace drivers {
 
 class EXPORT ImuFrame {
  public:
@@ -43,6 +44,7 @@ class EXPORT ImuFrame {
 
 typedef base::RepeatingCallback<void(const ImuFrame&)> ImuFrameCallback;
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_IMU_IMU_FRAME_H_

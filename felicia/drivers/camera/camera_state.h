@@ -4,6 +4,7 @@
 #include "felicia/core/lib/base/state.h"
 
 namespace felicia {
+namespace drivers {
 
 class CameraStateTraits {
  public:
@@ -48,6 +49,7 @@ class CameraState : public State<uint8_t, CameraStateTraits> {
   ALWAYS_INLINE void ToStarted() { set_state(CameraStateTraits::kStarted); }
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_CAMERA_STATE_H_

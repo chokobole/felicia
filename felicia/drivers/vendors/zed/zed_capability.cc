@@ -3,6 +3,7 @@
 #include "third_party/chromium/base/logging.h"
 
 namespace felicia {
+namespace drivers {
 
 CameraFormat ConvertToCameraFormat(const ZedCapability& capability) {
   CameraFormat camera_format;
@@ -44,4 +45,5 @@ const ZedCapability* GetBestMatchedCapability(const CameraFormat& requested) {
   return best_match;
 }
 
+}  // namespace drivers
 }  // namespace felicia

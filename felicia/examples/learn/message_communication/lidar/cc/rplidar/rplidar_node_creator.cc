@@ -27,10 +27,11 @@ int RealMain(int argc, char* argv[]) {
   node_info.set_name(delegate.name_flag()->value());
 
   if (delegate.is_publishing_node_flag()->value()) {
-    LidarEndpoint lidar_endpoint;
+    drivers::LidarEndpoint lidar_endpoint;
     if (delegate.serial_port_flag()->is_set()) {
-      lidar_endpoint = LidarEndpoint(delegate.serial_port_flag()->value(),
-                                     delegate.baudrate_flag()->value());
+      lidar_endpoint =
+          drivers::LidarEndpoint(delegate.serial_port_flag()->value(),
+                                 delegate.baudrate_flag()->value());
     } else {
       net::IPAddress address;
       bool valid = address.AssignFromIPLiteral(delegate.ip_flag()->value());
@@ -38,7 +39,7 @@ int RealMain(int argc, char* argv[]) {
         std::cerr << "IP is not valid " << delegate.ip_flag()->value()
                   << std::endl;
       }
-      lidar_endpoint = LidarEndpoint(
+      lidar_endpoint = drivers::LidarEndpoint(
           net::IPEndPoint(address, delegate.tcp_port_flag()->value()));
     }
     master_proxy.RequestRegisterNode<RPlidarPublishingNode>(node_info, delegate,

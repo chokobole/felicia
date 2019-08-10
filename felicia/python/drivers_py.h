@@ -6,9 +6,11 @@
 namespace py = pybind11;
 
 namespace felicia {
+namespace drivers {
 
 void AddDrivers(py::module& m);
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_PYTHON_DRIVERS_PY_H_

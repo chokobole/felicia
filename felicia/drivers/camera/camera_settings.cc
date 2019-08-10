@@ -3,6 +3,7 @@
 #include "third_party/chromium/base/logging.h"
 
 namespace felicia {
+namespace drivers {
 
 #define DEFINE_NAMED_VALUE_METHOD(type, name)                             \
   bool CameraSettings::has_##name() const { return name##_.has_value(); } \
@@ -28,4 +29,5 @@ DEFINE_NAMED_VALUE_METHOD(int64_t, gamma)
 
 #undef DEFINE_NAMED_VALUE_METHOD
 
+}  // namespace drivers
 }  // namespace felicia

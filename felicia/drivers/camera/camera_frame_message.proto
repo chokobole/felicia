@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "felicia/drivers/camera/camera_format_message.proto";
 
-package felicia;
+package felicia.drivers;
 
 message CameraFrameMessage {
   bytes data = 1;

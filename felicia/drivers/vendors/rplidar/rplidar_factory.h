@@ -6,6 +6,7 @@
 #include "felicia/drivers/vendors/rplidar/rplidar.h"
 
 namespace felicia {
+namespace drivers {
 
 class RPlidarFactory {
  public:
@@ -14,6 +15,7 @@ class RPlidarFactory {
   DISALLOW_COPY_AND_ASSIGN(RPlidarFactory);
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_VENDORS_RPLIDAR_RPLIDAR_FACTORY_H_

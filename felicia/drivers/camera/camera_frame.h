@@ -18,6 +18,7 @@
 #include "felicia/drivers/camera/camera_frame_message.pb.h"
 
 namespace felicia {
+namespace drivers {
 
 class EXPORT CameraFrame {
  public:
@@ -69,6 +70,7 @@ EXPORT base::Optional<CameraFrame> ConvertToRequestedPixelFormat(
 
 typedef base::RepeatingCallback<void(CameraFrame)> CameraFrameCallback;
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_CAMERA_FRAME_H_

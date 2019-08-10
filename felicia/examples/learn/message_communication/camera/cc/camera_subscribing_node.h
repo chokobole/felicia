@@ -47,7 +47,7 @@ class CameraSubscribingNode : public NodeLifecycle {
                        base::Unretained(this)));
   }
 
-  void OnMessage(CameraFrameMessage&& message) {
+  void OnMessage(drivers::CameraFrameMessage&& message) {
     std::cout << "CameraSubscribingNode::OnMessage()" << std::endl;
 
     // static int frame_number = 0;
@@ -88,7 +88,7 @@ class CameraSubscribingNode : public NodeLifecycle {
   NodeInfo node_info_;
   const CameraFlag& camera_flag_;
   const std::string topic_;
-  Subscriber<CameraFrameMessage> subscriber_;
+  Subscriber<drivers::CameraFrameMessage> subscriber_;
 };
 
 }  // namespace felicia

@@ -12,6 +12,7 @@
 #include "third_party/chromium/base/time/time.h"
 
 namespace felicia {
+namespace drivers {
 
 // Indicates an invalid or missing timestamp.
 constexpr base::TimeDelta kNoTimestamp =
@@ -21,6 +22,7 @@ constexpr base::TimeDelta kNoTimestamp =
 constexpr base::TimeDelta kInfiniteDuration =
     base::TimeDelta::FromMicroseconds(std::numeric_limits<int64_t>::max());
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVER_CAMERA_TIMESTAMP_CONSTANTS_H_

@@ -9,6 +9,7 @@
 #include "felicia/drivers/lidar/lidar_frame_message.pb.h"
 
 namespace felicia {
+namespace drivers {
 
 class EXPORT LidarFrame {
  public:
@@ -67,6 +68,7 @@ class EXPORT LidarFrame {
 
 typedef base::RepeatingCallback<void(const LidarFrame&)> LidarFrameCallback;
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_LIDRA_LIDRA_FRAME_H_

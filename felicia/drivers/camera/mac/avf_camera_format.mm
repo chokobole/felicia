@@ -6,6 +6,7 @@
 #include "third_party/chromium/base/logging.h"
 
 namespace felicia {
+namespace drivers {
 
 namespace {
 
@@ -39,4 +40,5 @@ PixelFormat CameraFormat::FromAVFoundationPixelFormat(const FourCharCode avf_pix
   return PIXEL_FORMAT_UNKNOWN;
 }
 
+}  // namespace drivers
 }  // namespace felicia

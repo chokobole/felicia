@@ -3,6 +3,7 @@
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 namespace felicia {
+namespace drivers {
 
 ImuFormat::ImuFormat() = default;
 
@@ -44,4 +45,5 @@ bool CompareCapability(const ImuFormat& requested, const ImuFormat& lhs,
   return diff_fps_lhs < diff_fps_rhs;
 }
 
+}  // namespace drivers
 }  // namespace felicia

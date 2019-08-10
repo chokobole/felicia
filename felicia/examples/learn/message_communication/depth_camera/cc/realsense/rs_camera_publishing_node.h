@@ -11,7 +11,7 @@ namespace felicia {
 class RsCameraPublishingNode : public NodeLifecycle {
  public:
   RsCameraPublishingNode(const RsCameraFlag& rs_camera_flag,
-                         const CameraDescriptor& camera_descriptor)
+                         const drivers::CameraDescriptor& camera_descriptor)
       : rs_camera_flag_(rs_camera_flag),
         color_topic_(rs_camera_flag_.color_topic_flag()->value()),
         depth_topic_(rs_camera_flag_.depth_topic_flag()->value()),
@@ -25,7 +25,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
 
   void OnInit() override {
     std::cout << "RsCameraPublishingNode::OnInit()" << std::endl;
-    camera_ = RsCameraFactory::NewDepthCamera(camera_descriptor_);
+    camera_ = drivers::RsCameraFactory::NewDepthCamera(camera_descriptor_);
     Status s = camera_->Init();
     CHECK(s.ok()) << s;
   }
@@ -109,13 +109,13 @@ class RsCameraPublishingNode : public NodeLifecycle {
   void StartCamera() {
     if (camera_->IsStarted()) return;
 
-    StatusOr<rs2::sensor> status_or = camera_->sensor(RS_COLOR);
+    StatusOr<rs2::sensor> status_or = camera_->sensor(drivers::RS_COLOR);
     if (status_or.ok()) {
       rs2::sensor& s = status_or.ValueOrDie();
       camera_->SetOption(s, RS2_OPTION_EMITTER_ENABLED, 1);
     }
 
-    RsCamera::StartParams params;
+    drivers::RsCamera::StartParams params;
     params.status_callback = base::BindRepeating(
         &RsCameraPublishingNode::OnCameraError, base::Unretained(this));
 
@@ -123,40 +123,41 @@ class RsCameraPublishingNode : public NodeLifecycle {
       PixelFormat pixel_format;
       PixelFormat_Parse(rs_camera_flag_.pixel_format_flag()->value(),
                         &pixel_format);
-      params.requested_color_format =
-          CameraFormat(rs_camera_flag_.width_flag()->value(),
-                       rs_camera_flag_.height_flag()->value(), pixel_format,
-                       rs_camera_flag_.fps_flag()->value());
+      params.requested_color_format = drivers::CameraFormat(
+          rs_camera_flag_.width_flag()->value(),
+          rs_camera_flag_.height_flag()->value(), pixel_format,
+          rs_camera_flag_.fps_flag()->value());
       params.color_frame_callback = base::BindRepeating(
           &RsCameraPublishingNode::OnColorFrame, base::Unretained(this));
     }
 
     if (!depth_topic_.empty()) {
-      params.requested_depth_format =
-          CameraFormat(rs_camera_flag_.width_flag()->value(),
-                       rs_camera_flag_.height_flag()->value(), PIXEL_FORMAT_Z16,
-                       rs_camera_flag_.fps_flag()->value());
+      params.requested_depth_format = drivers::CameraFormat(
+          rs_camera_flag_.width_flag()->value(),
+          rs_camera_flag_.height_flag()->value(), PIXEL_FORMAT_Z16,
+          rs_camera_flag_.fps_flag()->value());
       params.depth_frame_callback = base::BindRepeating(
           &RsCameraPublishingNode::OnDepthFrame, base::Unretained(this));
     }
 
     if (!pointcloud_topic_.empty()) {
-      StatusOr<rs2::sensor> status_or = camera_->sensor(RS_COLOR);
+      StatusOr<rs2::sensor> status_or = camera_->sensor(drivers::RS_COLOR);
       if (status_or.ok()) {
-        params.named_filters.push_back(RsCamera::NamedFilter(
-            RsCamera::NamedFilter::POINTCLOUD,
-            std::make_shared<rs2::pointcloud>(RS_COLOR.stream_type,
-                                              RS_COLOR.stream_index)));
+        params.named_filters.push_back(drivers::RsCamera::NamedFilter(
+            drivers::RsCamera::NamedFilter::POINTCLOUD,
+            std::make_shared<rs2::pointcloud>(drivers::RS_COLOR.stream_type,
+                                              drivers::RS_COLOR.stream_index)));
       } else {
-        status_or = camera_->sensor(RS_DEPTH);
+        status_or = camera_->sensor(drivers::RS_DEPTH);
         if (status_or.ok()) {
-          params.named_filters.push_back(
-              RsCamera::NamedFilter(RsCamera::NamedFilter::COLORIZER,
-                                    std::make_shared<rs2::colorizer>()));
-          params.named_filters.push_back(RsCamera::NamedFilter(
-              RsCamera::NamedFilter::POINTCLOUD,
-              std::make_shared<rs2::pointcloud>(RS_DEPTH.stream_type,
-                                                RS_DEPTH.stream_index)));
+          params.named_filters.push_back(drivers::RsCamera::NamedFilter(
+              drivers::RsCamera::NamedFilter::COLORIZER,
+              std::make_shared<rs2::colorizer>()));
+          params.named_filters.push_back(drivers::RsCamera::NamedFilter(
+              drivers::RsCamera::NamedFilter::POINTCLOUD,
+              std::make_shared<rs2::pointcloud>(
+                  drivers::RS_DEPTH.stream_type,
+                  drivers::RS_DEPTH.stream_index)));
         }
       }
       params.pointcloud_frame_callback = base::BindRepeating(
@@ -164,9 +165,9 @@ class RsCameraPublishingNode : public NodeLifecycle {
     }
 
     if (!imu_topic_.empty()) {
-      params.requested_accel_format = ImuFormat(63);
-      params.requested_gyro_format = ImuFormat(200);
-      params.imu_filter_kind = ImuFilterFactory::MADGWICK_FILTER_KIND;
+      params.requested_accel_format = drivers::ImuFormat(63);
+      params.requested_gyro_format = drivers::ImuFormat(200);
+      params.imu_filter_kind = drivers::ImuFilterFactory::MADGWICK_FILTER_KIND;
       params.imu_frame_callback = base::BindRepeating(
           &RsCameraPublishingNode::OnImuFrame, base::Unretained(this));
     }
@@ -194,7 +195,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
     }
   }
 
-  void OnColorFrame(CameraFrame color_frame) {
+  void OnColorFrame(drivers::CameraFrame color_frame) {
     if (color_publisher_.IsUnregistered()) return;
 
     color_publisher_.Publish(
@@ -203,7 +204,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
                             base::Unretained(this)));
   }
 
-  void OnDepthFrame(DepthCameraFrame depth_frame) {
+  void OnDepthFrame(drivers::DepthCameraFrame depth_frame) {
     if (depth_publisher_.IsUnregistered()) return;
 
     depth_publisher_.Publish(
@@ -212,7 +213,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
                             base::Unretained(this)));
   }
 
-  void OnPointcloudFrame(PointcloudFrame pointcloud_frame) {
+  void OnPointcloudFrame(drivers::PointcloudFrame pointcloud_frame) {
     if (pointcloud_publisher_.IsUnregistered()) return;
 
     pointcloud_publisher_.Publish(
@@ -221,7 +222,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
                             base::Unretained(this)));
   }
 
-  void OnImuFrame(const ImuFrame& imu_frame) {
+  void OnImuFrame(const drivers::ImuFrame& imu_frame) {
     if (imu_publisher_.IsUnregistered()) return;
 
     if (imu_frame.timestamp() - last_timestamp_ <
@@ -314,12 +315,12 @@ class RsCameraPublishingNode : public NodeLifecycle {
   const std::string depth_topic_;
   const std::string pointcloud_topic_;
   const std::string imu_topic_;
-  CameraDescriptor camera_descriptor_;
-  Publisher<CameraFrameMessage> color_publisher_;
-  Publisher<DepthCameraFrameMessage> depth_publisher_;
-  Publisher<PointcloudFrameMessage> pointcloud_publisher_;
-  Publisher<ImuFrameMessage> imu_publisher_;
-  std::unique_ptr<RsCamera> camera_;
+  drivers::CameraDescriptor camera_descriptor_;
+  Publisher<drivers::CameraFrameMessage> color_publisher_;
+  Publisher<drivers::DepthCameraFrameMessage> depth_publisher_;
+  Publisher<drivers::PointcloudFrameMessage> pointcloud_publisher_;
+  Publisher<drivers::ImuFrameMessage> imu_publisher_;
+  std::unique_ptr<drivers::RsCamera> camera_;
   base::TimeDelta last_timestamp_;
 };
 

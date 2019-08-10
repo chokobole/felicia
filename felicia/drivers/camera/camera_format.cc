@@ -7,6 +7,7 @@
 #include "felicia/drivers/camera/camera_frame_util.h"
 
 namespace felicia {
+namespace drivers {
 
 CameraFormat::CameraFormat() = default;
 
@@ -224,4 +225,5 @@ const CameraFormat& GetBestMatchedCameraFormat(
   return *best_match;
 }
 
+}  // namespace drivers
 }  // namespace felicia

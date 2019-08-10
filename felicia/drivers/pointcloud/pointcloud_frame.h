@@ -9,6 +9,7 @@
 #include "felicia/drivers/pointcloud/pointcloud_frame_message.pb.h"
 
 namespace felicia {
+namespace drivers {
 
 class EXPORT PointcloudFrame {
  public:
@@ -41,6 +42,7 @@ class EXPORT PointcloudFrame {
 
 typedef base::RepeatingCallback<void(PointcloudFrame)> PointcloudFrameCallback;
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_POINTCLOUD_POINTCLOUD_FRAME_H_

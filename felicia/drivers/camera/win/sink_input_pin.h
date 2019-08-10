@@ -18,6 +18,7 @@
 #include "felicia/drivers/camera/win/sink_filter.h"
 
 namespace felicia {
+namespace drivers {
 
 // Const used for converting Seconds to REFERENCE_TIME.
 extern const REFERENCE_TIME kSecondsToReferenceTime;
@@ -48,6 +49,7 @@ class SinkInputPin : public PinBase {
   DISALLOW_IMPLICIT_CONSTRUCTORS(SinkInputPin);
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_WIN_SINK_INPUT_PIN_H_

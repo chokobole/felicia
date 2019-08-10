@@ -17,6 +17,7 @@
 #include "felicia/drivers/camera/mac/frame_receiver.h"
 
 namespace felicia {
+namespace drivers {
 
 class AvfCamera : public CameraInterface, public FrameReceiver {
  public:
@@ -57,6 +58,7 @@ class AvfCamera : public CameraInterface, public FrameReceiver {
   DISALLOW_IMPLICIT_CONSTRUCTORS(AvfCamera);
 };
 
+}  // namespace drivers
 }  // namespace felicia
 
 #endif  // FELICIA_DRIVERS_CAMERA_MAC_AVF_CAMERA_H_

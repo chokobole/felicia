@@ -9,6 +9,7 @@
 #include "felicia/drivers/camera/camera_factory.h"
 
 namespace felicia {
+namespace drivers {
 
 // static
 std::unique_ptr<ZedCamera> ZedCameraFactory::NewStereoCamera(
@@ -71,4 +72,5 @@ Status ZedCameraFactory::GetSupportedCameraFormats(
   return Status::OK();
 }
 
+}  // namespace drivers
 }  // namespace felicia

@@ -10,11 +10,12 @@
 #include "felicia/drivers/vendors/realsense/rs_pixel_format.h"
 
 namespace felicia {
+namespace drivers {
 
 namespace errors {
 
 Status NotSupportedOption(rs2_option option) {
-  return errors::NotFound(
+  return felicia::errors::NotFound(
       base::StringPrintf("%s is not supported", rs2_option_to_string(option)));
 }
 
@@ -95,12 +96,13 @@ Status RsCamera::Start(const RsCamera::StartParams& params) {
   bool has_imu_callback = !params.imu_frame_callback.is_null();
 
   if (params.status_callback.is_null()) {
-    return errors::InvalidArgument("status_callback is null.");
+    return felicia::errors::InvalidArgument("status_callback is null.");
   }
 
   if (!(has_color_callback || has_depth_callback || has_pointcloud_callback ||
         has_imu_callback)) {
-    return errors::InvalidArgument("There's no callback to receive frame.");
+    return felicia::errors::InvalidArgument(
+        "There's no callback to receive frame.");
   }
 
   std::function<void(rs2::frame)> frame_callback_function;
@@ -216,7 +218,7 @@ Status RsCamera::Stop() {
 StatusOr<rs2::sensor> RsCamera::sensor(const RsStreamInfo& rs_stream_info) {
   auto it = sensors_.find(rs_stream_info);
   if (it == sensors_.end()) {
-    return errors::NotFound("No sensor");
+    return felicia::errors::NotFound("No sensor");
   }
   return it->second;
 }
@@ -319,12 +321,12 @@ Status RsCamera::SetOption(rs2::sensor& sensor, rs2_option option,
     sensor.set_option(option, value);
     return Status::OK();
   } catch (const rs2::error& e) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         base::StringPrintf("Failed to set_option(%s): %s.",
                            rs2_option_to_string(option), e.what()));
   }
 
-  return errors::Internal("Not reached");
+  return felicia::errors::Internal("Not reached");
 }
 
 Status RsCamera::GetOption(rs2::sensor& sensor, rs2_option option,
@@ -337,12 +339,12 @@ Status RsCamera::GetOption(rs2::sensor& sensor, rs2_option option,
     *value = sensor.get_option(option);
     return Status::OK();
   } catch (const rs2::error& e) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         base::StringPrintf("Failed to get_option(%s): %s.",
                            rs2_option_to_string(option), e.what()));
   }
 
-  return errors::Internal("Not reached");
+  return felicia::errors::Internal("Not reached");
 }
 
 Status RsCamera::GetOptionRange(rs2::sensor& sensor, rs2_option option,
@@ -355,12 +357,12 @@ Status RsCamera::GetOptionRange(rs2::sensor& sensor, rs2_option option,
     *option_range = sensor.get_option_range(option);
     return Status::OK();
   } catch (const rs2::error& e) {
-    return errors::Unavailable(
+    return felicia::errors::Unavailable(
         base::StringPrintf("Failed to get_option_range(%s): %s.",
                            rs2_option_to_string(option), e.what()));
   }
 
-  return errors::Internal("Not reached");
+  return felicia::errors::Internal("Not reached");
 }
 
 Status RsCamera::GetCameraSettingsInfo(
@@ -667,7 +669,7 @@ base::Optional<CameraFrame> RsCamera::ConvertToRequestedPixelFormat(
   const uint8_t* data =
       reinterpret_cast<const uint8_t*>(color_frame.get_data());
   size_t length = color_format_.AllocationSize();
-  return felicia::ConvertToRequestedPixelFormat(
+  return felicia::drivers::ConvertToRequestedPixelFormat(
       data, length, color_format_, requested_pixel_format, timestamp);
 }
 
@@ -778,4 +780,5 @@ Status RsCamera::CreateCapabilityMap(rs2::device device,
   return Status::OK();
 }
 
+}  // namespace drivers
 }  // namespace felicia
