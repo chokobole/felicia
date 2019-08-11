@@ -4,7 +4,6 @@
 #include "third_party/chromium/base/strings/string_util.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
-#include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/util/command_line_interface/text_style.h"
 
 namespace felicia {
@@ -26,7 +25,7 @@ bool NodeFlag::Parse(FlagParser& parser) {
   switch (current_command_) {
     case COMMAND_SELF:
       if (command_flag_->Parse(parser)) {
-        if (Equals(command_, kLs)) {
+        if (command_ == kLs) {
           current_command_ = COMMAND_LIST;
           parser.set_program_name(
               base::StringPrintf("%s %s", parser.program_name().c_str(), kLs));

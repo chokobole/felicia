@@ -34,10 +34,6 @@ bool EndsWith(base::StringPiece s, base::StringPiece expected) {
   return base::EndsWith(s, expected, base::CompareCase::SENSITIVE);
 }
 
-bool Equals(base::StringPiece s, base::StringPiece expected) {
-  return base::EqualsASCII(ASCIIToUTF16(s), expected);
-}
-
 bool Contains(base::StringPiece s, base::StringPiece expected) {
   return s.find(expected) != base::StringPiece::npos;
 }
@@ -45,7 +41,7 @@ bool Contains(base::StringPiece s, base::StringPiece expected) {
 StringComparator::StringComparator(base::StringPiece text) : text_(text) {}
 
 bool StringComparator::operator()(const base::StringPiece text) {
-  return Equals(text_, text);
+  return text_ == text;
 }
 
 std::string BoolToString(bool b) { return b ? "true" : "false"; }

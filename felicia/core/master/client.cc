@@ -7,7 +7,6 @@
 #include "third_party/chromium/base/no_destructor.h"
 #include "third_party/chromium/base/rand_util.h"
 
-#include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/util/uuid/generator.h"
 
 namespace felicia {
@@ -103,7 +102,7 @@ std::vector<base::WeakPtr<Node>> Client::FindNodes(
     }
   } else if (!node_filter.name().empty()) {
     for (auto& node : nodes_) {
-      if (Equals(node->name(), node_filter.name())) {
+      if (node->name() == node_filter.name()) {
         nodes.push_back(node->AsWeakPtr());
       }
     }

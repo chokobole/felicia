@@ -9,7 +9,6 @@
 
 #include "felicia/core/channel/channel.h"
 #include "felicia/core/lib/net/net_util.h"
-#include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/master/errors.h"
 
 namespace felicia {
@@ -326,9 +325,9 @@ void OnListAllNodes(std::shared_ptr<base::WaitableEvent> event,
   EXPECT_TRUE(s.ok());
   auto& node_infos = response->node_infos();
   EXPECT_EQ(2, node_infos.size());
-  EXPECT_TRUE(Equals(publishing_node_name, node_infos[0].name()));
+  EXPECT_EQ(publishing_node_name, node_infos[0].name());
   EXPECT_EQ(client_id, node_infos[0].client_id());
-  EXPECT_TRUE(Equals(subscribing_node_name, node_infos[1].name()));
+  EXPECT_EQ(subscribing_node_name, node_infos[1].name());
   EXPECT_EQ(client_id, node_infos[1].client_id());
   event->Signal();
 }
@@ -340,7 +339,7 @@ void OnListPublishingNodes(std::shared_ptr<base::WaitableEvent> event,
   EXPECT_TRUE(s.ok());
   auto& node_infos = response->node_infos();
   EXPECT_EQ(1, node_infos.size());
-  EXPECT_TRUE(Equals(publishing_node_name, node_infos[0].name()));
+  EXPECT_EQ(publishing_node_name, node_infos[0].name());
   EXPECT_EQ(client_id, node_infos[0].client_id());
   event->Signal();
 }
@@ -352,7 +351,7 @@ void OnListSubscribingNodes(std::shared_ptr<base::WaitableEvent> event,
   EXPECT_TRUE(s.ok());
   auto& node_infos = response->node_infos();
   EXPECT_EQ(1, node_infos.size());
-  EXPECT_TRUE(Equals(subscribing_node_name, node_infos[0].name()));
+  EXPECT_EQ(subscribing_node_name, node_infos[0].name());
   EXPECT_EQ(client_id, node_infos[0].client_id());
   event->Signal();
 }
@@ -363,7 +362,7 @@ void OnListPubSubTopics(std::shared_ptr<base::WaitableEvent> event,
   EXPECT_TRUE(s.ok());
   auto& pub_sub_topics = response->pub_sub_topics();
   EXPECT_EQ(1, pub_sub_topics.publishing_topics().size());
-  EXPECT_TRUE(Equals(topic, pub_sub_topics.publishing_topics()[0]));
+  EXPECT_EQ(topic, pub_sub_topics.publishing_topics()[0]);
   EXPECT_EQ(0, pub_sub_topics.subscribing_topics().size());
   event->Signal();
 }
@@ -503,7 +502,7 @@ void OnListAllTopics(std::shared_ptr<base::WaitableEvent> event,
   EXPECT_TRUE(s.ok());
   auto& topic_infos = response->topic_infos();
   EXPECT_EQ(1, topic_infos.size());
-  EXPECT_TRUE(Equals(topic, topic_infos[0].topic()));
+  EXPECT_EQ(topic, topic_infos[0].topic());
   EXPECT_TRUE(IsSameChannelSource(topic_source, topic_infos[0].topic_source()));
   event->Signal();
 }
@@ -514,7 +513,7 @@ void OnListTopic(std::shared_ptr<base::WaitableEvent> event,
   EXPECT_TRUE(s.ok());
   auto& topic_infos = response->topic_infos();
   EXPECT_EQ(1, topic_infos.size());
-  EXPECT_TRUE(Equals(topic_info.topic(), topic_infos[0].topic()));
+  EXPECT_EQ(topic_info.topic(), topic_infos[0].topic());
   EXPECT_TRUE(IsSameChannelSource(topic_info.topic_source(),
                                   topic_infos[0].topic_source()));
   event->Signal();

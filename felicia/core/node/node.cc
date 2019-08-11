@@ -126,7 +126,7 @@ std::vector<std::string> Node::AllSubscribingTopics() const {
 }
 
 bool NodeNameChecker::operator()(const std::unique_ptr<Node>& node) {
-  return Equals(node->name(), node_info_.name());
+  return node->name() == node_info_.name();
 }
 
 }  // namespace felicia

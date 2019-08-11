@@ -17,8 +17,6 @@ limitations under the License.
 
 #include "third_party/chromium/base/logging.h"
 
-#include "felicia/core/lib/strings/str_util.h"
-
 namespace felicia {
 
 Status::Status() : error_code_(error::Code::OK) {}
@@ -42,7 +40,7 @@ bool Status::ok() const { return error_code_ == 0; }
 
 bool Status::operator==(const Status& status) const {
   return error_code_ == status.error_code_ &&
-         Equals(error_message_, status.error_message_);
+         error_message_ == status.error_message_;
 }
 
 bool Status::operator!=(const Status& status) const {

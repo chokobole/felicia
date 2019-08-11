@@ -1,10 +1,10 @@
 #ifndef FELICIA_CORE_LIB_BASE_TEMPLATE_UTIL_H_
 #define FELICIA_CORE_LIB_BASE_TEMPLATE_UTIL_H_
 
+#include <string>
 #include <type_traits>
 #include <utility>
-
-#include "felicia/core/lib/strings/str_util.h"
+#include <vector>
 
 namespace felicia {
 namespace internal {
@@ -36,7 +36,7 @@ bool IsEqual(const T& v1, const T& v2) {
 template <typename T, std::enable_if_t<std::is_same<T, std::string>::value,
                                        void*> = nullptr>
 bool IsEqual(const T& v1, const T& v2) {
-  return Equals(v1, v2);
+  return v1 == v2;
 }
 
 template <typename T>

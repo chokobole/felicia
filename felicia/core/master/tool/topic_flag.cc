@@ -4,7 +4,6 @@
 #include "third_party/chromium/base/strings/string_util.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
-#include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/util/command_line_interface/text_style.h"
 
 namespace felicia {
@@ -29,11 +28,11 @@ bool TopicFlag::Parse(FlagParser& parser) {
   switch (current_command_) {
     case COMMAND_SELF:
       if (command_flag_->Parse(parser)) {
-        if (Equals(command_, kLs)) {
+        if (command_ == kLs) {
           current_command_ = COMMAND_LIST;
-        } else if (Equals(command_, kPublish)) {
+        } else if (command_ == kPublish) {
           current_command_ = COMMAND_PUBLISH;
-        } else if (Equals(command_, kSubscribe)) {
+        } else if (command_ == kSubscribe) {
           current_command_ = COMMAND_SUBSCRIBE;
         }
         parser.set_program_name(base::StringPrintf(

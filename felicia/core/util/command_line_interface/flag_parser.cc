@@ -4,7 +4,6 @@
 
 #include "third_party/chromium/base/logging.h"
 
-#include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/util/command_line_interface/flag.h"
 #include "felicia/core/util/command_line_interface/text_constants.h"
 #include "felicia/core/util/command_line_interface/text_style.h"
@@ -47,7 +46,7 @@ bool FlagParser::Parse(int argc, char** argv, Delegate* delegate) {
   argv_ = argv;
 
   while (current_idx_ < argc_) {
-    if (Equals(current(), "--help")) {
+    if (current() == "--help") {
       if (!suppress_help_) PrintHelp(delegate);
       return false;
     }

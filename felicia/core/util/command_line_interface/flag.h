@@ -272,7 +272,7 @@ template <typename T, typename Traits>
 bool Flag<T, Traits>::set_long_name(const std::string& long_name) {
   base::StringPiece text = long_name;
   if (!ConsumePrefix(&text, "--")) return false;
-  CHECK(!Equals(text, "help"));
+  CHECK_NE(text, "help");
   if (!ContainsOnlyAsciiAlphaOrDigitOrUndderscore(text)) return false;
 
   long_name_ = std::string(long_name);
