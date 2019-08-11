@@ -4,6 +4,7 @@
 #include "third_party/chromium/base/callback.h"
 
 #include "felicia/core/lib/base/export.h"
+#include "felicia/core/lib/error/status.h"
 #include "felicia/core/lib/unit/geometry/quaternion.h"
 #include "felicia/core/lib/unit/geometry/vector.h"
 #include "felicia/drivers/imu/imu_frame_message.pb.h"
@@ -33,7 +34,7 @@ class EXPORT ImuFrame {
   base::TimeDelta timestamp() const;
 
   ImuFrameMessage ToImuFrameMessage() const;
-  static ImuFrame FromImuFrameMessage(const ImuFrameMessage& message);
+  Status FromImuFrameMessage(const ImuFrameMessage& message);
 
  private:
   Quaternionf orientation_;

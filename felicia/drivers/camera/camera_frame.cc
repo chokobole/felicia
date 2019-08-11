@@ -65,27 +65,32 @@ CameraFrameMessage CameraFrame::ToCameraFrameMessage() const {
   return message;
 }
 
-// static
-CameraFrame CameraFrame::FromCameraFrameMessage(
-    const CameraFrameMessage& message) {
+Status CameraFrame::FromCameraFrameMessage(const CameraFrameMessage& message) {
   const std::string& data = message.data();
   std::unique_ptr<uint8_t> data_ptr(new uint8_t[data.length()]);
   memcpy(data_ptr.get(), data.c_str(), data.length());
 
-  return {std::move(data_ptr), data.length(),
-          CameraFormat::FromCameraFormatMessage(message.camera_format()),
-          base::TimeDelta::FromMicroseconds(message.timestamp())};
+  CameraFormat camera_format;
+  Status s = camera_format.FromCameraFormatMessage(message.camera_format());
+  if (!s.ok()) return s;
+
+  *this = CameraFrame{std::move(data_ptr), data.length(), camera_format,
+                      base::TimeDelta::FromMicroseconds(message.timestamp())};
+  return Status::OK();
 }
 
-// static
-CameraFrame CameraFrame::FromCameraFrameMessage(CameraFrameMessage&& message) {
+Status CameraFrame::FromCameraFrameMessage(CameraFrameMessage&& message) {
   std::string* data = message.release_data();
   size_t length = data->length();
   std::unique_ptr<uint8_t> data_ptr = StdStringToUniquePtr<uint8_t>(*data);
 
-  return {std::move(data_ptr), length,
-          CameraFormat::FromCameraFormatMessage(message.camera_format()),
-          base::TimeDelta::FromMicroseconds(message.timestamp())};
+  CameraFormat camera_format;
+  Status s = camera_format.FromCameraFormatMessage(message.camera_format());
+  if (!s.ok()) return s;
+
+  *this = CameraFrame{std::move(data_ptr), length, camera_format,
+                      base::TimeDelta::FromMicroseconds(message.timestamp())};
+  return Status::OK();
 }
 
 #if defined(HAS_OPENCV)
@@ -119,15 +124,14 @@ bool CameraFrame::CloneToCvMat(cv::Mat* out) const {
   return true;
 }
 
-// static
-CameraFrame CameraFrame::FromCvMat(cv::Mat mat,
-                                   const CameraFormat& camera_format,
-                                   base::TimeDelta timestamp) {
+Status CameraFrame::FromCvMat(cv::Mat mat, const CameraFormat& camera_format,
+                              base::TimeDelta timestamp) {
   size_t length = mat.rows * mat.cols * mat.dims;
   std::unique_ptr<uint8_t> data_ptr(new uint8_t[length]);
   memcpy(data_ptr.get(), mat.data, length);
 
-  return {std::move(data_ptr), length, camera_format, timestamp};
+  *this = CameraFrame{std::move(data_ptr), length, camera_format, timestamp};
+  return Status::OK();
 }
 #endif
 

@@ -42,8 +42,8 @@ class EXPORT CameraFrame {
   base::TimeDelta timestamp() const;
 
   CameraFrameMessage ToCameraFrameMessage() const;
-  static CameraFrame FromCameraFrameMessage(const CameraFrameMessage& message);
-  static CameraFrame FromCameraFrameMessage(CameraFrameMessage&& message);
+  Status FromCameraFrameMessage(const CameraFrameMessage& message);
+  Status FromCameraFrameMessage(CameraFrameMessage&& message);
 
 #if defined(HAS_OPENCV)
   // Ownership is moved to |out|, Returns true if it is success to move.
@@ -51,8 +51,8 @@ class EXPORT CameraFrame {
   // Clone to |out|, Returns true if it is success to clone.
   bool CloneToCvMat(cv::Mat* out) const;
 
-  static CameraFrame FromCvMat(cv::Mat mat, const CameraFormat& camera_format,
-                               base::TimeDelta timestamp);
+  Status FromCvMat(cv::Mat mat, const CameraFormat& camera_format,
+                   base::TimeDelta timestamp);
 #endif
 
  protected:

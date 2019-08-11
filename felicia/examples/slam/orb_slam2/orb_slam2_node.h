@@ -94,8 +94,9 @@ class OrbSlam2Node : public NodeLifecycle, public System::Client {
   }
 
   void OnLeftColorMessage(drivers::CameraFrameMessage&& message) {
-    drivers::CameraFrame camera_frame =
-        drivers::CameraFrame::FromCameraFrameMessage(message);
+    drivers::CameraFrame camera_frame;
+    Status s = camera_frame.FromCameraFrameMessage(message);
+    if (!s.ok()) return;
     orb_slam2_->TrackMonocular(std::move(camera_frame));
   }
 

@@ -126,9 +126,9 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
   }
 
   void OnMessage(drivers::LidarFrameMessage&& message) {
-    drivers::LidarFrame lidar_frame =
-        drivers::LidarFrame::FromLidarFrameMessage(message);
-    hector_slam_->Update(std::move(lidar_frame));
+    drivers::LidarFrame lidar_frame;
+    Status s = lidar_frame.FromLidarFrameMessage(message);
+    if (s.ok()) hector_slam_->Update(std::move(lidar_frame));
   }
 
   void OnSubscriptionError(const Status& s) { LOG(ERROR) << s; }

@@ -139,11 +139,11 @@ CameraFormatMessage CameraFormat::ToCameraFormatMessage() const {
   return message;
 }
 
-// static
-CameraFormat CameraFormat::FromCameraFormatMessage(
+Status CameraFormat::FromCameraFormatMessage(
     const CameraFormatMessage& message) {
-  return CameraFormat{SizeiMessageToSizei(message.size()),
-                      message.pixel_format(), message.frame_rate()};
+  *this = CameraFormat{SizeiMessageToSizei(message.size()),
+                       message.pixel_format(), message.frame_rate()};
+  return Status::OK();
 }
 
 bool CameraFormat::operator==(const CameraFormat& other) {

@@ -5,6 +5,7 @@
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/lib/base/export.h"
+#include "felicia/core/lib/error/status.h"
 #include "felicia/core/lib/unit/geometry/point.h"
 #include "felicia/drivers/lidar/lidar_frame_message.pb.h"
 
@@ -46,7 +47,7 @@ class EXPORT LidarFrame {
   const std::vector<float>& intensities() const;
 
   LidarFrameMessage ToLidarFrameMessage() const;
-  static LidarFrame FromLidarFrameMessage(const LidarFrameMessage& message);
+  Status FromLidarFrameMessage(const LidarFrameMessage& message);
 
   void Project(std::vector<Pointf>* points, float user_range_min,
                float user_range_max) const;

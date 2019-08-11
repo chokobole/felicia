@@ -64,12 +64,12 @@ ImuFrameMessage ImuFrame::ToImuFrameMessage() const {
   return message;
 }
 
-// static
-ImuFrame ImuFrame::FromImuFrameMessage(const ImuFrameMessage& message) {
-  return {QuaternionfMessageToQuaternionf(message.orientation()),
-          Vector3fMessageToVector3f(message.angular_velocity()),
-          Vector3fMessageToVector3f(message.angular_velocity()),
-          base::TimeDelta::FromMicroseconds(message.timestamp())};
+Status ImuFrame::FromImuFrameMessage(const ImuFrameMessage& message) {
+  *this = ImuFrame{QuaternionfMessageToQuaternionf(message.orientation()),
+                   Vector3fMessageToVector3f(message.angular_velocity()),
+                   Vector3fMessageToVector3f(message.angular_velocity()),
+                   base::TimeDelta::FromMicroseconds(message.timestamp())};
+  return Status::OK();
 }
 
 }  // namespace drivers

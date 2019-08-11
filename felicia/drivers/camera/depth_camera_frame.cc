@@ -31,29 +31,38 @@ DepthCameraFrameMessage DepthCameraFrame::ToDepthCameraFrameMessage() const {
   return message;
 }
 
-// static
-DepthCameraFrame DepthCameraFrame::FromDepthCameraFrameMessage(
+Status DepthCameraFrame::FromDepthCameraFrameMessage(
     const DepthCameraFrameMessage& message) {
-  return {CameraFrame::FromCameraFrameMessage(message.frame()), message.min(),
-          message.max()};
+  CameraFrame camera_frame;
+  Status s = camera_frame.FromCameraFrameMessage(message.frame());
+  if (!s.ok()) return s;
+  *this =
+      DepthCameraFrame{std::move(camera_frame), message.min(), message.max()};
+  return Status::OK();
 }
 
-// static
-DepthCameraFrame DepthCameraFrame::FromDepthCameraFrameMessage(
+Status DepthCameraFrame::FromDepthCameraFrameMessage(
     DepthCameraFrameMessage&& message) {
   float min = message.min();
   float max = message.max();
-  return {CameraFrame::FromCameraFrameMessage(std::move(message.frame())), min,
-          max};
+  CameraFrame camera_frame;
+  Status s = camera_frame.FromCameraFrameMessage(std::move(message.frame()));
+  if (!s.ok()) return s;
+  *this = DepthCameraFrame{std::move(camera_frame), min, max};
+  return Status::OK();
 }
 
 #if defined(HAS_OPENCV)
 // static
-DepthCameraFrame DepthCameraFrame::FromCvMat(cv::Mat mat,
-                                             const CameraFormat& camera_format,
-                                             base::TimeDelta timestamp,
-                                             float min, float max) {
-  return {CameraFrame::FromCvMat(mat, camera_format, timestamp), min, max};
+Status DepthCameraFrame::FromCvMat(cv::Mat mat,
+                                   const CameraFormat& camera_format,
+                                   base::TimeDelta timestamp, float min,
+                                   float max) {
+  CameraFrame camera_frame;
+  Status s = camera_frame.FromCvMat(mat, camera_format, timestamp);
+  if (!s.ok()) return s;
+  *this = {std::move(camera_frame), min, max};
+  return Status::OK();
 }
 #endif
 

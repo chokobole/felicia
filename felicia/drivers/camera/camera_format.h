@@ -13,6 +13,7 @@ typedef uint32_t FourCharCode;
 #endif
 
 #include "felicia/core/lib/base/export.h"
+#include "felicia/core/lib/error/status.h"
 #include "felicia/core/lib/unit/geometry/size.h"
 #include "felicia/drivers/camera/camera_format_message.pb.h"
 
@@ -63,8 +64,7 @@ class EXPORT CameraFormat {
   libyuv::FourCC ToLibyuvPixelFormat() const;
 
   CameraFormatMessage ToCameraFormatMessage() const;
-  static CameraFormat FromCameraFormatMessage(
-      const CameraFormatMessage& message);
+  Status FromCameraFormatMessage(const CameraFormatMessage& message);
 
   bool operator==(const CameraFormat& other);
 
