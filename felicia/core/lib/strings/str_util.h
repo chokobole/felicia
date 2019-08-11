@@ -6,7 +6,6 @@
 #include "felicia/core/lib/base/export.h"
 
 namespace felicia {
-namespace strings {
 
 // If |s| starts with |expected|, consume it and return true.
 // Otherwise, return false.
@@ -40,7 +39,6 @@ class EXPORT StringComparator {
 
 EXPORT std::string BoolToString(bool b);
 
-}  // namespace strings
 }  // namespace felicia
 
 #endif  // BASE_STRINGS_STR_UTIL_H_

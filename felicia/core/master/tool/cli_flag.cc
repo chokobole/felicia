@@ -28,11 +28,11 @@ bool CliFlag::Parse(FlagParser& parser) {
   switch (current_command_) {
     case COMMAND_SELF:
       if (command_flag_->Parse(parser)) {
-        if (strings::Equals(command_, kClient)) {
+        if (Equals(command_, kClient)) {
           current_command_ = COMMAND_CLIENT;
-        } else if (strings::Equals(command_, kNode)) {
+        } else if (Equals(command_, kNode)) {
           current_command_ = COMMAND_NODE;
-        } else if (strings::Equals(command_, kTopic)) {
+        } else if (Equals(command_, kTopic)) {
           current_command_ = COMMAND_TOPIC;
         }
         parser.set_program_name(base::StringPrintf(

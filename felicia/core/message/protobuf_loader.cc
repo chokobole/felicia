@@ -37,7 +37,7 @@ std::unique_ptr<ProtobufLoader> ProtobufLoader::Load(
     base::ReplaceChars(path.MaybeAsASCII(), "\\", "/", &path_canonicalized);
     auto relative_path =
         path_canonicalized.substr(root_path_canonicalized.length());
-    if (!strings::StartsWith(relative_path, "felicia/")) continue;
+    if (!StartsWith(relative_path, "felicia/")) continue;
 
     loader->descriptor_pool_.FindFileByName(relative_path);
   }

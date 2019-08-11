@@ -42,7 +42,7 @@ bool Status::ok() const { return error_code_ == 0; }
 
 bool Status::operator==(const Status& status) const {
   return error_code_ == status.error_code_ &&
-         strings::Equals(error_message_, status.error_message_);
+         Equals(error_message_, status.error_message_);
 }
 
 bool Status::operator!=(const Status& status) const {

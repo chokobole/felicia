@@ -261,7 +261,7 @@ EXPORT bool ContainsOnlyAsciiAlphaOrDigitOrUndderscore(base::StringPiece text);
 template <typename T, typename Traits>
 bool Flag<T, Traits>::set_short_name(const std::string& short_name) {
   base::StringPiece text = short_name;
-  if (!strings::ConsumePrefix(&text, "-")) return false;
+  if (!ConsumePrefix(&text, "-")) return false;
   if (!ContainsOnlyAsciiAlphaOrDigitOrUndderscore(text)) return false;
 
   short_name_ = std::string(short_name);
@@ -271,8 +271,8 @@ bool Flag<T, Traits>::set_short_name(const std::string& short_name) {
 template <typename T, typename Traits>
 bool Flag<T, Traits>::set_long_name(const std::string& long_name) {
   base::StringPiece text = long_name;
-  if (!strings::ConsumePrefix(&text, "--")) return false;
-  CHECK(!strings::Equals(text, "help"));
+  if (!ConsumePrefix(&text, "--")) return false;
+  CHECK(!Equals(text, "help"));
   if (!ContainsOnlyAsciiAlphaOrDigitOrUndderscore(text)) return false;
 
   long_name_ = std::string(long_name);
@@ -434,7 +434,7 @@ template <typename T, typename Traits>
 bool Flag<T, Traits>::Parse(FlagParser& parser) {
   base::StringPiece arg = parser.current();
   if (!long_name_.empty()) {
-    if (strings::ConsumePrefix(&arg, long_name_)) {
+    if (ConsumePrefix(&arg, long_name_)) {
       if (!Is<bool>() && !ConsumeEqualOrProceed(parser, &arg)) return false;
       if (ParseValue(arg)) {
         return true;
@@ -442,7 +442,7 @@ bool Flag<T, Traits>::Parse(FlagParser& parser) {
     }
   }
   if (!short_name_.empty()) {
-    if (strings::ConsumePrefix(&arg, short_name_)) {
+    if (ConsumePrefix(&arg, short_name_)) {
       if (!Is<bool>() && !ConsumeEqualOrProceed(parser, &arg)) return false;
       if (ParseValue(arg)) {
         return true;
@@ -460,7 +460,7 @@ bool Flag<T, Traits>::Parse(FlagParser& parser) {
 template <typename T, typename Traits>
 bool Flag<T, Traits>::ConsumeEqualOrProceed(FlagParser& parser,
                                             base::StringPiece* arg) const {
-  if (strings::ConsumePrefix(arg, "=")) return true;
+  if (ConsumePrefix(arg, "=")) return true;
   if (!arg->empty()) return false;
   parser.Proceed();
   *arg = parser.current();

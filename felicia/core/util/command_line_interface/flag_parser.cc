@@ -47,7 +47,7 @@ bool FlagParser::Parse(int argc, char** argv, Delegate* delegate) {
   argv_ = argv;
 
   while (current_idx_ < argc_) {
-    if (strings::Equals(current(), "--help")) {
+    if (Equals(current(), "--help")) {
       if (!suppress_help_) PrintHelp(delegate);
       return false;
     }

@@ -141,7 +141,7 @@ void ProtobufMessageToString(
         entities.push_back("[ ");
         for (int i = 0; i < repeated_field_ref.size(); ++i) {
           entities.push_back(
-              strings::BoolToString(reflection->GetBool(message, field_desc)));
+              BoolToString(reflection->GetBool(message, field_desc)));
           if (i != repeated_field_ref.size() - 1) {
             entities.push_back(", ");
           }
@@ -150,7 +150,7 @@ void ProtobufMessageToString(
         return;
       }
       entities.push_back(
-          strings::BoolToString(reflection->GetBool(message, field_desc)));
+          BoolToString(reflection->GetBool(message, field_desc)));
       return;
     }
     case google::protobuf::FieldDescriptor::TYPE_STRING: {

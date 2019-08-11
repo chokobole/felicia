@@ -29,11 +29,11 @@ bool TopicFlag::Parse(FlagParser& parser) {
   switch (current_command_) {
     case COMMAND_SELF:
       if (command_flag_->Parse(parser)) {
-        if (strings::Equals(command_, kLs)) {
+        if (Equals(command_, kLs)) {
           current_command_ = COMMAND_LIST;
-        } else if (strings::Equals(command_, kPublish)) {
+        } else if (Equals(command_, kPublish)) {
           current_command_ = COMMAND_PUBLISH;
-        } else if (strings::Equals(command_, kSubscribe)) {
+        } else if (Equals(command_, kSubscribe)) {
           current_command_ = COMMAND_SUBSCRIBE;
         }
         parser.set_program_name(base::StringPrintf(

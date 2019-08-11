@@ -26,7 +26,7 @@ bool ClientFlag::Parse(FlagParser& parser) {
   switch (current_command_) {
     case COMMAND_SELF:
       if (command_flag_->Parse(parser)) {
-        if (strings::Equals(command_, kLs)) {
+        if (Equals(command_, kLs)) {
           current_command_ = COMMAND_LIST;
           parser.set_program_name(
               base::StringPrintf("%s %s", parser.program_name().c_str(), kLs));

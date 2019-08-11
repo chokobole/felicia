@@ -36,7 +36,7 @@ bool IsEqual(const T& v1, const T& v2) {
 template <typename T, std::enable_if_t<std::is_same<T, std::string>::value,
                                        void*> = nullptr>
 bool IsEqual(const T& v1, const T& v2) {
-  return strings::Equals(v1, v2);
+  return Equals(v1, v2);
 }
 
 template <typename T>

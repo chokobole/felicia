@@ -39,7 +39,7 @@ Status ZedCameraFactory::GetCameraDescriptors(
       << std::endl;
   int id = 0;
   for (auto& nt_camera_descriptor : nt_camera_descriptors) {
-    if (strings::StartsWith(nt_camera_descriptor.display_name(), "ZED")) {
+    if (StartsWith(nt_camera_descriptor.display_name(), "ZED")) {
       camera_descriptors->emplace_back(nt_camera_descriptor, id++);
     }
   }

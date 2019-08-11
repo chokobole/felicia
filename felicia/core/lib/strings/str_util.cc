@@ -9,7 +9,6 @@
 #include "felicia/core/lib/strings/str_util.h"
 
 namespace felicia {
-namespace strings {
 
 bool ConsumePrefix(base::StringPiece* s, base::StringPiece expected) {
   if (StartsWith(*s, expected)) {
@@ -51,5 +50,4 @@ bool StringComparator::operator()(const base::StringPiece text) {
 
 std::string BoolToString(bool b) { return b ? "true" : "false"; }
 
-}  // namespace strings
 }  // namespace felicia

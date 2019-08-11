@@ -58,8 +58,8 @@ bool PermessageDeflate::Negotiate(base::StringTokenizer& params,
           base::StringPiece(&*(end + 1), std::distance(end + 1, param_end)),
           base::TrimPositions::TRIM_ALL);
 
-      if (strings::ConsumePrefix(&value, "\"")) {
-        if (!strings::ConsumeSuffix(&value, "\"")) {
+      if (ConsumePrefix(&value, "\"")) {
+        if (!ConsumeSuffix(&value, "\"")) {
           DLOG(ERROR) << "value not end with \"" << value;
           return false;
         }

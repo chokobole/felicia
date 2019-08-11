@@ -84,9 +84,8 @@ void Node::UnregisterPublishingTopic(const std::string& topic) {
 }
 
 void Node::UnregisterSubscribingTopic(const std::string& topic) {
-  auto it =
-      std::remove_if(subscribing_topics_.begin(), subscribing_topics_.end(),
-                     strings::StringComparator{topic});
+  auto it = std::remove_if(subscribing_topics_.begin(),
+                           subscribing_topics_.end(), StringComparator{topic});
   subscribing_topics_.erase(it, subscribing_topics_.end());
 }
 
@@ -97,7 +96,7 @@ bool Node::IsPublishingTopic(const std::string& topic) const {
 
 bool Node::IsSubsribingTopic(const std::string& topic) const {
   auto it = std::find_if(subscribing_topics_.begin(), subscribing_topics_.end(),
-                         strings::StringComparator{topic});
+                         StringComparator{topic});
   return it != subscribing_topics_.end();
 }
 
@@ -127,7 +126,7 @@ std::vector<std::string> Node::AllSubscribingTopics() const {
 }
 
 bool NodeNameChecker::operator()(const std::unique_ptr<Node>& node) {
-  return strings::Equals(node->name(), node_info_.name());
+  return Equals(node->name(), node_info_.name());
 }
 
 }  // namespace felicia

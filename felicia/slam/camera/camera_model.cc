@@ -303,9 +303,8 @@ Status CameraModel::Load(const base::FilePath& path) {
     internal::MaybeLoad(
         fs, "distortion_model", path, [&D](const cv::FileNode& n) {
           std::string distortionModel = static_cast<std::string>(n);
-          if (D.cols >= 4 &&
-              (strings::Contains(distortionModel, "fisheye") ||
-               strings::Contains(distortionModel, "equidistant"))) {
+          if (D.cols >= 4 && (Contains(distortionModel, "fisheye") ||
+                              Contains(distortionModel, "equidistant"))) {
             cv::Mat D2 = cv::Mat::zeros(1, 6, CV_64FC1);
             D2.at<double>(0, 0) = D.at<double>(0, 0);
             D2.at<double>(0, 1) = D.at<double>(0, 1);

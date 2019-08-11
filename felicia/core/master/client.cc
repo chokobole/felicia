@@ -103,7 +103,7 @@ std::vector<base::WeakPtr<Node>> Client::FindNodes(
     }
   } else if (!node_filter.name().empty()) {
     for (auto& node : nodes_) {
-      if (strings::Equals(node->name(), node_filter.name())) {
+      if (Equals(node->name(), node_filter.name())) {
         nodes.push_back(node->AsWeakPtr());
       }
     }
