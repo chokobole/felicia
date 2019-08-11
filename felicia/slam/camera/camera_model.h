@@ -30,17 +30,33 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(HAS_OPENCV)
 
+#include <functional>
+
 #include <opencv2/opencv.hpp>
 
 #include "third_party/chromium/base/files/file_path.h"
 
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"
+#include "felicia/core/lib/error/statusor.h"
 #include "felicia/core/lib/unit/geometry/point.h"
 #include "felicia/slam/camera/camera_model_message.pb.h"
 
 namespace felicia {
 namespace slam {
+
+namespace internal {
+
+Status InvalidRowsAndCols(int rows, int cols);
+
+Status MaybeLoad(const cv::FileStorage& fs, const std::string& name,
+                 const base::FilePath& path,
+                 std::function<Status(const cv::FileNode&)> callback);
+
+StatusOr<cv::Mat> LoadCvMatrix(const cv::FileNode& n,
+                               std::function<bool(int, int)> callback);
+
+}  // namespace internal
 
 class EXPORT CameraModel {
  public:

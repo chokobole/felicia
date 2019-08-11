@@ -27,8 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "felicia/slam/camera/camera_model.h"
 
-#include <functional>
-
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include "third_party/chromium/base/logging.h"
@@ -36,7 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 #include "felicia/core/lib/error/errors.h"
-#include "felicia/core/lib/error/statusor.h"
 #include "felicia/core/lib/strings/str_util.h"
 
 namespace felicia {
@@ -47,40 +44,6 @@ namespace {
 Status InvalidImageSize(int width, int height) {
   return errors::InvalidArgument(
       base::StringPrintf("image size is not valid. (%dx%d)", width, height));
-}
-
-Status InvalidRowsAndCols(int rows, int cols) {
-  return errors::InvalidArgument(
-      base::StringPrintf("rows and cols are not invalid. (%dx%d)", rows, cols));
-}
-
-Status MaybeLoad(const cv::FileStorage& fs, const std::string& name,
-                 const base::FilePath& path,
-                 std::function<Status(const cv::FileNode&)> callback) {
-  cv::FileNode n = fs[name];
-  if (n.type() != cv::FileNode::NONE) {
-    return callback(n);
-  } else {
-    LOG(WARNING) << "Missing \"" << name << "\" field in \"" << path << "\"";
-  }
-  return Status::OK();
-}
-
-StatusOr<cv::Mat> LoadCvMatrix(const cv::FileNode& n,
-                               std::function<bool(int, int)> callback) {
-  int rows = static_cast<int>(n["rows"]);
-  int cols = static_cast<int>(n["cols"]);
-  std::vector<double> data;
-  n["data"] >> data;
-  if (rows * cols != static_cast<int>(data.size())) {
-    return errors::InvalidArgument(base::StringPrintf(
-        "rowsxcols are not matched with data size. %dx%d = %d", rows, cols,
-        static_cast<int>(data.size())));
-  }
-  if (!callback(rows, cols)) {
-    return InvalidRowsAndCols(rows, cols);
-  }
-  return cv::Mat(rows, cols, CV_64FC1, data.data()).clone();
 }
 
 bool IsValidImageSize(int width, int height) {
@@ -114,6 +77,43 @@ bool IsValidPMatrix(const cv::Mat& P) {
 }
 
 }  // namespace
+
+namespace internal {
+
+Status InvalidRowsAndCols(int rows, int cols) {
+  return errors::InvalidArgument(
+      base::StringPrintf("rows and cols are not invalid. (%dx%d)", rows, cols));
+}
+
+Status MaybeLoad(const cv::FileStorage& fs, const std::string& name,
+                 const base::FilePath& path,
+                 std::function<Status(const cv::FileNode&)> callback) {
+  cv::FileNode n = fs[name];
+  if (n.type() != cv::FileNode::NONE) {
+    return callback(n);
+  } else {
+    LOG(WARNING) << "Missing \"" << name << "\" field in \"" << path << "\"";
+  }
+  return Status::OK();
+}
+
+StatusOr<cv::Mat> LoadCvMatrix(const cv::FileNode& n,
+                               std::function<bool(int, int)> callback) {
+  int rows = static_cast<int>(n["rows"]);
+  int cols = static_cast<int>(n["cols"]);
+  std::vector<double> data;
+  n["data"] >> data;
+  if (rows * cols != static_cast<int>(data.size())) {
+    return errors::InvalidArgument(base::StringPrintf(
+        "rowsxcols are not matched with data size. %dx%d = %d", rows, cols,
+        static_cast<int>(data.size())));
+  }
+  if (!callback(rows, cols)) {
+    return internal::InvalidRowsAndCols(rows, cols);
+  }
+  return cv::Mat(rows, cols, CV_64FC1, data.data()).clone();
+}
+}  // namespace internal
 
 CameraModel::CameraModel() = default;
 
@@ -261,72 +261,79 @@ Status CameraModel::Load(const base::FilePath& path) {
 
     Status s;
 
-    MaybeLoad(fs, "camera_name", path, [&name](const cv::FileNode& n) {
-      name = static_cast<std::string>(n);
-      return Status::OK();
-    });
-    MaybeLoad(fs, "image_width", path, [&image_size](const cv::FileNode& n) {
-      image_size.width = static_cast<int>(n);
-      return Status::OK();
-    });
-    MaybeLoad(fs, "image_height", path, [&image_size](const cv::FileNode& n) {
-      image_size.height = static_cast<int>(n);
-      return Status::OK();
-    });
+    internal::MaybeLoad(fs, "camera_name", path,
+                        [&name](const cv::FileNode& n) {
+                          name = static_cast<std::string>(n);
+                          return Status::OK();
+                        });
+    internal::MaybeLoad(fs, "image_width", path,
+                        [&image_size](const cv::FileNode& n) {
+                          image_size.width = static_cast<int>(n);
+                          return Status::OK();
+                        });
+    internal::MaybeLoad(fs, "image_height", path,
+                        [&image_size](const cv::FileNode& n) {
+                          image_size.height = static_cast<int>(n);
+                          return Status::OK();
+                        });
     if (!IsValidImageSize(image_size.width, image_size.height))
       return InvalidImageSize(image_size.width, image_size.height);
 
     // import from ROS calibration format
-    s = MaybeLoad(fs, "camera_matrix", path, [&K](const cv::FileNode& n) {
-      StatusOr<cv::Mat> status_or =
-          LoadCvMatrix(n, static_cast<bool (*)(int, int)>(&IsValidKMatrix));
-      if (!status_or.ok()) return status_or.status();
-      K = status_or.ValueOrDie();
-      return Status::OK();
-    });
+    s = internal::MaybeLoad(
+        fs, "camera_matrix", path, [&K](const cv::FileNode& n) {
+          StatusOr<cv::Mat> status_or = internal::LoadCvMatrix(
+              n, static_cast<bool (*)(int, int)>(&IsValidKMatrix));
+          if (!status_or.ok()) return status_or.status();
+          K = status_or.ValueOrDie();
+          return Status::OK();
+        });
     if (!s.ok()) return s;
 
-    s = MaybeLoad(
+    s = internal::MaybeLoad(
         fs, "distortion_coefficients", path, [&D](const cv::FileNode& n) {
-          StatusOr<cv::Mat> status_or =
-              LoadCvMatrix(n, static_cast<bool (*)(int, int)>(&IsValidDMatrix));
+          StatusOr<cv::Mat> status_or = internal::LoadCvMatrix(
+              n, static_cast<bool (*)(int, int)>(&IsValidDMatrix));
           if (!status_or.ok()) return status_or.status();
           D = status_or.ValueOrDie();
           return Status::OK();
         });
     if (!s.ok()) return s;
 
-    MaybeLoad(fs, "distortion_model", path, [&D](const cv::FileNode& n) {
-      std::string distortionModel = static_cast<std::string>(n);
-      if (D.cols >= 4 && (strings::Contains(distortionModel, "fisheye") ||
-                          strings::Contains(distortionModel, "equidistant"))) {
-        cv::Mat D2 = cv::Mat::zeros(1, 6, CV_64FC1);
-        D2.at<double>(0, 0) = D.at<double>(0, 0);
-        D2.at<double>(0, 1) = D.at<double>(0, 1);
-        D2.at<double>(0, 4) = D.at<double>(0, 2);
-        D2.at<double>(0, 5) = D.at<double>(0, 3);
-        D = D2;
-      }
-      return Status::OK();
-    });
+    internal::MaybeLoad(
+        fs, "distortion_model", path, [&D](const cv::FileNode& n) {
+          std::string distortionModel = static_cast<std::string>(n);
+          if (D.cols >= 4 &&
+              (strings::Contains(distortionModel, "fisheye") ||
+               strings::Contains(distortionModel, "equidistant"))) {
+            cv::Mat D2 = cv::Mat::zeros(1, 6, CV_64FC1);
+            D2.at<double>(0, 0) = D.at<double>(0, 0);
+            D2.at<double>(0, 1) = D.at<double>(0, 1);
+            D2.at<double>(0, 4) = D.at<double>(0, 2);
+            D2.at<double>(0, 5) = D.at<double>(0, 3);
+            D = D2;
+          }
+          return Status::OK();
+        });
 
-    s = MaybeLoad(
+    s = internal::MaybeLoad(
         fs, "rectification_matrix", path, [&R](const cv::FileNode& n) {
-          StatusOr<cv::Mat> status_or =
-              LoadCvMatrix(n, static_cast<bool (*)(int, int)>(&IsValidRMatrix));
+          StatusOr<cv::Mat> status_or = internal::LoadCvMatrix(
+              n, static_cast<bool (*)(int, int)>(&IsValidRMatrix));
           if (!status_or.ok()) return status_or.status();
           R = status_or.ValueOrDie();
           return Status::OK();
         });
     if (!s.ok()) return s;
 
-    s = MaybeLoad(fs, "projection_matrix", path, [&P](const cv::FileNode& n) {
-      StatusOr<cv::Mat> status_or =
-          LoadCvMatrix(n, static_cast<bool (*)(int, int)>(&IsValidPMatrix));
-      if (!status_or.ok()) return status_or.status();
-      P = status_or.ValueOrDie();
-      return Status::OK();
-    });
+    s = internal::MaybeLoad(
+        fs, "projection_matrix", path, [&P](const cv::FileNode& n) {
+          StatusOr<cv::Mat> status_or = internal::LoadCvMatrix(
+              n, static_cast<bool (*)(int, int)>(&IsValidPMatrix));
+          if (!status_or.ok()) return status_or.status();
+          P = status_or.ValueOrDie();
+          return Status::OK();
+        });
     if (!s.ok()) return s;
 
     fs.release();
@@ -353,87 +360,93 @@ Status CameraModel::Load(const base::FilePath& path) {
 
 Status CameraModel::Save(const base::FilePath& path) const {
   if (!K_.empty() || !D_.empty() || !R_.empty() || !P_.empty()) {
-    cv::FileStorage fs(path.AsUTF8Unsafe(), cv::FileStorage::WRITE);
+    try {
+      cv::FileStorage fs(path.AsUTF8Unsafe(), cv::FileStorage::WRITE);
 
-    // export in ROS calibration format
-    if (!name_.empty()) {
-      fs << "camera_name" << name_;
-    }
-    if (image_size_.width > 0 && image_size_.height > 0) {
-      fs << "image_width" << image_size_.width;
-      fs << "image_height" << image_size_.height;
-    }
-
-    if (!K_.empty()) {
-      fs << "camera_matrix"
-         << "{";
-      fs << "rows" << K_.rows;
-      fs << "cols" << K_.cols;
-      fs << "data"
-         << std::vector<double>(
-                reinterpret_cast<double*>(K_.data),
-                reinterpret_cast<double*>(K_.data) + (K_.rows * K_.cols));
-      fs << "}";
-    }
-
-    if (!D_.empty()) {
-      cv::Mat D = D_;
-      if (D_.cols == 6) {
-        D = cv::Mat(1, 4, CV_64FC1);
-        D.at<double>(0, 0) = D_.at<double>(0, 0);
-        D.at<double>(0, 1) = D_.at<double>(0, 1);
-        D.at<double>(0, 2) = D_.at<double>(0, 4);
-        D.at<double>(0, 3) = D_.at<double>(0, 5);
+      // export in ROS calibration format
+      if (!name_.empty()) {
+        fs << "camera_name" << name_;
       }
-      fs << "distortion_coefficients"
-         << "{";
-      fs << "rows" << D.rows;
-      fs << "cols" << D.cols;
-      fs << "data"
-         << std::vector<double>(
-                reinterpret_cast<double*>(D.data),
-                reinterpret_cast<double*>(D.data) + (D.rows * D.cols));
-      fs << "}";
 
-      // compaibility with ROS
-      if (D_.cols == 6) {
-        fs << "distortion_model"
-           << "equidistant";  // equidistant, fisheye
-      } else if (D.cols > 5) {
-        fs << "distortion_model"
-           << "rational_polynomial";  // rad tan
-      } else {
-        fs << "distortion_model"
-           << "plumb_bob";  // rad tan
+      if (image_size_.width > 0 && image_size_.height > 0) {
+        fs << "image_width" << image_size_.width;
+        fs << "image_height" << image_size_.height;
       }
+
+      if (!K_.empty()) {
+        fs << "camera_matrix"
+           << "{";
+        fs << "rows" << K_.rows;
+        fs << "cols" << K_.cols;
+        fs << "data"
+           << std::vector<double>(
+                  reinterpret_cast<double*>(K_.data),
+                  reinterpret_cast<double*>(K_.data) + (K_.rows * K_.cols));
+        fs << "}";
+      }
+
+      if (!D_.empty()) {
+        cv::Mat D = D_;
+        if (D_.cols == 6) {
+          D = cv::Mat(1, 4, CV_64FC1);
+          D.at<double>(0, 0) = D_.at<double>(0, 0);
+          D.at<double>(0, 1) = D_.at<double>(0, 1);
+          D.at<double>(0, 2) = D_.at<double>(0, 4);
+          D.at<double>(0, 3) = D_.at<double>(0, 5);
+        }
+        fs << "distortion_coefficients"
+           << "{";
+        fs << "rows" << D.rows;
+        fs << "cols" << D.cols;
+        fs << "data"
+           << std::vector<double>(
+                  reinterpret_cast<double*>(D.data),
+                  reinterpret_cast<double*>(D.data) + (D.rows * D.cols));
+        fs << "}";
+
+        // compaibility with ROS
+        if (D_.cols == 6) {
+          fs << "distortion_model"
+             << "equidistant";  // equidistant, fisheye
+        } else if (D.cols > 5) {
+          fs << "distortion_model"
+             << "rational_polynomial";  // rad tan
+        } else {
+          fs << "distortion_model"
+             << "plumb_bob";  // rad tan
+        }
+      }
+
+      if (!R_.empty()) {
+        fs << "rectification_matrix"
+           << "{";
+        fs << "rows" << R_.rows;
+        fs << "cols" << R_.cols;
+        fs << "data"
+           << std::vector<double>(
+                  reinterpret_cast<double*>(R_.data),
+                  reinterpret_cast<double*>(R_.data) + (R_.rows * R_.cols));
+        fs << "}";
+      }
+
+      if (!P_.empty()) {
+        fs << "projection_matrix"
+           << "{";
+        fs << "rows" << P_.rows;
+        fs << "cols" << P_.cols;
+        fs << "data"
+           << std::vector<double>(
+                  reinterpret_cast<double*>(P_.data),
+                  (reinterpret_cast<double*>(P_.data)) + (P_.rows * P_.cols));
+        fs << "}";
+      }
+
+      fs.release();
+    } catch (const cv::Exception& e) {
+      return errors::InvalidArgument(
+          base::StringPrintf("Error writing calibration file %s : %s",
+                             path.value().c_str(), e.what()));
     }
-
-    if (!R_.empty()) {
-      fs << "rectification_matrix"
-         << "{";
-      fs << "rows" << R_.rows;
-      fs << "cols" << R_.cols;
-      fs << "data"
-         << std::vector<double>(
-                reinterpret_cast<double*>(R_.data),
-                reinterpret_cast<double*>(R_.data) + (R_.rows * R_.cols));
-      fs << "}";
-    }
-
-    if (!P_.empty()) {
-      fs << "projection_matrix"
-         << "{";
-      fs << "rows" << P_.rows;
-      fs << "cols" << P_.cols;
-      fs << "data"
-         << std::vector<double>(
-                reinterpret_cast<double*>(P_.data),
-                (reinterpret_cast<double*>(P_.data)) + (P_.rows * P_.cols));
-      fs << "}";
-    }
-
-    fs.release();
-
   } else {
     return errors::InvalidArgument(
         "Cannot save calibration, check if K, D, R and P are not empty");
@@ -474,7 +487,8 @@ Status CameraModel::FromCameraModelMessage(const CameraModelMessage& message) {
     const std::string& k = message.k();
     int rows = 3;
     int cols = k.length() / rows;
-    if (!IsValidKMatrix(rows, cols)) return InvalidRowsAndCols(rows, cols);
+    if (!IsValidKMatrix(rows, cols))
+      return internal::InvalidRowsAndCols(rows, cols);
     K = cv::Mat(rows, cols, CV_64FC1, const_cast<char*>(k.c_str())).clone();
   }
 
@@ -482,7 +496,8 @@ Status CameraModel::FromCameraModelMessage(const CameraModelMessage& message) {
     const std::string& d = message.d();
     int rows = 1;
     int cols = d.length() / rows;
-    if (!IsValidKMatrix(rows, cols)) return InvalidRowsAndCols(rows, cols);
+    if (!IsValidKMatrix(rows, cols))
+      return internal::InvalidRowsAndCols(rows, cols);
     D = cv::Mat(rows, cols, CV_64FC1, const_cast<char*>(d.c_str())).clone();
   }
 
@@ -490,7 +505,8 @@ Status CameraModel::FromCameraModelMessage(const CameraModelMessage& message) {
     const std::string& r = message.r();
     int rows = 3;
     int cols = r.length() / rows;
-    if (!IsValidKMatrix(rows, cols)) return InvalidRowsAndCols(rows, cols);
+    if (!IsValidKMatrix(rows, cols))
+      return internal::InvalidRowsAndCols(rows, cols);
     R = cv::Mat(rows, cols, CV_64FC1, const_cast<char*>(r.c_str())).clone();
   }
 
@@ -498,7 +514,8 @@ Status CameraModel::FromCameraModelMessage(const CameraModelMessage& message) {
     const std::string& p = message.p();
     int rows = 4;
     int cols = p.length() / rows;
-    if (!IsValidKMatrix(rows, cols)) return InvalidRowsAndCols(rows, cols);
+    if (!IsValidKMatrix(rows, cols))
+      return internal::InvalidRowsAndCols(rows, cols);
     P = cv::Mat(rows, cols, CV_64FC1, const_cast<char*>(p.c_str())).clone();
   }
 
@@ -530,7 +547,8 @@ Status CameraModel::FromCameraModelMessage(CameraModelMessage&& message) {
     std::string* k = message.release_k();
     int rows = 3;
     int cols = k->length() / rows;
-    if (!IsValidKMatrix(rows, cols)) return InvalidRowsAndCols(rows, cols);
+    if (!IsValidKMatrix(rows, cols))
+      return internal::InvalidRowsAndCols(rows, cols);
     K = cv::Mat(rows, cols, CV_64FC1, const_cast<char*>(k->c_str()));
   }
 
@@ -538,7 +556,8 @@ Status CameraModel::FromCameraModelMessage(CameraModelMessage&& message) {
     std::string* d = message.release_d();
     int rows = 1;
     int cols = d->length() / rows;
-    if (!IsValidKMatrix(rows, cols)) return InvalidRowsAndCols(rows, cols);
+    if (!IsValidKMatrix(rows, cols))
+      return internal::InvalidRowsAndCols(rows, cols);
     D = cv::Mat(rows, cols, CV_64FC1, const_cast<char*>(d->c_str()));
   }
 
@@ -546,7 +565,8 @@ Status CameraModel::FromCameraModelMessage(CameraModelMessage&& message) {
     std::string* r = message.release_r();
     int rows = 3;
     int cols = r->length() / rows;
-    if (!IsValidKMatrix(rows, cols)) return InvalidRowsAndCols(rows, cols);
+    if (!IsValidKMatrix(rows, cols))
+      return internal::InvalidRowsAndCols(rows, cols);
     R = cv::Mat(rows, cols, CV_64FC1, const_cast<char*>(r->c_str()));
   }
 
@@ -554,7 +574,8 @@ Status CameraModel::FromCameraModelMessage(CameraModelMessage&& message) {
     std::string* p = message.release_p();
     int rows = 4;
     int cols = p->length() / rows;
-    if (!IsValidKMatrix(rows, cols)) return InvalidRowsAndCols(rows, cols);
+    if (!IsValidKMatrix(rows, cols))
+      return internal::InvalidRowsAndCols(rows, cols);
     P = cv::Mat(rows, cols, CV_64FC1, const_cast<char*>(p->c_str()));
   }
 
