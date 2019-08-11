@@ -132,8 +132,7 @@ const std::string& CameraFormat::PixelFormatToString(PixelFormat pixel_format) {
 
 CameraFormatMessage CameraFormat::ToCameraFormatMessage() const {
   CameraFormatMessage message;
-  message.set_width(size_.width());
-  message.set_height(size_.height());
+  *message.mutable_size() = SizeiToSizeiMessage(size_);
   message.set_pixel_format(pixel_format_);
   message.set_frame_rate(frame_rate_);
 
@@ -143,8 +142,8 @@ CameraFormatMessage CameraFormat::ToCameraFormatMessage() const {
 // static
 CameraFormat CameraFormat::FromCameraFormatMessage(
     const CameraFormatMessage& message) {
-  return CameraFormat{message.width(), message.height(), message.pixel_format(),
-                      message.frame_rate()};
+  return CameraFormat{SizeiMessageToSizei(message.size()),
+                      message.pixel_format(), message.frame_rate()};
 }
 
 bool CameraFormat::operator==(const CameraFormat& other) {

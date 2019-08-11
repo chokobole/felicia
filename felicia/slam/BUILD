@@ -5,6 +5,7 @@ package(default_visibility = ["//felicia:internal"])
 fel_cc_library(
     name = "slam",
     deps = [
+        "//felicia/slam/camera",
         "//felicia/slam/map",
     ],
 )

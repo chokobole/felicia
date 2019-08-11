@@ -28,6 +28,7 @@ fel_proto_library(
         "//felicia/drivers/imu:imu_proto",
         "//felicia/drivers/lidar:lidar_proto",
         "//felicia/drivers/pointcloud:pointcloud_proto",
+        "//felicia/slam/camera:camera_proto",
         "//felicia/slam/map:map_proto",
     ],
     visibility = ["//visibility:public"],

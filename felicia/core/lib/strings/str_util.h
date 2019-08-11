@@ -25,6 +25,9 @@ EXPORT bool EndsWith(base::StringPiece s, base::StringPiece expected);
 // If |s| equals to |expected|, return true. Otherwise, return false.
 EXPORT bool Equals(base::StringPiece s, base::StringPiece expected);
 
+// If |s| contains |expected|, return true. Otherwise, return false.
+EXPORT bool Contains(base::StringPiece s, base::StringPiece expected);
+
 class EXPORT StringComparator {
  public:
   explicit StringComparator(base::StringPiece text);

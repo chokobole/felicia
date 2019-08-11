@@ -4,7 +4,7 @@
 #include <memory>
 
 #if defined(HAS_OPENCV)
-#include "opencv2/core.hpp"
+#include <opencv2/core.hpp>
 #endif
 
 #include "third_party/chromium/base/callback.h"

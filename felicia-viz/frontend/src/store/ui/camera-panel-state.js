@@ -9,7 +9,8 @@ export class CameraFrame {
     this.converted = converted;
     this.data = data.data;
     this.timestamp = timestamp;
-    const { width, height, pixelFormat, frameRate } = cameraFormat;
+    const { size, pixelFormat, frameRate } = cameraFormat;
+    const { width, height } = size;
     this.width = width;
     this.height = height;
     this.pixelFormat = pixelFormat;

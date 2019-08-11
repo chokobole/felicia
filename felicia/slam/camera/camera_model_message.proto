@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+import "felicia/core/protobuf/geometry.proto";
+
+package felicia.slam;
+
+message CameraModelMessage {
+  SizeiMessage image_size = 1;
+  bytes K = 2;
+  bytes D = 3;
+  bytes R = 4;
+  bytes P = 5;
+}

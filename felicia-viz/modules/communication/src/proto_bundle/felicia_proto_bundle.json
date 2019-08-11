@@ -1147,21 +1147,17 @@
           "nested": {
             "CameraFormatMessage": {
               "fields": {
-                "width": {
-                  "type": "int32",
+                "size": {
+                  "type": "SizeiMessage",
                   "id": 1
-                },
-                "height": {
-                  "type": "int32",
-                  "id": 2
                 },
                 "pixelFormat": {
                   "type": "PixelFormat",
-                  "id": 3
+                  "id": 2
                 },
                 "frameRate": {
                   "type": "float",
-                  "id": 4
+                  "id": 3
                 }
               }
             },
@@ -1397,27 +1393,55 @@
             }
           }
         },
-        "OccupancyGridMapMessage": {
-          "fields": {
-            "size": {
-              "type": "SizeiMessage",
-              "id": 1
+        "slam": {
+          "nested": {
+            "CameraModelMessage": {
+              "fields": {
+                "imageSize": {
+                  "type": "SizeiMessage",
+                  "id": 1
+                },
+                "K": {
+                  "type": "bytes",
+                  "id": 2
+                },
+                "D": {
+                  "type": "bytes",
+                  "id": 3
+                },
+                "R": {
+                  "type": "bytes",
+                  "id": 4
+                },
+                "P": {
+                  "type": "bytes",
+                  "id": 5
+                }
+              }
             },
-            "resolution": {
-              "type": "float",
-              "id": 2
-            },
-            "origin": {
-              "type": "PointfMessage",
-              "id": 3
-            },
-            "data": {
-              "type": "bytes",
-              "id": 4
-            },
-            "timestamp": {
-              "type": "int64",
-              "id": 5
+            "OccupancyGridMapMessage": {
+              "fields": {
+                "size": {
+                  "type": "SizeiMessage",
+                  "id": 1
+                },
+                "resolution": {
+                  "type": "float",
+                  "id": 2
+                },
+                "origin": {
+                  "type": "PointfMessage",
+                  "id": 3
+                },
+                "data": {
+                  "type": "bytes",
+                  "id": 4
+                },
+                "timestamp": {
+                  "type": "int64",
+                  "id": 5
+                }
+              }
             }
           }
         }
