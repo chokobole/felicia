@@ -12,7 +12,7 @@ namespace felicia {
 template <typename T>
 class Transform {
  public:
-  typedef ::Eigen::Transform<T, 2, ::Eigen::Affine> EigenTransformType;
+  typedef Eigen::Transform<T, 2, Eigen::Affine> EigenTransformType;
 
   constexpr Transform()
       : transform_(EigenTransformType::MatrixType::Identity()) {}
@@ -31,25 +31,25 @@ class Transform {
   const EigenTransformType& ToEigenTransform() const { return transform_; }
 
   Transform& AddTranslate(T x, T y) {
-    transform_ = ::Eigen::Translation<T, 2>(x, y) * transform_;
+    transform_ = Eigen::Translation<T, 2>(x, y) * transform_;
     return *this;
   }
 
   // |angle| should be in radian.
   Transform& AddRotation(T angle) {
-    transform_ = ::Eigen::Rotation2D<T>(angle) * transform_;
+    transform_ = Eigen::Rotation2D<T>(angle) * transform_;
     return *this;
   }
 
   Transform& AddScale(T x, T y) {
-    transform_ = ::Eigen::Scaling(x, y) * transform_;
+    transform_ = Eigen::Scaling(x, y) * transform_;
     return *this;
   }
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(
       EigenTransformType::Scalar,
-      EigenTransformType::Dim == ::Eigen::Dynamic
-          ? ::Eigen::Dynamic
+      EigenTransformType::Dim == Eigen::Dynamic
+          ? Eigen::Dynamic
           : (EigenTransformType::Dim + 1) * (EigenTransformType::Dim + 1))
 
  private:
@@ -72,7 +72,7 @@ typedef Transform<double> Transformd;
 template <typename T>
 class Transform3 {
  public:
-  typedef ::Eigen::Transform<T, 3, ::Eigen::Affine> EigenTransformType;
+  typedef Eigen::Transform<T, 3, Eigen::Affine> EigenTransformType;
 
   constexpr Transform3()
       : transform_(EigenTransformType::MatrixType::Identity()) {}
@@ -91,14 +91,13 @@ class Transform3 {
   const EigenTransformType& ToEigenTransform() const { return transform_; }
 
   Transform3& AddTranslate(T x, T y, T z) {
-    transform_ = ::Eigen::Translation<T, 3>(x, y, z) * transform_;
+    transform_ = Eigen::Translation<T, 3>(x, y, z) * transform_;
     return *this;
   }
 
   // |angle| should be in radian.
   Transform3& AddRotation(T angle, const Vector3<T>& axis) {
-    transform_ =
-        ::Eigen::AngleAxis<T>(angle, axis.ToEigenVector()) * transform_;
+    transform_ = Eigen::AngleAxis<T>(angle, axis.ToEigenVector()) * transform_;
     return *this;
   }
 
@@ -108,14 +107,14 @@ class Transform3 {
   }
 
   Transform3& AddScale(T x, T y, T z) {
-    transform_ = ::Eigen::Scaling(x, y, z) * transform_;
+    transform_ = Eigen::Scaling(x, y, z) * transform_;
     return *this;
   }
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF_VECTORIZABLE_FIXED_SIZE(
       EigenTransformType::Scalar,
-      EigenTransformType::Dim == ::Eigen::Dynamic
-          ? ::Eigen::Dynamic
+      EigenTransformType::Dim == Eigen::Dynamic
+          ? Eigen::Dynamic
           : (EigenTransformType::Dim + 1) * (EigenTransformType::Dim + 1))
 
  private:

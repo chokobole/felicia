@@ -14,7 +14,7 @@ namespace felicia {
 template <typename T>
 class Vector {
  public:
-  typedef ::Eigen::Matrix<T, 2, 1> EigenMatrixType;
+  typedef Eigen::Matrix<T, 2, 1> EigenMatrixType;
 
   constexpr Vector() : x_{0}, y_{0} {}
   constexpr Vector(T x, T y) : x_(x), y_(y) {}
@@ -133,7 +133,7 @@ EXPORT Vectord VectordMessageToVectord(const VectordMessage& message);
 template <typename T>
 class Vector3 {
  public:
-  typedef ::Eigen::Matrix<T, 3, 1> EigenMatrixType;
+  typedef Eigen::Matrix<T, 3, 1> EigenMatrixType;
 
   constexpr Vector3() : x_(0), y_(0), z_(0) {}
   constexpr Vector3(T x, T y, T z) : x_(x), y_(y), z_(z) {}

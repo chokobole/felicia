@@ -80,8 +80,8 @@ base::Optional<Posef> ScanMatcher<MapType>::Estimate(
   float sin_rot = sin(pose.theta());
   float cos_rot = cos(pose.theta());
 
-  ::Eigen::Matrix3f H = ::Eigen::Matrix3f::Zero();
-  ::Eigen::Vector3f dTr = ::Eigen::Vector3f::Zero();
+  Eigen::Matrix3f H = Eigen::Matrix3f::Zero();
+  Eigen::Vector3f dTr = Eigen::Vector3f::Zero();
 
   for (const Pointf& point : points) {
     float values[3];
@@ -113,7 +113,7 @@ base::Optional<Posef> ScanMatcher<MapType>::Estimate(
   H(2, 1) = H(1, 2);
 
   if ((H(0, 0) != 0.0f) && (H(1, 1) != 0.0f)) {
-    ::Eigen::Vector3f search_dir(H.inverse() * dTr);
+    Eigen::Vector3f search_dir(H.inverse() * dTr);
 
     float x_delta = search_dir[0];
     float y_delta = search_dir[1];

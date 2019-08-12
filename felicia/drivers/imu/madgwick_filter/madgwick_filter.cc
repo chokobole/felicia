@@ -28,7 +28,7 @@ void Normalize(Vector3f& v) {
 }
 
 template <typename Type, int Row, int Col>
-void Normalize(::Eigen::Matrix<Type, Row, Col>& v) {
+void Normalize(Eigen::Matrix<Type, Row, Col>& v) {
   float r = InvSqrt(v.squaredNorm());
   v *= r;
 }
@@ -36,7 +36,7 @@ void Normalize(::Eigen::Matrix<Type, Row, Col>& v) {
 }  // namespace
 
 MadgwickFilter::MadgwickFilter()
-    : gravity_(0, 0, 1, 0), gradient_(::Eigen::Vector4f::Zero()) {}
+    : gravity_(0, 0, 1, 0), gradient_(Eigen::Vector4f::Zero()) {}
 
 Quaternionf MadgwickFilter::orientation() const {
   return orientation_.inverse();
@@ -94,7 +94,7 @@ void MadgwickFilter::UpdateLinearAcceleration(
     float q3 = orientation_.z();
 
     // Equation(13)
-    ::Eigen::Matrix<float, 4, 3> jacobian_T;
+    Eigen::Matrix<float, 4, 3> jacobian_T;
     jacobian_T << -2 * q2, 2 * q1, 0, 2 * q3, 2 * q0, -4 * q1, -2 * q0, 2 * q3,
         -4 * q2, 2 * q1, 2 * q2, 0;
 

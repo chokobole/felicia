@@ -24,7 +24,7 @@ class MadgwickFilter : public ImuFilterInterface {
   base::TimeDelta last_timestamp_;
   float beta_ = 0.1;
   Quaternionf gravity_;
-  ::Eigen::Vector4f gradient_;
+  Eigen::Vector4f gradient_;
 };
 
 }  // namespace drivers

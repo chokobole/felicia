@@ -20,7 +20,7 @@ const double kEpsilon = 1e-5;
 template <typename T>
 class Quaternion {
  public:
-  typedef ::Eigen::Quaternion<T> EigenQuaternionType;
+  typedef Eigen::Quaternion<T> EigenQuaternionType;
 
   constexpr Quaternion() : x_(0), y_(0), z_(0), w_(1) {}
   constexpr Quaternion(T x, T y, T z, T w) : x_(x), y_(y), z_(z), w_(w) {}

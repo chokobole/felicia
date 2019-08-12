@@ -58,8 +58,8 @@ class Point {
   }
 
   Point Transform(const Transform<T>& transform) const {
-    ::Eigen::Matrix<T, 2, 1> vec(x_, y_);
-    ::Eigen::Matrix<T, 2, 1> transformed = transform.ToEigenTransform() * vec;
+    Eigen::Matrix<T, 2, 1> vec(x_, y_);
+    Eigen::Matrix<T, 2, 1> transformed = transform.ToEigenTransform() * vec;
     return {transformed[0], transformed[1]};
   }
 
@@ -196,8 +196,8 @@ class Point3 {
   Point3& operator/=(T s) { return ScaleInPlace(1.0 / s); }
 
   Point3 Transform(const Transform3<T>& transform) const {
-    ::Eigen::Matrix<T, 3, 1> vec(x_, y_, z_);
-    ::Eigen::Matrix<T, 3, 1> transformed = transform.ToEigenTransform() * vec;
+    Eigen::Matrix<T, 3, 1> vec(x_, y_, z_);
+    Eigen::Matrix<T, 3, 1> transformed = transform.ToEigenTransform() * vec;
     return {transformed[0], transformed[1], transformed[2]};
   }
 
