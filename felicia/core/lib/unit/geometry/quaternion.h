@@ -70,12 +70,15 @@ class Quaternion {
            static_cast<double>(z_) * z_ + static_cast<double>(w_) * w_;
   }
 
-  constexpr Quaternion inverse() const { return Quaternion{-x_, -y_, -z_, w_}; }
+  constexpr Quaternion inverse() const { return {-x_, -y_, -z_, w_}; }
 
-  Quaternion Scale(T s) const {
-    return Quaternion{x_ * s, y_ * s, z_ * s, w_ * s};
+  template <typename U>
+  Quaternion Scale(U s) const {
+    return {static_cast<T>(x_ * s), static_cast<T>(y_ * s),
+            static_cast<T>(z_ * s), static_cast<T>(w_ * s)};
   }
-  Quaternion& ScaleInPlace(T s) {
+  template <typename U>
+  Quaternion& ScaleInPlace(U s) {
     x_ *= s;
     y_ *= s;
     z_ *= s;
@@ -83,9 +86,9 @@ class Quaternion {
     return *this;
   }
 
-  Quaternion Normalize() const { return Scale(base::ClampDiv(1.0, Norm())); }
+  Quaternion Normalize() const { return Scale(1.0 / Norm()); }
   Quaternion& NormalizeInPlace() {
-    ScaleInPlace(base::ClampDiv(1.0, Norm()));
+    ScaleInPlace(1.0 / Norm());
     return *this;
   }
 
@@ -156,14 +159,16 @@ class Quaternion {
     return *this;
   }
 
-  Quaternion operator*(T a) const {
+  template <typename U>
+  Quaternion operator*(U a) const {
     T x = x_ * a;
     T y = y_ * a;
     T z = z_ * a;
     T w = w_ * a;
     return {x, y, z, w};
   }
-  Quaternion& operator*=(T a) {
+  template <typename U>
+  Quaternion& operator*=(U a) {
     x_ *= a;
     y_ *= a;
     z_ *= a;

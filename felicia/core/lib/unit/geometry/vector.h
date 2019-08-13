@@ -40,8 +40,12 @@ class Vector {
     return static_cast<double>(x_) * x_ + static_cast<double>(y_) * y_;
   }
 
-  Vector Scale(T s) const { return {x_ * s, y_ * s}; }
-  Vector& ScaleInPlace(T s) {
+  template <typename U>
+  Vector Scale(U s) const {
+    return {static_cast<T>(x_ * s), static_cast<T>(y_ * s)};
+  }
+  template <typename U>
+  Vector& ScaleInPlace(U s) {
     x_ *= s;
     y_ *= s;
     return *this;
@@ -73,10 +77,22 @@ class Vector {
     y_ = base::ClampSub(y_, other.y_);
     return *this;
   }
-  Vector operator*(T a) const { return Scale(a); }
-  Vector& operator*=(T a) { return ScaleInPlace(a); }
-  Vector operator/(T a) const { return Scale(1.0 / a); }
-  Vector& operator/=(T a) const { return ScaleInPlace(1.0 / a); }
+  template <typename U>
+  Vector operator*(U a) const {
+    return Scale(a);
+  }
+  template <typename U>
+  Vector& operator*=(U a) {
+    return ScaleInPlace(a);
+  }
+  template <typename U>
+  Vector operator/(U a) const {
+    return Scale(1.0 / a);
+  }
+  template <typename U>
+  Vector& operator/=(U a) const {
+    return ScaleInPlace(1.0 / a);
+  }
 
   std::string ToString() const {
     return base::StringPrintf("(%s, %s)", base::NumberToString(x_).c_str(),
@@ -106,6 +122,11 @@ inline bool operator!=(const Vector<T>& lhs, const Vector<T>& rhs) {
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const Vector<T>& vector) {
   return os << vector.ToString();
+}
+
+template <typename T, typename U>
+inline Vector<T> operator*(U a, const Vector<T>& vector) {
+  return vector * a;
 }
 
 typedef Vector<float> Vectorf;
@@ -165,8 +186,13 @@ class Vector3 {
            static_cast<double>(z_) * z_;
   }
 
-  Vector3 Scale(T s) const { return {x_ * s, y_ * s, z_ * s}; }
-  Vector3& ScaleInPlace(T s) {
+  template <typename U>
+  Vector3 Scale(U s) const {
+    return {static_cast<T>(x_ * s), static_cast<T>(y_ * s),
+            static_cast<T>(z_ * s)};
+  }
+  template <typename U>
+  Vector3& ScaleInPlace(U s) {
     x_ *= s;
     y_ *= s;
     z_ *= s;
@@ -203,10 +229,22 @@ class Vector3 {
     z_ = base::ClampSub(z_, other.z_);
     return *this;
   }
-  Vector3 operator*(T a) const { return Scale(a); }
-  Vector3& operator*=(T a) { return ScaleInPlace(a); }
-  Vector3 operator/(T a) const { return Scale(1 / a); }
-  Vector3& operator/=(T a) const { return ScaleInPlace(1 / a); }
+  template <typename U>
+  Vector3 operator*(U a) const {
+    return Scale(a);
+  }
+  template <typename U>
+  Vector3& operator*=(U a) {
+    return ScaleInPlace(a);
+  }
+  template <typename U>
+  Vector3 operator/(U a) const {
+    return Scale(1 / a);
+  }
+  template <typename U>
+  Vector3& operator/=(U a) const {
+    return ScaleInPlace(1 / a);
+  }
 
   std::string ToString() const {
     return base::StringPrintf("(%s, %s, %s)", base::NumberToString(x_).c_str(),
@@ -238,6 +276,11 @@ inline bool operator!=(const Vector3<T>& lhs, const Vector3<T>& rhs) {
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const Vector3<T>& vector) {
   return os << vector.ToString();
+}
+
+template <typename T, typename U>
+inline Vector3<T> operator*(U a, const Vector3<T>& vector) {
+  return vector * a;
 }
 
 typedef Vector3<float> Vector3f;

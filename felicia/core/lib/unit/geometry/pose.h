@@ -48,8 +48,12 @@ class Pose {
     return *this;
   }
 
-  Pose Scale(T s) const { return Pose{point_.Scale(s), theta_}; }
-  Pose& ScaleInPlace(T s) {
+  template <typename U>
+  Pose Scale(U s) const {
+    return Pose{point_.Scale(s), theta_};
+  }
+  template <typename U>
+  Pose& ScaleInPlace(U s) {
     point_.ScaleInPlace(s);
     return *this;
   }
@@ -172,21 +176,20 @@ class Pose3 {
     return *this;
   }
 
-  Pose3 Scale(T s) const { return Pose3{point_.Scale(s), orientation_}; }
-  Pose3& ScaleInPlace(T s) {
+  template <typename U>
+  Pose3 Scale(U s) const {
+    return Pose3{point_.Scale(s), orientation_};
+  }
+  template <typename U>
+  Pose3& ScaleInPlace(U s) {
     point_.ScaleInPlace(s);
     return *this;
   }
 
-  Transform3<T> ToTransform(bool rotate_first = true) const {
+  Transform3<T> ToTransform() const {
     Transform3<T> transform;
-    if (rotate_first) {
-      transform.AddRotation(orientation_)
-          .AddTranslate(point_.x(), point_.y(), point_.z());
-    } else {
-      transform.AddTranslate(point_.x(), point_.y(), point_.z())
-          .AddRotation(orientation_);
-    }
+    transform.AddRotation(orientation_)
+        .AddTranslate(point_.x(), point_.y(), point_.z());
     return transform;
   }
 

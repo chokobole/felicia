@@ -50,16 +50,21 @@ class Point {
     return *this;
   }
 
-  Point Scale(T s) const { return {x_ * s, y_ * s}; }
-  Point& ScaleInPlace(T s) {
+  template <typename U>
+  Point Scale(U s) const {
+    return {static_cast<T>(x_ * s), static_cast<T>(y_ * s)};
+  }
+  template <typename U>
+  Point& ScaleInPlace(U s) {
     x_ *= s;
     y_ *= s;
     return *this;
   }
 
-  Point Transform(const Transform<T>& transform) const {
-    Eigen::Matrix<T, 2, 1> vec(x_, y_);
-    Eigen::Matrix<T, 2, 1> transformed = transform.ToEigenTransform() * vec;
+  template <typename U>
+  Point Transform(const Transform<U>& transform) const {
+    Eigen::Matrix<U, 2, 1> vec(x_, y_);
+    Eigen::Matrix<U, 2, 1> transformed = transform.ToEigenTransform() * vec;
     return {transformed[0], transformed[1]};
   }
 
@@ -70,10 +75,22 @@ class Point {
     T y = base::ClampSub(y_, other.y_);
     return {x, y};
   }
-  Point operator*(T s) const { return Scale(s); }
-  Point& operator*=(T s) { return ScaleInPlace(s); }
-  Point operator/(T s) const { return Scale(1.0 / s); }
-  Point& operator/=(T s) { return ScaleInPlace(1.0 / s); }
+  template <typename U>
+  Point operator*(U s) const {
+    return Scale(s);
+  }
+  template <typename U>
+  Point& operator*=(U s) {
+    return ScaleInPlace(s);
+  }
+  template <typename U>
+  Point operator/(U s) const {
+    return Scale(1.0 / s);
+  }
+  template <typename U>
+  Point& operator/=(U s) {
+    return ScaleInPlace(1.0 / s);
+  }
 
   std::string ToString() const {
     return base::StringPrintf("(%s, %s)", base::NumberToString(x_).c_str(),
@@ -172,8 +189,13 @@ class Point3 {
     return *this;
   }
 
-  Point3 Scale(T s) const { return {x_ * s, y_ * s, z_ * s}; }
-  Point3& ScaleInPlace(T s) {
+  template <typename U>
+  Point3 Scale(U s) const {
+    return {static_cast<T>(x_ * s), static_cast<T>(y_ * s),
+            static_cast<T>(z_ * s)};
+  }
+  template <typename U>
+  Point3& ScaleInPlace(U s) {
     x_ *= s;
     y_ *= s;
     z_ *= s;
@@ -190,14 +212,27 @@ class Point3 {
     T z = base::ClampSub(z_, other.z_);
     return {x, y, z};
   }
-  Point3 operator*(T s) const { return Scale(s); }
-  Point3& operator*=(T s) { return ScaleInPlace(s); }
-  Point3 operator/(T s) const { return Scale(1.0 / s); }
-  Point3& operator/=(T s) { return ScaleInPlace(1.0 / s); }
+  template <typename U>
+  Point3 operator*(U s) const {
+    return Scale(s);
+  }
+  template <typename U>
+  Point3& operator*=(U s) {
+    return ScaleInPlace(s);
+  }
+  template <typename U>
+  Point3 operator/(U s) const {
+    return Scale(1.0 / s);
+  }
+  template <typename U>
+  Point3& operator/=(U s) {
+    return ScaleInPlace(1.0 / s);
+  }
 
-  Point3 Transform(const Transform3<T>& transform) const {
-    Eigen::Matrix<T, 3, 1> vec(x_, y_, z_);
-    Eigen::Matrix<T, 3, 1> transformed = transform.ToEigenTransform() * vec;
+  template <typename U>
+  Point3 Transform(const Transform3<U>& transform) const {
+    Eigen::Matrix<U, 3, 1> vec(x_, y_, z_);
+    Eigen::Matrix<U, 3, 1> transformed = transform.ToEigenTransform() * vec;
     return {transformed[0], transformed[1], transformed[2]};
   }
 
