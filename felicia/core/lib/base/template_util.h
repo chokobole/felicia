@@ -25,16 +25,7 @@ struct SupportsLessThanOrEqualOperator<T, decltype(void(std::declval<T>() <=
                                                         std::declval<T>()))>
     : std::true_type {};
 
-template <typename T,
-          std::enable_if_t<internal::SupportsEqualOperator<T>::value &&
-                               !std::is_same<T, std::string>::value,
-                           void*> = nullptr>
-bool IsEqual(const T& v1, const T& v2) {
-  return v1 == v2;
-}
-
-template <typename T, std::enable_if_t<std::is_same<T, std::string>::value,
-                                       void*> = nullptr>
+template <typename T>
 bool IsEqual(const T& v1, const T& v2) {
   return v1 == v2;
 }
