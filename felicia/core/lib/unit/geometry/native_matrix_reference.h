@@ -41,6 +41,7 @@ class NativeMatrixRef<Eigen::Matrix<T, Rows_, Cols_>> {
   static MatrixType Zero(int rows, int cols) {
     return MatrixType::Zero(rows, cols);
   }
+  static MatrixType Identity() { return MatrixType::Identity(); }
 
   bool empty() const {
     if (Rows_ != Eigen::Dynamic && Cols_ != Eigen::Dynamic) return false;
@@ -97,6 +98,7 @@ class ConstNativeMatrixRef<Eigen::Matrix<T, Rows_, Cols_>> {
   static MatrixType Zero(int rows, int cols) {
     return MatrixType::Zero(rows, cols);
   }
+  static MatrixType Identity() { return MatrixType::Identity(); }
 
   bool empty() const {
     if (Rows_ != Eigen::Dynamic && Cols_ != Eigen::Dynamic) return false;
@@ -151,6 +153,9 @@ class NativeMatrixRef<cv::Mat> {
   static MatrixType Zero(int rows, int cols, int type) {
     return MatrixType::zeros(rows, cols, type);
   }
+  static MatrixType Identity(int rows, int cols, int type) {
+    return MatrixType::eye(rows, cols, type);
+  }
 
   bool empty() const { return matrix_.empty(); }
 
@@ -196,6 +201,9 @@ class ConstNativeMatrixRef<cv::Mat> {
   static MatrixType Zero(int rows, int cols, int type) {
     return MatrixType::zeros(rows, cols, type);
   }
+  static MatrixType Identity(int rows, int cols, int type) {
+    return MatrixType::eye(rows, cols, type);
+  }
 
   bool empty() const { return matrix_.empty(); }
 
@@ -238,6 +246,10 @@ class NativeMatrixRef<cv::Mat_<T>> {
   static MatrixType Zero(int rows, int cols, int type = cv::DataType<T>::type) {
     return MatrixType::zeros(rows, cols);
   }
+  static MatrixType Identity(int rows, int cols,
+                             int type = cv::DataType<T>::type) {
+    return MatrixType::eye(rows, cols);
+  }
 
   bool empty() const { return matrix_.empty(); }
 
@@ -279,6 +291,10 @@ class ConstNativeMatrixRef<cv::Mat_<T>> {
   static MatrixType Zero(int rows, int cols, int type = cv::DataType<T>::type) {
     return MatrixType::zeros(rows, cols);
   }
+  static MatrixType Identity(int rows, int cols,
+                             int type = cv::DataType<T>::type) {
+    return MatrixType::eye(rows, cols);
+  }
 
   bool empty() const { return matrix_.empty(); }
 
@@ -319,6 +335,10 @@ class NativeMatrixRef<cv::Matx<T, Rows_, Cols_>> {
   static MatrixType Zero() { return MatrixType::zeros(); }
   static MatrixType Zero(int rows, int cols, int type = cv::DataType<T>::type) {
     return MatrixType::zeros();
+  }
+  static MatrixType Identity(int row, int cols,
+                             int type = cv::DataType<T>::type) {
+    return MatrixType::eye();
   }
 
   bool empty() const { return false; }
@@ -366,6 +386,10 @@ class ConstNativeMatrixRef<cv::Matx<T, Rows_, Cols_>> {
   static MatrixType Zero() { return MatrixType::zeros(); }
   static MatrixType Zero(int rows, int cols, int type = cv::DataType<T>::type) {
     return MatrixType::zeros();
+  }
+  static MatrixType Identity(int row, int cols,
+                             int type = cv::DataType<T>::type) {
+    return MatrixType::eye();
   }
 
   bool empty() const { return false; }
