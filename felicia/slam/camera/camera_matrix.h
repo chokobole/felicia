@@ -100,13 +100,6 @@ class CameraMatrix {
   MatrixType matrix_;
 };
 
-typedef CameraMatrix<Eigen::Matrix3f> EigenCameraMatrixf;
-typedef CameraMatrix<Eigen::Matrix3d> EigenCameraMatrixd;
-#if defined(HAS_OPENCV)
-typedef CameraMatrix<cv::Mat1f> CvCameraMatrixf;
-typedef CameraMatrix<cv::Mat1d> CvCameraMatrixd;
-#endif
-
 }  // namespace slam
 }  // namespace felicia
 

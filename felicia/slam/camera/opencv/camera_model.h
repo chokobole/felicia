@@ -44,7 +44,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "felicia/slam/camera/camera_matrix.h"
 #include "felicia/slam/camera/camera_model_message.pb.h"
 #include "felicia/slam/camera/distortion_matrix.h"
-#include "felicia/slam/camera/opencv/types.h"
+#include "felicia/slam/types.h"
 
 namespace felicia {
 namespace slam {

@@ -48,8 +48,10 @@ class RigidBodyTransform<Eigen::Matrix<T, 2, 2>, Eigen::Matrix<T, 2, 1>> {
   TranslationType t_;
 };
 
-typedef RigidBodyTransform<Eigen::Matrix2f, Eigen::Vector2f> EigenRBTransformf;
-typedef RigidBodyTransform<Eigen::Matrix2d, Eigen::Vector2d> EigenRBTransformd;
+typedef RigidBodyTransform<Eigen::Matrix2f, Eigen::Vector2f>
+    EigenRigidBodyTransformf;
+typedef RigidBodyTransform<Eigen::Matrix2d, Eigen::Vector2d>
+    EigenRigidBodyTransformd;
 
 template <typename T>
 class RigidBodyTransform<Eigen::Rotation2D<T>, Eigen::Translation<T, 2>> {
@@ -166,8 +168,8 @@ class RigidBodyTransform<cv::Mat_<T>, cv::Mat_<T>> {
   TranslationType t_;
 };
 
-typedef RigidBodyTransform<cv::Mat1f, cv::Mat1f> CvRBTransformf;
-typedef RigidBodyTransform<cv::Mat1d, cv::Mat1d> CvRBTransformd;
+typedef RigidBodyTransform<cv::Mat1f, cv::Mat1f> CvRigidBodyTransformf;
+typedef RigidBodyTransform<cv::Mat1d, cv::Mat1d> CvRigidBodyTransformd;
 
 template <typename T>
 class RigidBodyTransform<cv::Matx<T, 2, 2>, cv::Matx<T, 2, 1>> {
@@ -245,9 +247,9 @@ class RigidBodyTransform3<Eigen::Matrix<T, 3, 3>, Eigen::Matrix<T, 3, 1>> {
 };
 
 typedef RigidBodyTransform3<Eigen::Matrix3f, Eigen::Vector3f>
-    EigenRBTransform3f;
+    EigenRigidBodyTransform3f;
 typedef RigidBodyTransform3<Eigen::Matrix3d, Eigen::Vector3d>
-    EigenRBTransform3d;
+    EigenRigidBodyTransform3d;
 
 template <typename T>
 class RigidBodyTransform3<Eigen::AngleAxis<T>, Eigen::Translation<T, 3>> {
@@ -405,8 +407,8 @@ class RigidBodyTransform3<cv::Mat_<T>, cv::Mat_<T>> {
   TranslationType t_;
 };
 
-typedef RigidBodyTransform3<cv::Mat1f, cv::Mat1f> CvRBTransform3f;
-typedef RigidBodyTransform3<cv::Mat1d, cv::Mat1d> CvRBTransform3d;
+typedef RigidBodyTransform3<cv::Mat1f, cv::Mat1f> CvRigidBodyTransform3f;
+typedef RigidBodyTransform3<cv::Mat1d, cv::Mat1d> CvRigidBodyTransform3d;
 
 template <typename T>
 class RigidBodyTransform3<cv::Matx<T, 3, 3>, cv::Matx<T, 3, 1>> {

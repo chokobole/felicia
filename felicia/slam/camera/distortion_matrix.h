@@ -123,13 +123,6 @@ class DistortionMatrix {
   MatrixType matrix_;
 };
 
-typedef DistortionMatrix<Eigen::VectorXf> EigenDistortionMatrixf;
-typedef DistortionMatrix<Eigen::VectorXd> EigenDistortionMatrixd;
-#if defined(HAS_OPENCV)
-typedef DistortionMatrix<cv::Mat1f> CvDistortionMatrixf;
-typedef DistortionMatrix<cv::Mat1d> CvDistortionMatrixd;
-#endif
-
 }  // namespace slam
 }  // namespace felicia
 

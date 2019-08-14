@@ -129,7 +129,7 @@ class EXPORT StereoCameraModel {
   std::string name_;
   CameraModel left_camera_model_;
   CameraModel right_camera_model_;
-  CvRBTransform3d transform_;
+  CvRigidBodyTransform3d transform_;
   cv::Mat1d E_;
   cv::Mat1d F_;
 };
