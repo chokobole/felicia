@@ -2,8 +2,8 @@
 #define FELICIA_SLAM_CAMERA_EPIPOLAR_GEOMETRY_H_
 
 #include "felicia/core/lib/base/export.h"
-#include "felicia/core/lib/unit/geometry/factorable_native_transform.h"
 #include "felicia/core/lib/unit/geometry/native_matrix_reference.h"
+#include "felicia/core/lib/unit/geometry/rigid_body_transform.h"
 
 namespace felicia {
 namespace slam {
@@ -17,9 +17,8 @@ class EXPORT EpiploarGeometry {
   template <typename MatrixType, typename VectorType>
   static MatrixType ComputeEssentialMatrix(const MatrixType& R,
                                            const VectorType& t);
-  template <typename FactorableNativeTransform3Type>
-  static auto ComputeEssentialMatrix(
-      const FactorableNativeTransform3Type& transform);
+  template <typename RigidBodyTransform3Type>
+  static auto ComputeEssentialMatrix(const RigidBodyTransform3Type& T);
 
   // Compute K2.transpose.inverse * E * K.inverse
   // MatrixType should be any kind of 3x3 Matrix and
@@ -29,10 +28,10 @@ class EXPORT EpiploarGeometry {
                                              const MatrixType& K2,
                                              const MatrixType& R,
                                              const VectorType& t);
-  template <typename MatrixType, typename FactorableNativeTransform3Type>
-  static MatrixType ComputeFundamentalMatrix(
-      const MatrixType& K, const MatrixType& K2,
-      const FactorableNativeTransform3Type& transform);
+  template <typename MatrixType, typename RigidBodyTransform3Type>
+  static MatrixType ComputeFundamentalMatrix(const MatrixType& K,
+                                             const MatrixType& K2,
+                                             const RigidBodyTransform3Type& T);
 };
 
 // static
@@ -59,11 +58,11 @@ MatrixType EpiploarGeometry::ComputeEssentialMatrix(const MatrixType& R,
 }
 
 // static
-template <typename FactorableNativeTransform3Type>
+template <typename RigidBodyTransform3Type>
 auto EpiploarGeometry::ComputeEssentialMatrix(
-    const FactorableNativeTransform3Type& transform) {
-  return EpiploarGeometry::ComputeEssentialMatrix(
-      transform.rotation_matrix(), transform.translation_vector());
+    const RigidBodyTransform3Type& T) {
+  return EpiploarGeometry::ComputeEssentialMatrix(T.rotation_matrix(),
+                                                  T.translation_vector());
 }
 
 // static
@@ -81,12 +80,12 @@ MatrixType EpiploarGeometry::ComputeFundamentalMatrix(const MatrixType& K,
 }
 
 // static
-template <typename MatrixType, typename FactorableNativeTransform3Type>
+template <typename MatrixType, typename RigidBodyTransform3Type>
 MatrixType EpiploarGeometry::ComputeFundamentalMatrix(
     const MatrixType& K, const MatrixType& K2,
-    const FactorableNativeTransform3Type& transform) {
-  return EpiploarGeometry::ComputeFundamentalMatrix(
-      K, K2, transform.rotation_matrix(), transform.translation_vector());
+    const RigidBodyTransform3Type& T) {
+  return EpiploarGeometry::ComputeFundamentalMatrix(K, K2, T.rotation_matrix(),
+                                                    T.translation_vector());
 }
 
 }  // namespace slam

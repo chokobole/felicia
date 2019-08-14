@@ -56,13 +56,13 @@ fel_cc_library(
         "net/net_util.h",
         "strings/str_util.h",
         "synchronization/scoped_event_signaller.h",
-        "unit/geometry/factorable_native_transform.h",
         "unit/geometry/native_matrix_reference.h",
         "unit/geometry/size.h",
         "unit/geometry/transform.h",
         "unit/geometry/point.h",
         "unit/geometry/pose.h",
         "unit/geometry/quaternion.h",
+        "unit/geometry/rigid_body_transform.h",
         "unit/geometry/vector.h",
         "unit/bytes.h",
         "unit/length.h",
@@ -91,7 +91,7 @@ fel_cc_library(
         "unit/geometry/native_matrix_reference_test_util.h",
     ],
     deps = [
-        ":lib"
+        ":lib",
     ],
 )
 

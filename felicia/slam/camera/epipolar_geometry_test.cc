@@ -16,8 +16,8 @@ TEST(EpipolarGeometryTest, ComputeEssentialMatrix) {
   Eigen::Vector3f t = translation.vector();
   auto expected = EpiploarGeometry::ComputeEssentialMatrix(R, t);
   {
-    FactorableNativeTransform3<Eigen::AngleAxisf, Eigen::Translation3f>
-        transform(angle_axis, translation);
+    RigidBodyTransform3<Eigen::AngleAxisf, Eigen::Translation3f> transform(
+        angle_axis, translation);
     ExpectEqualMatrix(expected,
                       EpiploarGeometry::ComputeEssentialMatrix(transform));
   }
@@ -28,8 +28,8 @@ TEST(EpipolarGeometryTest, ComputeEssentialMatrix) {
   ExpectEqualMatrix(expected, EpiploarGeometry::ComputeEssentialMatrix(
                                   quaternion.matrix(), t));
   {
-    FactorableNativeTransform3<Eigen::Quaternionf, Eigen::Translation3f>
-        transform(quaternion, translation);
+    RigidBodyTransform3<Eigen::Quaternionf, Eigen::Translation3f> transform(
+        quaternion, translation);
     ExpectEqualMatrix(expected,
                       EpiploarGeometry::ComputeEssentialMatrix(transform));
   }
@@ -44,8 +44,8 @@ TEST(EpipolarGeometryTest, ComputeEssentialMatrix) {
   ExpectEqualMatrix(expected, EpiploarGeometry::ComputeEssentialMatrix(
                                   cv_matx33_R, cv_matx31_t));
   {
-    FactorableNativeTransform3<cv::Matx33f, cv::Matx31f> transform(cv_matx33_R,
-                                                                   cv_matx31_t);
+    RigidBodyTransform3<cv::Matx33f, cv::Matx31f> transform(cv_matx33_R,
+                                                            cv_matx31_t);
     ExpectEqualMatrix(expected,
                       EpiploarGeometry::ComputeEssentialMatrix(transform));
   }

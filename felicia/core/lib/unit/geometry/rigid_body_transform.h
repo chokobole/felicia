@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_LIB_UNIT_GEOMETRY_FACTORABLE_NATIVE_TRANSFORM_H_
-#define FELICIA_CORE_LIB_UNIT_GEOMETRY_FACTORABLE_NATIVE_TRANSFORM_H_
+#ifndef FELICIA_CORE_LIB_UNIT_GEOMETRY_RIGID_BODY_TRANSFORM_TRANSFORM_H_
+#define FELICIA_CORE_LIB_UNIT_GEOMETRY_RIGID_BODY_TRANSFORM_TRANSFORM_H_
 
 #include "Eigen/Geometry"
 
@@ -10,11 +10,10 @@
 namespace felicia {
 
 template <typename RotationType, typename TranslationType>
-class FactorableNativeTransform;
+class RigidBodyTransform;
 
 template <typename T>
-class FactorableNativeTransform<Eigen::Matrix<T, 2, 2>,
-                                Eigen::Matrix<T, 2, 1>> {
+class RigidBodyTransform<Eigen::Matrix<T, 2, 2>, Eigen::Matrix<T, 2, 1>> {
  public:
   typedef T ScalarType;
   typedef Eigen::Matrix<T, 2, 2> RotationType;
@@ -22,17 +21,17 @@ class FactorableNativeTransform<Eigen::Matrix<T, 2, 2>,
   typedef Eigen::Matrix<T, 2, 2> RotationMatrixType;
   typedef Eigen::Matrix<T, 2, 1> TranslationVectorType;
 
-  FactorableNativeTransform(const RotationType& R, const TranslationType& t)
+  RigidBodyTransform(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
   ScalarType tx() const { return t_[0]; }
   ScalarType ty() const { return t_[1]; }
 
-  RotationType& rotation() { return R_; }
-  const RotationType& rotation() const { return R_; }
+  RotationType& R() { return R_; }
+  const RotationType& R() const { return R_; }
 
-  TranslationType& translation() { return t_; }
-  const TranslationType& translation() const { return t_; }
+  TranslationType& t() { return t_; }
+  const TranslationType& t() const { return t_; }
 
   RotationMatrixType& rotation_matrix() { return R_; }
   const RotationMatrixType& rotation_matrix() const { return R_; }
@@ -48,9 +47,11 @@ class FactorableNativeTransform<Eigen::Matrix<T, 2, 2>,
   TranslationType t_;
 };
 
+typedef RigidBodyTransform<Eigen::Matrix2f, Eigen::Vector2f> EigenRBTransformf;
+typedef RigidBodyTransform<Eigen::Matrix2d, Eigen::Vector2d> EigenRBTransformd;
+
 template <typename T>
-class FactorableNativeTransform<Eigen::Rotation2D<T>,
-                                Eigen::Translation<T, 2>> {
+class RigidBodyTransform<Eigen::Rotation2D<T>, Eigen::Translation<T, 2>> {
  public:
   typedef T ScalarType;
   typedef Eigen::Rotation2D<T> RotationType;
@@ -58,17 +59,17 @@ class FactorableNativeTransform<Eigen::Rotation2D<T>,
   typedef Eigen::Matrix<T, 2, 2> RotationMatrixType;
   typedef Eigen::Matrix<T, 2, 1> TranslationVectorType;
 
-  FactorableNativeTransform(const RotationType& R, const TranslationType& t)
+  RigidBodyTransform(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
   ScalarType tx() const { return t_.x(); }
   ScalarType ty() const { return t_.y(); }
 
-  RotationType& rotation() { return R_; }
-  const RotationType& rotation() const { return R_; }
+  RotationType& R() { return R_; }
+  const RotationType& R() const { return R_; }
 
-  TranslationType& translation() { return t_; }
-  const TranslationType& translation() const { return t_; }
+  TranslationType& t() { return t_; }
+  const TranslationType& t() const { return t_; }
 
   RotationMatrixType rotation_matrix() const { return R_.matrix(); }
 
@@ -84,26 +85,39 @@ class FactorableNativeTransform<Eigen::Rotation2D<T>,
 
 #if defined(HAS_OPENCV)
 template <>
-class FactorableNativeTransform<cv::Mat, cv::Mat> {
+class RigidBodyTransform<cv::Mat, cv::Mat> {
  public:
-  typedef double ScalarType;
   typedef cv::Mat RotationType;
   typedef cv::Mat TranslationType;
   typedef cv::Mat RotationMatrixType;
   typedef cv::Mat TranslationVectorType;
 
-  FactorableNativeTransform(const RotationType& R, const TranslationType& t)
+  RigidBodyTransform(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
-  ScalarType tx() const { return t_.template at<ScalarType>(0); }
-  ScalarType ty() const { return t_.template at<ScalarType>(1); }
-  ScalarType tz() const { return t_.template at<ScalarType>(2); }
+  // To conform to other RigidBodyTransform's
+  double tx() const { return t_.template at<double>(0); }
+  double ty() const { return t_.template at<double>(1); }
+  double tz() const { return t_.template at<double>(2); }
 
-  RotationType& rotation() { return R_; }
-  const RotationType& rotation() const { return R_; }
+  template <typename T>
+  std::enable_if_t<!std::is_same<T, double>::value, T> tx() const {
+    return t_.template at<T>(0);
+  }
+  template <typename T>
+  std::enable_if_t<!std::is_same<T, double>::value, T> ty() const {
+    return t_.template at<T>(1);
+  }
+  template <typename T>
+  std::enable_if_t<!std::is_same<T, double>::value, T> tz() const {
+    return t_.template at<T>(2);
+  }
 
-  TranslationType& translation() { return t_; }
-  const TranslationType& translation() const { return t_; }
+  RotationType& R() { return R_; }
+  const RotationType& R() const { return R_; }
+
+  TranslationType& t() { return t_; }
+  const TranslationType& t() const { return t_; }
 
   RotationMatrixType& rotation_matrix() { return R_; }
   const RotationMatrixType& rotation_matrix() const { return R_; }
@@ -117,7 +131,7 @@ class FactorableNativeTransform<cv::Mat, cv::Mat> {
 };
 
 template <typename T>
-class FactorableNativeTransform<cv::Mat_<T>, cv::Mat_<T>> {
+class RigidBodyTransform<cv::Mat_<T>, cv::Mat_<T>> {
  public:
   typedef T ScalarType;
   typedef cv::Mat_<T> RotationType;
@@ -125,17 +139,17 @@ class FactorableNativeTransform<cv::Mat_<T>, cv::Mat_<T>> {
   typedef cv::Mat_<T> RotationMatrixType;
   typedef cv::Mat_<T> TranslationVectorType;
 
-  FactorableNativeTransform(const RotationType& R, const TranslationType& t)
+  RigidBodyTransform(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
-  ScalarType tx() const { return t_.template at<ScalarType>(0); }
-  ScalarType ty() const { return t_.template at<ScalarType>(1); }
+  ScalarType tx() const { return t_(0); }
+  ScalarType ty() const { return t_(1); }
 
-  RotationType& rotation() { return R_; }
-  const RotationType& rotation() const { return R_; }
+  RotationType& R() { return R_; }
+  const RotationType& R() const { return R_; }
 
-  TranslationType& translation() { return t_; }
-  const TranslationType& translation() const { return t_; }
+  TranslationType& t() { return t_; }
+  const TranslationType& t() const { return t_; }
 
   RotationMatrixType& rotation_matrix() { return R_; }
   const RotationMatrixType& rotation_matrix() const { return R_; }
@@ -148,8 +162,11 @@ class FactorableNativeTransform<cv::Mat_<T>, cv::Mat_<T>> {
   TranslationType t_;
 };
 
+typedef RigidBodyTransform<cv::Mat1f, cv::Mat1f> CvRBTransformf;
+typedef RigidBodyTransform<cv::Mat1d, cv::Mat1d> CvRBTransformd;
+
 template <typename T>
-class FactorableNativeTransform<cv::Matx<T, 2, 2>, cv::Matx<T, 2, 1>> {
+class RigidBodyTransform<cv::Matx<T, 2, 2>, cv::Matx<T, 2, 1>> {
  public:
   typedef T ScalarType;
   typedef cv::Matx<T, 2, 2> RotationType;
@@ -157,18 +174,18 @@ class FactorableNativeTransform<cv::Matx<T, 2, 2>, cv::Matx<T, 2, 1>> {
   typedef cv::Matx<T, 2, 2> RotationMatrixType;
   typedef cv::Matx<T, 2, 1> TranslationVectorType;
 
-  FactorableNativeTransform(const RotationType& R, const TranslationType& t)
+  RigidBodyTransform(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
-  ScalarType tx() const { return t_.template at<ScalarType>(0); }
-  ScalarType ty() const { return t_.template at<ScalarType>(1); }
-  ScalarType tz() const { return t_.template at<ScalarType>(2); }
+  ScalarType tx() const { return t_(0); }
+  ScalarType ty() const { return t_(1); }
+  ScalarType tz() const { return t_(2); }
 
-  RotationType& rotation() { return R_; }
-  const RotationType& rotation() const { return R_; }
+  RotationType& R() { return R_; }
+  const RotationType& R() const { return R_; }
 
-  TranslationType& translation() { return t_; }
-  const TranslationType& translation() const { return t_; }
+  TranslationType& t() { return t_; }
+  const TranslationType& t() const { return t_; }
 
   RotationMatrixType& rotation_matrix() { return R_; }
   const RotationMatrixType& rotation_matrix() const { return R_; }
@@ -183,11 +200,10 @@ class FactorableNativeTransform<cv::Matx<T, 2, 2>, cv::Matx<T, 2, 1>> {
 #endif
 
 template <typename RotationType, typename TranslationType>
-class FactorableNativeTransform3;
+class RigidBodyTransform3;
 
 template <typename T>
-class FactorableNativeTransform3<Eigen::Matrix<T, 3, 3>,
-                                 Eigen::Matrix<T, 3, 1>> {
+class RigidBodyTransform3<Eigen::Matrix<T, 3, 3>, Eigen::Matrix<T, 3, 1>> {
  public:
   typedef T ScalarType;
   typedef Eigen::Matrix<T, 3, 3> RotationType;
@@ -195,18 +211,18 @@ class FactorableNativeTransform3<Eigen::Matrix<T, 3, 3>,
   typedef Eigen::Matrix<T, 3, 3> RotationMatrixType;
   typedef Eigen::Matrix<T, 3, 1> TranslationVectorType;
 
-  FactorableNativeTransform3(const RotationType& R, const TranslationType& t)
+  RigidBodyTransform3(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
   ScalarType tx() const { return t_[0]; }
   ScalarType ty() const { return t_[1]; }
   ScalarType tz() const { return t_[2]; }
 
-  RotationType& rotation() { return R_; }
-  const RotationType& rotation() const { return R_; }
+  RotationType& R() { return R_; }
+  const RotationType& R() const { return R_; }
 
-  TranslationType& translation() { return t_; }
-  const TranslationType& translation() const { return t_; }
+  TranslationType& t() { return t_; }
+  const TranslationType& t() const { return t_; }
 
   RotationMatrixType& rotation_matrix() { return R_; }
   const RotationMatrixType& rotation_matrix() const { return R_; }
@@ -222,9 +238,13 @@ class FactorableNativeTransform3<Eigen::Matrix<T, 3, 3>,
   TranslationType t_;
 };
 
+typedef RigidBodyTransform3<Eigen::Matrix3f, Eigen::Vector3f>
+    EigenRBTransform3f;
+typedef RigidBodyTransform3<Eigen::Matrix3d, Eigen::Vector3d>
+    EigenRBTransform3d;
+
 template <typename T>
-class FactorableNativeTransform3<Eigen::AngleAxis<T>,
-                                 Eigen::Translation<T, 3>> {
+class RigidBodyTransform3<Eigen::AngleAxis<T>, Eigen::Translation<T, 3>> {
  public:
   typedef T ScalarType;
   typedef Eigen::AngleAxis<T> RotationType;
@@ -232,18 +252,18 @@ class FactorableNativeTransform3<Eigen::AngleAxis<T>,
   typedef Eigen::Matrix<T, 3, 3> RotationMatrixType;
   typedef Eigen::Matrix<T, 3, 1> TranslationVectorType;
 
-  FactorableNativeTransform3(const RotationType& R, const TranslationType& t)
+  RigidBodyTransform3(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
   ScalarType tx() const { return t_.x(); }
   ScalarType ty() const { return t_.y(); }
   ScalarType tz() const { return t_.z(); }
 
-  RotationType& rotation() { return R_; }
-  const RotationType& rotation() const { return R_; }
+  RotationType& R() { return R_; }
+  const RotationType& R() const { return R_; }
 
-  TranslationType& translation() { return t_; }
-  const TranslationType& translation() const { return t_; }
+  TranslationType& t() { return t_; }
+  const TranslationType& t() const { return t_; }
 
   RotationMatrixType rotation_matrix() const { return R_.matrix(); }
 
@@ -258,8 +278,7 @@ class FactorableNativeTransform3<Eigen::AngleAxis<T>,
 };
 
 template <typename T>
-class FactorableNativeTransform3<Eigen::Quaternion<T>,
-                                 Eigen::Translation<T, 3>> {
+class RigidBodyTransform3<Eigen::Quaternion<T>, Eigen::Translation<T, 3>> {
  public:
   typedef T ScalarType;
   typedef Eigen::Quaternion<T> RotationType;
@@ -267,18 +286,18 @@ class FactorableNativeTransform3<Eigen::Quaternion<T>,
   typedef Eigen::Matrix<T, 3, 3> RotationMatrixType;
   typedef Eigen::Matrix<T, 3, 1> TranslationVectorType;
 
-  FactorableNativeTransform3(const RotationType& R, const TranslationType& t)
+  RigidBodyTransform3(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
   ScalarType tx() const { return t_.x(); }
   ScalarType ty() const { return t_.y(); }
   ScalarType tz() const { return t_.z(); }
 
-  RotationType& rotation() { return R_; }
-  const RotationType& rotation() const { return R_; }
+  RotationType& R() { return R_; }
+  const RotationType& R() const { return R_; }
 
-  TranslationType& translation() { return t_; }
-  const TranslationType& translation() const { return t_; }
+  TranslationType& t() { return t_; }
+  const TranslationType& t() const { return t_; }
 
   RotationMatrixType rotation_matrix() const { return R_.matrix(); }
 
@@ -298,26 +317,39 @@ class FactorableNativeTransform3<Eigen::Quaternion<T>,
 
 #if defined(HAS_OPENCV)
 template <>
-class FactorableNativeTransform3<cv::Mat, cv::Mat> {
+class RigidBodyTransform3<cv::Mat, cv::Mat> {
  public:
-  typedef double ScalarType;
   typedef cv::Mat RotationType;
   typedef cv::Mat TranslationType;
   typedef cv::Mat RotationMatrixType;
   typedef cv::Mat TranslationVectorType;
 
-  FactorableNativeTransform3(const RotationType& R, const TranslationType& t)
+  RigidBodyTransform3(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
-  ScalarType tx() const { return t_.template at<ScalarType>(0); }
-  ScalarType ty() const { return t_.template at<ScalarType>(1); }
-  ScalarType tz() const { return t_.template at<ScalarType>(2); }
+  // To conform to other RigidBodyTransform's
+  double tx() const { return t_.template at<double>(0); }
+  double ty() const { return t_.template at<double>(1); }
+  double tz() const { return t_.template at<double>(2); }
 
-  RotationType& rotation() { return R_; }
-  const RotationType& rotation() const { return R_; }
+  template <typename T>
+  std::enable_if_t<!std::is_same<T, double>::value, T> tx() const {
+    return t_.template at<T>(0);
+  }
+  template <typename T>
+  std::enable_if_t<!std::is_same<T, double>::value, T> ty() const {
+    return t_.template at<T>(1);
+  }
+  template <typename T>
+  std::enable_if_t<!std::is_same<T, double>::value, T> tz() const {
+    return t_.template at<T>(2);
+  }
 
-  TranslationType& translation() { return t_; }
-  const TranslationType& translation() const { return t_; }
+  RotationType& R() { return R_; }
+  const RotationType& R() const { return R_; }
+
+  TranslationType& t() { return t_; }
+  const TranslationType& t() const { return t_; }
 
   RotationMatrixType& rotation_matrix() { return R_; }
   const RotationMatrixType& rotation_matrix() const { return R_; }
@@ -331,7 +363,7 @@ class FactorableNativeTransform3<cv::Mat, cv::Mat> {
 };
 
 template <typename T>
-class FactorableNativeTransform3<cv::Mat_<T>, cv::Mat_<T>> {
+class RigidBodyTransform3<cv::Mat_<T>, cv::Mat_<T>> {
  public:
   typedef T ScalarType;
   typedef cv::Mat_<T> RotationType;
@@ -339,18 +371,18 @@ class FactorableNativeTransform3<cv::Mat_<T>, cv::Mat_<T>> {
   typedef cv::Mat_<T> RotationMatrixType;
   typedef cv::Mat_<T> TranslationVectorType;
 
-  FactorableNativeTransform3(const RotationType& R, const TranslationType& t)
+  RigidBodyTransform3(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
-  ScalarType tx() const { return t_.template at<ScalarType>(0); }
-  ScalarType ty() const { return t_.template at<ScalarType>(1); }
-  ScalarType tz() const { return t_.template at<ScalarType>(2); }
+  ScalarType tx() const { return t_(0); }
+  ScalarType ty() const { return t_(1); }
+  ScalarType tz() const { return t_(2); }
 
-  RotationType& rotation() { return R_; }
-  const RotationType& rotation() const { return R_; }
+  RotationType& R() { return R_; }
+  const RotationType& R() const { return R_; }
 
-  TranslationType& translation() { return t_; }
-  const TranslationType& translation() const { return t_; }
+  TranslationType& t() { return t_; }
+  const TranslationType& t() const { return t_; }
 
   RotationMatrixType& rotation_matrix() { return R_; }
   const RotationMatrixType& rotation_matrix() const { return R_; }
@@ -363,8 +395,11 @@ class FactorableNativeTransform3<cv::Mat_<T>, cv::Mat_<T>> {
   TranslationType t_;
 };
 
+typedef RigidBodyTransform3<cv::Mat1f, cv::Mat1f> CvRBTransform3f;
+typedef RigidBodyTransform3<cv::Mat1d, cv::Mat1d> CvRBTransform3d;
+
 template <typename T>
-class FactorableNativeTransform3<cv::Matx<T, 3, 3>, cv::Matx<T, 3, 1>> {
+class RigidBodyTransform3<cv::Matx<T, 3, 3>, cv::Matx<T, 3, 1>> {
  public:
   typedef T ScalarType;
   typedef cv::Matx<T, 3, 3> RotationType;
@@ -372,18 +407,18 @@ class FactorableNativeTransform3<cv::Matx<T, 3, 3>, cv::Matx<T, 3, 1>> {
   typedef cv::Matx<T, 3, 3> RotationMatrixType;
   typedef cv::Matx<T, 3, 1> TranslationVectorType;
 
-  FactorableNativeTransform3(const RotationType& R, const TranslationType& t)
+  RigidBodyTransform3(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
-  ScalarType tx() const { return t_.template at<ScalarType>(0); }
-  ScalarType ty() const { return t_.template at<ScalarType>(1); }
-  ScalarType tz() const { return t_.template at<ScalarType>(2); }
+  ScalarType tx() const { return t_(0); }
+  ScalarType ty() const { return t_(1); }
+  ScalarType tz() const { return t_(2); }
 
-  RotationType& rotation() { return R_; }
-  const RotationType& rotation() const { return R_; }
+  RotationType& R() { return R_; }
+  const RotationType& R() const { return R_; }
 
-  TranslationType& translation() { return t_; }
-  const TranslationType& translation() const { return t_; }
+  TranslationType& t() { return t_; }
+  const TranslationType& t() const { return t_; }
 
   RotationMatrixType& rotation_matrix() { return R_; }
   const RotationMatrixType& rotation_matrix() const { return R_; }
@@ -399,4 +434,4 @@ class FactorableNativeTransform3<cv::Matx<T, 3, 3>, cv::Matx<T, 3, 1>> {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_LIB_UNIT_GEOMETRY_FACTORABLE_NATIVE_TRANSFORM_H_
+#endif  // FELICIA_CORE_LIB_UNIT_GEOMETRY_RIGID_BODY_TRANSFORM_TRANSFORM_H_
