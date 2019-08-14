@@ -25,17 +25,18 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef FELICIA_SLAM_CAMERA_STEREO_CAMERA_MODEL_H_
-#define FELICIA_SLAM_CAMERA_STEREO_CAMERA_MODEL_H_
+#ifndef FELICIA_SLAM_CAMERA_OPENCV_STEREO_CAMERA_MODEL_H_
+#define FELICIA_SLAM_CAMERA_OPENCV_STEREO_CAMERA_MODEL_H_
 
 #if defined(HAS_OPENCV)
 
 #include <opencv2/opencv.hpp>
 
 #include "felicia/core/lib/base/export.h"
+#include "felicia/core/lib/unit/geometry/rigid_body_transform.h"
 #include "felicia/core/lib/unit/length.h"
-#include "felicia/slam/camera/camera_model.h"
 #include "felicia/slam/camera/camera_model_message.pb.h"
+#include "felicia/slam/camera/opencv/camera_model.h"
 
 namespace felicia {
 namespace slam {
@@ -44,18 +45,21 @@ class EXPORT StereoCameraModel {
  public:
   StereoCameraModel();
   StereoCameraModel(const std::string& name, const std::string& name1,
-                    const cv::Size& image_size1, const cv::Mat& K1,
-                    const cv::Mat& D1, const cv::Mat& R1, const cv::Mat& P1,
-                    const std::string& name2, const cv::Size& image_size2,
-                    const cv::Mat& K2, const cv::Mat& D2, const cv::Mat& R2,
-                    const cv::Mat& P2, const cv::Mat& R, const cv::Mat& T,
-                    const cv::Mat& E, const cv::Mat& F);
+                    const cv::Size& image_size1, const cv::Mat1d& K1,
+                    const cv::Mat1d& D1, const cv::Mat1d& R1,
+                    const cv::Mat1d& P1, const std::string& name2,
+                    const cv::Size& image_size2, const cv::Mat1d& K2,
+                    const cv::Mat1d& D2, const cv::Mat1d& R2,
+                    const cv::Mat1d& P2, const cv::Mat1d& R, const cv::Mat1d& T,
+                    const cv::Mat1d& E, const cv::Mat1d& F);
 
   StereoCameraModel(const std::string& name,
                     const CameraModel& left_camera_model,
                     const CameraModel& right_camera_model,
-                    const cv::Mat& R = cv::Mat(), const cv::Mat& T = cv::Mat(),
-                    const cv::Mat& E = cv::Mat(), const cv::Mat& F = cv::Mat());
+                    const cv::Mat1d& R = cv::Mat1d(),
+                    const cv::Mat1d& T = cv::Mat1d(),
+                    const cv::Mat1d& E = cv::Mat1d(),
+                    const cv::Mat1d& F = cv::Mat1d());
 
   // minimal
   StereoCameraModel(double fx, double fy, double cx, double cy, double baseline,
@@ -80,10 +84,14 @@ class EXPORT StereoCameraModel {
   void set_name(const std::string& name) { name_ = name; }
   const std::string& name() const { return name_; }
 
-  const cv::Mat& R() const { return R_; }  // extrinsic rotation matrix
-  const cv::Mat& T() const { return T_; }  // extrinsic translation matrix
-  const cv::Mat& E() const { return E_; }  // extrinsic essential matrix
-  const cv::Mat& F() const { return F_; }  // extrinsic fundamental matrix
+  const cv::Mat1d& R() const {
+    return transform_.R();
+  }  // extrinsic rotation matrix
+  const cv::Mat1d& T() const {
+    return transform_.t();
+  }                                          // extrinsic translation matrix
+  const cv::Mat1d& E() const { return E_; }  // extrinsic essential matrix
+  const cv::Mat1d& F() const { return F_; }  // extrinsic fundamental matrix
 
   const CameraModel& left_camera_model() const { return left_camera_model_; }
   const CameraModel& right_camera_model() const { return right_camera_model_; }
@@ -121,10 +129,9 @@ class EXPORT StereoCameraModel {
   std::string name_;
   CameraModel left_camera_model_;
   CameraModel right_camera_model_;
-  cv::Mat R_;
-  cv::Mat T_;
-  cv::Mat E_;
-  cv::Mat F_;
+  CvRBTransform3d transform_;
+  cv::Mat1d E_;
+  cv::Mat1d F_;
 };
 
 }  // namespace slam
@@ -132,4 +139,4 @@ class EXPORT StereoCameraModel {
 
 #endif  // !defined(HAS_OPENCV)
 
-#endif  // FELICIA_SLAM_CAMERA_CAMERA_MODEL_H_
+#endif  // FELICIA_SLAM_CAMERA_OPENCV_STEREO_CAMERA_MODEL_H_

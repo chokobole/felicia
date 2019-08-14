@@ -25,39 +25,34 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "felicia/slam/camera/stereo_camera_model.h"
+#include "felicia/slam/camera/opencv/stereo_camera_model.h"
 
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include "third_party/chromium/base/strings/string_util.h"
+
 #include "felicia/core/lib/error/errors.h"
+#include "felicia/core/lib/math/matrix_util.h"
 
 namespace felicia {
 namespace slam {
 
 namespace {
 
-bool IsValidRMatrix(int rows, int cols) { return rows == 3 && cols == 3; }
-
-bool IsValidTMatrix(int rows, int cols) { return rows == 3 && cols == 1; }
-
-bool IsValidEMatrix(int rows, int cols) { return rows == 3 && cols == 3; }
-
-bool IsValidFMatrix(int rows, int cols) { return rows == 3 && cols == 3; }
-
-bool IsValidRMatrix(const cv::Mat& R) {
-  return R.empty() || (IsValidRMatrix(R.rows, R.cols) && R.type() == CV_64FC1);
+bool IsValidRMatrix(const cv::Mat1d& R) {
+  return R.empty() || IsMatrix<3, 3>(R.rows, R.cols);
 }
 
-bool IsValidTMatrix(const cv::Mat& T) {
-  return T.empty() || (IsValidTMatrix(T.rows, T.cols) && T.type() == CV_64FC1);
+bool IsValidTMatrix(const cv::Mat1d& T) {
+  return T.empty() || IsMatrix<3, 1>(T.rows, T.cols);
 }
 
-bool IsValidEMatrix(const cv::Mat& E) {
-  return E.empty() || (IsValidEMatrix(E.rows, E.cols) && E.type() == CV_64FC1);
+bool IsValidEMatrix(const cv::Mat1d& E) {
+  return E.empty() || IsMatrix<3, 3>(E.rows, E.cols);
 }
 
-bool IsValidFMatrix(const cv::Mat& F) {
-  return F.empty() || (IsValidFMatrix(F.rows, F.cols) && F.type() == CV_64FC1);
+bool IsValidFMatrix(const cv::Mat1d& F) {
+  return F.empty() || IsMatrix<3, 3>(F.rows, F.cols);
 }
 
 }  // namespace
@@ -66,49 +61,39 @@ StereoCameraModel::StereoCameraModel() = default;
 
 StereoCameraModel::StereoCameraModel(
     const std::string& name, const std::string& name1,
-    const cv::Size& image_size1, const cv::Mat& K1, const cv::Mat& D1,
-    const cv::Mat& R1, const cv::Mat& P1, const std::string& name2,
-    const cv::Size& image_size2, const cv::Mat& K2, const cv::Mat& D2,
-    const cv::Mat& R2, const cv::Mat& P2, const cv::Mat& R, const cv::Mat& T,
-    const cv::Mat& E, const cv::Mat& F)
-    : name_(name),
-      left_camera_model_(name1, image_size1, K1, D1, R1, P1),
-      right_camera_model_(name2, image_size2, K2, D2, R2, P2),
-      R_(R),
-      T_(T),
-      E_(E),
-      F_(F) {
-  CHECK(IsValidRMatrix(R_));
-  CHECK(IsValidTMatrix(T_));
-  CHECK(IsValidEMatrix(E_));
-  CHECK(IsValidFMatrix(F_));
-  RectifyStereo();
-}
+    const cv::Size& image_size1, const cv::Mat1d& K1, const cv::Mat1d& D1,
+    const cv::Mat1d& R1, const cv::Mat1d& P1, const std::string& name2,
+    const cv::Size& image_size2, const cv::Mat1d& K2, const cv::Mat1d& D2,
+    const cv::Mat1d& R2, const cv::Mat1d& P2, const cv::Mat1d& R,
+    const cv::Mat1d& T, const cv::Mat1d& E, const cv::Mat1d& F)
+    : StereoCameraModel(name, CameraModel{name1, image_size1, K1, D1, R1, P1},
+                        CameraModel{name2, image_size2, K2, D2, R2, P2}, R, T,
+                        E, F) {}
 
 StereoCameraModel::StereoCameraModel(const std::string& name,
                                      const CameraModel& left_camera_model,
                                      const CameraModel& right_camera_model,
-                                     const cv::Mat& R, const cv::Mat& T,
-                                     const cv::Mat& E, const cv::Mat& F)
+                                     const cv::Mat1d& R, const cv::Mat1d& T,
+                                     const cv::Mat1d& E, const cv::Mat1d& F)
     : name_(name),
       left_camera_model_(left_camera_model),
       right_camera_model_(right_camera_model),
-      R_(R),
-      T_(T),
+      transform_(R, T),
       E_(E),
       F_(F) {
-  CHECK(IsValidRMatrix(R_));
-  CHECK(IsValidTMatrix(T_));
-  CHECK(IsValidEMatrix(E_));
-  CHECK(IsValidFMatrix(F_));
+  CHECK(IsValidRMatrix(R));
+  CHECK(IsValidTMatrix(T));
+  CHECK(IsValidEMatrix(E));
+  CHECK(IsValidFMatrix(F));
   RectifyStereo();
 }
 
 StereoCameraModel::StereoCameraModel(double fx, double fy, double cx, double cy,
                                      double baseline,
                                      const cv::Size& image_size)
-    : left_camera_model_(fx, fy, cx, cy, 0, image_size),
-      right_camera_model_(fx, fy, cx, cy, baseline * -fx, image_size) {}
+    : StereoCameraModel(base::EmptyString(), base::EmptyString(),
+                        base::EmptyString(), fx, fy, cx, cy, baseline,
+                        image_size) {}
 
 StereoCameraModel::StereoCameraModel(const std::string& name,
                                      const std::string& left_camera_model_name,
@@ -157,10 +142,10 @@ Status StereoCameraModel::LoadStereoTransform(const base::FilePath& path) {
     cv::FileStorage fs(path.AsUTF8Unsafe(), cv::FileStorage::READ);
 
     std::string name = name_;
-    cv::Mat R = R_;
-    cv::Mat T = T_;
-    cv::Mat E = E_;
-    cv::Mat F = F_;
+    cv::Mat1d R = transform_.R();
+    cv::Mat1d T = transform_.t();
+    cv::Mat1d E = E_;
+    cv::Mat1d F = F_;
 
     Status s;
 
@@ -171,51 +156,51 @@ Status StereoCameraModel::LoadStereoTransform(const base::FilePath& path) {
                         });
 
     // import from ROS calibration format
-    s = internal::MaybeLoad(
-        fs, "rotation_matrix", path, [&R](const cv::FileNode& n) {
-          StatusOr<cv::Mat> status_or = internal::LoadCvMatrix(
-              n, static_cast<bool (*)(int, int)>(&IsValidRMatrix));
-          if (!status_or.ok()) return status_or.status();
-          R = status_or.ValueOrDie();
-          return Status::OK();
-        });
+    s = internal::MaybeLoad(fs, "rotation_matrix", path,
+                            [&R](const cv::FileNode& n) {
+                              StatusOr<cv::Mat1d> status_or =
+                                  internal::LoadCvMatrix(n, IsMatrix<3, 3>);
+                              if (!status_or.ok()) return status_or.status();
+                              R = status_or.ValueOrDie();
+                              return Status::OK();
+                            });
     if (!s.ok()) return s;
 
-    s = internal::MaybeLoad(
-        fs, "translation_matrix", path, [&T](const cv::FileNode& n) {
-          StatusOr<cv::Mat> status_or = internal::LoadCvMatrix(
-              n, static_cast<bool (*)(int, int)>(&IsValidTMatrix));
-          if (!status_or.ok()) return status_or.status();
-          T = status_or.ValueOrDie();
-          return Status::OK();
-        });
+    s = internal::MaybeLoad(fs, "translation_matrix", path,
+                            [&T](const cv::FileNode& n) {
+                              StatusOr<cv::Mat1d> status_or =
+                                  internal::LoadCvMatrix(n, IsMatrix<3, 1>);
+                              if (!status_or.ok()) return status_or.status();
+                              T = status_or.ValueOrDie();
+                              return Status::OK();
+                            });
     if (!s.ok()) return s;
 
-    s = internal::MaybeLoad(
-        fs, "essential_matrix", path, [&E](const cv::FileNode& n) {
-          StatusOr<cv::Mat> status_or = internal::LoadCvMatrix(
-              n, static_cast<bool (*)(int, int)>(&IsValidEMatrix));
-          if (!status_or.ok()) return status_or.status();
-          E = status_or.ValueOrDie();
-          return Status::OK();
-        });
+    s = internal::MaybeLoad(fs, "essential_matrix", path,
+                            [&E](const cv::FileNode& n) {
+                              StatusOr<cv::Mat1d> status_or =
+                                  internal::LoadCvMatrix(n, IsMatrix<3, 3>);
+                              if (!status_or.ok()) return status_or.status();
+                              E = status_or.ValueOrDie();
+                              return Status::OK();
+                            });
     if (!s.ok()) return s;
 
-    s = internal::MaybeLoad(
-        fs, "fundamental_matrix", path, [&F](const cv::FileNode& n) {
-          StatusOr<cv::Mat> status_or = internal::LoadCvMatrix(
-              n, static_cast<bool (*)(int, int)>(&IsValidFMatrix));
-          if (!status_or.ok()) return status_or.status();
-          F = status_or.ValueOrDie();
-          return Status::OK();
-        });
+    s = internal::MaybeLoad(fs, "fundamental_matrix", path,
+                            [&F](const cv::FileNode& n) {
+                              StatusOr<cv::Mat1d> status_or =
+                                  internal::LoadCvMatrix(n, IsMatrix<3, 3>);
+                              if (!status_or.ok()) return status_or.status();
+                              F = status_or.ValueOrDie();
+                              return Status::OK();
+                            });
     if (!s.ok()) return s;
 
     fs.release();
 
     name_ = name;
-    R_ = R;
-    T_ = T;
+    transform_.R() = R;
+    transform_.t() = T;
     E_ = E;
     F_ = F;
   } catch (const cv::Exception& e) {
@@ -229,7 +214,9 @@ Status StereoCameraModel::LoadStereoTransform(const base::FilePath& path) {
 
 Status StereoCameraModel::SaveStereoTransform(
     const base::FilePath& path) const {
-  if (!R_.empty() && !T_.empty()) {
+  const cv::Mat1d& R = transform_.R();
+  const cv::Mat1d& T = transform_.t();
+  if (!R.empty() && !T.empty()) {
     try {
       cv::FileStorage fs(path.AsUTF8Unsafe(), cv::FileStorage::WRITE);
 
@@ -238,27 +225,27 @@ Status StereoCameraModel::SaveStereoTransform(
         fs << "camera_name" << name_;
       }
 
-      if (!R_.empty()) {
+      if (!R.empty()) {
         fs << "rotation_matrix"
            << "{";
-        fs << "rows" << R_.rows;
-        fs << "cols" << R_.cols;
+        fs << "rows" << R.rows;
+        fs << "cols" << R.cols;
         fs << "data"
            << std::vector<double>(
-                  reinterpret_cast<double*>(R_.data),
-                  reinterpret_cast<double*>(R_.data) + (R_.rows * R_.cols));
+                  reinterpret_cast<double*>(R.data),
+                  reinterpret_cast<double*>(R.data) + (R.rows * R.cols));
         fs << "}";
       }
 
-      if (!T_.empty()) {
+      if (!T.empty()) {
         fs << "translation_matrix"
            << "{";
-        fs << "rows" << T_.rows;
-        fs << "cols" << T_.cols;
+        fs << "rows" << T.rows;
+        fs << "cols" << T.cols;
         fs << "data"
            << std::vector<double>(
-                  reinterpret_cast<double*>(T_.data),
-                  reinterpret_cast<double*>(T_.data) + (T_.rows * T_.cols));
+                  reinterpret_cast<double*>(T.data),
+                  reinterpret_cast<double*>(T.data) + (T.rows * T.cols));
         fs << "}";
       }
 
@@ -305,8 +292,10 @@ StereoCameraModelMessage StereoCameraModel::ToStereoCameraModelMessage() const {
       left_camera_model_.ToCameraModelMessage();
   *message.mutable_right_camera_model() =
       right_camera_model_.ToCameraModelMessage();
-  if (!R_.empty()) message.set_r(R_.data, R_.total() * sizeof(double));
-  if (!T_.empty()) message.set_t(T_.data, T_.total() * sizeof(double));
+  const cv::Mat1d& R = transform_.R();
+  const cv::Mat1d& T = transform_.t();
+  if (!R.empty()) message.set_r(R.data, R.total() * sizeof(double));
+  if (!T.empty()) message.set_t(T.data, T.total() * sizeof(double));
   if (!E_.empty()) message.set_e(E_.data, E_.total() * sizeof(double));
   if (!F_.empty()) message.set_f(F_.data, F_.total() * sizeof(double));
 
@@ -317,10 +306,10 @@ Status StereoCameraModel::FromStereoCameraModelMessage(
     const StereoCameraModelMessage& message) {
   CameraModel left_camera_model = left_camera_model_;
   CameraModel right_camera_model = right_camera_model_;
-  cv::Mat R = R_;
-  cv::Mat T = T_;
-  cv::Mat E = E_;
-  cv::Mat F = F_;
+  cv::Mat1d R = transform_.R();
+  cv::Mat1d T = transform_.t();
+  cv::Mat1d E = E_;
+  cv::Mat1d F = F_;
 
   if (message.has_left_camera_model()) {
     Status s =
@@ -338,42 +327,50 @@ Status StereoCameraModel::FromStereoCameraModelMessage(
     const std::string& r = message.r();
     int rows = 3;
     int cols = r.length() / rows;
-    if (!IsValidRMatrix(rows, cols))
+    if (!IsMatrix<3, 3>(rows, cols))
       return internal::InvalidRowsAndCols(rows, cols);
-    R = cv::Mat(rows, cols, CV_64FC1, const_cast<char*>(r.c_str())).clone();
+    R = cv::Mat1d(rows, cols,
+                  reinterpret_cast<double*>(const_cast<char*>(r.c_str())))
+            .clone();
   }
 
   if (!message.t().empty()) {
     const std::string& t = message.t();
     int rows = 3;
     int cols = t.length() / rows;
-    if (!IsValidRMatrix(rows, cols))
+    if (!IsMatrix<3, 1>(rows, cols))
       return internal::InvalidRowsAndCols(rows, cols);
-    T = cv::Mat(rows, cols, CV_64FC1, const_cast<char*>(t.c_str())).clone();
+    T = cv::Mat1d(rows, cols,
+                  reinterpret_cast<double*>(const_cast<char*>(t.c_str())))
+            .clone();
   }
 
   if (!message.e().empty()) {
     const std::string& e = message.e();
     int rows = 3;
     int cols = e.length() / rows;
-    if (!IsValidRMatrix(rows, cols))
+    if (!IsMatrix<3, 3>(rows, cols))
       return internal::InvalidRowsAndCols(rows, cols);
-    E = cv::Mat(rows, cols, CV_64FC1, const_cast<char*>(e.c_str())).clone();
+    E = cv::Mat1d(rows, cols,
+                  reinterpret_cast<double*>(const_cast<char*>(e.c_str())))
+            .clone();
   }
 
   if (!message.f().empty()) {
     const std::string& f = message.f();
     int rows = 3;
     int cols = f.length() / rows;
-    if (!IsValidRMatrix(rows, cols))
+    if (!IsMatrix<3, 3>(rows, cols))
       return internal::InvalidRowsAndCols(rows, cols);
-    F = cv::Mat(rows, cols, CV_64FC1, const_cast<char*>(f.c_str())).clone();
+    F = cv::Mat1d(rows, cols,
+                  reinterpret_cast<double*>(const_cast<char*>(f.c_str())))
+            .clone();
   }
 
   left_camera_model_ = left_camera_model;
   right_camera_model_ = right_camera_model;
-  R_ = R;
-  T_ = T;
+  transform_.R() = R;
+  transform_.t() = T;
   E_ = E;
   F_ = F;
 
@@ -384,10 +381,10 @@ Status StereoCameraModel::FromStereoCameraModelMessage(
     StereoCameraModelMessage&& message) {
   CameraModel left_camera_model = left_camera_model_;
   CameraModel right_camera_model = right_camera_model_;
-  cv::Mat R = R_;
-  cv::Mat T = T_;
-  cv::Mat E = E_;
-  cv::Mat F = F_;
+  cv::Mat1d R = transform_.R();
+  cv::Mat1d T = transform_.t();
+  cv::Mat1d E = E_;
+  cv::Mat1d F = F_;
 
   if (message.has_left_camera_model()) {
     Status s = left_camera_model_.FromCameraModelMessage(
@@ -405,42 +402,46 @@ Status StereoCameraModel::FromStereoCameraModelMessage(
     std::string* r = message.release_r();
     int rows = 3;
     int cols = r->length() / rows;
-    if (!IsValidRMatrix(rows, cols))
+    if (!IsMatrix<3, 3>(rows, cols))
       return internal::InvalidRowsAndCols(rows, cols);
-    R = cv::Mat(rows, cols, CV_64FC1, const_cast<char*>(r->c_str()));
+    R = cv::Mat1d(rows, cols,
+                  reinterpret_cast<double*>(const_cast<char*>(r->c_str())));
   }
 
   if (!message.t().empty()) {
     std::string* t = message.release_t();
     int rows = 3;
     int cols = t->length() / rows;
-    if (!IsValidRMatrix(rows, cols))
+    if (!IsMatrix<3, 1>(rows, cols))
       return internal::InvalidRowsAndCols(rows, cols);
-    T = cv::Mat(rows, cols, CV_64FC1, const_cast<char*>(t->c_str()));
+    T = cv::Mat1d(rows, cols,
+                  reinterpret_cast<double*>(const_cast<char*>(t->c_str())));
   }
 
   if (!message.e().empty()) {
     std::string* e = message.release_e();
     int rows = 3;
     int cols = e->length() / rows;
-    if (!IsValidRMatrix(rows, cols))
+    if (!IsMatrix<3, 3>(rows, cols))
       return internal::InvalidRowsAndCols(rows, cols);
-    E = cv::Mat(rows, cols, CV_64FC1, const_cast<char*>(e->c_str()));
+    E = cv::Mat1d(rows, cols,
+                  reinterpret_cast<double*>(const_cast<char*>(e->c_str())));
   }
 
   if (!message.f().empty()) {
     std::string* f = message.release_f();
     int rows = 3;
     int cols = f->length() / rows;
-    if (!IsValidRMatrix(rows, cols))
+    if (!IsMatrix<3, 3>(rows, cols))
       return internal::InvalidRowsAndCols(rows, cols);
-    F = cv::Mat(rows, cols, CV_64FC1, const_cast<char*>(f->c_str()));
+    F = cv::Mat1d(rows, cols,
+                  reinterpret_cast<double*>(const_cast<char*>(f->c_str())));
   }
 
   left_camera_model_ = left_camera_model;
   right_camera_model_ = right_camera_model;
-  R_ = R;
-  T_ = T;
+  transform_.R() = R;
+  transform_.t() = T;
   E_ = E;
   F_ = F;
 
@@ -468,14 +469,16 @@ float StereoCameraModel::ComputeDisparity(float depth) const {
 }
 
 void StereoCameraModel::RectifyStereo() {
-  if (!R_.empty() && !T_.empty()) {
+  const cv::Mat1d& R = transform_.R();
+  const cv::Mat1d& T = transform_.t();
+  if (!R.empty() && !T.empty()) {
     CHECK(IsValidForRectification());
 
-    cv::Mat R1, R2, P1, P2, Q;
+    cv::Mat1d R1, R2, P1, P2, Q;
     cv::stereoRectify(left_camera_model_.K_raw(), left_camera_model_.D_raw(),
                       right_camera_model_.K_raw(), right_camera_model_.D_raw(),
-                      left_camera_model_.image_size(), R_, T_, R1, R2, P1, P2,
-                      Q, cv::CALIB_ZERO_DISPARITY, 0,
+                      left_camera_model_.image_size(), R, T, R1, R2, P1, P2, Q,
+                      cv::CALIB_ZERO_DISPARITY, 0,
                       left_camera_model_.image_size());
 
     left_camera_model_ = CameraModel(

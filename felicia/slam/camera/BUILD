@@ -22,15 +22,31 @@ fel_proto_library(
     visibility = ["//visibility:public"],
 )
 
+CAMERA_HDRS = [
+    "camera_matrix.h",
+    "distortion_matrix.h",
+    "epipolar_geometry.h",
+]
+
 fel_cc_library(
     name = "camera",
+    hdrs = CAMERA_HDRS,
+    deps = [
+        ":opencv_camera",
+        "//felicia/core/lib",
+    ],
+)
+
+fel_cc_library(
+    name = "opencv_camera",
     srcs = if_has_opencv([
-        "camera_model.cc",
-        "stereo_camera_model.cc",
+        "opencv/camera_model.cc",
+        "opencv/stereo_camera_model.cc",
     ]),
-    hdrs = ["epipolar_geometry.h"] + if_has_opencv([
-        "camera_model.h",
-        "stereo_camera_model.h",
+    hdrs = CAMERA_HDRS + if_has_opencv([
+        "opencv/camera_model.h",
+        "opencv/stereo_camera_model.h",
+        "opencv/types.h",
     ]),
     deps = [
         "//felicia/core/lib",
