@@ -41,7 +41,6 @@ class NativeMatrixRef<Eigen::Matrix<T, Rows_, Cols_>> {
   static MatrixType Zero(int rows, int cols) {
     return MatrixType::Zero(rows, cols);
   }
-  static MatrixType Zero(int size) { return MatrixType::Zero(size); }
 
   bool empty() const {
     if (Rows_ != Eigen::Dynamic && Cols_ != Eigen::Dynamic) return false;
@@ -98,7 +97,6 @@ class ConstNativeMatrixRef<Eigen::Matrix<T, Rows_, Cols_>> {
   static MatrixType Zero(int rows, int cols) {
     return MatrixType::Zero(rows, cols);
   }
-  static MatrixType Zero(int size) { return MatrixType::Zero(size); }
 
   bool empty() const {
     if (Rows_ != Eigen::Dynamic && Cols_ != Eigen::Dynamic) return false;
@@ -237,7 +235,7 @@ class NativeMatrixRef<cv::Mat_<T>> {
 
   explicit NativeMatrixRef(MatrixType& matrix) : matrix_(matrix) {}
 
-  static MatrixType Zero(int rows, int cols) {
+  static MatrixType Zero(int rows, int cols, int type = cv::DataType<T>::type) {
     return MatrixType::zeros(rows, cols);
   }
 
@@ -278,7 +276,7 @@ class ConstNativeMatrixRef<cv::Mat_<T>> {
 
   explicit ConstNativeMatrixRef(const MatrixType& matrix) : matrix_(matrix) {}
 
-  static MatrixType Zero(int rows, int cols) {
+  static MatrixType Zero(int rows, int cols, int type = cv::DataType<T>::type) {
     return MatrixType::zeros(rows, cols);
   }
 
@@ -319,6 +317,9 @@ class NativeMatrixRef<cv::Matx<T, Rows_, Cols_>> {
   explicit NativeMatrixRef(MatrixType& matrix) : matrix_(matrix) {}
 
   static MatrixType Zero() { return MatrixType::zeros(); }
+  static MatrixType Zero(int rows, int cols, int type = cv::DataType<T>::type) {
+    return MatrixType::zeros();
+  }
 
   bool empty() const { return false; }
 
@@ -363,6 +364,9 @@ class ConstNativeMatrixRef<cv::Matx<T, Rows_, Cols_>> {
   explicit ConstNativeMatrixRef(const MatrixType& matrix) : matrix_(matrix) {}
 
   static MatrixType Zero() { return MatrixType::zeros(); }
+  static MatrixType Zero(int rows, int cols, int type = cv::DataType<T>::type) {
+    return MatrixType::zeros();
+  }
 
   bool empty() const { return false; }
 
