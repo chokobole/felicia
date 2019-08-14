@@ -21,6 +21,7 @@ class RigidBodyTransform<Eigen::Matrix<T, 2, 2>, Eigen::Matrix<T, 2, 1>> {
   typedef Eigen::Matrix<T, 2, 2> RotationMatrixType;
   typedef Eigen::Matrix<T, 2, 1> TranslationVectorType;
 
+  RigidBodyTransform() = default;
   RigidBodyTransform(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
@@ -59,6 +60,7 @@ class RigidBodyTransform<Eigen::Rotation2D<T>, Eigen::Translation<T, 2>> {
   typedef Eigen::Matrix<T, 2, 2> RotationMatrixType;
   typedef Eigen::Matrix<T, 2, 1> TranslationVectorType;
 
+  RigidBodyTransform() = default;
   RigidBodyTransform(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
@@ -92,6 +94,7 @@ class RigidBodyTransform<cv::Mat, cv::Mat> {
   typedef cv::Mat RotationMatrixType;
   typedef cv::Mat TranslationVectorType;
 
+  RigidBodyTransform() = default;
   RigidBodyTransform(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
@@ -139,6 +142,7 @@ class RigidBodyTransform<cv::Mat_<T>, cv::Mat_<T>> {
   typedef cv::Mat_<T> RotationMatrixType;
   typedef cv::Mat_<T> TranslationVectorType;
 
+  RigidBodyTransform() = default;
   RigidBodyTransform(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
@@ -174,6 +178,7 @@ class RigidBodyTransform<cv::Matx<T, 2, 2>, cv::Matx<T, 2, 1>> {
   typedef cv::Matx<T, 2, 2> RotationMatrixType;
   typedef cv::Matx<T, 2, 1> TranslationVectorType;
 
+  RigidBodyTransform() = default;
   RigidBodyTransform(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
@@ -211,6 +216,7 @@ class RigidBodyTransform3<Eigen::Matrix<T, 3, 3>, Eigen::Matrix<T, 3, 1>> {
   typedef Eigen::Matrix<T, 3, 3> RotationMatrixType;
   typedef Eigen::Matrix<T, 3, 1> TranslationVectorType;
 
+  RigidBodyTransform3() = default;
   RigidBodyTransform3(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
@@ -252,6 +258,7 @@ class RigidBodyTransform3<Eigen::AngleAxis<T>, Eigen::Translation<T, 3>> {
   typedef Eigen::Matrix<T, 3, 3> RotationMatrixType;
   typedef Eigen::Matrix<T, 3, 1> TranslationVectorType;
 
+  RigidBodyTransform3() = default;
   RigidBodyTransform3(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
@@ -286,6 +293,7 @@ class RigidBodyTransform3<Eigen::Quaternion<T>, Eigen::Translation<T, 3>> {
   typedef Eigen::Matrix<T, 3, 3> RotationMatrixType;
   typedef Eigen::Matrix<T, 3, 1> TranslationVectorType;
 
+  RigidBodyTransform3() = default;
   RigidBodyTransform3(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
@@ -324,6 +332,7 @@ class RigidBodyTransform3<cv::Mat, cv::Mat> {
   typedef cv::Mat RotationMatrixType;
   typedef cv::Mat TranslationVectorType;
 
+  RigidBodyTransform3() = default;
   RigidBodyTransform3(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
@@ -371,6 +380,7 @@ class RigidBodyTransform3<cv::Mat_<T>, cv::Mat_<T>> {
   typedef cv::Mat_<T> RotationMatrixType;
   typedef cv::Mat_<T> TranslationVectorType;
 
+  RigidBodyTransform3() = default;
   RigidBodyTransform3(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
@@ -407,6 +417,7 @@ class RigidBodyTransform3<cv::Matx<T, 3, 3>, cv::Matx<T, 3, 1>> {
   typedef cv::Matx<T, 3, 3> RotationMatrixType;
   typedef cv::Matx<T, 3, 1> TranslationVectorType;
 
+  RigidBodyTransform3() = default;
   RigidBodyTransform3(const RotationType& R, const TranslationType& t)
       : R_(R), t_(t) {}
 
