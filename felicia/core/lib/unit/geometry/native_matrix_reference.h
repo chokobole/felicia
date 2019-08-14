@@ -1,6 +1,8 @@
 #ifndef FELICIA_CORE_LIB_UNIT_GEOMETRY_NATIVE_MATRIX_REFERENCE_H_
 #define FELICIA_CORE_LIB_UNIT_GEOMETRY_NATIVE_MATRIX_REFERENCE_H_
 
+#include <type_traits>
+
 #include "Eigen/Core"
 
 #if defined(HAS_OPENCV)
@@ -36,6 +38,15 @@ class NativeMatrixRef<Eigen::Matrix<T, Rows_, Cols_>> {
   explicit NativeMatrixRef(MatrixType& matrix) : matrix_(matrix) {}
 
   static MatrixType Zero() { return MatrixType::Zero(); }
+  static MatrixType Zero(int rows, int cols) {
+    return MatrixType::Zero(rows, cols);
+  }
+  static MatrixType Zero(int size) { return MatrixType::Zero(size); }
+
+  bool empty() const {
+    if (Rows_ != Eigen::Dynamic && Cols_ != Eigen::Dynamic) return false;
+    return matrix_.rows() * matrix_.cols() == 0;
+  }
 
   MatrixType transpose() const { return matrix_.transpose(); }
 
@@ -43,6 +54,9 @@ class NativeMatrixRef<Eigen::Matrix<T, Rows_, Cols_>> {
 
   ScalarType& at(int row, int col) { return matrix_(row, col); }
   const ScalarType& at(int row, int col) const { return matrix_(row, col); }
+
+  int rows() const { return matrix_.rows(); }
+  int cols() const { return matrix_.cols(); }
 
 #if defined(HAS_OPENCV)
   void ToCvMatrix(cv::Mat* mat) const { cv::eigen2cv(matrix_, *mat); }
@@ -81,12 +95,24 @@ class ConstNativeMatrixRef<Eigen::Matrix<T, Rows_, Cols_>> {
   explicit ConstNativeMatrixRef(const MatrixType& matrix) : matrix_(matrix) {}
 
   static MatrixType Zero() { return MatrixType::Zero(); }
+  static MatrixType Zero(int rows, int cols) {
+    return MatrixType::Zero(rows, cols);
+  }
+  static MatrixType Zero(int size) { return MatrixType::Zero(size); }
+
+  bool empty() const {
+    if (Rows_ != Eigen::Dynamic && Cols_ != Eigen::Dynamic) return false;
+    return matrix_.rows() * matrix_.cols() == 0;
+  }
 
   MatrixType transpose() const { return matrix_.transpose(); }
 
   MatrixType inverse() const { return matrix_.inverse(); }
 
   const ScalarType& at(int row, int col) const { return matrix_(row, col); }
+
+  int rows() const { return matrix_.rows(); }
+  int cols() const { return matrix_.cols(); }
 
 #if defined(HAS_OPENCV)
   void ToCvMatrix(cv::Mat* mat) const { cv::eigen2cv(matrix_, *mat); }
@@ -112,6 +138,173 @@ typedef ConstNativeMatrixRef<Eigen::Vector3f> ConstEigenVector3fRef;
 typedef ConstNativeMatrixRef<Eigen::Vector3d> ConstEigenVector3dRef;
 
 #if defined(HAS_OPENCV)
+template <>
+class NativeMatrixRef<cv::Mat> {
+ public:
+  typedef cv::Mat MatrixType;
+
+  enum {
+    Rows = -1,
+    Cols = -1,
+  };
+
+  explicit NativeMatrixRef(MatrixType& matrix) : matrix_(matrix) {}
+
+  static MatrixType Zero(int rows, int cols, int type) {
+    return MatrixType::zeros(rows, cols, type);
+  }
+
+  bool empty() const { return matrix_.empty(); }
+
+  MatrixType transpose() const { return matrix_.t(); }
+
+  MatrixType inverse() const { return matrix_.inv(); }
+
+  template <typename ScalarType>
+  ScalarType& at(int row, int col) {
+    return matrix_.at<ScalarType>(row, col);
+  }
+  template <typename ScalarType>
+  const ScalarType& at(int row, int col) const {
+    return matrix_.at<ScalarType>(row, col);
+  }
+
+  int rows() const { return matrix_.rows; }
+  int cols() const { return matrix_.cols; }
+
+  template <typename Derived>
+  void ToEigenMatrix(Eigen::MatrixBase<Derived>* matrix) const {
+    cv::cv2eigen(matrix_, *matrix);
+  }
+
+ private:
+  MatrixType& matrix_;
+};
+
+typedef NativeMatrixRef<cv::Mat> CvMatRef;
+
+template <>
+class ConstNativeMatrixRef<cv::Mat> {
+ public:
+  typedef cv::Mat MatrixType;
+
+  enum {
+    Rows = -1,
+    Cols = -1,
+  };
+
+  explicit ConstNativeMatrixRef(const MatrixType& matrix) : matrix_(matrix) {}
+
+  static MatrixType Zero(int rows, int cols, int type) {
+    return MatrixType::zeros(rows, cols, type);
+  }
+
+  bool empty() const { return matrix_.empty(); }
+
+  MatrixType transpose() const { return matrix_.t(); }
+
+  MatrixType inverse() const { return matrix_.inv(); }
+
+  template <typename ScalarType>
+  const ScalarType& at(int row, int col) const {
+    return matrix_.at<ScalarType>(row, col);
+  }
+
+  int rows() const { return matrix_.rows; }
+  int cols() const { return matrix_.cols; }
+
+  template <typename Derived>
+  void ToEigenMatrix(Eigen::MatrixBase<Derived>* matrix) const {
+    cv::cv2eigen(matrix_, *matrix);
+  }
+
+ private:
+  const MatrixType& matrix_;
+};
+
+typedef ConstNativeMatrixRef<cv::Mat> ConstCvMatRef;
+
+template <typename T>
+class NativeMatrixRef<cv::Mat_<T>> {
+ public:
+  typedef T ScalarType;
+  typedef cv::Mat_<T> MatrixType;
+
+  enum {
+    Rows = -1,
+    Cols = -1,
+  };
+
+  explicit NativeMatrixRef(MatrixType& matrix) : matrix_(matrix) {}
+
+  static MatrixType Zero(int rows, int cols) {
+    return MatrixType::zeros(rows, cols);
+  }
+
+  bool empty() const { return matrix_.empty(); }
+
+  MatrixType transpose() const { return matrix_.t(); }
+
+  MatrixType inverse() const { return matrix_.inv(); }
+
+  ScalarType& at(int row, int col) { return matrix_(row, col); }
+  const ScalarType& at(int row, int col) const { return matrix_(row, col); }
+
+  int rows() const { return matrix_.rows; }
+  int cols() const { return matrix_.cols; }
+
+  template <typename Derived>
+  void ToEigenMatrix(Eigen::MatrixBase<Derived>* matrix) const {
+    cv::cv2eigen(matrix_, *matrix);
+  }
+
+ private:
+  MatrixType& matrix_;
+};
+
+typedef NativeMatrixRef<cv::Mat1f> CvMat1fRef;
+typedef NativeMatrixRef<cv::Mat1d> CvMat1dRef;
+
+template <typename T>
+class ConstNativeMatrixRef<cv::Mat_<T>> {
+ public:
+  typedef T ScalarType;
+  typedef cv::Mat_<T> MatrixType;
+
+  enum {
+    Rows = -1,
+    Cols = -1,
+  };
+
+  explicit ConstNativeMatrixRef(const MatrixType& matrix) : matrix_(matrix) {}
+
+  static MatrixType Zero(int rows, int cols) {
+    return MatrixType::zeros(rows, cols);
+  }
+
+  bool empty() const { return matrix_.empty(); }
+
+  MatrixType transpose() const { return matrix_.t(); }
+
+  MatrixType inverse() const { return matrix_.inv(); }
+
+  const ScalarType& at(int row, int col) const { return matrix_(row, col); }
+
+  int rows() const { return matrix_.rows; }
+  int cols() const { return matrix_.cols; }
+
+  template <typename Derived>
+  void ToEigenMatrix(Eigen::MatrixBase<Derived>* matrix) const {
+    cv::cv2eigen(matrix_, *matrix);
+  }
+
+ private:
+  const MatrixType& matrix_;
+};
+
+typedef ConstNativeMatrixRef<cv::Mat1f> ConstCvMat1fRef;
+typedef ConstNativeMatrixRef<cv::Mat1d> ConstCvMat1dRef;
+
 template <typename T, int Rows_, int Cols_>
 class NativeMatrixRef<cv::Matx<T, Rows_, Cols_>> {
  public:
@@ -127,12 +320,17 @@ class NativeMatrixRef<cv::Matx<T, Rows_, Cols_>> {
 
   static MatrixType Zero() { return MatrixType::zeros(); }
 
+  bool empty() const { return false; }
+
   MatrixType transpose() const { return matrix_.t(); }
 
   MatrixType inverse() const { return matrix_.inv(); }
 
   ScalarType& at(int row, int col) { return matrix_(row, col); }
   const ScalarType& at(int row, int col) const { return matrix_(row, col); }
+
+  int rows() const { return matrix_.rows; }
+  int cols() const { return matrix_.cols; }
 
   void ToEigenMatrix(Eigen::Matrix<T, Rows_, Cols_>* matrix) const {
     cv::cv2eigen(matrix_, *matrix);
@@ -166,11 +364,16 @@ class ConstNativeMatrixRef<cv::Matx<T, Rows_, Cols_>> {
 
   static MatrixType Zero() { return MatrixType::zeros(); }
 
+  bool empty() const { return false; }
+
   MatrixType transpose() const { return matrix_.t(); }
 
   MatrixType inverse() const { return matrix_.inv(); }
 
   const ScalarType& at(int row, int col) const { return matrix_(row, col); }
+
+  int rows() const { return matrix_.rows; }
+  int cols() const { return matrix_.cols; }
 
   void ToEigenMatrix(Eigen::Matrix<T, Rows_, Cols_>* matrix) const {
     cv::cv2eigen(matrix_, *matrix);

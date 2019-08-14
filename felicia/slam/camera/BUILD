@@ -45,6 +45,7 @@ fel_cc_test(
     ],
     deps = fel_shared_library() + [
         ":camera",
+        "//felicia/core/lib:lib_test_util",
         "@com_google_googletest//:gtest_main",
     ],
 )

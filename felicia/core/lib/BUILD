@@ -51,6 +51,7 @@ fel_cc_library(
         "error/statusor_internals.h",
         "file/file_util.h",
         "math/math_util.h",
+        "math/matrix_util.h",
         "memory/memory_util.h",
         "net/net_util.h",
         "strings/str_util.h",
@@ -83,6 +84,17 @@ fel_cc_library(
     ]),
 )
 
+fel_cc_library(
+    name = "lib_test_util",
+    testonly = True,
+    hdrs = [
+        "unit/geometry/native_matrix_reference_test_util.h",
+    ],
+    deps = [
+        ":lib"
+    ],
+)
+
 fel_cc_test(
     name = "lib_tests",
     size = "small",
@@ -91,6 +103,7 @@ fel_cc_test(
         "base/range_test.cc",
         "containers/pool_test.cc",
         "coordinate/coordinate_test.cc",
+        "math/matrix_util_test.cc",
         "unit/bytes_test.cc",
         "unit/geometry/point_test.cc",
         "unit/geometry/vector_test.cc",
@@ -98,6 +111,7 @@ fel_cc_test(
         "unit/unit_helper_test.cc",
     ],
     deps = fel_shared_library() + [
+        ":lib_test_util",
         "@com_google_googletest//:gtest_main",
     ],
 )
