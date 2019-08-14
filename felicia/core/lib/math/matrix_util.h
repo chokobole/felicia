@@ -253,6 +253,11 @@ class MatrixBinaryOperation<cv::Mat_<T>, cv::Mat_<T>> {
 };
 #endif
 
+template <int Rows, int Cols>
+constexpr bool IsMatrix(int rows, int cols) {
+  return rows == Rows && cols == Cols;
+}
+
 }  // namespace felicia
 
 #endif  // FELICIA_CORE_LIB_MATH_MATRIX_UTIL_H_
