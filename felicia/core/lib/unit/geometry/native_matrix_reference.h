@@ -141,6 +141,8 @@ typedef ConstNativeMatrixRef<Eigen::Vector3d> ConstEigenVector3dRef;
 template <>
 class NativeMatrixRef<cv::Mat> {
  public:
+  // To conform to other NativeMatrixRef's
+  typedef double ScalarType;
   typedef cv::Mat MatrixType;
 
   enum {
@@ -163,13 +165,22 @@ class NativeMatrixRef<cv::Mat> {
 
   MatrixType inverse() const { return matrix_.inv(); }
 
-  template <typename ScalarType>
+  // To conform to other NativeMatrixRef's
   ScalarType& at(int row, int col) {
-    return matrix_.at<ScalarType>(row, col);
+    return matrix_.template at<ScalarType>(row, col);
   }
-  template <typename ScalarType>
   const ScalarType& at(int row, int col) const {
-    return matrix_.at<ScalarType>(row, col);
+    return matrix_.template at<ScalarType>(row, col);
+  }
+
+  template <typename T>
+  std::enable_if_t<!std::is_same<T, double>::value, T&> at(int row, int col) {
+    return matrix_.template at<T>(row, col);
+  }
+  template <typename T>
+  std::enable_if_t<!std::is_same<T, double>::value, const T&> at(
+      int row, int col) const {
+    return matrix_.template at<T>(row, col);
   }
 
   int rows() const { return matrix_.rows; }
@@ -189,6 +200,8 @@ typedef NativeMatrixRef<cv::Mat> CvMatRef;
 template <>
 class ConstNativeMatrixRef<cv::Mat> {
  public:
+  // To conform to other ConstNativeMatrixRef's
+  typedef double ScalarType;
   typedef cv::Mat MatrixType;
 
   enum {
@@ -211,9 +224,15 @@ class ConstNativeMatrixRef<cv::Mat> {
 
   MatrixType inverse() const { return matrix_.inv(); }
 
-  template <typename ScalarType>
+  // To conform to other ConstNativeMatrixRef's
   const ScalarType& at(int row, int col) const {
-    return matrix_.at<ScalarType>(row, col);
+    return matrix_.template at<ScalarType>(row, col);
+  }
+
+  template <typename T>
+  std::enable_if_t<!std::is_same<T, double>::value, const T&> at(
+      int row, int col) const {
+    return matrix_.template at<T>(row, col);
   }
 
   int rows() const { return matrix_.rows; }
