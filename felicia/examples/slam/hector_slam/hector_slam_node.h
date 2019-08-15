@@ -107,9 +107,7 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
     if (!pose_topic_.empty()) {
       pose_publisher_.RequestPublish(
           node_info_, pose_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
-              ChannelDef::CHANNEL_TYPE_WS,
-          settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
           base::BindOnce(&HectorSlamNode::OnRequestPublish,
                          base::Unretained(this)));
     }
@@ -117,9 +115,7 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
     if (!map_topic_.empty()) {
       map_publisher_.RequestPublish(
           node_info_, map_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
-              ChannelDef::CHANNEL_TYPE_WS,
-          settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
           base::BindOnce(&HectorSlamNode::OnRequestPublish,
                          base::Unretained(this)));
     }

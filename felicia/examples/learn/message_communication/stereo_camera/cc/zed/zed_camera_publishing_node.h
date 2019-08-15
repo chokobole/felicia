@@ -49,9 +49,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
     if (!left_camera_topic_.empty()) {
       left_camera_publisher_.RequestPublish(
           node_info_, left_camera_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
-              ChannelDef::CHANNEL_TYPE_WS,
-          settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
           base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
                          base::Unretained(this)));
     }
@@ -59,9 +57,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
     if (!right_camera_topic_.empty()) {
       right_camera_publisher_.RequestPublish(
           node_info_, right_camera_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
-              ChannelDef::CHANNEL_TYPE_WS,
-          settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
           base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
                          base::Unretained(this)));
     }
@@ -69,9 +65,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
     if (!depth_topic_.empty()) {
       depth_publisher_.RequestPublish(
           node_info_, depth_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
-              ChannelDef::CHANNEL_TYPE_WS,
-          settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
           base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
                          base::Unretained(this)));
     }
@@ -79,9 +73,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
     if (!pointcloud_topic_.empty()) {
       pointcloud_publisher_.RequestPublish(
           node_info_, pointcloud_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
-              ChannelDef::CHANNEL_TYPE_WS,
-          settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
           base::BindOnce(&ZedCameraPublishingNode::OnRequestPublish,
                          base::Unretained(this)));
     }

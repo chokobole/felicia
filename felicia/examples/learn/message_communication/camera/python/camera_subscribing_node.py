@@ -24,10 +24,13 @@ class CameraSubscribingNode(fel.NodeLifecycle):
 
     def request_subscribe(self):
         settings = fel.communication.Settings()
-        settings.period = fel.TimeDelta.from_seconds(1 / self.camera_flag.fps_flag.value)
+        settings.period = fel.TimeDelta.from_seconds(
+            1 / self.camera_flag.fps_flag.value)
         settings.is_dynamic_buffer = True
 
-        self.subscriber.request_subscribe(self.node_info, self.topic, ChannelDef.CHANNEL_TYPE_TCP,
+        self.subscriber.request_subscribe(self.node_info, self.topic,
+                                          ChannelDef.CHANNEL_TYPE_TCP |
+                                          ChannelDef.CHANNEL_TYPE_SHM,
                                           CameraFrameMessage, self.on_message,
                                           self.on_subscription_error, settings,
                                           self.on_request_subscribe)

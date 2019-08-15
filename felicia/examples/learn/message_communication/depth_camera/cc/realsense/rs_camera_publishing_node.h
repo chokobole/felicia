@@ -50,9 +50,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
     if (!color_topic_.empty()) {
       color_publisher_.RequestPublish(
           node_info_, color_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
-              ChannelDef::CHANNEL_TYPE_WS,
-          settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
           base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
                          base::Unretained(this)));
     }
@@ -60,9 +58,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
     if (!depth_topic_.empty()) {
       depth_publisher_.RequestPublish(
           node_info_, depth_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
-              ChannelDef::CHANNEL_TYPE_WS,
-          settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
           base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
                          base::Unretained(this)));
     }
@@ -70,9 +66,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
     if (!pointcloud_topic_.empty()) {
       pointcloud_publisher_.RequestPublish(
           node_info_, pointcloud_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
-              ChannelDef::CHANNEL_TYPE_WS,
-          settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
           base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
                          base::Unretained(this)));
     }
@@ -80,9 +74,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
     if (!imu_topic_.empty()) {
       imu_publisher_.RequestPublish(
           node_info_, imu_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM |
-              ChannelDef::CHANNEL_TYPE_WS,
-          settings,
+          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
           base::BindOnce(&RsCameraPublishingNode::OnRequestPublish,
                          base::Unretained(this)));
     }
