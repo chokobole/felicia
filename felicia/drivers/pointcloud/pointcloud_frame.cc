@@ -54,8 +54,7 @@ PointcloudFrameMessage PointcloudFrame::ToPointcloudFrameMessage() const {
   return message;
 }
 
-// static
-PointcloudFrame PointcloudFrame::FromPointcloudFrameMessage(
+Status PointcloudFrame::FromPointcloudFrameMessage(
     const PointcloudFrameMessage& message) {
   std::vector<Point3f> points;
   const std::string& points_data = message.points();
@@ -67,8 +66,11 @@ PointcloudFrame PointcloudFrame::FromPointcloudFrameMessage(
   colors.resize(colors_data.length() / sizeof(uint8_t));
   memcpy(colors.data(), colors_data.c_str(), colors_data.length());
 
-  return {std::move(points), std::move(colors),
-          base::TimeDelta::FromMicroseconds(message.timestamp())};
+  *this =
+      PointcloudFrame{std::move(points), std::move(colors),
+                      base::TimeDelta::FromMicroseconds(message.timestamp())};
+
+  return Status::OK();
 }
 
 }  // namespace drivers

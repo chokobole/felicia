@@ -4,6 +4,7 @@
 #include "third_party/chromium/base/callback.h"
 
 #include "felicia/core/lib/base/export.h"
+#include "felicia/core/lib/error/status.h"
 #include "felicia/core/lib/unit/geometry/point.h"
 #include "felicia/core/lib/unit/ui/color.h"
 #include "felicia/drivers/pointcloud/pointcloud_frame_message.pb.h"
@@ -29,8 +30,7 @@ class EXPORT PointcloudFrame {
   base::TimeDelta timestamp() const;
 
   PointcloudFrameMessage ToPointcloudFrameMessage() const;
-  static PointcloudFrame FromPointcloudFrameMessage(
-      const PointcloudFrameMessage& message);
+  Status FromPointcloudFrameMessage(const PointcloudFrameMessage& message);
 
  private:
   std::vector<Point3f> points_;
