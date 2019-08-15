@@ -96,7 +96,7 @@ void ExpectTopicNotSubscribingOnNode(std::shared_ptr<base::WaitableEvent> event,
   auto request = std::make_unique<Method##Request>(); \
   auto response = std::make_unique<Method##Response>()
 
-class MasterTest : public ::testing::Test {
+class MasterTest : public testing::Test {
  public:
   MasterTest()
       : master_(base::WrapUnique(new Master())),
