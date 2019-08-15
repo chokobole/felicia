@@ -231,7 +231,7 @@ StatusOr<ChannelDef> Publisher<MessageTy>::Setup(
 #endif
   else if (channel->IsShmChannel()) {
     ShmChannel<MessageTy>* shm_channel = channel->ToShmChannel();
-    status_or = shm_channel->MakeReadOnlySharedMemory();
+    status_or = shm_channel->MakeSharedMemory();
   }
 
   return status_or;

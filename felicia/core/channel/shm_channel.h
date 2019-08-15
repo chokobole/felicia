@@ -25,7 +25,7 @@ class ShmChannel : public Channel<MessageTy> {
   void Connect(const ChannelDef& channel_def,
                StatusOnceCallback callback) override;
 
-  StatusOr<ChannelDef> MakeReadOnlySharedMemory();
+  StatusOr<ChannelDef> MakeSharedMemory();
 
  private:
   void OnReceiveData(StatusOr<PlatformHandleBroker::Data> status_or);
@@ -61,7 +61,7 @@ void ShmChannel<MessageTy>::Connect(const ChannelDef& channel_def,
 }
 
 template <typename MessageTy>
-StatusOr<ChannelDef> ShmChannel<MessageTy>::MakeReadOnlySharedMemory() {
+StatusOr<ChannelDef> ShmChannel<MessageTy>::MakeSharedMemory() {
   DCHECK(!this->channel_impl_);
   this->channel_impl_ =
       std::make_unique<SharedMemory>(settings_.shm_size.bytes());
