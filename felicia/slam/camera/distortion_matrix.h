@@ -16,13 +16,14 @@ class DistortionMatrix {
   typedef NativeMatrixRef<MatrixType> MatrixTypeRef;
   typedef ConstNativeMatrixRef<MatrixType> ConstMatrixTypeRef;
   typedef typename ConstMatrixTypeRef::ScalarType ScalarType;
-  static_assert(
-      IsValidDistortionMatrix(ConstMatrixTypeRef::Rows,
-                              ConstMatrixTypeRef::Cols) ||
-          (ConstMatrixTypeRef::Rows == 1 && ConstMatrixTypeRef::Cols == -1) ||
-          (ConstMatrixTypeRef::Rows == -1 && ConstMatrixTypeRef::Cols == -1),
-      "DistortionMatrix should be 1xn matrix, otherwise it should be "
-      "possibly changed to that form.");
+  static_assert(IsValidDistortionMatrix(ConstMatrixTypeRef::Rows,
+                                        ConstMatrixTypeRef::Cols) ||
+                    IsDynamicMatrix(ConstMatrixTypeRef::Rows,
+                                    ConstMatrixTypeRef::Cols) ||
+                    IsDynamicRowVector(ConstMatrixTypeRef::Rows,
+                                       ConstMatrixTypeRef::Cols),
+                FEL_MATRIX_SIZE_NOT_SATISFIED("CameraMatrix",
+                                              "1xn or valid distortion sized"));
 
   DistortionMatrix() = default;
   explicit DistortionMatrix(const MatrixType& matrix) : matrix_(matrix) {

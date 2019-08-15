@@ -253,9 +253,35 @@ class MatrixBinaryOperation<cv::Mat_<T>, cv::Mat_<T>> {
 };
 #endif
 
+#define FEL_MATRIX_SIZE_NOT_SATISFIED(name, size) \
+#name " should be " #size                       \
+        " matrix, otherwise it should be possibly changed to that form."
+
 template <int Rows, int Cols>
 constexpr bool IsMatrix(int rows, int cols) {
   return rows == Rows && cols == Cols;
+}
+
+constexpr bool IsDynamicMatrix(int rows, int cols) {
+  return rows == -1 && cols == -1;
+}
+
+template <int Rows>
+constexpr bool IsVector(int rows, int cols) {
+  return rows == Rows && cols == 1;
+}
+
+template <int Cols>
+constexpr bool IsRowVector(int rows, int cols) {
+  return rows == 1 && cols == Cols;
+}
+
+constexpr bool IsDynamicVector(int rows, int cols) {
+  return rows == -1 && cols == 1;
+}
+
+constexpr bool IsDynamicRowVector(int rows, int cols) {
+  return rows == 1 && cols == -1;
 }
 
 }  // namespace felicia

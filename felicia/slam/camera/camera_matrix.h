@@ -16,11 +16,11 @@ class CameraMatrix {
   typedef NativeMatrixRef<MatrixType> MatrixTypeRef;
   typedef ConstNativeMatrixRef<MatrixType> ConstMatrixTypeRef;
   typedef typename ConstMatrixTypeRef::ScalarType ScalarType;
-  static_assert(
-      (ConstMatrixTypeRef::Rows == 3 || ConstMatrixTypeRef::Rows == -1) &&
-          (ConstMatrixTypeRef::Cols == 3 || ConstMatrixTypeRef::Cols == -1),
-      "CameraMatrix should be 3x3 matrix, otherwise it should be possibly "
-      "changed to that form.");
+  static_assert(IsMatrix<3, 3>(ConstMatrixTypeRef::Rows,
+                               ConstMatrixTypeRef::Cols) ||
+                    IsDynamicMatrix(ConstMatrixTypeRef::Rows,
+                                    ConstMatrixTypeRef::Cols),
+                FEL_MATRIX_SIZE_NOT_SATISFIED("CameraMatrix", "3x3"));
 
   CameraMatrix() = default;
   explicit CameraMatrix(const MatrixType& matrix) : matrix_(matrix) {
