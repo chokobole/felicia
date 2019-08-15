@@ -84,12 +84,10 @@ class EXPORT StereoCameraModel {
   void set_name(const std::string& name) { name_ = name; }
   const std::string& name() const { return name_; }
 
-  const cv::Mat1d& R() const {
-    return transform_.R();
-  }  // extrinsic rotation matrix
-  const cv::Mat1d& T() const {
-    return transform_.t();
-  }                                          // extrinsic translation matrix
+  // extrinsic rotation matrix
+  const cv::Mat1d& R() const { return transform_.R(); }
+  // extrinsic translation matrix
+  const cv::Mat1d& T() const { return transform_.t(); }
   const cv::Mat1d& E() const { return E_; }  // extrinsic essential matrix
   const cv::Mat1d& F() const { return F_; }  // extrinsic fundamental matrix
 
