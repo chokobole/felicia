@@ -43,6 +43,9 @@ class NativeMatrixRef<Eigen::Matrix<T, Rows_, Cols_>> {
     return MatrixType::Zero(rows, cols);
   }
   static MatrixType Identity() { return MatrixType::Identity(); }
+  static MatrixType Identity(int rows, int cols) {
+    return MatrixType::Identity(rows, cols);
+  }
 
   bool empty() const {
     if (Rows_ != Eigen::Dynamic && Cols_ != Eigen::Dynamic) return false;
@@ -103,6 +106,9 @@ class ConstNativeMatrixRef<Eigen::Matrix<T, Rows_, Cols_>> {
     return MatrixType::Zero(rows, cols);
   }
   static MatrixType Identity() { return MatrixType::Identity(); }
+  static MatrixType Identity(int rows, int cols) {
+    return MatrixType::Identity(rows, cols);
+  }
 
   bool empty() const {
     if (Rows_ != Eigen::Dynamic && Cols_ != Eigen::Dynamic) return false;
@@ -374,6 +380,7 @@ class NativeMatrixRef<cv::Matx<T, Rows_, Cols_>> {
   static MatrixType Zero(int rows, int cols, int type = cv::DataType<T>::type) {
     return MatrixType::zeros();
   }
+  static MatrixType Identity() { return MatrixType::eye(); }
   static MatrixType Identity(int row, int cols,
                              int type = cv::DataType<T>::type) {
     return MatrixType::eye();
@@ -428,6 +435,7 @@ class ConstNativeMatrixRef<cv::Matx<T, Rows_, Cols_>> {
   static MatrixType Zero(int rows, int cols, int type = cv::DataType<T>::type) {
     return MatrixType::zeros();
   }
+  static MatrixType Identity() { return MatrixType::eye(); }
   static MatrixType Identity(int row, int cols,
                              int type = cv::DataType<T>::type) {
     return MatrixType::eye();
