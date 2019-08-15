@@ -126,7 +126,7 @@ bool CameraFrame::CloneToCvMat(cv::Mat* out) const {
 
 Status CameraFrame::FromCvMat(cv::Mat mat, const CameraFormat& camera_format,
                               base::TimeDelta timestamp) {
-  size_t length = mat.rows * mat.cols * mat.dims;
+  size_t length = mat.total() * mat.channels();
   std::unique_ptr<uint8_t> data_ptr(new uint8_t[length]);
   memcpy(data_ptr.get(), mat.data, length);
 
