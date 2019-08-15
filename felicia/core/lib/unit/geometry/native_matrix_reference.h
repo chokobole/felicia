@@ -53,6 +53,8 @@ class NativeMatrixRef<Eigen::Matrix<T, Rows_, Cols_>> {
 
   MatrixType inverse() const { return matrix_.inverse(); }
 
+  double determinant() const { return matrix_.determinant(); }
+
   ScalarType& at(int row, int col) { return matrix_(row, col); }
   const ScalarType& at(int row, int col) const { return matrix_(row, col); }
 
@@ -111,6 +113,8 @@ class ConstNativeMatrixRef<Eigen::Matrix<T, Rows_, Cols_>> {
 
   MatrixType inverse() const { return matrix_.inverse(); }
 
+  double determinant() const { return matrix_.determinant(); }
+
   const ScalarType& at(int row, int col) const { return matrix_(row, col); }
 
   int rows() const { return matrix_.rows(); }
@@ -167,6 +171,8 @@ class NativeMatrixRef<cv::Mat> {
   MatrixType transpose() const { return matrix_.t(); }
 
   MatrixType inverse() const { return matrix_.inv(); }
+
+  double determinant() const { return cv::determinant(matrix_); }
 
   // To conform to other NativeMatrixRef's
   ScalarType& at(int row, int col) {
@@ -228,6 +234,8 @@ class ConstNativeMatrixRef<cv::Mat> {
 
   MatrixType inverse() const { return matrix_.inv(); }
 
+  double determinant() const { return cv::determinant(matrix_); }
+
   // To conform to other ConstNativeMatrixRef's
   const ScalarType& at(int row, int col) const {
     return matrix_.template at<ScalarType>(row, col);
@@ -281,6 +289,8 @@ class NativeMatrixRef<cv::Mat_<T>> {
 
   MatrixType inverse() const { return matrix_.inv(); }
 
+  double determinant() const { return cv::determinant(matrix_); }
+
   ScalarType& at(int row, int col) { return matrix_(row, col); }
   const ScalarType& at(int row, int col) const { return matrix_(row, col); }
 
@@ -327,6 +337,8 @@ class ConstNativeMatrixRef<cv::Mat_<T>> {
 
   MatrixType inverse() const { return matrix_.inv(); }
 
+  double determinant() const { return cv::determinant(matrix_); }
+
   const ScalarType& at(int row, int col) const { return matrix_(row, col); }
 
   int rows() const { return matrix_.rows; }
@@ -372,6 +384,8 @@ class NativeMatrixRef<cv::Matx<T, Rows_, Cols_>> {
   MatrixType transpose() const { return matrix_.t(); }
 
   MatrixType inverse() const { return matrix_.inv(); }
+
+  double determinant() const { return cv::determinant(matrix_); }
 
   ScalarType& at(int row, int col) { return matrix_(row, col); }
   const ScalarType& at(int row, int col) const { return matrix_(row, col); }
@@ -424,6 +438,8 @@ class ConstNativeMatrixRef<cv::Matx<T, Rows_, Cols_>> {
   MatrixType transpose() const { return matrix_.t(); }
 
   MatrixType inverse() const { return matrix_.inv(); }
+
+  double determinant() const { return cv::determinant(matrix_); }
 
   const ScalarType& at(int row, int col) const { return matrix_(row, col); }
 
