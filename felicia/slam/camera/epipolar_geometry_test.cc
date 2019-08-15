@@ -14,24 +14,24 @@ TEST(EpipolarGeometryTest, ComputeEssentialMatrix) {
   Eigen::Translation3f translation(1, 2, 3);
   Eigen::Matrix3f R = angle_axis.matrix();
   Eigen::Vector3f t = translation.vector();
-  auto expected = EpiploarGeometry::ComputeEssentialMatrix(R, t);
+  auto expected = EpipolarGeometry::ComputeEssentialMatrix(R, t);
   {
     RigidBodyTransform3<Eigen::AngleAxisf, Eigen::Translation3f> transform(
         angle_axis, translation);
     ExpectEqualMatrix(expected,
-                      EpiploarGeometry::ComputeEssentialMatrix(transform));
+                      EpipolarGeometry::ComputeEssentialMatrix(transform));
   }
 
   Eigen::Quaternionf quaternion(angle_axis);
   // Has to check if its matrix type are really same.
   ExpectEqualMatrix(angle_axis.matrix(), quaternion.matrix());
-  ExpectEqualMatrix(expected, EpiploarGeometry::ComputeEssentialMatrix(
+  ExpectEqualMatrix(expected, EpipolarGeometry::ComputeEssentialMatrix(
                                   quaternion.matrix(), t));
   {
     RigidBodyTransform3<Eigen::Quaternionf, Eigen::Translation3f> transform(
         quaternion, translation);
     ExpectEqualMatrix(expected,
-                      EpiploarGeometry::ComputeEssentialMatrix(transform));
+                      EpipolarGeometry::ComputeEssentialMatrix(transform));
   }
 
 #if defined(HAS_OPENCV)
@@ -41,13 +41,13 @@ TEST(EpipolarGeometryTest, ComputeEssentialMatrix) {
   R_ref.ToCvMatrix(&cv_matx33_R);
   cv::Matx31f cv_matx31_t;
   t_ref.ToCvMatrix(&cv_matx31_t);
-  ExpectEqualMatrix(expected, EpiploarGeometry::ComputeEssentialMatrix(
+  ExpectEqualMatrix(expected, EpipolarGeometry::ComputeEssentialMatrix(
                                   cv_matx33_R, cv_matx31_t));
   {
     RigidBodyTransform3<cv::Matx33f, cv::Matx31f> transform(cv_matx33_R,
                                                             cv_matx31_t);
     ExpectEqualMatrix(expected,
-                      EpiploarGeometry::ComputeEssentialMatrix(transform));
+                      EpipolarGeometry::ComputeEssentialMatrix(transform));
   }
 #endif
 }

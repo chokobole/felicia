@@ -1,14 +1,13 @@
 #ifndef FELICIA_SLAM_CAMERA_EPIPOLAR_GEOMETRY_H_
 #define FELICIA_SLAM_CAMERA_EPIPOLAR_GEOMETRY_H_
 
-#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/unit/geometry/native_matrix_reference.h"
 #include "felicia/core/lib/unit/geometry/rigid_body_transform.h"
 
 namespace felicia {
 namespace slam {
 
-class EXPORT EpiploarGeometry {
+class EpipolarGeometry {
  public:
   // Compute R[t]x, where [t]x is the matrix representation of the cross product
   // with t.
@@ -36,7 +35,7 @@ class EXPORT EpiploarGeometry {
 
 // static
 template <typename MatrixType, typename VectorType>
-MatrixType EpiploarGeometry::ComputeEssentialMatrix(const MatrixType& R,
+MatrixType EpipolarGeometry::ComputeEssentialMatrix(const MatrixType& R,
                                                     const VectorType& t) {
   typedef typename NativeMatrixRef<MatrixType>::ScalarType ScalarType;
 
@@ -59,15 +58,15 @@ MatrixType EpiploarGeometry::ComputeEssentialMatrix(const MatrixType& R,
 
 // static
 template <typename RigidBodyTransform3Type>
-auto EpiploarGeometry::ComputeEssentialMatrix(
+auto EpipolarGeometry::ComputeEssentialMatrix(
     const RigidBodyTransform3Type& T) {
-  return EpiploarGeometry::ComputeEssentialMatrix(T.rotation_matrix(),
+  return EpipolarGeometry::ComputeEssentialMatrix(T.rotation_matrix(),
                                                   T.translation_vector());
 }
 
 // static
 template <typename MatrixType, typename VectorType>
-MatrixType EpiploarGeometry::ComputeFundamentalMatrix(const MatrixType& K,
+MatrixType EpipolarGeometry::ComputeFundamentalMatrix(const MatrixType& K,
                                                       const MatrixType& K2,
                                                       const MatrixType& R,
                                                       const VectorType& t) {
@@ -81,10 +80,10 @@ MatrixType EpiploarGeometry::ComputeFundamentalMatrix(const MatrixType& K,
 
 // static
 template <typename MatrixType, typename RigidBodyTransform3Type>
-MatrixType EpiploarGeometry::ComputeFundamentalMatrix(
+MatrixType EpipolarGeometry::ComputeFundamentalMatrix(
     const MatrixType& K, const MatrixType& K2,
     const RigidBodyTransform3Type& T) {
-  return EpiploarGeometry::ComputeFundamentalMatrix(K, K2, T.rotation_matrix(),
+  return EpipolarGeometry::ComputeFundamentalMatrix(K, K2, T.rotation_matrix(),
                                                     T.translation_vector());
 }
 
