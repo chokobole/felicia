@@ -83,6 +83,30 @@ function fillPixelsImpl(pixels, width, height, data, colorIndexes) {
   }
 }
 
+function fillGreyPixelsImpl(pixels, width, height, data, is8bit) {
+  const size = width * height;
+  if (is8bit) {
+    const pixelData = new Uint8ClampedArray(data);
+    for (let i = 0; i < size; i += 1) {
+      const pixelsIdx = i << 2;
+      pixels[pixelsIdx + RGBA.rIdx] = pixelData[i];
+      pixels[pixelsIdx + RGBA.gIdx] = pixelData[i];
+      pixels[pixelsIdx + RGBA.bIdx] = pixelData[i];
+      pixels[pixelsIdx + RGBA.aIdx] = 255;
+    }
+  } else {
+    const pixelData = new Uint16Array(data);
+    for (let i = 0; i < size; i += 1) {
+      const pixelsIdx = i << 2;
+      const v = Math.floor(pixelData[i] / 256);
+      pixels[pixelsIdx + RGBA.rIdx] = v;
+      pixels[pixelsIdx + RGBA.gIdx] = v;
+      pixels[pixelsIdx + RGBA.bIdx] = v;
+      pixels[pixelsIdx + RGBA.aIdx] = 255;
+    }
+  }
+}
+
 export function fillPixels(pixels, width, height, data, pixelFormat) {
   let colorIndexes = null;
   if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_BGRA) {
@@ -97,6 +121,18 @@ export function fillPixels(pixels, width, height, data, pixelFormat) {
     colorIndexes = RGB;
   } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_BGRX) {
     colorIndexes = BGRX;
+  } else if (
+    pixelFormat === PixelFormat.values.PIXEL_FORMAT_Y8 ||
+    pixelFormat === PixelFormat.values.PIXEL_FORMAT_Y16
+  ) {
+    fillGreyPixelsImpl(
+      pixels,
+      width,
+      height,
+      data,
+      pixelFormat === PixelFormat.values.PIXEL_FORMAT_Y8
+    );
+    return true;
   } else {
     console.error(`To draw, you need to convert to BGRA format: ${pixelFormat}`);
     return false;
