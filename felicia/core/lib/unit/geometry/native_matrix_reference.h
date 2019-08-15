@@ -31,6 +31,7 @@ class NativeMatrixRef<Eigen::Matrix<T, Rows_, Cols_>> {
   typedef Eigen::Matrix<T, Rows_, Cols_> MatrixType;
 
   enum {
+    EigenMatrix = 1,
     Rows = Rows_,
     Cols = Cols_,
   };
@@ -88,6 +89,7 @@ class ConstNativeMatrixRef<Eigen::Matrix<T, Rows_, Cols_>> {
   typedef Eigen::Matrix<T, Rows_, Cols_> MatrixType;
 
   enum {
+    EigenMatrix = 1,
     Rows = Rows_,
     Cols = Cols_,
   };
@@ -146,6 +148,7 @@ class NativeMatrixRef<cv::Mat> {
   typedef cv::Mat MatrixType;
 
   enum {
+    CvMatrix = 1,
     Rows = -1,
     Cols = -1,
   };
@@ -205,6 +208,7 @@ class ConstNativeMatrixRef<cv::Mat> {
   typedef cv::Mat MatrixType;
 
   enum {
+    CvMatrix = 1,
     Rows = -1,
     Cols = -1,
   };
@@ -256,6 +260,7 @@ class NativeMatrixRef<cv::Mat_<T>> {
   typedef cv::Mat_<T> MatrixType;
 
   enum {
+    CvMatrix = 1,
     Rows = -1,
     Cols = -1,
   };
@@ -301,6 +306,7 @@ class ConstNativeMatrixRef<cv::Mat_<T>> {
   typedef cv::Mat_<T> MatrixType;
 
   enum {
+    CvMatrix = 1,
     Rows = -1,
     Cols = -1,
   };
@@ -345,6 +351,7 @@ class NativeMatrixRef<cv::Matx<T, Rows_, Cols_>> {
   typedef cv::Matx<T, Rows_, Cols_> MatrixType;
 
   enum {
+    CvMatrix = 1,
     Rows = Rows_,
     Cols = Cols_,
   };
@@ -396,6 +403,7 @@ class ConstNativeMatrixRef<cv::Matx<T, Rows_, Cols_>> {
   typedef cv::Matx<T, Rows_, Cols_> MatrixType;
 
   enum {
+    CvMatrix = 1,
     Rows = Rows_,
     Cols = Cols_,
   };
