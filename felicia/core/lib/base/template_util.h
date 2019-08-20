@@ -26,11 +26,6 @@ struct SupportsLessThanOrEqualOperator<T, decltype(void(std::declval<T>() <=
     : std::true_type {};
 
 template <typename T>
-bool IsEqual(const T& v1, const T& v2) {
-  return v1 == v2;
-}
-
-template <typename T>
 void AddValue(std::vector<T>& vec, T&& value) {
   vec.push_back(std::forward<T>(value));
 }

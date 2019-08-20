@@ -2,10 +2,12 @@
 /* eslint no-restricted-globals: ["off"] */
 /* eslint no-bitwise: ["off"] */
 import { RGBA } from 'util/color';
+import { getDataView } from 'util/util';
 
 self.onmessage = event => {
   const { imageData, frame, scale } = event.data;
   const { angleStart, angleDelta, rangeMin, rangeMax, ranges } = frame;
+  const rangesData = getDataView(ranges);
 
   const { data, width, height } = imageData;
   const radius = Math.min(width, height) / 2;
@@ -14,8 +16,9 @@ self.onmessage = event => {
     data[i] = 0;
   }
 
-  for (let i = 0; i < ranges.length; i += 1) {
-    const range = ranges[i];
+  const rangesSize = rangesData.byteLength / 4;
+  for (let i = 0; i < rangesSize; i += 1) {
+    const range = rangesData.getFloat32(i * 4, true);
     if (range >= rangeMin && range <= rangeMax) {
       const radian = angleStart + angleDelta * i;
       const r = ((radius * range) / rangeMax) * scale;

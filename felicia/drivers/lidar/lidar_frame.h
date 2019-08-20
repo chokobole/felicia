@@ -5,6 +5,7 @@
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/lib/base/export.h"
+#include "felicia/core/lib/containers/string_vector.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/lib/unit/geometry/point.h"
 #include "felicia/drivers/lidar/lidar_frame_message.pb.h"
@@ -17,10 +18,15 @@ class EXPORT LidarFrame {
   LidarFrame();
   LidarFrame(float angle_start, float angle_end, float angle_delta,
              float time_delta, float scan_time, float range_min,
-             float range_max, std::vector<float>&& ranges,
-             std::vector<float> intensities,
+             float range_max, const std::string& ranges,
+             const std::string& intensities, base::TimeDelta timestamp);
+  LidarFrame(float angle_start, float angle_end, float angle_delta,
+             float time_delta, float scan_time, float range_min,
+             float range_max, std::string&& ranges, std::string&& intensities,
              base::TimeDelta timestamp) noexcept;
+  LidarFrame(const LidarFrame& other);
   LidarFrame(LidarFrame&& other) noexcept;
+  LidarFrame& operator=(const LidarFrame& other);
   LidarFrame& operator=(LidarFrame&& other);
   ~LidarFrame();
 
@@ -41,13 +47,19 @@ class EXPORT LidarFrame {
   void set_timestamp(base::TimeDelta timestamp);
   base::TimeDelta timestamp() const;
 
-  std::vector<float>& ranges();
-  const std::vector<float>& ranges() const;
-  std::vector<float>& intensities();
-  const std::vector<float>& intensities() const;
+  StringVector& ranges();
+  StringVector& intensities();
+  const StringVector& ranges() const;
+  const StringVector& intensities() const;
+
+  float& RangeAt(size_t idx);
+  float& IntensityAt(size_t idx);
+  const float& RangeAt(size_t idx) const;
+  const float& IntensityAt(size_t idx) const;
 
   LidarFrameMessage ToLidarFrameMessage() const;
   Status FromLidarFrameMessage(const LidarFrameMessage& message);
+  Status FromLidarFrameMessage(LidarFrameMessage&& message);
 
   void Project(std::vector<Pointf>* points, float user_range_min,
                float user_range_max) const;
@@ -60,11 +72,9 @@ class EXPORT LidarFrame {
   float scan_time_;
   float range_min_;
   float range_max_;
-  std::vector<float> ranges_;
-  std::vector<float> intensities_;
+  StringVector ranges_;
+  StringVector intensities_;
   base::TimeDelta timestamp_;
-
-  DISALLOW_COPY_AND_ASSIGN(LidarFrame);
 };
 
 typedef base::RepeatingCallback<void(const LidarFrame&)> LidarFrameCallback;

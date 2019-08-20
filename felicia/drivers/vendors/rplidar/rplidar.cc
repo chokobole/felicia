@@ -298,23 +298,23 @@ LidarFrame RPlidar::ToLidarFrame(rplidar_response_measurement_node_hq_t* nodes,
     for (size_t i = 0; i < node_count; i++) {
       float read_value = static_cast<float>(nodes[i].dist_mm_q2 / 4.0f / 1000);
       if (read_value == 0.0) {
-        lidar_frame.ranges()[node_count - i - 1] =
+        lidar_frame.RangeAt(node_count - i - 1) =
             std::numeric_limits<float>::infinity();
       } else {
-        lidar_frame.ranges()[node_count - i - 1] = read_value;
+        lidar_frame.RangeAt(node_count - i - 1) = read_value;
       }
-      lidar_frame.intensities()[node_count - i - 1] =
+      lidar_frame.IntensityAt(node_count - i - 1) =
           static_cast<float>(nodes[i].quality >> 2);
     }
   } else {
     for (size_t i = 0; i < node_count; i++) {
       float read_value = static_cast<float>(nodes[i].dist_mm_q2 / 4.0f / 1000);
       if (read_value == 0.0) {
-        lidar_frame.ranges()[i] = std::numeric_limits<float>::infinity();
+        lidar_frame.RangeAt(i) = std::numeric_limits<float>::infinity();
       } else {
-        lidar_frame.ranges()[i] = read_value;
+        lidar_frame.RangeAt(i) = read_value;
       }
-      lidar_frame.intensities()[i] = static_cast<float>(nodes[i].quality >> 2);
+      lidar_frame.IntensityAt(i) = static_cast<float>(nodes[i].quality >> 2);
     }
   }
   lidar_frame.set_timestamp(timestamper_.timestamp());

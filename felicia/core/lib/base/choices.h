@@ -30,7 +30,7 @@ class Choices {
 
   bool In(const T& value) const {
     for (auto& value_ : values_) {
-      if (internal::IsEqual(value, value_)) {
+      if (value == value_) {
         return true;
       }
     }
