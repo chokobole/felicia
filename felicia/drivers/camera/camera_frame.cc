@@ -80,7 +80,7 @@ Status CameraFrame::FromCameraFrameMessage(const CameraFrameMessage& message) {
 }
 
 Status CameraFrame::FromCameraFrameMessage(CameraFrameMessage&& message) {
-  std::string* data = message.release_data();
+  std::unique_ptr<std::string> data(message.release_data());
   size_t length = data->length();
   std::unique_ptr<uint8_t> data_ptr = StdStringToUniquePtr<uint8_t>(*data);
 

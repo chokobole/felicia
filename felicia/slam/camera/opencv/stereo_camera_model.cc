@@ -399,7 +399,7 @@ Status StereoCameraModel::FromStereoCameraModelMessage(
   }
 
   if (!message.r().empty()) {
-    std::string* r = message.release_r();
+    std::unique_ptr<std::string> r(message.release_r());
     int rows = 3;
     int cols = r->length() / rows;
     if (!IsMatrix<3, 3>(rows, cols))
@@ -409,7 +409,7 @@ Status StereoCameraModel::FromStereoCameraModelMessage(
   }
 
   if (!message.t().empty()) {
-    std::string* t = message.release_t();
+    std::unique_ptr<std::string> t(message.release_t());
     int rows = 3;
     int cols = t->length() / rows;
     if (!IsMatrix<3, 1>(rows, cols))
@@ -419,7 +419,7 @@ Status StereoCameraModel::FromStereoCameraModelMessage(
   }
 
   if (!message.e().empty()) {
-    std::string* e = message.release_e();
+    std::unique_ptr<std::string> e(message.release_e());
     int rows = 3;
     int cols = e->length() / rows;
     if (!IsMatrix<3, 3>(rows, cols))
@@ -429,7 +429,7 @@ Status StereoCameraModel::FromStereoCameraModelMessage(
   }
 
   if (!message.f().empty()) {
-    std::string* f = message.release_f();
+    std::unique_ptr<std::string> f(message.release_f());
     int rows = 3;
     int cols = f->length() / rows;
     if (!IsMatrix<3, 3>(rows, cols))

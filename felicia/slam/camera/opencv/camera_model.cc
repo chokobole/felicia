@@ -515,7 +515,7 @@ Status CameraModel::FromCameraModelMessage(CameraModelMessage&& message) {
   }
 
   if (!message.k().empty()) {
-    std::string* k = message.release_k();
+    std::unique_ptr<std::string> k(message.release_k());
     int rows = 3;
     int cols = k->length() / rows;
     if (!IsMatrix<3, 3>(rows, cols))
@@ -525,7 +525,7 @@ Status CameraModel::FromCameraModelMessage(CameraModelMessage&& message) {
   }
 
   if (!message.d().empty()) {
-    std::string* d = message.release_d();
+    std::unique_ptr<std::string> d(message.release_d());
     int rows = 1;
     int cols = d->length() / rows;
     if (!IsValidDistortionMatrix(rows, cols))
@@ -535,7 +535,7 @@ Status CameraModel::FromCameraModelMessage(CameraModelMessage&& message) {
   }
 
   if (!message.r().empty()) {
-    std::string* r = message.release_r();
+    std::unique_ptr<std::string> r(message.release_r());
     int rows = 3;
     int cols = r->length() / rows;
     if (!IsMatrix<3, 3>(rows, cols))
@@ -545,7 +545,7 @@ Status CameraModel::FromCameraModelMessage(CameraModelMessage&& message) {
   }
 
   if (!message.p().empty()) {
-    std::string* p = message.release_p();
+    std::unique_ptr<std::string> p(message.release_p());
     int rows = 3;
     int cols = p->length() / rows;
     if (!IsMatrix<3, 4>(rows, cols))
