@@ -36,6 +36,8 @@ SLAM_HDRS = [
     "types.h",
     "camera/camera_matrix.h",
     "camera/distortion_matrix.h",
+    "camera/projection_matrix.h",
+    "camera/rectification_matrix.h",
     "camera/epipolar_geometry.h",
 ]
 

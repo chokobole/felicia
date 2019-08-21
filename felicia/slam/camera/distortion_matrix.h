@@ -22,7 +22,7 @@ class DistortionMatrix {
                                     ConstMatrixTypeRef::Cols) ||
                     IsDynamicRowVector(ConstMatrixTypeRef::Rows,
                                        ConstMatrixTypeRef::Cols),
-                FEL_MATRIX_SIZE_NOT_SATISFIED("CameraMatrix",
+                FEL_MATRIX_SIZE_NOT_SATISFIED("DistortionMatrix",
                                               "1xn or valid distortion sized"));
 
   DistortionMatrix() = default;
@@ -84,7 +84,7 @@ class DistortionMatrix {
   void set_k2(ScalarType k2) { MaybeSet(1, k2); }
 
   ScalarType p1() const { return ValueOrZero(2); }
-  void set_p1(ScalarType p1) { MaybeSet(2, k2); }
+  void set_p1(ScalarType p1) { MaybeSet(2, p1); }
 
   ScalarType p2() const { return ValueOrZero(3); }
   void set_p2(ScalarType p2) { MaybeSet(3, p2); }

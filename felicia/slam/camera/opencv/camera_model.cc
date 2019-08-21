@@ -123,12 +123,12 @@ CameraModel::CameraModel(const std::string& name, const cv::Size& image_size,
   }
 }
 
-CameraModel::CameraModel(double fx, double fy, double cx, double cy, double Tx,
+CameraModel::CameraModel(double fx, double fy, double cx, double cy, double tx,
                          const cv::Size& image_size)
-    : CameraModel(base::EmptyString(), fx, fy, cx, cy, Tx, image_size) {}
+    : CameraModel(base::EmptyString(), fx, fy, cx, cy, tx, image_size) {}
 
 CameraModel::CameraModel(const std::string& name, double fx, double fy,
-                         double cx, double cy, double Tx,
+                         double cx, double cy, double tx,
                          const cv::Size& image_size)
     : name_(name), K_(cv::Mat1d::eye(3, 3)) {
   CHECK_GT(fx, 0.0);
@@ -137,11 +137,12 @@ CameraModel::CameraModel(const std::string& name, double fx, double fy,
   CHECK_GE(cy, 0.0);
   CHECK(IsValidImageSize(image_size.width, image_size.height));
 
-  if (Tx != 0.0) {
+  if (tx != 0.0) {
     P_ = cv::Mat1d::eye(3, 4);
-    P_(0, 0) = fx;
-    P_(1, 1) = fy;
-    P_(0, 3) = Tx;
+    cv::Mat1d& P = K_.matrix();
+    P(0, 0) = fx;
+    P(1, 1) = fy;
+    P(0, 3) = tx;
   }
 
   cv::Mat1d& K = K_.matrix();
@@ -156,6 +157,8 @@ CameraModel::~CameraModel() = default;
 void CameraModel::InitRectificationMap() {
   const cv::Mat1d& K = K_.matrix();
   const cv::Mat1d& D = D_.matrix();
+  const cv::Mat1d& R = R_.matrix();
+  const cv::Mat1d& P = P_.matrix();
   if (D.cols == 6) {
 #if CV_MAJOR_VERSION > 2 or    \
     (CV_MAJOR_VERSION == 2 and \
@@ -168,7 +171,7 @@ void CameraModel::InitRectificationMap() {
     D2(0, 1) = D(0, 1);
     D2(0, 2) = D(0, 4);
     D2(0, 3) = D(0, 5);
-    cv::fisheye::initUndistortRectifyMap(K, D2, R_, P_, image_size_, CV_32FC1,
+    cv::fisheye::initUndistortRectifyMap(K, D2, R, P, image_size_, CV_32FC1,
                                          map_x_, map_y_);
 
   } else
@@ -181,7 +184,7 @@ void CameraModel::InitRectificationMap() {
 #endif
   {
     // RadialTangential
-    cv::initUndistortRectifyMap(K, D, R_, P_, image_size_, CV_32FC1, map_x_,
+    cv::initUndistortRectifyMap(K, D, R, P, image_size_, CV_32FC1, map_x_,
                                 map_y_);
   }
 }
@@ -198,9 +201,9 @@ void CameraModel::set_image_size(const cv::Size& size) {
   if (ncy == 0.0 && image_size_.height > 0) {
     ncy = static_cast<double>(image_size_.height) / 2.0 - 0.5;
   }
-  if (!P_.empty()) {
-    P_(0, 2) = ncx;
-    P_(1, 2) = ncy;
+  if (!P_.matrix().empty()) {
+    P_.matrix()(0, 2) = ncx;
+    P_.matrix()(1, 2) = ncy;
   }
   if (!K_.matrix().empty()) {
     K_.matrix()(0, 2) = ncx;
@@ -216,8 +219,8 @@ Status CameraModel::Load(const base::FilePath& path) {
     cv::Size image_size = image_size_;
     cv::Mat1d K = K_.matrix();
     cv::Mat1d D = D_.matrix();
-    cv::Mat1d R = R_;
-    cv::Mat1d P = P_;
+    cv::Mat1d R = R_.matrix();
+    cv::Mat1d P = P_.matrix();
 
     Status s;
 
@@ -320,7 +323,9 @@ Status CameraModel::Load(const base::FilePath& path) {
 Status CameraModel::Save(const base::FilePath& path) const {
   const cv::Mat1d& K = K_.matrix();
   const cv::Mat1d& D = D_.matrix();
-  if (!K.empty() || !D.empty() || !R_.empty() || !P_.empty()) {
+  const cv::Mat1d& R = R_.matrix();
+  const cv::Mat1d& P = P_.matrix();
+  if (!K.empty() || !D.empty() || !R.empty() || !P.empty()) {
     try {
       cv::FileStorage fs(path.AsUTF8Unsafe(), cv::FileStorage::WRITE);
 
@@ -378,27 +383,27 @@ Status CameraModel::Save(const base::FilePath& path) const {
         }
       }
 
-      if (!R_.empty()) {
+      if (!R.empty()) {
         fs << "rectification_matrix"
            << "{";
-        fs << "rows" << R_.rows;
-        fs << "cols" << R_.cols;
+        fs << "rows" << R.rows;
+        fs << "cols" << R.cols;
         fs << "data"
            << std::vector<double>(
-                  reinterpret_cast<double*>(R_.data),
-                  reinterpret_cast<double*>(R_.data) + (R_.rows * R_.cols));
+                  reinterpret_cast<double*>(R.data),
+                  reinterpret_cast<double*>(R.data) + (R.rows * R.cols));
         fs << "}";
       }
 
-      if (!P_.empty()) {
+      if (!P.empty()) {
         fs << "projection_matrix"
            << "{";
-        fs << "rows" << P_.rows;
-        fs << "cols" << P_.cols;
+        fs << "rows" << P.rows;
+        fs << "cols" << P.cols;
         fs << "data"
            << std::vector<double>(
-                  reinterpret_cast<double*>(P_.data),
-                  (reinterpret_cast<double*>(P_.data)) + (P_.rows * P_.cols));
+                  reinterpret_cast<double*>(P.data),
+                  (reinterpret_cast<double*>(P.data)) + (P.rows * P.cols));
         fs << "}";
       }
 
@@ -422,10 +427,12 @@ CameraModelMessage CameraModel::ToCameraModelMessage() const {
   image_size_message->set_height(image_size_.height);
   const cv::Mat1d& K = K_.matrix();
   const cv::Mat1d& D = D_.matrix();
-  if (!K.empty()) message.set_k(K.data, K.total() * sizeof(double));
-  if (!D.empty()) message.set_d(D.data, D.total() * sizeof(double));
-  if (!R_.empty()) message.set_r(R_.data, R_.total() * sizeof(double));
-  if (!P_.empty()) message.set_p(P_.data, P_.total() * sizeof(double));
+  const cv::Mat1d& R = R_.matrix();
+  const cv::Mat1d& P = P_.matrix();
+  if (!K.empty()) message.set_k(K.data, K.total() * K.elemSize());
+  if (!D.empty()) message.set_d(D.data, D.total() * K.elemSize());
+  if (!R.empty()) message.set_r(R.data, R.total() * K.elemSize());
+  if (!P.empty()) message.set_p(P.data, P.total() * K.elemSize());
 
   return message;
 }
@@ -434,8 +441,8 @@ Status CameraModel::FromCameraModelMessage(const CameraModelMessage& message) {
   cv::Size image_size = image_size_;
   cv::Mat1d K = K_.matrix();
   cv::Mat1d D = D_.matrix();
-  cv::Mat1d R = R_;
-  cv::Mat1d P = P_;
+  cv::Mat1d R = R_.matrix();
+  cv::Mat1d P = P_.matrix();
 
   if (message.has_image_size()) {
     int width = message.image_size().width();
@@ -502,8 +509,8 @@ Status CameraModel::FromCameraModelMessage(CameraModelMessage&& message) {
   cv::Size image_size = image_size_;
   cv::Mat1d K = K_.matrix();
   cv::Mat1d D = D_.matrix();
-  cv::Mat1d R = R_;
-  cv::Mat1d P = P_;
+  cv::Mat1d R = R_.matrix();
+  cv::Mat1d P = P_.matrix();
 
   if (message.has_image_size()) {
     int width = message.image_size().width();
@@ -577,8 +584,8 @@ CameraModel CameraModel::Scaled(double scale) const {
     }
 
     cv::Mat1d P;
-    if (!P_.empty()) {
-      P = P_.clone();
+    if (!P_.matrix().empty()) {
+      P = P_.matrix().clone();
       P(0, 0) *= scale;
       P(1, 1) *= scale;
       P(0, 2) *= scale;
@@ -590,7 +597,7 @@ CameraModel CameraModel::Scaled(double scale) const {
         CameraModel(name_,
                     cv::Size(static_cast<double>(image_size_.width) * scale,
                              static_cast<double>(image_size_.height) * scale),
-                    K, D_.matrix(), R_, P);
+                    K, D_.matrix(), R_.matrix(), P);
   } else {
     LOG(WARNING)
         << "Trying to scale a camera model not valid! Ignoring scaling...";
@@ -610,12 +617,12 @@ CameraModel CameraModel::Roi(const cv::Rect& roi) const {
     }
 
     cv::Mat1d P;
-    if (!P_.empty()) {
-      P = P_.clone();
+    if (!P_.matrix().empty()) {
+      P = P_.matrix().clone();
       P(0, 2) -= roi.x;
       P(1, 2) -= roi.y;
     }
-    roi_model = CameraModel(name_, roi.size(), K, D_.matrix(), R_, P);
+    roi_model = CameraModel(name_, roi.size(), K, D_.matrix(), R_.matrix(), P);
   } else {
     LOG(WARNING) << "Trying to extract roi from a camera model not valid! "
                     "Ignoring roi...";

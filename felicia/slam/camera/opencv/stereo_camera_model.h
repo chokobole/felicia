@@ -113,8 +113,8 @@ class EXPORT StereoCameraModel {
 
   double baseline() const {
     return right_camera_model_.fx() != 0.0 && left_camera_model_.fx() != 0.0
-               ? left_camera_model_.Tx() / left_camera_model_.fx() -
-                     right_camera_model_.Tx() / right_camera_model_.fx()
+               ? left_camera_model_.tx() / left_camera_model_.fx() -
+                     right_camera_model_.tx() / right_camera_model_.fx()
                : 0.0;
   }
 

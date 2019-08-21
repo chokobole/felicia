@@ -1,5 +1,5 @@
-#ifndef FELICIA_SLAM_CAMERA_CAMERA_MATRIX_H_
-#define FELICIA_SLAM_CAMERA_CAMERA_MATRIX_H_
+#ifndef FELICIA_SLAM_CAMERA_PROJECTION_MATRIX_H_
+#define FELICIA_SLAM_CAMERA_PROJECTION_MATRIX_H_
 
 #include "third_party/chromium/base/logging.h"
 
@@ -11,35 +11,37 @@ namespace felicia {
 namespace slam {
 
 template <typename MatrixType>
-class CameraMatrix {
+class ProjectionMatrix {
  public:
   typedef NativeMatrixRef<MatrixType> MatrixTypeRef;
   typedef ConstNativeMatrixRef<MatrixType> ConstMatrixTypeRef;
   typedef typename ConstMatrixTypeRef::ScalarType ScalarType;
-  static_assert(IsMatrix<3, 3>(ConstMatrixTypeRef::Rows,
+  static_assert(IsMatrix<3, 4>(ConstMatrixTypeRef::Rows,
                                ConstMatrixTypeRef::Cols) ||
                     IsDynamicMatrix(ConstMatrixTypeRef::Rows,
                                     ConstMatrixTypeRef::Cols),
-                FEL_MATRIX_SIZE_NOT_SATISFIED("CameraMatrix", "3x3"));
+                FEL_MATRIX_SIZE_NOT_SATISFIED("ProjectionMatrix", "3x4"));
 
-  CameraMatrix() = default;
-  explicit CameraMatrix(const MatrixType& matrix) : matrix_(matrix) {
+  ProjectionMatrix() = default;
+  explicit ProjectionMatrix(const MatrixType& matrix) : matrix_(matrix) {
     ConstMatrixTypeRef matrix_ref(matrix_);
     CHECK((matrix_ref.empty() ||
-           IsMatrix<3, 3>(matrix_ref.rows(), matrix_ref.cols())));
+           IsMatrix<3, 4>(matrix_ref.rows(), matrix_ref.cols())));
   }
-  CameraMatrix(ScalarType fx, ScalarType fy, ScalarType cx, ScalarType cy)
-      : matrix_(ConstMatrixTypeRef::Identity(3, 3)) {
+  ProjectionMatrix(ScalarType fx, ScalarType fy, ScalarType cx, ScalarType cy,
+                   ScalarType tx)
+      : matrix_(ConstMatrixTypeRef::Identity(3, 4)) {
     set_fx(fx);
     set_fy(fy);
     set_cx(cx);
     set_cy(cx);
+    set_tx(tx);
   }
 
   void operator=(const MatrixType& matrix) {
     ConstMatrixTypeRef matrix_ref(matrix);
     CHECK((matrix_ref.empty() ||
-           IsMatrix<3, 3>(matrix_ref.rows(), matrix_ref.cols())));
+           IsMatrix<3, 4>(matrix_ref.rows(), matrix_ref.cols())));
     matrix_ = matrix;
   }
 
@@ -54,6 +56,9 @@ class CameraMatrix {
 
   ScalarType cy() const { return ValueOrZero(1, 2); }
   void set_cy(ScalarType cy) { MaybeSet(1, 2, cy); }
+
+  ScalarType tx() const { return ValueOrZero(0, 3); }
+  void set_tx(ScalarType tx) { MaybeSet(0, 3, tx); }
 
   const MatrixType& matrix() const { return matrix_; }
   MatrixType& matrix() { return matrix_; }
@@ -103,4 +108,4 @@ class CameraMatrix {
 }  // namespace slam
 }  // namespace felicia
 
-#endif  // FELICIA_SLAM_CAMERA_CAMERA_MATRIX_H_
+#endif  // FELICIA_SLAM_CAMERA_PROJECTION_MATRIX_H_

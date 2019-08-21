@@ -44,6 +44,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "felicia/slam/camera/camera_matrix.h"
 #include "felicia/slam/camera/camera_model_message.pb.h"
 #include "felicia/slam/camera/distortion_matrix.h"
+#include "felicia/slam/camera/projection_matrix.h"
+#include "felicia/slam/camera/rectification_matrix.h"
 #include "felicia/slam/types.h"
 
 namespace felicia {
@@ -71,11 +73,11 @@ class EXPORT CameraModel {
               const cv::Mat1d& P);
 
   // minimal
-  CameraModel(double fx, double fy, double cx, double cy, double Tx = 0.0f,
+  CameraModel(double fx, double fy, double cx, double cy, double tx = 0.0f,
               const cv::Size& image_size = cv::Size(0, 0));
   // minimal to be saved
   CameraModel(const std::string& name, double fx, double fy, double cx,
-              double cy, double Tx = 0.0f,
+              double cy, double tx = 0.0f,
               const cv::Size& image_size = cv::Size(0, 0));
 
   ~CameraModel();
@@ -90,18 +92,18 @@ class EXPORT CameraModel {
   }
   bool IsValidForRectification() const {
     return image_size_.width > 0 && image_size_.height > 0 &&
-           !K_.matrix().empty() && !D_.matrix().empty() && !R_.empty() &&
-           !P_.empty();
+           !K_.matrix().empty() && !D_.matrix().empty() &&
+           !R_.matrix().empty() && !P_.matrix().empty();
   }
 
   void set_name(const std::string& name) { name_ = name; }
   const std::string& name() const { return name_; }
 
-  double fx() const { return P_.empty() ? K_.fx() : P_(0, 0); }
-  double fy() const { return P_.empty() ? K_.fy() : P_(1, 1); }
-  double cx() const { return P_.empty() ? K_.cx() : P_(0, 2); }
-  double cy() const { return P_.empty() ? K_.cy() : P_(1, 2); }
-  double Tx() const { return P_.empty() ? 0.0 : P_(0, 3); }
+  double fx() const { return P_.matrix().empty() ? K_.fx() : P_.fx(); }
+  double fy() const { return P_.matrix().empty() ? K_.fy() : P_.fy(); }
+  double cx() const { return P_.matrix().empty() ? K_.cx() : P_.cx(); }
+  double cy() const { return P_.matrix().empty() ? K_.cy() : P_.cy(); }
+  double tx() const { return P_.matrix().empty() ? 0.0 : P_.tx(); }
 
   // intrinsic camera matrix (before rectification)
   const cv::Mat1d& K_raw() const { return K_.matrix(); }
@@ -109,17 +111,18 @@ class EXPORT CameraModel {
   const cv::Mat1d& D_raw() const { return D_.matrix(); }
   // if P exists, return rectified version
   cv::Mat1d K() const {
-    return !P_.empty() ? cv::Mat1d(P_.colRange(0, 3)) : K_.matrix();
+    return !P_.matrix().empty() ? cv::Mat1d(P_.matrix().colRange(0, 3))
+                                : K_.matrix();
   }
   // if P exists, return rectified version
   cv::Mat1d D() const {
-    return P_.empty() && !D_.matrix().empty() ? D_.matrix()
-                                              : cv::Mat1d::zeros(1, 5);
+    return P_.matrix().empty() && !D_.matrix().empty() ? D_.matrix()
+                                                       : cv::Mat1d::zeros(1, 5);
   }
   // rectification matrix
-  const cv::Mat1d& R() const { return R_; }
+  const cv::Mat1d& R() const { return R_.matrix(); }
   // projection matrix
-  const cv::Mat1d& P() const { return P_; }
+  const cv::Mat1d& P() const { return P_.matrix(); }
 
   void set_image_size(const cv::Size& size);
   const cv::Size& image_size() const { return image_size_; }
@@ -165,10 +168,10 @@ class EXPORT CameraModel {
   // The distortion coefficients 1x4,5,6,8
   CvDistortionMatrixd D_;
   // The rectification matrix 3x3 (computed from stereo or Identity)
-  cv::Mat1d R_;
+  CvRectificationMatrixd R_;
   // The projection matrix 3x4 (computed from stereo or equal to [K [0
   // 0 1]'])
-  cv::Mat1d P_;
+  CvProjectionMatrixd P_;
   // These are used to compute undistortion.
   cv::Mat map_x_;
   cv::Mat map_y_;
