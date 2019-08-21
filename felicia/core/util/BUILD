@@ -29,6 +29,14 @@ fel_cc_library(
 )
 
 fel_cc_library(
+    name = "dataset",
+    hdrs = [
+        "dataset/dataset_loader.h",
+    ],
+    deps = ["//felicia/core/lib"],
+)
+
+fel_cc_library(
     name = "uuid",
     hdrs = [
         "uuid/generator.h",
@@ -47,6 +55,7 @@ fel_cc_library(
     name = "util",
     deps = [
         ":command_line_interface",
+        ":dataset",
         ":timestamp",
         ":uuid",
     ],

@@ -16,6 +16,8 @@ Status BufferedReader::Open(const base::FilePath& path) {
   return Status::OK();
 }
 
+bool BufferedReader::IsOpened() const { return file_.IsValid(); }
+
 void BufferedReader::SetBufferCapacityForTesting(size_t buffer_capacity) {
   buffer_capacity_ = buffer_capacity;
   buffer_ = std::unique_ptr<char[]>(new char[buffer_capacity]);

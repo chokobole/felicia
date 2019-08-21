@@ -17,8 +17,11 @@ class EXPORT BufferedReader {
 
   Status Open(const base::FilePath& path);
 
+  bool IsOpened() const;
+
   void SetBufferCapacityForTesting(size_t buffer_capacity);
 
+  // Return true if read succeeds, return false when eof.
   bool ReadLine(std::string* line);
 
   bool eof() const;

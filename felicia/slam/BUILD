@@ -44,12 +44,17 @@ SLAM_HDRS = [
 fel_cc_library(
     name = "slam",
     hdrs = [
+        "dataset/kitti_dataset_loader.h",
         "map/grid_map.h",
         "map/occupancy_grid_map.h",
     ] + SLAM_HDRS,
+    srcs = [
+        "dataset/kitti_dataset_loader.cc",
+    ],
     deps = [
         ":opencv_camera",
         "//felicia/core/lib",
+        "//felicia/core/util",
     ],
 )
 
