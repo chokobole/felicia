@@ -23,6 +23,7 @@ fel_cc_library(
         "coordinate/coordinate.cc",
         "error/status.cc",
         "error/statusor.cc",
+        "file/buffered_reader.cc",
         "file/file_util.cc",
         "memory/memory_util.cc",
         "net/net_util.cc",
@@ -50,6 +51,7 @@ fel_cc_library(
         "error/status.h",
         "error/statusor.h",
         "error/statusor_internals.h",
+        "file/buffered_reader.h",
         "file/file_util.h",
         "math/math_util.h",
         "math/matrix_util.h",
@@ -105,6 +107,7 @@ fel_cc_test(
         "containers/pool_test.cc",
         "containers/string_vector_test.cc",
         "coordinate/coordinate_test.cc",
+        "file/buffered_reader_test.cc",
         "math/matrix_util_test.cc",
         "unit/bytes_test.cc",
         "unit/geometry/point_test.cc",
@@ -112,9 +115,14 @@ fel_cc_test(
         "unit/length_test.cc",
         "unit/unit_helper_test.cc",
     ],
+    data = [
+        "file/test/data.txt",
+        "file/test/data-not-ending-with-linefeed.txt",
+    ],
     deps = fel_shared_library() + [
         ":lib_test_util",
         "@com_google_googletest//:gtest_main",
+        "@bazel_tools//tools/cpp/runfiles",
     ],
 )
 
