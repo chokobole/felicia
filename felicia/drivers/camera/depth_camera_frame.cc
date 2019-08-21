@@ -8,16 +8,17 @@ DepthCameraFrame::DepthCameraFrame() = default;
 DepthCameraFrame::DepthCameraFrame(CameraFrame other, float min, float max)
     : CameraFrame(std::move(other)), min_(min), max_(max) {}
 
+DepthCameraFrame::DepthCameraFrame(const DepthCameraFrame& other)
+    : CameraFrame(other), min_(other.min_), max_(other.max_) {}
+
 DepthCameraFrame::DepthCameraFrame(DepthCameraFrame&& other) noexcept
     : CameraFrame(std::move(other)), min_(other.min_), max_(other.max_) {}
 
-DepthCameraFrame& DepthCameraFrame::operator=(DepthCameraFrame&& other) {
-  CameraFrame::operator=(std::move(other));
-  min_ = other.min_;
-  max_ = other.max_;
+DepthCameraFrame& DepthCameraFrame::operator=(const DepthCameraFrame& other) =
+    default;
 
-  return *this;
-}
+DepthCameraFrame& DepthCameraFrame::operator=(DepthCameraFrame&& other) =
+    default;
 
 DepthCameraFrame::~DepthCameraFrame() = default;
 

@@ -11,7 +11,9 @@ class EXPORT DepthCameraFrame : public CameraFrame {
  public:
   DepthCameraFrame();
   DepthCameraFrame(CameraFrame other, float min, float max);
+  DepthCameraFrame(const DepthCameraFrame& other);
   DepthCameraFrame(DepthCameraFrame&& other) noexcept;
+  DepthCameraFrame& operator=(const DepthCameraFrame& other);
   DepthCameraFrame& operator=(DepthCameraFrame&& other);
   ~DepthCameraFrame();
 
@@ -27,8 +29,6 @@ class EXPORT DepthCameraFrame : public CameraFrame {
  private:
   float min_;
   float max_;
-
-  DISALLOW_COPY_AND_ASSIGN(DepthCameraFrame);
 };
 
 typedef base::RepeatingCallback<void(DepthCameraFrame&&)>
