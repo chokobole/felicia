@@ -117,7 +117,7 @@ void LidarFrame::set_timestamp(base::TimeDelta timestamp) {
 
 base::TimeDelta LidarFrame::timestamp() const { return timestamp_; }
 
-LidarFrameMessage LidarFrame::ToLidarFrameMessage() const {
+LidarFrameMessage LidarFrame::ToLidarFrameMessage(bool copy) {
   LidarFrameMessage message;
   message.set_angle_start(angle_start_);
   message.set_angle_end(angle_end_);
@@ -126,8 +126,13 @@ LidarFrameMessage LidarFrame::ToLidarFrameMessage() const {
   message.set_scan_time(scan_time_);
   message.set_range_min(range_min_);
   message.set_range_max(range_max_);
-  message.set_ranges(ranges_.data());
-  message.set_intensities(intensities_.data());
+  if (copy) {
+    message.set_ranges(ranges_.data());
+    message.set_intensities(intensities_.data());
+  } else {
+    message.set_ranges(std::move(ranges_).data());
+    message.set_intensities(std::move(intensities_).data());
+  }
   message.set_timestamp(timestamp_.InMicroseconds());
   return message;
 }

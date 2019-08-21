@@ -57,7 +57,7 @@ class EXPORT LidarFrame {
   const float& RangeAt(size_t idx) const;
   const float& IntensityAt(size_t idx) const;
 
-  LidarFrameMessage ToLidarFrameMessage() const;
+  LidarFrameMessage ToLidarFrameMessage(bool copy = true);
   Status FromLidarFrameMessage(const LidarFrameMessage& message);
   Status FromLidarFrameMessage(LidarFrameMessage&& message);
 
@@ -77,7 +77,7 @@ class EXPORT LidarFrame {
   base::TimeDelta timestamp_;
 };
 
-typedef base::RepeatingCallback<void(const LidarFrame&)> LidarFrameCallback;
+typedef base::RepeatingCallback<void(LidarFrame&&)> LidarFrameCallback;
 
 }  // namespace drivers
 }  // namespace felicia

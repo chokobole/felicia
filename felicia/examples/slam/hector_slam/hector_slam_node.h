@@ -123,7 +123,7 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
 
   void OnMessage(drivers::LidarFrameMessage&& message) {
     drivers::LidarFrame lidar_frame;
-    Status s = lidar_frame.FromLidarFrameMessage(message);
+    Status s = lidar_frame.FromLidarFrameMessage(std::move(message));
     if (s.ok()) hector_slam_->Update(std::move(lidar_frame));
   }
 

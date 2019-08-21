@@ -31,7 +31,7 @@ class EXPORT DepthCameraFrame : public CameraFrame {
   DISALLOW_COPY_AND_ASSIGN(DepthCameraFrame);
 };
 
-typedef base::RepeatingCallback<void(DepthCameraFrame)>
+typedef base::RepeatingCallback<void(DepthCameraFrame&&)>
     DepthCameraFrameCallback;
 
 }  // namespace drivers

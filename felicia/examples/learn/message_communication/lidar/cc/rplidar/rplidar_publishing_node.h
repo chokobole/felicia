@@ -123,11 +123,11 @@ class RPlidarPublishingNode : public NodeLifecycle {
     }
   }
 
-  void OnLidarFrame(const drivers::LidarFrame& lidar_frame) {
+  void OnLidarFrame(drivers::LidarFrame&& lidar_frame) {
     if (lidar_publisher_.IsUnregistered()) return;
 
     lidar_publisher_.Publish(
-        lidar_frame.ToLidarFrameMessage(),
+        lidar_frame.ToLidarFrameMessage(false),
         base::BindRepeating(&RPlidarPublishingNode::OnPublishLidarFrame,
                             base::Unretained(this)));
   }

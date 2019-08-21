@@ -265,7 +265,7 @@ void RPlidar::DoScan() {
 
   LidarFrame lidar_frame =
       ToLidarFrame(nodes, count, scan_time, angle_start, angle_end);
-  lidar_frame_callback_.Run(lidar_frame);
+  lidar_frame_callback_.Run(std::move(lidar_frame));
 }
 
 LidarFrame RPlidar::ToLidarFrame(rplidar_response_measurement_node_hq_t* nodes,

@@ -100,7 +100,7 @@ class CameraPublishingNode : public NodeLifecycle {
     }
   }
 
-  void OnCameraFrame(drivers::CameraFrame camera_frame) {
+  void OnCameraFrame(drivers::CameraFrame&& camera_frame) {
     if (publisher_.IsUnregistered()) return;
 
     publisher_.Publish(camera_frame.ToCameraFrameMessage(false),

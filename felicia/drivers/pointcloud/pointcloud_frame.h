@@ -42,7 +42,7 @@ class EXPORT PointcloudFrame {
   void set_timestamp(base::TimeDelta time);
   base::TimeDelta timestamp() const;
 
-  PointcloudFrameMessage ToPointcloudFrameMessage() const;
+  PointcloudFrameMessage ToPointcloudFrameMessage(bool copy = true);
   Status FromPointcloudFrameMessage(const PointcloudFrameMessage& message);
   Status FromPointcloudFrameMessage(PointcloudFrameMessage&& message);
 
@@ -52,7 +52,8 @@ class EXPORT PointcloudFrame {
   base::TimeDelta timestamp_;
 };
 
-typedef base::RepeatingCallback<void(PointcloudFrame)> PointcloudFrameCallback;
+typedef base::RepeatingCallback<void(PointcloudFrame&&)>
+    PointcloudFrameCallback;
 
 }  // namespace drivers
 }  // namespace felicia

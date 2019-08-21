@@ -79,10 +79,15 @@ void PointcloudFrame::set_timestamp(base::TimeDelta timestamp) {
 
 base::TimeDelta PointcloudFrame::timestamp() const { return timestamp_; }
 
-PointcloudFrameMessage PointcloudFrame::ToPointcloudFrameMessage() const {
+PointcloudFrameMessage PointcloudFrame::ToPointcloudFrameMessage(bool copy) {
   PointcloudFrameMessage message;
-  message.set_points(points_.data());
-  message.set_colors(colors_.data());
+  if (copy) {
+    message.set_points(points_.data());
+    message.set_colors(colors_.data());
+  } else {
+    message.set_points(std::move(points_).data());
+    message.set_colors(std::move(colors_).data());
+  }
   message.set_timestamp(timestamp_.InMicroseconds());
   return message;
 }

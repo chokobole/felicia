@@ -73,7 +73,7 @@ EXPORT base::Optional<CameraFrame> ConvertToRequestedPixelFormat(
     const uint8_t* data, size_t data_length, const CameraFormat& camera_format,
     PixelFormat requested_pixel_format, base::TimeDelta timestamp);
 
-typedef base::RepeatingCallback<void(CameraFrame)> CameraFrameCallback;
+typedef base::RepeatingCallback<void(CameraFrame&&)> CameraFrameCallback;
 
 }  // namespace drivers
 }  // namespace felicia

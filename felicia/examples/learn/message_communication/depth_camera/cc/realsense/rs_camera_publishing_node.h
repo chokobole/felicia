@@ -187,7 +187,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
     }
   }
 
-  void OnColorFrame(drivers::CameraFrame color_frame) {
+  void OnColorFrame(drivers::CameraFrame&& color_frame) {
     if (color_publisher_.IsUnregistered()) return;
 
     color_publisher_.Publish(
@@ -196,7 +196,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
                             base::Unretained(this)));
   }
 
-  void OnDepthFrame(drivers::DepthCameraFrame depth_frame) {
+  void OnDepthFrame(drivers::DepthCameraFrame&& depth_frame) {
     if (depth_publisher_.IsUnregistered()) return;
 
     depth_publisher_.Publish(
@@ -205,11 +205,11 @@ class RsCameraPublishingNode : public NodeLifecycle {
                             base::Unretained(this)));
   }
 
-  void OnPointcloudFrame(drivers::PointcloudFrame pointcloud_frame) {
+  void OnPointcloudFrame(drivers::PointcloudFrame&& pointcloud_frame) {
     if (pointcloud_publisher_.IsUnregistered()) return;
 
     pointcloud_publisher_.Publish(
-        pointcloud_frame.ToPointcloudFrameMessage(),
+        pointcloud_frame.ToPointcloudFrameMessage(false),
         base::BindRepeating(&RsCameraPublishingNode::OnPublishPointcloud,
                             base::Unretained(this)));
   }

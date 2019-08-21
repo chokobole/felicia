@@ -152,7 +152,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
     }
   }
 
-  void OnLeftCameraFrame(drivers::CameraFrame camera_frame) {
+  void OnLeftCameraFrame(drivers::CameraFrame&& camera_frame) {
     if (left_camera_publisher_.IsUnregistered()) return;
 
     left_camera_publisher_.Publish(
@@ -161,7 +161,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
                             base::Unretained(this)));
   }
 
-  void OnRightCameraFrame(drivers::CameraFrame camera_frame) {
+  void OnRightCameraFrame(drivers::CameraFrame&& camera_frame) {
     if (right_camera_publisher_.IsUnregistered()) return;
 
     right_camera_publisher_.Publish(
@@ -170,20 +170,20 @@ class ZedCameraPublishingNode : public NodeLifecycle {
                             base::Unretained(this)));
   }
 
-  void OnDepthFrame(drivers::DepthCameraFrame depth_camera_frame) {
+  void OnDepthFrame(drivers::DepthCameraFrame&& depth_camera_frame) {
     if (depth_publisher_.IsUnregistered()) return;
 
     depth_publisher_.Publish(
-        depth_camera_frame.ToDepthCameraFrameMessage(),
+        depth_camera_frame.ToDepthCameraFrameMessage(false),
         base::BindRepeating(&ZedCameraPublishingNode::OnPublishDepth,
                             base::Unretained(this)));
   }
 
-  void OnPointcloudFrame(drivers::PointcloudFrame pointcloud_frame) {
+  void OnPointcloudFrame(drivers::PointcloudFrame&& pointcloud_frame) {
     if (pointcloud_publisher_.IsUnregistered()) return;
 
     pointcloud_publisher_.Publish(
-        pointcloud_frame.ToPointcloudFrameMessage(),
+        pointcloud_frame.ToPointcloudFrameMessage(false),
         base::BindRepeating(&ZedCameraPublishingNode::OnPublishPointcloud,
                             base::Unretained(this)));
   }

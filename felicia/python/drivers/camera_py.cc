@@ -18,7 +18,7 @@ SUPPORT_PROTOBUF_TYPE_CAST(felicia::drivers::CameraFrameMessage,
 namespace felicia {
 namespace drivers {
 
-using PyCameraFrameCallback = PyCallback<void(CameraFrame)>;
+using PyCameraFrameCallback = PyCallback<void(CameraFrame&&)>;
 
 namespace {
 
