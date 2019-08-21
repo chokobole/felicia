@@ -507,11 +507,9 @@ void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
   if (timestamp == kNoTimestamp) timestamp = timestamper_.timestamp();
 
   if (requested_pixel_format_ == camera_format_.pixel_format()) {
-    std::unique_ptr<uint8_t> data(new uint8_t[length]);
-    memcpy(data.get(), buffer, length);
-    camera_frame_callback_.Run(CameraFrame{std::move(data),
-                                           static_cast<size_t>(length),
-                                           camera_format_, timestamp});
+    StringVector data(buffer, length);
+    camera_frame_callback_.Run(
+        CameraFrame{std::move(data), camera_format_, timestamp});
   } else {
     base::Optional<CameraFrame> camera_frame = ConvertToRequestedPixelFormat(
         buffer, length, camera_format_, requested_pixel_format_, timestamp);

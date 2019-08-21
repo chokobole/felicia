@@ -784,11 +784,9 @@ void MfCamera::OnIncomingCapturedData(const uint8_t* data, int length,
   }
 
   if (requested_pixel_format_ == camera_format_.pixel_format()) {
-    std::unique_ptr<uint8_t> new_data(new uint8_t[length]);
-    memcpy(new_data.get(), data, length);
-    camera_frame_callback_.Run(CameraFrame{std::move(new_data),
-                                           static_cast<size_t>(length),
-                                           camera_format_, timestamp});
+    StringVector new_data(data, length);
+    camera_frame_callback_.Run(
+        CameraFrame{std::move(new_data), camera_format_, timestamp});
   } else {
     base::Optional<CameraFrame> camera_frame = ConvertToRequestedPixelFormat(
         data, length, camera_format_, requested_pixel_format_, timestamp);

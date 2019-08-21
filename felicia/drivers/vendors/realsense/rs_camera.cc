@@ -522,7 +522,7 @@ void RsCamera::HandleVideoFrame(rs2::video_frame frame,
     if (requested_pixel_format_ == color_format_.pixel_format()) {
       color_frame_callback_.Run(FromRsColorFrame(frame, timestamp));
     } else if (requested_pixel_format_ == cached_color_frame_.pixel_format() &&
-               cached_color_frame_.data_ptr()) {
+               !cached_color_frame_.data().empty()) {
       color_frame_callback_.Run(std::move(cached_color_frame_));
     } else {
       base::Optional<CameraFrame> color_frame = ConvertToRequestedPixelFormat(
@@ -600,7 +600,7 @@ void RsCamera::HandlePoints(rs2::points points, base::TimeDelta timestamp,
 
       width = cached_color_frame_.width();
       height = cached_color_frame_.height();
-      color = cached_color_frame_.data_ptr();
+      color = cached_color_frame_.data().cast<const uint8_t*>();
     } else {
       std::set<rs2_format> available_formats{rs2_format::RS2_FORMAT_RGB8,
                                              rs2_format::RS2_FORMAT_Y8};
@@ -675,22 +675,18 @@ base::Optional<CameraFrame> RsCamera::ConvertToRequestedPixelFormat(
 
 CameraFrame RsCamera::FromRsColorFrame(rs2::video_frame color_frame,
                                        base::TimeDelta timestamp) {
-  size_t length = color_format_.AllocationSize();
-  std::unique_ptr<uint8_t> new_color_frame(new uint8_t[length]);
-  memcpy(new_color_frame.get(), color_frame.get_data(), length);
-  return CameraFrame{std::move(new_color_frame), length, color_format_,
-                     timestamp};
+  return CameraFrame{
+      StringVector{color_frame.get_data(), color_format_.AllocationSize()},
+      color_format_, timestamp};
 }
 
 DepthCameraFrame RsCamera::FromRsDepthFrame(rs2::depth_frame depth_frame,
                                             base::TimeDelta timestamp) {
   size_t size = depth_format_.width() * depth_format_.height();
-  size_t allocation_size = depth_format_.AllocationSize();
-  std::unique_ptr<uint8_t> new_depth_frame(new uint8_t[allocation_size]);
-  memcpy(new_depth_frame.get(), depth_frame.get_data(), allocation_size);
-  uint8_t* new_depth_frame_ptr = new_depth_frame.get();
-  uint16_t* new_depth_frame_ptr16 =
-      reinterpret_cast<uint16_t*>(new_depth_frame.get());
+  StringVector new_depth_frame(depth_frame.get_data(),
+                               depth_format_.AllocationSize());
+  uint8_t* new_depth_frame_ptr = new_depth_frame.cast<uint8_t*>();
+  uint16_t* new_depth_frame_ptr16 = new_depth_frame.cast<uint16_t*>();
   for (size_t i = 0; i < size; ++i) {
     const size_t data_idx = i << 1;
     uint16_t value =
@@ -699,8 +695,8 @@ DepthCameraFrame RsCamera::FromRsDepthFrame(rs2::depth_frame depth_frame,
     new_depth_frame_ptr16[i] = static_cast<uint16_t>(
         std::round(value * depth_scale_ * 1000));  // in mm
   }
-  CameraFrame camera_frame(std::move(new_depth_frame), allocation_size,
-                           depth_format_, timestamp);
+  CameraFrame camera_frame(std::move(new_depth_frame), depth_format_,
+                           timestamp);
   DepthCameraFrame depth_camera_frame(std::move(camera_frame),
                                       105 /* 0.105 m */, UINT16_MAX);
   return depth_camera_frame;

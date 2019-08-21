@@ -85,7 +85,7 @@ class CameraPublishingNode(fel.NodeLifecycle):
         if self.publisher.is_unregistered():
             return
 
-        self.publisher.publish(camera_frame.to_camera_frame_message(),
+        self.publisher.publish(camera_frame.to_camera_frame_message(False),
                                self.on_publish)
 
     def on_camera_error(self, status):

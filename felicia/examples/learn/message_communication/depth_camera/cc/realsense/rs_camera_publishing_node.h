@@ -191,7 +191,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
     if (color_publisher_.IsUnregistered()) return;
 
     color_publisher_.Publish(
-        color_frame.ToCameraFrameMessage(),
+        color_frame.ToCameraFrameMessage(false),
         base::BindRepeating(&RsCameraPublishingNode::OnPublishColor,
                             base::Unretained(this)));
   }
@@ -200,7 +200,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
     if (depth_publisher_.IsUnregistered()) return;
 
     depth_publisher_.Publish(
-        depth_frame.ToDepthCameraFrameMessage(),
+        depth_frame.ToDepthCameraFrameMessage(false),
         base::BindRepeating(&RsCameraPublishingNode::OnPublishDepth,
                             base::Unretained(this)));
   }

@@ -156,7 +156,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
     if (left_camera_publisher_.IsUnregistered()) return;
 
     left_camera_publisher_.Publish(
-        camera_frame.ToCameraFrameMessage(),
+        camera_frame.ToCameraFrameMessage(false),
         base::BindRepeating(&ZedCameraPublishingNode::OnPublishLeftCamera,
                             base::Unretained(this)));
   }
@@ -165,7 +165,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
     if (right_camera_publisher_.IsUnregistered()) return;
 
     right_camera_publisher_.Publish(
-        camera_frame.ToCameraFrameMessage(),
+        camera_frame.ToCameraFrameMessage(false),
         base::BindRepeating(&ZedCameraPublishingNode::OnPublishRightCamera,
                             base::Unretained(this)));
   }

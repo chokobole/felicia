@@ -15,7 +15,7 @@ class EXPORT DepthCameraFrame : public CameraFrame {
   DepthCameraFrame& operator=(DepthCameraFrame&& other);
   ~DepthCameraFrame();
 
-  DepthCameraFrameMessage ToDepthCameraFrameMessage() const;
+  DepthCameraFrameMessage ToDepthCameraFrameMessage(bool copy = true);
   Status FromDepthCameraFrameMessage(const DepthCameraFrameMessage& message);
   Status FromDepthCameraFrameMessage(DepthCameraFrameMessage&& message);
 

@@ -21,10 +21,10 @@ DepthCameraFrame& DepthCameraFrame::operator=(DepthCameraFrame&& other) {
 
 DepthCameraFrame::~DepthCameraFrame() = default;
 
-DepthCameraFrameMessage DepthCameraFrame::ToDepthCameraFrameMessage() const {
+DepthCameraFrameMessage DepthCameraFrame::ToDepthCameraFrameMessage(bool copy) {
   DepthCameraFrameMessage message;
 
-  *message.mutable_frame() = ToCameraFrameMessage();
+  *message.mutable_frame() = ToCameraFrameMessage(copy);
   message.set_min(min_);
   message.set_max(max_);
 

@@ -12,6 +12,7 @@
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/lib/base/export.h"
+#include "felicia/core/lib/containers/string_vector.h"
 #include "felicia/core/lib/error/statusor.h"
 #include "felicia/core/lib/unit/geometry/size.h"
 #include "felicia/drivers/camera/camera_format.h"
@@ -23,14 +24,22 @@ namespace drivers {
 class EXPORT CameraFrame {
  public:
   CameraFrame();
-  CameraFrame(std::unique_ptr<uint8_t> data, size_t length,
-              const CameraFormat& camera_format, base::TimeDelta timestamp);
+  CameraFrame(const StringVector& data, const CameraFormat& camera_format,
+              base::TimeDelta timestamp);
+  CameraFrame(StringVector&& data, const CameraFormat& camera_format,
+              base::TimeDelta timestamp) noexcept;
+  CameraFrame(const std::string& data, const CameraFormat& camera_format,
+              base::TimeDelta timestamp);
+  CameraFrame(std::string&& data, const CameraFormat& camera_format,
+              base::TimeDelta timestamp) noexcept;
+  CameraFrame(const CameraFrame& other);
   CameraFrame(CameraFrame&& other) noexcept;
+  CameraFrame& operator=(const CameraFrame& other);
   CameraFrame& operator=(CameraFrame&& other);
   ~CameraFrame();
 
-  std::unique_ptr<uint8_t> data();
-  const uint8_t* data_ptr() const;
+  const StringVector& data() const;
+  StringVector& data();
   size_t length() const;
   const CameraFormat& camera_format() const;
   int width() const;
@@ -41,27 +50,23 @@ class EXPORT CameraFrame {
   void set_timestamp(base::TimeDelta time);
   base::TimeDelta timestamp() const;
 
-  CameraFrameMessage ToCameraFrameMessage() const;
+  CameraFrameMessage ToCameraFrameMessage(bool copy = true);
   Status FromCameraFrameMessage(const CameraFrameMessage& message);
   Status FromCameraFrameMessage(CameraFrameMessage&& message);
 
 #if defined(HAS_OPENCV)
-  // Ownership is moved to |out|, Returns true if it is success to move.
-  bool ToCvMat(cv::Mat* out);
-  // Clone to |out|, Returns true if it is success to clone.
-  bool CloneToCvMat(cv::Mat* out) const;
+  // Copy to |out| if |copy| is true, Otherwise |out| references to |data_|.
+  // Return true if it is success.
+  bool ToCvMat(cv::Mat* out, bool copy = true);
 
   Status FromCvMat(cv::Mat mat, const CameraFormat& camera_format,
                    base::TimeDelta timestamp);
 #endif
 
  protected:
-  std::unique_ptr<uint8_t> data_;
-  size_t length_;
+  StringVector data_;
   CameraFormat camera_format_;
   base::TimeDelta timestamp_;
-
-  DISALLOW_COPY_AND_ASSIGN(CameraFrame);
 };
 
 EXPORT base::Optional<CameraFrame> ConvertToRequestedPixelFormat(

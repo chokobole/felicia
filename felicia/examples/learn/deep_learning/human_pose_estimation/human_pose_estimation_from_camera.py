@@ -285,7 +285,7 @@ class HumanPoseEstimationNode(fel.NodeLifecycle):
             estimated_camera_frame = fel.drivers.CameraFrame(
                 datum.cvOutputData, camera_frame.camera_format, camera_frame.timestamp)
 
-            self.publisher.publish(estimated_camera_frame.to_camera_frame_message(),
+            self.publisher.publish(estimated_camera_frame.to_camera_frame_message(False),
                                    self.on_publish)
         else:
             image_with_humans = ImageWithHumansMessage()

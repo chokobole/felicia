@@ -16,6 +16,8 @@ namespace felicia {
 class EXPORT StringVector {
  public:
   StringVector() = default;
+  StringVector(const void* s, size_t n)
+      : data_(reinterpret_cast<const char*>(s), n) {}
   StringVector(const std::string& data) : data_(data) {}
   StringVector(std::string&& data) noexcept : data_(std::move(data)) {}
   StringVector(const StringVector& other) = default;
@@ -42,17 +44,26 @@ class EXPORT StringVector {
   }
 
   template <typename R>
+  std::enable_if_t<std::is_pointer<R>::value, R> cast() const {
+    return reinterpret_cast<R>(data_.data());
+  }
+
+  template <typename R>
+  std::enable_if_t<std::is_pointer<R>::value, R> cast() {
+    return reinterpret_cast<R>(const_cast<char*>(data_.data()));
+  }
+
+  template <typename R>
   R& at(size_t idx) {
     CHECK(size<R>() > idx);
-    R* ptr =
-        reinterpret_cast<R*>(const_cast<char*>(data_.data() + sizeof(R) * idx));
+    R* ptr = cast<R*>() + idx;
     return *ptr;
   }
 
   template <typename R>
   const R& at(size_t idx) const {
     CHECK(size<R>() > idx);
-    const R* ptr = reinterpret_cast<const R*>(data_.data() + sizeof(R) * idx);
+    const R* ptr = cast<const R*>() + idx;
     return *ptr;
   }
 
@@ -69,7 +80,8 @@ class EXPORT StringVector {
 
   void resize(size_t n) { data_.resize(n); }
 
-  const std::string& data() const { return data_; }
+  const std::string& data() const& { return data_; }
+  std::string&& data() && { return std::move(data_); }
 
  private:
   std::string data_;

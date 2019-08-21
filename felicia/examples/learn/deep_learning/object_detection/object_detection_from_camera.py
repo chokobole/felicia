@@ -82,7 +82,7 @@ class ObjectDetectionNode(fel.NodeLifecycle):
             detected_camera_frame = fel.drivers.CameraFrame(
                 detected_image, camera_frame.camera_format, camera_frame.timestamp)
 
-            self.publisher.publish(detected_camera_frame.to_camera_frame_message(),
+            self.publisher.publish(detected_camera_frame.to_camera_frame_message(False),
                                    self.on_publish)
         else:
             image_with_bounding_boxes = self.object_detection.run(

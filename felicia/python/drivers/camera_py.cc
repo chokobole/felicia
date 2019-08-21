@@ -142,10 +142,8 @@ void AddCamera(py::module& m) {
               NotHaveFixedSizedChannelPixelFormat();
             }
 
-            std::unique_ptr<uint8_t> data(new uint8_t[array.size()]);
-            memcpy(data.get(), array.data(), array.size());
-            return CameraFrame(std::move(data), array.size(), camera_format,
-                               timestamp);
+            StringVector data(array.data(), array.size());
+            return CameraFrame(std::move(data), camera_format, timestamp);
           }))
       .def_property_readonly("length", &CameraFrame::length)
       .def_property_readonly("camera_format", &CameraFrame::camera_format)
@@ -163,7 +161,7 @@ void AddCamera(py::module& m) {
         int width = camera_frame.width();
         int height = camera_frame.height();
         int channel = camera_frame.length() / (width * height);
-        return py::buffer_info(const_cast<uint8_t*>(camera_frame.data_ptr()),
+        return py::buffer_info(camera_frame.data().cast<uint8_t*>(),
                                sizeof(uint8_t),
                                py::format_descriptor<uint8_t>::format(), 3,
                                {height, width, channel},
