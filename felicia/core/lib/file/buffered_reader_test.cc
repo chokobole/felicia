@@ -37,6 +37,25 @@ TEST(BufferedReaderTest, ReadLineBasicTest) {
   }
 }
 
+TEST(BufferedReaderTest, ReadLineWithRemoveCrOrLfTest) {
+  BufferedReader reader(BufferedReader::REMOVE_CR_OR_LF);
+  base::FilePath path(
+      FELICIA_RELATIVE_PATH("/felicia/core/lib/file/test/data.txt"));
+  Status s = reader.Open(path);
+  {
+    std::string line;
+    bool ret = reader.ReadLine(&line);
+    EXPECT_TRUE(ret);
+    EXPECT_EQ(line, "Hello");
+  }
+  {
+    std::string line;
+    bool ret = reader.ReadLine(&line);
+    EXPECT_TRUE(ret);
+    EXPECT_EQ(line, "World");
+  }
+}
+
 TEST(BufferedReaderTest, ReadLineWithSmallBufferTest) {
   BufferedReader reader;
   base::FilePath path(

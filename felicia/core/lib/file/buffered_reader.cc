@@ -4,7 +4,7 @@
 
 namespace felicia {
 
-BufferedReader::BufferedReader() = default;
+BufferedReader::BufferedReader(int option) : option_(option) {}
 
 Status BufferedReader::Open(const base::FilePath& path) {
   file_ = base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
@@ -24,18 +24,31 @@ void BufferedReader::SetBufferCapacityForTesting(size_t buffer_capacity) {
 }
 
 bool BufferedReader::ReadLine(std::string* line) {
+  if (!line->empty()) return false;
   if (eof()) return false;
 
   bool met_linefeed = false;
   while (!met_linefeed) {
     size_t begin = read_;
     while (read_ < buffer_size_) {
-      if (buffer_[read_++] == '\n') {
+      char c = buffer_[read_++];
+      if (c == '\n') {
         met_linefeed = true;
         break;
       }
     }
-    line->append(buffer_.get() + begin, read_ - begin);
+    size_t len = read_ - begin;
+    if (met_linefeed && option_ == REMOVE_CR_OR_LF) {
+      if (len >= 2 && buffer_[read_ - 2] == '\r') {
+        len -= 2;
+      } else {
+        len -= 1;
+      }
+      if (line->length() > 0 && (*line)[line->length() - 1] == '\r') {
+        *line = line->substr(0, line->length() - 1);
+      }
+    }
+    line->append(buffer_.get() + begin, len);
     if (!met_linefeed || eof()) {
       ReadInAdvance();
       if (eof()) break;

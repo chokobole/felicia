@@ -13,7 +13,14 @@ namespace felicia {
 
 class EXPORT BufferedReader {
  public:
-  BufferedReader();
+  enum Option {
+    NONE,
+    REMOVE_CR_OR_LF,
+  };
+
+  explicit BufferedReader(int option = Option::NONE);
+
+  void set_option(int option) { option_ = option; }
 
   Status Open(const base::FilePath& path);
 
@@ -21,7 +28,8 @@ class EXPORT BufferedReader {
 
   void SetBufferCapacityForTesting(size_t buffer_capacity);
 
-  // Return true if read succeeds, return false when eof.
+  // Return true if read succeeds, return false when eof or
+  // |line| is not empty. We expect |line| to be empty.
   bool ReadLine(std::string* line);
 
   bool eof() const;
@@ -35,6 +43,7 @@ class EXPORT BufferedReader {
   size_t buffer_capacity_ = kDefaultBufferCapacity;
   size_t buffer_size_ = 0;
   size_t read_ = 0;
+  int option_;
   std::unique_ptr<char[]> buffer_;
 };
 
