@@ -47,7 +47,7 @@ class CameraMatrix {
   void set_fx(ScalarType fx) { MaybeSet(0, 0, fx); }
 
   ScalarType fy() const { return ValueOrZero(1, 1); }
-  void set_fy(ScalarType fy) { Maybeset(1, 1, fy); }
+  void set_fy(ScalarType fy) { MaybeSet(1, 1, fy); }
 
   ScalarType cx() const { return ValueOrZero(0, 2); }
   void set_cx(ScalarType cx) { MaybeSet(0, 2, cx); }

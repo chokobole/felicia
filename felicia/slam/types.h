@@ -16,8 +16,8 @@ namespace slam {
 typedef CameraMatrix<Eigen::Matrix3f> EigenCameraMatrixf;
 typedef CameraMatrix<Eigen::Matrix3d> EigenCameraMatrixd;
 
-typedef DistortionMatrix<Eigen::Matrix3f> EigenDistortionMatrixf;
-typedef DistortionMatrix<Eigen::Matrix3d> EigenDistortionMatrixd;
+typedef DistortionMatrix<Eigen::RowVectorXf> EigenDistortionMatrixf;
+typedef DistortionMatrix<Eigen::RowVectorXd> EigenDistortionMatrixd;
 
 typedef ProjectionMatrix<Eigen::Matrix<float, 3, 4>> EigenProjectionMatrixf;
 typedef ProjectionMatrix<Eigen::Matrix<double, 3, 4>> EigenProjectionMatrixd;
