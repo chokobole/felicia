@@ -14,25 +14,26 @@ TumDatasetLoader::TumDatasetLoader(const base::FilePath& path, TumKind kind,
   path_to_data_ = PathToData();
 }
 
-StatusOr<TumCalibData> TumDatasetLoader::Init() {
-  TumCalibData calib_data;
+StatusOr<SensorMetaData> TumDatasetLoader::Init() {
+  SensorMetaData sensor_meta_data;
   if (kind_ == FR1) {
-    calib_data.K = EigenCameraMatrixd(517.3, 516.5, 318.6, 255.3);
-    calib_data.D =
-        EigenDistortionMatrixd(0.2624, -0.9531, -0.0054, 0.0026, 1.1633);
+    sensor_meta_data.set_left_K(EigenCameraMatrixd(517.3, 516.5, 318.6, 255.3));
+    sensor_meta_data.set_left_D(
+        EigenDistortionMatrixd(0.2624, -0.9531, -0.0054, 0.0026, 1.1633));
   } else if (kind_ == FR2) {
-    calib_data.K = EigenCameraMatrixd(520.9, 521.0, 325.1, 249.7);
-    calib_data.D =
-        EigenDistortionMatrixd(0.2312, -0.7849, -0.0033, -0.0001, 0.9172);
+    sensor_meta_data.set_left_K(EigenCameraMatrixd(520.9, 521.0, 325.1, 249.7));
+    sensor_meta_data.set_left_D(
+        EigenDistortionMatrixd(0.2312, -0.7849, -0.0033, -0.0001, 0.9172));
   } else if (kind_ == FR3) {
-    calib_data.K = EigenCameraMatrixd(535.4, 539.2, 320.1, 247.6);
-    calib_data.D = EigenDistortionMatrixd(0.0, 0.0, 0.0, 0.0, 0.0);
+    sensor_meta_data.set_left_K(EigenCameraMatrixd(535.4, 539.2, 320.1, 247.6));
+    sensor_meta_data.set_left_D(
+        EigenDistortionMatrixd(0.0, 0.0, 0.0, 0.0, 0.0));
   }
 
-  return calib_data;
+  return sensor_meta_data;
 }
 
-StatusOr<TumData> TumDatasetLoader::Next() {
+StatusOr<SensorData> TumDatasetLoader::Next() {
   if (!reader_.IsOpened()) {
     int skip_header = 3;
     if (data_kind_ != RGBD) {
@@ -45,7 +46,7 @@ StatusOr<TumData> TumDatasetLoader::Next() {
   ++current_;
   int current_line = current_ + 3;
   std::vector<std::string> items;
-  TumData tum_data;
+  SensorData sensor_data;
   if (reader_.ReadItems(&items)) {
     if (items.size() != ColumnsForData()) {
       return errors::InvalidArgument(
@@ -55,23 +56,23 @@ StatusOr<TumData> TumDatasetLoader::Next() {
     StatusOr<double> status_or =
         TryConvertToDouble(items[0], path_to_data_, current_line);
     if (!status_or.ok()) return status_or.status();
-    tum_data.timestamp = status_or.ValueOrDie();
+    sensor_data.set_timestamp(status_or.ValueOrDie());
     switch (data_kind_) {
       case RGB: {
-        tum_data.rgbd_data.color_image_filename =
-            path_.AppendASCII(items[1]).value();
+        sensor_data.set_left_image_filename(
+            path_.AppendASCII(items[1]).value());
         break;
       }
       case DEPTH: {
-        tum_data.rgbd_data.depth_image_filename =
-            path_.AppendASCII(items[2]).value();
+        sensor_data.set_depth_image_filename(
+            path_.AppendASCII(items[2]).value());
         break;
       }
       case RGBD: {
-        tum_data.rgbd_data.color_image_filename =
-            path_.AppendASCII(items[1]).value();
-        tum_data.rgbd_data.depth_image_filename =
-            path_.AppendASCII(items[3]).value();
+        sensor_data.set_left_image_filename(
+            path_.AppendASCII(items[1]).value());
+        sensor_data.set_depth_image_filename(
+            path_.AppendASCII(items[3]).value());
         break;
       }
       case ACCELERATION: {
@@ -82,7 +83,7 @@ StatusOr<TumData> TumDatasetLoader::Next() {
           if (!status_or.ok()) return status_or.status();
           v[i] = status_or.ValueOrDie();
         }
-        tum_data.acceleration.set_xyz(v[0], v[1], v[2]);
+        sensor_data.set_acceleration(Vector3f{v[0], v[1], v[2]});
         break;
       }
       case GROUND_TRUTH: {
@@ -95,12 +96,12 @@ StatusOr<TumData> TumDatasetLoader::Next() {
         }
         Point3f p(v[0], v[1], v[2]);
         Quaternionf q(v[3], v[4], v[5], v[6]);
-        tum_data.ground_truth = Pose3f{p, q};
+        sensor_data.set_pose(Pose3f{p, q});
         break;
       }
     }
   }
-  return tum_data;
+  return sensor_data;
 }
 
 bool TumDatasetLoader::End() const { return reader_.eof(); }

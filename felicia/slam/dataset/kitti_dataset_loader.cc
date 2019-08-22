@@ -65,7 +65,7 @@ StatusOr<KittiCalibData> KittiDatasetLoader::Init() {
   return kitti_calib_data;
 }
 
-StatusOr<KittiData> KittiDatasetLoader::Next() {
+StatusOr<SensorData> KittiDatasetLoader::Next() {
   if (!times_reader_.IsOpened()) {
     times_reader_.set_option(BufferedReader::REMOVE_CR_OR_LF);
     Status s = times_reader_.Open(times_path_);
@@ -73,25 +73,23 @@ StatusOr<KittiData> KittiDatasetLoader::Next() {
   }
 
   size_t current = current_++;
-  KittiData kitti_data;
+  SensorData sensor_data;
   std::stringstream ss;
   ss << std::setfill('0') << std::setw(6) << current;
-  kitti_data.stereo_data.left_image_filename =
-      left_images_path_.AppendASCII(ss.str())
-          .AddExtensionASCII(".png")
-          .AsUTF8Unsafe();
-  kitti_data.stereo_data.right_image_filename =
-      right_images_path_.AppendASCII(ss.str())
-          .AddExtensionASCII(".png")
-          .AsUTF8Unsafe();
+  sensor_data.set_left_image_filename(left_images_path_.AppendASCII(ss.str())
+                                          .AddExtensionASCII(".png")
+                                          .AsUTF8Unsafe());
+  sensor_data.set_right_image_filename(right_images_path_.AppendASCII(ss.str())
+                                           .AddExtensionASCII(".png")
+                                           .AsUTF8Unsafe());
   std::string line;
   if (times_reader_.ReadLine(&line)) {
     StatusOr<double> status_or =
         TryConvertToDouble(line, times_path_, current_);
     if (!status_or.ok()) return status_or.status();
-    kitti_data.timestamp = status_or.ValueOrDie();
+    sensor_data.set_timestamp(status_or.ValueOrDie());
   }
-  return kitti_data;
+  return sensor_data;
 }
 
 bool KittiDatasetLoader::End() const { return times_reader_.eof(); }

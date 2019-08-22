@@ -6,7 +6,7 @@
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/file/buffered_reader.h"
 #include "felicia/core/util/dataset/dataset_loader.h"
-#include "felicia/slam/dataset/stereo_data.h"
+#include "felicia/slam/dataset/sensor_data.h"
 #include "felicia/slam/types.h"
 
 namespace felicia {
@@ -19,24 +19,18 @@ struct KittiCalibData {
   EigenProjectionMatrixd p3;
 };
 
-// TODO: We should read the image and give users a CameraFrame
-struct KittiData {
-  StereoData stereo_data;
-  double timestamp;
-};
-
 // KittiDatasetLoader loader("/path/to/kitti", 0);
 // StatusOr<KittiCalibData> status_or = loader.Init();
-// StatusOr<KittiData> status_or2 = loader.Next();
+// StatusOr<SensorData> status_or2 = loader.Next();
 // For example, /path/to/kitti points to the /path/to/dataset/sequences.
 class EXPORT KittiDatasetLoader
-    : DatasetLoader<KittiCalibData, KittiData>::Delegate {
+    : DatasetLoader<KittiCalibData, SensorData>::Delegate {
  public:
   KittiDatasetLoader(const base::FilePath& path_to_sequence, uint8_t sequence);
 
-  // DatasetLoader<KittiCalibData, KittiData>::Delegate methods
+  // DatasetLoader<KittiCalibData, SensorData>::Delegate methods
   StatusOr<KittiCalibData> Init() override;
-  StatusOr<KittiData> Next() override;
+  StatusOr<SensorData> Next() override;
   bool End() const override;
 
  private:
