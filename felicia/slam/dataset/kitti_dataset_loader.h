@@ -1,13 +1,12 @@
 #ifndef FELICIA_SLAM_DATASET_KITTI_DATASET_LOADER_H_
 #define FELICIA_SLAM_DATASET_KITTI_DATASET_LOADER_H_
 
-#include "Eigen/Core"
-
 #include "third_party/chromium/base/files/file_path.h"
 
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/file/buffered_reader.h"
 #include "felicia/core/util/dataset/dataset_loader.h"
+#include "felicia/slam/dataset/stereo_data.h"
 #include "felicia/slam/types.h"
 
 namespace felicia {
@@ -22,11 +21,14 @@ struct KittiCalibData {
 
 // TODO: We should read the image and give users a CameraFrame
 struct KittiData {
-  std::string left_image_filename;
-  std::string right_image_filename;
+  StereoData stereo_data;
   double timestamp;
 };
 
+// KittiDatasetLoader loader("/path/to/kitti", 0);
+// StatusOr<KittiCalibData> status_or = loader.Init();
+// StatusOr<KittiData> status_or2 = loader.Next();
+// For example, /path/to/kitti points to the /path/to/dataset/sequences.
 class EXPORT KittiDatasetLoader
     : DatasetLoader<KittiCalibData, KittiData>::Delegate {
  public:
@@ -36,13 +38,13 @@ class EXPORT KittiDatasetLoader
   StatusOr<KittiCalibData> Init() override;
   StatusOr<KittiData> Next() override;
   bool End() const override;
-  size_t length() const override;
 
  private:
-  base::FilePath path_;
+  base::FilePath calibs_path_;
+  base::FilePath times_path_;
+  base::FilePath left_images_path_;
+  base::FilePath right_images_path_;
   BufferedReader times_reader_;
-  base::FilePath path_to_left_image_;
-  base::FilePath path_to_right_image_;
   size_t current_;
 };
 

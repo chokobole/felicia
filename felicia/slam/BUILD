@@ -44,12 +44,18 @@ SLAM_HDRS = [
 fel_cc_library(
     name = "slam",
     hdrs = [
+        "dataset/dataset_utils.h",
         "dataset/kitti_dataset_loader.h",
+        "dataset/rgbd_data.h",
+        "dataset/stereo_data.h",
+        "dataset/tum_dataset_loader.h",
         "map/grid_map.h",
         "map/occupancy_grid_map.h",
     ] + SLAM_HDRS,
     srcs = [
+        "dataset/dataset_utils.cc",
         "dataset/kitti_dataset_loader.cc",
+        "dataset/tum_dataset_loader.cc",
     ],
     deps = [
         ":opencv_camera",
