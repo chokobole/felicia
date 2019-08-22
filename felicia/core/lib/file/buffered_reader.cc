@@ -7,6 +7,7 @@ namespace felicia {
 BufferedReader::BufferedReader(int option) : option_(option) {}
 
 Status BufferedReader::Open(const base::FilePath& path) {
+  file_.Close();
   file_ = base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file_.IsValid())
     return errors::InvalidArgument(
@@ -16,6 +17,8 @@ Status BufferedReader::Open(const base::FilePath& path) {
   return Status::OK();
 }
 
+void BufferedReader::Close() { file_.Close(); }
+
 bool BufferedReader::IsOpened() const { return file_.IsValid(); }
 
 void BufferedReader::SetBufferCapacityForTesting(size_t buffer_capacity) {
@@ -24,7 +27,7 @@ void BufferedReader::SetBufferCapacityForTesting(size_t buffer_capacity) {
 }
 
 bool BufferedReader::ReadLine(std::string* line) {
-  if (!line->empty()) return false;
+  if (line && !line->empty()) return false;
   if (eof()) return false;
 
   bool met_linefeed = false;
@@ -44,11 +47,11 @@ bool BufferedReader::ReadLine(std::string* line) {
       } else {
         len -= 1;
       }
-      if (line->length() > 0 && (*line)[line->length() - 1] == '\r') {
+      if (line && line->length() > 0 && (*line)[line->length() - 1] == '\r') {
         *line = line->substr(0, line->length() - 1);
       }
     }
-    line->append(buffer_.get() + begin, len);
+    if (line) line->append(buffer_.get() + begin, len);
     if (!met_linefeed || eof()) {
       ReadInAdvance();
       if (eof()) break;

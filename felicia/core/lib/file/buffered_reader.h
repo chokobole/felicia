@@ -24,13 +24,16 @@ class EXPORT BufferedReader {
 
   Status Open(const base::FilePath& path);
 
+  void Close();
+
   bool IsOpened() const;
 
   void SetBufferCapacityForTesting(size_t buffer_capacity);
 
   // Return true if read succeeds, return false when eof or
   // |line| is not empty. We expect |line| to be empty.
-  bool ReadLine(std::string* line);
+  // If you just want to skip line, you can set |line| to nullptr.
+  bool ReadLine(std::string* line = nullptr);
 
   bool eof() const;
 

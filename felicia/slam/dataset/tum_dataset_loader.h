@@ -4,7 +4,7 @@
 #include "third_party/chromium/base/files/file_path.h"
 
 #include "felicia/core/lib/base/export.h"
-#include "felicia/core/lib/file/buffered_reader.h"
+#include "felicia/core/lib/file/csv_reader.h"
 #include "felicia/core/lib/unit/geometry/pose.h"
 #include "felicia/core/lib/unit/geometry/vector.h"
 #include "felicia/core/util/dataset/dataset_loader.h"
@@ -54,10 +54,11 @@ class EXPORT TumDatasetLoader : DatasetLoader<TumCalibData, TumData>::Delegate {
 
  private:
   base::FilePath PathToData() const;
+  int ColumnsForData() const;
 
   base::FilePath path_;
   base::FilePath path_to_data_;
-  BufferedReader reader_;
+  CsvReader reader_;
   TumKind kind_;
   DataKind data_kind_;
   size_t current_;

@@ -1,7 +1,5 @@
 #include "felicia/slam/dataset/tum_dataset_loader.h"
 
-#include "third_party/chromium/base/strings/string_tokenizer.h"
-
 #include "felicia/slam/dataset/dataset_utils.h"
 
 namespace felicia {
@@ -36,59 +34,51 @@ StatusOr<TumCalibData> TumDatasetLoader::Init() {
 
 StatusOr<TumData> TumDatasetLoader::Next() {
   if (!reader_.IsOpened()) {
-    reader_.set_option(BufferedReader::REMOVE_CR_OR_LF);
-    Status s = reader_.Open(path_to_data_);
-    if (!s.ok()) return s;
-  }
-
-  if (data_kind_ != RGBD) {
-    // Read comments
-    for (int i = 0; i < 3; ++i) {
-      std::string line;
-      reader_.ReadLine(&line);
+    int skip_header = 3;
+    if (data_kind_ != RGBD) {
+      skip_header = 0;
     }
+    Status s = reader_.Open(path_to_data_, " ", skip_header);
+    if (!s.ok()) return s;
   }
 
   ++current_;
   int current_line = current_ + 3;
-  std::string line;
+  std::vector<std::string> items;
   TumData tum_data;
-  if (reader_.ReadLine(&line)) {
-    base::StringTokenizer t(line, " ");
-    t.GetNext();
+  if (reader_.ReadItems(&items)) {
+    if (items.size() != ColumnsForData()) {
+      return errors::InvalidArgument(
+          base::StringPrintf("The number of columns is not valid at %s:%d",
+                             path_to_data_.value().c_str(), current_line));
+    }
     StatusOr<double> status_or =
-        TryConvertToDouble(t.token(), path_to_data_, current_line);
+        TryConvertToDouble(items[0], path_to_data_, current_line);
     if (!status_or.ok()) return status_or.status();
     tum_data.timestamp = status_or.ValueOrDie();
     switch (data_kind_) {
       case RGB: {
-        t.GetNext();
         tum_data.rgbd_data.color_image_filename =
-            path_.AppendASCII(t.token()).value();
+            path_.AppendASCII(items[1]).value();
         break;
       }
       case DEPTH: {
-        t.GetNext();
         tum_data.rgbd_data.depth_image_filename =
-            path_.AppendASCII(t.token()).value();
+            path_.AppendASCII(items[2]).value();
         break;
       }
       case RGBD: {
-        t.GetNext();
         tum_data.rgbd_data.color_image_filename =
-            path_.AppendASCII(t.token()).value();
-        t.GetNext();
-        t.GetNext();
+            path_.AppendASCII(items[1]).value();
         tum_data.rgbd_data.depth_image_filename =
-            path_.AppendASCII(t.token()).value();
+            path_.AppendASCII(items[3]).value();
         break;
       }
       case ACCELERATION: {
         float v[3];
         for (int i = 0; i < 3; ++i) {
-          t.GetNext();
           status_or =
-              TryConvertToDouble(t.token(), path_to_data_, current_line);
+              TryConvertToDouble(items[i + 1], path_to_data_, current_line);
           if (!status_or.ok()) return status_or.status();
           v[i] = status_or.ValueOrDie();
         }
@@ -98,9 +88,8 @@ StatusOr<TumData> TumDatasetLoader::Next() {
       case GROUND_TRUTH: {
         float v[7];
         for (int i = 0; i < 7; ++i) {
-          t.GetNext();
           status_or =
-              TryConvertToDouble(t.token(), path_to_data_, current_line);
+              TryConvertToDouble(items[i + 1], path_to_data_, current_line);
           if (!status_or.ok()) return status_or.status();
           v[i] = status_or.ValueOrDie();
         }
@@ -131,6 +120,23 @@ base::FilePath TumDatasetLoader::PathToData() const {
   }
   NOTREACHED();
   return path_;
+}
+
+int TumDatasetLoader::ColumnsForData() const {
+  switch (data_kind_) {
+    case RGB:
+      return 2;
+    case DEPTH:
+      return 2;
+    case RGBD:
+      return 4;
+    case ACCELERATION:
+      return 4;
+    case GROUND_TRUTH:
+      return 8;
+  }
+  NOTREACHED();
+  return 0;
 }
 
 }  // namespace slam

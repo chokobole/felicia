@@ -3,10 +3,8 @@
 #include <iomanip>
 #include <sstream>
 
-#include "third_party/chromium/base/strings/string_tokenizer.h"
-
 #include "felicia/core/lib/error/errors.h"
-#include "felicia/core/lib/strings/str_util.h"
+#include "felicia/core/lib/file/csv_reader.h"
 #include "felicia/slam/dataset/dataset_utils.h"
 
 namespace felicia {
@@ -25,35 +23,30 @@ KittiDatasetLoader::KittiDatasetLoader(const base::FilePath& path_to_sequence,
 }
 
 StatusOr<KittiCalibData> KittiDatasetLoader::Init() {
-  BufferedReader reader(BufferedReader::REMOVE_CR_OR_LF);
-  Status s = reader.Open(calibs_path_);
+  CsvReader reader;
+  Status s = reader.Open(calibs_path_, " ");
   if (!s.ok()) return s;
   enum { P0, P1, P2, P3, TR };
   int cur = P0;
   KittiCalibData kitti_calib_data;
   while (!reader.eof()) {
-    std::string line;
-    if (reader.ReadLine(&line)) {
-      base::StringPiece text = line;
-      if ((cur == P0 && StartsWith(text, "P0: ")) ||
-          (cur == P1 && StartsWith(text, "P1: ")) ||
-          (cur == P2 && StartsWith(text, "P2: ")) ||
-          (cur == P3 && StartsWith(text, "P3: "))) {
-        line = line.substr(4, line.length() - 4);
-        base::StringTokenizer t(line, " ");
+    std::vector<std::string> items;
+    if (reader.ReadItems(&items)) {
+      if (cur <= P3 && items.size() != 13) {
+        return errors::InvalidArgument(
+            base::StringPrintf("Invalid projection matrix at line %s:%d",
+                               calibs_path_.value().c_str(), cur + 1));
+      }
+      if ((cur == P0 && items[0] == "P0:") ||
+          (cur == P1 && items[0] == "P1:") ||
+          (cur == P2 && items[0] == "P2:") ||
+          (cur == P3 && items[0] == "P3:")) {
         Eigen::Matrix<double, 3, 4> m;
-        int idx = 0;
-        while (t.GetNext()) {
+        for (int i = 0; i < 12; ++i) {
           StatusOr<double> status_or =
-              TryConvertToDouble(t.token(), calibs_path_, cur + 1);
+              TryConvertToDouble(items[i + 1], calibs_path_, cur + 1);
           if (!status_or.ok()) return status_or.status();
-          m(idx / 4, idx % 4) = status_or.ValueOrDie();
-          ++idx;
-        }
-        if (idx != 12) {
-          return errors::InvalidArgument(
-              base::StringPrintf("Invalid projection matrix at line %s:%d",
-                                 calibs_path_.value().c_str(), cur + 1));
+          m(i / 4, i % 4) = status_or.ValueOrDie();
         }
 
         if (cur == P0) {
