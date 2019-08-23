@@ -4,6 +4,12 @@
 
 #include "felicia/core/lib/felicia_env.h"
 
+#if BUILDFLAG(TRAVIS) && defined(OS_WIN)
+#define NEWLINE "\r\n"
+#else
+#define NEWLINE "\n"
+#endif
+
 namespace felicia {
 
 TEST(BufferedReaderTest, OpenTest) {
@@ -27,13 +33,13 @@ TEST(BufferedReaderTest, ReadLineBasicTest) {
     std::string line;
     bool ret = reader.ReadLine(&line);
     EXPECT_TRUE(ret);
-    EXPECT_EQ(line, "Hello\n");
+    EXPECT_EQ(line, "Hello" NEWLINE);
   }
   {
     std::string line;
     bool ret = reader.ReadLine(&line);
     EXPECT_TRUE(ret);
-    EXPECT_EQ(line, "World\n");
+    EXPECT_EQ(line, "World" NEWLINE);
   }
 }
 
@@ -66,13 +72,13 @@ TEST(BufferedReaderTest, ReadLineWithSmallBufferTest) {
     std::string line;
     bool ret = reader.ReadLine(&line);
     EXPECT_TRUE(ret);
-    EXPECT_EQ(line, "Hello\n");
+    EXPECT_EQ(line, "Hello" NEWLINE);
   }
   {
     std::string line;
     bool ret = reader.ReadLine(&line);
     EXPECT_TRUE(ret);
-    EXPECT_EQ(line, "World\n");
+    EXPECT_EQ(line, "World" NEWLINE);
   }
 }
 
@@ -85,7 +91,7 @@ TEST(BufferedReaderTest, ReadLineNotEndingLineFeedTest) {
     std::string line;
     bool ret = reader.ReadLine(&line);
     EXPECT_TRUE(ret);
-    EXPECT_EQ(line, "Hello\n");
+    EXPECT_EQ(line, "Hello" NEWLINE);
   }
   {
     std::string line;
