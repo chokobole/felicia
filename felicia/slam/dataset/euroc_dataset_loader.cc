@@ -1,5 +1,7 @@
 #include "felicia/slam/dataset/euroc_dataset_loader.h"
 
+#include "third_party/chromium/base/strings/utf_string_conversions.h"
+
 #include "felicia/core/lib/file/yaml_reader.h"
 #include "felicia/slam/dataset/dataset_utils.h"
 
@@ -58,10 +60,10 @@ StatusOr<SensorData> EurocDatasetLoader::Next() {
   std::vector<std::string> items;
   SensorData sensor_data;
   if (reader_.ReadItems(&items)) {
-    if (items.size() != ColumnsForData()) {
-      return errors::InvalidArgument(
-          base::StringPrintf("The number of columns is not valid at %s:%d",
-                             path_to_data_list_.value().c_str(), current_line));
+    if (items.size() != static_cast<size_t>(ColumnsForData())) {
+      return errors::InvalidArgument(base::StringPrintf(
+          "The number of columns is not valid at %" PRFilePath ":%d",
+          path_to_data_list_.value().c_str(), current_line));
     }
     StatusOr<double> status_or =
         TryConvertToDouble(items[0], path_to_data_list_, current_line);
@@ -70,13 +72,23 @@ StatusOr<SensorData> EurocDatasetLoader::Next() {
 
     switch (data_kind_) {
       case CAM0: {
+#if defined(OS_WIN)
+        sensor_data.set_left_image_filename(
+            base::UTF16ToUTF8(path_to_data_.AppendASCII(items[1]).value()));
+#else
         sensor_data.set_left_image_filename(
             path_to_data_.AppendASCII(items[1]).value());
+#endif
         break;
       }
       case CAM1: {
+#if defined(OS_WIN)
+        sensor_data.set_right_image_filename(
+            base::UTF16ToUTF8(path_to_data_.AppendASCII(items[1]).value()));
+#else
         sensor_data.set_right_image_filename(
             path_to_data_.AppendASCII(items[1]).value());
+#endif
         break;
       }
       case IMU0: {

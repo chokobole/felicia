@@ -13,8 +13,8 @@ StatusOr<double> TryConvertToDouble(const std::string& str,
   double n;
   if (!base::StringToDouble(str, &n)) {
     return errors::InvalidArgument(
-        base::StringPrintf("Cann't convert to double %s at %s:%d", str.c_str(),
-                           path.value().c_str(), line));
+        base::StringPrintf("Cann't convert to double %s at %" PRFilePath ":%d",
+                           str.c_str(), path.value().c_str(), line));
   }
   return n;
 }

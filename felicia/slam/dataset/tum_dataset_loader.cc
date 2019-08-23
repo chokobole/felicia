@@ -1,5 +1,7 @@
 #include "felicia/slam/dataset/tum_dataset_loader.h"
 
+#include "third_party/chromium/base/strings/utf_string_conversions.h"
+
 #include "felicia/slam/dataset/dataset_utils.h"
 
 namespace felicia {
@@ -7,10 +9,7 @@ namespace slam {
 
 TumDatasetLoader::TumDatasetLoader(const base::FilePath& path, TumKind kind,
                                    DataKind data_kind)
-    : path_(path),
-      kind_(kind),
-      data_kind_(data_kind),
-      current_(0) {
+    : path_(path), kind_(kind), data_kind_(data_kind), current_(0) {
   path_to_data_ = PathToData();
 }
 
@@ -48,10 +47,10 @@ StatusOr<SensorData> TumDatasetLoader::Next() {
   std::vector<std::string> items;
   SensorData sensor_data;
   if (reader_.ReadItems(&items)) {
-    if (items.size() != ColumnsForData()) {
-      return errors::InvalidArgument(
-          base::StringPrintf("The number of columns is not valid at %s:%d",
-                             path_to_data_.value().c_str(), current_line));
+    if (items.size() != static_cast<size_t>(ColumnsForData())) {
+      return errors::InvalidArgument(base::StringPrintf(
+          "The number of columns is not valid at %" PRFilePath ":%d",
+          path_to_data_.value().c_str(), current_line));
     }
     StatusOr<double> status_or =
         TryConvertToDouble(items[0], path_to_data_, current_line);
@@ -59,20 +58,37 @@ StatusOr<SensorData> TumDatasetLoader::Next() {
     sensor_data.set_timestamp(status_or.ValueOrDie());
     switch (data_kind_) {
       case RGB: {
+#if defined(OS_WIN)
+        sensor_data.set_left_image_filename(
+            base::UTF16ToUTF8(path_.AppendASCII(items[1]).value()));
+#else
         sensor_data.set_left_image_filename(
             path_.AppendASCII(items[1]).value());
+#endif
         break;
       }
       case DEPTH: {
+#if defined(OS_WIN)
+        sensor_data.set_depth_image_filename(
+            base::UTF16ToUTF8(path_.AppendASCII(items[1]).value()));
+#else
         sensor_data.set_depth_image_filename(
             path_.AppendASCII(items[2]).value());
+#endif
         break;
       }
       case RGBD: {
+#if defined(OS_WIN)
+        sensor_data.set_left_image_filename(
+            base::UTF16ToUTF8(path_.AppendASCII(items[1]).value()));
+        sensor_data.set_depth_image_filename(
+            base::UTF16ToUTF8(path_.AppendASCII(items[3]).value()));
+#else
         sensor_data.set_left_image_filename(
             path_.AppendASCII(items[1]).value());
         sensor_data.set_depth_image_filename(
             path_.AppendASCII(items[3]).value());
+#endif
         break;
       }
       case ACCELERATION: {

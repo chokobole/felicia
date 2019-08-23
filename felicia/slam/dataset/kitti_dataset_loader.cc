@@ -33,9 +33,9 @@ StatusOr<KittiCalibData> KittiDatasetLoader::Init() {
     std::vector<std::string> items;
     if (reader.ReadItems(&items)) {
       if (cur <= P3 && items.size() != 13) {
-        return errors::InvalidArgument(
-            base::StringPrintf("Invalid projection matrix at line %s:%d",
-                               calibs_path_.value().c_str(), cur + 1));
+        return errors::InvalidArgument(base::StringPrintf(
+            "Invalid projection matrix at line %" PRFilePath ":%d",
+            calibs_path_.value().c_str(), cur + 1));
       }
       if ((cur == P0 && items[0] == "P0:") ||
           (cur == P1 && items[0] == "P1:") ||
