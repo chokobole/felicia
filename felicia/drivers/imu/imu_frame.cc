@@ -18,7 +18,7 @@ void ImuFrame::set_orientation(float w, float x, float y, float z) {
   orientation_.set_xyzw(x, y, z, w);
 }
 
-void ImuFrame::set_angulary_veilocity(float x, float y, float z) {
+void ImuFrame::set_angular_velocity(float x, float y, float z) {
   angular_velocity_.set_xyz(x, y, z);
 }
 
@@ -30,7 +30,7 @@ void ImuFrame::set_orientation(const Quaternionf& orientation) {
   orientation_ = orientation;
 }
 
-void ImuFrame::set_angulary_veilocity(const Vector3f& angular_velocity) {
+void ImuFrame::set_angular_velocity(const Vector3f& angular_velocity) {
   angular_velocity_ = angular_velocity;
 }
 

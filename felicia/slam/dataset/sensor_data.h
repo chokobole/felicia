@@ -4,6 +4,7 @@
 #include "third_party/chromium/base/optional.h"
 
 #include "felicia/core/lib/base/export.h"
+#include "felicia/core/lib/unit/geometry/point.h"
 #include "felicia/core/lib/unit/geometry/pose.h"
 #include "felicia/core/lib/unit/geometry/vector.h"
 #include "felicia/drivers/imu/imu_frame.h"
@@ -23,6 +24,9 @@ class EXPORT SensorData {
   DECLARE_METHOD(std::string, depth_image_filename);
   DECLARE_METHOD(drivers::ImuFrame, imu_frame);
   DECLARE_METHOD(Vector3f, acceleration);
+  DECLARE_METHOD(Vector3f, velocity);
+  DECLARE_METHOD(Vector3f, angular_velocity);
+  DECLARE_METHOD(Point3f, point);
   DECLARE_METHOD(Pose3f, pose);
 
 #undef DECLARE_METHOD
@@ -37,6 +41,9 @@ class EXPORT SensorData {
   base::Optional<std::string> depth_image_filename_;
   base::Optional<drivers::ImuFrame> imu_frame_;
   base::Optional<Vector3f> acceleration_;
+  base::Optional<Vector3f> velocity_;
+  base::Optional<Vector3f> angular_velocity_;
+  base::Optional<Point3f> point_;
   base::Optional<Pose3f> pose_;
   double timestamp_;
 };

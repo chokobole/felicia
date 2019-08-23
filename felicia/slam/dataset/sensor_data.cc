@@ -13,6 +13,9 @@ DEFINE_METHOD(std::string, right_image_filename)
 DEFINE_METHOD(std::string, depth_image_filename)
 DEFINE_METHOD(drivers::ImuFrame, imu_frame)
 DEFINE_METHOD(Vector3f, acceleration)
+DEFINE_METHOD(Vector3f, velocity)
+DEFINE_METHOD(Vector3f, angular_velocity)
+DEFINE_METHOD(Point3f, point)
 DEFINE_METHOD(Pose3f, pose)
 
 #undef DEFINE_METHOD

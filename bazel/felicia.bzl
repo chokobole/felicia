@@ -178,6 +178,7 @@ def fel_additional_deps():
         "@com_google_protobuf//:protobuf",
         "@com_google_googletest//:gtest",
         "@eigen",
+        "@yaml-cpp",
     ]
 
 def fel_shared_library():

@@ -497,7 +497,7 @@ void RsCamera::OnImuFrame(rs2::frame frame) {
                           Coordinate::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP);
   base::TimeDelta timestamp = timestamper_.timestamp();
   if (stream == RS_GYRO.stream_type) {
-    imu_frame.set_angulary_veilocity(converted);
+    imu_frame.set_angular_velocity(converted);
     imu_filter_->UpdateAngularVelocity(converted, timestamp);
   } else {
     imu_frame.set_linear_acceleration(converted);

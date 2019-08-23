@@ -34,9 +34,13 @@ class EXPORT KittiDatasetLoader
   bool End() const override;
 
  private:
+  // path to calib.txt
   base::FilePath calibs_path_;
+  // path to times.txt
   base::FilePath times_path_;
+  // path to root of left images
   base::FilePath left_images_path_;
+  // path to root of right images
   base::FilePath right_images_path_;
   BufferedReader times_reader_;
   size_t current_;

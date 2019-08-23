@@ -1,5 +1,5 @@
-#ifndef FELICIA_SLAM_DATASET_TUM_DATASET_LOADER_H_
-#define FELICIA_SLAM_DATASET_TUM_DATASET_LOADER_H_
+#ifndef FELICIA_SLAM_DATASET_EUROC_DATASET_LOADER_H_
+#define FELICIA_SLAM_DATASET_EUROC_DATASET_LOADER_H_
 
 #include "third_party/chromium/base/files/file_path.h"
 
@@ -12,25 +12,22 @@
 namespace felicia {
 namespace slam {
 
-// TumDataSetLoader loader("/path/to/tum", TumDataSetLoader::FR1,
-// TumDataSetLoader::RGB); StatusOr<SensorMetaData> status_or = loader.Init();
+// EurocDataSetLoader loader("/path/to/euroc", EurocDataSetLoader::CAM0);
+// StatusOr<SensorMetaData> status_or = loader.Init();
 // StatusOr<SensorData> status_or2 = loader.Next();
-// For example, /path/to/tum points to the /path/to/rgbd_data_set/freiburg1_rpy.
-// NOTE: We expect the name of associated text file to be "associated.txt".
-class EXPORT TumDatasetLoader
+// For example, /path/to/euroc points to the /path/to/mav0.
+class EXPORT EurocDatasetLoader
     : DatasetLoader<SensorMetaData, SensorData>::Delegate {
  public:
-  enum TumKind { FR1, FR2, FR3 };
   enum DataKind {
-    RGB,
-    DEPTH,
-    RGBD,
-    ACCELERATION,
+    CAM0,
+    CAM1,
+    IMU0,
+    LEICA0,
     GROUND_TRUTH,
   };
 
-  TumDatasetLoader(const base::FilePath& path, TumKind kind,
-                   DataKind data_kind);
+  EurocDatasetLoader(const base::FilePath& path, DataKind data_kind);
 
   // DatasetLoader<SensorMetaData, SensorData>::Delegate methods
   StatusOr<SensorMetaData> Init() override;
@@ -38,15 +35,19 @@ class EXPORT TumDatasetLoader
   bool End() const override;
 
  private:
+  base::FilePath PathToMetaData() const;
   base::FilePath PathToData() const;
+  base::FilePath PathToDataList() const;
+  base::FilePath PathToDataKind() const;
   int ColumnsForData() const;
 
   // path to root
   base::FilePath path_;
-  // path to data list e.g) /path/to/rgb.txt
+  // path to root of each data e.g) /path/to/cam0/data
   base::FilePath path_to_data_;
+  // path to data list e.g) /path/to/cam0/data.csv
+  base::FilePath path_to_data_list_;
   CsvReader reader_;
-  TumKind kind_;
   DataKind data_kind_;
   size_t current_;
 };
@@ -54,4 +55,4 @@ class EXPORT TumDatasetLoader
 }  // namespace slam
 }  // namespace felicia
 
-#endif  // FELICIA_SLAM_DATASET_TUM_DATASET_LOADER_H_
+#endif  // FELICIA_SLAM_DATASET_EUROC_DATASET_LOADER_H_

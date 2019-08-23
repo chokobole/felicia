@@ -19,11 +19,11 @@ class EXPORT ImuFrame {
            const Vector3f& linear_acceleration, base::TimeDelta timestamp);
 
   void set_orientation(float w, float x, float y, float z);
-  void set_angulary_veilocity(float x, float y, float z);
+  void set_angular_velocity(float x, float y, float z);
   void set_linear_acceleration(float x, float y, float z);
 
   void set_orientation(const Quaternionf& orientation);
-  void set_angulary_veilocity(const Vector3f& angular_velocity);
+  void set_angular_velocity(const Vector3f& angular_velocity);
   void set_linear_acceleration(const Vector3f& linear_acceleration);
 
   const Quaternionf& orientation() const;

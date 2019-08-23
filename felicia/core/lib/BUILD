@@ -26,6 +26,7 @@ fel_cc_library(
         "file/buffered_reader.cc",
         "file/csv_reader.cc",
         "file/file_util.cc",
+        "file/yaml_reader.cc",
         "memory/memory_util.cc",
         "net/net_util.cc",
         "strings/str_util.cc",
@@ -55,6 +56,7 @@ fel_cc_library(
         "file/buffered_reader.h",
         "file/csv_reader.h",
         "file/file_util.h",
+        "file/yaml_reader.h",
         "math/math_util.h",
         "math/matrix_util.h",
         "memory/memory_util.h",
@@ -84,6 +86,7 @@ fel_cc_library(
         "//third_party/chromium/net",
         "@com_google_googletest//:gtest",
         "@eigen",
+        "@yaml-cpp",
     ] + if_has_opencv([
         "@opencv",
     ]),

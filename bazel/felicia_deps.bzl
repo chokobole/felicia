@@ -105,7 +105,6 @@ def load_deps():
         patches = ["//third_party:libyuv.patch"],
     )
 
-    # Needed by pybind11
     new_git_repository(
         name = "eigen",
         build_file = "//third_party:eigen.BUILD",
@@ -118,6 +117,15 @@ def load_deps():
         build_file = "//third_party:pybind11.BUILD",
         remote = "https://github.com/pybind/pybind11.git",
         tag = "v2.2.2",
+    )
+
+    new_git_repository(
+        name = "yaml-cpp",
+        build_file = "//third_party:yaml_cpp.BUILD",
+        remote = "https://github.com/jbeder/yaml-cpp.git",
+        tag = "yaml-cpp-0.6.2",
+        patch_args = ["-p1"],
+        patches = ["//third_party:yaml_cpp.patch"],
     )
 
     http_archive(
