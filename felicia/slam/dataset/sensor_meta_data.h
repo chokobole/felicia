@@ -23,6 +23,8 @@ class EXPORT SensorMetaData {
   DECLARE_METHOD(EigenCameraMatrixd, right_K);
   DECLARE_METHOD(EigenDistortionMatrixd, left_D);
   DECLARE_METHOD(EigenDistortionMatrixd, right_D);
+  DECLARE_METHOD(EigenProjectionMatrixd, left_P);
+  DECLARE_METHOD(EigenProjectionMatrixd, right_P);
 
 #undef DECLARE_METHOD
 
@@ -33,6 +35,8 @@ class EXPORT SensorMetaData {
   base::Optional<EigenCameraMatrixd> right_K_;
   base::Optional<EigenDistortionMatrixd> left_D_;
   base::Optional<EigenDistortionMatrixd> right_D_;
+  base::Optional<EigenProjectionMatrixd> left_P_;
+  base::Optional<EigenProjectionMatrixd> right_P_;
 };
 
 }  // namespace slam

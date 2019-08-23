@@ -7,29 +7,25 @@
 #include "felicia/core/lib/file/buffered_reader.h"
 #include "felicia/core/util/dataset/dataset_loader.h"
 #include "felicia/slam/dataset/sensor_data.h"
+#include "felicia/slam/dataset/sensor_meta_data.h"
 #include "felicia/slam/types.h"
 
 namespace felicia {
 namespace slam {
 
-struct KittiCalibData {
-  EigenProjectionMatrixd p0;
-  EigenProjectionMatrixd p1;
-  EigenProjectionMatrixd p2;
-  EigenProjectionMatrixd p3;
-};
-
-// KittiDatasetLoader loader("/path/to/kitti", 0);
-// StatusOr<KittiCalibData> status_or = loader.Init();
-// StatusOr<SensorData> status_or2 = loader.Next();
-// For example, /path/to/kitti points to the /path/to/dataset/sequences.
+// KittiDatasetLoader loader("/path/to/kitti");
+// StatusOr<SensorMetaData> sensor_meta_data = loader.Init();
+// StatusOr<SensorData> sensor_data = loader.Next();
+// For example, /path/to/kitti points to the /path/to/dataset/sequences/00.
 class EXPORT KittiDatasetLoader
-    : DatasetLoader<KittiCalibData, SensorData>::Delegate {
+    : DatasetLoader<SensorMetaData, SensorData>::Delegate {
  public:
-  KittiDatasetLoader(const base::FilePath& path_to_sequence, uint8_t sequence);
+  enum DataKind { GRAYSCALE, COLOR, VELODYNE_LASER_DATA, GROUND_TRUTH };
 
-  // DatasetLoader<KittiCalibData, SensorData>::Delegate methods
-  StatusOr<KittiCalibData> Init() override;
+  KittiDatasetLoader(const base::FilePath& path, DataKind data_kind);
+
+  // DatasetLoader<SensorMetaData, SensorData>::Delegate methods
+  StatusOr<SensorMetaData> Init() override;
   StatusOr<SensorData> Next() override;
   bool End() const override;
 
@@ -43,6 +39,7 @@ class EXPORT KittiDatasetLoader
   // path to root of right images
   base::FilePath right_images_path_;
   BufferedReader times_reader_;
+  DataKind data_kind_;
   size_t current_;
 };
 

@@ -10,25 +10,22 @@
 namespace felicia {
 namespace slam {
 
-KittiDatasetLoader::KittiDatasetLoader(const base::FilePath& path_to_sequence,
-                                       uint8_t sequence)
-    : current_(0) {
-  std::stringstream ss;
-  ss << std::setfill('0') << std::setw(2) << base::NumberToString(sequence);
-  base::FilePath path = path_to_sequence.AppendASCII(ss.str());
+KittiDatasetLoader::KittiDatasetLoader(const base::FilePath& path,
+                                       DataKind data_kind)
+    : data_kind_(data_kind), current_(0) {
   calibs_path_ = path.AppendASCII("calib.txt");
   times_path_ = path.AppendASCII("times.txt");
   left_images_path_ = path.AppendASCII("image_0");
   right_images_path_ = path.AppendASCII("image_1");
 }
 
-StatusOr<KittiCalibData> KittiDatasetLoader::Init() {
+StatusOr<SensorMetaData> KittiDatasetLoader::Init() {
   CsvReader reader;
   Status s = reader.Open(calibs_path_, " ");
   if (!s.ok()) return s;
   enum { P0, P1, P2, P3, TR };
   int cur = P0;
-  KittiCalibData kitti_calib_data;
+  SensorMetaData sensor_meta_data;
   while (!reader.eof()) {
     std::vector<std::string> items;
     if (reader.ReadItems(&items)) {
@@ -37,6 +34,8 @@ StatusOr<KittiCalibData> KittiDatasetLoader::Init() {
             "Invalid projection matrix at line %" PRFilePath ":%d",
             calibs_path_.value().c_str(), cur + 1));
       }
+      if (data_kind_ == GRAYSCALE && (cur >= P2 && cur <= P3)) continue;
+      if (data_kind_ == COLOR && (cur >= P0 && cur <= P1)) continue;
       if ((cur == P0 && items[0] == "P0:") ||
           (cur == P1 && items[0] == "P1:") ||
           (cur == P2 && items[0] == "P2:") ||
@@ -49,20 +48,17 @@ StatusOr<KittiCalibData> KittiDatasetLoader::Init() {
           m(i / 4, i % 4) = status_or.ValueOrDie();
         }
 
-        if (cur == P0) {
-          kitti_calib_data.p0 = m;
-        } else if (cur == P1) {
-          kitti_calib_data.p1 = m;
-        } else if (cur == P2) {
-          kitti_calib_data.p2 = m;
-        } else if (cur == P3) {
-          kitti_calib_data.p3 = m;
+        if (cur == P0 || cur == P2) {
+          sensor_meta_data.set_left_P(EigenProjectionMatrixd{m});
+        } else if (cur == P1 || cur == P3) {
+          sensor_meta_data.set_right_P(EigenProjectionMatrixd{m});
         }
       }
+      // TOOD: Handle Tr
     }
     ++cur;
   }
-  return kitti_calib_data;
+  return sensor_meta_data;
 }
 
 StatusOr<SensorData> KittiDatasetLoader::Next() {

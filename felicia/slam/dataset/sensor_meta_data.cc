@@ -14,6 +14,8 @@ DEFINE_METHOD(EigenCameraMatrixd, left_K)
 DEFINE_METHOD(EigenCameraMatrixd, right_K)
 DEFINE_METHOD(EigenDistortionMatrixd, left_D)
 DEFINE_METHOD(EigenDistortionMatrixd, right_D)
+DEFINE_METHOD(EigenProjectionMatrixd, left_P)
+DEFINE_METHOD(EigenProjectionMatrixd, right_P)
 
 #undef DEFINE_METHOD
 

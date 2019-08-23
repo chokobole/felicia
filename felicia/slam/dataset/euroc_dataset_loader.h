@@ -13,8 +13,8 @@ namespace felicia {
 namespace slam {
 
 // EurocDataSetLoader loader("/path/to/euroc", EurocDataSetLoader::CAM0);
-// StatusOr<SensorMetaData> status_or = loader.Init();
-// StatusOr<SensorData> status_or2 = loader.Next();
+// StatusOr<SensorMetaData> sensor_meta_data = loader.Init();
+// StatusOr<SensorData> sensor_data = loader.Next();
 // For example, /path/to/euroc points to the /path/to/mav0.
 class EXPORT EurocDatasetLoader
     : DatasetLoader<SensorMetaData, SensorData>::Delegate {

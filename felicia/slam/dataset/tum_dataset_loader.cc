@@ -7,6 +7,18 @@
 namespace felicia {
 namespace slam {
 
+TumDatasetLoader::TumDatasetLoader(const base::FilePath& path,
+                                   DataKind data_kind)
+    : TumDatasetLoader(path, FR1, data_kind) {
+  base::FilePath::StringType path_string = path.value();
+  size_t pos = path_string.find(FILE_PATH_LITERAL("rgbd_dataset_freiburg"));
+  if (path_string[pos + 21] == '2') {
+    kind_ = FR2;
+  } else if (path_string[pos + 21] == '3') {
+    kind_ = FR3;
+  }
+}
+
 TumDatasetLoader::TumDatasetLoader(const base::FilePath& path, TumKind kind,
                                    DataKind data_kind)
     : path_(path), kind_(kind), data_kind_(data_kind), current_(0) {
@@ -35,7 +47,7 @@ StatusOr<SensorMetaData> TumDatasetLoader::Init() {
 StatusOr<SensorData> TumDatasetLoader::Next() {
   if (!reader_.IsOpened()) {
     int skip_header = 3;
-    if (data_kind_ != RGBD) {
+    if (data_kind_ == RGBD) {
       skip_header = 0;
     }
     Status s = reader_.Open(path_to_data_, " ", skip_header);
