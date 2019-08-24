@@ -13,20 +13,12 @@ namespace felicia {
 class EXPORT YamlReader {
  public:
   YamlReader();
+  ~YamlReader();
 
   Status Open(const base::FilePath& path);
 
-  template <typename Key>
-  const YAML::Node operator[](const Key& key) const {
-    return node_[key];
-  }
-  template <typename Key>
-  YAML::Node operator[](const Key& key) {
-    return node_[key];
-  }
-
-  const YAML::Node operator[](const YAML::Node& key) const;
-  YAML::Node operator[](const YAML::Node& key);
+  const YAML::Node& node() const;
+  YAML::Node& node();
 
  private:
   YAML::Node node_;

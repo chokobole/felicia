@@ -6,6 +6,8 @@ namespace felicia {
 
 YamlReader::YamlReader() = default;
 
+YamlReader::~YamlReader() = default;
+
 Status YamlReader::Open(const base::FilePath& path) {
   try {
     node_ = YAML::LoadFile(path.AsUTF8Unsafe());
@@ -15,10 +17,7 @@ Status YamlReader::Open(const base::FilePath& path) {
   return Status::OK();
 }
 
-const YAML::Node YamlReader::operator[](const YAML::Node& key) const {
-  return node_[key];
-}
-
-YAML::Node YamlReader::operator[](const YAML::Node& key) { return node_[key]; }
+const YAML::Node& YamlReader::node() const { return node_; }
+YAML::Node& YamlReader::node() { return node_; }
 
 }  // namespace felicia

@@ -19,14 +19,15 @@ StatusOr<SensorMetaData> EurocDatasetLoader::Init() {
   YamlReader reader;
   Status s = reader.Open(PathToMetaData());
   if (!s.ok()) return s;
+  const YAML::Node& node = reader.node();
   SensorMetaData sensor_meta_data;
   switch (data_kind_) {
     case CAM0:
     case CAM1: {
-      float frame_rate = reader["rate_hz"].as<float>();
-      YAML::Node resolution = reader["resolution"];
-      YAML::Node intrinsics = reader["intrinsics"];
-      YAML::Node distortion_coeffs = reader["distortion_coefficients"];
+      float frame_rate = node["rate_hz"].as<float>();
+      YAML::Node resolution = node["resolution"];
+      YAML::Node intrinsics = node["intrinsics"];
+      YAML::Node distortion_coeffs = node["distortion_coefficients"];
       sensor_meta_data.set_color_camera_format(drivers::CameraFormat{
           resolution[0].as<int>(), resolution[1].as<int>(), PIXEL_FORMAT_BGR,
           frame_rate});
