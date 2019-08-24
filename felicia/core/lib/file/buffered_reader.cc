@@ -41,7 +41,7 @@ bool BufferedReader::ReadLine(std::string* line) {
       }
     }
     size_t len = read_ - begin;
-    if (met_linefeed && option_ == REMOVE_CR_OR_LF) {
+    if (met_linefeed && (option_ & REMOVE_CR_OR_LF)) {
       if (len >= 2 && buffer_[read_ - 2] == '\r') {
         len -= 2;
       } else {

@@ -31,14 +31,12 @@ TEST(BufferedReaderTest, ReadLineBasicTest) {
   Status s = reader.Open(path);
   {
     std::string line;
-    bool ret = reader.ReadLine(&line);
-    EXPECT_TRUE(ret);
+    EXPECT_TRUE(reader.ReadLine(&line));
     EXPECT_EQ(line, "Hello" NEWLINE);
   }
   {
     std::string line;
-    bool ret = reader.ReadLine(&line);
-    EXPECT_TRUE(ret);
+    EXPECT_TRUE(reader.ReadLine(&line));
     EXPECT_EQ(line, "World" NEWLINE);
   }
 }
@@ -50,14 +48,12 @@ TEST(BufferedReaderTest, ReadLineWithRemoveCrOrLfTest) {
   Status s = reader.Open(path);
   {
     std::string line;
-    bool ret = reader.ReadLine(&line);
-    EXPECT_TRUE(ret);
+    EXPECT_TRUE(reader.ReadLine(&line));
     EXPECT_EQ(line, "Hello");
   }
   {
     std::string line;
-    bool ret = reader.ReadLine(&line);
-    EXPECT_TRUE(ret);
+    EXPECT_TRUE(reader.ReadLine(&line));
     EXPECT_EQ(line, "World");
   }
 }
@@ -70,14 +66,12 @@ TEST(BufferedReaderTest, ReadLineWithSmallBufferTest) {
   Status s = reader.Open(path);
   {
     std::string line;
-    bool ret = reader.ReadLine(&line);
-    EXPECT_TRUE(ret);
+    EXPECT_TRUE(reader.ReadLine(&line));
     EXPECT_EQ(line, "Hello" NEWLINE);
   }
   {
     std::string line;
-    bool ret = reader.ReadLine(&line);
-    EXPECT_TRUE(ret);
+    EXPECT_TRUE(reader.ReadLine(&line));
     EXPECT_EQ(line, "World" NEWLINE);
   }
 }
@@ -89,14 +83,12 @@ TEST(BufferedReaderTest, ReadLineNotEndingLineFeedTest) {
   Status s = reader.Open(path);
   {
     std::string line;
-    bool ret = reader.ReadLine(&line);
-    EXPECT_TRUE(ret);
+    EXPECT_TRUE(reader.ReadLine(&line));
     EXPECT_EQ(line, "Hello" NEWLINE);
   }
   {
     std::string line;
-    bool ret = reader.ReadLine(&line);
-    EXPECT_TRUE(ret);
+    EXPECT_TRUE(reader.ReadLine(&line));
     EXPECT_EQ(line, "World");
   }
 }
