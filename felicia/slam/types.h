@@ -1,11 +1,12 @@
-#ifndef FELICIA_SLAM_TYPE_H_
-#define FELICIA_SLAM_TYPE_H_
+#ifndef FELICIA_SLAM_TYPES_H_
+#define FELICIA_SLAM_TYPES_H_
 
 #if defined(HAS_OPENCV)
 #include <opencv2/core.hpp>
 #endif
 
 #include "felicia/slam/camera/camera_matrix.h"
+#include "felicia/slam/camera/camera_model_base.h"
 #include "felicia/slam/camera/distortion_matrix.h"
 #include "felicia/slam/camera/projection_matrix.h"
 #include "felicia/slam/camera/rectification_matrix.h"
@@ -19,11 +20,18 @@ typedef CameraMatrix<Eigen::Matrix3d> EigenCameraMatrixd;
 typedef DistortionMatrix<Eigen::RowVectorXf> EigenDistortionMatrixf;
 typedef DistortionMatrix<Eigen::RowVectorXd> EigenDistortionMatrixd;
 
+typedef RectificationMatrix<Eigen::Matrix3f> EigenRectificationMatrixf;
+typedef RectificationMatrix<Eigen::Matrix3d> EigenRectificationMatrixd;
+
 typedef ProjectionMatrix<Eigen::Matrix<float, 3, 4>> EigenProjectionMatrixf;
 typedef ProjectionMatrix<Eigen::Matrix<double, 3, 4>> EigenProjectionMatrixd;
 
-typedef RectificationMatrix<Eigen::Matrix3f> EigenRectificationMatrixf;
-typedef RectificationMatrix<Eigen::Matrix3d> EigenRectificationMatrixd;
+typedef CameraModelBase<EigenCameraMatrixf, EigenDistortionMatrixf,
+                        EigenRectificationMatrixf, EigenProjectionMatrixf>
+    EigenCameraModelBasef;
+typedef CameraModelBase<EigenCameraMatrixd, EigenDistortionMatrixd,
+                        EigenRectificationMatrixd, EigenProjectionMatrixd>
+    EigenCameraModelBased;
 
 #if defined(HAS_OPENCV)
 typedef CameraMatrix<cv::Mat1f> CvCameraMatrixf;
@@ -32,11 +40,18 @@ typedef CameraMatrix<cv::Mat1d> CvCameraMatrixd;
 typedef DistortionMatrix<cv::Mat1f> CvDistortionMatrixf;
 typedef DistortionMatrix<cv::Mat1d> CvDistortionMatrixd;
 
+typedef RectificationMatrix<cv::Mat1f> CvRectificationMatrixf;
+typedef RectificationMatrix<cv::Mat1d> CvRectificationMatrixd;
+
 typedef ProjectionMatrix<cv::Mat1f> CvProjectionMatrixf;
 typedef ProjectionMatrix<cv::Mat1d> CvProjectionMatrixd;
 
-typedef RectificationMatrix<cv::Mat1f> CvRectificationMatrixf;
-typedef RectificationMatrix<cv::Mat1d> CvRectificationMatrixd;
+typedef CameraModelBase<CvCameraMatrixf, CvDistortionMatrixf,
+                        CvRectificationMatrixf, CvProjectionMatrixf>
+    CvCameraModelBasef;
+typedef CameraModelBase<CvCameraMatrixd, CvDistortionMatrixd,
+                        CvRectificationMatrixd, CvProjectionMatrixd>
+    CvCameraModelBased;
 #endif
 
 }  // namespace slam
@@ -50,4 +65,4 @@ typedef Mat_<uint16_t> Mat1u;
 }  // namespace cv
 #endif
 
-#endif  // FELICIA_SLAM_TYPE_H_
+#endif  // FELICIA_SLAM_TYPES_H_

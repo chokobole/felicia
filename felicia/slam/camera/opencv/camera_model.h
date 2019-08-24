@@ -32,150 +32,138 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <functional>
 
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 
-#include "third_party/chromium/base/files/file_path.h"
+#include "third_party/chromium/base/logging.h"
 
-#include "felicia/core/lib/base/export.h"
-#include "felicia/core/lib/error/status.h"
-#include "felicia/core/lib/error/statusor.h"
-#include "felicia/core/lib/unit/geometry/point.h"
-#include "felicia/core/lib/unit/geometry/rigid_body_transform.h"
-#include "felicia/slam/camera/camera_matrix.h"
-#include "felicia/slam/camera/camera_model_message.pb.h"
-#include "felicia/slam/camera/distortion_matrix.h"
-#include "felicia/slam/camera/projection_matrix.h"
-#include "felicia/slam/camera/rectification_matrix.h"
+#include "felicia/slam/camera/camera_model_base.h"
 #include "felicia/slam/types.h"
 
 namespace felicia {
 namespace slam {
 
-namespace internal {
-
-Status InvalidRowsAndCols(int rows, int cols);
-
-Status MaybeLoad(const cv::FileStorage& fs, const std::string& name,
-                 const base::FilePath& path,
-                 std::function<Status(const cv::FileNode&)> callback);
-
-StatusOr<cv::Mat1d> LoadCvMatrix(const cv::FileNode& n,
-                                 std::function<bool(int, int)> callback);
-
-}  // namespace internal
-
-class EXPORT CameraModel {
+template <typename KType, typename DType, typename RType, typename PType>
+class CameraModel : CameraModelBase<KType, DType, RType, PType> {
  public:
-  CameraModel();
-
-  CameraModel(const std::string& name, const cv::Size& image_size,
-              const cv::Mat1d& K, const cv::Mat1d& D, const cv::Mat1d& R,
-              const cv::Mat1d& P);
-
-  // minimal
-  CameraModel(double fx, double fy, double cx, double cy, double tx = 0.0f,
-              const cv::Size& image_size = cv::Size(0, 0));
-  // minimal to be saved
-  CameraModel(const std::string& name, double fx, double fy, double cx,
-              double cy, double tx = 0.0f,
-              const cv::Size& image_size = cv::Size(0, 0));
-
-  ~CameraModel();
+  typedef typename KType::MatrixType KMatrixType;
+  typedef typename DType::MatrixType DMatrixType;
+  typedef typename RType::MatrixType RMatrixType;
+  typedef typename PType::MatrixType PMatrixType;
 
   void InitRectificationMap();
   bool IsRectificationMapInitialized() const {
     return !map_x_.empty() && !map_y_.empty();
   }
 
-  bool IsValidForProjection() const {
-    return fx() > 0.0 && fy() > 0.0 && cx() > 0.0 && cy() > 0.0;
-  }
-  bool IsValidForRectification() const {
-    return image_size_.width > 0 && image_size_.height > 0 &&
-           !K_.matrix().empty() && !D_.matrix().empty() &&
-           !R_.matrix().empty() && !P_.matrix().empty();
-  }
-
-  void set_name(const std::string& name) { name_ = name; }
-  const std::string& name() const { return name_; }
-
-  double fx() const { return P_.matrix().empty() ? K_.fx() : P_.fx(); }
-  double fy() const { return P_.matrix().empty() ? K_.fy() : P_.fy(); }
-  double cx() const { return P_.matrix().empty() ? K_.cx() : P_.cx(); }
-  double cy() const { return P_.matrix().empty() ? K_.cy() : P_.cy(); }
-  double tx() const { return P_.matrix().empty() ? 0.0 : P_.tx(); }
-
-  // intrinsic camera matrix (before rectification)
-  const cv::Mat1d& K_raw() const { return K_.matrix(); }
-  // intrinsic distorsion matrix (before rectification)
-  const cv::Mat1d& D_raw() const { return D_.matrix(); }
-  // if P exists, return rectified version
-  cv::Mat1d K() const {
-    return !P_.matrix().empty() ? cv::Mat1d(P_.matrix().colRange(0, 3))
-                                : K_.matrix();
-  }
-  // if P exists, return rectified version
-  cv::Mat1d D() const {
-    return P_.matrix().empty() && !D_.matrix().empty() ? D_.matrix()
-                                                       : cv::Mat1d::zeros(1, 5);
-  }
-  // rectification matrix
-  const cv::Mat1d& R() const { return R_.matrix(); }
-  // projection matrix
-  const cv::Mat1d& P() const { return P_.matrix(); }
-
-  void set_image_size(const cv::Size& size);
-  const cv::Size& image_size() const { return image_size_; }
-  int image_width() const { return image_size_.width; }
-  int image_height() const { return image_size_.height; }
-
-  Status Load(const base::FilePath& path);
-  Status Save(const base::FilePath& path) const;
-
-  CameraModelMessage ToCameraModelMessage() const;
-  Status FromCameraModelMessage(const CameraModelMessage& message);
-  Status FromCameraModelMessage(CameraModelMessage&& message);
-
-  CameraModel Scaled(double scale) const;
-  CameraModel Roi(const cv::Rect& roi) const;
-
-  double HorizontalFOV() const;  // in radians
-  double VerticalFOV() const;    // in radians
-
   // For depth images, your should use cv::INTER_NEAREST
   cv::Mat RectifyImage(const cv::Mat& raw,
                        int interpolation = cv::INTER_LINEAR) const;
   cv::Mat1u RectifyDepth(const cv::Mat1u& raw) const;
 
-  template <typename T>
-  Point<T> Project(const Point3<T>& point) const {
-    CameraMatrix<cv::Matx33d> camera_matrix(fx(), fy(), cx(), cy());
-    return camera_matrix.Project(point);
-  }
-
-  template <typename T>
-  Point3<T> ProjectInverse(const Point<T>& point, T depth) const {
-    CameraMatrix<cv::Matx33d> camera_matrix(fx(), fy(), cx(), cy());
-    return camera_matrix.ProjectInverse(point, depth);
-  }
-  bool InImage(int u, int v) const;
-
  private:
-  std::string name_;
-  cv::Size image_size_;
-  // The camera intrinsic 3x3
-  CvCameraMatrixd K_;
-  // The distortion coefficients 1x4,5,6,8
-  CvDistortionMatrixd D_;
-  // The rectification matrix 3x3 (computed from stereo or Identity)
-  CvRectificationMatrixd R_;
-  // The projection matrix 3x4 (computed from stereo or equal to [K [0
-  // 0 1]'])
-  CvProjectionMatrixd P_;
   // These are used to compute undistortion.
   cv::Mat map_x_;
   cv::Mat map_y_;
 };
+
+template <typename KType, typename DType, typename RType, typename PType>
+void CameraModel<KType, DType, RType, PType>::InitRectificationMap() {
+  if (IsRectificationMapInitialized()) return;
+  if (!IsValidForRectification()) return;
+
+  const KMatrixType& K = K_.matrix();
+  const DMatrixType& D = D_.matrix();
+  const RMatrixType& R = R_.matrix();
+  const PMatrixType& P = P_.matrix();
+  if (D.cols == 6) {
+#if CV_MAJOR_VERSION > 2 or    \
+    (CV_MAJOR_VERSION == 2 and \
+     (CV_MINOR_VERSION > 4 or  \
+      (CV_MINOR_VERSION == 4 and CV_SUBMINOR_VERSION >= 10)))
+    // Equidistant / FishEye
+    // get only k parameters (k1,k2,p1,p2,k3,k4)
+    cv::Mat1d D2(1, 4);
+    ConstNativeMatrixRef<DMatrixType> D_ref(D);
+    D2(0, 0) = D_ref.at(0, 0);
+    D2(0, 1) = D_ref.at(0, 1);
+    D2(0, 2) = D_ref.at(0, 4);
+    D2(0, 3) = D_ref.at(0, 5);
+    cv::fisheye::initUndistortRectifyMap(K, D2, R, P, image_size_, CV_32FC1,
+                                         map_x_, map_y_);
+
+  } else
+#else
+    NOTREACHED() << base::StringPrintf(
+        "Too old opencv version (%d,%d,%d) to support fisheye model (min "
+        "2.4.10 required)!",
+        CV_MAJOR_VERSION, CV_MINOR_VERSION, CV_SUBMINOR_VERSION);
+  }
+#endif
+  {
+    // RadialTangential
+    cv::initUndistortRectifyMap(K, D, R, P, image_size_, CV_32FC1, map_x_,
+                                map_y_);
+  }
+}
+
+template <typename KType, typename DType, typename RType, typename PType>
+cv::Mat CameraModel<KType, DType, RType, PType>::RectifyImage(
+    const cv::Mat& raw, int interpolation) const {
+  if (IsRectificationMapInitialized()) {
+    cv::Mat rectified;
+    cv::remap(raw, rectified, map_x_, map_y_, interpolation);
+    return rectified;
+  } else {
+    LOG(ERROR)
+        << "Cannot rectify image because the rectify map is not initialized.";
+    return raw.clone();
+  }
+}
+
+// inspired from
+// https://github.com/code-iai/iai_kinect2/blob/master/depth_registration/src/depth_registration_cpu.cpp
+template <typename KType, typename DType, typename RType, typename PType>
+cv::Mat1u CameraModel<KType, DType, RType, PType> CameraModel::RectifyDepth(
+    const cv::Mat1u& raw) const {
+  if (IsRectificationMapInitialized()) {
+    cv::Mat1u rectified = cv::Mat1u::zeros(map_x_.rows, map_x_.cols);
+    for (int y = 0; y < map_x_.rows; ++y) {
+      for (int x = 0; x < map_x_.cols; ++x) {
+        cv::Point2f pt(map_x_.at<float>(y, x), map_y_.at<float>(y, x));
+        int xL = static_cast<int>(floor(pt.x));
+        int xH = static_cast<int>(ceil(pt.x));
+        int yL = static_cast<int>(floor(pt.y));
+        int yH = static_cast<int>(ceil(pt.y));
+        if (xL >= 0 && yL >= 0 && xH < raw.cols && yH < raw.rows) {
+          const uint16_t& pLT = raw(yL, xL);
+          const uint16_t& pRT = raw(yL, xH);
+          const uint16_t& pLB = raw(yH, xL);
+          const uint16_t& pRB = raw(yH, xH);
+          if (pLT > 0 && pRT > 0 && pLB > 0 && pRB > 0) {
+            uint16_t avg = (pLT + pRT + pLB + pRB) / 4;
+            uint16_t thres = 0.01 * avg;
+            if (abs(pLT - avg) < thres && abs(pRT - avg) < thres &&
+                abs(pLB - avg) < thres && abs(pRB - avg) < thres) {
+              // bilinear interpolation
+              float a = pt.x - static_cast<float>(xL);
+              float c = pt.y - static_cast<float>(yL);
+
+              // http://stackoverflow.com/questions/13299409/how-to-get-the-image-pixel-at-real-locations-in-opencv
+              rectified(y, x) = (pLT * (1.f - a) + pRT * a) * (1.f - c) +
+                                (pLB * (1.f - a) + pRB * a) * c;
+            }
+          }
+        }
+      }
+    }
+    return rectified;
+  } else {
+    LOG(ERROR)
+        << "Cannot rectify image because the rectify map is not initialized.";
+    return raw.clone();
+  }
+}
 
 }  // namespace slam
 }  // namespace felicia

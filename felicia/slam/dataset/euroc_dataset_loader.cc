@@ -36,8 +36,8 @@ StatusOr<SensorMetaData> EurocDatasetLoader::Init() {
           intrinsics[2].as<double>(), intrinsics[3].as<double>()});
       sensor_meta_data.set_left_D(EigenDistortionMatrixd{
           distortion_coeffs[0].as<double>(), distortion_coeffs[1].as<double>(),
-          distortion_coeffs[2].as<double>(),
-          distortion_coeffs[3].as<double>()});
+          distortion_coeffs[2].as<double>(), distortion_coeffs[3].as<double>(),
+          DISTORTION_MODEL_PLUMB_BOB});
       break;
     }
     // TODO: Fill the belows.

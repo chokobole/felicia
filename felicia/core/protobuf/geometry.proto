@@ -31,6 +31,11 @@ message QuaterniondMessage {
   double z = 4;
 }
 
+message VectoriMessage {
+  int32 x = 1;
+  int32 y = 2;
+}
+
 message VectorfMessage {
   float x = 1;
   float y = 2;
@@ -39,6 +44,12 @@ message VectorfMessage {
 message VectordMessage {
   double x = 1;
   double y = 2;
+}
+
+message Vector3iMessage {
+  int32 x = 1;
+  int32 y = 2;
+  int32 z = 3;
 }
 
 message Vector3fMessage {
@@ -143,6 +154,13 @@ message RectfMessage {
 message RectdMessage {
   PointdMessage top_left = 1;
   PointdMessage bottom_right = 2;
+}
+
+message QuadiMessage {
+  PointfMessage top_left = 1;
+  PointfMessage top_right = 2;
+  PointfMessage bottom_left = 3;
+  PointfMessage bottom_right = 4;
 }
 
 message QuadfMessage {

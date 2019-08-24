@@ -11,7 +11,8 @@ YamlWriter::YamlWriter() = default;
 YamlWriter::~YamlWriter() = default;
 
 Status YamlWriter::WriteToFile(const base::FilePath& path) {
-  base::File file(path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  base::File file(path,
+                  base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   if (!file.IsValid())
     return errors::InvalidArgument(
         base::File::ErrorToString(file.error_details()));

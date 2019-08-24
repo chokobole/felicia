@@ -1,14 +1,16 @@
 #ifndef FELICIA_SLAM_CAMERA_RECTIFICATION_MATRIX_H_
 #define FELICIA_SLAM_CAMERA_RECTIFICATION_MATRIX_H_
 
+#include "felicia/core/lib/math/matrix_util.h"
 #include "felicia/core/lib/unit/geometry/native_matrix_reference.h"
 
 namespace felicia {
 namespace slam {
 
-template <typename MatrixType>
+template <typename MatrixType_>
 class RectificationMatrix {
  public:
+  typedef MatrixType_ MatrixType;
   typedef ConstNativeMatrixRef<MatrixType> ConstMatrixTypeRef;
   typedef typename ConstMatrixTypeRef::ScalarType ScalarType;
   static_assert(IsMatrix<3, 3>(ConstMatrixTypeRef::Rows,

@@ -300,6 +300,18 @@
             }
           }
         },
+        "VectoriMessage": {
+          "fields": {
+            "x": {
+              "type": "int32",
+              "id": 1
+            },
+            "y": {
+              "type": "int32",
+              "id": 2
+            }
+          }
+        },
         "VectorfMessage": {
           "fields": {
             "x": {
@@ -321,6 +333,22 @@
             "y": {
               "type": "double",
               "id": 2
+            }
+          }
+        },
+        "Vector3iMessage": {
+          "fields": {
+            "x": {
+              "type": "int32",
+              "id": 1
+            },
+            "y": {
+              "type": "int32",
+              "id": 2
+            },
+            "z": {
+              "type": "int32",
+              "id": 3
             }
           }
         },
@@ -588,6 +616,26 @@
             }
           }
         },
+        "QuadiMessage": {
+          "fields": {
+            "topLeft": {
+              "type": "PointfMessage",
+              "id": 1
+            },
+            "topRight": {
+              "type": "PointfMessage",
+              "id": 2
+            },
+            "bottomLeft": {
+              "type": "PointfMessage",
+              "id": 3
+            },
+            "bottomRight": {
+              "type": "PointfMessage",
+              "id": 4
+            }
+          }
+        },
         "QuadfMessage": {
           "fields": {
             "topLeft": {
@@ -821,136 +869,6 @@
             }
           }
         },
-        "NodeInfo": {
-          "fields": {
-            "name": {
-              "type": "string",
-              "id": 1
-            },
-            "clientId": {
-              "type": "uint32",
-              "id": 2
-            },
-            "watcher": {
-              "type": "bool",
-              "id": 3
-            }
-          }
-        },
-        "PubSubTopics": {
-          "fields": {
-            "publishingTopics": {
-              "rule": "repeated",
-              "type": "string",
-              "id": 2
-            },
-            "subscribingTopics": {
-              "rule": "repeated",
-              "type": "string",
-              "id": 3
-            }
-          }
-        },
-        "ClientInfo": {
-          "fields": {
-            "id": {
-              "type": "uint32",
-              "id": 1
-            },
-            "heartBeatSignallerSource": {
-              "type": "ChannelSource",
-              "id": 2
-            },
-            "topicInfoWatcherSource": {
-              "type": "ChannelSource",
-              "id": 3
-            }
-          }
-        },
-        "TopicInfo": {
-          "fields": {
-            "topic": {
-              "type": "string",
-              "id": 1
-            },
-            "typeName": {
-              "type": "string",
-              "id": 2
-            },
-            "topicSource": {
-              "type": "ChannelSource",
-              "id": 3
-            },
-            "status": {
-              "type": "Status",
-              "id": 4
-            }
-          },
-          "nested": {
-            "Status": {
-              "values": {
-                "REGISTERED": 0,
-                "UNREGISTERED": 1
-              }
-            }
-          }
-        },
-        "ClientFilter": {
-          "fields": {
-            "all": {
-              "type": "bool",
-              "id": 1
-            },
-            "id": {
-              "type": "uint32",
-              "id": 2
-            }
-          }
-        },
-        "NodeFilter": {
-          "fields": {
-            "all": {
-              "type": "bool",
-              "id": 1
-            },
-            "publishingTopic": {
-              "type": "string",
-              "id": 2
-            },
-            "subscribingTopic": {
-              "type": "string",
-              "id": 3
-            },
-            "name": {
-              "type": "string",
-              "id": 4
-            },
-            "watcher": {
-              "type": "bool",
-              "id": 5
-            }
-          }
-        },
-        "TopicFilter": {
-          "fields": {
-            "all": {
-              "type": "bool",
-              "id": 1
-            },
-            "topic": {
-              "type": "string",
-              "id": 2
-            }
-          }
-        },
-        "HeartBeat": {
-          "fields": {
-            "ok": {
-              "type": "bool",
-              "id": 1
-            }
-          }
-        },
         "RegisterClientRequest": {
           "fields": {
             "clientInfo": {
@@ -1105,6 +1023,136 @@
             "topicInfos": {
               "rule": "repeated",
               "type": "TopicInfo",
+              "id": 1
+            }
+          }
+        },
+        "NodeInfo": {
+          "fields": {
+            "name": {
+              "type": "string",
+              "id": 1
+            },
+            "clientId": {
+              "type": "uint32",
+              "id": 2
+            },
+            "watcher": {
+              "type": "bool",
+              "id": 3
+            }
+          }
+        },
+        "PubSubTopics": {
+          "fields": {
+            "publishingTopics": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 2
+            },
+            "subscribingTopics": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 3
+            }
+          }
+        },
+        "ClientInfo": {
+          "fields": {
+            "id": {
+              "type": "uint32",
+              "id": 1
+            },
+            "heartBeatSignallerSource": {
+              "type": "ChannelSource",
+              "id": 2
+            },
+            "topicInfoWatcherSource": {
+              "type": "ChannelSource",
+              "id": 3
+            }
+          }
+        },
+        "TopicInfo": {
+          "fields": {
+            "topic": {
+              "type": "string",
+              "id": 1
+            },
+            "typeName": {
+              "type": "string",
+              "id": 2
+            },
+            "topicSource": {
+              "type": "ChannelSource",
+              "id": 3
+            },
+            "status": {
+              "type": "Status",
+              "id": 4
+            }
+          },
+          "nested": {
+            "Status": {
+              "values": {
+                "REGISTERED": 0,
+                "UNREGISTERED": 1
+              }
+            }
+          }
+        },
+        "ClientFilter": {
+          "fields": {
+            "all": {
+              "type": "bool",
+              "id": 1
+            },
+            "id": {
+              "type": "uint32",
+              "id": 2
+            }
+          }
+        },
+        "NodeFilter": {
+          "fields": {
+            "all": {
+              "type": "bool",
+              "id": 1
+            },
+            "publishingTopic": {
+              "type": "string",
+              "id": 2
+            },
+            "subscribingTopic": {
+              "type": "string",
+              "id": 3
+            },
+            "name": {
+              "type": "string",
+              "id": 4
+            },
+            "watcher": {
+              "type": "bool",
+              "id": 5
+            }
+          }
+        },
+        "TopicFilter": {
+          "fields": {
+            "all": {
+              "type": "bool",
+              "id": 1
+            },
+            "topic": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "HeartBeat": {
+          "fields": {
+            "ok": {
+              "type": "bool",
               "id": 1
             }
           }

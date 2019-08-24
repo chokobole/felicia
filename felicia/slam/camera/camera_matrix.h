@@ -10,9 +10,10 @@
 namespace felicia {
 namespace slam {
 
-template <typename MatrixType>
+template <typename MatrixType_>
 class CameraMatrix {
  public:
+  typedef MatrixType_ MatrixType;
   typedef NativeMatrixRef<MatrixType> MatrixTypeRef;
   typedef ConstNativeMatrixRef<MatrixType> ConstMatrixTypeRef;
   typedef typename ConstMatrixTypeRef::ScalarType ScalarType;
@@ -28,8 +29,13 @@ class CameraMatrix {
     CHECK((matrix_ref.empty() ||
            IsMatrix<3, 3>(matrix_ref.rows(), matrix_ref.cols())));
   }
+
   CameraMatrix(ScalarType fx, ScalarType fy, ScalarType cx, ScalarType cy)
       : matrix_(ConstMatrixTypeRef::Identity(3, 3)) {
+    CHECK_GT(fx, 0);
+    CHECK_GT(fy, 0);
+    CHECK_GE(cx, 0);
+    CHECK_GE(cy, 0);
     set_fx(fx);
     set_fy(fy);
     set_cx(cx);
@@ -54,6 +60,16 @@ class CameraMatrix {
 
   ScalarType cy() const { return ValueOrZero(1, 2); }
   void set_cy(ScalarType cy) { MaybeSet(1, 2, cy); }
+
+  CameraMatrix Scaled(double scale) const {
+    return {static_cast<ScalarType>(fx() * scale),
+            static_cast<ScalarType>(fy() * scale),
+            static_cast<ScalarType>(cx() * scale),
+            static_cast<ScalarType>(cy() * scale)};
+  }
+  CameraMatrix CenterMoved(const Vector<ScalarType>& vector) const {
+    return {fx(), fy(), cx() + vector.x(), cy() + vector.y()};
+  }
 
   const MatrixType& matrix() const { return matrix_; }
   MatrixType& matrix() { return matrix_; }

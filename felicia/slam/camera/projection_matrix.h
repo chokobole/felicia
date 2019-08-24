@@ -6,13 +6,15 @@
 #include "felicia/core/lib/math/matrix_util.h"
 #include "felicia/core/lib/unit/geometry/native_matrix_reference.h"
 #include "felicia/core/lib/unit/geometry/point.h"
+#include "felicia/core/lib/unit/geometry/vector.h"
 
 namespace felicia {
 namespace slam {
 
-template <typename MatrixType>
+template <typename MatrixType_>
 class ProjectionMatrix {
  public:
+  typedef MatrixType_ MatrixType;
   typedef NativeMatrixRef<MatrixType> MatrixTypeRef;
   typedef ConstNativeMatrixRef<MatrixType> ConstMatrixTypeRef;
   typedef typename ConstMatrixTypeRef::ScalarType ScalarType;
@@ -28,14 +30,16 @@ class ProjectionMatrix {
     CHECK((matrix_ref.empty() ||
            IsMatrix<3, 4>(matrix_ref.rows(), matrix_ref.cols())));
   }
+
   ProjectionMatrix(ScalarType fx, ScalarType fy, ScalarType cx, ScalarType cy,
-                   ScalarType tx)
+                   ScalarType tx = 0, ScalarType ty = 0)
       : matrix_(ConstMatrixTypeRef::Identity(3, 4)) {
     set_fx(fx);
     set_fy(fy);
     set_cx(cx);
     set_cy(cx);
     set_tx(tx);
+    set_ty(ty);
   }
 
   void operator=(const MatrixType& matrix) {
@@ -59,6 +63,21 @@ class ProjectionMatrix {
 
   ScalarType tx() const { return ValueOrZero(0, 3); }
   void set_tx(ScalarType tx) { MaybeSet(0, 3, tx); }
+
+  ScalarType ty() const { return ValueOrZero(1, 3); }
+  void set_ty(ScalarType ty) { MaybeSet(1, 3, ty); }
+
+  ProjectionMatrix Scaled(double scale) const {
+    return {static_cast<ScalarType>(fx() * scale),
+            static_cast<ScalarType>(fy() * scale),
+            static_cast<ScalarType>(cx() * scale),
+            static_cast<ScalarType>(cy() * scale),
+            static_cast<ScalarType>(tx() * scale),
+            static_cast<ScalarType>(ty() * scale)};
+  }
+  ProjectionMatrix CenterMoved(const Vector<ScalarType>& vector) const {
+    return {fx(), fy(), cx() + vector.x(), cy() + vector.y(), tx(), ty()};
+  }
 
   const MatrixType& matrix() const { return matrix_; }
   MatrixType& matrix() { return matrix_; }
