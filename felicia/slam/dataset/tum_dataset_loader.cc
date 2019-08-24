@@ -56,50 +56,48 @@ StatusOr<SensorData> TumDatasetLoader::Next() {
 
   ++current_;
   int current_line = current_ + 3;
-  std::vector<std::string> items;
+  std::vector<std::string> rows;
   SensorData sensor_data;
-  if (reader_.ReadItems(&items)) {
-    if (items.size() != static_cast<size_t>(ColumnsForData())) {
+  if (reader_.ReadRows(&rows)) {
+    if (rows.size() != static_cast<size_t>(ColumnsForData())) {
       return errors::InvalidArgument(base::StringPrintf(
           "The number of columns is not valid at %" PRFilePath ":%d",
           path_to_data_.value().c_str(), current_line));
     }
     StatusOr<double> status_or =
-        TryConvertToDouble(items[0], path_to_data_, current_line);
+        TryConvertToDouble(rows[0], path_to_data_, current_line);
     if (!status_or.ok()) return status_or.status();
     sensor_data.set_timestamp(status_or.ValueOrDie());
     switch (data_kind_) {
       case RGB: {
 #if defined(OS_WIN)
         sensor_data.set_left_image_filename(
-            base::UTF16ToUTF8(path_.AppendASCII(items[1]).value()));
+            base::UTF16ToUTF8(path_.AppendASCII(rows[1]).value()));
 #else
-        sensor_data.set_left_image_filename(
-            path_.AppendASCII(items[1]).value());
+        sensor_data.set_left_image_filename(path_.AppendASCII(rows[1]).value());
 #endif
         break;
       }
       case DEPTH: {
 #if defined(OS_WIN)
         sensor_data.set_depth_image_filename(
-            base::UTF16ToUTF8(path_.AppendASCII(items[1]).value()));
+            base::UTF16ToUTF8(path_.AppendASCII(rows[1]).value()));
 #else
         sensor_data.set_depth_image_filename(
-            path_.AppendASCII(items[2]).value());
+            path_.AppendASCII(rows[2]).value());
 #endif
         break;
       }
       case RGBD: {
 #if defined(OS_WIN)
         sensor_data.set_left_image_filename(
-            base::UTF16ToUTF8(path_.AppendASCII(items[1]).value()));
+            base::UTF16ToUTF8(path_.AppendASCII(rows[1]).value()));
         sensor_data.set_depth_image_filename(
-            base::UTF16ToUTF8(path_.AppendASCII(items[3]).value()));
+            base::UTF16ToUTF8(path_.AppendASCII(rows[3]).value()));
 #else
-        sensor_data.set_left_image_filename(
-            path_.AppendASCII(items[1]).value());
+        sensor_data.set_left_image_filename(path_.AppendASCII(rows[1]).value());
         sensor_data.set_depth_image_filename(
-            path_.AppendASCII(items[3]).value());
+            path_.AppendASCII(rows[3]).value());
 #endif
         break;
       }
@@ -107,7 +105,7 @@ StatusOr<SensorData> TumDatasetLoader::Next() {
         float v[3];
         for (int i = 0; i < 3; ++i) {
           status_or =
-              TryConvertToDouble(items[i + 1], path_to_data_, current_line);
+              TryConvertToDouble(rows[i + 1], path_to_data_, current_line);
           if (!status_or.ok()) return status_or.status();
           v[i] = status_or.ValueOrDie();
         }
@@ -118,7 +116,7 @@ StatusOr<SensorData> TumDatasetLoader::Next() {
         float v[7];
         for (int i = 0; i < 7; ++i) {
           status_or =
-              TryConvertToDouble(items[i + 1], path_to_data_, current_line);
+              TryConvertToDouble(rows[i + 1], path_to_data_, current_line);
           if (!status_or.ok()) return status_or.status();
           v[i] = status_or.ValueOrDie();
         }

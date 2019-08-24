@@ -18,8 +18,8 @@ class EXPORT CsvReader {
   bool IsOpened() const;
 
   // Return true if read succeeds, return false when eof or
-  // |items| is not empty. We expect |items| to be empty.
-  bool ReadItems(std::vector<std::string>* items);
+  // |rows| is not empty. We expect |rows| to be empty.
+  bool ReadRows(std::vector<std::string>* rows);
 
   bool eof() const;
 

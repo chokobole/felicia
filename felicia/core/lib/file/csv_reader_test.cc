@@ -8,27 +8,17 @@
 
 namespace felicia {
 
-TEST(CsvReaderTest, ReadItemsBasicTest) {
+TEST(CsvReaderTest, ReadRowsBasicTest) {
   CsvReader reader;
   base::FilePath path(
       FELICIA_RELATIVE_PATH("/felicia/core/lib/file/test/data.csv"));
-  Status s = reader.Open(path);
-  {
-    std::vector<std::string> items;
-    bool ret = reader.ReadItems(&items);
-    EXPECT_TRUE(ret);
-    EXPECT_EQ(items.size(), 5);
-    for (int i = 0; i < 5; ++i) {
-      EXPECT_EQ(base::NumberToString(i + 1), items[i]);
-    }
-  }
-  {
-    std::vector<std::string> items;
-    bool ret = reader.ReadItems(&items);
-    EXPECT_TRUE(ret);
-    EXPECT_EQ(items.size(), 5);
-    for (int i = 0; i < 5; ++i) {
-      EXPECT_EQ(base::NumberToString(i + 6), items[i]);
+  EXPECT_TRUE(reader.Open(path).ok());
+  for (int i = 0; i < 2; ++i) {
+    std::vector<std::string> rows;
+    EXPECT_TRUE(reader.ReadRows(&rows));
+    EXPECT_EQ(rows.size(), 5);
+    for (int j = 0; j < 5; ++j) {
+      EXPECT_EQ(base::NumberToString(i * 5 + j + 1), rows[j]);
     }
   }
 }

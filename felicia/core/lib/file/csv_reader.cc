@@ -22,13 +22,13 @@ void CsvReader::Close() { reader_.Close(); }
 
 bool CsvReader::IsOpened() const { return reader_.IsOpened(); }
 
-bool CsvReader::ReadItems(std::vector<std::string>* items) {
-  if (items->size() > 0) return false;
+bool CsvReader::ReadRows(std::vector<std::string>* rows) {
+  if (rows->size() > 0) return false;
   std::string line;
   reader_.ReadLine(&line);
   base::StringTokenizer t(line, delimiter_);
   while (t.GetNext()) {
-    items->push_back(t.token());
+    rows->push_back(t.token());
   }
   return true;
 }

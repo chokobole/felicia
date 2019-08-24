@@ -27,23 +27,21 @@ StatusOr<SensorMetaData> KittiDatasetLoader::Init() {
   int cur = P0;
   SensorMetaData sensor_meta_data;
   while (!reader.eof()) {
-    std::vector<std::string> items;
-    if (reader.ReadItems(&items)) {
-      if (cur <= P3 && items.size() != 13) {
+    std::vector<std::string> rows;
+    if (reader.ReadRows(&rows)) {
+      if (cur <= P3 && rows.size() != 13) {
         return errors::InvalidArgument(base::StringPrintf(
             "Invalid projection matrix at line %" PRFilePath ":%d",
             calibs_path_.value().c_str(), cur + 1));
       }
       if (data_kind_ == GRAYSCALE && (cur >= P2 && cur <= P3)) continue;
       if (data_kind_ == COLOR && (cur >= P0 && cur <= P1)) continue;
-      if ((cur == P0 && items[0] == "P0:") ||
-          (cur == P1 && items[0] == "P1:") ||
-          (cur == P2 && items[0] == "P2:") ||
-          (cur == P3 && items[0] == "P3:")) {
+      if ((cur == P0 && rows[0] == "P0:") || (cur == P1 && rows[0] == "P1:") ||
+          (cur == P2 && rows[0] == "P2:") || (cur == P3 && rows[0] == "P3:")) {
         Eigen::Matrix<double, 3, 4> m;
         for (int i = 0; i < 12; ++i) {
           StatusOr<double> status_or =
-              TryConvertToDouble(items[i + 1], calibs_path_, cur + 1);
+              TryConvertToDouble(rows[i + 1], calibs_path_, cur + 1);
           if (!status_or.ok()) return status_or.status();
           m(i / 4, i % 4) = status_or.ValueOrDie();
         }

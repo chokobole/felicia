@@ -58,16 +58,16 @@ StatusOr<SensorData> EurocDatasetLoader::Next() {
 
   ++current_;
   int current_line = current_ + 1;
-  std::vector<std::string> items;
+  std::vector<std::string> rows;
   SensorData sensor_data;
-  if (reader_.ReadItems(&items)) {
-    if (items.size() != static_cast<size_t>(ColumnsForData())) {
+  if (reader_.ReadRows(&rows)) {
+    if (rows.size() != static_cast<size_t>(ColumnsForData())) {
       return errors::InvalidArgument(base::StringPrintf(
           "The number of columns is not valid at %" PRFilePath ":%d",
           path_to_data_list_.value().c_str(), current_line));
     }
     StatusOr<double> status_or =
-        TryConvertToDouble(items[0], path_to_data_list_, current_line);
+        TryConvertToDouble(rows[0], path_to_data_list_, current_line);
     if (!status_or.ok()) return status_or.status();
     sensor_data.set_timestamp(status_or.ValueOrDie());
 
@@ -75,20 +75,20 @@ StatusOr<SensorData> EurocDatasetLoader::Next() {
       case CAM0: {
 #if defined(OS_WIN)
         sensor_data.set_left_image_filename(
-            base::UTF16ToUTF8(path_to_data_.AppendASCII(items[1]).value()));
+            base::UTF16ToUTF8(path_to_data_.AppendASCII(rows[1]).value()));
 #else
         sensor_data.set_left_image_filename(
-            path_to_data_.AppendASCII(items[1]).value());
+            path_to_data_.AppendASCII(rows[1]).value());
 #endif
         break;
       }
       case CAM1: {
 #if defined(OS_WIN)
         sensor_data.set_right_image_filename(
-            base::UTF16ToUTF8(path_to_data_.AppendASCII(items[1]).value()));
+            base::UTF16ToUTF8(path_to_data_.AppendASCII(rows[1]).value()));
 #else
         sensor_data.set_right_image_filename(
-            path_to_data_.AppendASCII(items[1]).value());
+            path_to_data_.AppendASCII(rows[1]).value());
 #endif
         break;
       }
@@ -96,7 +96,7 @@ StatusOr<SensorData> EurocDatasetLoader::Next() {
         float v[6];
         for (int i = 0; i < 6; ++i) {
           status_or =
-              TryConvertToDouble(items[i + 1], path_to_data_, current_line);
+              TryConvertToDouble(rows[i + 1], path_to_data_, current_line);
           if (!status_or.ok()) return status_or.status();
           v[i] = status_or.ValueOrDie();
         }
@@ -110,7 +110,7 @@ StatusOr<SensorData> EurocDatasetLoader::Next() {
         float v[3];
         for (int i = 0; i < 3; ++i) {
           status_or =
-              TryConvertToDouble(items[i + 1], path_to_data_, current_line);
+              TryConvertToDouble(rows[i + 1], path_to_data_, current_line);
           if (!status_or.ok()) return status_or.status();
           v[i] = status_or.ValueOrDie();
         }
@@ -121,7 +121,7 @@ StatusOr<SensorData> EurocDatasetLoader::Next() {
         float v[16];
         for (int i = 0; i < 16; ++i) {
           status_or =
-              TryConvertToDouble(items[i + 1], path_to_data_, current_line);
+              TryConvertToDouble(rows[i + 1], path_to_data_, current_line);
           if (!status_or.ok()) return status_or.status();
           v[i] = status_or.ValueOrDie();
         }
