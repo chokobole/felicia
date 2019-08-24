@@ -7,13 +7,16 @@ exports_files(["LICENSE"])
 
 cc_library(
     name = "yaml-cpp",
-    hdrs = glob([
-        "include/yaml-cpp/**/*.h",
-    ]),
     srcs = glob([
         "src/**/*.cpp",
         "src/**/*.h",
     ]),
-    includes = ["src", "include"],
+    hdrs = glob([
+        "include/yaml-cpp/**/*.h",
+    ]),
+    includes = [
+        "include",
+        "src",
+    ],
     visibility = ["//visibility:public"],
 )
