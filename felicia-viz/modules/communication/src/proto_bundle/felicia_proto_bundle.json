@@ -356,6 +356,18 @@
             }
           }
         },
+        "PointiMessage": {
+          "fields": {
+            "x": {
+              "type": "int32",
+              "id": 1
+            },
+            "y": {
+              "type": "int32",
+              "id": 2
+            }
+          }
+        },
         "PointfMessage": {
           "fields": {
             "x": {
@@ -377,6 +389,22 @@
             "y": {
               "type": "double",
               "id": 2
+            }
+          }
+        },
+        "Point3iMessage": {
+          "fields": {
+            "x": {
+              "type": "int32",
+              "id": 1
+            },
+            "y": {
+              "type": "int32",
+              "id": 2
+            },
+            "z": {
+              "type": "int32",
+              "id": 3
             }
           }
         },
@@ -524,13 +552,25 @@
             }
           }
         },
+        "RectiMessage": {
+          "fields": {
+            "topLeft": {
+              "type": "PointiMessage",
+              "id": 1
+            },
+            "bottomRight": {
+              "type": "PointiMessage",
+              "id": 2
+            }
+          }
+        },
         "RectfMessage": {
           "fields": {
-            "leftTop": {
+            "topLeft": {
               "type": "PointfMessage",
               "id": 1
             },
-            "rightBottom": {
+            "bottomRight": {
               "type": "PointfMessage",
               "id": 2
             }
@@ -538,11 +578,11 @@
         },
         "RectdMessage": {
           "fields": {
-            "leftTop": {
+            "topLeft": {
               "type": "PointdMessage",
               "id": 1
             },
-            "rightBottom": {
+            "bottomRight": {
               "type": "PointdMessage",
               "id": 2
             }
@@ -550,19 +590,19 @@
         },
         "QuadfMessage": {
           "fields": {
-            "leftTop": {
+            "topLeft": {
               "type": "PointfMessage",
               "id": 1
             },
-            "rightTop": {
+            "topRight": {
               "type": "PointfMessage",
               "id": 2
             },
-            "leftBottom": {
+            "bottomLeft": {
               "type": "PointfMessage",
               "id": 3
             },
-            "rightBottom": {
+            "bottomRight": {
               "type": "PointfMessage",
               "id": 4
             }
@@ -570,19 +610,19 @@
         },
         "QuaddMessage": {
           "fields": {
-            "leftTop": {
+            "topLeft": {
               "type": "PointdMessage",
               "id": 1
             },
-            "rightTop": {
+            "topRight": {
               "type": "PointdMessage",
               "id": 2
             },
-            "leftBottom": {
+            "bottomLeft": {
               "type": "PointdMessage",
               "id": 3
             },
-            "rightBottom": {
+            "bottomRight": {
               "type": "PointdMessage",
               "id": 4
             }
@@ -1360,13 +1400,11 @@
                   "id": 7
                 },
                 "ranges": {
-                  "rule": "repeated",
-                  "type": "float",
+                  "type": "bytes",
                   "id": 8
                 },
                 "intensities": {
-                  "rule": "repeated",
-                  "type": "float",
+                  "type": "bytes",
                   "id": 9
                 },
                 "timestamp": {

@@ -103,11 +103,11 @@ export default class ImageWithBoundingBoxesView extends Component {
     for (let i = 0; i < boundingBoxes.length; i += 1) {
       const { color, box, label, score } = boundingBoxes[i];
       if (score >= threshold) {
-        const { leftTop, rightBottom } = box;
+        const { topLeft, bottomRight } = box;
         const { r, g, b } = color;
-        const { x, y } = leftTop;
-        const w = rightBottom.x - leftTop.x;
-        const h = rightBottom.y - leftTop.y;
+        const { x, y } = topLeft;
+        const w = bottomRight.x - topLeft.x;
+        const h = bottomRight.y - topLeft.y;
         const colorStyle = `rgb(${r}, ${g}, ${b})`;
         this.proxyContext.beginPath();
         this.proxyContext.font = `${fontSize}px sans`;

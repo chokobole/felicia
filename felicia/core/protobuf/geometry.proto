@@ -53,6 +53,11 @@ message Vector3dMessage {
   double z = 3;
 }
 
+message PointiMessage {
+  int32 x = 1;
+  int32 y = 2;
+}
+
 message PointfMessage {
   float x = 1;
   float y = 2;
@@ -61,6 +66,12 @@ message PointfMessage {
 message PointdMessage {
   double x = 1;
   double y = 2;
+}
+
+message Point3iMessage {
+  int32 x = 1;
+  int32 y = 2;
+  int32 z = 3;
 }
 
 message Point3fMessage {
@@ -119,26 +130,31 @@ message Pose3dWithTimestampMessage {
   int64 timestamp = 3;
 }
 
+message RectiMessage {
+  PointiMessage top_left = 1;
+  PointiMessage bottom_right = 2;
+}
+
 message RectfMessage {
-  PointfMessage left_top = 1;
-  PointfMessage right_bottom = 2;
+  PointfMessage top_left = 1;
+  PointfMessage bottom_right = 2;
 }
 
 message RectdMessage {
-  PointdMessage left_top = 1;
-  PointdMessage right_bottom = 2;
+  PointdMessage top_left = 1;
+  PointdMessage bottom_right = 2;
 }
 
 message QuadfMessage {
-  PointfMessage left_top = 1;
-  PointfMessage right_top = 2;
-  PointfMessage left_bottom = 3;
-  PointfMessage right_bottom = 4;
+  PointfMessage top_left = 1;
+  PointfMessage top_right = 2;
+  PointfMessage bottom_left = 3;
+  PointfMessage bottom_right = 4;
 }
 
 message QuaddMessage {
-  PointdMessage left_top = 1;
-  PointdMessage right_top = 2;
-  PointdMessage left_bottom = 3;
-  PointdMessage right_bottom = 4;
+  PointdMessage top_left = 1;
+  PointdMessage top_right = 2;
+  PointdMessage bottom_left = 3;
+  PointdMessage bottom_right = 4;
 }

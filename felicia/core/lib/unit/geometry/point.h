@@ -122,6 +122,7 @@ inline Point<T> operator*(U a, const Point<T>& point) {
   return point * a;
 }
 
+typedef Point<int> Pointi;
 typedef Point<float> Pointf;
 typedef Point<double> Pointd;
 
@@ -268,6 +269,7 @@ inline Point3<T> operator*(U a, const Point3<T>& point) {
   return point * a;
 }
 
+typedef Point3<int> Point3i;
 typedef Point3<float> Point3f;
 typedef Point3<double> Point3d;
 
@@ -281,6 +283,7 @@ MessageType Point3ToPoint3Message(const Point3<T>& point) {
 }
 
 EXPORT Point3fMessage Point3fToPoint3fMessage(const Point3f& point);
+EXPORT Point3fMessage Point3fToPoint3fMessage(const Point3f& point);
 EXPORT Point3dMessage Point3dToPoint3dMessage(const Point3d& point);
 
 template <typename T, typename MessageType>
@@ -288,6 +291,7 @@ Point3<T> Point3MessageToPoint3(const MessageType& message) {
   return {message.x(), message.y(), message.z()};
 }
 
+EXPORT Point3i Point3iMessageToPoint3i(const Point3iMessage& message);
 EXPORT Point3f Point3fMessageToPoint3f(const Point3fMessage& message);
 EXPORT Point3d Point3dMessageToPoint3d(const Point3dMessage& message);
 

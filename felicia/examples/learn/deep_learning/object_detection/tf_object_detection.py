@@ -81,10 +81,10 @@ def convert_to_image_with_bounding_boxes(image,
         if scores[i] > threshold:
             bounding_box = image_with_bounding_boxes.bounding_boxes.add()
             ymin, xmin, ymax, xmax = tuple(boxes[i].tolist())
-            bounding_box.box.left_top.x = xmin * width
-            bounding_box.box.left_top.y = ymin * height
-            bounding_box.box.right_bottom.x = xmax * width
-            bounding_box.box.right_bottom.y = ymax * height
+            bounding_box.box.top_left.x = xmin * width
+            bounding_box.box.top_left.y = ymin * height
+            bounding_box.box.bottom_right.x = xmax * width
+            bounding_box.box.bottom_right.y = ymax * height
             if classes[i] in category_index.keys():
                 class_name = category_index[classes[i]]['name']
                 color = bounding_box.color

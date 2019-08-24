@@ -25,7 +25,7 @@ class Size {
   void set_width(T width) { width_ = width; }
   void set_height(T height) { height_ = height; }
 
-  constexpr double area() const { return CheckedArea().ValueOrDie(); }
+  constexpr T area() const { return CheckedArea().ValueOrDie(); }
 
   Size operator+(Size other) const {
     return {internal::SaturateAdd(width_, other.width_),
@@ -71,8 +71,8 @@ class Size {
   }
 
  private:
-  constexpr base::CheckedNumeric<double> CheckedArea() const {
-    base::CheckedNumeric<double> checked_area = width();
+  constexpr base::CheckedNumeric<T> CheckedArea() const {
+    base::CheckedNumeric<T> checked_area = width();
     checked_area *= height();
     return checked_area;
   }
