@@ -37,9 +37,10 @@ SLAM_HDRS = [
     "camera/camera_matrix.h",
     "camera/camera_model_base.h",
     "camera/distortion_matrix.h",
+    "camera/essential_matrix.h",
+    "camera/fundamental_matrix.h",
     "camera/projection_matrix.h",
     "camera/rectification_matrix.h",
-    "camera/epipolar_geometry.h",
 ]
 
 fel_cc_library(
@@ -92,7 +93,8 @@ fel_cc_test(
     size = "small",
     srcs = [
         "camera/camera_model_base_test.cc",
-        "camera/epipolar_geometry_test.cc",
+        "camera/essential_matrix_test.cc",
+        "camera/fundamental_matrix_test.cc",
     ],
     deps = fel_shared_library() + [
         ":slam",

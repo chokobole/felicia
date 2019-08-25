@@ -1,37 +1,75 @@
-#ifndef FELICIA_SLAM_CAMERA_EPIPOLAR_GEOMETRY_H_
-#define FELICIA_SLAM_CAMERA_EPIPOLAR_GEOMETRY_H_
+#ifndef FELICIA_SLAM_CAMERA_FUNDAMENTAL_MATRIX_H_
+#define FELICIA_SLAM_CAMERA_FUNDAMENTAL_MATRIX_H_
+
+#include "third_party/chromium/base/logging.h"
 
 #include "felicia/core/lib/math/matrix_util.h"
 #include "felicia/core/lib/unit/geometry/native_matrix_reference.h"
 #include "felicia/core/lib/unit/geometry/rigid_body_transform.h"
+#include "felicia/slam/camera/essential_matrix.h"
 
 namespace felicia {
 namespace slam {
 
-class EpipolarGeometry {
+template <typename MatrixType_>
+class FundamentalMatrix {
  public:
-  // Compute R[t]x, where [t]x is the matrix representation
-  // of the cross product  with t.
-  // MatrixType should be any kind of 3x3 Matrix and
-  // VectorType should be any kind of 3x1 Matrix.
-  template <typename MatrixType, typename VectorType>
-  static MatrixType ComputeEssentialMatrix(const MatrixType& R,
-                                           const VectorType& t);
-  template <typename RigidBodyTransform3Type>
-  static auto ComputeEssentialMatrix(const RigidBodyTransform3Type& T);
+  typedef MatrixType_ MatrixType;
+  typedef ConstNativeMatrixRef<MatrixType> ConstMatrixTypeRef;
+  typedef typename ConstMatrixTypeRef::ScalarType ScalarType;
+  static_assert(IsMatrix<3, 3>(ConstMatrixTypeRef::Rows,
+                               ConstMatrixTypeRef::Cols) ||
+                    IsDynamicMatrix(ConstMatrixTypeRef::Rows,
+                                    ConstMatrixTypeRef::Cols),
+                FEL_MATRIX_SIZE_NOT_SATISFIED("FundamentalMatrix", "3x3"));
+
+  FundamentalMatrix() = default;
+  explicit FundamentalMatrix(const MatrixType& matrix) : matrix_(matrix) {
+    ConstMatrixTypeRef matrix_ref(matrix_);
+    CHECK((matrix_ref.empty() ||
+           IsMatrix<3, 3>(matrix_ref.rows(), matrix_ref.cols())));
+  }
 
   // Compute K2.transpose.inverse * E * K.inverse
   // MatrixType should be any kind of 3x3 Matrix and
   // VectorType should be any kind of 3x1 Matrix.
-  template <typename MatrixType, typename VectorType>
-  static MatrixType ComputeFundamentalMatrix(const MatrixType& K,
-                                             const MatrixType& K2,
-                                             const MatrixType& R,
-                                             const VectorType& t);
-  template <typename MatrixType, typename RigidBodyTransform3Type>
-  static MatrixType ComputeFundamentalMatrix(const MatrixType& K,
-                                             const MatrixType& K2,
-                                             const RigidBodyTransform3Type& T);
+  static FundamentalMatrix ComputeFrom(const MatrixType& K,
+                                       const MatrixType& K2,
+                                       const MatrixType& E) {
+    ConstMatrixTypeRef K_ref(K);
+    ConstMatrixTypeRef K2_ref(K2);
+
+    return FundamentalMatrix{ConstMatrixTypeRef{K2_ref.transpose()}.inverse() *
+                             E * K_ref.inverse()};
+  }
+
+  template <typename VectorType>
+  static FundamentalMatrix ComputeFrom(const MatrixType& K,
+                                       const MatrixType& K2,
+                                       const MatrixType& R,
+                                       const VectorType& t) {
+    return ComputeFrom(K, K2,
+                       EssentialMatrix<MatrixType>::ComputeFrom(R, t).matrix());
+  }
+
+  template <typename RigidBodyTransform3Type>
+  static FundamentalMatrix ComputeFrom(const MatrixType& K,
+                                       const MatrixType& K2,
+                                       const RigidBodyTransform3Type& T) {
+    return ComputeFrom(K, K2, T.rotation_matrix(), T.translation_vector());
+  }
+
+  void operator=(const MatrixType& matrix) {
+    ConstMatrixTypeRef matrix_ref(matrix);
+    CHECK((matrix_ref.empty() ||
+           IsMatrix<3, 3>(matrix_ref.rows(), matrix_ref.cols())));
+    matrix_ = matrix;
+  }
+
+  const MatrixType& matrix() const { return matrix_; }
+  MatrixType& matrix() { return matrix_; }
+
+  void set_matrix(const MatrixType& matrix) { matrix_ = matrix; }
 
 #if defined(HAS_OPENCV)
   // Compute projection matrix from the essential matrix |E|.
@@ -39,69 +77,15 @@ class EpipolarGeometry {
   // positions among camera and image_points.
   // MatrixType should be any kind of 3x3 Matrix and
   // PointsType should be any kind of 2xn Matrix.
-  template <typename RigidBodyTransform3Type, typename MatrixType,
-            typename PointsType>
+  template <typename RigidBodyTransform3Type, typename PointsType>
   static RigidBodyTransform3Type ComputeRigidBodyTransform(
       const MatrixType& E, const PointsType& image_points,
       const PointsType& image_points2);
 #endif
+
+ private:
+  MatrixType matrix_;
 };
-
-// static
-template <typename MatrixType, typename VectorType>
-MatrixType EpipolarGeometry::ComputeEssentialMatrix(const MatrixType& R,
-                                                    const VectorType& t) {
-  typedef NativeMatrixRef<MatrixType> MatrixTypeRef;
-  typedef ConstNativeMatrixRef<VectorType> ConstVectorTypeRef;
-  typedef typename ConstVectorTypeRef::ScalarType ScalarType;
-
-  MatrixType mat = MatrixTypeRef::Zero();
-  MatrixTypeRef mat_ref(mat);
-  ConstVectorTypeRef t_ref(t);
-  ScalarType x = t_ref.at(0, 0);
-  ScalarType y = t_ref.at(1, 0);
-  ScalarType z = t_ref.at(2, 0);
-
-  mat_ref.at(0, 1) = -z;
-  mat_ref.at(0, 2) = y;
-  mat_ref.at(1, 0) = z;
-  mat_ref.at(1, 2) = -x;
-  mat_ref.at(2, 0) = -y;
-  mat_ref.at(2, 1) = x;
-
-  return mat * R;
-}
-
-// static
-template <typename RigidBodyTransform3Type>
-auto EpipolarGeometry::ComputeEssentialMatrix(
-    const RigidBodyTransform3Type& T) {
-  return EpipolarGeometry::ComputeEssentialMatrix(T.rotation_matrix(),
-                                                  T.translation_vector());
-}
-
-// static
-template <typename MatrixType, typename VectorType>
-MatrixType EpipolarGeometry::ComputeFundamentalMatrix(const MatrixType& K,
-                                                      const MatrixType& K2,
-                                                      const MatrixType& R,
-                                                      const VectorType& t) {
-  typedef ConstNativeMatrixRef<MatrixType> ConstMatrixTypeRef;
-  ConstMatrixTypeRef K_ref(K);
-  ConstMatrixTypeRef K2_ref(K2);
-  MatrixType E = ComputeEssentialMatrix(R, t);
-
-  return K2_ref.transpose().inverse() * E * K_ref.inverse();
-}
-
-// static
-template <typename MatrixType, typename RigidBodyTransform3Type>
-MatrixType EpipolarGeometry::ComputeFundamentalMatrix(
-    const MatrixType& K, const MatrixType& K2,
-    const RigidBodyTransform3Type& T) {
-  return EpipolarGeometry::ComputeFundamentalMatrix(K, K2, T.rotation_matrix(),
-                                                    T.translation_vector());
-}
 
 #if defined(HAS_OPENCV)
 // This was taken and modified from
@@ -115,7 +99,7 @@ int InFrontOfBothCameras(const PointsType& image_points,
   p(1, 1) = 1;
   p(2, 2) = 1;
   cv::Matx34d p2;
-  internal::HStack(R, T, &p2);
+  felicia::internal::HStack(R, T, &p2);
 
   cv::Mat1d points;
   cv::triangulatePoints(p, p2, image_points, image_points2, points);
@@ -136,9 +120,10 @@ int InFrontOfBothCameras(const PointsType& image_points,
 // This was taken and modified from
 // https://github.com/introlab/rtabmap/blob/4b118ae6600dbda769eb6993223eda30d3d90b1d/corelib/src/EpipolarGeometry.cpp#L175-L290
 // static
-template <typename RigidBodyTransform3Type, typename MatrixType,
-          typename PointsType>
-RigidBodyTransform3Type EpipolarGeometry::ComputeRigidBodyTransform(
+template <typename MatrixType>
+template <typename RigidBodyTransform3Type, typename PointsType>
+RigidBodyTransform3Type
+FundamentalMatrix<MatrixType>::ComputeRigidBodyTransform(
     const MatrixType& E, const PointsType& image_points,
     const PointsType& image_points2) {
   typedef NativeMatrixRef<MatrixType> MatrixTypeRef;
@@ -213,4 +198,4 @@ RigidBodyTransform3Type EpipolarGeometry::ComputeRigidBodyTransform(
 }  // namespace slam
 }  // namespace felicia
 
-#endif  // FELICIA_SLAM_CAMERA_EPIPOLAR_GEOMETRY_H_
+#endif  // FELICIA_SLAM_CAMERA_FUNDAMENTAL_MATRIX_H_

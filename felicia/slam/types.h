@@ -8,6 +8,8 @@
 #include "felicia/slam/camera/camera_matrix.h"
 #include "felicia/slam/camera/camera_model_base.h"
 #include "felicia/slam/camera/distortion_matrix.h"
+#include "felicia/slam/camera/essential_matrix.h"
+#include "felicia/slam/camera/fundamental_matrix.h"
 #include "felicia/slam/camera/projection_matrix.h"
 #include "felicia/slam/camera/rectification_matrix.h"
 
@@ -25,6 +27,12 @@ typedef RectificationMatrix<Eigen::Matrix3d> EigenRectificationMatrixd;
 
 typedef ProjectionMatrix<Eigen::Matrix<float, 3, 4>> EigenProjectionMatrixf;
 typedef ProjectionMatrix<Eigen::Matrix<double, 3, 4>> EigenProjectionMatrixd;
+
+typedef EssentialMatrix<Eigen::Matrix3f> EigenEssentialMatrixf;
+typedef EssentialMatrix<Eigen::Matrix3d> EigenEssentialMatrixd;
+
+typedef FundamentalMatrix<Eigen::Matrix3f> EigenFundamentalMatrixf;
+typedef FundamentalMatrix<Eigen::Matrix3d> EigenFundamentalMatrixd;
 
 typedef CameraModelBase<EigenCameraMatrixf, EigenDistortionMatrixf,
                         EigenRectificationMatrixf, EigenProjectionMatrixf>
@@ -45,6 +53,12 @@ typedef RectificationMatrix<cv::Mat1d> CvRectificationMatrixd;
 
 typedef ProjectionMatrix<cv::Mat1f> CvProjectionMatrixf;
 typedef ProjectionMatrix<cv::Mat1d> CvProjectionMatrixd;
+
+typedef EssentialMatrix<cv::Mat1f> CvEssentialMatrixf;
+typedef EssentialMatrix<cv::Mat1d> CvEssentialMatrixd;
+
+typedef FundamentalMatrix<cv::Mat1f> CvFundamentalMatrixf;
+typedef FundamentalMatrix<cv::Mat1d> CvFundamentalMatrixd;
 
 typedef CameraModelBase<CvCameraMatrixf, CvDistortionMatrixf,
                         CvRectificationMatrixf, CvProjectionMatrixf>
