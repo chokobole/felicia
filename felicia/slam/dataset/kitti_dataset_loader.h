@@ -18,7 +18,7 @@ namespace slam {
 // StatusOr<SensorData> sensor_data = loader.Next();
 // For example, /path/to/kitti points to the /path/to/dataset/sequences/00.
 class EXPORT KittiDatasetLoader
-    : DatasetLoader<SensorMetaData, SensorData>::Delegate {
+    : public DatasetLoader<SensorMetaData, SensorData>::Delegate {
  public:
   enum DataKind { GRAYSCALE, COLOR, VELODYNE_LASER_DATA, GROUND_TRUTH };
 

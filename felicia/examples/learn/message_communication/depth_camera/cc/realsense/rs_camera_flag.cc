@@ -3,7 +3,8 @@
 namespace felicia {
 
 RsCameraFlag::RsCameraFlag(int default_width, int default_height,
-                           int default_fps) {
+                           float default_fps)
+    : DepthCameraFlag(default_width, default_height, default_fps) {
   {
     StringFlag::Builder builder(MakeValueStore<std::string>(&imu_topic_));
     auto flag = builder.SetLongName("--imu_topic")

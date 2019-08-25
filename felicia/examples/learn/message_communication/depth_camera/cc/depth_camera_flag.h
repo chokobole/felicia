@@ -9,7 +9,7 @@ class DepthCameraFlag : public CameraFlag {
  public:
   DepthCameraFlag(int default_width = kDefaultWidth,
                   int default_height = kDefaultHeight,
-                  int default_fps = kDefaultFps,
+                  float default_fps = kDefaultFps,
                   int default_pixel_format = kDefaultPixelFormat);
   ~DepthCameraFlag();
 

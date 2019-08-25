@@ -18,7 +18,7 @@ class CameraFlag(NodeCreateFlag):
             "camera frame width (default: {})".format(default_width)).build()
         self.height_flag = cli.IntDefaultFlagBuilder(default_height).set_short_name("-h").set_long_name("--height").set_help(
             "camera frame height (default: {})".format(default_height)).build()
-        self.fps_flag = cli.IntDefaultFlagBuilder(default_fps).set_short_name("-f").set_long_name("--fps").set_help(
+        self.fps_flag = cli.FloatDefaultFlagBuilder(default_fps).set_short_name("-f").set_long_name("--fps").set_help(
             "frame per second (default: {})".format(default_fps)).build()
 
         kDefaultPixelFormats = [

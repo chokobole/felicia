@@ -10,11 +10,12 @@ class CameraFlag : public NodeCreateFlag {
  public:
   static constexpr int kDefaultWidth = 640;
   static constexpr int kDefaultHeight = 480;
-  static constexpr int kDefaultFps = 30;
+  static constexpr float kDefaultFps = 30;
   static constexpr int kDefaultPixelFormat = PIXEL_FORMAT_BGR;
 
   CameraFlag(int default_width = kDefaultWidth,
-             int default_height = kDefaultHeight, int default_fps = kDefaultFps,
+             int default_height = kDefaultHeight,
+             float default_fps = kDefaultFps,
              int default_pixel_format = kDefaultPixelFormat);
   ~CameraFlag();
 
@@ -24,7 +25,7 @@ class CameraFlag : public NodeCreateFlag {
   }
   const IntDefaultFlag* width_flag() const { return width_flag_.get(); }
   const IntDefaultFlag* height_flag() const { return height_flag_.get(); }
-  const IntDefaultFlag* fps_flag() const { return fps_flag_.get(); }
+  const FloatDefaultFlag* fps_flag() const { return fps_flag_.get(); }
   const StringChoicesFlag* pixel_format_flag() const {
     return pixel_format_flag_.get();
   }
@@ -47,13 +48,13 @@ class CameraFlag : public NodeCreateFlag {
   size_t device_index_;
   int width_;
   int height_;
-  int fps_;
+  float fps_;
   std::string pixel_format_;
   std::unique_ptr<BoolFlag> device_list_flag_;
   std::unique_ptr<Flag<size_t>> device_index_flag_;
   std::unique_ptr<IntDefaultFlag> width_flag_;
   std::unique_ptr<IntDefaultFlag> height_flag_;
-  std::unique_ptr<IntDefaultFlag> fps_flag_;
+  std::unique_ptr<FloatDefaultFlag> fps_flag_;
   std::unique_ptr<StringChoicesFlag> pixel_format_flag_;
 };
 

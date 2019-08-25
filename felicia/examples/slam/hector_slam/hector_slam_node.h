@@ -46,7 +46,7 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
         lidar_topic_(slam_node_create_flag_.lidar_topic_flag()->value()),
         map_topic_(slam_node_create_flag_.map_topic_flag()->value()),
         pose_topic_(slam_node_create_flag_.pose_topic_flag()->value()),
-        fps_(slam_node_create_flag_.fps_flag()->value()) {}
+        fps_(slam_node_create_flag_.lidar_fps_flag()->value()) {}
 
   void OnInit() override {
     const HectorSlamFlag& hector_slam_flag =
@@ -166,7 +166,7 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
   const std::string lidar_topic_;
   const std::string map_topic_;
   const std::string pose_topic_;
-  const int fps_;
+  const float fps_;
   std::unique_ptr<HectorSlam> hector_slam_;
   Subscriber<drivers::LidarFrameMessage> lidar_subscriber_;
   Publisher<PosefWithTimestampMessage> pose_publisher_;

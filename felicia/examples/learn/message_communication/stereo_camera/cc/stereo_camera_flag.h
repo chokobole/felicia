@@ -9,7 +9,7 @@ class StereoCameraFlag : public CameraFlag {
  public:
   StereoCameraFlag(int default_width = kDefaultWidth,
                    int default_height = kDefaultHeight,
-                   int default_fps = kDefaultFps,
+                   float default_fps = kDefaultFps,
                    int pixel_format = kDefaultPixelFormat);
   ~StereoCameraFlag();
 

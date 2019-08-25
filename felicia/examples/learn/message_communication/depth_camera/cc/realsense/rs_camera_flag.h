@@ -9,7 +9,7 @@ class RsCameraFlag : public DepthCameraFlag {
  public:
   RsCameraFlag(int default_width = kDefaultWidth,
                int default_height = kDefaultHeight,
-               int default_fps = kDefaultFps);
+               float default_fps = kDefaultFps);
   ~RsCameraFlag();
 
   const StringFlag* imu_topic_flag() const { return imu_topic_flag_.get(); }

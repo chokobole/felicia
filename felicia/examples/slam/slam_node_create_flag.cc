@@ -68,21 +68,35 @@ SlamNodeCreateFlag::SlamNodeCreateFlag() : current_slam_kind_(SLAM_KIND_NONE) {
     pose_topic_flag_ = std::make_unique<StringFlag>(flag);
   }
   {
-    IntDefaultFlag::Builder builder(MakeValueStore(&fps_, 10));
-    auto flag = builder.SetLongName("--fps")
-                    .SetHelp("Fps to run slam (default: 10)")
+    FloatDefaultFlag::Builder builder(MakeValueStore(&color_fps_, 30.f));
+    auto flag = builder.SetLongName("--color_fps")
+                    .SetHelp("color fps to run slam (default: 30)")
                     .Build();
-    fps_flag_ = std::make_unique<IntDefaultFlag>(flag);
+    color_fps_flag_ = std::make_unique<FloatDefaultFlag>(flag);
+  }
+  {
+    FloatDefaultFlag::Builder builder(MakeValueStore(&depth_fps_, 30.f));
+    auto flag = builder.SetLongName("--depth_fps")
+                    .SetHelp("depth fps to run slam (default: 30)")
+                    .Build();
+    depth_fps_flag_ = std::make_unique<FloatDefaultFlag>(flag);
+  }
+  {
+    FloatDefaultFlag::Builder builder(MakeValueStore(&lidar_fps_, 5.5f));
+    auto flag = builder.SetLongName("--lidar_fps")
+                    .SetHelp("lidar fps to run slam (default: 5.5)")
+                    .Build();
+    lidar_fps_flag_ = std::make_unique<FloatDefaultFlag>(flag);
   }
 }
 
 SlamNodeCreateFlag::~SlamNodeCreateFlag() = default;
 
 bool SlamNodeCreateFlag::Parse(FlagParser& parser) {
-  bool parsed = PARSE_OPTIONAL_FLAG(parser, name_flag_, left_color_topic_flag_,
-                                    right_color_topic_flag_, depth_topic_flag_,
-                                    lidar_topic_flag_, map_topic_flag_,
-                                    pose_topic_flag_, fps_flag_);
+  bool parsed = PARSE_OPTIONAL_FLAG(
+      parser, name_flag_, left_color_topic_flag_, right_color_topic_flag_,
+      depth_topic_flag_, lidar_topic_flag_, map_topic_flag_, pose_topic_flag_,
+      color_fps_flag_, depth_fps_flag_, lidar_fps_flag_);
 
   if (parsed) return true;
 
@@ -107,7 +121,9 @@ bool SlamNodeCreateFlag::Parse(FlagParser& parser) {
 }
 
 bool SlamNodeCreateFlag::Validate() const {
-  if (!CheckIfFlagPositive(fps_flag_)) return false;
+  if (!CheckIfFlagPositive(color_fps_flag_)) return false;
+  if (!CheckIfFlagPositive(depth_fps_flag_)) return false;
+  if (!CheckIfFlagPositive(lidar_fps_flag_)) return false;
 
   switch (current_slam_kind_) {
     case SLAM_KIND_NONE:
@@ -132,7 +148,8 @@ std::vector<std::string> SlamNodeCreateFlag::CollectUsages() const {
       usages.push_back("[--help]");
       AddUsage(usages, slam_kind_flag_, name_flag_, left_color_topic_flag_,
                right_color_topic_flag_, depth_topic_flag_, lidar_topic_flag_,
-               map_topic_flag_, pose_topic_flag_, fps_flag_);
+               map_topic_flag_, pose_topic_flag_, color_fps_flag_,
+               depth_fps_flag_, lidar_fps_flag_);
       return usages;
     }
     case SLAM_KIND_ORB_SLAM2:
@@ -172,7 +189,8 @@ std::vector<NamedHelpType> SlamNodeCreateFlag::CollectNamedHelps() const {
                   left_color_topic_flag_->help(),
                   right_color_topic_flag_->help(), depth_topic_flag_->help(),
                   lidar_topic_flag_->help(), map_topic_flag_->help(),
-                  pose_topic_flag_->help(), fps_flag_->help()}),
+                  pose_topic_flag_->help(), color_fps_flag_->help(),
+                  depth_fps_flag_->help(), lidar_fps_flag_->help()}),
       };
     }
     case SLAM_KIND_ORB_SLAM2:
@@ -220,7 +238,8 @@ bool SlamNodeCreateFlag::CheckIfLeftColorAndDepthTopicWasSet(
 bool SlamNodeCreateFlag::CheckIfLidarTopicWasSet(
     bool emit_error_message) const {
   if (!lidar_topic_flag_->is_set()) {
-    std::cerr << kRedError << "lidar_topic should be set." << std::endl;
+    if (emit_error_message)
+      std::cerr << kRedError << "lidar_topic should be set." << std::endl;
     return false;
   }
   return true;

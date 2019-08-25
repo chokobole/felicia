@@ -8,7 +8,7 @@
 
 namespace felicia {
 
-CameraFlag::CameraFlag(int default_width, int default_height, int default_fps,
+CameraFlag::CameraFlag(int default_width, int default_height, float default_fps,
                        int default_pixel_format) {
   {
     BoolFlag::Builder builder(MakeValueStore(&device_list_));
@@ -49,13 +49,13 @@ CameraFlag::CameraFlag(int default_width, int default_height, int default_fps,
     height_flag_ = std::make_unique<IntDefaultFlag>(flag);
   }
   {
-    IntDefaultFlag::Builder builder(MakeValueStore(&fps_, default_fps));
+    FloatDefaultFlag::Builder builder(MakeValueStore(&fps_, default_fps));
     auto flag = builder.SetShortName("-f")
                     .SetLongName("--fps")
                     .SetHelp(base::StringPrintf(
-                        "frame per second (default: %d)", default_fps))
+                        "frame per second (default: %f)", default_fps))
                     .Build();
-    fps_flag_ = std::make_unique<IntDefaultFlag>(flag);
+    fps_flag_ = std::make_unique<FloatDefaultFlag>(flag);
   }
   {
     PixelFormat kDefaultPixelFormats[] = {

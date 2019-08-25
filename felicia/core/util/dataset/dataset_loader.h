@@ -19,7 +19,10 @@ class DatasetLoader {
     virtual size_t length() const { return 0; }
   };
 
-  DatasetLoader(Delegate* delegate) : delegate_(delegate) {}
+  DatasetLoader() = default;
+  explicit DatasetLoader(Delegate* delegate) : delegate_(delegate) {}
+
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
   StatusOr<MetaDataType> Init() { return delegate_->Init(); }
 

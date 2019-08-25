@@ -4,6 +4,20 @@ load("//bazel:felicia_cc.bzl", "fel_cc_binary")
 package(default_visibility = ["//visibility:private"])
 
 fel_cc_binary(
+    name = "dataset_loader_node_creator",
+    srcs = [
+        "dataset_flag.cc",
+        "dataset_flag.h",
+        "dataset_loader_node.h",
+        "dataset_loader_node_creator.cc",
+    ],
+    deps = fel_shared_library() + [
+        "//felicia/core:felicia_init",
+        "//felicia/slam",
+    ],
+)
+
+fel_cc_binary(
     name = "slam_node_creator",
     srcs = [
         "slam_node_create_flag.cc",

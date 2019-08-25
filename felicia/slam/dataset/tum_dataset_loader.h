@@ -19,7 +19,7 @@ namespace slam {
 // For example, /path/to/tum points to the /path/to/rgbd_data_set/freiburg1_rpy.
 // NOTE: We expect the name of associated text file to be "associated.txt".
 class EXPORT TumDatasetLoader
-    : DatasetLoader<SensorMetaData, SensorData>::Delegate {
+    : public DatasetLoader<SensorMetaData, SensorData>::Delegate {
  public:
   enum TumKind { FR1, FR2, FR3 };
   enum DataKind {

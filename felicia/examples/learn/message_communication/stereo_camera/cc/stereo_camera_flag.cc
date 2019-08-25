@@ -3,7 +3,7 @@
 namespace felicia {
 
 StereoCameraFlag::StereoCameraFlag(int default_width, int default_height,
-                                   int default_fps, int default_pixel_format)
+                                   float default_fps, int default_pixel_format)
     : CameraFlag(default_width, default_height, default_fps,
                  default_pixel_format) {
   {

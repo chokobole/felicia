@@ -28,7 +28,15 @@ class SlamNodeCreateFlag : public FlagParser::Delegate {
   const StringFlag* lidar_topic_flag() const { return lidar_topic_flag_.get(); }
   const StringFlag* map_topic_flag() const { return map_topic_flag_.get(); }
   const StringFlag* pose_topic_flag() const { return pose_topic_flag_.get(); }
-  const IntDefaultFlag* fps_flag() const { return fps_flag_.get(); }
+  const FloatDefaultFlag* color_fps_flag() const {
+    return color_fps_flag_.get();
+  }
+  const FloatDefaultFlag* depth_fps_flag() const {
+    return depth_fps_flag_.get();
+  }
+  const FloatDefaultFlag* lidar_fps_flag() const {
+    return lidar_fps_flag_.get();
+  }
 
   const hector_slam::HectorSlamFlag& hector_slam_delegate() const {
     return hector_slam_delegate_;
@@ -64,7 +72,9 @@ class SlamNodeCreateFlag : public FlagParser::Delegate {
   std::string lidar_topic_;
   std::string map_topic_;
   std::string pose_topic_;
-  int fps_;
+  float color_fps_;
+  float depth_fps_;
+  float lidar_fps_;
   std::unique_ptr<StringChoicesFlag> slam_kind_flag_;
   std::unique_ptr<StringFlag> name_flag_;
   std::unique_ptr<StringFlag> left_color_topic_flag_;
@@ -73,7 +83,9 @@ class SlamNodeCreateFlag : public FlagParser::Delegate {
   std::unique_ptr<StringFlag> lidar_topic_flag_;
   std::unique_ptr<StringFlag> map_topic_flag_;
   std::unique_ptr<StringFlag> pose_topic_flag_;
-  std::unique_ptr<IntDefaultFlag> fps_flag_;
+  std::unique_ptr<FloatDefaultFlag> color_fps_flag_;
+  std::unique_ptr<FloatDefaultFlag> depth_fps_flag_;
+  std::unique_ptr<FloatDefaultFlag> lidar_fps_flag_;
 
   SlamKind current_slam_kind_;
   hector_slam::HectorSlamFlag hector_slam_delegate_;

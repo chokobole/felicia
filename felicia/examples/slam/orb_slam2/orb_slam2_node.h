@@ -23,7 +23,7 @@ class OrbSlam2Node : public NodeLifecycle, public System::Client {
             slam_node_create_flag_.right_color_topic_flag()->value()),
         depth_topic_(slam_node_create_flag_.depth_topic_flag()->value()),
         pose_topic_(slam_node_create_flag_.pose_topic_flag()->value()),
-        fps_(slam_node_create_flag_.fps_flag()->value()) {}
+        fps_(slam_node_create_flag_.color_fps_flag()->value()) {}
 
   void OnInit() override {
     orb_slam2::System::SensorType sensor_type;
@@ -44,8 +44,7 @@ class OrbSlam2Node : public NodeLifecycle, public System::Client {
         orb_slam2_flag.settings_path_flag()->value();
 
     orb_slam2_ = std::make_unique<orb_slam2::System>(
-        this, ::base::FilePath{ToFilePathString(voc_path)},
-        ::base::FilePath{ToFilePathString(settings_path)}, sensor_type);
+        this, ToFilePath(voc_path), ToFilePath(settings_path), sensor_type);
   }
 
   void OnDidCreate(const NodeInfo& node_info) override {
@@ -126,7 +125,7 @@ class OrbSlam2Node : public NodeLifecycle, public System::Client {
   const std::string depth_topic_;
   const std::string map_topic_;
   const std::string pose_topic_;
-  const int fps_;
+  const float fps_;
   std::unique_ptr<orb_slam2::System> orb_slam2_;
   Subscriber<drivers::CameraFrameMessage> left_color_subscriber_;
   Publisher<PosefWithTimestampMessage> pose_publisher_;

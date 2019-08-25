@@ -17,7 +17,7 @@ namespace slam {
 // StatusOr<SensorData> sensor_data = loader.Next();
 // For example, /path/to/euroc points to the /path/to/mav0.
 class EXPORT EurocDatasetLoader
-    : DatasetLoader<SensorMetaData, SensorData>::Delegate {
+    : public DatasetLoader<SensorMetaData, SensorData>::Delegate {
  public:
   enum DataKind {
     CAM0,
