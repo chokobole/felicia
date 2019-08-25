@@ -2,8 +2,7 @@
 
 #include "gtest/gtest.h"
 
-#include "felicia/core/lib/unit/geometry/native_matrix_reference.h"
-#include "felicia/slam/types.h"
+#include "felicia/slam/camera/camera_model_base_test_util.h"
 
 namespace felicia {
 namespace slam {
@@ -21,23 +20,14 @@ TEST(CameraModelBaseTest, MessageConversionTest) {
   EigenCameraModelBasef camera_model = PrepareEigenCameraModelf();
   CameraModelMessage message = camera_model.ToCameraModelMessage();
   EigenCameraModelBasef camera_model2;
-  Status s = camera_model2.FromCameraModelMessage(message);
-  EXPECT_TRUE(s.ok());
-  EXPECT_EQ(camera_model.K_raw().matrix(), camera_model2.K_raw().matrix());
-  EXPECT_EQ(camera_model.D_raw().matrix(), camera_model2.D_raw().matrix());
-  EXPECT_EQ(camera_model.R().matrix(), camera_model2.R().matrix());
-  EXPECT_EQ(camera_model.P().matrix(), camera_model2.P().matrix());
-  s = camera_model2.FromCameraModelMessage(std::move(message));
-  EXPECT_TRUE(s.ok());
-  EXPECT_EQ(camera_model.K_raw().matrix(), camera_model2.K_raw().matrix());
-  EXPECT_EQ(camera_model.D_raw().matrix(), camera_model2.D_raw().matrix());
-  EXPECT_EQ(camera_model.R().matrix(), camera_model2.R().matrix());
-  EXPECT_EQ(camera_model.P().matrix(), camera_model2.P().matrix());
+  EXPECT_TRUE(camera_model2.FromCameraModelMessage(message).ok());
+  ExpectEqualCameraModel(camera_model, camera_model2);
+  EXPECT_TRUE(camera_model2.FromCameraModelMessage(std::move(message)).ok());
+  ExpectEqualCameraModel(camera_model, camera_model2);
 
   CameraModelMessage message2;
   message2.set_k("abcd");
-  s = camera_model2.FromCameraModelMessage(message2);
-  EXPECT_FALSE(s.ok());
+  EXPECT_FALSE(camera_model2.FromCameraModelMessage(message2).ok());
 }
 
 TEST(CameraModelBaseTest, ScaleTest) {
@@ -79,11 +69,7 @@ TEST(CameraModelBaseTest, WriteToAndReadFromYamlTest) {
   EXPECT_TRUE(camera_model.Save(path).ok());
   EigenCameraModelBasef camera_model2;
   EXPECT_TRUE(camera_model2.Load(path).ok());
-  EXPECT_EQ(camera_model.image_size(), camera_model2.image_size());
-  EXPECT_EQ(camera_model.K_raw().matrix(), camera_model2.K_raw().matrix());
-  EXPECT_EQ(camera_model.D_raw().matrix(), camera_model2.D_raw().matrix());
-  EXPECT_EQ(camera_model.R().matrix(), camera_model2.R().matrix());
-  EXPECT_EQ(camera_model.P().matrix(), camera_model2.P().matrix());
+  ExpectEqualCameraModel(camera_model, camera_model2);
 }
 
 }  // namespace slam

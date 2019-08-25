@@ -30,107 +30,55 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(HAS_OPENCV)
 
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/opencv.hpp>
 
-#include "felicia/core/lib/base/export.h"
-#include "felicia/core/lib/unit/geometry/rigid_body_transform.h"
-#include "felicia/core/lib/unit/length.h"
-#include "felicia/slam/camera/camera_model_message.pb.h"
-#include "felicia/slam/camera/opencv/camera_model.h"
+#include "felicia/slam/camera/stereo_camera_model_base.h"
 
 namespace felicia {
 namespace slam {
 
-class EXPORT StereoCameraModel {
+template <typename CameraModelType, typename TType, typename EType,
+          typename FType>
+class StereoCameraModel
+    : public StereoCameraModelBase<CameraModelType, TType, EType, FType> {
  public:
-  StereoCameraModel();
-  StereoCameraModel(const std::string& name, const std::string& name1,
-                    const cv::Size& image_size1, const cv::Mat1d& K1,
-                    const cv::Mat1d& D1, const cv::Mat1d& R1,
-                    const cv::Mat1d& P1, const std::string& name2,
-                    const cv::Size& image_size2, const cv::Mat1d& K2,
-                    const cv::Mat1d& D2, const cv::Mat1d& R2,
-                    const cv::Mat1d& P2, const cv::Mat1d& R, const cv::Mat1d& T,
-                    const cv::Mat1d& E, const cv::Mat1d& F);
+  typedef typename TType::RotationMatrixType RotationMatrixType;
+  typedef typename TType::TranslationVectorType TranslationVectorType;
+  typedef typename EType::MatrixType EMatrixType;
+  typedef typename FType::MatrixType FMatrixType;
+  typedef typename EType::ScalarType ScalarType;
 
-  StereoCameraModel(const std::string& name,
-                    const CameraModel& left_camera_model,
-                    const CameraModel& right_camera_model,
-                    const cv::Mat1d& R = cv::Mat1d(),
-                    const cv::Mat1d& T = cv::Mat1d(),
-                    const cv::Mat1d& E = cv::Mat1d(),
-                    const cv::Mat1d& F = cv::Mat1d());
-
-  // minimal
-  StereoCameraModel(double fx, double fy, double cx, double cy, double baseline,
-                    const cv::Size& image_size = cv::Size(0, 0));
-  // minimal to be saved
-  StereoCameraModel(const std::string& name,
-                    const std::string& left_camera_model_name,
-                    const std::string& right_camera_model_name, double fx,
-                    double fy, double cx, double cy, double baseline,
-                    const cv::Size& image_size = cv::Size(0, 0));
-  ~StereoCameraModel();
-
-  bool IsValidForProjection() const {
-    return left_camera_model_.IsValidForProjection() &&
-           right_camera_model_.IsValidForProjection() && baseline() > 0.0;
-  }
-  bool IsValidForRectification() const {
-    return left_camera_model_.IsValidForRectification() &&
-           right_camera_model_.IsValidForRectification();
-  }
-
-  void set_name(const std::string& name) { name_ = name; }
-  const std::string& name() const { return name_; }
-
-  // extrinsic rotation matrix
-  const cv::Mat1d& R() const { return transform_.R(); }
-  // extrinsic translation matrix
-  const cv::Mat1d& T() const { return transform_.t(); }
-  const cv::Mat1d& E() const { return E_; }  // extrinsic essential matrix
-  const cv::Mat1d& F() const { return F_; }  // extrinsic fundamental matrix
-
-  const CameraModel& left_camera_model() const { return left_camera_model_; }
-  const CameraModel& right_camera_model() const { return right_camera_model_; }
-
-  CameraModel& left_camera_model() { return left_camera_model_; }
-  CameraModel& right_camera_model() { return right_camera_model_; }
-
-  Status Load(const base::FilePath& left_camera_model_path,
-              const base::FilePath& right_camera_model_path,
-              const base::FilePath& stereo_transform_path = base::FilePath());
-  Status Save(
-      const base::FilePath& left_camera_model_path,
-      const base::FilePath& right_camera_model_path,
-      const base::FilePath& stereo_transform_path = base::FilePath()) const;
-  Status LoadStereoTransform(const base::FilePath& path);
-  Status SaveStereoTransform(const base::FilePath& path) const;
-
-  StereoCameraModelMessage ToStereoCameraModelMessage() const;
-  Status FromStereoCameraModelMessage(const StereoCameraModelMessage& message);
-  Status FromStereoCameraModelMessage(StereoCameraModelMessage&& message);
-
-  double baseline() const {
-    return right_camera_model_.fx() != 0.0 && left_camera_model_.fx() != 0.0
-               ? left_camera_model_.tx() / left_camera_model_.fx() -
-                     right_camera_model_.tx() / right_camera_model_.fx()
-               : 0.0;
-  }
-
-  float ComputeDepth(float disparity) const;
-  float ComputeDisparity(float depth) const;
-
- private:
   void RectifyStereo();
-
-  std::string name_;
-  CameraModel left_camera_model_;
-  CameraModel right_camera_model_;
-  CvRigidBodyTransform3d transform_;
-  cv::Mat1d E_;
-  cv::Mat1d F_;
 };
+
+template <typename CameraModelType, typename TType, typename EType,
+          typename FType>
+void StereoCameraModel<CameraModelType, TType, EType, FType>::RectifyStereo() {
+  RotationMatrixType R = T_.R();
+  TranslationVectorType t = T_.t();
+  if (!R.empty() && !t.empty()) {
+    CHECK(IsValidForRectification());
+
+    cv::Mat_<ScalarType> R1, R2, P1, P2, Q;
+    cv::stereoRectify(left_camera_model_.K_raw().matrix(),
+                      left_camera_model_.D_raw().matrix(),
+                      right_camera_model_.K_raw().matrix(),
+                      right_camera_model_.D_raw().matrix(),
+                      left_camera_model_.image_size(), R, t, R1, R2, P1, P2, Q,
+                      cv::CALIB_ZERO_DISPARITY, 0,
+                      left_camera_model_.image_size());
+
+    left_camera_model_ = CameraModelType(
+        left_camera_model_.name(), left_camera_model_.image_size(),
+        left_camera_model_.K_raw().matrix(),
+        left_camera_model_.D_raw().matrix(), R1, P1);
+    right_camera_model_ = CameraModelType(
+        right_camera_model_.name(), right_camera_model_.image_size(),
+        right_camera_model_.K_raw().matrix(),
+        right_camera_model_.D_raw().matrix(), R2, P2);
+  }
+}
 
 }  // namespace slam
 }  // namespace felicia

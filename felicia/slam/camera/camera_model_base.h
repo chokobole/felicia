@@ -58,8 +58,9 @@ Status MaybeLoad(const YAML::Node& node, const std::string& name,
                  const base::FilePath& path,
                  std::function<Status(const YAML::Node&)> callback);
 
-template <typename T, typename MatrixType = typename T::MatrixType,
-          typename ScalarType = typename T::ScalarType>
+template <
+    typename MatrixType,
+    typename ScalarType = typename ConstNativeMatrixRef<MatrixType>::ScalarType>
 StatusOr<MatrixType> LoadMatrix(const YAML::Node& n,
                                 std::function<bool(int, int)> callback) {
   int rows = n["rows"].as<int>();
@@ -281,14 +282,14 @@ Status CameraModelBase<KType, DType, RType, PType>::Load(
     return internal::InvalidImageSize(image_size.width(), image_size.height());
 
   // import from ROS calibration format
-  s = internal::MaybeLoad(node, "camera_matrix", path,
-                          [&K](const YAML::Node& n) {
-                            StatusOr<KMatrixType> status_or =
-                                internal::LoadMatrix<KType>(n, IsMatrix<3, 3>);
-                            if (!status_or.ok()) return status_or.status();
-                            K = status_or.ValueOrDie();
-                            return Status::OK();
-                          });
+  s = internal::MaybeLoad(
+      node, "camera_matrix", path, [&K](const YAML::Node& n) {
+        StatusOr<KMatrixType> status_or =
+            internal::LoadMatrix<KMatrixType>(n, IsMatrix<3, 3>);
+        if (!status_or.ok()) return status_or.status();
+        K = status_or.ValueOrDie();
+        return Status::OK();
+      });
   if (!s.ok()) return s;
 
   DistortionModel distortion_model;
@@ -302,7 +303,7 @@ Status CameraModelBase<KType, DType, RType, PType>::Load(
       node, "distortion_coefficients", path,
       [distortion_model, &D](const YAML::Node& n) {
         StatusOr<DMatrixType> status_or =
-            internal::LoadMatrix<DType>(n, IsValidDistortionMatrix);
+            internal::LoadMatrix<DMatrixType>(n, IsValidDistortionMatrix);
         if (!status_or.ok()) return status_or.status();
         D = status_or.ValueOrDie();
         if (D.distortion_model() != distortion_model) {
@@ -314,24 +315,24 @@ Status CameraModelBase<KType, DType, RType, PType>::Load(
       });
   if (!s.ok()) return s;
 
-  s = internal::MaybeLoad(node, "rectification_matrix", path,
-                          [&R](const YAML::Node& n) {
-                            StatusOr<RMatrixType> status_or =
-                                internal::LoadMatrix<RType>(n, IsMatrix<3, 3>);
-                            if (!status_or.ok()) return status_or.status();
-                            R = status_or.ValueOrDie();
-                            return Status::OK();
-                          });
+  s = internal::MaybeLoad(
+      node, "rectification_matrix", path, [&R](const YAML::Node& n) {
+        StatusOr<RMatrixType> status_or =
+            internal::LoadMatrix<RMatrixType>(n, IsMatrix<3, 3>);
+        if (!status_or.ok()) return status_or.status();
+        R = status_or.ValueOrDie();
+        return Status::OK();
+      });
   if (!s.ok()) return s;
 
-  s = internal::MaybeLoad(node, "projection_matrix", path,
-                          [&P](const YAML::Node& n) {
-                            StatusOr<PMatrixType> status_or =
-                                internal::LoadMatrix<PType>(n, IsMatrix<3, 4>);
-                            if (!status_or.ok()) return status_or.status();
-                            P = status_or.ValueOrDie();
-                            return Status::OK();
-                          });
+  s = internal::MaybeLoad(
+      node, "projection_matrix", path, [&P](const YAML::Node& n) {
+        StatusOr<PMatrixType> status_or =
+            internal::LoadMatrix<PMatrixType>(n, IsMatrix<3, 4>);
+        if (!status_or.ok()) return status_or.status();
+        P = status_or.ValueOrDie();
+        return Status::OK();
+      });
   if (!s.ok()) return s;
 
   name_ = name;
@@ -428,6 +429,7 @@ Status CameraModelBase<KType, DType, RType, PType>::Save(
                          P_ref.size());
       emitter << YAML::EndMap;
     }
+    emitter << YAML::EndMap;
 
     Status s = yaml_writer.WriteToFile(path);
     if (!s.ok()) return s;

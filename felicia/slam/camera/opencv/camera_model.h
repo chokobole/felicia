@@ -44,12 +44,13 @@ namespace felicia {
 namespace slam {
 
 template <typename KType, typename DType, typename RType, typename PType>
-class CameraModel : CameraModelBase<KType, DType, RType, PType> {
+class CameraModel : public CameraModelBase<KType, DType, RType, PType> {
  public:
   typedef typename KType::MatrixType KMatrixType;
   typedef typename DType::MatrixType DMatrixType;
   typedef typename RType::MatrixType RMatrixType;
   typedef typename PType::MatrixType PMatrixType;
+  typedef typename KType::ScalarType ScalarType;
 
   void InitRectificationMap();
   bool IsRectificationMapInitialized() const {
@@ -83,7 +84,7 @@ void CameraModel<KType, DType, RType, PType>::InitRectificationMap() {
       (CV_MINOR_VERSION == 4 and CV_SUBMINOR_VERSION >= 10)))
     // Equidistant / FishEye
     // get only k parameters (k1,k2,p1,p2,k3,k4)
-    cv::Mat1d D2(1, 4);
+    cv::Mat_<ScalarType> D2(1, 4);
     ConstNativeMatrixRef<DMatrixType> D_ref(D);
     D2(0, 0) = D_ref.at(0, 0);
     D2(0, 1) = D_ref.at(0, 1);

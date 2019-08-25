@@ -16,7 +16,7 @@ message StereoCameraModelMessage {
   CameraModelMessage left_camera_model = 1;
   CameraModelMessage right_camera_model = 2;
   bytes R = 3;
-  bytes T = 4;
+  bytes t = 4;
   bytes E = 5;
   bytes F = 6;
 }

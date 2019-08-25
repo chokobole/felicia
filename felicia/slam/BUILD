@@ -41,6 +41,7 @@ SLAM_HDRS = [
     "camera/fundamental_matrix.h",
     "camera/projection_matrix.h",
     "camera/rectification_matrix.h",
+    "camera/stereo_camera_model_base.h",
 ]
 
 fel_cc_library(
@@ -76,12 +77,9 @@ fel_cc_library(
 
 fel_cc_library(
     name = "opencv_camera",
-    srcs = if_has_opencv([
-        # "camera/opencv/stereo_camera_model.cc",
-    ]),
     hdrs = SLAM_HDRS + if_has_opencv([
         "camera/opencv/camera_model.h",
-        # "camera/opencv/stereo_camera_model.h",
+        "camera/opencv/stereo_camera_model.h",
     ]),
     deps = [
         "//felicia/core/lib",
@@ -93,8 +91,10 @@ fel_cc_test(
     size = "small",
     srcs = [
         "camera/camera_model_base_test.cc",
+        "camera/camera_model_base_test_util.h",
         "camera/essential_matrix_test.cc",
         "camera/fundamental_matrix_test.cc",
+        "camera/stereo_camera_model_base_test.cc",
     ],
     deps = fel_shared_library() + [
         ":slam",

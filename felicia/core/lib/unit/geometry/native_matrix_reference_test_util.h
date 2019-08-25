@@ -12,7 +12,7 @@ void ExpectEqualMatrix(const MatrixType& lhs, const MatrixType2& rhs) {
   EXPECT_EQ(lhs_ref.cols(), rhs_ref.cols());
   for (int i = 0; i < lhs_ref.rows(); ++i) {
     for (int j = 0; j < lhs_ref.cols(); ++j) {
-      EXPECT_FLOAT_EQ(lhs_ref.at(i, j), rhs_ref.at(i, j));
+      EXPECT_NEAR(lhs_ref.at(i, j), rhs_ref.at(i, j), 1e-5);
     }
   }
 }
