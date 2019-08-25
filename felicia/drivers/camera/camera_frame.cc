@@ -3,7 +3,6 @@
 #include "libyuv.h"
 #include "third_party/chromium/base/logging.h"
 
-#include "felicia/core/lib/memory/memory_util.h"
 #include "felicia/drivers/camera/camera_frame_util.h"
 
 namespace felicia {
