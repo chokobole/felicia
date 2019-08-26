@@ -24,7 +24,7 @@ namespace {
 
 void NotHaveFixedSizedChannelPixelFormat() {
   PyErr_SetString(PyExc_TypeError,
-                  "pixel_format doens't have a fixed sized channel.");
+                  "pixel_format doesn't have a fixed sized channel.");
   throw py::error_already_set();
 }
 
