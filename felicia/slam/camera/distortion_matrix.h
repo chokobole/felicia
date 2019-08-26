@@ -46,7 +46,8 @@ class DistortionMatrix {
   }
 
   DistortionMatrix(ScalarType k1, ScalarType k2, ScalarType k3_or_p1,
-                   ScalarType k4_or_p2, DistortionModel distortion_model) {
+                   ScalarType k4_or_p2, DistortionModel distortion_model)
+      : distortion_model_(distortion_model) {
     if (distortion_model_ == DISTORTION_MODEL_PLUMB_BOB) {
       matrix_ = ConstMatrixTypeRef::Zero(1, 4);
       set_k1(k1);
