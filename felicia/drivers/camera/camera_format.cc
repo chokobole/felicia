@@ -60,6 +60,7 @@ bool CameraFormat::HasFixedSizedChannelPixelFormat() const {
     case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_RGBA:
     case PIXEL_FORMAT_RGBX:
+    case PIXEL_FORMAT_RGB:
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_Z16:
       return true;
