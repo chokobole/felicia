@@ -290,8 +290,8 @@ class HumanPoseEstimationNode(fel.NodeLifecycle):
         else:
             image_with_humans = ImageWithHumansMessage()
             shape = np.shape(image_np)
-            image_with_humans.image.width = shape[1]
-            image_with_humans.image.height = shape[0]
+            image_with_humans.image.size.width = shape[1]
+            image_with_humans.image.size.height = shape[0]
             image_with_humans.image.pixel_format = PIXEL_FORMAT_BGR
             image_with_humans.image.data = np.ndarray.tobytes(image_np)
             model_pose = self.params["model_pose"]

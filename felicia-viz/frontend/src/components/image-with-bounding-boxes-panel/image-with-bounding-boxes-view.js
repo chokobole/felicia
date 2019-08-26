@@ -69,8 +69,8 @@ export default class ImageWithBoundingBoxesView extends Component {
 
     if (!frame) return;
 
-    const { width, height } = frame.image;
     const { image, boundingBoxes } = frame;
+    const { width, height } = image.size;
 
     this.worker.postMessage({
       imageData: this.proxyContext.getImageData(0, 0, width, height),

@@ -473,8 +473,8 @@ export default class ImageWithHumansView extends Component {
 
     if (!frame) return;
 
-    const { width, height } = frame.image;
     const { image, model, humans } = frame;
+    const { width, height } = image.size;
 
     this.worker.postMessage({
       imageData: this.proxyContext.getImageData(0, 0, width, height),

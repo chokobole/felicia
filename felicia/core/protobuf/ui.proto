@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "felicia/core/protobuf/geometry.proto";
+
 package felicia;
 
 message Color3uMessage {
@@ -47,8 +49,7 @@ enum PixelFormat {
 }
 
 message ImageMessage {
-  uint32 width = 1;
-  uint32 height = 2;
-  PixelFormat pixel_format = 3;
-  bytes data = 4;
+  SizeiMessage size = 1;
+  PixelFormat pixel_format = 2;
+  bytes data = 3;
 }

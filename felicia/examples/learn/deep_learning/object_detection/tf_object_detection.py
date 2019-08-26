@@ -73,8 +73,8 @@ def convert_to_image_with_bounding_boxes(image,
                                          threshold = 0.5):
     image_with_bounding_boxes = ImageWithBoundingBoxesMessage()
     height, width, _ = image.shape
-    image_with_bounding_boxes.image.width = width
-    image_with_bounding_boxes.image.height = height
+    image_with_bounding_boxes.image.size.width = width
+    image_with_bounding_boxes.image.size.height = height
     image_with_bounding_boxes.image.pixel_format = PIXEL_FORMAT_RGB
     image_with_bounding_boxes.image.data = np.ndarray.tobytes(image)
     for i in range(boxes.shape[0]):
