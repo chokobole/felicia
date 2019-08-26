@@ -14,6 +14,7 @@
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/containers/string_vector.h"
 #include "felicia/core/lib/error/statusor.h"
+#include "felicia/core/lib/image/image.h"
 #include "felicia/core/lib/unit/geometry/size.h"
 #include "felicia/drivers/camera/camera_format.h"
 #include "felicia/drivers/camera/camera_frame_message.pb.h"
@@ -31,6 +32,9 @@ class EXPORT CameraFrame {
   CameraFrame(const std::string& data, const CameraFormat& camera_format,
               base::TimeDelta timestamp);
   CameraFrame(std::string&& data, const CameraFormat& camera_format,
+              base::TimeDelta timestamp) noexcept;
+  CameraFrame(const Image& image, float frame_rate, base::TimeDelta timestamp);
+  CameraFrame(Image&& image, float frame_rate,
               base::TimeDelta timestamp) noexcept;
   CameraFrame(const CameraFrame& other);
   CameraFrame(CameraFrame&& other) noexcept;

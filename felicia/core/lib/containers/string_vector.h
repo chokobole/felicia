@@ -80,6 +80,8 @@ class EXPORT StringVector {
 
   void resize(size_t n) { data_.resize(n); }
 
+  void clear() { data_.clear(); }
+
   const std::string& data() const& { return data_; }
   std::string&& data() && { return std::move(data_); }
 

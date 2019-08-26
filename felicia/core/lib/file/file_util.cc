@@ -1,5 +1,7 @@
 #include "felicia/core/lib/file/file_util.h"
 
+#include "third_party/chromium/base/files/file.h"
+
 #if defined(OS_POSIX)
 #include <fcntl.h>
 
@@ -35,6 +37,18 @@ base::FilePath ToFilePath(const std::string& file_path) {
 #else
   return base::FilePath{file_path};
 #endif
+}
+
+bool ReadFile(const base::FilePath& path, std::unique_ptr<char[]>* out,
+              size_t* out_len) {
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid()) return false;
+  int64_t length = file.GetLength();
+  if (length < 0) return false;
+  out->reset(new char[length]);
+  *out_len = length;
+  int rv = file.ReadAtCurrentPos(out->get(), static_cast<int>(length));
+  return rv >= 0;
 }
 
 }  // namespace felicia

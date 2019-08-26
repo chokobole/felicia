@@ -30,6 +30,18 @@ CameraFrame::CameraFrame(std::string&& data, const CameraFormat& camera_format,
                          base::TimeDelta timestamp) noexcept
     : CameraFrame(StringVector{std::move(data)}, camera_format, timestamp) {}
 
+CameraFrame::CameraFrame(const Image& image, float frame_rate,
+                         base::TimeDelta timestamp)
+    : CameraFrame(image.data(),
+                  CameraFormat{image.size(), image.pixel_format(), frame_rate},
+                  timestamp) {}
+
+CameraFrame::CameraFrame(Image&& image, float frame_rate,
+                         base::TimeDelta timestamp) noexcept
+    : CameraFrame(std::move(image.data()),
+                  CameraFormat{image.size(), image.pixel_format(), frame_rate},
+                  timestamp) {}
+
 CameraFrame::CameraFrame(const CameraFrame& other)
     : data_(other.data_),
       camera_format_(other.camera_format_),

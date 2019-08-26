@@ -10,7 +10,8 @@ namespace drivers {
 class EXPORT DepthCameraFrame : public CameraFrame {
  public:
   DepthCameraFrame();
-  DepthCameraFrame(CameraFrame other, float min, float max);
+  DepthCameraFrame(const CameraFrame& other, float min, float max);
+  DepthCameraFrame(CameraFrame&& other, float min, float max);
   DepthCameraFrame(const DepthCameraFrame& other);
   DepthCameraFrame(DepthCameraFrame&& other) noexcept;
   DepthCameraFrame& operator=(const DepthCameraFrame& other);

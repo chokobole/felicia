@@ -5,7 +5,11 @@ namespace drivers {
 
 DepthCameraFrame::DepthCameraFrame() = default;
 
-DepthCameraFrame::DepthCameraFrame(CameraFrame other, float min, float max)
+DepthCameraFrame::DepthCameraFrame(const CameraFrame& other, float min,
+                                   float max)
+    : CameraFrame(other), min_(min), max_(max) {}
+
+DepthCameraFrame::DepthCameraFrame(CameraFrame&& other, float min, float max)
     : CameraFrame(std::move(other)), min_(min), max_(max) {}
 
 DepthCameraFrame::DepthCameraFrame(const DepthCameraFrame& other)
