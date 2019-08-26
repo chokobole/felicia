@@ -5,6 +5,7 @@
 #include "felicia/core/lib/error/errors.h"
 #include "felicia/core/lib/file/file_util.h"
 #include "felicia/core/lib/image/jpeg_codec.h"
+#include "felicia/core/lib/image/png_codec.h"
 
 namespace felicia {
 
@@ -84,8 +85,17 @@ Status Image::Load(const base::FilePath& path, PixelFormat pixel_format) {
     return errors::InvalidArgument("Failed to read file.");
 
   pixel_format_ = pixel_format;
-  return JpegCodec::Decode(reinterpret_cast<uint8_t*>(input.get()), input_len,
-                           this);
+  base::FilePath::StringType extension = path.Extension();
+  if (extension == FILE_PATH_LITERAL(".jpg") ||
+      extension == FILE_PATH_LITERAL(".jpeg")) {
+    return JpegCodec::Decode(reinterpret_cast<uint8_t*>(input.get()), input_len,
+                             this);
+  } else if (extension == FILE_PATH_LITERAL(".png")) {
+    return PngCodec::Decode(reinterpret_cast<uint8_t*>(input.get()), input_len,
+                            this);
+  } else {
+    return errors::InvalidArgument("Unsupported codec type.");
+  }
 }
 
 }  // namespace felicia

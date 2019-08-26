@@ -184,6 +184,7 @@ def fel_additional_deps():
         "@com_google_googletest//:gtest",
         "@eigen",
         "@jpeg",
+        "@png_archive//:png",
         "@yaml-cpp",
     ] + if_not_win_no_grpc(["//felicia:grpc++"])
 

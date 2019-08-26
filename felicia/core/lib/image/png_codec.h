@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // Followings are taken and modified from
-// https://github.com/chromium/chromium/blob/5db095c2653f332334d56ad739ae5fe1053308b1/ui/gfx/codec/jpeg_codec.h
+// https://github.com/chromium/chromium/blob/5db095c2653f332334d56ad739ae5fe1053308b1/ui/gfx/codec/png_codec.h
 
-#ifndef FELICIA_CORE_LIB_IMAGE_JPEG_CODEC_H_
-#define FELICIA_CORE_LIB_IMAGE_JPEG_CODEC_H_
+#ifndef FELICIA_CORE_LIB_IMAGE_PNG_CODEC_H_
+#define FELICIA_CORE_LIB_IMAGE_PNG_CODEC_H_
 
 #include <stdint.h>
 
@@ -15,7 +15,7 @@
 
 namespace felicia {
 
-class EXPORT JpegCodec {
+class EXPORT PngCodec {
  public:
   static Status Decode(const unsigned char* input, size_t input_size,
                        Image* image);
@@ -23,4 +23,4 @@ class EXPORT JpegCodec {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_LIB_IMAGE_JPEG_CODEC_H_
+#endif  // FELICIA_CORE_LIB_IMAGE_PNG_CODEC_H_

@@ -32,6 +32,7 @@ fel_cc_library(
         "file/yaml_writer.cc",
         "image/image.cc",
         "image/jpeg_codec.cc",
+        "image/png_codec.cc",
         "net/net_util.cc",
         "strings/str_util.cc",
         "unit/bytes.cc",
@@ -67,6 +68,7 @@ fel_cc_library(
         "file/yaml_writer.h",
         "image/image.h",
         "image/jpeg_codec.h",
+        "image/png_codec.h",
         "math/math_util.h",
         "math/matrix_util.h",
         "net/net_util.h",
@@ -97,6 +99,7 @@ fel_cc_library(
         "@com_google_googletest//:gtest",
         "@eigen",
         "@jpeg",
+        "@png_archive//:png",
         "@yaml-cpp",
     ] + if_has_opencv([
         "@opencv",

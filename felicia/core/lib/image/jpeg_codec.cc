@@ -117,7 +117,7 @@ struct JpegDecompressStructDeleter {
 }  // namespace
 
 // static
-Status JpegCodec::Decode(const uint8_t* input, size_t input_size,
+Status JpegCodec::Decode(const unsigned char* input, size_t input_size,
                          Image* image) {
   std::unique_ptr<jpeg_decompress_struct, JpegDecompressStructDeleter> cinfo(
       new jpeg_decompress_struct);
@@ -226,7 +226,7 @@ Status JpegCodec::Decode(const uint8_t* input, size_t input_size,
   int row_write_stride = row_read_stride;
   image->data().resize(row_write_stride * cinfo->output_height);
 
-  uint8_t* rowptr = image->data().cast<uint8_t*>();
+  unsigned char* rowptr = image->data().cast<unsigned char*>();
   for (int row = 0; row < static_cast<int>(cinfo->output_height);
        row++, rowptr += row_write_stride) {
     if (!jpeg_read_scanlines(cinfo.get(), &rowptr, 1))

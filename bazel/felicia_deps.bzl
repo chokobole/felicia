@@ -85,6 +85,17 @@ def load_deps():
     )
 
     http_archive(
+        name = "png_archive",
+        build_file = "//third_party:png.BUILD",
+        sha256 = "ca74a0dace179a8422187671aee97dd3892b53e168627145271cad5b5ac81307",
+        strip_prefix = "libpng-1.6.37",
+        urls = [
+            "http://mirror.tensorflow.org/github.com/glennrp/libpng/archive/v1.6.37.tar.gz",
+            "https://github.com/glennrp/libpng/archive/v1.6.37.tar.gz",
+        ],
+    )
+
+    http_archive(
         name = "nasm",
         urls = [
             "http://mirror.tensorflow.org/www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.bz2",
