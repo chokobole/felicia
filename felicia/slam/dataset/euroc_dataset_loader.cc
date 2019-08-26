@@ -138,7 +138,9 @@ StatusOr<SensorData> EurocDatasetLoader::Next() {
   return sensor_data;
 }
 
-bool EurocDatasetLoader::End() const { return reader_.eof(); }
+bool EurocDatasetLoader::End() const {
+  return reader_.IsOpened() && reader_.eof();
+}
 
 base::FilePath EurocDatasetLoader::PathToMetaData() const {
   return PathToDataKind().AppendASCII("sensor.yaml");

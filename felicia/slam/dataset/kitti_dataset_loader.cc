@@ -86,7 +86,9 @@ StatusOr<SensorData> KittiDatasetLoader::Next() {
   return sensor_data;
 }
 
-bool KittiDatasetLoader::End() const { return times_reader_.eof(); }
+bool KittiDatasetLoader::End() const {
+  return times_reader_.IsOpened() && times_reader_.eof();
+}
 
 }  // namespace slam
 }  // namespace felicia

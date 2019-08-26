@@ -130,7 +130,9 @@ StatusOr<SensorData> TumDatasetLoader::Next() {
   return sensor_data;
 }
 
-bool TumDatasetLoader::End() const { return reader_.eof(); }
+bool TumDatasetLoader::End() const {
+  return reader_.IsOpened() && reader_.eof();
+}
 
 base::FilePath TumDatasetLoader::PathToData() const {
   switch (data_kind_) {
