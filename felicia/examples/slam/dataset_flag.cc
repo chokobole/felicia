@@ -115,6 +115,13 @@ DatasetFlag::~DatasetFlag() = default;
 bool DatasetFlag::Parse(FlagParser& parser) {
   PARSE_POSITIONAL_FLAG(parser, 3, dataset_kind_flag_, path_flag_,
                         data_kind_flag_);
+  if (dataset_kind_ == kEuroc) {
+    current_dataset_kind_ = DATASET_KIND_EUROC;
+  } else if (dataset_kind_ == kKitti) {
+    current_dataset_kind_ = DATASET_KIND_KITTI;
+  } else if (dataset_kind_ == kTum) {
+    current_dataset_kind_ = DATASET_KIND_TUM;
+  }
   return PARSE_OPTIONAL_FLAG(parser, name_flag_, channel_type_flag_,
                              left_color_topic_flag_, right_color_topic_flag_,
                              depth_topic_flag_, lidar_topic_flag_,
