@@ -169,18 +169,23 @@ def if_has_zed(a):
         "//conditions:default": [],
     })
 
+def fel_zlib_deps():
+    return select({
+        "//felicia:win_no_grpc": ["@node_addon_api"],
+        "//conditions:default": ["@com_github_madler_zlib//:z"],
+    })
+
 def fel_additional_deps():
     return [
         "//felicia/core/protobuf:protos_all_cc_impl",
         "//third_party/chromium/base",
         "//third_party/chromium/net",
-        "//felicia:grpc++",
         "@com_google_protobuf//:protobuf",
         "@com_google_googletest//:gtest",
         "@eigen",
         "@jpeg",
         "@yaml-cpp",
-    ]
+    ] + if_not_win_no_grpc(["//felicia:grpc++"])
 
 def fel_shared_library():
     return ["//felicia"]

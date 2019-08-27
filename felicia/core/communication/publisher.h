@@ -210,15 +210,12 @@ StatusOr<ChannelDef> Publisher<MessageTy>::Setup(
   } else if (channel->IsUDPChannel()) {
     UDPChannel<MessageTy>* udp_channel = channel->ToUDPChannel();
     status_or = udp_channel->Bind();
-  }
-#if !defined(FEL_WIN_NO_GRPC)
-  else if (channel->IsWSChannel()) {
+  } else if (channel->IsWSChannel()) {
     WSChannel<MessageTy>* ws_channel = channel->ToWSChannel();
     status_or = ws_channel->Listen();
     ws_channel->AcceptLoop(base::BindRepeating(
         [](const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }));
   }
-#endif
 #if defined(OS_POSIX)
   else if (channel->IsUDSChannel()) {
     UDSChannel<MessageTy>* uds_channel = channel->ToUDSChannel();

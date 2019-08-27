@@ -4,6 +4,7 @@ package(default_visibility = ["//third_party/chromium:internal"])
 
 load(
     "//bazel:felicia.bzl",
+    "fel_zlib_deps",
     "if_not_linux",
     "if_not_win_no_grpc",
     "if_not_windows",
@@ -31,28 +32,24 @@ chromium_cc_library(
         "base/winsock_init.cc",
         "base/winsock_util.cc",
         "ssl/**",
-        "websockets/**",
     ]) + if_windows([
         ":net_win_srcs",
     ]) + if_not_windows_and_not_linux([
         ":net_posix_srcs",
     ]) + if_not_win_no_grpc([
         ":net_ssl_srcs",
-        ":net_websockets_srcs",
     ]),
     hdrs = chromium_platform_hdrs(exclude = [
         "base/network_interfaces_getifaddrs.h",
         "base/winsock_init.h",
         "base/winsock_util.h",
         "ssl/**",
-        "websockets/**",
     ]) + if_windows([
         ":net_win_hdrs",
     ]) + if_not_windows([
         ":net_posix_hdrs",
     ]) + if_not_win_no_grpc([
         ":net_ssl_hdrs",
-        ":net_websockets_hdrs",
     ]),
     copts = net_copts(),
     linkopts = net_linkopts(),
@@ -62,8 +59,7 @@ chromium_cc_library(
         "//third_party/chromium/url",
     ] + if_not_win_no_grpc([
         "//third_party/chromium/crypto",
-        "@com_github_madler_zlib//:z",
-    ]),
+    ]) + fel_zlib_deps(),
 )
 
 filegroup(
@@ -75,18 +71,6 @@ filegroup(
 filegroup(
     name = "net_ssl_srcs",
     srcs = chromium_platform_srcs(base = "ssl"),
-    visibility = ["//visibility:private"],
-)
-
-filegroup(
-    name = "net_websockets_hdrs",
-    srcs = chromium_platform_hdrs(base = "websockets"),
-    visibility = ["//visibility:private"],
-)
-
-filegroup(
-    name = "net_websockets_srcs",
-    srcs = chromium_platform_srcs(base = "websockets"),
     visibility = ["//visibility:private"],
 )
 

@@ -26,14 +26,10 @@ fel_cc_library(
         "tcp_channel.h",
         "udp_channel.h",
         "shm_channel.h",
+        "ws_channel.h",
     ] + if_not_windows([
         "uds_channel.h",
-    ]) + select({
-        "//felicia:win_no_grpc": [],
-        "//conditions:default": [
-            "ws_channel.h",
-        ],
-    }),
+    ]),
     deps = [
         ":channel_impl",
         "//felicia/core/channel/shared_memory",
