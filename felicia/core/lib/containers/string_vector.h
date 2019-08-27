@@ -78,6 +78,66 @@ class EXPORT StringVector {
     new (ptr) std::decay_t<T>(std::forward<T>(value));
   }
 
+  template <typename T>
+  void pop_back() {
+    back<T>().~T();
+    data_.resize(data_.size() - sizeof(T));
+  }
+
+  template <typename T, typename iterator = typename Iterator<T>::iterator,
+            typename const_iterator = typename Iterator<T>::const_iterator>
+  iterator insert(const_iterator position, const T& value) {
+    ptrdiff_t diff = position - Iterated<T>().begin();
+    size_t size = diff * sizeof(T);
+    data_.insert(size, sizeof(T), 0);
+    char* ptr = const_cast<char*>(data_.data() + size);
+    new (ptr) T(value);
+    return Iterated<T>().begin() + diff;
+  }
+
+  template <typename T, typename iterator = typename Iterator<T>::iterator,
+            typename const_iterator = typename Iterator<T>::const_iterator>
+  iterator insert(const_iterator position, T&& value) {
+    ptrdiff_t diff = position - Iterated<T>().begin();
+    size_t size = diff * sizeof(T);
+    data_.insert(size, sizeof(T), 0);
+    char* ptr = const_cast<char*>(data_.data() + size);
+    new (ptr) std::decay_t<T>(std::forward<T>(value));
+    return Iterated<T>().begin() + diff;
+  }
+
+  template <typename T,
+            typename const_iterator = typename Iterator<T>::const_iterator>
+  void insert(const_iterator position, size_t n, const T& value) {
+    ptrdiff_t diff = position - Iterated<T>().begin();
+    size_t size = diff * sizeof(T);
+    data_.insert(size, sizeof(T) * n, 0);
+    char* ptr = const_cast<char*>(data_.data() + size);
+    for (size_t i = 0; i < n; ++i) {
+      new (ptr + sizeof(T) * i) T(value);
+    }
+  }
+
+  template <typename T, typename iterator = typename Iterator<T>::iterator,
+            typename const_iterator = typename Iterator<T>::const_iterator>
+  iterator erase(const_iterator position) {
+    ptrdiff_t diff = position - Iterated<T>().begin();
+    size_t size = diff * sizeof(T);
+    data_.erase(size, sizeof(T));
+    return Iterated<T>().begin() + diff;
+  }
+
+  template <typename T, typename iterator = typename Iterator<T>::iterator,
+            typename const_iterator = typename Iterator<T>::const_iterator>
+  iterator erase(const_iterator first, const_iterator last) {
+    ptrdiff_t diff = first - Iterated<T>().begin();
+    size_t size = diff * sizeof(T);
+    data_.erase(size, (last - first) * sizeof(T));
+    return Iterated<T>().begin() + diff;
+  }
+
+  void swap(StringVector& other) { data_.swap(other.data_); }
+
   template <typename R>
   std::enable_if_t<std::is_pointer<R>::value, R> cast() const noexcept {
     return reinterpret_cast<R>(data_.data());
@@ -102,6 +162,23 @@ class EXPORT StringVector {
     return *ptr;
   }
 
+  template <typename R>
+  R& front() {
+    return *Iterated<R>().begin();
+  }
+  template <typename R>
+  const R& front() const {
+    return *Iterated<R>().cbegin();
+  }
+  template <typename R>
+  R& back() {
+    return *(Iterated<R>().end() - 1);
+  }
+  template <typename R>
+  const R& back() const {
+    return *(Iterated<R>().cend() - 1);
+  }
+
   size_t raw_size() const noexcept { return data_.size(); }
 
   template <typename T>
@@ -114,6 +191,8 @@ class EXPORT StringVector {
   void reserve(size_t n) { data_.reserve(n); }
 
   void resize(size_t n) { data_.resize(n); }
+
+  void shrink_to_fit() { data_.shrink_to_fit(); }
 
   void clear() { data_.clear(); }
 
