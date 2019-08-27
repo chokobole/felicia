@@ -30,4 +30,36 @@ TEST(StringVectorTest, Push) {
   ASSERT_EQ(vector.at<Point>(0).x, 5);
 }
 
+namespace {
+
+template <typename Iterator>
+void ExpectForwardEq(Iterator begin, Iterator end, int from, int to) {
+  int n = from;
+  bool incremental = to > from;
+  for (auto it = begin; it != end; it++) {
+    if (incremental) {
+      EXPECT_EQ(*it, n++);
+    } else {
+      EXPECT_EQ(*it, n--);
+    }
+  }
+  EXPECT_EQ(n, to);
+}
+
+}  // namespace
+
+TEST(StringVectorTest, Iterator) {
+  StringVector vector;
+  for (int i = 0; i < 10; ++i) {
+    vector.push_back<int>(i);
+  }
+
+  StringVector::Iterator<int> iterator = vector.Iterated<int>();
+
+  ExpectForwardEq(iterator.begin(), iterator.end(), 0, 10);
+  ExpectForwardEq(iterator.cbegin(), iterator.cend(), 0, 10);
+  ExpectForwardEq(iterator.rbegin(), iterator.rend(), 9, -1);
+  ExpectForwardEq(iterator.rbegin(), iterator.rend(), 9, -1);
+}
+
 }  // namespace felicia

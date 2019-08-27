@@ -4,6 +4,7 @@
 #include <string>
 #include <type_traits>
 
+#include "third_party/chromium/base/containers/checked_iterators.h"
 #include "third_party/chromium/base/logging.h"
 
 #include "felicia/core/lib/base/export.h"
@@ -15,6 +16,40 @@ namespace felicia {
 // bytes type of protobuf.
 class EXPORT StringVector {
  public:
+  template <typename T>
+  class Iterator {
+   public:
+    using iterator = base::CheckedRandomAccessIterator<T>;
+    using const_iterator = base::CheckedRandomAccessConstIterator<T>;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+    explicit Iterator(StringVector& vector) noexcept : vector_(vector) {}
+    void operator=(const Iterator& iterator) { vector_ = iterator.vector_; }
+
+    iterator begin() const noexcept {
+      return iterator(vector_.cast<T*>(),
+                      vector_.cast<T*>() + vector_.size<T>());
+    }
+    const_iterator cbegin() const noexcept { return begin(); }
+
+    iterator end() const noexcept {
+      return iterator(vector_.cast<T*>(),
+                      vector_.cast<T*>() + vector_.size<T>(),
+                      vector_.cast<T*>() + vector_.size<T>());
+    }
+    const_iterator cend() const noexcept { return end(); }
+
+    reverse_iterator rbegin() const noexcept { return reverse_iterator(end()); }
+    const_reverse_iterator crbegin() const noexcept { return rbegin(); }
+
+    reverse_iterator rend() const noexcept { return reverse_iterator(begin()); }
+    const_reverse_iterator crend() const noexcept { return rend(); }
+
+   private:
+    StringVector& vector_;
+  };
+
   StringVector() = default;
   StringVector(const void* s, size_t n)
       : data_(reinterpret_cast<const char*>(s), n) {}
@@ -44,12 +79,12 @@ class EXPORT StringVector {
   }
 
   template <typename R>
-  std::enable_if_t<std::is_pointer<R>::value, R> cast() const {
+  std::enable_if_t<std::is_pointer<R>::value, R> cast() const noexcept {
     return reinterpret_cast<R>(data_.data());
   }
 
   template <typename R>
-  std::enable_if_t<std::is_pointer<R>::value, R> cast() {
+  std::enable_if_t<std::is_pointer<R>::value, R> cast() noexcept {
     return reinterpret_cast<R>(const_cast<char*>(data_.data()));
   }
 
@@ -67,14 +102,14 @@ class EXPORT StringVector {
     return *ptr;
   }
 
-  size_t raw_size() const { return data_.size(); }
+  size_t raw_size() const noexcept { return data_.size(); }
 
   template <typename T>
-  size_t size() const {
+  size_t size() const noexcept {
     return data_.size() / sizeof(T);
   }
 
-  bool empty() const { return data_.size() == 0; }
+  bool empty() const noexcept { return data_.size() == 0; }
 
   void reserve(size_t n) { data_.reserve(n); }
 
@@ -82,8 +117,13 @@ class EXPORT StringVector {
 
   void clear() { data_.clear(); }
 
-  const std::string& data() const& { return data_; }
-  std::string&& data() && { return std::move(data_); }
+  const std::string& data() const& noexcept { return data_; }
+  std::string&& data() && noexcept { return std::move(data_); }
+
+  template <typename R>
+  Iterator<R> Iterated() noexcept {
+    return Iterator<R>(*this);
+  }
 
  private:
   std::string data_;
