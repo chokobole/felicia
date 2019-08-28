@@ -206,9 +206,9 @@ void Channel<MessageTy>::WriteImpl(const std::string& text,
   if (err == MessageIoError::OK) {
     is_sending_ = true;
     send_callback_ = callback;
-    channel_impl_->Write(send_buffer_.buffer(), send_buffer_.size(),
-                         base::BindOnce(&Channel<MessageTy>::OnSendMessage,
-                                        base::Unretained(this)));
+    channel_impl_->WriteAsync(send_buffer_.buffer(), send_buffer_.size(),
+                              base::BindOnce(&Channel<MessageTy>::OnSendMessage,
+                                             base::Unretained(this)));
   } else {
     callback.Run(type(), errors::Unavailable(MessageIoErrorToString(err)));
   }
@@ -221,9 +221,9 @@ void Channel<MessageTy>::ReadImpl(MessageTy* message,
 
   message_ = message;
   receive_callback_ = std::move(callback);
-  channel_impl_->Read(receive_buffer_.buffer(), sizeof(Header),
-                      base::BindOnce(&Channel<MessageTy>::OnReceiveHeader,
-                                     base::Unretained(this)));
+  channel_impl_->ReadAsync(receive_buffer_.buffer(), sizeof(Header),
+                           base::BindOnce(&Channel<MessageTy>::OnReceiveHeader,
+                                          base::Unretained(this)));
 }
 
 template <typename MessageTy>
@@ -251,9 +251,9 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
   }
 
   receive_buffer_.set_offset(0);
-  channel_impl_->Read(receive_buffer_.buffer(), header_.size(),
-                      base::BindOnce(&Channel<MessageTy>::OnReceiveMessage,
-                                     base::Unretained(this)));
+  channel_impl_->ReadAsync(receive_buffer_.buffer(), header_.size(),
+                           base::BindOnce(&Channel<MessageTy>::OnReceiveMessage,
+                                          base::Unretained(this)));
 }
 
 template <typename MessageTy>

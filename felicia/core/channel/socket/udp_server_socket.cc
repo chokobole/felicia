@@ -51,8 +51,8 @@ StatusOr<ChannelDef> UDPServerSocket::Bind() {
   return ToChannelDef(multicast_ip_endpoint_, ChannelDef::CHANNEL_TYPE_UDP);
 }
 
-void UDPServerSocket::Write(scoped_refptr<net::IOBuffer> buffer, int size,
-                            StatusOnceCallback callback) {
+void UDPServerSocket::WriteAsync(scoped_refptr<net::IOBuffer> buffer, int size,
+                                 StatusOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(size > 0);
   write_callback_ = std::move(callback);
@@ -78,8 +78,8 @@ void UDPServerSocket::Write(scoped_refptr<net::IOBuffer> buffer, int size,
   }
 }
 
-void UDPServerSocket::Read(scoped_refptr<net::GrowableIOBuffer> buffer,
-                           int size, StatusOnceCallback callback) {
+void UDPServerSocket::ReadAsync(scoped_refptr<net::GrowableIOBuffer> buffer,
+                                int size, StatusOnceCallback callback) {
   NOTREACHED() << "You read data from ServerSocket";
 }
 

@@ -103,8 +103,8 @@ bool UnixDomainServerSocket::IsConnected() const {
   return false;
 }
 
-void UnixDomainServerSocket::Write(scoped_refptr<net::IOBuffer> buffer,
-                                   int size, StatusOnceCallback callback) {
+void UnixDomainServerSocket::WriteAsync(scoped_refptr<net::IOBuffer> buffer,
+                                        int size, StatusOnceCallback callback) {
   DCHECK(write_callback_.is_null());
   write_callback_ = std::move(callback);
   broadcaster_.Broadcast(
@@ -112,8 +112,9 @@ void UnixDomainServerSocket::Write(scoped_refptr<net::IOBuffer> buffer,
       base::BindOnce(&UnixDomainServerSocket::OnWrite, base::Unretained(this)));
 }
 
-void UnixDomainServerSocket::Read(scoped_refptr<net::GrowableIOBuffer> buffer,
-                                  int size, StatusOnceCallback callback) {
+void UnixDomainServerSocket::ReadAsync(
+    scoped_refptr<net::GrowableIOBuffer> buffer, int size,
+    StatusOnceCallback callback) {
   NOTREACHED() << "You read data from ServerSocket";
 }
 

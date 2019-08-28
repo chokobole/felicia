@@ -129,7 +129,7 @@ void ShmChannel<MessageTy>::ReadImpl(MessageTy* message,
 
   this->message_ = message;
   this->receive_callback_ = std::move(callback);
-  this->channel_impl_->Read(
+  this->channel_impl_->ReadAsync(
       this->receive_buffer_.buffer(), this->receive_buffer_.capacity(),
       base::BindOnce(&ShmChannel<MessageTy>::OnReceiveMessageWithHeader,
                      base::Unretained(this)));

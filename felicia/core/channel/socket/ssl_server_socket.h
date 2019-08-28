@@ -45,10 +45,10 @@ class SSLServerSocket : public SSLSocket, public SocketBIOAdapter::Delegate {
   void Close() override;
 
   // ChannelImpl methods
-  void Write(scoped_refptr<net::IOBuffer> buffer, int size,
-             StatusOnceCallback callback) override;
-  void Read(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
-            StatusOnceCallback callback) override;
+  void WriteAsync(scoped_refptr<net::IOBuffer> buffer, int size,
+                  StatusOnceCallback callback) override;
+  void ReadAsync(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
+                 StatusOnceCallback callback) override;
 
   // SocketBIOAdapter::Delegate methods
   void OnReadReady() override;

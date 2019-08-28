@@ -152,8 +152,8 @@ int SSLServerSocket::Read(net::IOBuffer* buf, int buf_len,
 
 void SSLServerSocket::Close() { stream_socket_->Close(); }
 
-void SSLServerSocket::Write(scoped_refptr<net::IOBuffer> buffer, int size,
-                            StatusOnceCallback callback) {
+void SSLServerSocket::WriteAsync(scoped_refptr<net::IOBuffer> buffer, int size,
+                                 StatusOnceCallback callback) {
   int result = Write(buffer.get(), size,
                      base::BindOnce(&SSLServerSocket::OnWriteCheckingReset,
                                     base::Unretained(this)));
@@ -164,8 +164,8 @@ void SSLServerSocket::Write(scoped_refptr<net::IOBuffer> buffer, int size,
   }
 }
 
-void SSLServerSocket::Read(scoped_refptr<net::GrowableIOBuffer> buffer,
-                           int size, StatusOnceCallback callback) {
+void SSLServerSocket::ReadAsync(scoped_refptr<net::GrowableIOBuffer> buffer,
+                                int size, StatusOnceCallback callback) {
   int result = Read(buffer.get(), size,
                     base::BindOnce(&SSLServerSocket::OnReadCheckingClosed,
                                    base::Unretained(this)));

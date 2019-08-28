@@ -16,10 +16,10 @@ class EXPORT UDPClientSocket : public UDPSocket {
   bool IsClient() const override;
 
   // ChannelImpl methods
-  void Write(scoped_refptr<net::IOBuffer> buffer, int size,
-             StatusOnceCallback callback) override;
-  void Read(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
-            StatusOnceCallback callback) override;
+  void WriteAsync(scoped_refptr<net::IOBuffer> buffer, int size,
+                  StatusOnceCallback callback) override;
+  void ReadAsync(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
+                 StatusOnceCallback callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(UDPClientSocket);
 };

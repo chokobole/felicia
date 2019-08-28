@@ -47,15 +47,15 @@ bool TCPClientSocket::IsConnected() const {
   return socket_ && socket_->IsConnected();
 }
 
-void TCPClientSocket::Write(scoped_refptr<net::IOBuffer> buffer, int size,
-                            StatusOnceCallback callback) {
+void TCPClientSocket::WriteAsync(scoped_refptr<net::IOBuffer> buffer, int size,
+                                 StatusOnceCallback callback) {
   WriteRepeating(
       buffer, size, std::move(callback),
       base::BindRepeating(&TCPClientSocket::OnWrite, base::Unretained(this)));
 }
 
-void TCPClientSocket::Read(scoped_refptr<net::GrowableIOBuffer> buffer,
-                           int size, StatusOnceCallback callback) {
+void TCPClientSocket::ReadAsync(scoped_refptr<net::GrowableIOBuffer> buffer,
+                                int size, StatusOnceCallback callback) {
   ReadRepeating(
       buffer, size, std::move(callback),
       base::BindRepeating(&TCPClientSocket::OnRead, base::Unretained(this)));

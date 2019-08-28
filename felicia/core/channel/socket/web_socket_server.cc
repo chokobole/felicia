@@ -48,13 +48,13 @@ bool WebSocketServer::IsConnected() const {
   return false;
 }
 
-void WebSocketServer::Write(scoped_refptr<net::IOBuffer> buffer, int size,
-                            StatusOnceCallback callback) {
+void WebSocketServer::WriteAsync(scoped_refptr<net::IOBuffer> buffer, int size,
+                                 StatusOnceCallback callback) {
   broadcaster_.Broadcast(std::move(buffer), size, std::move(callback));
 }
 
-void WebSocketServer::Read(scoped_refptr<net::GrowableIOBuffer> buffer,
-                           int size, StatusOnceCallback callback) {
+void WebSocketServer::ReadAsync(scoped_refptr<net::GrowableIOBuffer> buffer,
+                                int size, StatusOnceCallback callback) {
   NOTREACHED() << "You read data from ServerSocket";
 }
 

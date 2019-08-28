@@ -51,15 +51,15 @@ void UDPClientSocket::Connect(const net::IPEndPoint& ip_endpoint,
 
 bool UDPClientSocket::IsClient() const { return true; }
 
-void UDPClientSocket::Write(scoped_refptr<net::IOBuffer> buffer, int size,
-                            StatusOnceCallback callback) {
+void UDPClientSocket::WriteAsync(scoped_refptr<net::IOBuffer> buffer, int size,
+                                 StatusOnceCallback callback) {
   WriteRepeating(
       buffer, size, std::move(callback),
       base::BindRepeating(&UDPClientSocket::OnWrite, base::Unretained(this)));
 }
 
-void UDPClientSocket::Read(scoped_refptr<net::GrowableIOBuffer> buffer,
-                           int size, StatusOnceCallback callback) {
+void UDPClientSocket::ReadAsync(scoped_refptr<net::GrowableIOBuffer> buffer,
+                                int size, StatusOnceCallback callback) {
   ReadRepeating(
       buffer, size, std::move(callback),
       base::BindRepeating(&UDPClientSocket::OnRead, base::Unretained(this)));

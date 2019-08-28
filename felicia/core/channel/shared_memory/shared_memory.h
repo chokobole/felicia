@@ -16,10 +16,10 @@ class SharedMemory : public ChannelImpl {
 
   bool IsSharedMemory() const override { return true; }
 
-  void Write(scoped_refptr<net::IOBuffer> buffer, int size,
-             StatusOnceCallback callback) override;
-  void Read(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
-            StatusOnceCallback callback) override;
+  void WriteAsync(scoped_refptr<net::IOBuffer> buffer, int size,
+                  StatusOnceCallback callback) override;
+  void ReadAsync(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
+                 StatusOnceCallback callback) override;
 
   size_t BufferSize() const;
 

@@ -23,10 +23,10 @@ class ChannelImpl {
   Socket* ToSocket();
   SharedMemory* ToSharedMemory();
 
-  virtual void Write(scoped_refptr<net::IOBuffer> buffer, int size,
-                     StatusOnceCallback callback) = 0;
-  virtual void Read(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
-                    StatusOnceCallback callback) = 0;
+  virtual void WriteAsync(scoped_refptr<net::IOBuffer> buffer, int size,
+                          StatusOnceCallback callback) = 0;
+  virtual void ReadAsync(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
+                         StatusOnceCallback callback) = 0;
 };
 
 // Create ChannelDef from |ip_endpoint| and |type|

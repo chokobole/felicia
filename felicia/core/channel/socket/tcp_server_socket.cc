@@ -82,8 +82,8 @@ bool TCPServerSocket::IsConnected() const {
   return false;
 }
 
-void TCPServerSocket::Write(scoped_refptr<net::IOBuffer> buffer, int size,
-                            StatusOnceCallback callback) {
+void TCPServerSocket::WriteAsync(scoped_refptr<net::IOBuffer> buffer, int size,
+                                 StatusOnceCallback callback) {
   DCHECK(write_callback_.is_null());
   write_callback_ = std::move(callback);
   broadcaster_.Broadcast(
@@ -91,8 +91,8 @@ void TCPServerSocket::Write(scoped_refptr<net::IOBuffer> buffer, int size,
       base::BindOnce(&TCPServerSocket::OnWrite, base::Unretained(this)));
 }
 
-void TCPServerSocket::Read(scoped_refptr<net::GrowableIOBuffer> buffer,
-                           int size, StatusOnceCallback callback) {
+void TCPServerSocket::ReadAsync(scoped_refptr<net::GrowableIOBuffer> buffer,
+                                int size, StatusOnceCallback callback) {
   NOTREACHED() << "You read data from ServerSocket, if you need, please use "
                   "TCPServerSokcet::AcceptOnceIntercept.";
 }

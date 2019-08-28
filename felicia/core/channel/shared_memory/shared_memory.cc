@@ -14,8 +14,8 @@ SharedMemory::SharedMemory(base::subtle::PlatformSharedMemoryRegion handle)
 
 SharedMemory::~SharedMemory() = default;
 
-void SharedMemory::Write(scoped_refptr<net::IOBuffer> buffer, int size,
-                         StatusOnceCallback callback) {
+void SharedMemory::WriteAsync(scoped_refptr<net::IOBuffer> buffer, int size,
+                              StatusOnceCallback callback) {
   WritableSharedBuffer* writable_buffer = buffer_->ToWritableSharedBuffer();
   if (static_cast<size_t>(size) > writable_buffer->size()) {
     std::move(callback).Run(errors::OutOfRange("Buffer size is not enough."));
@@ -29,8 +29,8 @@ void SharedMemory::Write(scoped_refptr<net::IOBuffer> buffer, int size,
   std::move(callback).Run(Status::OK());
 }
 
-void SharedMemory::Read(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
-                        StatusOnceCallback callback) {
+void SharedMemory::ReadAsync(scoped_refptr<net::GrowableIOBuffer> buffer,
+                             int size, StatusOnceCallback callback) {
   ReadOnlySharedBuffer* readonly_buffer = buffer_->ToReadOnlySharedBuffer();
   const int kMaximumContentionCount = 10;
   int contention_count = -1;

@@ -36,10 +36,10 @@ class EXPORT TCPServerSocket : public TCPSocket {
   // all the sockets, then callback with Status::OK(), otherwise callback
   // with the |write_result_|, which is recorded at every time finishing
   // write.
-  void Write(scoped_refptr<net::IOBuffer> buffer, int size,
-             StatusOnceCallback callback) override;
-  void Read(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
-            StatusOnceCallback callback) override;
+  void WriteAsync(scoped_refptr<net::IOBuffer> buffer, int size,
+                  StatusOnceCallback callback) override;
+  void ReadAsync(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
+                 StatusOnceCallback callback) override;
 
  private:
   int DoAccept();

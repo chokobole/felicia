@@ -61,15 +61,16 @@ bool UnixDomainClientSocket::IsConnected() const {
   return socket_ && socket_->IsConnected();
 }
 
-void UnixDomainClientSocket::Write(scoped_refptr<net::IOBuffer> buffer,
-                                   int size, StatusOnceCallback callback) {
+void UnixDomainClientSocket::WriteAsync(scoped_refptr<net::IOBuffer> buffer,
+                                        int size, StatusOnceCallback callback) {
   WriteRepeating(buffer, size, std::move(callback),
                  base::BindRepeating(&UnixDomainClientSocket::OnWrite,
                                      base::Unretained(this)));
 }
 
-void UnixDomainClientSocket::Read(scoped_refptr<net::GrowableIOBuffer> buffer,
-                                  int size, StatusOnceCallback callback) {
+void UnixDomainClientSocket::ReadAsync(
+    scoped_refptr<net::GrowableIOBuffer> buffer, int size,
+    StatusOnceCallback callback) {
   ReadRepeating(buffer, size, std::move(callback),
                 base::BindRepeating(&UnixDomainClientSocket::OnRead,
                                     base::Unretained(this)));
