@@ -144,7 +144,6 @@ fel_cc_test(
     ],
     deps = fel_shared_library() + [
         ":lib_test_util",
-        "//third_party/chromium/base:test_lib",
         "@com_google_googletest//:gtest_main",
     ],
 )

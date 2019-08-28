@@ -550,7 +550,11 @@ void RsCamera::HandlePoints(rs2::points points, base::TimeDelta timestamp,
 
   rs2_stream texture_source_id = static_cast<rs2_stream>(
       pc_filter_iter->filter->get_option(rs2_option::RS2_OPTION_STREAM_FILTER));
-  PointcloudFrame pointcloud_frame(points.size(), points.size());
+  PointcloudFrame pointcloud_frame;
+  StringVector::View<Point3f> points_vector =
+      pointcloud_frame.points().AsView<Point3f>();
+  StringVector::View<Color3u> colors_vector =
+      pointcloud_frame.colors().AsView<Color3u>();
   bool use_texture = texture_source_id != RS2_STREAM_ANY;
   rs2::frameset::iterator texture_frame_itr = frameset.end();
   if (use_texture) {
@@ -633,6 +637,8 @@ void RsCamera::HandlePoints(rs2::points points, base::TimeDelta timestamp,
 
     const rs2::vertex* vertex = points.get_vertices();
     const rs2::texture_coordinate* uv = points.get_texture_coordinates();
+    points_vector.resize(points.size());
+    colors_vector.resize(points.size());
     for (size_t i = 0; i < points.size(); ++i) {
       float u = static_cast<float>(uv[i].u);
       float v = static_cast<float>(uv[i].v);
@@ -640,22 +646,22 @@ void RsCamera::HandlePoints(rs2::points points, base::TimeDelta timestamp,
         int x = static_cast<int>(u * width);
         int y = static_cast<int>(v * height);
         size_t offset = (y * width + x) * bpp;
-        Point3f point =
+        points_vector[i] =
             coordinate_.Convert(Point3f(vertex[i].x, vertex[i].y, vertex[i].z),
                                 Coordinate::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP);
-        pointcloud_frame.AddPointAndColor(
-            point.x(), point.y(), point.z(), color[offset + color_indexes.r],
-            color[offset + color_indexes.g], color[offset + color_indexes.b]);
+        colors_vector[i] = Color3u(color[offset + color_indexes.r],
+                                   color[offset + color_indexes.g],
+                                   color[offset + color_indexes.b]);
       }
     }
   } else {
+    points_vector.resize(points.size());
     const rs2::vertex* vertex = points.get_vertices();
     for (size_t i = 0; i < points.size(); ++i) {
       if (vertex[i].z > 0) {
-        Point3f point =
+        points_vector[i] =
             coordinate_.Convert(Point3f(vertex[i].x, vertex[i].y, vertex[i].z),
                                 Coordinate::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP);
-        pointcloud_frame.AddPoint(point.x(), point.y(), point.z());
       }
     }
   }

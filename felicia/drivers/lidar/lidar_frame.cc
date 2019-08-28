@@ -97,20 +97,6 @@ const StringVector& LidarFrame::ranges() const { return ranges_; }
 
 const StringVector& LidarFrame::intensities() const { return intensities_; }
 
-float& LidarFrame::RangeAt(size_t idx) { return ranges_.at<float>(idx); }
-
-float& LidarFrame::IntensityAt(size_t idx) {
-  return intensities_.at<float>(idx);
-}
-
-const float& LidarFrame::RangeAt(size_t idx) const {
-  return ranges_.at<float>(idx);
-}
-
-const float& LidarFrame::IntensityAt(size_t idx) const {
-  return intensities_.at<float>(idx);
-}
-
 void LidarFrame::set_timestamp(base::TimeDelta timestamp) {
   timestamp_ = timestamp;
 }
@@ -174,9 +160,10 @@ void LidarFrame::Project(std::vector<Pointf>* points, float user_range_min,
   // TODO: Implement using BLAS.
   float range_min = std::max(user_range_min, range_min_);
   float range_max = std::min(user_range_max, range_max_);
-  const size_t size = ranges_.size<float>();
+  StringVector::ConstView<float> ranges = ranges_.AsConstView<float>();
+  const size_t size = ranges.size();
   for (size_t i = 0; i < size; ++i) {
-    float range = ranges_.at<float>(i);
+    float range = ranges[i];
     if (range < range_min || range > range_max) continue;
     const float radian = angle_start_ + angle_delta_ * i;
     points->emplace_back(range * std::cos(radian), range * std::sin(radian));

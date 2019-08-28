@@ -5,11 +5,6 @@ namespace drivers {
 
 PointcloudFrame::PointcloudFrame() = default;
 
-PointcloudFrame::PointcloudFrame(size_t points_size, size_t colors_size) {
-  points_.reserve(points_size);
-  colors_.reserve(colors_size);
-}
-
 PointcloudFrame::PointcloudFrame(const std::string& points,
                                  const std::string& colors,
                                  base::TimeDelta timestamp)
@@ -35,43 +30,13 @@ PointcloudFrame& PointcloudFrame::operator=(const PointcloudFrame& other) =
     default;
 PointcloudFrame& PointcloudFrame::operator=(PointcloudFrame&& other) = default;
 
-void PointcloudFrame::AddPoint(float x, float y, float z) {
-  AddPoint(Point3f{x, y, z});
-}
+const StringVector& PointcloudFrame::points() const { return points_; }
 
-void PointcloudFrame::AddPoint(const Point3f& point) {
-  points_.push_back<Point3f>(point);
-}
+StringVector& PointcloudFrame::points() { return points_; }
 
-void PointcloudFrame::AddColor(uint8_t r, uint8_t g, uint8_t b) {
-  AddColor(Color3u{r, g, b});
-}
+const StringVector& PointcloudFrame::colors() const { return colors_; }
 
-void PointcloudFrame::AddColor(const Color3u& color) {
-  colors_.push_back<Color3u>(color);
-}
-
-void PointcloudFrame::AddPointAndColor(float x, float y, float z, uint8_t r,
-                                       uint8_t g, uint8_t b) {
-  AddPoint(x, y, z);
-  AddColor(r, g, b);
-}
-
-Point3f& PointcloudFrame::PointAt(size_t idx) {
-  return points_.at<Point3f>(idx);
-}
-
-Color3u& PointcloudFrame::ColorAt(size_t idx) {
-  return colors_.at<Color3u>(idx);
-}
-
-const Point3f& PointcloudFrame::PointAt(size_t idx) const {
-  return points_.at<Point3f>(idx);
-}
-
-const Color3u& PointcloudFrame::ColorAt(size_t idx) const {
-  return colors_.at<Color3u>(idx);
-}
+StringVector& PointcloudFrame::colors() { return colors_; }
 
 void PointcloudFrame::set_timestamp(base::TimeDelta timestamp) {
   timestamp_ = timestamp;

@@ -52,11 +52,6 @@ class EXPORT LidarFrame {
   const StringVector& ranges() const;
   const StringVector& intensities() const;
 
-  float& RangeAt(size_t idx);
-  float& IntensityAt(size_t idx);
-  const float& RangeAt(size_t idx) const;
-  const float& IntensityAt(size_t idx) const;
-
   LidarFrameMessage ToLidarFrameMessage(bool copy = true);
   Status FromLidarFrameMessage(const LidarFrameMessage& message);
   Status FromLidarFrameMessage(LidarFrameMessage&& message);

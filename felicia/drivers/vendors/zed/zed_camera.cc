@@ -498,22 +498,28 @@ PointcloudFrame ZedCamera::ConvertToPointcloudFrame(sl::Mat cloud,
                                                     base::TimeDelta timestamp) {
   const float* cloud_ptr = cloud.getPtr<sl::float4>()->ptr();
   size_t size = cloud.getWidth() * cloud.getHeight();
-  PointcloudFrame frame(size, 3 * size);
+  PointcloudFrame frame;
   struct Color8_4 {
     uint8_t r;
     uint8_t g;
     uint8_t b;
     uint8_t a;
   };
+
+  StringVector::View<Point3f> points = frame.points().AsView<Point3f>();
+  StringVector::View<Color3u> colors = frame.colors().AsView<Color3u>();
+  points.resize(size);
+  colors.resize(size);
   if (init_params_.coordinate_units == sl::UNIT_METER &&
       init_params_.coordinate_system ==
           sl::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP) {
     for (size_t i = 0; i < size; ++i) {
       const size_t cloud_ptr_idx = i << 2;
       Color8_4 c = bit_cast<Color8_4>(cloud_ptr[cloud_ptr_idx + 3]);
-      frame.AddPointAndColor(cloud_ptr[cloud_ptr_idx],
-                             cloud_ptr[cloud_ptr_idx + 1],
-                             cloud_ptr[cloud_ptr_idx + 2], c.r, c.g, c.b);
+      points[i] =
+          Point3f(cloud_ptr[cloud_ptr_idx], cloud_ptr[cloud_ptr_idx + 1],
+                  cloud_ptr[cloud_ptr_idx + 2]);
+      colors[i] = Color3u(c.r, c.g, c.b);
     }
   } else {
     for (size_t i = 0; i < size; ++i) {
@@ -524,10 +530,10 @@ PointcloudFrame ZedCamera::ConvertToPointcloudFrame(sl::Mat cloud,
           InMeter(init_params_.coordinate_units, cloud_ptr[cloud_ptr_idx + 1]);
       float z =
           InMeter(init_params_.coordinate_units, cloud_ptr[cloud_ptr_idx + 2]);
-      Point3f point = coordinate_.Convert(
+      points[i] = coordinate_.Convert(
           Point3f(x, y, z), Coordinate::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP);
       Color8_4 c = bit_cast<Color8_4>(cloud_ptr[cloud_ptr_idx + 3]);
-      frame.AddPointAndColor(point.x(), point.y(), point.z(), c.r, c.g, c.b);
+      colors[i] = Color3u(c.r, c.g, c.b);
     }
   }
   frame.set_timestamp(timestamp);

@@ -16,7 +16,6 @@ namespace drivers {
 class EXPORT PointcloudFrame {
  public:
   PointcloudFrame();
-  PointcloudFrame(size_t points_size, size_t colors_size);
   PointcloudFrame(const std::string& points, const std::string& colors,
                   base::TimeDelta timestamp);
   PointcloudFrame(std::string&& points, std::string&& colors,
@@ -27,17 +26,10 @@ class EXPORT PointcloudFrame {
   PointcloudFrame& operator=(const PointcloudFrame& other);
   PointcloudFrame& operator=(PointcloudFrame&& other);
 
-  void AddPoint(float x, float y, float z);
-  void AddPoint(const Point3f& point);
-  void AddColor(uint8_t r, uint8_t g, uint8_t b);
-  void AddColor(const Color3u& color);
-  void AddPointAndColor(float x, float y, float z, uint8_t r, uint8_t g,
-                        uint8_t b);
-
-  Point3f& PointAt(size_t idx);
-  Color3u& ColorAt(size_t idx);
-  const Point3f& PointAt(size_t idx) const;
-  const Color3u& ColorAt(size_t idx) const;
+  const StringVector& points() const;
+  StringVector& points();
+  const StringVector& colors() const;
+  StringVector& colors();
 
   void set_timestamp(base::TimeDelta time);
   base::TimeDelta timestamp() const;

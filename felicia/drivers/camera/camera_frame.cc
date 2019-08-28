@@ -61,7 +61,7 @@ const StringVector& CameraFrame::data() const { return data_; }
 
 StringVector& CameraFrame::data() { return data_; }
 
-size_t CameraFrame::length() const { return data_.raw_size(); }
+size_t CameraFrame::length() const { return data_.size(); }
 
 const CameraFormat& CameraFrame::camera_format() const {
   return camera_format_;
