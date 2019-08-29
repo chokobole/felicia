@@ -14,6 +14,7 @@ import '@babylonjs/core/Meshes/meshBuilder';
 import { babylonCanvasStyle } from 'custom-styles';
 import { PointcloudFrame } from 'store/ui/pointcloud-panel-state';
 import { drawAxis, drawFrustrum } from 'util/babylon-util';
+import DataMessageReader from 'util/data-message-reader';
 import Worker from 'util/pointcloud-view-webworker.js';
 
 export default class PointcloudView extends Component {
@@ -74,7 +75,7 @@ export default class PointcloudView extends Component {
     const { frame } = this.props;
     if (frame !== nextProps.frame) {
       const { points } = nextProps.frame;
-      const size = points.byteLength / 4;
+      const size = new DataMessageReader(points).length();
       const meshSize = this.meshInfo.width * this.meshInfo.height;
       if (!frame || meshSize < size) {
         if (this.meshInfo.mesh) {

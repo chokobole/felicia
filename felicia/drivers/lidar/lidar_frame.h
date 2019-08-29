@@ -5,7 +5,7 @@
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/lib/base/export.h"
-#include "felicia/core/lib/containers/string_vector.h"
+#include "felicia/core/lib/containers/data.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/lib/unit/geometry/point.h"
 #include "felicia/drivers/lidar/lidar_frame_message.pb.h"
@@ -18,11 +18,11 @@ class EXPORT LidarFrame {
   LidarFrame();
   LidarFrame(float angle_start, float angle_end, float angle_delta,
              float time_delta, float scan_time, float range_min,
-             float range_max, const std::string& ranges,
-             const std::string& intensities, base::TimeDelta timestamp);
+             float range_max, const Data& ranges, const Data& intensities,
+             base::TimeDelta timestamp);
   LidarFrame(float angle_start, float angle_end, float angle_delta,
              float time_delta, float scan_time, float range_min,
-             float range_max, std::string&& ranges, std::string&& intensities,
+             float range_max, Data&& ranges, Data&& intensities,
              base::TimeDelta timestamp) noexcept;
   LidarFrame(const LidarFrame& other);
   LidarFrame(LidarFrame&& other) noexcept;
@@ -47,10 +47,10 @@ class EXPORT LidarFrame {
   void set_timestamp(base::TimeDelta timestamp);
   base::TimeDelta timestamp() const;
 
-  StringVector& ranges();
-  StringVector& intensities();
-  const StringVector& ranges() const;
-  const StringVector& intensities() const;
+  Data& ranges();
+  Data& intensities();
+  const Data& ranges() const;
+  const Data& intensities() const;
 
   LidarFrameMessage ToLidarFrameMessage(bool copy = true);
   Status FromLidarFrameMessage(const LidarFrameMessage& message);
@@ -67,8 +67,8 @@ class EXPORT LidarFrame {
   float scan_time_;
   float range_min_;
   float range_max_;
-  StringVector ranges_;
-  StringVector intensities_;
+  Data ranges_;
+  Data intensities_;
   base::TimeDelta timestamp_;
 };
 

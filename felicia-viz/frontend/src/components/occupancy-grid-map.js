@@ -52,7 +52,7 @@ export default class OccupancyGridMap {
         const pixels = imageData.data;
         const v = data[idx];
         if (v >= 0 && v <= 100) {
-          const c = Math.floor(255 * (1 - v / 100));
+          const c = Math.round(255 * (1 - v / 100));
           pixels[pixelsIdx] = c;
           pixels[pixelsIdx + 1] = c;
           pixels[pixelsIdx + 2] = c;

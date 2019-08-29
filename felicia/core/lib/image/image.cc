@@ -11,10 +11,10 @@ namespace felicia {
 
 Image::Image() = default;
 
-Image::Image(Sizei size, PixelFormat pixel_format, const std::string& data)
+Image::Image(Sizei size, PixelFormat pixel_format, const Data& data)
     : size_(size), pixel_format_(pixel_format), data_(data) {}
 
-Image::Image(Sizei size, PixelFormat pixel_format, std::string&& data)
+Image::Image(Sizei size, PixelFormat pixel_format, Data&& data)
     : size_(size), pixel_format_(pixel_format), data_(std::move(data)) {}
 
 Image::Image(const Image& other) = default;
@@ -43,9 +43,9 @@ void Image::set_pixel_format(PixelFormat pixel_format) {
   pixel_format_ = pixel_format;
 }
 
-StringVector& Image::data() { return data_; }
+Data& Image::data() { return data_; }
 
-const StringVector& Image::data() const { return data_; }
+const Data& Image::data() const { return data_; }
 
 ImageMessage Image::ToImageMessage(bool copy) {
   ImageMessage message;
@@ -59,22 +59,15 @@ ImageMessage Image::ToImageMessage(bool copy) {
   return message;
 }
 Status Image::FromImageMessage(const ImageMessage& message) {
-  *this = Image{
-      SizeiMessageToSizei(message.size()),
-      message.pixel_format(),
-      message.data(),
-  };
+  *this = Image{SizeiMessageToSizei(message.size()), message.pixel_format(),
+                Data{message.data()}};
   return Status::OK();
 }
 
 Status Image::FromImageMessage(ImageMessage&& message) {
   std::unique_ptr<std::string> data(message.release_data());
-
-  *this = Image{
-      SizeiMessageToSizei(message.size()),
-      message.pixel_format(),
-      std::move(*data),
-  };
+  *this = Image{SizeiMessageToSizei(message.size()), message.pixel_format(),
+                Data{std::move(*data)}};
   return Status::OK();
 }
 

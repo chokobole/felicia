@@ -3,8 +3,8 @@
 import { PixelFormat } from '@felicia-viz/communication';
 
 import { fillPixels } from 'util/color';
+import { getDataView } from 'util/data-message-reader';
 import Histogram from 'util/histogram';
-import { getDataView } from 'util/util';
 
 let histogram;
 

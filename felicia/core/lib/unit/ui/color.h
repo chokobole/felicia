@@ -1,70 +1,135 @@
 #ifndef FELICIA_CORE_LIB_UNIT_UI_COLOR_H_
 #define FELICIA_CORE_LIB_UNIT_UI_COLOR_H_
 
+#include "third_party/chromium/base/strings/string_number_conversions.h"
+#include "third_party/chromium/base/strings/stringprintf.h"
+
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/protobuf/ui.pb.h"
 
 namespace felicia {
 
-class EXPORT Color3u {
+template <typename T>
+class Color3 {
  public:
-  Color3u();
-  Color3u(uint8_t r, uint8_t y, uint8_t b);
-  Color3u(const Color3u& other);
-  Color3u& operator=(const Color3u& other);
+  constexpr Color3() : r_(0), g_(0), b_(0) {}
+  constexpr Color3(T r, T g, T b) : r_(r), g_(g), b_(b) {}
+  constexpr Color3(const Color3& other) = default;
+  Color3& operator=(const Color3& other) = default;
 
-  void set_rgb(uint8_t r, uint8_t g, uint8_t b);
-  void set_r(uint8_t r);
-  void set_g(uint8_t g);
-  void set_b(uint8_t b);
+  void set_rgb(T r, T g, T b) {
+    r_ = r;
+    g_ = g;
+    b_ = b;
+  }
+  void set_r(T r) { r_ = r; }
+  void set_g(T g) { g_ = g; }
+  void set_b(T b) { b_ = b; }
 
-  uint8_t r() const;
-  uint8_t g() const;
-  uint8_t b() const;
+  constexpr T r() const { return r_; }
+  constexpr T g() const { return g_; }
+  constexpr T b() const { return b_; }
 
-  Color3uMessage ToColor3uMessage() const;
-  Color3fMessage ToColor3fMessage() const;
+  std::string ToString() const {
+    return base::StringPrintf("(%s, %s, %s)", base::NumberToString(r_).c_str(),
+                              base::NumberToString(g_).c_str(),
+                              base::NumberToString(b_).c_str());
+  }
 
  private:
-  uint8_t r_;
-  uint8_t g_;
-  uint8_t b_;
+  T r_;
+  T g_;
+  T b_;
 };
 
-class EXPORT Color3f {
+template <typename T>
+inline bool operator==(const Color3<T>& lhs, const Color3<T>& rhs) {
+  return lhs.r() == rhs.r() && lhs.g() == rhs.g() && lhs.b() == rhs.b();
+}
+
+template <typename T>
+inline bool operator!=(const Color3<T>& lhs, const Color3<T>& rhs) {
+  return !(lhs == rhs);
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const Color3<T>& color) {
+  return os << color.ToString();
+}
+
+typedef Color3<uint8_t> Color3u;
+typedef Color3<float> Color3f;
+
+EXPORT Color3uMessage Color3uToColor3uMessage(const Color3u& color);
+EXPORT Color3fMessage Color3fToColor3fMessage(const Color3f& color);
+
+EXPORT Color3u Color3uMessageToColor3u(const Color3uMessage& message);
+EXPORT Color3f Color3fMessageToColor3f(const Color3fMessage& message);
+
+template <typename T>
+class Color4 {
  public:
-  Color3f();
-  Color3f(float r, float y, float b);
-  Color3f(const Color3f& other);
-  Color3f& operator=(const Color3f& other);
+  constexpr Color4() : r_(0), g_(0), b_(0), a_(0) {}
+  constexpr Color4(T r, T g, T b, T a) : r_(r), g_(g), b_(b), a_(a) {}
+  constexpr Color4(const Color4& other) = default;
+  Color4& operator=(const Color4& other) = default;
 
-  void set_rgb(float r, float g, float b);
-  void set_r(float r);
-  void set_g(float g);
-  void set_b(float b);
+  void set_rgba(T r, T g, T b, T a) {
+    r_ = r;
+    g_ = g;
+    b_ = b;
+    a_ = a;
+  }
+  void set_r(T r) { r_ = r; }
+  void set_g(T g) { g_ = g; }
+  void set_b(T b) { b_ = b; }
+  void set_a(T a) { a_ = a; }
 
-  float r() const;
-  float g() const;
-  float b() const;
+  constexpr T r() const { return r_; }
+  constexpr T g() const { return g_; }
+  constexpr T b() const { return b_; }
+  constexpr T a() const { return a_; }
 
-  Color3uMessage ToColor3uMessage() const;
-  Color3fMessage ToColor3fMessage() const;
+  std::string ToString() const {
+    return base::StringPrintf(
+        "(%s, %s, %s, %s)", base::NumberToString(r_).c_str(),
+        base::NumberToString(g_).c_str(), base::NumberToString(b_).c_str(),
+        base::NumberToString(a_).c_str());
+  }
 
  private:
-  float r_;
-  float g_;
-  float b_;
+  T r_;
+  T g_;
+  T b_;
+  T a_;
 };
 
-EXPORT bool operator==(const Color3u& lhs, const Color3u& rhs);
+template <typename T>
+inline bool operator==(const Color4<T>& lhs, const Color4<T>& rhs) {
+  return lhs.r() == rhs.r() && lhs.g() == rhs.g() && lhs.b() == rhs.b() &&
+         lhs.a() == rhs.a();
+}
 
-EXPORT bool operator!=(const Color3u& lhs, const Color3u& rhs);
+template <typename T>
+inline bool operator!=(const Color4<T>& lhs, const Color4<T>& rhs) {
+  return !(lhs == rhs);
+}
 
-EXPORT bool operator==(const Color3f& lhs, const Color3f& rhs);
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const Color4<T>& color) {
+  return os << color.ToString();
+}
 
-EXPORT bool operator!=(const Color3f& lhs, const Color3f& rhs);
+typedef Color4<uint8_t> Color4u;
+typedef Color4<float> Color4f;
 
-struct EXPORT ColorIndexes {
+EXPORT Color4uMessage Color4uToColor4uMessage(const Color4u& color);
+EXPORT Color4fMessage Color4fToColor4fMessage(const Color4f& color);
+
+EXPORT Color4u Color4uMessageToColor4u(const Color4uMessage& message);
+EXPORT Color4f Color4fMessageToColor4f(const Color4fMessage& message);
+
+struct ColorIndexes {
   int r;
   int g;
   int b;

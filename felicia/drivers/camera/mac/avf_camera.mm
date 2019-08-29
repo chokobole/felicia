@@ -150,7 +150,7 @@ void AvfCamera::ReceiveFrame(const uint8_t* video_frame, int video_frame_length,
   }
 
   if (requested_pixel_format_ == camera_format_.pixel_format()) {
-    StringVector data(video_frame, video_frame_length);
+    Data data(video_frame, video_frame_length);
     camera_frame_callback_.Run(CameraFrame{std::move(data), camera_format_, timestamp});
   } else {
     base::Optional<CameraFrame> camera_frame = ConvertToRequestedPixelFormat(

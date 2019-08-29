@@ -5,12 +5,11 @@ namespace drivers {
 
 PointcloudFrame::PointcloudFrame() = default;
 
-PointcloudFrame::PointcloudFrame(const std::string& points,
-                                 const std::string& colors,
+PointcloudFrame::PointcloudFrame(const Data& points, const Data& colors,
                                  base::TimeDelta timestamp)
     : points_(points), colors_(colors), timestamp_(timestamp) {}
 
-PointcloudFrame::PointcloudFrame(std::string&& points, std::string&& colors,
+PointcloudFrame::PointcloudFrame(Data&& points, Data&& colors,
                                  base::TimeDelta timestamp) noexcept
     : points_(std::move(points)),
       colors_(std::move(colors)),
@@ -30,13 +29,13 @@ PointcloudFrame& PointcloudFrame::operator=(const PointcloudFrame& other) =
     default;
 PointcloudFrame& PointcloudFrame::operator=(PointcloudFrame&& other) = default;
 
-const StringVector& PointcloudFrame::points() const { return points_; }
+const Data& PointcloudFrame::points() const { return points_; }
 
-StringVector& PointcloudFrame::points() { return points_; }
+Data& PointcloudFrame::points() { return points_; }
 
-const StringVector& PointcloudFrame::colors() const { return colors_; }
+const Data& PointcloudFrame::colors() const { return colors_; }
 
-StringVector& PointcloudFrame::colors() { return colors_; }
+Data& PointcloudFrame::colors() { return colors_; }
 
 void PointcloudFrame::set_timestamp(base::TimeDelta timestamp) {
   timestamp_ = timestamp;
@@ -46,35 +45,41 @@ base::TimeDelta PointcloudFrame::timestamp() const { return timestamp_; }
 
 PointcloudFrameMessage PointcloudFrame::ToPointcloudFrameMessage(bool copy) {
   PointcloudFrameMessage message;
-  if (copy) {
-    message.set_points(points_.data());
-    message.set_colors(colors_.data());
-  } else {
-    message.set_points(std::move(points_).data());
-    message.set_colors(std::move(colors_).data());
-  }
+  *message.mutable_points() = points_.ToDataMessage(copy);
+  *message.mutable_colors() = colors_.ToDataMessage(copy);
   message.set_timestamp(timestamp_.InMicroseconds());
   return message;
 }
 
 Status PointcloudFrame::FromPointcloudFrameMessage(
     const PointcloudFrameMessage& message) {
-  const std::string& points = message.points();
-  const std::string& colors = message.colors();
+  Data points;
+  Status s = points.FromDataMessage(message.points());
+  if (!s.ok()) return s;
+  Data colors;
+  s = colors.FromDataMessage(message.colors());
+  if (!s.ok()) return s;
 
-  *this = PointcloudFrame{
-      points, colors, base::TimeDelta::FromMicroseconds(message.timestamp())};
+  *this =
+      PointcloudFrame{std::move(points), std::move(colors),
+                      base::TimeDelta::FromMicroseconds(message.timestamp())};
 
   return Status::OK();
 }
 
 Status PointcloudFrame::FromPointcloudFrameMessage(
     PointcloudFrameMessage&& message) {
-  std::unique_ptr<std::string> points(message.release_points());
-  std::unique_ptr<std::string> colors(message.release_colors());
+  std::unique_ptr<DataMessage> points_message(message.release_points());
+  Data points;
+  Status s = points.FromDataMessage(std::move(*points_message));
+  if (!s.ok()) return s;
+  std::unique_ptr<DataMessage> colors_message(message.release_colors());
+  Data colors;
+  s = colors.FromDataMessage(std::move(*colors_message));
+  if (!s.ok()) return s;
 
   *this =
-      PointcloudFrame{std::move(*points), std::move(*colors),
+      PointcloudFrame{std::move(points), std::move(colors),
                       base::TimeDelta::FromMicroseconds(message.timestamp())};
 
   return Status::OK();

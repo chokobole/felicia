@@ -142,7 +142,7 @@ void AddCamera(py::module& m) {
               NotHaveFixedSizedChannelPixelFormat();
             }
 
-            StringVector data(array.data(), array.size());
+            Data data(array.data(), array.size());
             return CameraFrame(std::move(data), camera_format, timestamp);
           }))
       .def_property_readonly("length", &CameraFrame::length)

@@ -98,7 +98,7 @@ function fillGreyPixelsImpl(pixels, width, height, data, is8bit) {
     const pixelData = new Uint16Array(data);
     for (let i = 0; i < size; i += 1) {
       const pixelsIdx = i << 2;
-      const v = Math.floor(pixelData[i] / 256);
+      const v = Math.round(pixelData[i] / 256);
       pixels[pixelsIdx + RGBA.rIdx] = v;
       pixels[pixelsIdx + RGBA.gIdx] = v;
       pixels[pixelsIdx + RGBA.bIdx] = v;

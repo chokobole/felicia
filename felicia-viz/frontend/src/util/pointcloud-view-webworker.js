@@ -1,28 +1,30 @@
 /* global self */
 /* eslint no-restricted-globals: ["off"] */
-import { getDataView } from 'util/util';
+import { PointReader, ColorReader } from 'util/data-message-reader';
 
 self.onmessage = event => {
   let message = null;
   const { colors, positions, frame } = event.data;
-  const pointsData = getDataView(frame.points);
-  const colorsData = getDataView(frame.colors);
+  const pointsReader = new PointReader(frame.points);
+  const colorsReader = new ColorReader(frame.colors);
 
   const size = positions.length / 3;
   for (let i = 0; i < size; i += 1) {
     const colorsIdx = i * 4;
     const positionsIdx = i * 3;
-    const pointsDataIdx = positionsIdx * 4;
-    const colorsdataIdx = positionsIdx;
-    if (pointsDataIdx + 8 < pointsData.byteLength) {
-      positions[positionsIdx] = pointsData.getFloat32(pointsDataIdx, true);
-      positions[positionsIdx + 1] = pointsData.getFloat32(pointsDataIdx + 4, true);
-      positions[positionsIdx + 2] = pointsData.getFloat32(pointsDataIdx + 8, true);
-      if (colorsdataIdx + 2 < colorsData.byteLength) {
-        colors[colorsIdx] = colorsData.getUint8(colorsdataIdx + 0, true) / 255;
-        colors[colorsIdx + 1] = colorsData.getUint8(colorsdataIdx + 1, true) / 255;
-        colors[colorsIdx + 2] = colorsData.getUint8(colorsdataIdx + 2, true) / 255;
-        colors[colorsIdx + 3] = 1;
+    if (pointsReader.hasData(i)) {
+      [
+        positions[positionsIdx],
+        positions[positionsIdx + 1],
+        positions[positionsIdx + 2],
+      ] = pointsReader.nextPoint3(i);
+      if (colorsReader.hasData(i)) {
+        [
+          colors[colorsIdx],
+          colors[colorsIdx + 1],
+          colors[colorsIdx + 2],
+          colors[colorsIdx + 3],
+        ] = colorsReader.nextColor4f(i);
       }
     } else {
       positions[positionsIdx + 2] = -1000000;

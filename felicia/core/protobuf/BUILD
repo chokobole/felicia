@@ -7,6 +7,7 @@ fel_proto_library(
     srcs = [
         "bounding_box.proto",
         "channel.proto",
+        "data.proto",
         "error_codes.proto",
         "geometry.proto",
         "human.proto",

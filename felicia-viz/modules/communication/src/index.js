@@ -12,6 +12,8 @@ import PROTO_TYPES, {
   PixelFormat,
   HumanBody,
   HumanBodyModel,
+  DataElementType,
+  DataChannelType,
   hasWSChannel,
   findWSChannel,
 } from './proto-types';
@@ -33,6 +35,8 @@ export {
   PixelFormat,
   HumanBody,
   HumanBodyModel,
+  DataElementType,
+  DataChannelType,
   hasWSChannel,
   findWSChannel,
   TopicInfoSubscriber,

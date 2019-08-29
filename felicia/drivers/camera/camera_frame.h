@@ -12,7 +12,7 @@
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/lib/base/export.h"
-#include "felicia/core/lib/containers/string_vector.h"
+#include "felicia/core/lib/containers/data.h"
 #include "felicia/core/lib/error/statusor.h"
 #include "felicia/core/lib/image/image.h"
 #include "felicia/core/lib/unit/geometry/size.h"
@@ -25,13 +25,9 @@ namespace drivers {
 class EXPORT CameraFrame {
  public:
   CameraFrame();
-  CameraFrame(const StringVector& data, const CameraFormat& camera_format,
+  CameraFrame(const Data& data, const CameraFormat& camera_format,
               base::TimeDelta timestamp);
-  CameraFrame(StringVector&& data, const CameraFormat& camera_format,
-              base::TimeDelta timestamp) noexcept;
-  CameraFrame(const std::string& data, const CameraFormat& camera_format,
-              base::TimeDelta timestamp);
-  CameraFrame(std::string&& data, const CameraFormat& camera_format,
+  CameraFrame(Data&& data, const CameraFormat& camera_format,
               base::TimeDelta timestamp) noexcept;
   CameraFrame(const Image& image, float frame_rate, base::TimeDelta timestamp);
   CameraFrame(Image&& image, float frame_rate,
@@ -42,8 +38,8 @@ class EXPORT CameraFrame {
   CameraFrame& operator=(CameraFrame&& other);
   ~CameraFrame();
 
-  const StringVector& data() const;
-  StringVector& data();
+  const Data& data() const;
+  Data& data();
   size_t length() const;
   const CameraFormat& camera_format() const;
   int width() const;
@@ -68,7 +64,7 @@ class EXPORT CameraFrame {
 #endif
 
  protected:
-  StringVector data_;
+  Data data_;
   CameraFormat camera_format_;
   base::TimeDelta timestamp_;
 };

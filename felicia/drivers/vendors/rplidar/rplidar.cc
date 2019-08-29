@@ -292,9 +292,8 @@ LidarFrame RPlidar::ToLidarFrame(rplidar_response_measurement_node_hq_t* nodes,
   lidar_frame.set_range_min(0.15);
   lidar_frame.set_range_max(scan_mode_.max_distance);
 
-  StringVector::View<float> ranges = lidar_frame.ranges().AsView<float>();
-  StringVector::View<float> intensities =
-      lidar_frame.intensities().AsView<float>();
+  Data::View<float> ranges = lidar_frame.ranges().AsView<float>();
+  Data::View<float> intensities = lidar_frame.intensities().AsView<float>();
   ranges.resize(node_count);
   intensities.resize(node_count);
   if (reversed) {

@@ -103,7 +103,7 @@ export default class Histogram {
     let sum = 0;
     for (let i = 0; i < 256; i += 1) {
       sum += this.histogram[i];
-      this.histogram[i] = Math.floor((sum / validSize) * 255);
+      this.histogram[i] = Math.round((sum / validSize) * 255);
     }
   }
 

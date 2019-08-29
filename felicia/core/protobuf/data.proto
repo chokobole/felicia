@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package felicia;
+
+message DataMessage {
+  enum ElementType {
+    ELEMENT_TYPE_CUSTOM = 0;
+    ELEMENT_TYPE_8U = 1;
+    ELEMENT_TYPE_8S = 2;
+    ELEMENT_TYPE_16U = 3;
+    ELEMENT_TYPE_16S = 4;
+    ELEMENT_TYPE_32U = 5;
+    ELEMENT_TYPE_32S = 6;
+    ELEMENT_TYPE_64U = 7;
+    ELEMENT_TYPE_64S = 8;
+    ELEMENT_TYPE_32F = 9;
+    ELEMENT_TYPE_64F = 10;
+  };
+  enum ChannelType {
+    CHANNEL_TYPE_CUSTOM = 0;
+    CHANNEL_TYPE_C1 = 1;
+    CHANNEL_TYPE_C2 = 2;
+    CHANNEL_TYPE_C3 = 3;
+    CHANNEL_TYPE_C4 = 4;
+  };
+  uint32 type = 1;
+  bytes data = 2;
+}

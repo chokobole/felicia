@@ -5,15 +5,24 @@ import "felicia/core/protobuf/geometry.proto";
 package felicia;
 
 message Color3uMessage {
-  uint32 r = 1;
-  uint32 g = 2;
-  uint32 b = 3;
+  uint32 rgb = 1;
 }
 
 message Color3fMessage {
   float r = 1;
   float g = 2;
   float b = 3;
+}
+
+message Color4uMessage {
+  uint32 rgba = 1;
+}
+
+message Color4fMessage {
+  float r = 1;
+  float g = 2;
+  float b = 3;
+  float a = 4;
 }
 
 // Renamed followings

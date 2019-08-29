@@ -551,9 +551,11 @@ void RsCamera::HandlePoints(rs2::points points, base::TimeDelta timestamp,
   rs2_stream texture_source_id = static_cast<rs2_stream>(
       pc_filter_iter->filter->get_option(rs2_option::RS2_OPTION_STREAM_FILTER));
   PointcloudFrame pointcloud_frame;
-  StringVector::View<Point3f> points_vector =
+  pointcloud_frame.points().set_type(DATA_TYPE_32F_C3);
+  pointcloud_frame.colors().set_type(DATA_TYPE_8U_C3);
+  Data::View<Point3f> points_vector =
       pointcloud_frame.points().AsView<Point3f>();
-  StringVector::View<Color3u> colors_vector =
+  Data::View<Color3u> colors_vector =
       pointcloud_frame.colors().AsView<Color3u>();
   bool use_texture = texture_source_id != RS2_STREAM_ANY;
   rs2::frameset::iterator texture_frame_itr = frameset.end();
@@ -682,24 +684,19 @@ base::Optional<CameraFrame> RsCamera::ConvertToRequestedPixelFormat(
 CameraFrame RsCamera::FromRsColorFrame(rs2::video_frame color_frame,
                                        base::TimeDelta timestamp) {
   return CameraFrame{
-      StringVector{color_frame.get_data(), color_format_.AllocationSize()},
+      Data{color_frame.get_data(), color_format_.AllocationSize()},
       color_format_, timestamp};
 }
 
 DepthCameraFrame RsCamera::FromRsDepthFrame(rs2::depth_frame depth_frame,
                                             base::TimeDelta timestamp) {
   size_t size = depth_format_.width() * depth_format_.height();
-  StringVector new_depth_frame(depth_frame.get_data(),
-                               depth_format_.AllocationSize());
-  uint8_t* new_depth_frame_ptr = new_depth_frame.cast<uint8_t*>();
-  uint16_t* new_depth_frame_ptr16 = new_depth_frame.cast<uint16_t*>();
+  Data new_depth_frame(depth_frame.get_data(), depth_format_.AllocationSize());
+  uint16_t* new_depth_frame_ptr = new_depth_frame.cast<uint16_t*>();
   for (size_t i = 0; i < size; ++i) {
-    const size_t data_idx = i << 1;
-    uint16_t value =
-        static_cast<uint16_t>(new_depth_frame_ptr[data_idx]) |
-        static_cast<uint16_t>(new_depth_frame_ptr[data_idx + 1] << 8);
-    new_depth_frame_ptr16[i] = static_cast<uint16_t>(
-        std::round(value * depth_scale_ * 1000));  // in mm
+    uint16_t v = new_depth_frame_ptr[i];
+    new_depth_frame_ptr[i] =
+        static_cast<uint16_t>(std::round(v * depth_scale_ * 1000));  // in mm
   }
   CameraFrame camera_frame(std::move(new_depth_frame), depth_format_,
                            timestamp);

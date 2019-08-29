@@ -21,6 +21,8 @@ const TopicInfo = FeliciaProtoRoot.lookupType(TOPIC_INFO);
 export const PixelFormat = FeliciaProtoRoot.lookupEnum('felicia.PixelFormat');
 export const HumanBody = FeliciaProtoRoot.lookupEnum('felicia.HumanBody');
 export const HumanBodyModel = FeliciaProtoRoot.lookupEnum('felicia.HumanBodyModel');
+export const DataElementType = FeliciaProtoRoot.lookupEnum('felicia.DataMessage.ElementType');
+export const DataChannelType = FeliciaProtoRoot.lookupEnum('felicia.DataMessage.ChannelType');
 
 const PROTO_TYPES = {};
 PROTO_TYPES[CAMERA_FRAME_MESSAGE] = FeliciaProtoRoot.lookupType(CAMERA_FRAME_MESSAGE);

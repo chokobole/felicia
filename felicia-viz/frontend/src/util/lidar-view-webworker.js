@@ -2,7 +2,7 @@
 /* eslint no-restricted-globals: ["off"] */
 /* eslint no-bitwise: ["off"] */
 import { RGBA } from 'util/color';
-import { getDataView } from 'util/util';
+import { getDataView } from 'util/data-message-reader';
 
 self.onmessage = event => {
   const { imageData, frame, scale } = event.data;
@@ -22,8 +22,8 @@ self.onmessage = event => {
     if (range >= rangeMin && range <= rangeMax) {
       const radian = angleStart + angleDelta * i;
       const r = ((radius * range) / rangeMax) * scale;
-      const x = Math.floor(r * Math.sin(radian) + width / 2);
-      const y = Math.floor(height / 2 - r * Math.cos(radian));
+      const x = Math.round(r * Math.sin(radian) + width / 2);
+      const y = Math.round(height / 2 - r * Math.cos(radian));
 
       const dataIdx = (width * y + x) << 2;
       data[dataIdx + RGBA.rIdx] = 255;

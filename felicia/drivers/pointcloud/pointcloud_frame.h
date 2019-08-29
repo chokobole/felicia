@@ -4,7 +4,7 @@
 #include "third_party/chromium/base/callback.h"
 
 #include "felicia/core/lib/base/export.h"
-#include "felicia/core/lib/containers/string_vector.h"
+#include "felicia/core/lib/containers/data.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/lib/unit/geometry/point.h"
 #include "felicia/core/lib/unit/ui/color.h"
@@ -16,9 +16,9 @@ namespace drivers {
 class EXPORT PointcloudFrame {
  public:
   PointcloudFrame();
-  PointcloudFrame(const std::string& points, const std::string& colors,
+  PointcloudFrame(const Data& points, const Data& colors,
                   base::TimeDelta timestamp);
-  PointcloudFrame(std::string&& points, std::string&& colors,
+  PointcloudFrame(Data&& points, Data&& colors,
                   base::TimeDelta timestamp) noexcept;
   PointcloudFrame(const PointcloudFrame& other);
   PointcloudFrame(PointcloudFrame&& other) noexcept;
@@ -26,10 +26,10 @@ class EXPORT PointcloudFrame {
   PointcloudFrame& operator=(const PointcloudFrame& other);
   PointcloudFrame& operator=(PointcloudFrame&& other);
 
-  const StringVector& points() const;
-  StringVector& points();
-  const StringVector& colors() const;
-  StringVector& colors();
+  const Data& points() const;
+  Data& points();
+  const Data& colors() const;
+  Data& colors();
 
   void set_timestamp(base::TimeDelta time);
   base::TimeDelta timestamp() const;
@@ -39,8 +39,8 @@ class EXPORT PointcloudFrame {
   Status FromPointcloudFrameMessage(PointcloudFrameMessage&& message);
 
  private:
-  StringVector points_;
-  StringVector colors_;
+  Data points_;
+  Data colors_;
   base::TimeDelta timestamp_;
 };
 

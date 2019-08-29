@@ -1,4 +1,4 @@
-#include "felicia/core/lib/containers/string_vector.h"
+#include "felicia/core/lib/containers/data.h"
 
 #include "gtest/gtest.h"
 
@@ -8,9 +8,9 @@
 
 namespace felicia {
 
-TEST(StringVectorTest, PushAndPopTest) {
-  StringVector vector;
-  StringVector::View<Pointi> view = vector.AsView<Pointi>();
+TEST(DataTest, PushAndPopTest) {
+  Data vector;
+  Data::View<Pointi> view = vector.AsView<Pointi>();
   Pointi p(1, 2);
   Pointi p2(3, 4);
   view.push_back(p);
@@ -51,9 +51,9 @@ void ExpectForwardEq(Iterator begin, Iterator end, int from, int to) {
 
 }  // namespace
 
-TEST(StringVectorTest, IteratorTest) {
-  StringVector vector;
-  StringVector::View<int> view = vector.AsView<int>();
+TEST(DataTest, IteratorTest) {
+  Data vector;
+  Data::View<int> view = vector.AsView<int>();
   for (int i = 0; i < 10; ++i) {
     view.push_back(i);
   }
@@ -63,14 +63,14 @@ TEST(StringVectorTest, IteratorTest) {
   ExpectForwardEq(view.rbegin(), view.rend(), 9, -1);
   ExpectForwardEq(view.crbegin(), view.crend(), 9, -1);
 
-  StringVector::ConstView<int> cview = vector.AsConstView<int>();
+  Data::ConstView<int> cview = vector.AsConstView<int>();
   ExpectForwardEq(cview.cbegin(), cview.cend(), 0, 10);
   ExpectForwardEq(cview.crbegin(), cview.crend(), 9, -1);
 }
 
-TEST(StringVectorTest, InsertTest) {
-  StringVector vector;
-  StringVector::View<int> view = vector.AsView<int>();
+TEST(DataTest, InsertTest) {
+  Data vector;
+  Data::View<int> view = vector.AsView<int>();
   auto it = view.insert(view.begin(), 0);
   it = view.insert(it, 1);
   it = view.insert(view.begin() + 1, 2);
@@ -85,9 +85,9 @@ TEST(StringVectorTest, InsertTest) {
   }
 }
 
-TEST(StringVectorTest, EraseTest) {
-  StringVector vector;
-  StringVector::View<int> view = vector.AsView<int>();
+TEST(DataTest, EraseTest) {
+  Data vector;
+  Data::View<int> view = vector.AsView<int>();
   for (int i = 0; i < 10; ++i) {
     view.push_back(i);
   }

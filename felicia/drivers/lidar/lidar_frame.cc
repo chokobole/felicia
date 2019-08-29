@@ -7,9 +7,8 @@ LidarFrame::LidarFrame() = default;
 
 LidarFrame::LidarFrame(float angle_start, float angle_end, float angle_delta,
                        float time_delta, float scan_time, float range_min,
-                       float range_max, const std::string& ranges,
-                       const std::string& intensities,
-                       base::TimeDelta timestamp)
+                       float range_max, const Data& ranges,
+                       const Data& intensities, base::TimeDelta timestamp)
     : angle_start_(angle_start),
       angle_end_(angle_end),
       angle_delta_(angle_delta),
@@ -23,8 +22,7 @@ LidarFrame::LidarFrame(float angle_start, float angle_end, float angle_delta,
 
 LidarFrame::LidarFrame(float angle_start, float angle_end, float angle_delta,
                        float time_delta, float scan_time, float range_min,
-                       float range_max, std::string&& ranges,
-                       std::string&& intensities,
+                       float range_max, Data&& ranges, Data&& intensities,
                        base::TimeDelta timestamp) noexcept
     : angle_start_(angle_start),
       angle_end_(angle_end),
@@ -89,13 +87,13 @@ void LidarFrame::set_range_max(float range_max) { range_max_ = range_max; }
 
 float LidarFrame::range_max() const { return range_max_; }
 
-StringVector& LidarFrame::ranges() { return ranges_; }
+Data& LidarFrame::ranges() { return ranges_; }
 
-StringVector& LidarFrame::intensities() { return intensities_; }
+Data& LidarFrame::intensities() { return intensities_; }
 
-const StringVector& LidarFrame::ranges() const { return ranges_; }
+const Data& LidarFrame::ranges() const { return ranges_; }
 
-const StringVector& LidarFrame::intensities() const { return intensities_; }
+const Data& LidarFrame::intensities() const { return intensities_; }
 
 void LidarFrame::set_timestamp(base::TimeDelta timestamp) {
   timestamp_ = timestamp;
@@ -131,8 +129,8 @@ Status LidarFrame::FromLidarFrameMessage(const LidarFrameMessage& message) {
                      message.scan_time(),
                      message.range_min(),
                      message.range_max(),
-                     message.ranges(),
-                     message.intensities(),
+                     Data{message.ranges()},
+                     Data{message.intensities()},
                      base::TimeDelta::FromMicroseconds(message.timestamp())};
   return Status::OK();
 }
@@ -148,8 +146,8 @@ Status LidarFrame::FromLidarFrameMessage(LidarFrameMessage&& message) {
                      message.scan_time(),
                      message.range_min(),
                      message.range_max(),
-                     std::move(*ranges),
-                     std::move(*intensities),
+                     Data{std::move(*ranges)},
+                     Data{std::move(*intensities)},
                      base::TimeDelta::FromMicroseconds(message.timestamp())};
 
   return Status::OK();
@@ -160,7 +158,7 @@ void LidarFrame::Project(std::vector<Pointf>* points, float user_range_min,
   // TODO: Implement using BLAS.
   float range_min = std::max(user_range_min, range_min_);
   float range_max = std::min(user_range_max, range_max_);
-  StringVector::ConstView<float> ranges = ranges_.AsConstView<float>();
+  Data::ConstView<float> ranges = ranges_.AsConstView<float>();
   const size_t size = ranges.size();
   for (size_t i = 0; i < size; ++i) {
     float range = ranges[i];

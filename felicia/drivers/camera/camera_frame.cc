@@ -10,25 +10,15 @@ namespace drivers {
 
 CameraFrame::CameraFrame() = default;
 
-CameraFrame::CameraFrame(const StringVector& data,
-                         const CameraFormat& camera_format,
+CameraFrame::CameraFrame(const Data& data, const CameraFormat& camera_format,
                          base::TimeDelta timestamp)
     : data_(data), camera_format_(camera_format), timestamp_(timestamp) {}
 
-CameraFrame::CameraFrame(StringVector&& data, const CameraFormat& camera_format,
+CameraFrame::CameraFrame(Data&& data, const CameraFormat& camera_format,
                          base::TimeDelta timestamp) noexcept
     : data_(std::move(data)),
       camera_format_(camera_format),
       timestamp_(timestamp) {}
-
-CameraFrame::CameraFrame(const std::string& data,
-                         const CameraFormat& camera_format,
-                         base::TimeDelta timestamp)
-    : CameraFrame(StringVector{data}, camera_format, timestamp) {}
-
-CameraFrame::CameraFrame(std::string&& data, const CameraFormat& camera_format,
-                         base::TimeDelta timestamp) noexcept
-    : CameraFrame(StringVector{std::move(data)}, camera_format, timestamp) {}
 
 CameraFrame::CameraFrame(const Image& image, float frame_rate,
                          base::TimeDelta timestamp)
@@ -57,9 +47,9 @@ CameraFrame& CameraFrame::operator=(CameraFrame&& other) = default;
 
 CameraFrame::~CameraFrame() = default;
 
-const StringVector& CameraFrame::data() const { return data_; }
+const Data& CameraFrame::data() const { return data_; }
 
-StringVector& CameraFrame::data() { return data_; }
+Data& CameraFrame::data() { return data_; }
 
 size_t CameraFrame::length() const { return data_.size(); }
 
@@ -85,7 +75,6 @@ base::TimeDelta CameraFrame::timestamp() const { return timestamp_; }
 
 CameraFrameMessage CameraFrame::ToCameraFrameMessage(bool copy) {
   CameraFrameMessage message;
-
   if (copy) {
     message.set_data(data_.data());
   } else {
@@ -93,7 +82,6 @@ CameraFrameMessage CameraFrame::ToCameraFrameMessage(bool copy) {
   }
   *message.mutable_camera_format() = camera_format_.ToCameraFormatMessage();
   message.set_timestamp(timestamp_.InMicroseconds());
-
   return message;
 }
 
@@ -101,20 +89,17 @@ Status CameraFrame::FromCameraFrameMessage(const CameraFrameMessage& message) {
   CameraFormat camera_format;
   Status s = camera_format.FromCameraFormatMessage(message.camera_format());
   if (!s.ok()) return s;
-
-  *this = CameraFrame{message.data(), camera_format,
+  *this = CameraFrame{Data{message.data()}, camera_format,
                       base::TimeDelta::FromMicroseconds(message.timestamp())};
   return Status::OK();
 }
 
 Status CameraFrame::FromCameraFrameMessage(CameraFrameMessage&& message) {
-  std::unique_ptr<std::string> data(message.release_data());
-
   CameraFormat camera_format;
   Status s = camera_format.FromCameraFormatMessage(message.camera_format());
   if (!s.ok()) return s;
-
-  *this = CameraFrame{std::move(*data), camera_format,
+  std::unique_ptr<std::string> data(message.release_data());
+  *this = CameraFrame{Data{std::move(*data)}, camera_format,
                       base::TimeDelta::FromMicroseconds(message.timestamp())};
   return Status::OK();
 }
@@ -149,7 +134,7 @@ bool CameraFrame::ToCvMat(cv::Mat* out, bool copy) {
 Status CameraFrame::FromCvMat(cv::Mat mat, const CameraFormat& camera_format,
                               base::TimeDelta timestamp) {
   size_t length = mat.total() * mat.elemSize();
-  *this = CameraFrame{StringVector{mat.data, length}, camera_format, timestamp};
+  *this = CameraFrame{Data{mat.data, length}, camera_format, timestamp};
   return Status::OK();
 }
 #endif
@@ -175,7 +160,7 @@ base::Optional<CameraFrame> ConvertToBGRA(const uint8_t* data,
   CameraFormat bgra_camera_format(width, height, PIXEL_FORMAT_BGRA,
                                   camera_format.frame_rate());
   size_t length = bgra_camera_format.AllocationSize();
-  StringVector tmp_bgra;
+  Data tmp_bgra;
   tmp_bgra.resize(length);
   uint8_t* tmp_bgra_ptr = tmp_bgra.cast<uint8_t*>();
   if (libyuv::ConvertToARGB(data, data_length, tmp_bgra_ptr, width * 4,
@@ -209,7 +194,7 @@ base::Optional<CameraFrame> ConvertToRequestedPixelFormat(
     CameraFormat camera_format = bgra_camera_frame.camera_format();
     camera_format.set_pixel_format(requested_pixel_format);
     size_t length = camera_format.AllocationSize();
-    StringVector tmp_camera_frame;
+    Data tmp_camera_frame;
     tmp_camera_frame.resize(length);
     uint8_t* tmp_camera_frame_ptr = tmp_camera_frame.cast<uint8_t*>();
 

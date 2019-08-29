@@ -431,7 +431,7 @@ Status ZedCamera::OpenCamera(int device_id, sl::InitParameters& params,
 CameraFrame ZedCamera::ConvertToCameraFrame(sl::Mat image,
                                             base::TimeDelta timestamp) {
   size_t size = image.getStepBytes() * image.getHeight();
-  StringVector data;
+  Data data;
   data.resize(size);
   sl::MAT_TYPE data_type = image.getDataType();
 
@@ -470,7 +470,7 @@ DepthCameraFrame ZedCamera::ConvertToDepthCameraFrame(sl::Mat image,
                                                       float min, float max) {
   size_t size = image.getWidth() * image.getHeight();
   size_t allocation_size = 2 * size;
-  StringVector data;
+  Data data;
   data.resize(allocation_size);
   sl::float1* image_ptr = image.getPtr<sl::float1>();
   uint8_t* data_ptr = data.cast<uint8_t*>();
@@ -506,8 +506,10 @@ PointcloudFrame ZedCamera::ConvertToPointcloudFrame(sl::Mat cloud,
     uint8_t a;
   };
 
-  StringVector::View<Point3f> points = frame.points().AsView<Point3f>();
-  StringVector::View<Color3u> colors = frame.colors().AsView<Color3u>();
+  frame.points().set_type(DATA_TYPE_32F_C3);
+  frame.colors().set_type(DATA_TYPE_8U_C3);
+  Data::View<Point3f> points = frame.points().AsView<Point3f>();
+  Data::View<Color3u> colors = frame.colors().AsView<Color3u>();
   points.resize(size);
   colors.resize(size);
   if (init_params_.coordinate_units == sl::UNIT_METER &&

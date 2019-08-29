@@ -1,105 +1,77 @@
 #include "felicia/core/lib/unit/ui/color.h"
 
+#include "third_party/chromium/base/bit_cast.h"
+
 namespace felicia {
 
-Color3u::Color3u() = default;
+namespace {
 
-Color3u::Color3u(uint8_t r, uint8_t g, uint8_t b) : r_(r), g_(g), b_(b) {}
+struct Color8_4 {
+  uint8_t r;
+  uint8_t g;
+  uint8_t b;
+  uint8_t a;
 
-Color3u::Color3u(const Color3u& other) = default;
+  Color8_4() = default;
+  explicit Color8_4(const Color3u& color)
+      : r(color.r()), g(color.g()), b(color.b()), a(255) {}
+  explicit Color8_4(const Color4u& color)
+      : r(color.r()), g(color.g()), b(color.b()), a(color.a()) {}
+};
 
-Color3u& Color3u::operator=(const Color3u& other) = default;
-
-void Color3u::set_rgb(uint8_t r, uint8_t g, uint8_t b) {
-  r_ = r;
-  g_ = g;
-  b_ = b;
+uint32_t Color8_4ToUint32(const Color8_4& color) {
+  return bit_cast<uint32_t>(color);
 }
 
-void Color3u::set_r(uint8_t r) { r_ = r; }
+Color8_4 Uint32ToColor8_4(uint32_t color) { return bit_cast<Color8_4>(color); }
 
-void Color3u::set_g(uint8_t g) { g_ = g; }
+}  // namespace
 
-void Color3u::set_b(uint8_t b) { b_ = b; }
-
-uint8_t Color3u::r() const { return r_; }
-
-uint8_t Color3u::g() const { return g_; }
-
-uint8_t Color3u::b() const { return b_; }
-
-Color3uMessage Color3u::ToColor3uMessage() const {
+Color3uMessage Color3uToColor3uMessage(const Color3u& color) {
   Color3uMessage message;
-  message.set_r(r_);
-  message.set_g(g_);
-  message.set_b(b_);
+  message.set_rgb(Color8_4ToUint32(Color8_4(color)));
   return message;
 }
 
-Color3fMessage Color3u::ToColor3fMessage() const {
+Color3fMessage Color3fToColor3fMessage(const Color3f& color) {
   Color3fMessage message;
-  message.set_r(r_ / 255.f);
-  message.set_g(g_ / 255.f);
-  message.set_b(b_ / 255.f);
+  message.set_r(color.r());
+  message.set_g(color.g());
+  message.set_b(color.b());
   return message;
 }
 
-Color3f::Color3f() = default;
-
-Color3f::Color3f(float r, float g, float b) : r_(r), g_(g), b_(b) {}
-
-Color3f::Color3f(const Color3f& other) = default;
-
-Color3f& Color3f::operator=(const Color3f& other) = default;
-
-void Color3f::set_rgb(float r, float g, float b) {
-  r_ = r;
-  g_ = g;
-  b_ = b;
+Color3u Color3uMessageToColor3u(const Color3uMessage& message) {
+  Color8_4 color = Uint32ToColor8_4(message.rgb());
+  return {color.r, color.g, color.b};
 }
 
-void Color3f::set_r(float r) { r_ = r; }
+Color3f Color3fMessageToColor3f(const Color3fMessage& message) {
+  return {message.r(), message.g(), message.b()};
+}
 
-void Color3f::set_g(float g) { g_ = g; }
-
-void Color3f::set_b(float b) { b_ = b; }
-
-float Color3f::r() const { return r_; }
-
-float Color3f::g() const { return g_; }
-
-float Color3f::b() const { return b_; }
-
-Color3uMessage Color3f::ToColor3uMessage() const {
-  Color3uMessage message;
-  message.set_r(r_ * 255);
-  message.set_g(g_ * 255);
-  message.set_b(b_ * 255);
+Color4uMessage Color4uToColor4uMessage(const Color4u& color) {
+  Color4uMessage message;
+  message.set_rgba(Color8_4ToUint32(Color8_4(color)));
   return message;
 }
 
-Color3fMessage Color3f::ToColor3fMessage() const {
-  Color3fMessage message;
-  message.set_r(r_);
-  message.set_g(g_);
-  message.set_b(b_);
+Color4fMessage Color4fToColor4fMessage(const Color4f& color) {
+  Color4fMessage message;
+  message.set_r(color.r());
+  message.set_g(color.g());
+  message.set_b(color.b());
+  message.set_a(color.a());
   return message;
 }
 
-bool operator==(const Color3u& lhs, const Color3u& rhs) {
-  return lhs.r() == rhs.r() && lhs.g() == rhs.g() && lhs.b() == rhs.b();
+Color4u Color4uMessageToColor4u(const Color4uMessage& message) {
+  Color8_4 color = Uint32ToColor8_4(message.rgba());
+  return {color.r, color.g, color.b, color.a};
 }
 
-bool operator!=(const Color3u& lhs, const Color3u& rhs) {
-  return !(lhs == rhs);
-}
-
-bool operator==(const Color3f& lhs, const Color3f& rhs) {
-  return lhs.r() == rhs.r() && lhs.g() == rhs.g() && lhs.b() == rhs.b();
-}
-
-bool operator!=(const Color3f& lhs, const Color3f& rhs) {
-  return !(lhs == rhs);
+Color4f Color4fMessageToColor4f(const Color4fMessage& message) {
+  return {message.r(), message.g(), message.b(), message.a()};
 }
 
 }  // namespace felicia
