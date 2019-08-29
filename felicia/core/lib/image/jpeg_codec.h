@@ -7,16 +7,25 @@
 #ifndef FELICIA_CORE_LIB_IMAGE_JPEG_CODEC_H_
 #define FELICIA_CORE_LIB_IMAGE_JPEG_CODEC_H_
 
-#include <stdint.h>
+#include <stddef.h>
 
-#include "felicia/core/lib/base/export.h"
+#include <vector>
+
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/lib/image/image.h"
 
 namespace felicia {
 
-class EXPORT JpegCodec {
+class JpegCodec {
  public:
+  struct Options {
+    // quality should be between 0 and 100
+    int quality = 100;
+  };
+
+  static Status Encode(const Image& image, const Options& options,
+                       std::vector<unsigned char>* output);
+
   static Status Decode(const unsigned char* input, size_t input_size,
                        Image* image);
 };

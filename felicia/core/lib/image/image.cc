@@ -71,6 +71,23 @@ Status Image::FromImageMessage(ImageMessage&& message) {
   return Status::OK();
 }
 
+Status Image::Save(const base::FilePath& path) const {
+  std::vector<unsigned char> output;
+  Status s;
+  base::FilePath::StringType extension = path.Extension();
+  if (extension == FILE_PATH_LITERAL(".jpg") ||
+      extension == FILE_PATH_LITERAL(".jpeg")) {
+    s = JpegCodec::Encode(*this, JpegCodec::Options(), &output);
+  } else {
+    return errors::InvalidArgument("Unsupported codec type.");
+  }
+  if (!s.ok()) return s;
+  if (!WriteFile(path, reinterpret_cast<const char*>(output.data()),
+                 output.size()))
+    return errors::InvalidArgument("Failed to write file.");
+  return Status::OK();
+}
+
 Status Image::Load(const base::FilePath& path, PixelFormat pixel_format) {
   std::unique_ptr<char[]> input;
   size_t input_len;

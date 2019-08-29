@@ -16,8 +16,11 @@ EXPORT bool SetBlocking(int fd, int blocking);
 
 EXPORT base::FilePath ToFilePath(const std::string& file_path);
 
-bool ReadFile(const base::FilePath& path, std::unique_ptr<char[]>* out,
-              size_t* out_len);
+EXPORT bool ReadFile(const base::FilePath& path, std::unique_ptr<char[]>* out,
+                     size_t* out_len);
+
+EXPORT bool WriteFile(const base::FilePath& path, const char* buf,
+                      size_t buf_len);
 
 }  // namespace felicia
 

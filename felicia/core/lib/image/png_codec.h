@@ -7,7 +7,7 @@
 #ifndef FELICIA_CORE_LIB_IMAGE_PNG_CODEC_H_
 #define FELICIA_CORE_LIB_IMAGE_PNG_CODEC_H_
 
-#include <stdint.h>
+#include <stddef.h>
 
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"

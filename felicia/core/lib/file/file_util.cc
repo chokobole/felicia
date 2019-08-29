@@ -51,4 +51,12 @@ bool ReadFile(const base::FilePath& path, std::unique_ptr<char[]>* out,
   return rv >= 0;
 }
 
+bool WriteFile(const base::FilePath& path, const char* buf, size_t buf_len) {
+  base::File file(path,
+                  base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  if (!file.IsValid()) return false;
+  int rv = file.WriteAtCurrentPos(buf, buf_len);
+  return rv >= 0;
+}
+
 }  // namespace felicia

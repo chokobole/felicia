@@ -33,6 +33,171 @@ void ErrorExit(jpeg_common_struct* cinfo) {
 
 }  // namespace
 
+// Encoder --------------------------------------------------------------------
+
+namespace {
+
+struct JpegDestinationMgr : jpeg_destination_mgr {
+  static constexpr size_t kBufferSize = 1024;
+  std::vector<unsigned char>* destination;
+  unsigned char buffer[kBufferSize];
+};
+
+// Callback to initialize to the destination.
+//
+// From the JPEG library:
+// "Initialize destination. This is called by jpeg_start_compress() before any
+//  data is actually written. It must initialize next_output_byte and
+//  free_in_buffer. free_in_buffer must be initialized to a positive value."
+void InitDestination(j_compress_ptr cinfo) {
+  JpegDestinationMgr* dest = static_cast<JpegDestinationMgr*>(cinfo->dest);
+  dest->next_output_byte = dest->buffer;
+  dest->free_in_buffer = JpegDestinationMgr::kBufferSize;
+}
+
+// Callback to empty the buffer.
+//
+// From the JPEG library:
+// "This is called whenever the buffer has filled (free_in_buffer reaches zero).
+//  In typical applications, it should write out the entire buffer
+//  (use the saved start address and buffer length; ignore the current state of
+//  next_output_byte and free_in_buffer). Then reset the pointer & count to the
+//  start of the buffer, and return TRUE indicating that the buffer has been
+//  dumped. free_in_buffer must be set to a positive value when TRUE is
+//  returned. A FALSE return should only be used when I/O suspension is desired
+//  (this operating mode is discussed in the next section)."
+boolean EmptyOutputBuffer(j_compress_ptr cinfo) {
+  JpegDestinationMgr* dest = static_cast<JpegDestinationMgr*>(cinfo->dest);
+  size_t cur_size = dest->destination->size();
+  dest->destination->resize(cur_size + JpegDestinationMgr::kBufferSize);
+  memcpy(dest->destination->data() + cur_size, dest->buffer,
+         JpegDestinationMgr::kBufferSize);
+
+  dest->next_output_byte = dest->buffer;
+  dest->free_in_buffer = JpegDestinationMgr::kBufferSize;
+  return TRUE;
+}
+
+// Compression is finished, so we finally move the output buffer to the
+// destinatino buffer.
+//
+// From the JPEG library:
+// "Terminate destination --- called by jpeg_finish_compress() after all data
+//  has been written. In most applications, this must flush any data remaining
+//  in the buffer. Use either next_output_byte or free_in_buffer to determine
+//  how much data is in the buffer."
+void TermDestination(j_compress_ptr cinfo) {
+  JpegDestinationMgr* dest = static_cast<JpegDestinationMgr*>(cinfo->dest);
+  size_t size = JpegDestinationMgr::kBufferSize - dest->free_in_buffer;
+  if (size > 0) {
+    size_t cur_size = dest->destination->size();
+    dest->destination->resize(cur_size + size);
+    memcpy(dest->destination->data() + cur_size, dest->buffer, size);
+  }
+}
+
+// jpeg_compress_struct Deleter.
+struct JpegCompressStructDeleter {
+  void operator()(jpeg_compress_struct* ptr) {
+    jpeg_destroy_compress(ptr);
+    delete ptr;
+  }
+};
+
+}  // namespace
+
+// static
+Status JpegCodec::Encode(const Image& image, const Options& options,
+                         std::vector<unsigned char>* output) {
+  std::unique_ptr<jpeg_compress_struct, JpegCompressStructDeleter> cinfo(
+      new jpeg_compress_struct);
+  output->clear();
+
+  // We set up the normal JPEG error routines, then override error_exit.
+  // This must be done before the call to jpeg_create_compress.
+  CoderErrorMgr errmgr;
+  cinfo->err = jpeg_std_error(&errmgr.pub);
+  errmgr.pub.error_exit = ErrorExit;
+  // Establish the setjmp return context for ErrorExit to use.
+  if (setjmp(errmgr.setjmp_buffer)) {
+    // If we get here, the JPEG code has signaled an error.
+    // Release |cinfo| by hand to avoid use-after-free of |errmgr|.
+    cinfo.reset();
+    return errors::Unknown("Failed to encode.");
+  }
+
+  // The destroyer will destroy() cinfo on exit.  We don't want to set the
+  // destroyer's object until cinfo is initialized.
+  jpeg_create_compress(cinfo.get());
+
+  // set up the destination manager
+  JpegDestinationMgr dstmgr;
+  dstmgr.destination = output;
+  dstmgr.init_destination = InitDestination;
+  dstmgr.empty_output_buffer = EmptyOutputBuffer;
+  dstmgr.term_destination = TermDestination;
+  cinfo->dest = &dstmgr;
+
+  cinfo->image_width = static_cast<JDIMENSION>(image.width());
+  cinfo->image_height = static_cast<JDIMENSION>(image.height());
+
+  switch (image.pixel_format()) {
+    case PIXEL_FORMAT_BGRA:
+      cinfo->in_color_space = JCS_EXT_BGRA;
+      cinfo->input_components = 4;
+      break;
+    case PIXEL_FORMAT_BGR:
+      cinfo->in_color_space = JCS_EXT_BGR;
+      cinfo->input_components = 3;
+      break;
+    case PIXEL_FORMAT_BGRX:
+      cinfo->in_color_space = JCS_EXT_BGRX;
+      cinfo->input_components = 4;
+      break;
+    case PIXEL_FORMAT_Y8:
+      cinfo->in_color_space = JCS_GRAYSCALE;
+      cinfo->input_components = 1;
+      break;
+    case PIXEL_FORMAT_RGBA:
+      cinfo->in_color_space = JCS_EXT_RGBA;
+      cinfo->input_components = 4;
+      break;
+    case PIXEL_FORMAT_RGBX:
+      cinfo->in_color_space = JCS_EXT_RGBX;
+      cinfo->input_components = 4;
+      break;
+    case PIXEL_FORMAT_RGB:
+      cinfo->in_color_space = JCS_RGB;
+      cinfo->input_components = 3;
+      break;
+    case PIXEL_FORMAT_ARGB:
+      cinfo->in_color_space = JCS_EXT_ARGB;
+      cinfo->input_components = 4;
+      break;
+    default:
+      return errors::InvalidArgument("Invalid pixel format.");
+  }
+
+  jpeg_set_defaults(cinfo.get());
+  cinfo->optimize_coding = TRUE;
+
+  jpeg_set_quality(cinfo.get(), options.quality, TRUE);
+  jpeg_start_compress(cinfo.get(), TRUE);
+
+  int row_read_stride = cinfo->image_width * cinfo->input_components;
+
+  const unsigned char* rowptr = image.data().cast<const unsigned char*>();
+  for (int row = 0; row < static_cast<int>(cinfo->image_height);
+       row++, rowptr += row_read_stride) {
+    if (!jpeg_write_scanlines(cinfo.get(), const_cast<unsigned char**>(&rowptr),
+                              1))
+      return errors::InvalidArgument("Failed read scanlines.");
+  }
+
+  jpeg_finish_compress(cinfo.get());
+  return Status::OK();
+}
+
 // Decoder --------------------------------------------------------------------
 
 namespace {

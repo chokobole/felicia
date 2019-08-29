@@ -36,6 +36,7 @@ class EXPORT Image {
   Status FromImageMessage(const ImageMessage& message);
   Status FromImageMessage(ImageMessage&& message);
 
+  Status Save(const base::FilePath& path) const;
   Status Load(const base::FilePath& path,
               PixelFormat pixel_format = PIXEL_FORMAT_RGB);
 
