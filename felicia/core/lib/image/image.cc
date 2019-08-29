@@ -78,6 +78,8 @@ Status Image::Save(const base::FilePath& path) const {
   if (extension == FILE_PATH_LITERAL(".jpg") ||
       extension == FILE_PATH_LITERAL(".jpeg")) {
     s = JpegCodec::Encode(*this, JpegCodec::Options(), &output);
+  } else if (extension == FILE_PATH_LITERAL(".png")) {
+    s = PngCodec::Encode(*this, PngCodec::Options(), &output);
   } else {
     return errors::InvalidArgument("Unsupported codec type.");
   }

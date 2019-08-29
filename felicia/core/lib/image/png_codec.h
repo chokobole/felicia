@@ -9,6 +9,8 @@
 
 #include <stddef.h>
 
+#include <vector>
+
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/lib/image/image.h"
@@ -17,6 +19,15 @@ namespace felicia {
 
 class EXPORT PngCodec {
  public:
+  struct Options {
+    // compression_level should be between 0 and 9. The higher, the more
+    // compressed.
+    int compression_level = 6;
+  };
+
+  static Status Encode(const Image& image, const Options& options,
+                       std::vector<unsigned char>* output);
+
   static Status Decode(const unsigned char* input, size_t input_size,
                        Image* image);
 };

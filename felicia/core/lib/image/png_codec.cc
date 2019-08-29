@@ -7,10 +7,135 @@
 #include "felicia/core/lib/image/png_codec.h"
 
 #include "png.h"
+#include "zlib.h"
 
 #include "felicia/core/lib/error/errors.h"
 
 namespace felicia {
+
+// Encoder --------------------------------------------------------------------
+//
+// This section of the code is based on nsPNGEncoder.cpp in Mozilla
+// (Copyright 2005 Google Inc.)
+
+namespace {
+
+// Passed around as the io_ptr in the png structs so our callbacks know where
+// to write data.
+class PngEncoderState {
+ public:
+  PngEncoderState(std::vector<unsigned char>* o) : output(o) {}
+  std::vector<unsigned char>* output;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PngEncoderState);
+};
+
+// Called by libpng to flush its internal buffer to ours.
+void EncoderWriteCallback(png_structp png, png_bytep data, png_size_t size) {
+  PngEncoderState* state = static_cast<PngEncoderState*>(png_get_io_ptr(png));
+  size_t cur_size = state->output->size();
+  state->output->resize(cur_size + size);
+  memcpy(state->output->data() + cur_size, data, size);
+}
+
+// Holds png struct and info ensuring the proper destruction.
+class PngWriteStructInfo {
+ public:
+  PngWriteStructInfo() : png_ptr_(nullptr), info_ptr_(nullptr) {}
+  ~PngWriteStructInfo() { png_destroy_write_struct(&png_ptr_, &info_ptr_); }
+
+  Status Build() {
+    png_ptr_ = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (!png_ptr_) return errors::Unavailable("Failed to create write struct.");
+
+    info_ptr_ = png_create_info_struct(png_ptr_);
+    if (!info_ptr_) return errors::Unavailable("Failed to create info struct.");
+
+    return Status::OK();
+  }
+
+  png_struct* png_ptr_;
+  png_info* info_ptr_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PngWriteStructInfo);
+};
+
+}  // namespace
+
+// static
+Status PngCodec::Encode(const Image& image, const Options& options,
+                        std::vector<unsigned char>* output) {
+  output->clear();
+  PngWriteStructInfo si;
+  Status s = si.Build();
+  if (!s.ok()) return s;
+
+  if (setjmp(png_jmpbuf(si.png_ptr_))) {
+    // The destroyer will ensure that the structures are cleaned up in this
+    // case, even though we may get here as a jump from random parts of the
+    // PNG library called below.
+    return errors::Unknown("Failed to decode.");
+  }
+
+  PngEncoderState state(output);
+  png_set_write_fn(si.png_ptr_, &state, EncoderWriteCallback, 0);
+
+  int output_channels;
+  int output_color_type;
+  switch (image.pixel_format()) {
+    case PIXEL_FORMAT_BGRA:
+      output_channels = 4;
+      output_color_type = PNG_COLOR_TYPE_RGBA;
+      png_set_bgr(si.png_ptr_);
+      break;
+    case PIXEL_FORMAT_BGR:
+      output_channels = 3;
+      output_color_type = PNG_COLOR_TYPE_RGB;
+      png_set_bgr(si.png_ptr_);
+      break;
+    case PIXEL_FORMAT_Y8:
+      output_channels = 3;
+      output_color_type = PNG_COLOR_TYPE_RGB;
+      png_set_gray_to_rgb(si.png_ptr_);
+      break;
+    case PIXEL_FORMAT_Y16:
+      output_channels = 3;
+      output_color_type = PNG_COLOR_TYPE_RGB;
+      png_set_gray_to_rgb(si.png_ptr_);
+      png_set_strip_16(si.png_ptr_);
+      break;
+    case PIXEL_FORMAT_RGBA:
+      output_color_type = PNG_COLOR_TYPE_RGBA;
+      output_channels = 4;
+      break;
+    case PIXEL_FORMAT_RGB:
+      output_color_type = PNG_COLOR_TYPE_RGB;
+      output_channels = 3;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  png_set_IHDR(si.png_ptr_, si.info_ptr_, image.width(), image.height(), 8,
+               output_color_type, PNG_INTERLACE_NONE,
+               PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+  int compression_level =
+      std::max(std::min(options.compression_level, Z_BEST_COMPRESSION), 0);
+  png_set_compression_level(si.png_ptr_, compression_level);
+  png_write_info(si.png_ptr_, si.info_ptr_);
+
+  const unsigned char* rowptr = image.data().cast<const unsigned char*>();
+  int row_read_stride = image.width() * output_channels;
+  for (int row = 0; row < image.height(); row++, rowptr += row_read_stride) {
+    png_write_row(si.png_ptr_, rowptr);
+  }
+
+  png_write_end(si.png_ptr_, si.info_ptr_);
+  return Status::OK();
+}
 
 // Decoder --------------------------------------------------------------------
 //
@@ -216,32 +341,6 @@ class PngReadStructInfo {
  private:
   DISALLOW_COPY_AND_ASSIGN(PngReadStructInfo);
 };
-
-// Holds png struct and info ensuring the proper destruction.
-class PngWriteStructInfo {
- public:
-  PngWriteStructInfo() : png_ptr_(nullptr), info_ptr_(nullptr) {}
-
-  ~PngWriteStructInfo() { png_destroy_write_struct(&png_ptr_, &info_ptr_); }
-
-  png_struct* png_ptr_;
-  png_info* info_ptr_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PngWriteStructInfo);
-};
-
-// Libpng user error and warning functions which allows us to print libpng
-// errors and warnings using Chrome's logging facilities instead of stderr.
-
-void LogLibPNGDecodeError(png_structp png_ptr, png_const_charp error_msg) {
-  DLOG(ERROR) << "libpng decode error: " << error_msg;
-  longjmp(png_jmpbuf(png_ptr), 1);
-}
-
-void LogLibPNGDecodeWarning(png_structp png_ptr, png_const_charp warning_msg) {
-  DLOG(ERROR) << "libpng decode warning: " << warning_msg;
-}
 
 }  // namespace
 
