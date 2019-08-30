@@ -232,10 +232,7 @@ class EXPORT Data {
       new (ptr) T(std::forward<Args>(args)...);
     }
 
-    void pop_back() {
-      back().~T();
-      data_.resize(data_.size() - sizeof(T));
-    }
+    void pop_back() { data_.resize(data_.size() - sizeof(T)); }
 
     iterator insert(const_iterator position, const T& value) {
       T* ptr = AddElements(position, 1);
