@@ -84,7 +84,8 @@ Status PngCodec::Encode(const Image& image, const Options& options,
 
   int output_channels;
   int output_color_type;
-  switch (image.pixel_format()) {
+  PixelFormat pixel_format = image.pixel_format();
+  switch (pixel_format) {
     case PIXEL_FORMAT_BGRA:
       output_channels = 4;
       output_color_type = PNG_COLOR_TYPE_RGBA;
@@ -96,32 +97,34 @@ Status PngCodec::Encode(const Image& image, const Options& options,
       png_set_bgr(si.png_ptr_);
       break;
     case PIXEL_FORMAT_Y8:
-      output_channels = 3;
-      output_color_type = PNG_COLOR_TYPE_RGB;
-      png_set_gray_to_rgb(si.png_ptr_);
+      output_channels = 1;
+      output_color_type = PNG_COLOR_TYPE_GRAY;
       break;
     case PIXEL_FORMAT_Y16:
-      output_channels = 3;
-      output_color_type = PNG_COLOR_TYPE_RGB;
-      png_set_gray_to_rgb(si.png_ptr_);
-      png_set_strip_16(si.png_ptr_);
+    case PIXEL_FORMAT_Z16:
+      output_channels = 2;
+      output_color_type = PNG_COLOR_TYPE_GRAY;
       break;
     case PIXEL_FORMAT_RGBA:
-      output_color_type = PNG_COLOR_TYPE_RGBA;
       output_channels = 4;
+      output_color_type = PNG_COLOR_TYPE_RGBA;
       break;
     case PIXEL_FORMAT_RGB:
-      output_color_type = PNG_COLOR_TYPE_RGB;
       output_channels = 3;
+      output_color_type = PNG_COLOR_TYPE_RGB;
       break;
     default:
       NOTREACHED();
       break;
   }
 
-  png_set_IHDR(si.png_ptr_, si.info_ptr_, image.width(), image.height(), 8,
-               output_color_type, PNG_INTERLACE_NONE,
-               PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+  png_set_IHDR(
+      si.png_ptr_, si.info_ptr_, image.width(), image.height(),
+      (pixel_format == PIXEL_FORMAT_Y16 || pixel_format == PIXEL_FORMAT_Z16)
+          ? 16
+          : 8,
+      output_color_type, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
+      PNG_FILTER_TYPE_DEFAULT);
   int compression_level =
       std::max(std::min(options.compression_level, Z_BEST_COMPRESSION), 0);
   png_set_compression_level(si.png_ptr_, compression_level);
@@ -217,7 +220,14 @@ void DecodeInfoCallback(png_struct* png_ptr, png_info* info_ptr) {
   }
 
   // Convert 16-bit to 8-bit.
-  if (bit_depth == 16) png_set_strip_16(png_ptr);
+  if (bit_depth == 16 && state->output_channels == PIXEL_FORMAT_Y8)
+    png_set_strip_16(png_ptr);
+  // Convert to little-endian.
+  if (bit_depth == 16) png_set_swap(png_ptr);
+
+  if (bit_depth != 16 && (state->output_channels == PIXEL_FORMAT_Y16 ||
+                          state->output_channels == PIXEL_FORMAT_Z16))
+    longjmp(png_jmpbuf(png_ptr), 1);
 
   // Pick our row format converter necessary for this data.
   if (!input_has_alpha) {
@@ -231,6 +241,13 @@ void DecodeInfoCallback(png_struct* png_ptr, png_info* info_ptr) {
         state->output_channels = 3;
         png_set_bgr(png_ptr);
         break;
+      case PIXEL_FORMAT_Y8:
+        state->output_channels = 1;
+        break;
+      case PIXEL_FORMAT_Y16:
+      case PIXEL_FORMAT_Z16:
+        state->output_channels = 2;
+        break;
       case PIXEL_FORMAT_RGBA:
         state->output_channels = 4;
         png_set_add_alpha(png_ptr, 0xFF, PNG_FILLER_AFTER);
@@ -243,14 +260,22 @@ void DecodeInfoCallback(png_struct* png_ptr, png_info* info_ptr) {
         break;
     }
   } else {
-    state->output_channels = 4;
     switch (state->output_format) {
       case PIXEL_FORMAT_BGR:
       case PIXEL_FORMAT_BGRA:
+        state->output_channels = 4;
         png_set_bgr(png_ptr);
+        break;
+      case PIXEL_FORMAT_Y8:
+        state->output_channels = 2;
+        break;
+      case PIXEL_FORMAT_Y16:
+      case PIXEL_FORMAT_Z16:
+        state->output_channels = 3;
         break;
       case PIXEL_FORMAT_RGB:
       case PIXEL_FORMAT_RGBA:
+        state->output_channels = 4;
         break;
       default:
         NOTREACHED();
@@ -258,10 +283,12 @@ void DecodeInfoCallback(png_struct* png_ptr, png_info* info_ptr) {
     }
   }
 
-  // Expand grayscale to RGB.
-  if (color_type == PNG_COLOR_TYPE_GRAY ||
-      color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-    png_set_gray_to_rgb(png_ptr);
+  if ((color_type != PNG_COLOR_TYPE_GRAY &&
+       color_type != PNG_COLOR_TYPE_GRAY_ALPHA) &&
+      (state->output_channels == PIXEL_FORMAT_Y8 ||
+       state->output_channels == PIXEL_FORMAT_Y16 ||
+       state->output_channels == PIXEL_FORMAT_Z16))
+    png_set_rgb_to_gray(png_ptr, 1, 0.299, 0.587);
 
   // Deal with gamma and keep it under our control.
   double gamma;
