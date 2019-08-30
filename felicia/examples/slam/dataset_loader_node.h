@@ -33,20 +33,20 @@ class DatasetLoaderNode : public NodeLifecycle {
 
   void OnInit() override {
     base::FilePath path = ToFilePath(dataset_flag_.path_flag()->value());
-    const int data_kind = dataset_flag_.data_kind_flag()->value();
+    const int data_types = dataset_flag_.data_types_flag()->value();
 
     switch (dataset_flag_.dataset_kind()) {
       case DatasetFlag::DATASET_KIND_EUROC:
         delegate_.reset(new slam::EurocDatasetLoader(
-            path, static_cast<slam::EurocDatasetLoader::DataKind>(data_kind)));
+            path, static_cast<slam::SensorData::DataType>(data_types)));
         break;
       case DatasetFlag::DATASET_KIND_KITTI:
         delegate_.reset(new slam::KittiDatasetLoader(
-            path, static_cast<slam::KittiDatasetLoader::DataKind>(data_kind)));
+            path, static_cast<slam::SensorData::DataType>(data_types)));
         break;
       case DatasetFlag::DATASET_KIND_TUM:
         delegate_.reset(new slam::TumDatasetLoader(
-            path, static_cast<slam::TumDatasetLoader::DataKind>(data_kind)));
+            path, static_cast<slam::SensorData::DataType>(data_types)));
         break;
       case DatasetFlag::DATASET_KIND_NONE:
         NOTREACHED();
@@ -71,86 +71,85 @@ class DatasetLoaderNode : public NodeLifecycle {
     ChannelDef::Type_Parse(dataset_flag_.channel_type_flag()->value(),
                            &channel_type);
 
-    if (!left_color_topic_.empty())
+    if (!left_color_topic_.empty()) {
+      slam::SensorData::DataType data_type =
+          slam::SensorData::DATA_TYPE_LEFT_CAMERA;
+      if (dataset_flag_.left_as_gray_scale_flag()->value())
+        data_type = slam::SensorData::DATA_TYPE_LEFT_CAMERA_GRAY_SCALE;
       left_color_publisher_.RequestPublish(
           node_info_, left_color_topic_,
           channel_type | ChannelDef::CHANNEL_TYPE_WS, settings,
           base::BindOnce(&DatasetLoaderNode::OnRequestPublish,
-                         base::Unretained(this)));
+                         base::Unretained(this), data_type));
+    }
 
-    if (!right_color_topic_.empty())
+    if (!right_color_topic_.empty()) {
+      slam::SensorData::DataType data_type =
+          slam::SensorData::DATA_TYPE_RIGHT_CAMERA;
+      if (dataset_flag_.right_as_gray_scale_flag()->value())
+        data_type = slam::SensorData::DATA_TYPE_RIGHT_CAMERA_GRAY_SCALE;
       right_color_publisher_.RequestPublish(
           node_info_, right_color_topic_,
           channel_type | ChannelDef::CHANNEL_TYPE_WS, settings,
           base::BindOnce(&DatasetLoaderNode::OnRequestPublish,
-                         base::Unretained(this)));
+                         base::Unretained(this), data_type));
+    }
 
     if (!depth_topic_.empty())
       depth_publisher_.RequestPublish(
           node_info_, depth_topic_, channel_type | ChannelDef::CHANNEL_TYPE_WS,
           settings,
           base::BindOnce(&DatasetLoaderNode::OnRequestPublish,
-                         base::Unretained(this)));
+                         base::Unretained(this),
+                         slam::SensorData::DATA_TYPE_DEPTH_CAMERA));
 
     if (!lidar_topic_.empty())
       lidar_publisher_.RequestPublish(
           node_info_, lidar_topic_, channel_type | ChannelDef::CHANNEL_TYPE_WS,
           settings,
           base::BindOnce(&DatasetLoaderNode::OnRequestPublish,
-                         base::Unretained(this)));
+                         base::Unretained(this),
+                         slam::SensorData::DATA_TYPE_LIDAR));
   }
 
-  void OnRequestPublish(const Status& s) {
-    LOG_IF(ERROR, !s.ok()) << s;
-    if (!left_color_topic_.empty() && !left_color_publisher_.IsRegistered())
-      return;
-    if (!right_color_topic_.empty() && !right_color_publisher_.IsRegistered())
-      return;
-    if (!depth_topic_.empty() && !depth_publisher_.IsRegistered()) return;
-    if (!lidar_topic_.empty() && !lidar_publisher_.IsRegistered()) return;
-    LoadData();
+  void OnRequestPublish(slam::SensorData::DataType data_type, const Status& s) {
+    if (s.ok()) {
+      LoadData(data_type);
+    } else {
+      LOG(ERROR) << s;
+    }
   }
 
-  void LoadData() {
-    // TODO: currently we can load only one kind of data.
-    StatusOr<slam::SensorData> status_or = dataset_loader_.Next();
+  void LoadData(slam::SensorData::DataType data_type) {
+    StatusOr<slam::SensorData> status_or =
+        dataset_loader_.Next(static_cast<int>(data_type));
     if (!status_or.ok()) return;
     slam::SensorData sensor_data = status_or.ValueOrDie();
-    base::TimeDelta timestamp =
-        base::TimeDelta::FromMicrosecondsD(sensor_data.timestamp());
-    if (!left_color_topic_.empty()) {
-      Image image;
-      Status s = image.Load(ToFilePath(sensor_data.left_image_filename()));
-      LOG_IF(ERROR, !s.ok()) << s;
-      if (!s.ok()) return;
-      drivers::CameraFrame camera_frame(std::move(image), color_fps_,
-                                        timestamp);
+    if ((data_type == slam::SensorData::DATA_TYPE_LEFT_CAMERA ||
+         data_type == slam::SensorData::DATA_TYPE_LEFT_CAMERA_GRAY_SCALE) &&
+        !left_color_topic_.empty()) {
       left_color_publisher_.Publish(
-          camera_frame.ToCameraFrameMessage(),
+          std::move(sensor_data)
+              .left_camera_frame()
+              .ToCameraFrameMessage(false),
           base::BindRepeating(&DatasetLoaderNode::OnPublish,
                               base::Unretained(this)));
-
-    } else if (!right_color_topic_.empty()) {
-      Image image;
-      Status s = image.Load(ToFilePath(sensor_data.right_image_filename()));
-      if (!s.ok()) return;
-      drivers::CameraFrame camera_frame(std::move(image), color_fps_,
-                                        timestamp);
+    } else if ((data_type == slam::SensorData::DATA_TYPE_RIGHT_CAMERA ||
+                data_type ==
+                    slam::SensorData::DATA_TYPE_RIGHT_CAMERA_GRAY_SCALE) &&
+               !right_color_topic_.empty()) {
       right_color_publisher_.Publish(
-          camera_frame.ToCameraFrameMessage(),
+          std::move(sensor_data)
+              .right_camera_frame()
+              .ToCameraFrameMessage(false),
           base::BindRepeating(&DatasetLoaderNode::OnPublish,
                               base::Unretained(this)));
-    } else if (!depth_topic_.empty()) {
-      Image image;
-      Status s = image.Load(ToFilePath(sensor_data.depth_image_filename()),
-                            PIXEL_FORMAT_Y16);
-      if (!s.ok()) return;
-      drivers::CameraFrame camera_frame(std::move(image), depth_fps_,
-                                        timestamp);
-      drivers::DepthCameraFrame depth_camera_frame(
-          std::move(camera_frame), 0, std::numeric_limits<float>::max());
+    } else if (data_type == slam::SensorData::DATA_TYPE_DEPTH_CAMERA &&
+               !depth_topic_.empty()) {
       depth_publisher_.Publish(
-          depth_camera_frame.ToDepthCameraFrameMessage(),
+          std::move(sensor_data)
+              .depth_camera_frame()
+              .ToDepthCameraFrameMessage(false),
           base::BindRepeating(&DatasetLoaderNode::OnPublish,
                               base::Unretained(this)));
     }
@@ -168,7 +167,8 @@ class DatasetLoaderNode : public NodeLifecycle {
     }
     master_proxy.PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&DatasetLoaderNode::LoadData, base::Unretained(this)),
+        base::BindOnce(&DatasetLoaderNode::LoadData, base::Unretained(this),
+                       data_type),
         base::TimeDelta::FromSecondsD(delay));
   }
 

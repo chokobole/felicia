@@ -26,13 +26,13 @@ DatasetFlag::DatasetFlag() : current_dataset_kind_(DATASET_KIND_NONE) {
     path_flag_ = std::make_unique<StringFlag>(flag);
   }
   {
-    IntFlag::Builder builder(MakeValueStore(&data_kind_));
-    auto flag = builder.SetName("data_kind")
+    IntFlag::Builder builder(MakeValueStore(&data_types_));
+    auto flag = builder.SetName("data_types")
                     .SetHelp(
-                        "data kind, e.g) RGB or STEREO, which is an integer "
-                        "value for enum DataKind for each dataset")
+                        "data type (e.g, RGB), which is an enum "
+                        "value for SensorData::DataType.")
                     .Build();
-    data_kind_flag_ = std::make_unique<IntFlag>(flag);
+    data_types_flag_ = std::make_unique<IntFlag>(flag);
   }
   {
     StringFlag::Builder builder(MakeValueStore(&name_));
@@ -69,7 +69,7 @@ DatasetFlag::DatasetFlag() : current_dataset_kind_(DATASET_KIND_NONE) {
   {
     StringFlag::Builder builder(MakeValueStore(&right_color_topic_));
     auto flag = builder.SetLongName("--right_color_topic")
-                    .SetHelp("topic to publish right color of stereo")
+                    .SetHelp("topic to publish right camera of stereo")
                     .Build();
     right_color_topic_flag_ = std::make_unique<StringFlag>(flag);
   }
@@ -86,6 +86,20 @@ DatasetFlag::DatasetFlag() : current_dataset_kind_(DATASET_KIND_NONE) {
                     .SetHelp("topic to publish lidar")
                     .Build();
     lidar_topic_flag_ = std::make_unique<StringFlag>(flag);
+  }
+  {
+    BoolFlag::Builder builder(MakeValueStore(&left_as_gray_scale_));
+    auto flag = builder.SetLongName("--left_as_gray_scale")
+                    .SetHelp("read left camera frame as a gray scale")
+                    .Build();
+    left_as_gray_scale_flag_ = std::make_unique<BoolFlag>(flag);
+  }
+  {
+    BoolFlag::Builder builder(MakeValueStore(&right_as_gray_scale_));
+    auto flag = builder.SetLongName("--right_as_gray_scale")
+                    .SetHelp("read right camera frame as a gray scale")
+                    .Build();
+    right_as_gray_scale_flag_ = std::make_unique<BoolFlag>(flag);
   }
   {
     FloatDefaultFlag::Builder builder(MakeValueStore(&color_fps_, 30.f));
@@ -114,7 +128,7 @@ DatasetFlag::~DatasetFlag() = default;
 
 bool DatasetFlag::Parse(FlagParser& parser) {
   PARSE_POSITIONAL_FLAG(parser, 3, dataset_kind_flag_, path_flag_,
-                        data_kind_flag_);
+                        data_types_flag_);
   if (dataset_kind_ == kEuroc) {
     current_dataset_kind_ = DATASET_KIND_EUROC;
   } else if (dataset_kind_ == kKitti) {
@@ -122,14 +136,15 @@ bool DatasetFlag::Parse(FlagParser& parser) {
   } else if (dataset_kind_ == kTum) {
     current_dataset_kind_ = DATASET_KIND_TUM;
   }
-  return PARSE_OPTIONAL_FLAG(parser, name_flag_, channel_type_flag_,
-                             left_color_topic_flag_, right_color_topic_flag_,
-                             depth_topic_flag_, lidar_topic_flag_,
-                             color_fps_flag_, depth_fps_flag_, lidar_fps_flag_);
+  return PARSE_OPTIONAL_FLAG(
+      parser, name_flag_, channel_type_flag_, left_color_topic_flag_,
+      right_color_topic_flag_, depth_topic_flag_, lidar_topic_flag_,
+      left_as_gray_scale_flag_, right_as_gray_scale_flag_, color_fps_flag_,
+      depth_fps_flag_, lidar_fps_flag_);
 }
 
 bool DatasetFlag::Validate() const {
-  return CheckIfFlagWasSet(path_flag_) && CheckIfFlagWasSet(data_kind_flag_) &&
+  return CheckIfFlagWasSet(path_flag_) && CheckIfFlagWasSet(data_types_flag_) &&
          CheckIfFlagPositive(color_fps_flag_) &&
          CheckIfFlagPositive(depth_fps_flag_) &&
          CheckIfFlagPositive(lidar_fps_flag_) &&

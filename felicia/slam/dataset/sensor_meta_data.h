@@ -4,7 +4,6 @@
 #include "third_party/chromium/base/optional.h"
 
 #include "felicia/core/lib/base/export.h"
-#include "felicia/drivers/camera/camera_format.h"
 #include "felicia/slam/types.h"
 
 namespace felicia {
@@ -12,13 +11,19 @@ namespace slam {
 
 class EXPORT SensorMetaData {
  public:
+  SensorMetaData();
+  SensorMetaData(const SensorMetaData& other);
+  SensorMetaData(SensorMetaData&& other) noexcept;
+  ~SensorMetaData();
+  SensorMetaData& operator=(const SensorMetaData& other);
+  SensorMetaData& operator=(SensorMetaData&& other);
+
 #define DECLARE_METHOD(Type, name)   \
   bool has_##name() const;           \
   void set_##name(const Type& name); \
-  const Type& name() const
+  const Type& name() const&;         \
+  Type&& name()&&
 
-  DECLARE_METHOD(drivers::CameraFormat, color_camera_format);
-  DECLARE_METHOD(drivers::CameraFormat, depth_camera_format);
   DECLARE_METHOD(EigenCameraMatrixd, left_K);
   DECLARE_METHOD(EigenCameraMatrixd, right_K);
   DECLARE_METHOD(EigenDistortionMatrixd, left_D);
@@ -29,8 +34,6 @@ class EXPORT SensorMetaData {
 #undef DECLARE_METHOD
 
  private:
-  base::Optional<drivers::CameraFormat> color_camera_format_;
-  base::Optional<drivers::CameraFormat> depth_camera_format_;
   base::Optional<EigenCameraMatrixd> left_K_;
   base::Optional<EigenCameraMatrixd> right_K_;
   base::Optional<EigenDistortionMatrixd> left_D_;

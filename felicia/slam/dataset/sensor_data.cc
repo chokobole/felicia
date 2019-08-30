@@ -3,25 +3,49 @@
 namespace felicia {
 namespace slam {
 
+SensorData::SensorData() = default;
+
+SensorData::SensorData(const SensorData& other) = default;
+
+SensorData::SensorData(SensorData&& other) noexcept
+    : left_camera_frame_(std::move(other.left_camera_frame_)),
+      right_camera_frame_(std::move(other.right_camera_frame_)),
+      depth_camera_frame_(std::move(other.depth_camera_frame_)),
+      imu_frame_(std::move(other.imu_frame_)),
+      acceleration_(std::move(other.acceleration_)),
+      velocity_(std::move(other.velocity_)),
+      angular_velocity_(std::move(other.angular_velocity_)),
+      pose_(std::move(other.pose_)),
+      position_(std::move(other.position_)),
+      timestamp_(other.timestamp_) {}
+
+SensorData::~SensorData() = default;
+
+SensorData& SensorData::operator=(const SensorData& other) = default;
+SensorData& SensorData::operator=(SensorData&& other) = default;
+
 #define DEFINE_METHOD(Type, name)                                     \
   bool SensorData::has_##name() const { return name##_.has_value(); } \
   void SensorData::set_##name(const Type& name) { name##_ = name; }   \
-  const Type& SensorData::name() const { return name##_.value(); }
+  const Type& SensorData::name() const& { return name##_.value(); }   \
+  Type&& SensorData::name()&& { return std::move(name##_).value(); }
 
-DEFINE_METHOD(std::string, left_image_filename)
-DEFINE_METHOD(std::string, right_image_filename)
-DEFINE_METHOD(std::string, depth_image_filename)
+DEFINE_METHOD(drivers::CameraFrame, left_camera_frame)
+DEFINE_METHOD(drivers::CameraFrame, right_camera_frame)
+DEFINE_METHOD(drivers::DepthCameraFrame, depth_camera_frame)
 DEFINE_METHOD(drivers::ImuFrame, imu_frame)
 DEFINE_METHOD(Vector3f, acceleration)
 DEFINE_METHOD(Vector3f, velocity)
 DEFINE_METHOD(Vector3f, angular_velocity)
-DEFINE_METHOD(Point3f, point)
 DEFINE_METHOD(Pose3f, pose)
+DEFINE_METHOD(Point3f, position)
 
 #undef DEFINE_METHOD
 
-void SensorData::set_timestamp(double timestamp) { timestamp_ = timestamp; }
-double SensorData::timestamp() const { return timestamp_; }
+void SensorData::set_timestamp(base::TimeDelta timestamp) {
+  timestamp_ = timestamp;
+}
+base::TimeDelta SensorData::timestamp() const { return timestamp_; }
 
 }  // namespace slam
 }  // namespace felicia

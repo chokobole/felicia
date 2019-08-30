@@ -13,10 +13,10 @@ class DatasetLoader {
    public:
     virtual ~Delegate() = default;
 
-    virtual StatusOr<MetaDataType> Init() = 0;
-    virtual StatusOr<DataType> Next() = 0;
-    virtual bool End() const = 0;
-    virtual size_t length() const { return 0; }
+    virtual StatusOr<MetaDataType> Init(int data_type) = 0;
+    virtual StatusOr<DataType> Next(int data_type) = 0;
+    virtual bool End(int data_type) const = 0;
+    virtual size_t length(int data_type) const { return 0; }
   };
 
   DatasetLoader() = default;
@@ -24,17 +24,19 @@ class DatasetLoader {
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
-  StatusOr<MetaDataType> Init() { return delegate_->Init(); }
-
-  StatusOr<DataType> Next() {
-    if (End()) return errors::OutOfRange("No data any more.");
-    return delegate_->Next();
+  StatusOr<MetaDataType> Init(int data_type) {
+    return delegate_->Init(data_type);
   }
 
-  bool End() const { return delegate_->End(); }
+  StatusOr<DataType> Next(int data_type) {
+    if (End(data_type)) return errors::OutOfRange("No data any more.");
+    return delegate_->Next(data_type);
+  }
+
+  bool End(int data_type) const { return delegate_->End(data_type); }
 
   // This maybe return 0 if length can be predicted in advance.
-  bool length() const { return delegate_->length(); }
+  bool length(int data_type) const { return delegate_->length(data_type); }
 
  private:
   Delegate* delegate_;

@@ -3,7 +3,6 @@
 
 #include "third_party/chromium/base/files/file_path.h"
 
-#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/file/buffered_reader.h"
 #include "felicia/core/util/dataset/dataset_loader.h"
 #include "felicia/slam/dataset/sensor_data.h"
@@ -13,34 +12,48 @@
 namespace felicia {
 namespace slam {
 
-// KittiDatasetLoader loader("/path/to/kitti");
+// SensorData::DataType data_type = SensorData::DATA_TYPE_LEFT_CAMERA;
+// KittiDatasetLoader loader("/path/to/euroc", data_type);
 // StatusOr<SensorMetaData> sensor_meta_data = loader.Init();
 // StatusOr<SensorData> sensor_data = loader.Next();
 // For example, /path/to/kitti points to the /path/to/dataset/sequences/00.
-class EXPORT KittiDatasetLoader
+class KittiDatasetLoader
     : public DatasetLoader<SensorMetaData, SensorData>::Delegate {
  public:
-  enum DataKind { GRAYSCALE, COLOR, VELODYNE_LASER_DATA, GROUND_TRUTH };
+  class State {
+   public:
+    State(SensorData::DataType data_type, const base::FilePath& path);
 
-  KittiDatasetLoader(const base::FilePath& path, DataKind data_kind);
+    SensorData::DataType data_type() const;
+
+    StatusOr<SensorMetaData> Init();
+    StatusOr<SensorData> Next();
+    bool End() const;
+
+   private:
+    int SkipHeadCountForCalibs() const;
+    base::FilePath PathToData() const;
+
+    SensorData::DataType data_type_;
+    // path to root
+    base::FilePath path_;
+    // path to root of each data e.g) /path/to/root/image0
+    base::FilePath path_to_data_;
+    // path to times.txt
+    base::FilePath path_to_times_;
+    BufferedReader times_reader_;
+    size_t current_ = 0;
+  };
+
+  KittiDatasetLoader(const base::FilePath& path, int data_types);
 
   // DatasetLoader<SensorMetaData, SensorData>::Delegate methods
-  StatusOr<SensorMetaData> Init() override;
-  StatusOr<SensorData> Next() override;
-  bool End() const override;
+  StatusOr<SensorMetaData> Init(int data_type) override;
+  StatusOr<SensorData> Next(int data_type) override;
+  bool End(int data_type) const override;
 
  private:
-  // path to calib.txt
-  base::FilePath calibs_path_;
-  // path to times.txt
-  base::FilePath times_path_;
-  // path to root of left images
-  base::FilePath left_images_path_;
-  // path to root of right images
-  base::FilePath right_images_path_;
-  BufferedReader times_reader_;
-  DataKind data_kind_;
-  size_t current_;
+  std::vector<std::unique_ptr<State>> states_;
 };
 
 }  // namespace slam

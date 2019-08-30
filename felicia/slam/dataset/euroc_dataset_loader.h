@@ -3,7 +3,6 @@
 
 #include "third_party/chromium/base/files/file_path.h"
 
-#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/file/csv_reader.h"
 #include "felicia/core/util/dataset/dataset_loader.h"
 #include "felicia/slam/dataset/sensor_data.h"
@@ -12,44 +11,54 @@
 namespace felicia {
 namespace slam {
 
-// EurocDataSetLoader loader("/path/to/euroc", EurocDataSetLoader::CAM0);
+// SensorData::DataType data_type = SensorData::DATA_TYPE_LEFT_CAMERA;
+// EurocDataSetLoader loader("/path/to/euroc", data_type);
 // StatusOr<SensorMetaData> sensor_meta_data = loader.Init();
 // StatusOr<SensorData> sensor_data = loader.Next();
 // For example, /path/to/euroc points to the /path/to/mav0.
-class EXPORT EurocDatasetLoader
+class EurocDatasetLoader
     : public DatasetLoader<SensorMetaData, SensorData>::Delegate {
  public:
-  enum DataKind {
-    CAM0,
-    CAM1,
-    IMU0,
-    LEICA0,
-    GROUND_TRUTH,
+  class State {
+   public:
+    State(SensorData::DataType data_type, const base::FilePath& path);
+
+    SensorData::DataType data_type() const;
+
+    StatusOr<SensorMetaData> Init();
+    StatusOr<SensorData> Next();
+    bool End() const;
+
+   private:
+    float LoadFrameRate();
+
+    base::FilePath PathToMetaData() const;
+    base::FilePath PathToData() const;
+    base::FilePath PathToDataList() const;
+    base::FilePath PathToDataType() const;
+    int ColumnsForData() const;
+
+    SensorData::DataType data_type_;
+    // path to root
+    base::FilePath path_;
+    // path to root of each data e.g) /path/to/cam0/data
+    base::FilePath path_to_data_;
+    // path to data list e.g) /path/to/cam0/data.csv
+    base::FilePath path_to_data_list_;
+    CsvReader data_list_reader_;
+    size_t current_ = 0;
+    float frame_rate_ = -1;
   };
 
-  EurocDatasetLoader(const base::FilePath& path, DataKind data_kind);
+  EurocDatasetLoader(const base::FilePath& path, int data_types);
 
   // DatasetLoader<SensorMetaData, SensorData>::Delegate methods
-  StatusOr<SensorMetaData> Init() override;
-  StatusOr<SensorData> Next() override;
-  bool End() const override;
+  StatusOr<SensorMetaData> Init(int data_type) override;
+  StatusOr<SensorData> Next(int data_type) override;
+  bool End(int data_type) const override;
 
  private:
-  base::FilePath PathToMetaData() const;
-  base::FilePath PathToData() const;
-  base::FilePath PathToDataList() const;
-  base::FilePath PathToDataKind() const;
-  int ColumnsForData() const;
-
-  // path to root
-  base::FilePath path_;
-  // path to root of each data e.g) /path/to/cam0/data
-  base::FilePath path_to_data_;
-  // path to data list e.g) /path/to/cam0/data.csv
-  base::FilePath path_to_data_list_;
-  CsvReader reader_;
-  DataKind data_kind_;
-  size_t current_;
+  std::vector<std::unique_ptr<State>> states_;
 };
 
 }  // namespace slam
