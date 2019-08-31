@@ -44,6 +44,8 @@ fel_cc_library(
     name = "master_proxy",
     srcs = [
         "master_proxy.cc",
+        "node_initializer.cc",
+        "node_initializer.h",
         "topic_info_watcher.cc",
         "topic_info_watcher.h",
     ],

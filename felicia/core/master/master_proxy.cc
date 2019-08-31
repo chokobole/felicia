@@ -182,6 +182,21 @@ void MasterProxy::Setup(base::WaitableEvent* event) {
   event->Signal();
 }
 
+void MasterProxy::OnNodeInit(const NodeInfo& node_info,
+                             std::unique_ptr<NodeLifecycle> node) {
+  RegisterNodeRequest* request = new RegisterNodeRequest();
+  NodeInfo* new_node_info = request->mutable_node_info();
+  new_node_info->CopyFrom(node_info);
+  new_node_info->set_client_id(client_info_.id());
+  RegisterNodeResponse* response = new RegisterNodeResponse();
+
+  RegisterNodeAsync(
+      request, response,
+      base::BindOnce(&MasterProxy::OnRegisterNodeAsync, base::Unretained(this),
+                     base::Passed(&node), base::Owned(request),
+                     base::Owned(response)));
+}
+
 void MasterProxy::RegisterClient() {
   RegisterClientRequest* request = new RegisterClientRequest();
   *request->mutable_client_info() = client_info_;

@@ -21,6 +21,7 @@
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/master/heart_beat_signaller.h"
 #include "felicia/core/master/master_client_interface.h"
+#include "felicia/core/master/node_initializer.h"
 #include "felicia/core/master/topic_info_watcher.h"
 #include "felicia/core/message/protobuf_loader.h"
 #include "felicia/core/node/node_lifecycle.h"
@@ -104,6 +105,9 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
 
   void Setup(base::WaitableEvent* event);
 
+  void OnNodeInit(const NodeInfo& node_info,
+                  std::unique_ptr<NodeLifecycle> node_lifecycle);
+
   void RegisterClient();
 
   void OnRegisterClient(base::WaitableEvent* event,
@@ -143,20 +147,13 @@ template <typename NodeTy, typename... Args,
           std::enable_if_t<std::is_base_of<NodeLifecycle, NodeTy>::value>*>
 void MasterProxy::RequestRegisterNode(const NodeInfo& node_info,
                                       Args&&... args) {
-  RegisterNodeRequest* request = new RegisterNodeRequest();
-  NodeInfo* new_node_info = request->mutable_node_info();
-  new_node_info->CopyFrom(node_info);
-  new_node_info->set_client_id(client_info_.id());
-  RegisterNodeResponse* response = new RegisterNodeResponse();
-
   std::unique_ptr<NodeLifecycle> node =
       std::make_unique<NodeTy>(std::forward<Args>(args)...);
-  node->OnInit();
-  RegisterNodeAsync(
-      request, response,
-      base::BindOnce(&MasterProxy::OnRegisterNodeAsync, base::Unretained(this),
-                     base::Passed(&node), base::Owned(request),
-                     base::Owned(response)));
+  // |node_initializer| will be released inside its implementation,
+  // right after call callback function.
+  NodeInitializer* node_initializer = new NodeInitializer(std::move(node));
+  node_initializer->Initialize(base::BindOnce(
+      &MasterProxy::OnNodeInit, base::Unretained(this), node_info));
 }
 
 }  // namespace felicia
