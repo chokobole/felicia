@@ -105,16 +105,19 @@ class RigidBodyTransform<cv::Mat, cv::Mat> {
   double ty() const { return t_.template at<double>(1); }
   double tz() const { return t_.template at<double>(2); }
 
-  template <typename T>
-  std::enable_if_t<!std::is_same<T, double>::value, T> tx() const {
+  template <typename T,
+            std::enable_if_t<!std::is_same<T, double>::value>* = nullptr>
+  T tx() const {
     return t_.template at<T>(0);
   }
-  template <typename T>
-  std::enable_if_t<!std::is_same<T, double>::value, T> ty() const {
+  template <typename T,
+            std::enable_if_t<!std::is_same<T, double>::value>* = nullptr>
+  T ty() const {
     return t_.template at<T>(1);
   }
-  template <typename T>
-  std::enable_if_t<!std::is_same<T, double>::value, T> tz() const {
+  template <typename T,
+            std::enable_if_t<!std::is_same<T, double>::value>* = nullptr>
+  T tz() const {
     return t_.template at<T>(2);
   }
 
@@ -343,16 +346,19 @@ class RigidBodyTransform3<cv::Mat, cv::Mat> {
   double ty() const { return t_.template at<double>(1); }
   double tz() const { return t_.template at<double>(2); }
 
-  template <typename T>
-  std::enable_if_t<!std::is_same<T, double>::value, T> tx() const {
+  template <typename T,
+            std::enable_if_t<!std::is_same<T, double>::value>* = nullptr>
+  T tx() const {
     return t_.template at<T>(0);
   }
-  template <typename T>
-  std::enable_if_t<!std::is_same<T, double>::value, T> ty() const {
+  template <typename T,
+            std::enable_if_t<!std::is_same<T, double>::value>* = nullptr>
+  T ty() const {
     return t_.template at<T>(1);
   }
-  template <typename T>
-  std::enable_if_t<!std::is_same<T, double>::value, T> tz() const {
+  template <typename T,
+            std::enable_if_t<!std::is_same<T, double>::value>* = nullptr>
+  T tz() const {
     return t_.template at<T>(2);
   }
 

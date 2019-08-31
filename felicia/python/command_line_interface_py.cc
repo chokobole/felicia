@@ -11,12 +11,12 @@ void AddFlagBuilderCommonAttributes(py::class_<typename FlagTy::Builder>& cls) {
       .def("build", &FlagTy::Builder::Build);
 }
 
-template <typename FlagTy>
-std::enable_if_t<
-    std::is_same<typename FlagTy::traits_type,
-                 InitValueTraits<typename FlagTy::value_type>>::value,
-    void>
-AddFlagBuilder(py::module& m, const char* name) {
+template <typename FlagTy,
+          std::enable_if_t<std::is_same<
+              typename FlagTy::traits_type,
+              InitValueTraits<typename FlagTy::value_type>>::value>* = nullptr>
+
+void AddFlagBuilder(py::module& m, const char* name) {
   py::class_<typename FlagTy::Builder> cls(m, name);
   cls.def(py::init([]() {
     auto value = new typename FlagTy::value_type;
@@ -25,16 +25,16 @@ AddFlagBuilder(py::module& m, const char* name) {
   AddFlagBuilderCommonAttributes<FlagTy>(cls);
 }
 
-template <typename FlagTy>
-std::enable_if_t<
-    std::is_same<typename FlagTy::traits_type,
-                 DefaultValueTraits<typename FlagTy::value_type>>::value &&
+template <
+    typename FlagTy,
+    std::enable_if_t<
+        std::is_same<typename FlagTy::traits_type,
+                     DefaultValueTraits<typename FlagTy::value_type>>::value &&
         !std::is_same<typename FlagTy::flag_type,
                       Range<typename FlagTy::value_type>>::value &&
         !std::is_same<typename FlagTy::flag_type,
-                      Choices<typename FlagTy::value_type>>::value,
-    void>
-AddFlagBuilder(py::module& m, const char* name) {
+                      Choices<typename FlagTy::value_type>>::value>* = nullptr>
+void AddFlagBuilder(py::module& m, const char* name) {
   py::class_<typename FlagTy::Builder> cls(m, name);
   cls.def(py::init([](typename FlagTy::value_type default_value) {
     auto value = new typename FlagTy::value_type;
@@ -43,14 +43,14 @@ AddFlagBuilder(py::module& m, const char* name) {
   AddFlagBuilderCommonAttributes<FlagTy>(cls);
 }
 
-template <typename FlagTy>
-std::enable_if_t<
-    std::is_same<typename FlagTy::traits_type,
-                 DefaultValueTraits<typename FlagTy::value_type>>::value &&
+template <
+    typename FlagTy,
+    std::enable_if_t<
+        std::is_same<typename FlagTy::traits_type,
+                     DefaultValueTraits<typename FlagTy::value_type>>::value &&
         std::is_same<typename FlagTy::flag_type,
-                     Range<typename FlagTy::value_type>>::value,
-    void>
-AddFlagBuilder(py::module& m, const char* name) {
+                     Range<typename FlagTy::value_type>>::value>* = nullptr>
+void AddFlagBuilder(py::module& m, const char* name) {
   py::class_<typename FlagTy::Builder> cls(m, name);
   cls.def(py::init([](typename FlagTy::value_type default_value,
                       const std::pair<typename FlagTy::value_type,
@@ -63,14 +63,14 @@ AddFlagBuilder(py::module& m, const char* name) {
   AddFlagBuilderCommonAttributes<FlagTy>(cls);
 }
 
-template <typename FlagTy>
-std::enable_if_t<
-    std::is_same<typename FlagTy::traits_type,
-                 DefaultValueTraits<typename FlagTy::value_type>>::value &&
+template <
+    typename FlagTy,
+    std::enable_if_t<
+        std::is_same<typename FlagTy::traits_type,
+                     DefaultValueTraits<typename FlagTy::value_type>>::value &&
         std::is_same<typename FlagTy::flag_type,
-                     Choices<typename FlagTy::value_type>>::value,
-    void>
-AddFlagBuilder(py::module& m, const char* name) {
+                     Choices<typename FlagTy::value_type>>::value>* = nullptr>
+void AddFlagBuilder(py::module& m, const char* name) {
   py::class_<typename FlagTy::Builder> cls(m, name);
   cls.def(py::init([](typename FlagTy::value_type default_value,
                       const std::vector<typename FlagTy::value_type> vecs) {

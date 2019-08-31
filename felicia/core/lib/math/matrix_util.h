@@ -73,8 +73,8 @@ class MatrixBinaryOperation<Eigen::Matrix<T, Rows, Cols1>,
   typedef Eigen::Matrix<T, Rows, Cols2> RHSType;
   typedef Eigen::Matrix<T, Rows, SumOrDynamic(Cols1, Cols2)> HStackReturnType;
 
-  static std::enable_if_t<(Rows != Eigen::Dynamic), HStackReturnType> HStack(
-      const LHSType& lhs, const RHSType& rhs) {
+  template <std::enable_if_t<(Rows != Eigen::Dynamic)>* = nullptr>
+  static HStackReturnType HStack(const LHSType& lhs, const RHSType& rhs) {
     HStackReturnType ret;
     ret.resize(Rows, lhs.cols() + rhs.cols());
     ret << lhs, rhs;
@@ -90,8 +90,8 @@ class MatrixBinaryOperation<Eigen::Matrix<T, Rows1, Cols>,
   typedef Eigen::Matrix<T, Rows2, Cols> RHSType;
   typedef Eigen::Matrix<T, SumOrDynamic(Rows1, Rows2), Cols> VStackReturnType;
 
-  static std::enable_if_t<(Cols != Eigen::Dynamic), VStackReturnType> VStack(
-      const LHSType& lhs, const RHSType& rhs) {
+  template <std::enable_if_t<(Cols != Eigen::Dynamic)>* = nullptr>
+  static VStackReturnType VStack(const LHSType& lhs, const RHSType& rhs) {
     VStackReturnType ret;
     ret.resize(lhs.rows() + rhs.rows(), Cols);
     ret << lhs, rhs;
@@ -108,16 +108,16 @@ class MatrixBinaryOperation<Eigen::Matrix<T, Rows, Cols>,
   typedef Eigen::Matrix<T, Rows, SumOrDynamic(Cols, Cols)> HStackReturnType;
   typedef Eigen::Matrix<T, SumOrDynamic(Rows, Rows), Cols> VStackReturnType;
 
-  static std::enable_if_t<(Rows != Eigen::Dynamic), HStackReturnType> HStack(
-      const LHSType& lhs, const RHSType& rhs) {
+  template <std::enable_if_t<(Rows != Eigen::Dynamic)>* = nullptr>
+  static HStackReturnType HStack(const LHSType& lhs, const RHSType& rhs) {
     HStackReturnType ret;
     ret.resize(Rows, lhs.cols() + rhs.cols());
     ret << lhs, rhs;
     return ret;
   }
 
-  static std::enable_if_t<(Cols != Eigen::Dynamic), VStackReturnType> VStack(
-      const LHSType& lhs, const RHSType& rhs) {
+  template <std::enable_if_t<(Cols != Eigen::Dynamic)>* = nullptr>
+  static VStackReturnType VStack(const LHSType& lhs, const RHSType& rhs) {
     VStackReturnType ret;
     ret.resize(lhs.rows() + rhs.rows(), Cols);
     ret << lhs, rhs;

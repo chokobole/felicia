@@ -79,9 +79,10 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
 
   void Run();
 
-  template <typename NodeTy, typename... Args>
-  std::enable_if_t<std::is_base_of<NodeLifecycle, NodeTy>::value, void>
-  RequestRegisterNode(const NodeInfo& node_info, Args&&... args);
+  template <typename NodeTy, typename... Args,
+            std::enable_if_t<std::is_base_of<NodeLifecycle, NodeTy>::value>* =
+                nullptr>
+  void RequestRegisterNode(const NodeInfo& node_info, Args&&... args);
 
   void SubscribeTopicAsync(const SubscribeTopicRequest* request,
                            SubscribeTopicResponse* response,
@@ -136,9 +137,10 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
   DISALLOW_COPY_AND_ASSIGN(MasterProxy);
 };
 
-template <typename NodeTy, typename... Args>
-std::enable_if_t<std::is_base_of<NodeLifecycle, NodeTy>::value, void>
-MasterProxy::RequestRegisterNode(const NodeInfo& node_info, Args&&... args) {
+template <typename NodeTy, typename... Args,
+          std::enable_if_t<std::is_base_of<NodeLifecycle, NodeTy>::value>*>
+void MasterProxy::RequestRegisterNode(const NodeInfo& node_info,
+                                      Args&&... args) {
   RegisterNodeRequest* request = new RegisterNodeRequest();
   NodeInfo* new_node_info = request->mutable_node_info();
   new_node_info->CopyFrom(node_info);

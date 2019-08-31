@@ -29,43 +29,42 @@ struct PickTypeListItemImpl<0, TypeList<T, List...>> {
 template <size_t n, typename List>
 using PickTypeListItem = typename PickTypeListItemImpl<n, List>::Type;
 
-template <typename T>
-std::enable_if_t<std::is_same<bool, T>::value, Napi::Boolean> ToJs(
-    Napi::Env env, T value) {
+template <typename T, std::enable_if_t<std::is_same<bool, T>::value>* = nullptr>
+Napi::Boolean ToJs(Napi::Env env, T value) {
   return Napi::Boolean::New(env, value);
 }
 
-template <typename T>
-std::enable_if_t<std::is_arithmetic<T>::value && !std::is_same<bool, T>::value,
-                 Napi::Number>
-ToJs(Napi::Env env, T value) {
+template <typename T,
+          std::enable_if_t<std::is_arithmetic<T>::value &&
+                           !std::is_same<bool, T>::value>* = nullptr>
+Napi::Number ToJs(Napi::Env env, T value) {
   return Napi::Number::New(env, value);
 }
 
-template <typename T>
-std::enable_if_t<std::is_same<std::string, T>::value, Napi::String> ToJs(
-    Napi::Env env, const T& value) {
+template <typename T,
+          std::enable_if_t<std::is_same<std::string, T>::value>* = nullptr>
+Napi::String ToJs(Napi::Env env, const T& value) {
   return Napi::String::New(env, value);
 }
 
-template <typename R, typename... Args>
-std::enable_if_t<0 == sizeof...(Args), R> Invoke(const Napi::CallbackInfo& info,
-                                                 R (*f)(Args...)) {
+template <typename R, typename... Args,
+          std::enable_if_t<0 == sizeof...(Args)>* = nullptr>
+R Invoke(const Napi::CallbackInfo& info, R (*f)(Args...)) {
   return f();
 }
 
-template <typename R, typename... Args>
-std::enable_if_t<1 == sizeof...(Args), R> Invoke(const Napi::CallbackInfo& info,
-                                                 R (*f)(Args...)) {
+template <typename R, typename... Args,
+          std::enable_if_t<1 == sizeof...(Args)>* = nullptr>
+R Invoke(const Napi::CallbackInfo& info, R (*f)(Args...)) {
   using ArgList = internal::TypeList<Args...>;
   return f(
       js::TypeConvertor<internal::PickTypeListItem<0, ArgList>>::ToNativeValue(
           info[0]));
 }
 
-template <typename R, typename... Args>
-std::enable_if_t<2 == sizeof...(Args), R> Invoke(const Napi::CallbackInfo& info,
-                                                 R (*f)(Args...)) {
+template <typename R, typename... Args,
+          std::enable_if_t<2 == sizeof...(Args)>* = nullptr>
+R Invoke(const Napi::CallbackInfo& info, R (*f)(Args...)) {
   using ArgList = internal::TypeList<Args...>;
   return f(
       js::TypeConvertor<internal::PickTypeListItem<0, ArgList>>::ToNativeValue(
@@ -74,27 +73,24 @@ std::enable_if_t<2 == sizeof...(Args), R> Invoke(const Napi::CallbackInfo& info,
           info[1]));
 }
 
-template <typename R, typename Class, typename... Args>
-std::enable_if_t<0 == sizeof...(Args), R> Invoke(const Napi::CallbackInfo& info,
-                                                 R (Class::*f)(Args...),
-                                                 Class* c) {
+template <typename R, typename Class, typename... Args,
+          std::enable_if_t<0 == sizeof...(Args)>* = nullptr>
+R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...), Class* c) {
   return ((*c).*f)();
 }
 
-template <typename R, typename Class, typename... Args>
-std::enable_if_t<1 == sizeof...(Args), R> Invoke(const Napi::CallbackInfo& info,
-                                                 R (Class::*f)(Args...),
-                                                 Class* c) {
+template <typename R, typename Class, typename... Args,
+          std::enable_if_t<1 == sizeof...(Args)>* = nullptr>
+R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...), Class* c) {
   using ArgList = internal::TypeList<Args...>;
   return ((*c).*f)(
       js::TypeConvertor<internal::PickTypeListItem<0, ArgList>>::ToNativeValue(
           info[0]));
 }
 
-template <typename R, typename Class, typename... Args>
-std::enable_if_t<2 == sizeof...(Args), R> Invoke(const Napi::CallbackInfo& info,
-                                                 R (Class::*f)(Args...),
-                                                 Class* c) {
+template <typename R, typename Class, typename... Args,
+          std::enable_if_t<2 == sizeof...(Args)>* = nullptr>
+R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...), Class* c) {
   using ArgList = internal::TypeList<Args...>;
   return ((*c).*f)(
       js::TypeConvertor<internal::PickTypeListItem<0, ArgList>>::ToNativeValue(
@@ -103,27 +99,27 @@ std::enable_if_t<2 == sizeof...(Args), R> Invoke(const Napi::CallbackInfo& info,
           info[1]));
 }
 
-template <typename R, typename Class, typename... Args>
-std::enable_if_t<0 == sizeof...(Args), R> Invoke(const Napi::CallbackInfo& info,
-                                                 R (Class::*f)(Args...) const,
-                                                 const Class* c) {
+template <typename R, typename Class, typename... Args,
+          std::enable_if_t<0 == sizeof...(Args)>* = nullptr>
+R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...) const,
+         const Class* c) {
   return ((*c).*f)();
 }
 
-template <typename R, typename Class, typename... Args>
-std::enable_if_t<1 == sizeof...(Args), R> Invoke(const Napi::CallbackInfo& info,
-                                                 R (Class::*f)(Args...) const,
-                                                 const Class* c) {
+template <typename R, typename Class, typename... Args,
+          std::enable_if_t<1 == sizeof...(Args)>* = nullptr>
+R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...) const,
+         const Class* c) {
   using ArgList = internal::TypeList<Args...>;
   return ((*c).*f)(
       js::TypeConvertor<internal::PickTypeListItem<0, ArgList>>::ToNativeValue(
           info[0]));
 }
 
-template <typename R, typename Class, typename... Args>
-std::enable_if_t<2 == sizeof...(Args), R> Invoke(const Napi::CallbackInfo& info,
-                                                 R (Class::*f)(Args...) const,
-                                                 const Class* c) {
+template <typename R, typename Class, typename... Args,
+          std::enable_if_t<2 == sizeof...(Args)>* = nullptr>
+R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...) const,
+         const Class* c) {
   using ArgList = internal::TypeList<Args...>;
   return ((*c).*f)(
       js::TypeConvertor<internal::PickTypeListItem<0, ArgList>>::ToNativeValue(

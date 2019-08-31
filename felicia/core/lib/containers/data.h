@@ -359,13 +359,13 @@ class EXPORT Data {
   Data& operator=(const Data& other);
   Data& operator=(Data&& other);
 
-  template <typename T>
-  std::enable_if_t<std::is_pointer<T>::value, T> cast() const noexcept {
+  template <typename T, std::enable_if_t<std::is_pointer<T>::value>* = nullptr>
+  T cast() const noexcept {
     return reinterpret_cast<T>(data_.data());
   }
 
-  template <typename T>
-  std::enable_if_t<std::is_pointer<T>::value, T> cast() noexcept {
+  template <typename T, std::enable_if_t<std::is_pointer<T>::value>* = nullptr>
+  T cast() noexcept {
     return reinterpret_cast<T>(const_cast<char*>(data_.data()));
   }
 

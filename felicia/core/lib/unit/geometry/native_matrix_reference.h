@@ -222,13 +222,14 @@ class NativeMatrixRef<cv::Mat> {
     return matrix_.template at<ScalarType>(row, col);
   }
 
-  template <typename T>
-  std::enable_if_t<!std::is_same<T, double>::value, T&> at(int row, int col) {
+  template <typename T,
+            std::enable_if_t<!std::is_same<T, double>::value>* = nullptr>
+  T& at(int row, int col) {
     return matrix_.template at<T>(row, col);
   }
-  template <typename T>
-  std::enable_if_t<!std::is_same<T, double>::value, const T&> at(
-      int row, int col) const {
+  template <typename T,
+            std::enable_if_t<!std::is_same<T, double>::value>* = nullptr>
+  const T& at(int row, int col) const {
     return matrix_.template at<T>(row, col);
   }
 
@@ -301,9 +302,9 @@ class ConstNativeMatrixRef<cv::Mat> {
     return matrix_.template at<ScalarType>(row, col);
   }
 
-  template <typename T>
-  std::enable_if_t<!std::is_same<T, double>::value, const T&> at(
-      int row, int col) const {
+  template <typename T,
+            std::enable_if_t<!std::is_same<T, double>::value>* = nullptr>
+  const T& at(int row, int col) const {
     return matrix_.template at<T>(row, col);
   }
 
