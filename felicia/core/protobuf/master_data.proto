@@ -19,6 +19,7 @@ message ClientInfo {
   uint32 id = 1;
   ChannelSource heart_beat_signaller_source = 2;
   ChannelSource topic_info_watcher_source = 3;
+  uint32 heart_beat_duration = 4;  // in milliseconds
 }
 
 message TopicInfo {

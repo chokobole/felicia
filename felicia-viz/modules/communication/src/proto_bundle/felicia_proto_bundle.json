@@ -950,6 +950,10 @@
             "topicInfoWatcherSource": {
               "type": "ChannelSource",
               "id": 3
+            },
+            "heartBeatDuration": {
+              "type": "uint32",
+              "id": 4
             }
           }
         },

@@ -37,6 +37,8 @@ class EXPORT MasterProxy final : public TaskRunnerInterface,
 
   ProtobufLoader* protobuf_loader();
 
+  void set_heart_beat_duration(base::TimeDelta heart_beat_duration);
+
   // TaskRunnerInterface methods
   bool IsBoundToCurrentThread() const override;
 

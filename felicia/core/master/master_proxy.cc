@@ -59,6 +59,10 @@ ProtobufLoader* MasterProxy::protobuf_loader() {
   return protobuf_loader_.get();
 }
 
+void MasterProxy::set_heart_beat_duration(base::TimeDelta heart_beat_duration) {
+  client_info_.set_heart_beat_duration(heart_beat_duration.InMilliseconds());
+}
+
 bool MasterProxy::IsBoundToCurrentThread() const {
   if (g_on_background) {
     return thread_->task_runner()->BelongsToCurrentThread();

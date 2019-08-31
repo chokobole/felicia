@@ -35,6 +35,16 @@ HeartBeatListener::HeartBeatListener(const ClientInfo& client_info,
                                      OnDisconnectCallback callback)
     : client_info_(client_info), callback_(std::move(callback)) {
   DCHECK(!callback_.is_null());
+  uint32_t heart_beat_duration = client_info_.heart_beat_duration();
+  if (heart_beat_duration == 0) {
+    if (g_heart_beat_duration == base::TimeDelta()) {
+      g_heart_beat_duration = GetHeartBeatDuration();
+    }
+    heart_beat_duration_ = g_heart_beat_duration;
+  } else {
+    heart_beat_duration_ =
+        base::TimeDelta::FromMilliseconds(heart_beat_duration);
+  }
 }
 
 HeartBeatListener::~HeartBeatListener() {
@@ -42,10 +52,6 @@ HeartBeatListener::~HeartBeatListener() {
 }
 
 void HeartBeatListener::StartCheckHeartBeat() {
-  if (g_heart_beat_duration == base::TimeDelta()) {
-    g_heart_beat_duration = GetHeartBeatDuration();
-  }
-
   DCHECK_EQ(client_info_.heart_beat_signaller_source().channel_defs_size(), 1);
   DCHECK_EQ(client_info_.heart_beat_signaller_source().channel_defs(0).type(),
             ChannelDef::CHANNEL_TYPE_TCP);
@@ -76,7 +82,7 @@ void HeartBeatListener::TryReceiveHeartBeat() {
     timeout_.Reset(
         base::BindOnce(&HeartBeatListener::KillSelf, base::Unretained(this)));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, timeout_.callback(), kMultiplier * g_heart_beat_duration);
+        FROM_HERE, timeout_.callback(), kMultiplier * heart_beat_duration_);
   }
   channel_->ReceiveMessage(
       &heart_beat_,
@@ -96,7 +102,7 @@ void HeartBeatListener::OnAlive(const Status& s) {
       FROM_HERE,
       base::BindOnce(&HeartBeatListener::TryReceiveHeartBeat,
                      base::Unretained(this)),
-      g_heart_beat_duration);
+      heart_beat_duration_);
 }
 
 void HeartBeatListener::KillSelf() {

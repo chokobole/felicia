@@ -40,6 +40,7 @@ class HeartBeatListener {
   void KillSelf();
 
   ClientInfo client_info_;
+  base::TimeDelta heart_beat_duration_;
   OnDisconnectCallback callback_;
   HeartBeat heart_beat_;
   std::unique_ptr<Channel<HeartBeat>> channel_;
