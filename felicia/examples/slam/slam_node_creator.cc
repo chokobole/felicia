@@ -1,7 +1,9 @@
 #include "felicia/core/felicia_init.h"
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/examples/slam/hector_slam/hector_slam_node.h"
+#if defined(HAS_ORB_SLAM2)
 #include "felicia/examples/slam/orb_slam2/orb_slam2_node.h"
+#endif
 #include "felicia/examples/slam/slam_node_create_flag.h"
 
 namespace felicia {
@@ -28,10 +30,13 @@ int RealMain(int argc, char* argv[]) {
   if (delegate.slam_kind() == SlamNodeCreateFlag::SLAM_KIND_HECTOR_SLAM) {
     master_proxy.RequestRegisterNode<hector_slam::HectorSlamNode>(node_info,
                                                                   delegate);
-  } else if (delegate.slam_kind() == SlamNodeCreateFlag::SLAM_KIND_ORB_SLAM2) {
+  }
+#if defined(HAS_ORB_SLAM2)
+  else if (delegate.slam_kind() == SlamNodeCreateFlag::SLAM_KIND_ORB_SLAM2) {
     master_proxy.RequestRegisterNode<orb_slam2::OrbSlam2Node>(node_info,
                                                               delegate);
   }
+#endif
 
   master_proxy.Run();
 

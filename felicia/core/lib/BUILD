@@ -126,8 +126,8 @@ fel_cc_test(
     srcs = [
         "base/choices_test.cc",
         "base/range_test.cc",
-        "containers/pool_test.cc",
         "containers/data_test.cc",
+        "containers/pool_test.cc",
         "coordinate/coordinate_test.cc",
         "file/buffered_reader_test.cc",
         "file/buffered_writer_test.cc",

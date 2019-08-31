@@ -22,3 +22,6 @@ toolchain/emscripten_cache
 
 # Log related
 *.log
+
+# Example related
+ORB_SLAM2/

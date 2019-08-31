@@ -187,6 +187,15 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
+# Example build with ORB_SLAM2
+config_setting(
+    name = "has_orb_slam2",
+    define_values = {
+        "has_orb_slam2": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
 config_setting(
     name = "asan",
     define_values = {

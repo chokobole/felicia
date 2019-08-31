@@ -169,6 +169,12 @@ def if_has_zed(a):
         "//conditions:default": [],
     })
 
+def if_has_orb_slam2(a):
+    return select({
+        "//felicia:has_orb_slam2": a,
+        "//conditions:default": [],
+    })
+
 def fel_zlib_deps():
     return select({
         "//felicia:win_no_grpc": ["@node_addon_api"],

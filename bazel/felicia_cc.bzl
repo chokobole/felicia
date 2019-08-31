@@ -154,6 +154,7 @@ def deps_with_felicia_headers(deps):
         if (
             not dep.startswith("@") and
             not dep.startswith("//third_party") and
+            not dep.startswith(":@") and
             not dep == "//felicia:felicia" and
             not dep == "//felicia"
         )
