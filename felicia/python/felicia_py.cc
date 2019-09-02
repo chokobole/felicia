@@ -39,7 +39,7 @@ void AddGlobalFunctions(py::module& m) {
          else if (severity == ::logging::LOG_FATAL)
            LOG(FATAL) << text;
        },
-       py::arg("severity"), py::arg("text"))
+       py::arg("severity"), py::arg("text") = base::EmptyString())
       .def(
           "log_if",
           [](::logging::LogSeverity severity, bool condition,
@@ -53,7 +53,8 @@ void AddGlobalFunctions(py::module& m) {
             else if (severity == ::logging::LOG_FATAL)
               LOG_IF(FATAL, condition) << text;
           },
-          py::arg("severity"), py::arg("condition"), py::arg("text"))
+          py::arg("severity"), py::arg("condition"),
+          py::arg("text") = base::EmptyString())
       .def(
           "check",
           [](bool condition, const std::string& text) {

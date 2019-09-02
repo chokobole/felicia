@@ -46,15 +46,12 @@ void DynamicSubscribingNode::RequestSubscribe(
   auto subscriber = std::make_unique<DynamicSubscriber>();
 
   subscriber->RequestSubscribe(
-      node_info_, topic,
-      ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_UDP,
+      node_info_, topic, AllChannelTypes(), settings,
+      base::BindRepeating(&DynamicSubscribingNode::OneTopicDelegate::OnMessage,
+                          base::Unretained(one_topic_delegate_.get())),
       base::BindRepeating(
-          &DynamicSubscribingNode::OneTopicDelegate::OnNewMessage,
+          &DynamicSubscribingNode::OneTopicDelegate::OnMessageError,
           base::Unretained(one_topic_delegate_.get())),
-      base::BindRepeating(
-          &DynamicSubscribingNode::OneTopicDelegate::OnSubscriptionError,
-          base::Unretained(one_topic_delegate_.get())),
-      settings,
       base::BindOnce(&DynamicSubscribingNode::OnRequestSubscribe,
                      base::Unretained(this), topic));
 
@@ -115,13 +112,13 @@ void DynamicSubscribingNode::Subscribe(
   auto subscriber = std::make_unique<DynamicSubscriber>();
 
   subscriber->Subscribe(
+      settings,
       base::BindRepeating(
-          &DynamicSubscribingNode::MultiTopicDelegate::OnNewMessage,
+          &DynamicSubscribingNode::MultiTopicDelegate::OnMessage,
           base::Unretained(multi_topic_delegate_.get()), topic),
       base::BindRepeating(
-          &DynamicSubscribingNode::MultiTopicDelegate::OnSubscriptionError,
-          base::Unretained(multi_topic_delegate_.get()), topic),
-      settings);
+          &DynamicSubscribingNode::MultiTopicDelegate::OnMessageError,
+          base::Unretained(multi_topic_delegate_.get()), topic));
   subscriber->OnFindPublisher(topic_info);
 
   subscribers_[topic] = std::move(subscriber);

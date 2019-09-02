@@ -15,6 +15,7 @@ fel_cc_binary(
         "//felicia:has_realsense": [
             "realsense/rs_camera_flag.cc",
             "realsense/rs_camera_flag.h",
+            "realsense/rs_camera_publishing_node.cc",
             "realsense/rs_camera_publishing_node.h",
             "realsense/rs_camera_node_creator.cc",
         ],

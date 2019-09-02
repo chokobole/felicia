@@ -26,15 +26,14 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //=================================================================================================
 
-#ifndef FELICIA_EXAMPLES_SLAM_HECTOR_SLAM_HECTOR_SLAM_FLAG_H_
-#define FELICIA_EXAMPLES_SLAM_HECTOR_SLAM_HECTOR_SLAM_FLAG_H_
+#ifndef FELICIA_EXAMPLES_SLAM_HECTOR_SLAM_FLAG_H_
+#define FELICIA_EXAMPLES_SLAM_HECTOR_SLAM_FLAG_H_
 
 #include <memory>
 
 #include "felicia/core/util/command_line_interface/flag.h"
 
 namespace felicia {
-namespace hector_slam {
 
 class HectorSlamFlag : public FlagParser::Delegate {
  public:
@@ -106,7 +105,6 @@ class HectorSlamFlag : public FlagParser::Delegate {
   std::unique_ptr<FloatDefaultFlag> laser_max_dist_flag_;
 };
 
-}  // namespace hector_slam
 }  // namespace felicia
 
-#endif  // FELICIA_EXAMPLES_SLAM_HECTOR_SLAM_HECTOR_SLAM_FLAG_H_
+#endif  // FELICIA_EXAMPLES_SLAM_HECTOR_SLAM_FLAG_H_

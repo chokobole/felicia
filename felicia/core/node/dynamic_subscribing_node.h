@@ -22,12 +22,17 @@ class DynamicSubscribingNode : public NodeLifecycle {
     virtual ~OneTopicDelegate() = default;
 
     virtual void OnDidCreate(DynamicSubscribingNode* node) = 0;
-    virtual void OnError(const Status& s) = 0;
+    virtual void OnError(const Status& s) { LOG(ERROR) << s; }
 
-    virtual void OnNewMessage(DynamicProtobufMessage&& message) = 0;
-    virtual void OnSubscriptionError(const Status& s) = 0;
-    virtual void OnRequestSubscribe(const Status& s) = 0;
-    virtual void OnRequestUnsubscribe(const Status& s) = 0;
+    virtual void OnMessage(DynamicProtobufMessage&& message) = 0;
+    virtual void OnMessageError(const Status& s) { LOG(ERROR) << s; }
+
+    virtual void OnRequestSubscribe(const Status& s) {
+      LOG_IF(ERROR, !s.ok()) << s;
+    }
+    virtual void OnRequestUnsubscribe(const Status& s) {
+      LOG_IF(ERROR, !s.ok()) << s;
+    }
   };
 
   class MultiTopicDelegate {
@@ -35,12 +40,13 @@ class DynamicSubscribingNode : public NodeLifecycle {
     virtual ~MultiTopicDelegate() = default;
 
     virtual void OnDidCreate(DynamicSubscribingNode* node) = 0;
-    virtual void OnError(const Status& s) = 0;
+    virtual void OnError(const Status& s) { LOG(ERROR) << s; }
 
-    virtual void OnNewMessage(const std::string& topic,
-                              DynamicProtobufMessage&& message) = 0;
-    virtual void OnSubscriptionError(const std::string& topic,
-                                     const Status& s) = 0;
+    virtual void OnMessage(const std::string& topic,
+                           DynamicProtobufMessage&& message) = 0;
+    virtual void OnMessageError(const std::string& topic, const Status& s) {
+      LOG(ERROR) << s << "from the topic " << topic;
+    }
   };
 
   explicit DynamicSubscribingNode(std::unique_ptr<OneTopicDelegate> delegate);

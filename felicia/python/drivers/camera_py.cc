@@ -89,20 +89,24 @@ void AddCamera(py::module& m) {
                     &PyStatusCallback::Invoke,
                     base::Owned(new PyStatusCallback(on_error_callback))));
           },
+          py::arg("camera_format"), py::arg("on_camera_frame_callback"),
+          py::arg("on_error_callback"),
           py::call_guard<py::gil_scoped_release>())
       .def("stop", &CameraInterface::Stop,
            py::call_guard<py::gil_scoped_release>())
       .def("set_camera_settings", &CameraInterface::SetCameraSettings)
-      .def("get_camera_settings_info",
-           [](CameraInterface& self, py::object object) {
-             CameraSettingsInfoMessage message;
-             Status s = self.GetCameraSettingsInfo(&message);
+      .def(
+          "get_camera_settings_info",
+          [](CameraInterface& self, py::object object) {
+            CameraSettingsInfoMessage message;
+            Status s = self.GetCameraSettingsInfo(&message);
 
-             std::string text;
-             message.SerializeToString(&text);
-             object.attr("ParseFromString")(py::bytes(text));
-             return s;
-           })
+            std::string text;
+            message.SerializeToString(&text);
+            object.attr("ParseFromString")(py::bytes(text));
+            return s;
+          },
+          py::arg("object"))
       .def("is_initialized", &CameraInterface::IsInitialized)
       .def("is_started", &CameraInterface::IsStarted)
       .def("is_stopped", &CameraInterface::IsStopped)
@@ -117,8 +121,10 @@ void AddCamera(py::module& m) {
   py::class_<CameraFormat>(m, "CameraFormat")
       .def(py::init([](int width, int height, PixelFormat pixel_format,
                        float frame_rate) {
-        return new CameraFormat(width, height, pixel_format, frame_rate);
-      }))
+             return new CameraFormat(width, height, pixel_format, frame_rate);
+           }),
+           py::arg("width"), py::arg("height"), py::arg("pixel_format"),
+           py::arg("frame_rate"))
       .def_property("pixel_format", &CameraFormat::pixel_format,
                     &CameraFormat::set_pixel_format)
       .def_property("width", &CameraFormat::width,
@@ -134,17 +140,19 @@ void AddCamera(py::module& m) {
       .def("__str__", &CameraFormat::ToString);
 
   py::class_<CameraFrame>(m, "CameraFrame", py::buffer_protocol())
-      .def(py::init(
-          [](py::array_t<uint8_t, py::array::c_style | py::array::forcecast>
-                 array,
-             const CameraFormat& camera_format, base::TimeDelta timestamp) {
-            if (!camera_format.HasFixedSizedChannelPixelFormat()) {
-              NotHaveFixedSizedChannelPixelFormat();
-            }
+      .def(
+          py::init(
+              [](py::array_t<uint8_t, py::array::c_style | py::array::forcecast>
+                     array,
+                 const CameraFormat& camera_format, base::TimeDelta timestamp) {
+                if (!camera_format.HasFixedSizedChannelPixelFormat()) {
+                  NotHaveFixedSizedChannelPixelFormat();
+                }
 
-            Data data(array.data(), array.size());
-            return CameraFrame(std::move(data), camera_format, timestamp);
-          }))
+                Data data(array.data(), array.size());
+                return CameraFrame(std::move(data), camera_format, timestamp);
+              }),
+          py::arg("array"), py::arg("camera_format"), py::arg("timestamp"))
       .def_property_readonly("length", &CameraFrame::length)
       .def_property_readonly("camera_format", &CameraFrame::camera_format)
       .def_property_readonly("width", &CameraFrame::width)
@@ -180,17 +188,20 @@ void AddCamera(py::module& m) {
               list.append(camera_descriptor);
             }
             return s;
-          })
-      .def_static("get_supported_camera_formats",
-                  [](const CameraDescriptor& camera_descriptor, py::list list) {
-                    CameraFormats camera_formats;
-                    Status s = CameraFactory::GetSupportedCameraFormats(
-                        camera_descriptor, &camera_formats);
-                    for (auto& camera_format : camera_formats) {
-                      list.append(camera_format);
-                    }
-                    return s;
-                  });
+          },
+          py::arg("camera_descriptors"))
+      .def_static(
+          "get_supported_camera_formats",
+          [](const CameraDescriptor& camera_descriptor, py::list list) {
+            CameraFormats camera_formats;
+            Status s = CameraFactory::GetSupportedCameraFormats(
+                camera_descriptor, &camera_formats);
+            for (auto& camera_format : camera_formats) {
+              list.append(camera_format);
+            }
+            return s;
+          },
+          py::arg("camera_descriptor"), py::arg("camera_formats"));
 }
 
 }  // namespace drivers

@@ -52,4 +52,24 @@ std::ostream& operator<<(std::ostream& os, const Status& status) {
   return os;
 }
 
+namespace internal {
+
+void LogOrCallback(StatusOnceCallback callback, const Status& s) {
+  if (callback.is_null()) {
+    LOG_IF(ERROR, !s.ok()) << s;
+  } else {
+    std::move(callback).Run(s);
+  }
+}
+
+void LogOrCallback(StatusCallback callback, const Status& s) {
+  if (callback.is_null()) {
+    LOG_IF(ERROR, !s.ok()) << s;
+  } else {
+    callback.Run(s);
+  }
+}
+
+}  // namespace internal
+
 }  // namespace felicia

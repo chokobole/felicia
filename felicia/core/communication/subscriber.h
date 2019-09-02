@@ -49,21 +49,21 @@ class Subscriber {
 
   void RequestSubscribe(const NodeInfo& node_info, const std::string& topic,
                         int channel_types,
-                        OnMessageCallback on_message_callback,
-                        StatusCallback on_error_callback,
                         const communication::Settings& settings,
-                        StatusOnceCallback callback);
+                        OnMessageCallback on_message_callback,
+                        StatusCallback on_error_callback = StatusCallback(),
+                        StatusOnceCallback callback = StatusOnceCallback());
 
   void RequestUnsubscribe(const NodeInfo& node_info, const std::string& topic,
-                          StatusOnceCallback callback);
+                          StatusOnceCallback callback = StatusOnceCallback());
 
  protected:
   void OnSubscribeTopicAsync(SubscribeTopicRequest* request,
                              SubscribeTopicResponse* response,
                              int channel_types,
+                             const communication::Settings& settings,
                              OnMessageCallback on_message_callback,
                              StatusCallback on_error_callback,
-                             const communication::Settings& settings,
                              StatusOnceCallback callback, const Status& s);
   void OnUnubscribeTopicAsync(UnsubscribeTopicRequest* request,
                               UnsubscribeTopicResponse* response,
@@ -74,7 +74,7 @@ class Subscriber {
   void OnConnectToPublisher(const Status& s);
 
   void StartMessageLoop();
-  void StopMessageLoop(StatusOnceCallback callback);
+  void StopMessageLoop(StatusOnceCallback callback = StatusOnceCallback());
 
   void ReceiveMessageLoop();
   void OnReceiveMessage(const Status& s);
@@ -109,10 +109,12 @@ class Subscriber {
 template <typename MessageTy>
 void Subscriber<MessageTy>::RequestSubscribe(
     const NodeInfo& node_info, const std::string& topic, int channel_types,
+    const communication::Settings& settings,
     OnMessageCallback on_message_callback, StatusCallback on_error_callback,
-    const communication::Settings& settings, StatusOnceCallback callback) {
+    StatusOnceCallback callback) {
   if (!IsUnregistered()) {
-    std::move(callback).Run(register_state_.InvalidStateError());
+    internal::LogOrCallback(std::move(callback),
+                            register_state_.InvalidStateError());
     return;
   }
 
@@ -126,10 +128,10 @@ void Subscriber<MessageTy>::RequestSubscribe(
 
   master_proxy.SubscribeTopicAsync(
       request, response,
-      base::BindOnce(&Subscriber<MessageTy>::OnSubscribeTopicAsync,
-                     base::Unretained(this), base::Owned(request),
-                     base::Owned(response), channel_types, on_message_callback,
-                     on_error_callback, settings, std::move(callback)),
+      base::BindOnce(
+          &Subscriber<MessageTy>::OnSubscribeTopicAsync, base::Unretained(this),
+          base::Owned(request), base::Owned(response), channel_types, settings,
+          on_message_callback, on_error_callback, std::move(callback)),
       base::BindRepeating(&Subscriber<MessageTy>::OnFindPublisher,
                           base::Unretained(this)));
 }
@@ -139,7 +141,8 @@ void Subscriber<MessageTy>::RequestUnsubscribe(const NodeInfo& node_info,
                                                const std::string& topic,
                                                StatusOnceCallback callback) {
   if (!IsRegistered()) {
-    std::move(callback).Run(register_state_.InvalidStateError());
+    internal::LogOrCallback(std::move(callback),
+                            register_state_.InvalidStateError());
     return;
   }
 
@@ -162,17 +165,18 @@ void Subscriber<MessageTy>::RequestUnsubscribe(const NodeInfo& node_info,
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnSubscribeTopicAsync(
     SubscribeTopicRequest* request, SubscribeTopicResponse* response,
-    int channel_types, OnMessageCallback on_message_callback,
-    StatusCallback on_error_callback, const communication::Settings& settings,
+    int channel_types, const communication::Settings& settings,
+    OnMessageCallback on_message_callback, StatusCallback on_error_callback,
     StatusOnceCallback callback, const Status& s) {
   if (!IsRegistering()) {
-    std::move(callback).Run(register_state_.InvalidStateError());
+    internal::LogOrCallback(std::move(callback),
+                            register_state_.InvalidStateError());
     return;
   }
 
   if (!s.ok()) {
     register_state_.ToUnregistered(FROM_HERE);
-    std::move(callback).Run(s);
+    internal::LogOrCallback(std::move(callback), s);
     return;
   }
 
@@ -182,7 +186,7 @@ void Subscriber<MessageTy>::OnSubscribeTopicAsync(
   settings_ = settings;
 
   register_state_.ToRegistered(FROM_HERE);
-  std::move(callback).Run(s);
+  internal::LogOrCallback(std::move(callback), s);
 }
 
 template <typename MessageTy>
@@ -190,19 +194,20 @@ void Subscriber<MessageTy>::OnUnubscribeTopicAsync(
     UnsubscribeTopicRequest* request, UnsubscribeTopicResponse* response,
     StatusOnceCallback callback, const Status& s) {
   if (!IsUnregistering()) {
-    std::move(callback).Run(register_state_.InvalidStateError());
+    internal::LogOrCallback(std::move(callback),
+                            register_state_.InvalidStateError());
     return;
   }
 
   if (!s.ok()) {
     register_state_.ToRegistered(FROM_HERE);
-    std::move(callback).Run(s);
+    internal::LogOrCallback(std::move(callback), s);
     return;
   }
 
   register_state_.ToUnregistered(FROM_HERE);
-  StopMessageLoop(StatusOnceCallback{});
-  std::move(callback).Run(s);
+  StopMessageLoop();
+  internal::LogOrCallback(std::move(callback), s);
 }
 
 template <typename MessageTy>
@@ -222,7 +227,7 @@ void Subscriber<MessageTy>::OnFindPublisher(const TopicInfo& topic_info) {
 
   if (topic_info.status() == TopicInfo::UNREGISTERED) {
     if (IsStarted()) {
-      StopMessageLoop(StatusOnceCallback{});
+      StopMessageLoop();
     }
     return;
   }
@@ -269,7 +274,8 @@ void Subscriber<MessageTy>::ConnectToPublisher() {
 
   if (matched_channel_def.type() == ChannelDef::CHANNEL_TYPE_NONE) {
     channel_.reset();
-    on_error_callback_.Run(
+    internal::LogOrCallback(
+        on_error_callback_,
         errors::Unavailable("Failed to connect to publisher."));
     return;
   }
@@ -340,7 +346,8 @@ void Subscriber<MessageTy>::StopMessageLoop(StatusOnceCallback callback) {
 
   if (IsStopped() || IsStopping()) {
     LOG(ERROR) << "Tried stopping again";
-    std::move(callback).Run(errors::Aborted("Already stopping or stopped."));
+    if (!callback.is_null())
+      std::move(callback).Run(errors::Aborted("Already stopping or stopped."));
     return;
   }
 
@@ -368,14 +375,14 @@ void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
     Status new_status(s.error_code(),
                       base::StringPrintf("Failed to receive a message: %s",
                                          s.error_message().c_str()));
-    on_error_callback_.Run(new_status);
+    internal::LogOrCallback(on_error_callback_, new_status);
     if (channel_->IsTCPChannel() && !channel_->ToTCPChannel()->IsConnected()) {
-      StopMessageLoop(StatusOnceCallback{});
+      StopMessageLoop();
       return;
     }
     receive_message_failed_cnt_++;
     if (receive_message_failed_cnt_ >= kMaximumReceiveMessageFailedAllowed) {
-      StopMessageLoop(StatusOnceCallback{});
+      StopMessageLoop();
       return;
     }
   }

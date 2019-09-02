@@ -17,12 +17,19 @@ class DynamicPublishingNode : public NodeLifecycle {
     virtual ~Delegate() = default;
 
     virtual void OnDidCreate(DynamicPublishingNode* node) = 0;
-    virtual void OnError(const Status& s) = 0;
+    virtual void OnError(const Status& s) { LOG(ERROR) << s; }
 
-    virtual void OnRequestPublish(const Status& s) = 0;
-    virtual void OnRequestUnpublish(const Status& s) = 0;
+    virtual void OnRequestPublish(const Status& s) {
+      LOG_IF(ERROR, !s.ok()) << s;
+    }
 
-    virtual void OnPublish(ChannelDef::Type type, const Status& s) = 0;
+    virtual void OnRequestUnpublish(const Status& s) {
+      LOG_IF(ERROR, !s.ok()) << s;
+    }
+
+    virtual void OnPublish(ChannelDef::Type type, const Status& s) {
+      LOG_IF(ERROR, !s.ok()) << s << " from " << ChannelDef::Type_Name(type);
+    }
   };
 
   explicit DynamicPublishingNode(std::unique_ptr<Delegate> delegate);

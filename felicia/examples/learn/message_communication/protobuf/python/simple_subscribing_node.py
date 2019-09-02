@@ -22,6 +22,22 @@ class SimpleSubscribingNode(fel.NodeLifecycle):
         print("SimpleSubscribingNode.on_error()")
         fel.log(fel.ERROR, status.error_message())
 
+    def on_message(self, message):
+        print("SimpleSubscribingNode.on_message()")
+        print("message : {}".format(message))
+
+    def on_message_error(self, status):
+        print("SimpleSubscribingNode.on_message_error()")
+        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
+
+    def on_request_subscribe(self, status):
+        print("SimpleSubscribingNode.on_request_subscribe()")
+        fel.log(fel.ERROR, status.error_message())
+
+    def on_request_unsubscribe(self, status):
+        print("SimpleSubscribingNode.on_request_unsubscribe()")
+        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
+
     def request_subscribe(self):
         settings = fel.communication.Settings()
         settings.buffer_size = fel.Bytes.from_bytes(512)
@@ -31,28 +47,13 @@ class SimpleSubscribingNode(fel.NodeLifecycle):
                                           ChannelDef.CHANNEL_TYPE_UDP |
                                           ChannelDef.CHANNEL_TYPE_UDS |
                                           ChannelDef.CHANNEL_TYPE_SHM,
-                                          MessageSpec, self.on_message, self.on_subscription_error,
-                                          settings, self.on_request_subscribe)
+                                          MessageSpec, settings,
+                                          self.on_message, self.on_message_error,
+                                          self.on_request_subscribe)
 
         # fel.MasterProxy.post_delayed_task(
         #         self.request_unsubscribe, fel.from_seconds(10))
 
-    def on_message(self, message):
-        print("SimpleSubscribingNode.on_message()")
-        print("message : {}".format(message))
-
-    def on_subscription_error(self, status):
-        print("SimpleSubscribingNode.on_subscription_error()")
-        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
-
-    def on_request_subscribe(self, status):
-        print("SimpleSubscribingNode.on_request_subscribe()")
-        fel.log(fel.ERROR, status.error_message())
-
     def request_unsubscribe(self):
         self.subscriber.request_unsubscribe(
             self.node_info, self.topic, self.on_request_unsubscribe)
-
-    def on_request_unsubscribe(self, status):
-        print("SimpleSubscribingNode.on_request_unsubscribe()")
-        fel.log_if(fel.ERROR, not status.ok(), status.error_message())

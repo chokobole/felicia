@@ -15,10 +15,11 @@ class DynamicPublisher : public Publisher<DynamicProtobufMessage> {
   void ResetMessage(const std::string& message_type);
 
   void PublishFromJson(const std::string& json_message,
-                       SendMessageCallback callback);
+                       SendMessageCallback callback = SendMessageCallback());
 
-  void PublishFromSerialized(const std::string& serialized,
-                             SendMessageCallback callback);
+  void PublishFromSerialized(
+      const std::string& serialized,
+      SendMessageCallback callback = SendMessageCallback());
 
  private:
   std::string GetMessageTypeName() const override;

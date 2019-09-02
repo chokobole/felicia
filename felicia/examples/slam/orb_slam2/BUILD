@@ -43,17 +43,17 @@ cc_library(
 fel_cc_library(
     name = "orb_slam2_node",
     srcs = if_has_orb_slam2([
-        "orb_slam2_flag.cc",
+        "orb_slam2_node.cc",
     ]),
     hdrs = if_has_orb_slam2([
-        "orb_slam2_flag.h",
         "orb_slam2_node.h",
     ]),
     deps = if_has_orb_slam2([
         ":@orb_slam2",
-        "//felicia/core/util",
+        "//felicia/core/communication",
         "//felicia/drivers/camera",
         "//felicia/drivers/pointcloud",
+        "//felicia/examples/slam:slam_node_create_flag",
         "//felicia/slam",
     ]),
 )

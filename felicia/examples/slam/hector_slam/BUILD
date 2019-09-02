@@ -6,14 +6,13 @@ fel_cc_library(
     name = "hector_slam_node",
     srcs = [
         "hector_slam.cc",
-        "hector_slam_flag.cc",
+        "hector_slam_node.cc",
         "log_odds_occupancy_grid_map.cc",
         "multi_resolution_grid_map.cc",
         "point_container.cc",
     ],
     hdrs = [
         "hector_slam.h",
-        "hector_slam_flag.h",
         "hector_slam_node.h",
         "log_odds_occupancy_grid_map.h",
         "multi_resolution_grid_map.h",
@@ -21,8 +20,9 @@ fel_cc_library(
         "scan_matcher.h",
     ],
     deps = [
-        "//felicia/core/util",
+        "//felicia/core/communication",
         "//felicia/drivers/lidar",
+        "//felicia/examples/slam:slam_node_create_flag",
         "//felicia/slam",
     ],
 )

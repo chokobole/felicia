@@ -56,11 +56,11 @@ Now register Node. It depends on whether you pass the `-p` flag.
 
 ```python
 if delegate.is_publshing_node_flag.value:
-      fel.MasterProxy.request_register_node(
-          SimplePublishingNode, node_info, delegate.topic_flag.value, delegate.channel_type_flag.value)
+    fel.MasterProxy.request_register_node(
+        SimplePublishingNode, node_info, delegate)
 else:
     fel.MasterProxy.request_register_node(
-        SimpleSubscribingNode, node_info, delegate.topic_flag.value)
+        SimpleSubscribingNode, node_info, delegate)
 ```
 
 Lastly Run MasterProxy. This will blocks until `stop()` is called.
@@ -75,10 +75,11 @@ Now look into the [simple_publishing_node.py](simple_publishing_node.py). Becaus
 import felicia_py as fel
 
 class SimplePublishingNode(fel.NodeLifecycle):
-    def __init__(self, topic, channel_type):
+    def __init__(self, node_create_flag):
         super().__init__()
-        self.topic = topic
-        self.channel_def_type = ChannelDef.Type.Value(channel_type)
+        self.topic = node_create_flag.topic_flag.value
+        self.channel_def_type = ChannelDef.Type.Value(node_create_flag.channel_type_flag.value)
+        self.publisher = fel.communication.Publisher()
         ...
 
     def on_init(self):
@@ -114,6 +115,10 @@ def request_publish(self):
 If request is successfully delivered to the server, then callback `on_request_publish(status)` will be called. Here simply we call `Publish` api every 1 second. But you can publish a topic whenever you want to.
 
 ```python
+def on_publish(self, status):
+    print("SimplePublishingNode.on_request_publish()")
+    fel.log_if(fel.ERROR, not status.ok(), status.error_message())
+
 def on_request_publish(self, status):
     print("SimplePublishingNode.on_request_publish()")
     fel.log_if(fel.ERROR, not status.ok(), status.error_message())
@@ -125,17 +130,14 @@ def repeating_publish(self):
     if not self.publisher.is_unregistered():
         fel.MasterProxy.post_delayed_task(
             self.repeating_publish, fel.from_seconds(1))
-
-def on_publish(self, status):
-    print("SimplePublishingNode.on_request_publish()")
-    fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 ```
 
 To use `Unpublish` method, you have to do like below.
 
 ```python
-self.publisher.request_unpublish(self.node_info, self.topic,
-                                 self.on_request_unpublish)
+def request_unpublish(self):
+    self.publisher.request_unpublish(self.node_info, self.topic,
+                                        self.on_request_unpublish)
 ```
 
 Same with above, if request is successfully delivered to the server, then callback
@@ -156,9 +158,12 @@ def request_subscribe(self):
 
     self.subscriber.request_subscribe(self.node_info, self.topic,
                                       ChannelDef.CHANNEL_TYPE_TCP |
-                                      ChannelDef.CHANNEL_TYPE_UDP,
-                                      MessageSpec, self.on_message, self.on_subscription_error,
-                                      settings, self.on_request_subscribe)
+                                      ChannelDef.CHANNEL_TYPE_UDP |
+                                      ChannelDef.CHANNEL_TYPE_UDS |
+                                      ChannelDef.CHANNEL_TYPE_SHM,
+                                      MessageSpec, settings,
+                                      self.on_message, self.on_message_error,
+                                      self.on_request_subscribe)
 ```
 
 `Settings` looks like below.
@@ -200,12 +205,12 @@ Here, `period` is a type of `felicia_py.TimeDelta`, `queue_size` is `int` of 1by
 To `Unsubscribe`, it's also very similar.
 
 ```python
-def request_unsubscribe(self):
-    self.subscriber.request_unsubscribe(
-        self.node_info, self.topic, self.on_request_unsubscribe)
-
 def on_request_unsubscribe(self, status):
     print("SimpleSubscribingNode.on_request_unsubscribe()")
     fel.log_if(fel.ERROR, not status.ok(), status.error_message())
+
+def request_unsubscribe(self):
+    self.subscriber.request_unsubscribe(
+        self.node_info, self.topic, self.on_request_unsubscribe)
 ```
 

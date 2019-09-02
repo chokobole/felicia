@@ -133,19 +133,23 @@ void AddCommandLineInterface(py::module& m) {
       .def("CollectNamedHelps", &FlagParser::Delegate::CollectNamedHelps);
 
   py::class_<TextStyle>(command_line_interface, "TextStyle")
-      .def_static("red",
-                  [](const std::string& text) { return TextStyle::Red(text); })
+      .def_static(
+          "red", [](const std::string& text) { return TextStyle::Red(text); },
+          py::arg("text"))
       .def_static(
           "green",
-          [](const std::string& text) { return TextStyle::Green(text); })
-      .def_static("blue",
-                  [](const std::string& text) { return TextStyle::Blue(text); })
+          [](const std::string& text) { return TextStyle::Green(text); },
+          py::arg("text"))
+      .def_static(
+          "blue", [](const std::string& text) { return TextStyle::Blue(text); },
+          py::arg("text"))
       .def_static(
           "yellow",
-          [](const std::string& text) { return TextStyle::Yellow(text); })
-      .def_static("bold", [](const std::string& text) {
-        return TextStyle::Bold(text);
-      });
+          [](const std::string& text) { return TextStyle::Yellow(text); },
+          py::arg("text"))
+      .def_static(
+          "bold", [](const std::string& text) { return TextStyle::Bold(text); },
+          py::arg("text"));
 
   py::class_<FlagParser>(command_line_interface, "FlagParser")
       .def(py::init<>())
@@ -163,6 +167,7 @@ void AddCommandLineInterface(py::module& m) {
             }
             return self.Parse(argc, tmp_argv, &delegate);
           },
+          py::arg("argc"), py::arg("argv"), py::arg("delegate"),
           py::call_guard<py::gil_scoped_release>(),
           "Parse by passing every each |argv| to |flag|.");
 

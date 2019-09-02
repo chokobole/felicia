@@ -1,5 +1,6 @@
 #include "felicia/core/felicia_init.h"
 #include "felicia/core/master/master_proxy.h"
+#include "felicia/drivers/vendors/realsense/rs_camera_factory.h"
 #include "felicia/examples/learn/message_communication/depth_camera/cc/realsense/rs_camera_flag.h"
 #include "felicia/examples/learn/message_communication/depth_camera/cc/realsense/rs_camera_publishing_node.h"
 

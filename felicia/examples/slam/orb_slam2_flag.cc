@@ -1,7 +1,6 @@
-#include "felicia/examples/slam/orb_slam2/orb_slam2_flag.h"
+#include "felicia/examples/slam/orb_slam2_flag.h"
 
 namespace felicia {
-namespace orb_slam2 {
 
 OrbSlam2Flag::OrbSlam2Flag() {
   {
@@ -47,5 +46,4 @@ std::vector<NamedHelpType> OrbSlam2Flag::CollectNamedHelps() const {
   };
 }
 
-}  // namespace orb_slam2
 }  // namespace felicia

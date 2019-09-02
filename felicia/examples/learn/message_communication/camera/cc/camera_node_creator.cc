@@ -1,5 +1,6 @@
 #include "felicia/core/felicia_init.h"
 #include "felicia/core/master/master_proxy.h"
+#include "felicia/drivers/camera/camera_factory.h"
 #include "felicia/examples/learn/message_communication/camera/cc/camera_publishing_node.h"
 #include "felicia/examples/learn/message_communication/camera/cc/camera_subscribing_node.h"
 #include "felicia/examples/learn/message_communication/common/cc/camera_flag.h"

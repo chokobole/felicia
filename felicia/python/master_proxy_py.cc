@@ -116,7 +116,7 @@ void AddMasterProxy(py::module& m) {
                 base::BindOnce(&PyClosure::Invoke,
                                base::Owned(new PyClosure(callback))));
           },
-          py::call_guard<py::gil_scoped_release>())
+          py::arg("callback"), py::call_guard<py::gil_scoped_release>())
       .def_static(
           "post_delayed_task",
           [](py::function callback, base::TimeDelta delay) {
@@ -127,6 +127,7 @@ void AddMasterProxy(py::module& m) {
                                base::Owned(new PyClosure(callback))),
                 delay);
           },
+          py::arg("callback"), py::arg("delay"),
           py::call_guard<py::gil_scoped_release>());
 }
 

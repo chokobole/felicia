@@ -41,126 +41,23 @@ namespace hector_slam {
 
 class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
  public:
-  explicit HectorSlamNode(const SlamNodeCreateFlag& slam_node_create_flag)
-      : slam_node_create_flag_(slam_node_create_flag),
-        lidar_topic_(slam_node_create_flag_.lidar_topic_flag()->value()),
-        map_topic_(slam_node_create_flag_.map_topic_flag()->value()),
-        pose_topic_(slam_node_create_flag_.pose_topic_flag()->value()),
-        fps_(slam_node_create_flag_.lidar_fps_flag()->value()) {}
+  explicit HectorSlamNode(const SlamNodeCreateFlag& slam_node_create_flag);
 
-  void OnInit() override {
-    const HectorSlamFlag& hector_slam_flag =
-        slam_node_create_flag_.hector_slam_delegate();
-    int map_size = hector_slam_flag.map_size_flag()->value();
-    float map_resolution = hector_slam_flag.map_resolution_flag()->value();
-    float map_start_x = hector_slam_flag.map_start_x_flag()->value();
-    float map_start_y = hector_slam_flag.map_start_y_flag()->value();
-    int levels = hector_slam_flag.map_multi_res_levels_flag()->value();
-    float map_update_distance_thresh =
-        hector_slam_flag.map_update_distance_thresh_flag()->value();
-    float map_update_angle_thresh =
-        hector_slam_flag.map_update_angle_thresh_flag()->value();
-    float update_factor_free =
-        hector_slam_flag.update_factor_free_flag()->value();
-    float update_factor_occupied =
-        hector_slam_flag.update_factor_occupied_flag()->value();
-    float laser_min_dist = hector_slam_flag.laser_min_dist_flag()->value();
-    float laser_max_dist = hector_slam_flag.laser_max_dist_flag()->value();
-    hector_slam_ = std::make_unique<HectorSlam>(
-        this, Sizei{map_size, map_size}, map_resolution,
-        Pointf{map_start_x, map_start_y}, levels, map_update_distance_thresh,
-        map_update_angle_thresh, update_factor_free, update_factor_occupied,
-        laser_min_dist, laser_max_dist);
-  }
+  // NodeLifecycle methods
+  void OnInit() override;
+  void OnDidCreate(const NodeInfo& node_info) override;
 
-  void OnDidCreate(const NodeInfo& node_info) override {
-    node_info_ = node_info;
-    RequestSubscribe();
-    RequestPublish();
-  }
-
-  void OnError(const Status& s) override { LOG(ERROR) << s; }
-
-  void RequestSubscribe() {
-    communication::Settings settings;
-    settings.queue_size = 1;
-    settings.period = base::TimeDelta::FromSecondsD(1.0 / fps_);
-    settings.is_dynamic_buffer = true;
-
-    lidar_subscriber_.RequestSubscribe(
-        node_info_, lidar_topic_,
-        ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM,
-        base::BindRepeating(&HectorSlamNode::OnMessage, base::Unretained(this)),
-        base::BindRepeating(&HectorSlamNode::OnSubscriptionError,
-                            base::Unretained(this)),
-        settings,
-        base::BindOnce(&HectorSlamNode::OnRequestSubscribe,
-                       base::Unretained(this)));
-  }
-
-  void RequestPublish() {
-    communication::Settings settings;
-    settings.queue_size = 1;
-    settings.is_dynamic_buffer = true;
-    settings.channel_settings.ws_settings.permessage_deflate_enabled = false;
-
-    if (!pose_topic_.empty()) {
-      pose_publisher_.RequestPublish(
-          node_info_, pose_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
-          base::BindOnce(&HectorSlamNode::OnRequestPublish,
-                         base::Unretained(this)));
-    }
-
-    if (!map_topic_.empty()) {
-      map_publisher_.RequestPublish(
-          node_info_, map_topic_,
-          ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_WS, settings,
-          base::BindOnce(&HectorSlamNode::OnRequestPublish,
-                         base::Unretained(this)));
-    }
-  }
-
-  void OnMessage(drivers::LidarFrameMessage&& message) {
-    drivers::LidarFrame lidar_frame;
-    Status s = lidar_frame.FromLidarFrameMessage(std::move(message));
-    if (s.ok()) hector_slam_->Update(std::move(lidar_frame));
-  }
-
-  void OnSubscriptionError(const Status& s) { LOG(ERROR) << s; }
-
-  void OnRequestSubscribe(const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }
-
-  void OnRequestPublish(const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }
-
-  void OnPoseUpdated(const Posef& pose, base::TimeDelta timestamp) override {
-    if (pose_topic_.empty()) return;
-    if (!pose_publisher_.IsRegistered()) return;
-    pose_publisher_.Publish(PosefToPosefWithTimestampMessage(pose, timestamp),
-                            base::BindRepeating(&HectorSlamNode::OnPublishPose,
-                                                base::Unretained(this)));
-  }
-
+  // HectorSlam::Client methods
+  void OnPoseUpdated(const Posef& pose, base::TimeDelta timestamp) override;
   void OnMapUpdated(const MultiResolutionGridMap& map,
-                    base::TimeDelta timestamp) override {
-    if (map_topic_.empty()) return;
-    if (!map_publisher_.IsRegistered()) return;
-    slam::OccupancyGridMapMessage message =
-        map.ToOccupancyGridMapMessage(timestamp);
-    map_publisher_.Publish(std::move(message),
-                           base::BindRepeating(&HectorSlamNode::OnPublishMap,
-                                               base::Unretained(this)));
-  }
-
-  void OnPublishPose(ChannelDef::Type type, const Status& s) {
-    LOG_IF(ERROR, !s.ok()) << s << " from " << ChannelDef::Type_Name(type);
-  }
-
-  void OnPublishMap(ChannelDef::Type type, const Status& s) {
-    LOG_IF(ERROR, !s.ok()) << s << " from " << ChannelDef::Type_Name(type);
-  }
+                    base::TimeDelta timestamp) override;
 
  private:
+  void OnMessage(drivers::LidarFrameMessage&& message);
+
+  void RequestSubscribe();
+  void RequestPublish();
+
   NodeInfo node_info_;
   const SlamNodeCreateFlag& slam_node_create_flag_;
   const std::string lidar_topic_;

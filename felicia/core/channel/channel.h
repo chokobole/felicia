@@ -142,7 +142,6 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
                                      SendMessageCallback callback) {
   DCHECK(channel_impl_);
   DCHECK(!is_sending_);
-  DCHECK(!callback.is_null());
 
   send_buffer_.Reset();
   std::string text;
@@ -151,7 +150,8 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
     send_buffer_.InvalidateAttachment();
     WriteImpl(text, callback);
   } else {
-    callback.Run(type(), errors::Unavailable(MessageIoErrorToString(err)));
+    if (!callback.is_null())
+      callback.Run(type(), errors::Unavailable(MessageIoErrorToString(err)));
   }
 }
 
@@ -160,7 +160,6 @@ void Channel<MessageTy>::SendMessage(const std::string& serialized, bool reuse,
                                      SendMessageCallback callback) {
   DCHECK(channel_impl_);
   DCHECK(!is_sending_);
-  DCHECK(!callback.is_null());
 
   send_buffer_.Reset();
   if (!reuse) {
@@ -172,7 +171,7 @@ void Channel<MessageTy>::SendMessage(const std::string& serialized, bool reuse,
 template <typename MessageTy>
 void Channel<MessageTy>::OnSendMessage(const Status& s) {
   is_sending_ = false;
-  send_callback_.Run(type(), s);
+  if (!send_callback_.is_null()) send_callback_.Run(type(), s);
 }
 
 template <typename MessageTy>
@@ -210,7 +209,8 @@ void Channel<MessageTy>::WriteImpl(const std::string& text,
                               base::BindOnce(&Channel<MessageTy>::OnSendMessage,
                                              base::Unretained(this)));
   } else {
-    callback.Run(type(), errors::Unavailable(MessageIoErrorToString(err)));
+    if (!callback.is_null())
+      callback.Run(type(), errors::Unavailable(MessageIoErrorToString(err)));
   }
 }
 
@@ -293,6 +293,8 @@ EXPORT bool IsSameChannelDef(const ChannelDef& c, const ChannelDef& c2);
 // either |c| or |c2| is invalid or they are not same.
 EXPORT bool IsSameChannelSource(const ChannelSource& c,
                                 const ChannelSource& c2);
+
+EXPORT int AllChannelTypes();
 
 }  // namespace felicia
 

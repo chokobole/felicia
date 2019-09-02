@@ -1,12 +1,11 @@
-#ifndef FELICIA_EXAMPLES_SLAM_ORB_SLAM2_ORB_SLAM2_FLAG_H_
-#define FELICIA_EXAMPLES_SLAM_ORB_SLAM2_ORB_SLAM2_FLAG_H_
+#ifndef FELICIA_EXAMPLES_SLAM_ORB_SLAM2_FLAG_H_
+#define FELICIA_EXAMPLES_SLAM_ORB_SLAM2_FLAG_H_
 
 #include <memory>
 
 #include "felicia/core/util/command_line_interface/flag.h"
 
 namespace felicia {
-namespace orb_slam2 {
 
 class OrbSlam2Flag : public FlagParser::Delegate {
  public:
@@ -33,7 +32,6 @@ class OrbSlam2Flag : public FlagParser::Delegate {
   std::unique_ptr<StringFlag> settings_path_flag_;
 };
 
-}  // namespace orb_slam2
 }  // namespace felicia
 
-#endif  // FELICIA_EXAMPLES_SLAM_ORB_SLAM2_ORB_SLAM2_FLAG_H_
+#endif  // FELICIA_EXAMPLES_SLAM_ORB_SLAM2_FLAG_H_

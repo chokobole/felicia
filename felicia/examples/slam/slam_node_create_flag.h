@@ -1,9 +1,9 @@
 #ifndef FELICIA_EXAMPLES_SLAM_SLAM_NODE_CREATE_FLAG_H_
 #define FELICIA_EXAMPLES_SLAM_SLAM_NODE_CREATE_FLAG_H_
 
-#include "felicia/examples/slam/hector_slam/hector_slam_flag.h"
+#include "felicia/examples/slam/hector_slam_flag.h"
 #if defined(HAS_ORB_SLAM2)
-#include "felicia/examples/slam/orb_slam2/orb_slam2_flag.h"
+#include "felicia/examples/slam/orb_slam2_flag.h"
 #endif
 
 namespace felicia {
@@ -43,13 +43,11 @@ class SlamNodeCreateFlag : public FlagParser::Delegate {
     return lidar_fps_flag_.get();
   }
 
-  const hector_slam::HectorSlamFlag& hector_slam_delegate() const {
+  const HectorSlamFlag& hector_slam_delegate() const {
     return hector_slam_delegate_;
   }
 #if defined(HAS_ORB_SLAM2)
-  const orb_slam2::OrbSlam2Flag& orb_slam2_delegate() const {
-    return orb_slam2_delegate_;
-  }
+  const OrbSlam2Flag& orb_slam2_delegate() const { return orb_slam2_delegate_; }
 #endif
 
   SlamKind slam_kind() const { return current_slam_kind_; }
@@ -96,9 +94,9 @@ class SlamNodeCreateFlag : public FlagParser::Delegate {
   std::unique_ptr<FloatDefaultFlag> lidar_fps_flag_;
 
   SlamKind current_slam_kind_;
-  hector_slam::HectorSlamFlag hector_slam_delegate_;
+  HectorSlamFlag hector_slam_delegate_;
 #if defined(HAS_ORB_SLAM2)
-  orb_slam2::OrbSlam2Flag orb_slam2_delegate_;
+  OrbSlam2Flag orb_slam2_delegate_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SlamNodeCreateFlag);

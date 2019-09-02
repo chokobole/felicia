@@ -13,6 +13,7 @@ fel_cc_binary(
         "stereo_camera_flag.h",
     ] + select({
         "//felicia:has_zed": [
+            "zed/zed_camera_publishing_node.cc",
             "zed/zed_camera_publishing_node.h",
             "zed/zed_camera_node_creator.cc",
         ],

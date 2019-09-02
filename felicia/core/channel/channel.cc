@@ -90,4 +90,12 @@ bool IsSameChannelSource(const ChannelSource& c, const ChannelSource& c2) {
   return true;
 }
 
+int AllChannelTypes() {
+  int channel_types = 0;
+  for (int i = 1; i < ChannelDef_Type_Type_ARRAYSIZE; i = i << 1) {
+    channel_types |= i;
+  }
+  return channel_types;
+}
+
 }  // namespace felicia

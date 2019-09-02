@@ -40,13 +40,13 @@ On the subscriber side, if you type a command below, then you are successful to 
 bazel-bin/felicia/examples/learn/message_communication/camera/cc/camera_node_creator -t message
 ```
 
-Now look into the [camera_publishing_node.h](camera_publishing_node.h). In order to use camera, you should make a new camera instance using `CameraFactory::NewCamera()` and call `Init()`.
+Now look into the [camera_publishing_node.cc](camera_publishing_node.cc). In order to use camera, you should make a new camera instance using `CameraFactory::NewCamera()` and call `Init()`.
 
 ```c++
-void OnInit() override {
-  std::cout << "CameraPublishingNode::OnInit()" << std::endl;
-  camera_ = CameraFactory::NewCamera(camera_descriptor_);
-  CHECK(camera_->Init().ok());
+void CameraPublishingNode::OnInit() {
+  camera_ = drivers::CameraFactory::NewCamera(camera_descriptor_);
+  Status s = camera_->Init();
+  CHECK(s.ok()) << s;
 
   // You can set camera settings here.
   CameraSettings camera_settings;
@@ -55,24 +55,29 @@ void OnInit() override {
 
   CameraSettingsInfoMessage message;
   s = camera_->GetCameraSettingsInfo(&message);
-  std::cout << protobuf::ProtobufMessageToString(message) << std::endl;
+  if (s.ok()) {
+    std::cout << protobuf::ProtobufMessageToString(message) << std::endl;
+  } else {
+    LOG(ERROR) << s;
+  }
 }
 ```
 
 And then you should call `Start()`. But before call `Start()`, you should keep in mind that camera should run on the same thread whre you called `Init()`. We recommend you to run on the thread where `MasterProxy` is running on. Because currently on `window`, `MasterProxy` is responsible for initializing `COM`, and also we keep planning to implement something assuming that you run on that thread.
 
 ```c++
-void OnRequestPublish(const Status& s) {
-  std::cout << "CameraPublishingNode::OnRequestPublish()" << std::endl;
+void CameraPublishingNode::OnRequestPublish(const Status& s) {
   if (s.ok()) {
     MasterProxy& master_proxy = MasterProxy::GetInstance();
     master_proxy.PostTask(FROM_HERE,
                           base::BindOnce(&CameraPublishingNode::StartCamera,
-                                            base::Unretained(this)));
+                                         base::Unretained(this)));
+  } else {
+    LOG(ERROR) << s;
   }
 }
 
-void StartCamera() {
+void CameraPublishingNode::StartCamera() {
     PixelFormat pixel_format;
     PixelFormat_Parse(camera_flag_.pixel_format_flag()->value(), &pixel_format);
 
@@ -112,19 +117,18 @@ bazel-bin/felicia/examples/learn/message_communication/camera/cc/node_creator -l
 In order to stop the camera, you should call `Stop()`. `Stop()` also apply same rule above. You should obey the rule that `Start()` and `Stop()` should be called on the same thread `Init()`.
 
 ```c++
-void OnRequestUnpublish(const Status& s) {
-  std::cout << "CameraPublishingNode::OnRequestUnpublish()" << std::endl;
+void CameraPublishingNode::OnRequestUnpublish(const Status& s) {
   if (s.ok()) {
     MasterProxy& master_proxy = MasterProxy::GetInstance();
     master_proxy.PostTask(FROM_HERE,
                           base::BindOnce(&CameraPublishingNode::StopCamera,
-                                            base::Unretained(this)));
+                                         base::Unretained(this)));
   } else {
     LOG(ERROR) << s;
   }
 }
 
-void StopCamera() {
+void CameraPublishingNode::StopCamera() {
   Status s = camera_->Stop();
   LOG_IF(ERROR, !s.ok()) << s;
 }

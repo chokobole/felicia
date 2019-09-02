@@ -1,5 +1,6 @@
 #include "felicia/core/felicia_init.h"
 #include "felicia/core/master/master_proxy.h"
+#include "felicia/drivers/vendors/zed/zed_camera_factory.h"
 #include "felicia/examples/learn/message_communication/stereo_camera/cc/stereo_camera_flag.h"
 #include "felicia/examples/learn/message_communication/stereo_camera/cc/zed/zed_camera_publishing_node.h"
 

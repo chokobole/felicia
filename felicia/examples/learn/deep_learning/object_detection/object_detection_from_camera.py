@@ -23,7 +23,6 @@ class ObjectDetectionNode(fel.NodeLifecycle):
         self.draw_on_image = False
 
     def on_init(self):
-        print("ObjectDetectionNode.on_init()")
         self.camera = fel.drivers.CameraFactory.new_camera(
             self.camera_descriptor)
         s = self.camera.init()
@@ -33,13 +32,14 @@ class ObjectDetectionNode(fel.NodeLifecycle):
         self.object_detection = ObjectDetection()
 
     def on_did_create(self, node_info):
-        print("ObjectDetectionNode.on_did_create()")
         self.node_info = node_info
         self.request_publish()
 
-    def on_error(self, status):
-        print("ObjectDetectionNode.on_error()")
-        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
+    def on_request_publish(self, status):
+        if status.ok():
+            fel.MasterProxy.post_task(self.start_camera)
+        else:
+            fel.log(fel.ERROR, status.error_message())
 
     def request_publish(self):
         settings = fel.communication.Settings()
@@ -54,13 +54,6 @@ class ObjectDetectionNode(fel.NodeLifecycle):
         self.publisher.request_publish(self.node_info, self.topic,
                                        ChannelDef.CHANNEL_TYPE_TCP | ChannelDef.CHANNEL_TYPE_WS,
                                        type_name, settings, self.on_request_publish)
-
-    def on_request_publish(self, status):
-        print("ObjectDetectionNode.on_request_publish()")
-        if status.ok():
-            fel.MasterProxy.post_task(self.start_camera)
-        else:
-            fel.log(fel.ERROR, status.error_message())
 
     def start_camera(self):
         # You should set the camera format if you have any you want to run with.
@@ -82,8 +75,7 @@ class ObjectDetectionNode(fel.NodeLifecycle):
             detected_camera_frame = fel.drivers.CameraFrame(
                 detected_image, camera_frame.camera_format, camera_frame.timestamp)
 
-            self.publisher.publish(detected_camera_frame.to_camera_frame_message(False),
-                                   self.on_publish)
+            self.publisher.publish(detected_camera_frame.to_camera_frame_message(False))
         else:
             image_with_bounding_boxes = self.object_detection.run(
                 image_np, self.draw_on_image)
@@ -92,10 +84,6 @@ class ObjectDetectionNode(fel.NodeLifecycle):
 
     def on_camera_error(self, status):
         fel.log_if(fel.ERROR, not status.ok(), status.error_message())
-
-    def on_publish(self, channel_type, status):
-        fel.log_if(fel.ERROR, not status.ok(), "{} from {}".format(
-            status, ChannelDef.Type.Name(channel_type)))
 
 
 def main():

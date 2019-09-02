@@ -26,10 +26,9 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //=================================================================================================
 
-#include "felicia/examples/slam/hector_slam/hector_slam_flag.h"
+#include "felicia/examples/slam/hector_slam_flag.h"
 
 namespace felicia {
-namespace hector_slam {
 
 HectorSlamFlag::HectorSlamFlag() {
   {
@@ -195,5 +194,4 @@ std::vector<NamedHelpType> HectorSlamFlag::CollectNamedHelps() const {
   };
 }
 
-}  // namespace hector_slam
 }  // namespace felicia

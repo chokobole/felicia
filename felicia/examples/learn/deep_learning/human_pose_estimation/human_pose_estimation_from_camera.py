@@ -216,7 +216,6 @@ class HumanPoseEstimationNode(fel.NodeLifecycle):
         self.draw_on_image = False
 
     def on_init(self):
-        print("HumanPoseEstimationNode.on_init()")
         self.camera = fel.drivers.CameraFactory.new_camera(
             self.camera_descriptor)
         s = self.camera.init()
@@ -226,13 +225,14 @@ class HumanPoseEstimationNode(fel.NodeLifecycle):
         self.openpose = Openpose(self.params)
 
     def on_did_create(self, node_info):
-        print("HumanPoseEstimationNode.on_did_create()")
         self.node_info = node_info
         self.request_publish()
 
-    def on_error(self, status):
-        print("HumanPoseEstimationNode.on_error()")
-        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
+    def on_request_publish(self, status):
+        if status.ok():
+            fel.MasterProxy.post_task(self.start_camera)
+        else:
+            fel.log(fel.ERROR, status.error_message())
 
     def request_publish(self):
         settings = fel.communication.Settings()
@@ -247,13 +247,6 @@ class HumanPoseEstimationNode(fel.NodeLifecycle):
         self.publisher.request_publish(self.node_info, self.topic,
                                        ChannelDef.CHANNEL_TYPE_TCP | ChannelDef.CHANNEL_TYPE_WS,
                                        type_name, settings, self.on_request_publish)
-
-    def on_request_publish(self, status):
-        print("HumanPoseEstimationNode.on_request_publish()")
-        if status.ok():
-            fel.MasterProxy.post_task(self.start_camera)
-        else:
-            fel.log(fel.ERROR, status.error_message())
 
     def start_camera(self):
         # You should set the camera format if you have any you want to run with.
@@ -285,8 +278,7 @@ class HumanPoseEstimationNode(fel.NodeLifecycle):
             estimated_camera_frame = fel.drivers.CameraFrame(
                 datum.cvOutputData, camera_frame.camera_format, camera_frame.timestamp)
 
-            self.publisher.publish(estimated_camera_frame.to_camera_frame_message(False),
-                                   self.on_publish)
+            self.publisher.publish(estimated_camera_frame.to_camera_frame_message(False))
         else:
             image_with_humans = ImageWithHumansMessage()
             shape = np.shape(image_np)
@@ -333,10 +325,6 @@ class HumanPoseEstimationNode(fel.NodeLifecycle):
 
     def on_camera_error(self, status):
         fel.log_if(fel.ERROR, not status.ok(), status.error_message())
-
-    def on_publish(self, channel_type, status):
-        fel.log_if(fel.ERROR, not status.ok(), "{} from {}".format(
-            status, ChannelDef.Type.Name(channel_type)))
 
 
 def main():

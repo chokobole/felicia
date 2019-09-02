@@ -62,6 +62,13 @@ EXPORT std::ostream& operator<<(std::ostream& os, const Status& x);
 typedef base::RepeatingCallback<void(const Status&)> StatusCallback;
 typedef base::OnceCallback<void(const Status&)> StatusOnceCallback;
 
+namespace internal {
+
+EXPORT void LogOrCallback(StatusOnceCallback callback, const Status& s);
+EXPORT void LogOrCallback(StatusCallback callback, const Status& s);
+
+}  // namespace internal
+
 }  // namespace felicia
 
 #endif  // FELICIA_CORE_LIB_ERROR_STATUS_H_

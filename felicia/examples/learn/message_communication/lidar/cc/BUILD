@@ -8,12 +8,14 @@ fel_cc_binary(
     srcs = [
         "lidar_flag.cc",
         "lidar_flag.h",
+        "lidar_subscribing_node.cc",
         "lidar_subscribing_node.h",
     ] + select({
         "//felicia:has_rplidar": [
             "rplidar/rplidar_flag.cc",
             "rplidar/rplidar_flag.h",
             "rplidar/rplidar_node_creator.cc",
+            "rplidar/rplidar_publishing_node.cc",
             "rplidar/rplidar_publishing_node.h",
         ],
         "//conditions:default": ["//felicia:only_main.cc"],

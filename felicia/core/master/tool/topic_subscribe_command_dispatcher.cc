@@ -21,25 +21,17 @@ class OneTopicSubscriberDelegate
 
   void OnError(const Status& s) override { NOTREACHED() << s; }
 
-  void OnNewMessage(DynamicProtobufMessage&& message) override {
+  void OnMessage(DynamicProtobufMessage&& message) override {
     std::cout << message.ToString() << std::endl;
   }
 
-  void OnSubscriptionError(const Status& s) override {
-    std::cerr << kRedError << "Subscription error: " << s << std::endl;
+  void OnMessageError(const Status& s) override {
+    std::cerr << kRedError << "Message error: " << s << std::endl;
   }
 
-  void OnRequestSubscribe(const Status& s) override {
-    if (!s.ok()) {
-      NOTREACHED() << s;
-    }
-  }
+  void OnRequestSubscribe(const Status& s) override { CHECK(s.ok()) << s; }
 
-  void OnRequestUnsubscribe(const Status& s) override {
-    if (!s.ok()) {
-      NOTREACHED() << s;
-    }
-  }
+  void OnRequestUnsubscribe(const Status& s) override { CHECK(s.ok()) << s; }
 
  private:
   std::string topic_;
@@ -56,18 +48,18 @@ class MultiTopicSubscriberDelegate
 
   void OnError(const Status& s) override { NOTREACHED() << s; }
 
-  void OnNewMessage(const std::string& topic,
-                    DynamicProtobufMessage&& message) override {
+  void OnMessage(const std::string& topic,
+                 DynamicProtobufMessage&& message) override {
     std::cout << TextStyle::Green(
                      base::StringPrintf("[TOPIC] %s", topic.c_str()))
               << std::endl;
     std::cout << message.ToString() << std::endl;
   }
 
-  void OnSubscriptionError(const std::string& topic, const Status& s) override {
+  void OnMessageError(const std::string& topic, const Status& s) override {
     std::cout << TextStyle::Red(base::StringPrintf("[TOPIC] %s", topic.c_str()))
               << std::endl;
-    std::cerr << kRedError << "Subscription error: " << s << std::endl;
+    std::cerr << kRedError << "Message error: " << s << std::endl;
   }
 
   void HandleTopicInfo(const TopicInfo& topic_info) {

@@ -3,7 +3,11 @@ load(
     "fel_shared_library",
     "if_has_orb_slam2",
 )
-load("//bazel:felicia_cc.bzl", "fel_cc_binary")
+load(
+    "//bazel:felicia_cc.bzl",
+    "fel_cc_binary",
+    "fel_cc_library",
+)
 
 package(default_visibility = ["//visibility:private"])
 
@@ -12,6 +16,7 @@ fel_cc_binary(
     srcs = [
         "dataset_flag.cc",
         "dataset_flag.h",
+        "dataset_loader_node.cc",
         "dataset_loader_node.h",
         "dataset_loader_node_creator.cc",
     ],
@@ -21,15 +26,33 @@ fel_cc_binary(
     ],
 )
 
+fel_cc_library(
+    name = "slam_node_create_flag",
+    srcs = [
+        "hector_slam_flag.cc",
+        "slam_node_create_flag.cc",
+    ] + if_has_orb_slam2([
+        "orb_slam2_flag.cc",
+    ]),
+    hdrs = [
+        "hector_slam_flag.h",
+        "slam_node_create_flag.h",
+    ] + if_has_orb_slam2([
+        "orb_slam2_flag.h",
+    ]),
+    defines = if_has_orb_slam2(["HAS_ORB_SLAM2"]),
+    visibility = ["//felicia/examples:internal"],
+    deps = [
+        "//felicia/core/util",
+    ],
+)
+
 fel_cc_binary(
     name = "slam_node_creator",
-    srcs = [
-        "slam_node_create_flag.cc",
-        "slam_node_create_flag.h",
-        "slam_node_creator.cc",
-    ],
+    srcs = ["slam_node_creator.cc"],
     defines = if_has_orb_slam2(["HAS_ORB_SLAM2"]),
     deps = fel_shared_library() + [
+        ":slam_node_create_flag",
         "//felicia/core:felicia_init",
         "//felicia/examples/slam/hector_slam:hector_slam_node",
     ] + if_has_orb_slam2([

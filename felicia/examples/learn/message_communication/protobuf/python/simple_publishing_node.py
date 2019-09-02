@@ -28,6 +28,20 @@ class SimplePublishingNode(fel.NodeLifecycle):
         print("SimplePublishingNode.on_error()")
         fel.log(fel.ERROR, status.error_message())
 
+    def on_publish(self, channel_type, status):
+        print("SimplePublishingNode.on_publish() from {}".format(
+            ChannelDef.Type.Name(channel_type)))
+        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
+
+    def on_request_publish(self, status):
+        print("SimplePublishingNode.on_request_publish()")
+        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
+        self.repeating_publish()
+
+    def on_request_unpublish(self, status):
+        print("SimplePublishingNode.on_request_unpublish()")
+        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
+
     def request_publish(self):
         settings = fel.communication.Settings()
         settings.buffer_size = fel.Bytes.from_bytes(512)
@@ -36,10 +50,9 @@ class SimplePublishingNode(fel.NodeLifecycle):
                                        MessageSpec.DESCRIPTOR.full_name,
                                        settings, self.on_request_publish)
 
-    def on_request_publish(self, status):
-        print("SimplePublishingNode.on_request_publish()")
-        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
-        self.repeating_publish()
+    def request_unpublish(self):
+        self.publisher.request_unpublish(self.node_info, self.topic,
+                                         self.on_request_unpublish)
 
     def repeating_publish(self):
         self.publisher.publish(self.generate_message(), self.on_publish)
@@ -47,11 +60,6 @@ class SimplePublishingNode(fel.NodeLifecycle):
         if not self.publisher.is_unregistered():
             fel.MasterProxy.post_delayed_task(
                 self.repeating_publish, fel.TimeDelta.from_seconds(1))
-
-    def on_publish(self, channel_type, status):
-        print("SimplePublishingNode.on_publish() from {}".format(
-            ChannelDef.Type.Name(channel_type)))
-        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
     def generate_message(self):
         message_spec = MessageSpec()
@@ -61,11 +69,3 @@ class SimplePublishingNode(fel.NodeLifecycle):
         message_spec.content = "hello world"
         self.message_id += 1
         return message_spec
-
-    def request_unpublish(self):
-        self.publisher.request_unpublish(self.node_info, self.topic,
-                                         self.on_request_unpublish)
-
-    def on_request_unpublish(self, status):
-        print("SimplePublishingNode.on_request_unpublish()")
-        fel.log_if(fel.ERROR, not status.ok(), status.error_message())

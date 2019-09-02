@@ -10,6 +10,6 @@ void NodeLifecycle::OnInit() {}
 
 void NodeLifecycle::OnDidCreate(const NodeInfo& node_info) {}
 
-void NodeLifecycle::OnError(const Status& status) {}
+void NodeLifecycle::OnError(const Status& status) { LOG(ERROR) << status; }
 
 }  // namespace felicia

@@ -66,6 +66,19 @@ void AddCommunication(py::module& m) {
           [](DynamicPublisher& self, const NodeInfo& node_info,
              const std::string& topic, int channel_types,
              const std::string message_type,
+             const communication::Settings& settings) {
+            self.ResetMessage(message_type);
+
+            self.RequestPublish(node_info, topic, channel_types, settings);
+          },
+          py::arg("node_info"), py::arg("topic"), py::arg("channel_types"),
+          py::arg("message_type"), py::arg("settings"),
+          py::call_guard<py::gil_scoped_release>())
+      .def(
+          "request_publish",
+          [](DynamicPublisher& self, const NodeInfo& node_info,
+             const std::string& topic, int channel_types,
+             const std::string message_type,
              const communication::Settings& settings, py::function callback) {
             self.ResetMessage(message_type);
 
@@ -74,24 +87,51 @@ void AddCommunication(py::module& m) {
                 base::BindOnce(&PyStatusCallback::Invoke,
                                base::Owned(new PyStatusCallback(callback))));
           },
+          py::arg("node_info"), py::arg("topic"), py::arg("channel_types"),
+          py::arg("message_type"), py::arg("settings"), py::arg("callback"),
           py::call_guard<py::gil_scoped_release>())
-      .def("publish",
-           [](DynamicPublisher& self, py::object message,
-              py::function callback) {
-             std::string text =
-                 pybind11::str(message.attr("SerializeToString")());
-             if (PyErr_Occurred()) {
-               callback(errors::InvalidArgument(MessageIoErrorToString(
-                   MessageIoError::ERR_FAILED_TO_SERIALIZE)));
-               return;
-             }
+      .def(
+          "publish",
+          [](DynamicPublisher& self, py::object message) {
+            std::string text =
+                pybind11::str(message.attr("SerializeToString")());
+            if (PyErr_Occurred()) {
+              LOG(ERROR) << errors::InvalidArgument(MessageIoErrorToString(
+                  MessageIoError::ERR_FAILED_TO_SERIALIZE));
+              return;
+            }
 
-             py::gil_scoped_release release;
-             self.PublishFromSerialized(
-                 text, base::BindRepeating(
-                           &PySendMessageCallback::Invoke,
-                           base::Owned(new PySendMessageCallback(callback))));
-           })
+            py::gil_scoped_release release;
+            self.PublishFromSerialized(text);
+          },
+          py::arg("message"))
+      .def(
+          "publish",
+          [](DynamicPublisher& self, py::object message,
+             py::function callback) {
+            std::string text =
+                pybind11::str(message.attr("SerializeToString")());
+            if (PyErr_Occurred()) {
+              callback(errors::InvalidArgument(MessageIoErrorToString(
+                  MessageIoError::ERR_FAILED_TO_SERIALIZE)));
+              return;
+            }
+
+            py::gil_scoped_release release;
+            self.PublishFromSerialized(
+                text, base::BindRepeating(
+                          &PySendMessageCallback::Invoke,
+                          base::Owned(new PySendMessageCallback(callback))));
+          },
+          py::arg("message"), py::arg("callback"))
+      .def(
+          "request_unpublish",
+          [](DynamicPublisher& self, const NodeInfo& node_info,
+             const std::string& topic) {
+            self.RequestUnpublish(node_info, topic);
+          },
+          py::arg("node_info"), py::arg("topic"),
+          py::call_guard<py::gil_scoped_release>())
       .def(
           "request_unpublish",
           [](DynamicPublisher& self, const NodeInfo& node_info,
@@ -101,6 +141,7 @@ void AddCommunication(py::module& m) {
                 base::BindOnce(&PyStatusCallback::Invoke,
                                base::Owned(new PyStatusCallback(callback))));
           },
+          py::arg("node_info"), py::arg("topic"), py::arg("callback"),
           py::call_guard<py::gil_scoped_release>());
 
   py::class_<DynamicSubscriber>(communication, "Subscriber")
@@ -115,22 +156,73 @@ void AddCommunication(py::module& m) {
           "request_subscribe",
           [](DynamicSubscriber& self, const NodeInfo& node_info,
              const std::string& topic, int channel_types,
-             py::object mesage_prototype, py::function on_message_callback,
-             py::function on_error_callback,
-             const communication::Settings& settings, py::function callback) {
+             py::object mesage_prototype,
+             const communication::Settings& settings,
+             py::function on_message_callback) {
             self.RequestSubscribe(
-                node_info, topic, channel_types,
+                node_info, topic, channel_types, settings,
+                base::BindRepeating(
+                    &PyMessageCallback::Invoke,
+                    base::Owned(new PyMessageCallback(mesage_prototype,
+                                                      on_message_callback))));
+          },
+          py::arg("node_info"), py::arg("topic"), py::arg("channel_types"),
+          py::arg("message_prototype"), py::arg("settings"),
+          py::arg("on_message_callback"),
+          py::call_guard<py::gil_scoped_release>())
+      .def(
+          "request_subscribe",
+          [](DynamicSubscriber& self, const NodeInfo& node_info,
+             const std::string& topic, int channel_types,
+             py::object mesage_prototype,
+             const communication::Settings& settings,
+             py::function on_message_callback,
+             py::function on_message_error_callback) {
+            self.RequestSubscribe(
+                node_info, topic, channel_types, settings,
                 base::BindRepeating(
                     &PyMessageCallback::Invoke,
                     base::Owned(new PyMessageCallback(mesage_prototype,
                                                       on_message_callback))),
+                base::BindRepeating(&PyStatusCallback::Invoke,
+                                    base::Owned(new PyStatusCallback(
+                                        on_message_error_callback))));
+          },
+          py::arg("node_info"), py::arg("topic"), py::arg("channel_types"),
+          py::arg("message_prototype"), py::arg("settings"),
+          py::arg("on_message_callback"), py::arg("on_message_error_callback"),
+          py::call_guard<py::gil_scoped_release>())
+      .def(
+          "request_subscribe",
+          [](DynamicSubscriber& self, const NodeInfo& node_info,
+             const std::string& topic, int channel_types,
+             py::object mesage_prototype,
+             const communication::Settings& settings,
+             py::function on_message_callback,
+             py::function on_message_error_callback, py::function callback) {
+            self.RequestSubscribe(
+                node_info, topic, channel_types, settings,
                 base::BindRepeating(
-                    &PyStatusCallback::Invoke,
-                    base::Owned(new PyStatusCallback(on_error_callback))),
-                settings,
+                    &PyMessageCallback::Invoke,
+                    base::Owned(new PyMessageCallback(mesage_prototype,
+                                                      on_message_callback))),
+                base::BindRepeating(&PyStatusCallback::Invoke,
+                                    base::Owned(new PyStatusCallback(
+                                        on_message_error_callback))),
                 base::BindOnce(&PyStatusCallback::Invoke,
                                base::Owned(new PyStatusCallback(callback))));
           },
+          py::arg("node_info"), py::arg("topic"), py::arg("channel_types"),
+          py::arg("message_prototype"), py::arg("settings"),
+          py::arg("on_message_callback"), py::arg("on_message_error_callback"),
+          py::arg("callback"), py::call_guard<py::gil_scoped_release>())
+      .def(
+          "request_unsubscribe",
+          [](DynamicSubscriber& self, const NodeInfo& node_info,
+             const std::string& topic) {
+            self.RequestUnsubscribe(node_info, topic);
+          },
+          py::arg("node_info"), py::arg("topic"),
           py::call_guard<py::gil_scoped_release>())
       .def(
           "request_unsubscribe",
@@ -141,6 +233,7 @@ void AddCommunication(py::module& m) {
                 base::BindOnce(&PyStatusCallback::Invoke,
                                base::Owned(new PyStatusCallback(callback))));
           },
+          py::arg("node_info"), py::arg("topic"), py::arg("callback"),
           py::call_guard<py::gil_scoped_release>());
 }
 

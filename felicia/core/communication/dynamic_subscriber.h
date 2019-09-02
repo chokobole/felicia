@@ -12,13 +12,14 @@ class DynamicSubscriber : public Subscriber<DynamicProtobufMessage> {
   DynamicSubscriber();
   ~DynamicSubscriber();
 
-  void Subscribe(OnMessageCallback on_message_callback,
-                 StatusCallback on_error_callback,
-                 const communication::Settings& settings);
+  void Subscribe(const communication::Settings& settings,
+                 OnMessageCallback on_message_callback,
+                 StatusCallback on_error_callback = StatusCallback());
 
   void OnFindPublisher(const TopicInfo& topic_info);
 
-  void Unsubscribe(const std::string& topic, StatusOnceCallback callback);
+  void Unsubscribe(const std::string& topic,
+                   StatusOnceCallback callback = StatusCallback());
 
   const TopicInfo& topic_info() const { return topic_info_; }
 
