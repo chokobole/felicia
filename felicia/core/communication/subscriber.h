@@ -329,7 +329,7 @@ void Subscriber<MessageTy>::StartMessageLoop() {
   if (IsStarted()) return;
 
   subscriber_state_.ToStarted(FROM_HERE);
-  message_queue_.set_capacity(settings_.queue_size);
+  message_queue_.reserve(settings_.queue_size);
   ReceiveMessageLoop();
   NotifyMessageLoop();
 }

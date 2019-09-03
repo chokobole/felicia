@@ -36,7 +36,7 @@ TEST(DataTest, PushAndPopTest) {
 namespace {
 
 template <typename Iterator>
-void ExpectForwardEq(Iterator begin, Iterator end, int from, int to) {
+void ExpectIteratorEq(Iterator begin, Iterator end, int from, int to) {
   int n = from;
   bool incremental = to > from;
   for (auto it = begin; it != end; it++) {
@@ -58,14 +58,14 @@ TEST(DataTest, IteratorTest) {
     view.push_back(i);
   }
 
-  ExpectForwardEq(view.begin(), view.end(), 0, 10);
-  ExpectForwardEq(view.cbegin(), view.cend(), 0, 10);
-  ExpectForwardEq(view.rbegin(), view.rend(), 9, -1);
-  ExpectForwardEq(view.crbegin(), view.crend(), 9, -1);
+  ExpectIteratorEq(view.begin(), view.end(), 0, 10);
+  ExpectIteratorEq(view.cbegin(), view.cend(), 0, 10);
+  ExpectIteratorEq(view.rbegin(), view.rend(), 9, -1);
+  ExpectIteratorEq(view.crbegin(), view.crend(), 9, -1);
 
   Data::ConstView<int> cview = vector.AsConstView<int>();
-  ExpectForwardEq(cview.cbegin(), cview.cend(), 0, 10);
-  ExpectForwardEq(cview.crbegin(), cview.crend(), 9, -1);
+  ExpectIteratorEq(cview.cbegin(), cview.cend(), 0, 10);
+  ExpectIteratorEq(cview.crbegin(), cview.crend(), 9, -1);
 }
 
 TEST(DataTest, InsertTest) {
