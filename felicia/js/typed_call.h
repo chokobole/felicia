@@ -1,6 +1,7 @@
 #ifndef FELICIA_JS_TYPED_CALL_H_
 #define FELICIA_JS_TYPED_CALL_H_
 
+#include "felicia/core/lib/base/template_util.h"
 #include "felicia/js/type_convertor.h"
 #include "napi.h"
 
@@ -10,24 +11,6 @@
 namespace felicia {
 
 namespace internal {
-
-template <typename... Types>
-struct TypeList {};
-
-template <size_t n, typename List>
-struct PickTypeListItemImpl;
-
-template <size_t n, typename T, typename... List>
-struct PickTypeListItemImpl<n, TypeList<T, List...>>
-    : PickTypeListItemImpl<n - 1, TypeList<List...>> {};
-
-template <typename T, typename... List>
-struct PickTypeListItemImpl<0, TypeList<T, List...>> {
-  using Type = std::decay_t<T>;
-};
-
-template <size_t n, typename List>
-using PickTypeListItem = typename PickTypeListItemImpl<n, List>::Type;
 
 template <typename T, std::enable_if_t<std::is_same<bool, T>::value>* = nullptr>
 Napi::Boolean ToJs(Napi::Env env, T value) {
@@ -56,7 +39,7 @@ R Invoke(const Napi::CallbackInfo& info, R (*f)(Args...)) {
 template <typename R, typename... Args,
           std::enable_if_t<1 == sizeof...(Args)>* = nullptr>
 R Invoke(const Napi::CallbackInfo& info, R (*f)(Args...)) {
-  using ArgList = internal::TypeList<Args...>;
+  using ArgList = base::internal::TypeList<Args...>;
   return f(
       js::TypeConvertor<internal::PickTypeListItem<0, ArgList>>::ToNativeValue(
           info[0]));
@@ -65,7 +48,7 @@ R Invoke(const Napi::CallbackInfo& info, R (*f)(Args...)) {
 template <typename R, typename... Args,
           std::enable_if_t<2 == sizeof...(Args)>* = nullptr>
 R Invoke(const Napi::CallbackInfo& info, R (*f)(Args...)) {
-  using ArgList = internal::TypeList<Args...>;
+  using ArgList = base::internal::TypeList<Args...>;
   return f(
       js::TypeConvertor<internal::PickTypeListItem<0, ArgList>>::ToNativeValue(
           info[0]),
@@ -82,7 +65,7 @@ R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...), Class* c) {
 template <typename R, typename Class, typename... Args,
           std::enable_if_t<1 == sizeof...(Args)>* = nullptr>
 R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...), Class* c) {
-  using ArgList = internal::TypeList<Args...>;
+  using ArgList = base::internal::TypeList<Args...>;
   return ((*c).*f)(
       js::TypeConvertor<internal::PickTypeListItem<0, ArgList>>::ToNativeValue(
           info[0]));
@@ -91,7 +74,7 @@ R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...), Class* c) {
 template <typename R, typename Class, typename... Args,
           std::enable_if_t<2 == sizeof...(Args)>* = nullptr>
 R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...), Class* c) {
-  using ArgList = internal::TypeList<Args...>;
+  using ArgList = base::internal::TypeList<Args...>;
   return ((*c).*f)(
       js::TypeConvertor<internal::PickTypeListItem<0, ArgList>>::ToNativeValue(
           info[0]),
@@ -110,7 +93,7 @@ template <typename R, typename Class, typename... Args,
           std::enable_if_t<1 == sizeof...(Args)>* = nullptr>
 R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...) const,
          const Class* c) {
-  using ArgList = internal::TypeList<Args...>;
+  using ArgList = base::internal::TypeList<Args...>;
   return ((*c).*f)(
       js::TypeConvertor<internal::PickTypeListItem<0, ArgList>>::ToNativeValue(
           info[0]));
@@ -120,7 +103,7 @@ template <typename R, typename Class, typename... Args,
           std::enable_if_t<2 == sizeof...(Args)>* = nullptr>
 R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...) const,
          const Class* c) {
-  using ArgList = internal::TypeList<Args...>;
+  using ArgList = base::internal::TypeList<Args...>;
   return ((*c).*f)(
       js::TypeConvertor<internal::PickTypeListItem<0, ArgList>>::ToNativeValue(
           info[0]),

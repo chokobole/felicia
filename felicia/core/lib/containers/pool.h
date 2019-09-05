@@ -11,11 +11,15 @@
 #include "third_party/chromium/base/compiler_specific.h"
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/macros.h"
+#include "third_party/chromium/base/strings/stringprintf.h"
 
 namespace felicia {
 
 template <typename SizeType>
 struct PoolIndex {
+  static_assert(std::is_unsigned<SizeType>::value,
+                "Size type should be unsigned");
+
   typedef SizeType size_type;
 
   PoolIndex() = default;
@@ -45,6 +49,10 @@ struct PoolIndex {
     } else {
       return index + 1;
     }
+  }
+
+  ALWAYS_INLINE size_type inc_index(size_type index, size_type delta) const {
+    return (index + delta) % capacity;
   }
 
   ALWAYS_INLINE size_type dec_index(size_type index) const {
@@ -202,6 +210,12 @@ class Pool {
       return old;
     }
 
+    ConstIterator operator+(size_type delta) const {
+      ConstIterator ret = *this;
+      ret.pool_index_.inc_index(pool_index_.pop_index, delta);
+      return ret;
+    }
+
     reference operator*() const {
       CHECK_GT(pool_index_.size(), 0);
       return buffer_[pool_index_.pop_index];
@@ -244,10 +258,35 @@ class Pool {
   // Clear buffer.
   void clear();
 
-  ALWAYS_INLINE reference front();
-  ALWAYS_INLINE const_reference front() const;
-  ALWAYS_INLINE reference back();
-  ALWAYS_INLINE const_reference back() const;
+  ALWAYS_INLINE reference front() { return buffer_[pool_index_.pop_index]; }
+
+  ALWAYS_INLINE const_reference front() const {
+    return buffer_[pool_index_.pop_index];
+  }
+
+  ALWAYS_INLINE reference back() {
+    return buffer_[pool_index_.dec_index(pool_index_.push_index)];
+  }
+
+  ALWAYS_INLINE const_reference back() const {
+    return buffer_[pool_index_.dec_index(pool_index_.push_index)];
+  }
+
+  ALWAYS_INLINE reference at(size_type idx) {
+    range_check(idx);
+    return (*this)[idx];
+  }
+
+  ALWAYS_INLINE const_reference at(size_type idx) const {
+    range_check(idx);
+    return (*this)[idx];
+  }
+
+  ALWAYS_INLINE reference operator[](size_type idx) { return *(begin() + idx); }
+
+  ALWAYS_INLINE const_reference operator[](size_type idx) const {
+    return *(cbegin() + idx);
+  }
 
   ALWAYS_INLINE void push(const value_type& v);
   ALWAYS_INLINE void push(value_type&& v);
@@ -262,6 +301,13 @@ class Pool {
   const_iterator cend() const noexcept { return end(); }
 
  private:
+  void range_check(size_type idx) const {
+    if (idx >= size())
+      throw std::out_of_range(base::StringPrintf(
+          "Pool::range_check: (%zd >= %zd)", static_cast<size_t>(idx),
+          static_cast<size_t>(size())));
+  }
+
   friend class Iterator;
 
   value_type* buffer_ = nullptr;
@@ -279,26 +325,6 @@ void Pool<T, SizeType>::clear() {
   delete[] reinterpret_cast<char*>(buffer_);
   buffer_ = nullptr;
   pool_index_.reset();
-}
-
-template <typename T, typename SizeType>
-typename Pool<T, SizeType>::reference Pool<T, SizeType>::front() {
-  return buffer_[pool_index_.pop_index];
-}
-
-template <typename T, typename SizeType>
-typename Pool<T, SizeType>::const_reference Pool<T, SizeType>::front() const {
-  return buffer_[pool_index_.pop_index];
-}
-
-template <typename T, typename SizeType>
-typename Pool<T, SizeType>::reference Pool<T, SizeType>::back() {
-  return buffer_[pool_index_.dec_index(pool_index_.push_index)];
-}
-
-template <typename T, typename SizeType>
-typename Pool<T, SizeType>::const_reference Pool<T, SizeType>::back() const {
-  return buffer_[pool_index_.dec_index(pool_index_.push_index)];
 }
 
 template <typename T, typename SizeType>
