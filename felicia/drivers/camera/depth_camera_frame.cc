@@ -28,8 +28,13 @@ DepthCameraFrame::~DepthCameraFrame() = default;
 
 DepthCameraFrameMessage DepthCameraFrame::ToDepthCameraFrameMessage(bool copy) {
   DepthCameraFrameMessage message;
-
-  *message.mutable_frame() = ToCameraFrameMessage(copy);
+  if (copy) {
+    message.set_data(data_.data());
+  } else {
+    message.set_data(std::move(data_).data());
+  }
+  *message.mutable_camera_format() = camera_format_.ToCameraFormatMessage();
+  message.set_timestamp(timestamp_.InMicroseconds());
   message.set_min(min_);
   message.set_max(max_);
 
@@ -38,9 +43,12 @@ DepthCameraFrameMessage DepthCameraFrame::ToDepthCameraFrameMessage(bool copy) {
 
 Status DepthCameraFrame::FromDepthCameraFrameMessage(
     const DepthCameraFrameMessage& message) {
-  CameraFrame camera_frame;
-  Status s = camera_frame.FromCameraFrameMessage(message.frame());
+  CameraFormat camera_format;
+  Status s = camera_format.FromCameraFormatMessage(message.camera_format());
   if (!s.ok()) return s;
+  CameraFrame camera_frame(
+      Data{message.data()}, camera_format,
+      base::TimeDelta::FromMicroseconds(message.timestamp()));
   *this =
       DepthCameraFrame{std::move(camera_frame), message.min(), message.max()};
   return Status::OK();
@@ -48,11 +56,15 @@ Status DepthCameraFrame::FromDepthCameraFrameMessage(
 
 Status DepthCameraFrame::FromDepthCameraFrameMessage(
     DepthCameraFrameMessage&& message) {
+  CameraFormat camera_format;
+  Status s = camera_format.FromCameraFormatMessage(message.camera_format());
+  if (!s.ok()) return s;
+  std::unique_ptr<std::string> data(message.release_data());
+  CameraFrame camera_frame(
+      Data{std::move(*data)}, camera_format,
+      base::TimeDelta::FromMicroseconds(message.timestamp()));
   float min = message.min();
   float max = message.max();
-  CameraFrame camera_frame;
-  Status s = camera_frame.FromCameraFrameMessage(std::move(message.frame()));
-  if (!s.ok()) return s;
   *this = DepthCameraFrame{std::move(camera_frame), min, max};
   return Status::OK();
 }

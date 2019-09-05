@@ -6,12 +6,14 @@ import CameraPanelState, { CameraFrame } from './camera-panel-state';
 
 export class DepthCameraFrame extends CameraFrame {
   constructor(message) {
-    const { data } = message;
-    const { frame, scale, min, max } = data;
+    const { data, cameraFormat, timestamp, min, max } = message.data;
     super({
-      data: frame,
+      data: {
+        data,
+        cameraFormat,
+        timestamp,
+      },
     });
-    this.scale = scale;
     this.min = min;
     this.max = max;
   }

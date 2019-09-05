@@ -1,11 +1,13 @@
 syntax = "proto3";
 
-import "felicia/drivers/camera/camera_frame_message.proto";
+import "felicia/drivers/camera/camera_format_message.proto";
 
 package felicia.drivers;
 
 message DepthCameraFrameMessage {
-  CameraFrameMessage frame = 1; // PIXEL_FORMAT_Z16 and in mm.
-  float min = 2;
-  float max = 3;
+  bytes data = 1; // in mm.
+  CameraFormatMessage camera_format = 2; // PIXEL_FORMAT_Z16
+  int64 timestamp = 3;
+  float min = 4;
+  float max = 5;
 }

@@ -23,6 +23,8 @@ class MessageQueueImpl<Idx, MessageTy> {
   typedef Pool<MessageTy, uint8_t> PoolType;
   explicit MessageQueueImpl(uint8_t capacity = 1) : pool_(capacity) {}
 
+  void reserve(uint8_t capacity) { pool_.reserve(capacity); }
+
   PoolType& pool() { return pool_; }
   const PoolType& pool() const { return pool_; }
 
@@ -39,6 +41,11 @@ class MessageQueueImpl<Idx, MessageTy, Rest...> {
  public:
   typedef Pool<MessageTy, uint8_t> PoolType;
   explicit MessageQueueImpl(uint8_t capacity = 1) : pool_(capacity) {}
+
+  void reserve(uint8_t capacity) {
+    pool_.reserve(capacity);
+    rest_.reserve(capacity);
+  }
 
   PoolType& pool() { return pool_; }
   const PoolType& pool() const { return pool_; }
@@ -112,6 +119,8 @@ class MessageFilter<MessageTy, Rest...> {
   }
 
   ~MessageFilter() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
+
+  void reserve(uint8_t capacity) { filter_impl_.reserve(capacity); }
 
   void set_filter_callback(FilterCallback filter_callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -282,7 +291,6 @@ class MessageFilter<MessageTy, Rest...> {
 
   void ApplyFilter() {
     CHECK(!notify_callback_.is_null());
-    // base::AutoLock l(apply_filter_lock_);
     bool should_notify = false;
     if (!filter_callback_.is_null() && DoesAllQueueHaveElement()) {
       should_notify = filter_callback_.Run(*this);
@@ -396,8 +404,8 @@ class TimeSyncrhonizerMF {
   void FindTimestamps(MessageFilter<MessageTy, Rest...>& filter,
                       uint8_t* peek_idxs, MessageInfo* earliest_message,
                       MessageInfo* latest_message) {
-    base::TimeDelta timestamp =
-        filter.template PeekMessage<N>(peek_idxs[N]).timestamp();
+    base::TimeDelta timestamp = base::TimeDelta::FromMicroseconds(
+        filter.template PeekMessage<N>(peek_idxs[N]).timestamp());
     if (timestamp < earliest_message->timestamp) {
       earliest_message->timestamp = timestamp;
       earliest_message->idx = N;

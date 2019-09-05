@@ -5,8 +5,7 @@ import { makeVector3, makeQuarternion } from 'util/babylon-util';
 
 export class ImuFrame {
   constructor(message) {
-    const { data } = message;
-    const { orientation, angularVelocity, linearAcceleration, timestamp } = data;
+    const { orientation, angularVelocity, linearAcceleration, timestamp } = message.data;
     this.orientation = makeQuarternion(orientation);
     this.angularVelocity = makeVector3(angularVelocity);
     this.linearAcceleration = makeVector3(linearAcceleration);

@@ -4,8 +4,7 @@ import TopicSubscribable from 'store/topic-subscribable';
 
 export class PointcloudFrame {
   constructor(message) {
-    const { data } = message;
-    const { points, colors, timestamp } = data;
+    const { points, colors, timestamp } = message.data;
     this.points = points;
     this.colors = colors;
     this.timestamp = timestamp;

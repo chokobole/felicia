@@ -4,8 +4,7 @@ import TopicSubscribable from 'store/topic-subscribable';
 
 export class ImageWithHumans {
   constructor(message) {
-    const { data } = message;
-    const { image, model, humans } = data;
+    const { image, model, humans } = message.data;
     this.image = image;
     this.model = model;
     this.humans = humans;

@@ -4,10 +4,9 @@ import TopicSubscribable from 'store/topic-subscribable';
 
 export class CameraFrame {
   constructor(message) {
-    const { data } = message;
-    const { converted, cameraFormat, timestamp } = data;
+    const { converted, data, cameraFormat, timestamp } = message.data;
     this.converted = converted;
-    this.data = data.data;
+    this.data = data;
     this.timestamp = timestamp;
     const { size, pixelFormat, frameRate } = cameraFormat;
     const { width, height } = size;

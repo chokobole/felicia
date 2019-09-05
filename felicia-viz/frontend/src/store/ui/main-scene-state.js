@@ -9,12 +9,11 @@ import TopicSubscribable from 'store/topic-subscribable';
 
 export class OccupancyGridMap {
   constructor(message) {
-    const { data } = message;
-    const { size, resolution, origin, timestamp } = data;
+    const { data, size, resolution, origin, timestamp } = message.data;
     this.size = size;
     this.resolution = resolution;
     this.origin = origin;
-    this.data = data.data;
+    this.data = data;
     this.timestamp = timestamp;
   }
 }

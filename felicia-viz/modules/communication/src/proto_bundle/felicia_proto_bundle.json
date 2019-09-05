@@ -1433,17 +1433,25 @@
             },
             "DepthCameraFrameMessage": {
               "fields": {
-                "frame": {
-                  "type": "CameraFrameMessage",
+                "data": {
+                  "type": "bytes",
                   "id": 1
+                },
+                "cameraFormat": {
+                  "type": "CameraFormatMessage",
+                  "id": 2
+                },
+                "timestamp": {
+                  "type": "int64",
+                  "id": 3
                 },
                 "min": {
                   "type": "float",
-                  "id": 2
+                  "id": 4
                 },
                 "max": {
                   "type": "float",
-                  "id": 3
+                  "id": 5
                 }
               }
             },

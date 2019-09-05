@@ -97,33 +97,18 @@ TEST(MessageFilterTest, ApplyTimeSynchronizerFilterTest) {
   NotifyCallbackChecker<IntMessage, IntMessage> checker;
   std::vector<IntMessage> messages;
   std::vector<IntMessage> messages2;
-  GenerateAMessageLinearly(0, 1, base::TimeDelta(),
-                           base::TimeDelta::FromMilliseconds(200), 8,
-                           &messages);
-  GenerateAMessageLinearly(0, 1, base::TimeDelta(),
-                           base::TimeDelta::FromMilliseconds(300), 8,
-                           &messages2);
+  GenerateAMessageLinearly(0, 1, 0, 200000, 8, &messages);
+  GenerateAMessageLinearly(0, 1, 0, 300000, 8, &messages2);
 
   // CASE 1: when queue size is 1
   {
     checker.answers = {
-        std::tuple<IntMessage, IntMessage>{{0, base::TimeDelta()},
-                                           {0, base::TimeDelta()}},
-        std::tuple<IntMessage, IntMessage>{
-            {1, base::TimeDelta::FromMilliseconds(200)},
-            {1, base::TimeDelta::FromMilliseconds(300)}},
-        std::tuple<IntMessage, IntMessage>{
-            {3, base::TimeDelta::FromMilliseconds(600)},
-            {2, base::TimeDelta::FromMilliseconds(600)}},
-        std::tuple<IntMessage, IntMessage>{
-            {4, base::TimeDelta::FromMilliseconds(800)},
-            {3, base::TimeDelta::FromMilliseconds(900)}},
-        std::tuple<IntMessage, IntMessage>{
-            {6, base::TimeDelta::FromMilliseconds(1200)},
-            {4, base::TimeDelta::FromMilliseconds(1200)}},
-        std::tuple<IntMessage, IntMessage>{
-            {7, base::TimeDelta::FromMilliseconds(1400)},
-            {5, base::TimeDelta::FromMilliseconds(1500)}},
+        std::tuple<IntMessage, IntMessage>{{0, 0}, {0, 0}},
+        std::tuple<IntMessage, IntMessage>{{1, 200000}, {1, 300000}},
+        std::tuple<IntMessage, IntMessage>{{3, 600000}, {2, 600000}},
+        std::tuple<IntMessage, IntMessage>{{4, 800000}, {3, 900000}},
+        std::tuple<IntMessage, IntMessage>{{6, 1200000}, {4, 1200000}},
+        std::tuple<IntMessage, IntMessage>{{7, 1400000}, {5, 1500000}},
     };
 
     MessageFilter<IntMessage, IntMessage> filter;
@@ -142,23 +127,12 @@ TEST(MessageFilterTest, ApplyTimeSynchronizerFilterTest) {
   {
     checker.reset();
     checker.answers = {
-        std::tuple<IntMessage, IntMessage>{{0, base::TimeDelta()},
-                                           {0, base::TimeDelta()}},
-        std::tuple<IntMessage, IntMessage>{
-            {1, base::TimeDelta::FromMilliseconds(200)},
-            {1, base::TimeDelta::FromMilliseconds(300)}},
-        std::tuple<IntMessage, IntMessage>{
-            {3, base::TimeDelta::FromMilliseconds(600)},
-            {2, base::TimeDelta::FromMilliseconds(600)}},
-        std::tuple<IntMessage, IntMessage>{
-            {4, base::TimeDelta::FromMilliseconds(800)},
-            {3, base::TimeDelta::FromMilliseconds(900)}},
-        std::tuple<IntMessage, IntMessage>{
-            {6, base::TimeDelta::FromMilliseconds(1200)},
-            {4, base::TimeDelta::FromMilliseconds(1200)}},
-        std::tuple<IntMessage, IntMessage>{
-            {7, base::TimeDelta::FromMilliseconds(1400)},
-            {5, base::TimeDelta::FromMilliseconds(1500)}},
+        std::tuple<IntMessage, IntMessage>{{0, 0}, {0, 0}},
+        std::tuple<IntMessage, IntMessage>{{1, 200000}, {1, 300000}},
+        std::tuple<IntMessage, IntMessage>{{3, 600000}, {2, 600000}},
+        std::tuple<IntMessage, IntMessage>{{4, 800000}, {3, 900000}},
+        std::tuple<IntMessage, IntMessage>{{6, 1200000}, {4, 1200000}},
+        std::tuple<IntMessage, IntMessage>{{7, 1400000}, {5, 1500000}},
     };
 
     MessageFilter<IntMessage, IntMessage> filter(10);
@@ -177,14 +151,9 @@ TEST(MessageFilterTest, ApplyTimeSynchronizerFilterTest) {
   {
     checker.reset();
     checker.answers = {
-        std::tuple<IntMessage, IntMessage>{{0, base::TimeDelta()},
-                                           {0, base::TimeDelta()}},
-        std::tuple<IntMessage, IntMessage>{
-            {3, base::TimeDelta::FromMilliseconds(600)},
-            {2, base::TimeDelta::FromMilliseconds(600)}},
-        std::tuple<IntMessage, IntMessage>{
-            {6, base::TimeDelta::FromMilliseconds(1200)},
-            {4, base::TimeDelta::FromMilliseconds(1200)}},
+        std::tuple<IntMessage, IntMessage>{{0, 0}, {0, 0}},
+        std::tuple<IntMessage, IntMessage>{{3, 600000}, {2, 600000}},
+        std::tuple<IntMessage, IntMessage>{{6, 1200000}, {4, 1200000}},
     };
 
     MessageFilter<IntMessage, IntMessage> filter(10);
@@ -204,17 +173,10 @@ TEST(MessageFilterTest, ApplyTimeSynchronizerFilterTest) {
   {
     checker.reset();
     checker.answers = {
-        std::tuple<IntMessage, IntMessage>{{0, base::TimeDelta()},
-                                           {0, base::TimeDelta()}},
-        std::tuple<IntMessage, IntMessage>{
-            {2, base::TimeDelta::FromMilliseconds(400)},
-            {1, base::TimeDelta::FromMilliseconds(300)}},
-        std::tuple<IntMessage, IntMessage>{
-            {4, base::TimeDelta::FromMilliseconds(800)},
-            {3, base::TimeDelta::FromMilliseconds(900)}},
-        std::tuple<IntMessage, IntMessage>{
-            {6, base::TimeDelta::FromMilliseconds(1200)},
-            {4, base::TimeDelta::FromMilliseconds(1200)}},
+        std::tuple<IntMessage, IntMessage>{{0, 0}, {0, 0}},
+        std::tuple<IntMessage, IntMessage>{{2, 400000}, {1, 300000}},
+        std::tuple<IntMessage, IntMessage>{{4, 800000}, {3, 900000}},
+        std::tuple<IntMessage, IntMessage>{{6, 1200000}, {4, 1200000}},
     };
 
     MessageFilter<IntMessage, IntMessage> filter(10);

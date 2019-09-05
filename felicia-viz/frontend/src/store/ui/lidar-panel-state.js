@@ -4,7 +4,6 @@ import TopicSubscribable from 'store/topic-subscribable';
 
 export class LidarFrame {
   constructor(message) {
-    const { data } = message;
     const {
       angleStart,
       angleEnd,
@@ -16,7 +15,7 @@ export class LidarFrame {
       ranges,
       intensities,
       timestamp,
-    } = data;
+    } = message.data;
     this.angleStart = angleStart;
     this.angleEnd = angleEnd;
     this.angleDelta = angleDelta;

@@ -4,8 +4,7 @@ import TopicSubscribable from 'store/topic-subscribable';
 
 export class ImageWithBoundingBoxes {
   constructor(message) {
-    const { data } = message;
-    const { image, boundingBoxes } = data;
+    const { image, boundingBoxes } = message.data;
     this.image = image;
     this.boundingBoxes = boundingBoxes;
   }

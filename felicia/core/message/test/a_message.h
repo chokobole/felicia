@@ -4,23 +4,21 @@
 #include <type_traits>
 #include <vector>
 
-#include "third_party/chromium/base/time/time.h"
-
 namespace felicia {
 
 template <typename T>
 class AMessage {
  public:
   AMessage() = default;
-  AMessage(const T& data, base::TimeDelta timestamp)
+  AMessage(const T& data, double timestamp)
       : data_(data), timestamp_(timestamp) {}
   ~AMessage() = default;
 
   void set_data(const T& data) { data_ = data; }
   const T& data() const { return data_; }
 
-  void set_timestamp(base::TimeDelta timestamp) { timestamp_ = timestamp; }
-  base::TimeDelta timestamp() const { return timestamp_; }
+  void set_timestamp(double timestamp) { timestamp_ = timestamp; }
+  double timestamp() const { return timestamp_; }
 
   bool operator==(const AMessage& other) const {
     return data_ == other.data_ && timestamp_ == other.timestamp_;
@@ -29,7 +27,7 @@ class AMessage {
 
  private:
   int data_;
-  base::TimeDelta timestamp_;
+  double timestamp_;
 };
 
 typedef AMessage<int> IntMessage;
@@ -37,9 +35,8 @@ typedef AMessage<int> IntMessage;
 template <typename T, std::enable_if_t<internal::SupportsPlusOperator<T>::value,
                                        void*> = nullptr>
 void GenerateAMessageLinearly(T data_start, T data_delta,
-                              base::TimeDelta timestamp_start,
-                              base::TimeDelta timestamp_delta, size_t count,
-                              std::vector<AMessage<T>>* out) {
+                              double timestamp_start, double timestamp_delta,
+                              size_t count, std::vector<AMessage<T>>* out) {
   out->clear();
   out->reserve(count);
   for (size_t i = 0; i < count; ++i) {
