@@ -3,6 +3,7 @@
 #include "felicia/core/lib/coordinate/coordinate.h"
 #include "felicia/core/lib/file/file_util.h"
 #include "felicia/drivers/camera/camera_frame.h"
+#include "felicia/drivers/camera/depth_camera_frame.h"
 #include "felicia/drivers/pointcloud/pointcloud_frame.h"
 
 namespace felicia {
@@ -25,8 +26,18 @@ void OrbSlam2Node::OnInit() {
   ORB_SLAM2::System::eSensor sensor_type;
   if (!left_color_topic_.empty() && !depth_topic_.empty()) {
     sensor_type = ORB_SLAM2::System::RGBD;
+    rgbd_filter_.set_filter_callback(base::BindRepeating(
+        &RGBDSynchronizer::Callback, base::Unretained(&rgbd_synchronizer)));
+    rgbd_filter_.set_notify_callback(base::BindRepeating(
+        &OrbSlam2Node::OnRGBDFrameMessage, base::Unretained(this)));
+    rgbd_filter_.reserve(10);
   } else if (!left_color_topic_.empty() && !right_color_topic_.empty()) {
     sensor_type = ORB_SLAM2::System::STEREO;
+    stereo_filter_.set_filter_callback(base::BindRepeating(
+        &StereoSynchronizer::Callback, base::Unretained(&stereo_synchronizer)));
+    stereo_filter_.set_notify_callback(base::BindRepeating(
+        &OrbSlam2Node::OnStereoFrameMessage, base::Unretained(this)));
+    stereo_filter_.reserve(10);
   } else if (!left_color_topic_.empty()) {
     sensor_type = ORB_SLAM2::System::MONOCULAR;
   } else {
@@ -49,18 +60,52 @@ void OrbSlam2Node::OnDidCreate(const NodeInfo& node_info) {
   RequestPublish();
 }
 
-void OrbSlam2Node::OnLeftColorMessage(drivers::CameraFrameMessage&& message) {
-#if defined(HAS_OPENCV)
-  drivers::CameraFrame camera_frame;
-  Status s = camera_frame.FromCameraFrameMessage(std::move(message));
+void OrbSlam2Node::OnMonoFrameMessage(
+    drivers::CameraFrameMessage&& mono_message) {
+  drivers::CameraFrame mono_frame;
+  Status s = mono_frame.FromCameraFrameMessage(std::move(mono_message));
   if (!s.ok()) return;
-  base::TimeDelta timestamp =
-      base::TimeDelta::FromMicroseconds(message.timestamp());
-  cv::Mat left_image, right_image;
-  if (camera_frame.ToCvMat(&left_image)) {
-    Track(left_image, right_image, timestamp.InMicrosecondsF());
-  }
-#endif
+  cv::Mat mono_image;
+  mono_frame.ToCvMat(&mono_image, false);
+  orb_slam2_->TrackMonocular(mono_image, mono_frame.timestamp().InSecondsF());
+  Publish(mono_frame.timestamp());
+}
+
+void OrbSlam2Node::OnRGBDFrameMessage(
+    drivers::CameraFrameMessage&& rgb_message,
+    drivers::DepthCameraFrameMessage&& depth_message) {
+  drivers::CameraFrame rgb_frame;
+  Status s = rgb_frame.FromCameraFrameMessage(std::move(rgb_message));
+  if (!s.ok()) return;
+  drivers::DepthCameraFrame depth_frame;
+  s = depth_frame.FromDepthCameraFrameMessage(std::move(depth_message));
+  if (!s.ok()) return;
+  cv::Mat rgb_image;
+  rgb_frame.ToCvMat(&rgb_image, false);
+  cv::Mat depth_image;
+  depth_frame.ToCvMat(&depth_image, false);
+  orb_slam2_->TrackRGBD(rgb_image, depth_image,
+                        rgb_frame.timestamp().InSecondsF());
+  Publish(rgb_frame.timestamp());
+}
+
+void OrbSlam2Node::OnStereoFrameMessage(
+    drivers::CameraFrameMessage&& left_color_message,
+    drivers::CameraFrameMessage&& right_color_message) {
+  drivers::CameraFrame left_color_frame;
+  Status s =
+      left_color_frame.FromCameraFrameMessage(std::move(left_color_message));
+  if (!s.ok()) return;
+  drivers::CameraFrame right_color_frame;
+  s = right_color_frame.FromCameraFrameMessage(std::move(right_color_message));
+  if (!s.ok()) return;
+  cv::Mat left_image;
+  left_color_frame.ToCvMat(&left_image, false);
+  cv::Mat right_image;
+  right_color_frame.ToCvMat(&right_image, false);
+  orb_slam2_->TrackStereo(left_image, right_image,
+                          left_color_frame.timestamp().InSecondsF());
+  Publish(left_color_frame.timestamp());
 }
 
 void OrbSlam2Node::RequestSubscribe() {
@@ -69,12 +114,37 @@ void OrbSlam2Node::RequestSubscribe() {
   settings.period = base::TimeDelta::FromSecondsD(1.0 / color_fps_);
   settings.is_dynamic_buffer = true;
 
+  int channel_types =
+      ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM;
+
   if (!left_color_topic_.empty()) {
-    left_color_subscriber_.RequestSubscribe(
-        node_info_, left_color_topic_,
-        ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_SHM, settings,
-        base::BindRepeating(&OrbSlam2Node::OnLeftColorMessage,
-                            base::Unretained(this)));
+    if (!depth_topic_.empty()) {
+      left_color_subscriber_.RequestSubscribe(
+          node_info_, left_color_topic_, channel_types, settings,
+          base::BindRepeating(&RGBDMessageFilter::OnMessage<0>,
+                              base::Unretained(&rgbd_filter_)));
+
+      settings.period = base::TimeDelta::FromSecondsD(1.0 / depth_fps_);
+      depth_subscriber_.RequestSubscribe(
+          node_info_, depth_topic_, channel_types, settings,
+          base::BindRepeating(&RGBDMessageFilter::OnMessage<1>,
+                              base::Unretained(&rgbd_filter_)));
+    } else if (!right_color_topic_.empty()) {
+      left_color_subscriber_.RequestSubscribe(
+          node_info_, left_color_topic_, channel_types, settings,
+          base::BindRepeating(&StereoMessageFilter::OnMessage<0>,
+                              base::Unretained(&stereo_filter_)));
+
+      right_color_subscriber_.RequestSubscribe(
+          node_info_, right_color_topic_, channel_types, settings,
+          base::BindRepeating(&StereoMessageFilter::OnMessage<1>,
+                              base::Unretained(&stereo_filter_)));
+    } else {
+      left_color_subscriber_.RequestSubscribe(
+          node_info_, left_color_topic_, channel_types, settings,
+          base::BindRepeating(&OrbSlam2Node::OnMonoFrameMessage,
+                              base::Unretained(this)));
+    }
   }
 }
 
@@ -103,20 +173,7 @@ void OrbSlam2Node::RequestPublish() {
   }
 }
 
-void OrbSlam2Node::OnPoseUpdated(const Posef& pose, base::TimeDelta timestamp) {
-  if (pose_topic_.empty()) return;
-  if (!pose_publisher_.IsRegistered()) return;
-  pose_publisher_.Publish(PosefToPosefWithTimestampMessage(pose, timestamp));
-}
-
-void OrbSlam2Node::Track(cv::Mat left_image, cv::Mat right_image,
-                         double timestamp) {
-  if (right_image.empty()) {
-    orb_slam2_->TrackMonocular(left_image, timestamp);
-  } else {
-    orb_slam2_->TrackStereo(left_image, right_image, timestamp);
-  }
-
+void OrbSlam2Node::Publish(base::TimeDelta timestamp) {
   if (!frame_topic_.empty() && frame_publisher_.IsRegistered()) {
     cv::Mat frame = orb_slam2_->DrawCurrentFrame();
     drivers::CameraFormat camera_format(frame.cols, frame.rows,
@@ -124,7 +181,7 @@ void OrbSlam2Node::Track(cv::Mat left_image, cv::Mat right_image,
     drivers::CameraFrameMessage message;
     message.set_data(frame.data, frame.total() * frame.elemSize());
     *message.mutable_camera_format() = camera_format.ToCameraFormatMessage();
-    message.set_timestamp(timestamp);
+    message.set_timestamp(timestamp.InMicroseconds());
     frame_publisher_.Publish(std::move(message));
   }
 

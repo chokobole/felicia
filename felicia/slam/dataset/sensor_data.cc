@@ -47,5 +47,35 @@ void SensorData::set_timestamp(base::TimeDelta timestamp) {
 }
 base::TimeDelta SensorData::timestamp() const { return timestamp_; }
 
+// static
+std::string SensorData::ToString(DataType data_type) {
+  switch (data_type) {
+    case DATA_TYPE_NONE:
+      return "DATA_TYPE_NONE";
+    case DATA_TYPE_LEFT_CAMERA:
+      return "DATA_TYPE_LEFT_CAMERA";
+    case DATA_TYPE_RIGHT_CAMERA:
+      return "DATA_TYPE_RIGHT_CAMERA";
+    case DATA_TYPE_LEFT_CAMERA_GRAY_SCALE:
+      return "DATA_TYPE_LEFT_CAMERA_GRAY_SCALE";
+    case DATA_TYPE_RIGHT_CAMERA_GRAY_SCALE:
+      return "DATA_TYPE_RIGHT_CAMERA_GRAY_SCALE";
+    case DATA_TYPE_DEPTH_CAMERA:
+      return "DATA_TYPE_DEPTH_CAMERA";
+    case DATA_TYPE_IMU:
+      return "DATA_TYPE_IMU";
+    case DATA_TYPE_LIDAR:
+      return "DATA_TYPE_LIDAR";
+    case DATA_TYPE_ACCELERATION:
+      return "DATA_TYPE_ACCELERATION";
+    case DATA_TYPE_GROUND_TRUTH_POSE:
+      return "DATA_TYPE_GROUND_TRUTH_POSE";
+    case DATA_TYPE_GROUND_TRUTH_POSITION:
+      return "DATA_TYPE_GROUND_TRUTH_POSITION";
+    case DATA_TYPE_END:
+      return "DATA_TYPE_END";
+  }
+}
+
 }  // namespace slam
 }  // namespace felicia

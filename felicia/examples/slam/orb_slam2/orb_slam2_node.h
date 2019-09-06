@@ -6,8 +6,10 @@
 #include "felicia/core/communication/publisher.h"
 #include "felicia/core/communication/subscriber.h"
 #include "felicia/core/lib/unit/geometry/pose.h"
+#include "felicia/core/message/message_filter.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/drivers/camera/camera_frame_message.pb.h"
+#include "felicia/drivers/camera/depth_camera_frame_message.pb.h"
 #include "felicia/drivers/pointcloud/pointcloud_frame_message.pb.h"
 #include "felicia/examples/slam/orb_slam2_flag.h"
 #include "felicia/examples/slam/slam_node_create_flag.h"
@@ -19,6 +21,19 @@ namespace orb_slam2 {
 
 class OrbSlam2Node : public NodeLifecycle {
  public:
+  typedef TimeSyncrhonizerMF<drivers::CameraFrameMessage,
+                             drivers::CameraFrameMessage>
+      StereoSynchronizer;
+  typedef TimeSyncrhonizerMF<drivers::CameraFrameMessage,
+                             drivers::DepthCameraFrameMessage>
+      RGBDSynchronizer;
+  typedef MessageFilter<drivers::CameraFrameMessage,
+                        drivers::CameraFrameMessage>
+      StereoMessageFilter;
+  typedef MessageFilter<drivers::CameraFrameMessage,
+                        drivers::DepthCameraFrameMessage>
+      RGBDMessageFilter;
+
   explicit OrbSlam2Node(const SlamNodeCreateFlag& slam_node_create_flag);
 
   // NodeLifecycle methods
@@ -26,14 +41,16 @@ class OrbSlam2Node : public NodeLifecycle {
   void OnDidCreate(const NodeInfo& node_info) override;
 
  private:
-  void OnLeftColorMessage(drivers::CameraFrameMessage&& message);
+  void OnMonoFrameMessage(drivers::CameraFrameMessage&& mono_message);
+  void OnRGBDFrameMessage(drivers::CameraFrameMessage&& rgb_message,
+                          drivers::DepthCameraFrameMessage&& depth_message);
+  void OnStereoFrameMessage(drivers::CameraFrameMessage&& left_color_message,
+                            drivers::CameraFrameMessage&& right_color_message);
 
   void RequestSubscribe();
   void RequestPublish();
 
-  void OnPoseUpdated(const Posef& pose, base::TimeDelta timestamp);
-
-  void Track(cv::Mat left_image, cv::Mat right_image, double timestamp);
+  void Publish(base::TimeDelta timestamp);
 
   NodeInfo node_info_;
   const SlamNodeCreateFlag& slam_node_create_flag_;
@@ -47,9 +64,15 @@ class OrbSlam2Node : public NodeLifecycle {
   const float depth_fps_;
   std::unique_ptr<ORB_SLAM2::System> orb_slam2_;
   Subscriber<drivers::CameraFrameMessage> left_color_subscriber_;
+  Subscriber<drivers::CameraFrameMessage> right_color_subscriber_;
+  Subscriber<drivers::DepthCameraFrameMessage> depth_subscriber_;
   Publisher<drivers::CameraFrameMessage> frame_publisher_;
   Publisher<PosefWithTimestampMessage> pose_publisher_;
   Publisher<drivers::PointcloudFrameMessage> map_publisher_;
+  StereoSynchronizer stereo_synchronizer;
+  RGBDSynchronizer rgbd_synchronizer;
+  StereoMessageFilter stereo_filter_;
+  RGBDMessageFilter rgbd_filter_;
 };
 
 }  // namespace orb_slam2

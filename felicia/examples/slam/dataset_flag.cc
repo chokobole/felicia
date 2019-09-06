@@ -104,21 +104,21 @@ DatasetFlag::DatasetFlag() : current_dataset_kind_(DATASET_KIND_NONE) {
   {
     FloatDefaultFlag::Builder builder(MakeValueStore(&color_fps_, 30.f));
     auto flag = builder.SetLongName("--color_fps")
-                    .SetHelp("color fps to run slam (default: 30)")
+                    .SetHelp("color fps to load data (default: 30)")
                     .Build();
     color_fps_flag_ = std::make_unique<FloatDefaultFlag>(flag);
   }
   {
     FloatDefaultFlag::Builder builder(MakeValueStore(&depth_fps_, 30.f));
     auto flag = builder.SetLongName("--depth_fps")
-                    .SetHelp("depth fps to run slam (default: 30)")
+                    .SetHelp("depth fps to load data (default: 30)")
                     .Build();
     depth_fps_flag_ = std::make_unique<FloatDefaultFlag>(flag);
   }
   {
     FloatDefaultFlag::Builder builder(MakeValueStore(&lidar_fps_, 5.5f));
     auto flag = builder.SetLongName("--lidar_fps")
-                    .SetHelp("lidar fps to run slam (default: 5.5)")
+                    .SetHelp("lidar fps to load data (default: 5.5)")
                     .Build();
     lidar_fps_flag_ = std::make_unique<FloatDefaultFlag>(flag);
   }

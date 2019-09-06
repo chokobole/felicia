@@ -59,6 +59,8 @@ class EXPORT SensorData {
   void set_timestamp(base::TimeDelta timestamp);
   base::TimeDelta timestamp() const;
 
+  static std::string ToString(DataType data_type);
+
  private:
   base::Optional<drivers::CameraFrame> left_camera_frame_;
   base::Optional<drivers::CameraFrame> right_camera_frame_;

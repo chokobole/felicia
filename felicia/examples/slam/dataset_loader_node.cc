@@ -3,6 +3,7 @@
 #include "felicia/core/lib/file/file_util.h"
 #include "felicia/core/lib/image/image.h"
 #include "felicia/core/master/master_proxy.h"
+#include "felicia/core/util/command_line_interface/text_style.h"
 #include "felicia/slam/dataset/euroc_dataset_loader.h"
 #include "felicia/slam/dataset/kitti_dataset_loader.h"
 #include "felicia/slam/dataset/tum_dataset_loader.h"
@@ -110,7 +111,15 @@ void DatasetLoaderNode::RequestPublish() {
 void DatasetLoaderNode::LoadData(slam::SensorData::DataType data_type) {
   StatusOr<slam::SensorData> status_or =
       dataset_loader_.Next(static_cast<int>(data_type));
-  if (!status_or.ok()) return;
+  if (!status_or.ok()) {
+    if (dataset_loader_.End(static_cast<int>(data_type))) {
+      std::cout << TextStyle::Green(slam::SensorData::ToString(data_type))
+                << " is end!" << std::endl;
+    } else {
+      LOG(ERROR) << status_or.status();
+    }
+    return;
+  }
   slam::SensorData sensor_data = status_or.ValueOrDie();
   if ((data_type == slam::SensorData::DATA_TYPE_LEFT_CAMERA ||
        data_type == slam::SensorData::DATA_TYPE_LEFT_CAMERA_GRAY_SCALE) &&
@@ -129,6 +138,8 @@ void DatasetLoaderNode::LoadData(slam::SensorData::DataType data_type) {
     depth_publisher_.Publish(std::move(sensor_data)
                                  .depth_camera_frame()
                                  .ToDepthCameraFrameMessage(false));
+  } else {
+    return;
   }
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
