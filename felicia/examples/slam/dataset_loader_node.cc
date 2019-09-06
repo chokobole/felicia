@@ -22,7 +22,7 @@ DatasetLoaderNode::DatasetLoaderNode(const DatasetFlag& dataset_flag)
 
 void DatasetLoaderNode::OnInit() {
   base::FilePath path = ToFilePath(dataset_flag_.path_flag()->value());
-  const int data_types = dataset_flag_.data_types_flag()->value();
+  const int data_types = dataset_flag_.data_types();
 
   switch (dataset_flag_.dataset_kind()) {
     case DatasetFlag::DATASET_KIND_EUROC:

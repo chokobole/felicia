@@ -3,6 +3,7 @@
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 #include "felicia/core/protobuf/channel.pb.h"
+#include "felicia/slam/dataset/sensor_data.h"
 
 namespace felicia {
 
@@ -24,15 +25,6 @@ DatasetFlag::DatasetFlag() : current_dataset_kind_(DATASET_KIND_NONE) {
     StringFlag::Builder builder(MakeValueStore(&path_));
     auto flag = builder.SetName("path").SetHelp("path to dataset").Build();
     path_flag_ = std::make_unique<StringFlag>(flag);
-  }
-  {
-    IntFlag::Builder builder(MakeValueStore(&data_types_));
-    auto flag = builder.SetName("data_types")
-                    .SetHelp(
-                        "data type (e.g, RGB), which is an enum "
-                        "value for SensorData::DataType.")
-                    .Build();
-    data_types_flag_ = std::make_unique<IntFlag>(flag);
   }
   {
     StringFlag::Builder builder(MakeValueStore(&name_));
@@ -126,9 +118,33 @@ DatasetFlag::DatasetFlag() : current_dataset_kind_(DATASET_KIND_NONE) {
 
 DatasetFlag::~DatasetFlag() = default;
 
+int DatasetFlag::data_types() const {
+  int ret = 0;
+  if (left_color_topic_flag_->is_set()) {
+    if (left_as_gray_scale_flag_->is_set()) {
+      ret |= slam::SensorData::DATA_TYPE_LEFT_CAMERA_GRAY_SCALE;
+    } else {
+      ret |= slam::SensorData::DATA_TYPE_LEFT_CAMERA;
+    }
+  }
+  if (right_color_topic_flag_->is_set()) {
+    if (right_as_gray_scale_flag_->is_set()) {
+      ret |= slam::SensorData::DATA_TYPE_RIGHT_CAMERA_GRAY_SCALE;
+    } else {
+      ret |= slam::SensorData::DATA_TYPE_RIGHT_CAMERA;
+    }
+  }
+  if (depth_topic_flag_->is_set()) {
+    ret |= slam::SensorData::DATA_TYPE_DEPTH_CAMERA;
+  }
+  if (lidar_topic_flag_->is_set()) {
+    ret |= slam::SensorData::DATA_TYPE_LIDAR;
+  }
+  return ret;
+}
+
 bool DatasetFlag::Parse(FlagParser& parser) {
-  PARSE_POSITIONAL_FLAG(parser, 3, dataset_kind_flag_, path_flag_,
-                        data_types_flag_);
+  PARSE_POSITIONAL_FLAG(parser, 2, dataset_kind_flag_, path_flag_);
   if (dataset_kind_ == kEuroc) {
     current_dataset_kind_ = DATASET_KIND_EUROC;
   } else if (dataset_kind_ == kKitti) {
@@ -144,7 +160,7 @@ bool DatasetFlag::Parse(FlagParser& parser) {
 }
 
 bool DatasetFlag::Validate() const {
-  return CheckIfFlagWasSet(path_flag_) && CheckIfFlagWasSet(data_types_flag_) &&
+  return CheckIfFlagWasSet(path_flag_) &&
          CheckIfFlagPositive(color_fps_flag_) &&
          CheckIfFlagPositive(depth_fps_flag_) &&
          CheckIfFlagPositive(lidar_fps_flag_) &&

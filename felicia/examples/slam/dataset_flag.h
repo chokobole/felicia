@@ -17,7 +17,6 @@ class DatasetFlag : public FlagParser::Delegate {
   DatasetFlag();
   ~DatasetFlag();
   const StringFlag* path_flag() const { return path_flag_.get(); }
-  const IntFlag* data_types_flag() const { return data_types_flag_.get(); }
   const StringFlag* name_flag() const { return name_flag_.get(); }
   const StringChoicesFlag* channel_type_flag() const {
     return channel_type_flag_.get();
@@ -47,22 +46,21 @@ class DatasetFlag : public FlagParser::Delegate {
   }
 
   DatasetKind dataset_kind() const { return current_dataset_kind_; }
+  int data_types() const;
 
   bool Parse(FlagParser& parser) override;
 
   bool Validate() const override;
 
   AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(
-      dataset_kind_flag_, path_flag_, data_types_flag_, name_flag_,
-      channel_type_flag_, left_color_topic_flag_, right_color_topic_flag_,
-      depth_topic_flag_, lidar_topic_flag_, left_as_gray_scale_flag_,
-      right_as_gray_scale_flag_, color_fps_flag_, depth_fps_flag_,
-      lidar_fps_flag_)
+      dataset_kind_flag_, path_flag_, name_flag_, channel_type_flag_,
+      left_color_topic_flag_, right_color_topic_flag_, depth_topic_flag_,
+      lidar_topic_flag_, left_as_gray_scale_flag_, right_as_gray_scale_flag_,
+      color_fps_flag_, depth_fps_flag_, lidar_fps_flag_)
 
  private:
   std::string dataset_kind_;
   std::string path_;
-  int data_types_;
   std::string name_;
   std::string channel_type_;
   std::string left_color_topic_;
@@ -76,7 +74,6 @@ class DatasetFlag : public FlagParser::Delegate {
   float lidar_fps_;
   std::unique_ptr<StringChoicesFlag> dataset_kind_flag_;
   std::unique_ptr<StringFlag> path_flag_;
-  std::unique_ptr<IntFlag> data_types_flag_;
   std::unique_ptr<StringFlag> name_flag_;
   std::unique_ptr<StringChoicesFlag> channel_type_flag_;
   std::unique_ptr<StringFlag> left_color_topic_flag_;
