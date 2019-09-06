@@ -8,22 +8,22 @@
 
 namespace felicia {
 
-namespace {
+HeartBeatSignaller::HeartBeatSignaller()
+    : thread_("HeartBeatSignallerThread") {}
 
-base::TimeDelta g_heart_beat_duration = base::TimeDelta();
+void HeartBeatSignaller::Start(const ClientInfo& client_info,
+                               OnStartCallback callback) {
+  heart_beat_duration_ = GetHeartBeatDuration(client_info);
 
-}  // namespace
+  thread_.StartWithOptions(
+      base::Thread::Options{base::MessageLoop::TYPE_IO, 0});
+  thread_.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&HeartBeatSignaller::DoStart,
+                                base::Unretained(this), std::move(callback)));
+}
 
-HeartBeatSignaller::HeartBeatSignaller(
-    TaskRunnerInterface* task_runner_interface)
-    : task_runner_interface_(task_runner_interface) {}
-
-void HeartBeatSignaller::Start() {
+void HeartBeatSignaller::DoStart(OnStartCallback callback) {
   DCHECK(!channel_);
-
-  if (g_heart_beat_duration == base::TimeDelta()) {
-    g_heart_beat_duration = GetHeartBeatDuration();
-  }
 
   channel_ =
       ChannelFactory::NewChannel<HeartBeat>(ChannelDef::CHANNEL_TYPE_TCP);
@@ -32,20 +32,11 @@ void HeartBeatSignaller::Start() {
 
   TCPChannel<HeartBeat>* tcp_channel = channel_->ToTCPChannel();
   auto status_or = tcp_channel->Listen();
-  *channel_source_.add_channel_defs() = status_or.ValueOrDie();
-  AcceptLoop();
-}
-
-void HeartBeatSignaller::AcceptLoop() {
-  if (!task_runner_interface_->IsBoundToCurrentThread()) {
-    task_runner_interface_->PostTask(
-        FROM_HERE, base::BindOnce(&HeartBeatSignaller::AcceptLoop,
-                                  base::Unretained(this)));
-    return;
-  }
-  TCPChannel<HeartBeat>* tcp_channel = channel_->ToTCPChannel();
   tcp_channel->AcceptLoop(base::BindRepeating(&HeartBeatSignaller::OnAccept,
                                               base::Unretained(this)));
+  ChannelSource channel_source;
+  *channel_source.add_channel_defs() = status_or.ValueOrDie();
+  std::move(callback).Run(channel_source);
 }
 
 void HeartBeatSignaller::OnAccept(const Status& s) {
@@ -67,10 +58,10 @@ void HeartBeatSignaller::Signal() {
 
 void HeartBeatSignaller::OnSignal(ChannelDef::Type type, const Status& s) {
   if (s.ok() || trial_ <= kMaximumTrial) {
-    task_runner_interface_->PostDelayedTask(
+    thread_.task_runner()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&HeartBeatSignaller::Signal, base::Unretained(this)),
-        g_heart_beat_duration);
+        heart_beat_duration_);
   } else {
     LOG(ERROR) << "Failed to send heart...";
   }

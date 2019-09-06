@@ -3,29 +3,31 @@
 
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/macros.h"
+#include "third_party/chromium/base/threading/thread.h"
+#include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/channel/channel.h"
-#include "felicia/core/lib/base/task_runner_interface.h"
 #include "felicia/core/protobuf/master_data.pb.h"
 
 namespace felicia {
 
 class HeartBeatSignaller {
  public:
-  explicit HeartBeatSignaller(TaskRunnerInterface* task_runner_interface);
+  typedef base::OnceCallback<void(const ChannelSource&)> OnStartCallback;
 
-  const ChannelSource& channel_source() const { return channel_source_; }
+  HeartBeatSignaller();
 
-  void Start();
+  void Start(const ClientInfo& client_info, OnStartCallback callback);
 
  private:
+  void DoStart(OnStartCallback callback);
   void AcceptLoop();
   void OnAccept(const Status& s);
   void Signal();
   void OnSignal(ChannelDef::Type type, const Status& s);
 
-  TaskRunnerInterface* task_runner_interface_;  // not owned
-  ChannelSource channel_source_;
+  base::Thread thread_;
+  base::TimeDelta heart_beat_duration_;
   std::unique_ptr<Channel<HeartBeat>> channel_;
 
   uint8_t trial_ = 0;

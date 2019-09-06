@@ -51,7 +51,7 @@ class HeartBeatListener {
   DISALLOW_COPY_AND_ASSIGN(HeartBeatListener);
 };
 
-base::TimeDelta GetHeartBeatDuration();
+base::TimeDelta GetHeartBeatDuration(const ClientInfo& client_info);
 
 }  // namespace felicia
 

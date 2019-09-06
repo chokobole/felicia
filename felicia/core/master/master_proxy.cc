@@ -26,10 +26,8 @@ bool g_on_background = false;
 }  // namespace
 
 MasterProxy::MasterProxy()
-    : heart_beat_signaller_(this)
 #if defined(OS_WIN)
-      ,
-      scoped_com_initializer_(base::win::ScopedCOMInitializer::kMTA)
+    : scoped_com_initializer_(base::win::ScopedCOMInitializer::kMTA)
 #endif
 {
   if (g_on_background) {
@@ -171,30 +169,18 @@ void MasterProxy::Setup(base::WaitableEvent* event) {
     return;
   }
 
-  heart_beat_signaller_.Start();
   topic_info_watcher_.Start();
-
-  *client_info_.mutable_heart_beat_signaller_source() =
-      heart_beat_signaller_.channel_source();
   *client_info_.mutable_topic_info_watcher_source() =
       topic_info_watcher_.channel_source();
-
-  event->Signal();
+  heart_beat_signaller_.Start(
+      client_info_, base::BindOnce(&MasterProxy::OnHeartBeatSignallerStart,
+                                   base::Unretained(this), event));
 }
 
-void MasterProxy::OnNodeInit(const NodeInfo& node_info,
-                             std::unique_ptr<NodeLifecycle> node) {
-  RegisterNodeRequest* request = new RegisterNodeRequest();
-  NodeInfo* new_node_info = request->mutable_node_info();
-  new_node_info->CopyFrom(node_info);
-  new_node_info->set_client_id(client_info_.id());
-  RegisterNodeResponse* response = new RegisterNodeResponse();
-
-  RegisterNodeAsync(
-      request, response,
-      base::BindOnce(&MasterProxy::OnRegisterNodeAsync, base::Unretained(this),
-                     base::Passed(&node), base::Owned(request),
-                     base::Owned(response)));
+void MasterProxy::OnHeartBeatSignallerStart(
+    base::WaitableEvent* event, const ChannelSource& channel_source) {
+  *client_info_.mutable_heart_beat_signaller_source() = channel_source;
+  event->Signal();
 }
 
 void MasterProxy::RegisterClient() {

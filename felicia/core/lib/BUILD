@@ -19,7 +19,6 @@ felicia_env(
 fel_cc_library(
     name = "lib",
     srcs = [
-        "base/task_runner_interface.cc",
         "containers/data.cc",
         "coordinate/coordinate.cc",
         "error/status.cc",
@@ -51,7 +50,6 @@ fel_cc_library(
         "base/export.h",
         "base/range.h",
         "base/state.h",
-        "base/task_runner_interface.h",
         "base/template_util.h",
         "containers/data.h",
         "containers/data_constants.h",

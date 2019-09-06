@@ -15,7 +15,12 @@ base::TimeDelta g_heart_beat_duration = base::TimeDelta();
 
 }  // namespace
 
-base::TimeDelta GetHeartBeatDuration() {
+base::TimeDelta GetHeartBeatDuration(const ClientInfo& client_info) {
+  uint32_t heart_beat_duration = client_info.heart_beat_duration();
+  if (heart_beat_duration != 0)
+    return base::TimeDelta::FromMilliseconds(heart_beat_duration);
+  if (g_heart_beat_duration != base::TimeDelta()) return g_heart_beat_duration;
+
   int64_t duration = kDefeaultHeartBeatDuration;
   const char* duration_str = getenv("FEL_HEART_BEAT_DURATION");
   if (duration_str) {
@@ -28,23 +33,16 @@ base::TimeDelta GetHeartBeatDuration() {
     }
   }
 
-  return base::TimeDelta::FromMilliseconds(duration);
+  g_heart_beat_duration = base::TimeDelta::FromMilliseconds(duration);
+  return g_heart_beat_duration;
 }
 
 HeartBeatListener::HeartBeatListener(const ClientInfo& client_info,
                                      OnDisconnectCallback callback)
-    : client_info_(client_info), callback_(std::move(callback)) {
+    : client_info_(client_info),
+      heart_beat_duration_(GetHeartBeatDuration(client_info)),
+      callback_(std::move(callback)) {
   DCHECK(!callback_.is_null());
-  uint32_t heart_beat_duration = client_info_.heart_beat_duration();
-  if (heart_beat_duration == 0) {
-    if (g_heart_beat_duration == base::TimeDelta()) {
-      g_heart_beat_duration = GetHeartBeatDuration();
-    }
-    heart_beat_duration_ = g_heart_beat_duration;
-  } else {
-    heart_beat_duration_ =
-        base::TimeDelta::FromMilliseconds(heart_beat_duration);
-  }
 }
 
 HeartBeatListener::~HeartBeatListener() {
