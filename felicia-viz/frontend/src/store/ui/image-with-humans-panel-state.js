@@ -2,7 +2,7 @@ import { observable, action } from 'mobx';
 
 import TopicSubscribable from 'store/topic-subscribable';
 
-export class ImageWithHumans {
+export class ImageWithHumansMessage {
   constructor(message) {
     const { image, model, humans } = message.data;
     this.image = image;
@@ -17,7 +17,7 @@ export default class ImageWithHumansPanelState extends TopicSubscribable {
   @observable threshold = 0.3;
 
   @action update(message) {
-    this.frame = new ImageWithHumans(message);
+    this.frame = new ImageWithHumansMessage(message);
   }
 
   @action setThreshold(newThreshold) {

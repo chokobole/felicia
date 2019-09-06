@@ -3,14 +3,14 @@ import PropTypes from 'prop-types';
 
 import { ResizeDetector } from '@felicia-viz/ui';
 
-import { LidarFrame } from 'store/ui/lidar-panel-state';
-import Worker from 'util/lidar-view-webworker.js';
+import { LidarFrameMessage } from 'store/ui/lidar-panel-state';
+import Worker from 'util/lidar-frame-webworker.js';
 
 export default class LidarView extends Component {
   static propTypes = {
     width: PropTypes.string,
     height: PropTypes.string,
-    frame: PropTypes.instanceOf(LidarFrame),
+    frame: PropTypes.instanceOf(LidarFrameMessage),
   };
 
   static defaultProps = {

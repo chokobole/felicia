@@ -3,14 +3,14 @@ import PropTypes from 'prop-types';
 
 import { ResizableCanvas } from '@felicia-viz/ui';
 
-import { ImageWithBoundingBoxes } from 'store/ui/image-with-bounding-boxes-panel-state';
+import { ImageWithBoundingBoxesMessage } from 'store/ui/image-with-bounding-boxes-panel-state';
 import Worker from 'util/image-webworker.js';
 
 export default class ImageWithBoundingBoxesView extends Component {
   static propTypes = {
     width: PropTypes.string,
     height: PropTypes.string,
-    frame: PropTypes.instanceOf(ImageWithBoundingBoxes),
+    frame: PropTypes.instanceOf(ImageWithBoundingBoxesMessage),
     fontSize: PropTypes.number,
     lineWidth: PropTypes.number,
     threshold: PropTypes.number,

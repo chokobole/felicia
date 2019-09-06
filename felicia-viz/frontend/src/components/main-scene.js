@@ -3,26 +3,19 @@ import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import { ActionManager } from '@babylonjs/core/Actions/actionManager';
 import { ExecuteCodeAction } from '@babylonjs/core/Actions/directActions';
-import { Engine } from '@babylonjs/core/Engines/engine';
-import { Scene } from '@babylonjs/core/scene';
-import { Vector3, Color3 } from '@babylonjs/core/Maths/math';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
-import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { GridMaterial } from '@babylonjs/materials/grid';
+import { Vector3 } from '@babylonjs/core/Maths/math';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import '@babylonjs/core/Meshes/meshBuilder';
 
 import UI_TYPES from 'store/ui/ui-types';
-import { drawAxis } from 'util/babylon-util';
-import OccupancyGridMap from './occupancy-grid-map';
-
-function toMainSceneCoordinate(target, pose) {
-  const { point, theta } = pose;
-  const { x, y } = point;
-  target.position.x = -x; // eslint-disable-line no-param-reassign
-  target.position.y = -y; // eslint-disable-line no-param-reassign
-  target.rotation.z = Math.PI / 2 + theta; // eslint-disable-line no-param-reassign
-}
+import { OccupancyGridMapMessage, PoseWithTimestampMessage } from 'store/ui/main-scene-state';
+import { backgroundColor, createScene } from 'util/babylon-util';
+import OccupancyGridMap from 'util/occupancy-grid-map';
+import OccupancyGridMapWorker from 'util/occupancy-grid-map-webworker.js';
+import Pose from 'util/pose';
 
 @inject('store')
 @observer
@@ -31,34 +24,35 @@ export default class MainScene extends Component {
     width: PropTypes.string,
     height: PropTypes.string,
     store: PropTypes.object.isRequired,
+    occupancyGridMap: PropTypes.instanceOf(OccupancyGridMapMessage),
+    pose: PropTypes.instanceOf(PoseWithTimestampMessage),
   };
 
   static defaultProps = {
     width: '100%',
     height: '100%',
+    occupancyGridMap: null,
+    pose: null,
   };
 
   componentDidMount() {
-    const engine = new Engine(this.canvas);
+    const { engine, scene } = createScene(this.canvas);
+    this.scene = scene;
 
-    const backgroundColor = new Color3(51 / 255, 51 / 255, 51 / 255);
-
-    const scene = new Scene(engine);
-    scene.clearColor = backgroundColor;
-
-    const camera = new ArcRotateCamera('camera', 0, 0, 0, Vector3.Zero(), scene);
+    const camera = new ArcRotateCamera('main-scene-camera', 0, 0, 0, Vector3.Zero(), scene);
     camera.position = new Vector3(0, -30, 30);
     camera.attachControl(this.canvas, true);
 
-    const light = new HemisphericLight('light', new Vector3(0, 0, 1), scene);
+    const light = new HemisphericLight('main-scene-light', new Vector3(0, 0, 1), scene);
     light.intensity = 0.7;
 
-    const material = new GridMaterial('grid', scene);
-    material.mainColor = backgroundColor;
+    const material = new GridMaterial('main-scene-grid', scene);
+    material.mainColor = backgroundColor();
     material.opacity = 0.8;
 
-    const plane = Mesh.CreatePlane('plane', 10, scene, true, Mesh.DOUBLESIDE);
+    const plane = Mesh.CreatePlane('main-scene-plane', 10, scene, false, Mesh.DOUBLESIDE);
     plane.material = material;
+
     const actionManager = new ActionManager(scene);
     actionManager.registerAction(
       new ExecuteCodeAction(
@@ -76,31 +70,47 @@ export default class MainScene extends Component {
     scene.actionManager = actionManager;
 
     engine.runRenderLoop(() => {
-      const { store } = this.props;
-      const viewState = store.uiState.findView(0);
-      const { map, pose } = viewState;
-
-      if (map) {
-        const { size, resolution, origin, data } = map;
-        const { width, height } = size;
-        if (!this.map || (this.width !== width || this.height !== height)) {
-          this.map = new OccupancyGridMap('occupancy-grid-map', width, height, 1, scene);
-          this.map.toMainSceneCoordinate();
-        }
-        this.map.setOrigin(origin);
-        this.map.setResolution(resolution);
-        this.map.update(width, height, data);
-      }
-
-      if (pose) {
-        if (!this.pose) {
-          this.pose = drawAxis(1, scene);
-        }
-        toMainSceneCoordinate(this.pose, pose);
-      }
-
       scene.render();
     });
+  }
+
+  shouldComponentUpdate(nextProps) {
+    const { occupancyGridMap, pose } = this.props;
+    let updated = false;
+    if (occupancyGridMap !== nextProps.occupancyGridMap) {
+      if (!this.occupancyGridMap) {
+        this.occupancyGridMap = new OccupancyGridMap(new OccupancyGridMapWorker());
+      }
+      this.occupancyGridMap.update(nextProps.occupancyGridMap, this.scene);
+      updated = true;
+    }
+
+    if (pose !== nextProps.pose) {
+      if (!this.pose) {
+        this.pose = new Pose();
+      }
+      this.pose.update(1, nextProps.pose, this.scene);
+      updated = true;
+    }
+
+    if (updated) return true;
+
+    const { width, height } = this.props;
+    if (width !== nextProps.width || height !== nextProps.height) {
+      return true;
+    }
+
+    return false;
+  }
+
+  componentWillUnmount() {
+    if (this.occupancyGridMap) {
+      this.occupancyGridMap.terminateWorker();
+    }
+
+    if (this.pointcloud) {
+      this.pointcloud.terminateWorker();
+    }
   }
 
   _onCanvasLoad = ref => {

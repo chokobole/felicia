@@ -13,7 +13,7 @@ export const LIDAR_FRAME_MESSAGE = 'felicia.drivers.LidarFrameMessage';
 export const POINTCLOUD_FRAME_MESSAGE = 'felicia.drivers.PointcloudFrameMessage';
 export const TOPIC_INFO = 'felicia.TopicInfo';
 
-export const OCCUPANCY_GRID_MAP_MESSAGE = 'felicia.OccupancyGridMapMessage';
+export const OCCUPANCY_GRID_MAP_MESSAGE = 'felicia.slam.OccupancyGridMapMessage';
 export const POSEF_WITH_TIMESTAMP_MESSAGE = 'felicia.PosefWithTimestampMessage';
 
 const ChannelDefType = FeliciaProtoRoot.lookupEnum('felicia.ChannelDef.Type');

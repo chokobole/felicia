@@ -3,16 +3,16 @@ import PropTypes from 'prop-types';
 
 import { ResizableCanvas } from '@felicia-viz/ui';
 
-import { CameraFrame } from 'store/ui/camera-panel-state';
-import Worker from 'util/camera-view-webworker.js';
+import { CameraFrameMessage } from 'store/ui/camera-panel-state';
+import Worker from 'util/camera-frame-webworker.js';
 
 export default class CameraView extends Component {
   static propTypes = {
     width: PropTypes.string,
     height: PropTypes.string,
-    frame: PropTypes.instanceOf(CameraFrame),
+    frame: PropTypes.instanceOf(CameraFrameMessage),
     filter: PropTypes.string,
-    frameToAlign: PropTypes.instanceOf(CameraFrame),
+    frameToAlign: PropTypes.instanceOf(CameraFrameMessage),
   };
 
   static defaultProps = {

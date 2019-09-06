@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { ResizableCanvas } from '@felicia-viz/ui';
 import { HumanBody, HumanBodyModel } from '@felicia-viz/communication';
 
-import { ImageWithHumans } from 'store/ui/image-with-humans-panel-state';
+import { ImageWithHumansMessage } from 'store/ui/image-with-humans-panel-state';
 import Worker from 'util/image-webworker.js';
 
 const {
@@ -412,7 +412,7 @@ export default class ImageWithHumansView extends Component {
   static propTypes = {
     width: PropTypes.string,
     height: PropTypes.string,
-    frame: PropTypes.instanceOf(ImageWithHumans),
+    frame: PropTypes.instanceOf(ImageWithHumansMessage),
     lineWidth: PropTypes.number,
     radius: PropTypes.number,
     threshold: PropTypes.number,

@@ -7,7 +7,7 @@ import {
 
 import TopicSubscribable from 'store/topic-subscribable';
 
-export class OccupancyGridMap {
+export class OccupancyGridMapMessage {
   constructor(message) {
     const { data, size, resolution, origin, timestamp } = message.data;
     this.size = size;
@@ -18,7 +18,7 @@ export class OccupancyGridMap {
   }
 }
 
-export class PoseWithTimestamp {
+export class PoseWithTimestampMessage {
   constructor(message) {
     const { data } = message;
     const { point, theta, timestamp } = data;
@@ -29,15 +29,20 @@ export class PoseWithTimestamp {
 }
 
 export default class MainSceneState extends TopicSubscribable {
-  @observable map = null;
+  @observable occupancyGridMap = null;
 
   @observable pose = null;
 
   @action update(message) {
-    if (message.type === OCCUPANCY_GRID_MAP_MESSAGE) {
-      this.map = new OccupancyGridMap(message);
-    } else if (message.type === POSEF_WITH_TIMESTAMP_MESSAGE) {
-      this.pose = new PoseWithTimestamp(message);
+    switch (message.type) {
+      case OCCUPANCY_GRID_MAP_MESSAGE:
+        this.occupancyGridMap = new OccupancyGridMapMessage(message);
+        break;
+      case POSEF_WITH_TIMESTAMP_MESSAGE:
+        this.pose = new PoseWithTimestampMessage(message);
+        break;
+      default:
+        break;
     }
   }
 

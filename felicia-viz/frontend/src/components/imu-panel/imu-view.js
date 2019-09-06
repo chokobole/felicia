@@ -1,20 +1,18 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Engine } from '@babylonjs/core/Engines/engine';
-import { Scene } from '@babylonjs/core/scene';
-import { Vector3, Color3, Quaternion } from '@babylonjs/core/Maths/math';
+import { Vector3, Quaternion } from '@babylonjs/core/Maths/math';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import '@babylonjs/core/Meshes/meshBuilder';
 
 import { babylonCanvasStyle } from 'custom-styles';
-import { ImuFrame } from 'store/ui/imu-panel-state';
-import { drawAxis } from 'util/babylon-util';
+import { ImuFrameMessage } from 'store/ui/imu-panel-state';
+import { createAxis, createScene } from 'util/babylon-util';
 
-export default class ImuView extends PureComponent {
+export default class ImuView extends Component {
   static propTypes = {
     width: PropTypes.string, // eslint-disable-line
     height: PropTypes.string, // eslint-disable-line
-    frame: PropTypes.instanceOf(ImuFrame),
+    frame: PropTypes.instanceOf(ImuFrameMessage),
   };
 
   static defaultProps = {
@@ -24,30 +22,33 @@ export default class ImuView extends PureComponent {
   };
 
   componentDidMount() {
-    const engine = new Engine(this.canvas);
-
-    const backgroundColor = new Color3(51 / 255, 51 / 255, 51 / 255);
-
-    const scene = new Scene(engine);
-    scene.clearColor = backgroundColor;
+    const { engine, scene } = createScene(this.canvas);
 
     const camera = new ArcRotateCamera('camera', 0, 0, 0, Vector3.Zero(), scene);
     camera.position = new Vector3(0, 0, -10);
     camera.attachControl(this.canvas, true);
 
-    const localOrigin = drawAxis(10, scene);
+    this.localOrigin = createAxis(10, scene);
 
     engine.runRenderLoop(() => {
-      const { frame } = this.props;
-
-      if (frame) {
-        const { x, y, z, w } = frame.orientation;
-        const orientation = new Quaternion(x, y, z, w);
-        localOrigin.rotationQuaternion = orientation;
-      }
-
       scene.render();
     });
+  }
+
+  shouldComponentUpdate(nextProps) {
+    const { frame } = this.props;
+    if (frame !== nextProps.frame) {
+      const { x, y, z, w } = nextProps.frame.orientation;
+      this.localOrigin.rotationQuaternion = new Quaternion(x, y, z, w);
+      return true;
+    }
+
+    const { width, height } = this.props;
+    if (width !== nextProps.width || height !== nextProps.height) {
+      return true;
+    }
+
+    return false;
   }
 
   _onCanvasLoad = ref => {

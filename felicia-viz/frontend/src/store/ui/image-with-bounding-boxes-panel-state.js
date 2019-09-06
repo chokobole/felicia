@@ -2,7 +2,7 @@ import { observable, action } from 'mobx';
 
 import TopicSubscribable from 'store/topic-subscribable';
 
-export class ImageWithBoundingBoxes {
+export class ImageWithBoundingBoxesMessage {
   constructor(message) {
     const { image, boundingBoxes } = message.data;
     this.image = image;
@@ -18,7 +18,7 @@ export default class ImageWithBoundingBoxesPanelState extends TopicSubscribable 
   @observable threshold = 0.5;
 
   @action update(message) {
-    this.frame = new ImageWithBoundingBoxes(message);
+    this.frame = new ImageWithBoundingBoxesMessage(message);
   }
 
   @action setLineWidth(newLineWidth) {

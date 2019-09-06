@@ -2,7 +2,7 @@ import { observable, action } from 'mobx';
 
 import TopicSubscribable from 'store/topic-subscribable';
 
-export class CameraFrame {
+export class CameraFrameMessage {
   constructor(message) {
     const { converted, data, cameraFormat, timestamp } = message.data;
     this.converted = converted;
@@ -21,7 +21,7 @@ export default class CameraPanelState extends TopicSubscribable {
   @observable frame = null;
 
   @action update(message) {
-    this.frame = new CameraFrame(message);
+    this.frame = new CameraFrameMessage(message);
   }
 
   type = () => {

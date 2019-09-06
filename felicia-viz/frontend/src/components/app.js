@@ -71,10 +71,14 @@ export default class App extends Component {
   }
 
   render() {
+    const { store } = this.props;
+    const viewState = store.uiState.findView(0);
+    const { occupancyGridMap, pose } = viewState;
+
     return (
       <div id='container'>
         <ControlPanel />
-        <MainScene />
+        <MainScene occupancyGridMap={occupancyGridMap} pose={pose} />
         {this._renderViews()}
         <ToolBar />
         <NotificationContainer />

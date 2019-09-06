@@ -2,7 +2,7 @@ import { observable, action } from 'mobx';
 
 import TopicSubscribable from 'store/topic-subscribable';
 
-export class LidarFrame {
+export class LidarFrameMessage {
   constructor(message) {
     const {
       angleStart,
@@ -33,7 +33,7 @@ export default class LidarPanelState extends TopicSubscribable {
   @observable frame = null;
 
   @action update(message) {
-    this.frame = new LidarFrame(message);
+    this.frame = new LidarFrameMessage(message);
   }
 
   type = () => {

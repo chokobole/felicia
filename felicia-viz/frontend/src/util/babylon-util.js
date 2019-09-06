@@ -1,34 +1,27 @@
 /* eslint import/prefer-default-export: "off" */
+import { Engine } from '@babylonjs/core/Engines/engine';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3, Quaternion, Vector3 } from '@babylonjs/core/Maths/math';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
-import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
+import { Scene } from '@babylonjs/core/scene';
 
-export function makeVector3(v) {
+export function toVector3(v) {
   const { x, y, z } = v;
   return new Vector3(x, y, z);
 }
 
-export function makeQuarternion(q) {
+export function toQuarternion(q) {
   const { x, y, z, w } = q;
   return new Quaternion(x, y, z, w);
 }
 
-export function makeTextPlane(text, color, size, scene) {
-  const dynamicTexture = new DynamicTexture('DynamicTexture', 50, scene, true);
-  dynamicTexture.hasAlpha = true;
-  dynamicTexture.drawText(text, 5, 40, 'bold 36px Arial', color, 'transparent', true);
-  const plane = new Mesh.CreatePlane('TextPlane', size, scene, true);
-  plane.material = new StandardMaterial('TextPlaneMaterial', scene);
-  plane.material.backFaceCulling = false;
-  plane.material.specularColor = new Color3(0, 0, 0);
-  plane.material.diffuseTexture = dynamicTexture;
-  return plane;
+export function backgroundColor() {
+  return new Color3(51 / 255, 51 / 255, 51 / 255);
 }
 
-export function makePointcloud(size, scene) {
+export function createPointcloud(size, scene) {
   const width = Math.ceil(size / 2);
   const height = 2;
 
@@ -92,7 +85,7 @@ export function makePointcloud(size, scene) {
   return mesh;
 }
 
-export function drawAxis(size, scene) {
+export function createAxis(size, scene) {
   const axisX = Mesh.CreateLines(
     'axisX',
     [
@@ -105,8 +98,6 @@ export function drawAxis(size, scene) {
     scene
   );
   axisX.color = new Color3(1, 0, 0);
-  const xChar = makeTextPlane('X', 'red', size / 10, scene);
-  xChar.position = new Vector3(0.9 * size, -0.05 * size, 0);
   const axisY = Mesh.CreateLines(
     'axisY',
     [
@@ -119,8 +110,6 @@ export function drawAxis(size, scene) {
     scene
   );
   axisY.color = new Color3(0, 1, 0);
-  const yChar = makeTextPlane('Y', 'green', size / 10, scene);
-  yChar.position = new Vector3(0, 0.9 * size, -0.05 * size);
   const axisZ = Mesh.CreateLines(
     'axisZ',
     [
@@ -133,21 +122,16 @@ export function drawAxis(size, scene) {
     scene
   );
   axisZ.color = new Color3(0, 0, 1);
-  const zChar = makeTextPlane('Z', 'blue', size / 10, scene);
-  zChar.position = new Vector3(0, 0.05 * size, 0.9 * size);
 
   const node = new TransformNode('axis');
   axisX.parent = node;
   axisY.parent = node;
   axisZ.parent = node;
-  xChar.parent = node;
-  yChar.parent = node;
-  zChar.parent = node;
 
   return node;
 }
 
-export function drawFrustrum(camera, scene) {
+export function createFrustrum(camera, scene) {
   const c = new Color3(0.5, 0.5, 0.5);
   const l = Math.tan(camera.fov / 2) * camera.maxZ;
   const frustrum1 = Mesh.CreateLines(
@@ -182,4 +166,16 @@ export function drawFrustrum(camera, scene) {
   frustrum4.parent = node;
 
   return node;
+}
+
+export function createScene(canvas) {
+  const engine = new Engine(canvas);
+
+  const scene = new Scene(engine);
+  scene.clearColor = backgroundColor();
+
+  return {
+    engine,
+    scene,
+  };
 }

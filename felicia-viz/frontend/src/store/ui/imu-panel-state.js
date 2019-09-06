@@ -1,14 +1,14 @@
 import { observable, action } from 'mobx';
 
 import TopicSubscribable from 'store/topic-subscribable';
-import { makeVector3, makeQuarternion } from 'util/babylon-util';
+import { toVector3, toQuarternion } from 'util/babylon-util';
 
-export class ImuFrame {
+export class ImuFrameMessage {
   constructor(message) {
     const { orientation, angularVelocity, linearAcceleration, timestamp } = message.data;
-    this.orientation = makeQuarternion(orientation);
-    this.angularVelocity = makeVector3(angularVelocity);
-    this.linearAcceleration = makeVector3(linearAcceleration);
+    this.orientation = toQuarternion(orientation);
+    this.angularVelocity = toVector3(angularVelocity);
+    this.linearAcceleration = toVector3(linearAcceleration);
     this.timestamp = timestamp;
   }
 }
@@ -17,7 +17,7 @@ export default class ImuPanelState extends TopicSubscribable {
   @observable frame = null;
 
   @action update(message) {
-    this.frame = new ImuFrame(message);
+    this.frame = new ImuFrameMessage(message);
   }
 
   type = () => {
