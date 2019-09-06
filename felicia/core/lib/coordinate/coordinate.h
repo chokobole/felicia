@@ -23,7 +23,7 @@ class EXPORT Coordinate {
     COORDINATE_SYSTEM_RIGHT_HANDED_Y_UP,
     // Right-Handed with Z pointing up and Y forward. Used in 3DSMax.
     COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP,
-    //< Right-Handed with Z pointing up and X forward. Used in ROS (REP 103).
+    // Right-Handed with Z pointing up and X forward. Used in ROS (REP 103).
     COORDINATE_SYSTEM_RIGHT_HANDED_Z_UP_X_FWD,
     COORDINATE_SYSTEM_LAST,
   };
