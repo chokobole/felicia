@@ -1,9 +1,10 @@
 /* eslint import/prefer-default-export: "off" */
+import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3, Quaternion, Vector3 } from '@babylonjs/core/Maths/math';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 
 export function makeVector3(v) {
   const { x, y, z } = v;
@@ -25,6 +26,70 @@ export function makeTextPlane(text, color, size, scene) {
   plane.material.specularColor = new Color3(0, 0, 0);
   plane.material.diffuseTexture = dynamicTexture;
   return plane;
+}
+
+export function makePointcloud(size, scene) {
+  const width = Math.ceil(size / 2);
+  const height = 2;
+
+  const positions = new Float32Array(width * height * 3);
+  const indices = new Float32Array((width - 1) * (height - 1) * 6);
+  const colors = new Float32Array(width * height * 4);
+  const normals = [];
+
+  let positionsIdx = 0;
+  let colorsIdx = 0;
+  const centerX = width / 2;
+  const centerY = height / 2;
+  for (let i = 0; i < height; i += 1) {
+    for (let j = 0; j < width; j += 1) {
+      positions[positionsIdx] = centerX - j - 1;
+      positions[positionsIdx + 1] = centerY - i - 1;
+      positions[positionsIdx + 2] = 0;
+
+      colors[colorsIdx] = 1;
+      colors[colorsIdx + 1] = 0;
+      colors[colorsIdx + 2] = 0;
+      colors[colorsIdx + 3] = 1;
+
+      positionsIdx += 3;
+      colorsIdx += 4;
+    }
+  }
+
+  let indicesIdx = 0;
+  let verticesIdx = 0;
+  for (let i = 0; i < height - 1; i += 1) {
+    for (let j = 0; j < width; j += 1) {
+      if (j !== width - 1) {
+        indices[indicesIdx] = verticesIdx;
+        indices[indicesIdx + 1] = verticesIdx + width;
+        indices[indicesIdx + 2] = verticesIdx + 1;
+        indices[indicesIdx + 3] = verticesIdx + 1;
+        indices[indicesIdx + 4] = verticesIdx + width;
+        indices[indicesIdx + 5] = verticesIdx + width + 1;
+        indicesIdx += 6;
+      }
+      verticesIdx += 1;
+    }
+  }
+
+  const material = new StandardMaterial('material', scene);
+  material.backFaceCulling = false;
+  material.pointsCloud = true;
+  material.pointSize = 1;
+
+  const mesh = new Mesh('pointcloud', scene);
+  mesh.material = material;
+  const vertexData = new VertexData();
+  VertexData.ComputeNormals(positions, indices, normals);
+  vertexData.positions = positions;
+  vertexData.indices = indices;
+  vertexData.normals = normals;
+  vertexData.colors = colors;
+  vertexData.applyToMesh(mesh, true);
+
+  return mesh;
 }
 
 export function drawAxis(size, scene) {

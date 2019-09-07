@@ -6,14 +6,11 @@ import { Vector3, Color3 } from '@babylonjs/core/Maths/math';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { VertexBuffer } from '@babylonjs/core/Meshes/buffer';
-import { Mesh } from '@babylonjs/core/Meshes/mesh';
-import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
-import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import '@babylonjs/core/Meshes/meshBuilder';
 
 import { babylonCanvasStyle } from 'custom-styles';
 import { PointcloudFrame } from 'store/ui/pointcloud-panel-state';
-import { drawAxis, drawFrustrum } from 'util/babylon-util';
+import { drawAxis, drawFrustrum, makePointcloud } from 'util/babylon-util';
 import DataMessageReader from 'util/data-message-reader';
 import Worker from 'util/pointcloud-view-webworker.js';
 
@@ -30,14 +27,14 @@ export default class PointcloudView extends Component {
     frame: null,
   };
 
-  meshInfo = {};
+  pointcloud = {};
 
   componentDidMount() {
     this.worker = new Worker();
 
     this.worker.onmessage = event => {
       const { colors, positions } = event.data;
-      const { mesh } = this.meshInfo;
+      const { mesh } = this.pointcloud;
 
       mesh.updateVerticesData(VertexBuffer.ColorKind, colors);
       mesh.updateVerticesData(VertexBuffer.PositionKind, positions);
@@ -76,12 +73,12 @@ export default class PointcloudView extends Component {
     if (frame !== nextProps.frame) {
       const { points } = nextProps.frame;
       const size = new DataMessageReader(points).length();
-      const meshSize = this.meshInfo.width * this.meshInfo.height;
-      if (!frame || meshSize < size) {
-        if (this.meshInfo.mesh) {
-          this.meshInfo.mesh.dispose();
+      if (!frame || this.pointcloud.size < size) {
+        if (this.pointcloud.mesh) {
+          this.pointcloud.mesh.dispose();
         }
-        this._createPointcloud(Math.ceil(size / 2), 2);
+        this.pointcloud.mesh = makePointcloud(size, this.scene);
+        this.pointcloud.size = size;
       }
 
       this._updatePointcloud(nextProps.frame);
@@ -104,73 +101,8 @@ export default class PointcloudView extends Component {
     this.canvas = ref;
   };
 
-  _createPointcloud(width, height) {
-    const positions = new Float32Array(width * height * 3);
-    const indices = new Float32Array((width - 1) * (height - 1) * 6);
-    const colors = new Float32Array(width * height * 4);
-    const normals = [];
-
-    let positionsIdx = 0;
-    let colorsIdx = 0;
-    const centerX = width / 2;
-    const centerY = height / 2;
-    for (let i = 0; i < height; i += 1) {
-      for (let j = 0; j < width; j += 1) {
-        positions[positionsIdx] = centerX - j - 1;
-        positions[positionsIdx + 1] = centerY - i - 1;
-        positions[positionsIdx + 2] = 0;
-
-        colors[colorsIdx] = 1;
-        colors[colorsIdx + 1] = 0;
-        colors[colorsIdx + 2] = 0;
-        colors[colorsIdx + 3] = 1;
-
-        positionsIdx += 3;
-        colorsIdx += 4;
-      }
-    }
-
-    let indicesIdx = 0;
-    let verticesIdx = 0;
-    for (let i = 0; i < height - 1; i += 1) {
-      for (let j = 0; j < width; j += 1) {
-        if (j !== width - 1) {
-          indices[indicesIdx] = verticesIdx;
-          indices[indicesIdx + 1] = verticesIdx + width;
-          indices[indicesIdx + 2] = verticesIdx + 1;
-          indices[indicesIdx + 3] = verticesIdx + 1;
-          indices[indicesIdx + 4] = verticesIdx + width;
-          indices[indicesIdx + 5] = verticesIdx + width + 1;
-          indicesIdx += 6;
-        }
-        verticesIdx += 1;
-      }
-    }
-
-    const material = new StandardMaterial('material', this.scene);
-    material.backFaceCulling = false;
-    material.pointsCloud = true;
-    material.pointSize = 1;
-
-    const mesh = new Mesh('pointcloud', this.scene);
-    mesh.material = material;
-    const vertexData = new VertexData();
-    VertexData.ComputeNormals(positions, indices, normals);
-    vertexData.positions = positions;
-    vertexData.indices = indices;
-    vertexData.normals = normals;
-    vertexData.colors = colors;
-    vertexData.applyToMesh(mesh, true);
-
-    this.meshInfo = {
-      mesh,
-      width,
-      height,
-    };
-  }
-
   _updatePointcloud(frame) {
-    const { mesh } = this.meshInfo;
+    const { mesh } = this.pointcloud;
 
     const colors = mesh.getVerticesData(VertexBuffer.ColorKind);
     const positions = mesh.getVerticesData(VertexBuffer.PositionKind);
