@@ -26,7 +26,7 @@ net::IPAddress HostIPAddress(int option) {
     }
   }
 
-  return net::IPAddress();
+  return net::IPAddress(127, 0, 0, 1);
 }
 
 namespace {

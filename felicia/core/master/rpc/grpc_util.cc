@@ -18,6 +18,7 @@ std::shared_ptr<::grpc::Channel> ConnectGRPCService() {
                        gpr_time_from_seconds(10, GPR_TIMESPAN)))) {
     LOG(ERROR) << "Channel to server failed to connected";
     NOTREACHED();
+    return nullptr;
   }
   LOG(INFO) << "Channel to server is connected on port " << port;
 
