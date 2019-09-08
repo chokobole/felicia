@@ -33,6 +33,8 @@ class Quaternion {
     z_ = normalized.z() * s;
     w_ = cos(angle);
   }
+  explicit constexpr Quaternion(const EigenQuaternionType& q)
+      : x_(q.x()), y_(q.y()), z_(q.z()), w_(q.w()) {}
   constexpr Quaternion(const Quaternion& other) = default;
   Quaternion& operator=(const Quaternion& other) = default;
 

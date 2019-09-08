@@ -107,7 +107,7 @@ template <typename CellType>
 void OccupancyGridMap<CellType>::Update(const Posef& pose, const Pointf& point,
                                         const std::vector<Pointf>& points,
                                         const std::vector<float>& intencities) {
-  Pointf map_point = this->ToMapCoordinate(pose.point());
+  Pointf map_point = this->ToMapCoordinate(pose.position());
   Transformf transform;
   transform.AddRotation(pose.theta())
       .AddTranslate(map_point.x(), map_point.y());

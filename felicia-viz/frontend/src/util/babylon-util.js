@@ -12,7 +12,7 @@ export function toVector3(v) {
   return new Vector3(x, y, z);
 }
 
-export function toQuarternion(q) {
+export function toQuaternion(q) {
   const { x, y, z, w } = q;
   return new Quaternion(x, y, z, w);
 }
@@ -89,7 +89,7 @@ export function createAxis(size, scene) {
   const axisX = Mesh.CreateLines(
     'axisX',
     [
-      new Vector3.Zero(),
+      Vector3.Zero(),
       new Vector3(size, 0, 0),
       new Vector3(size * 0.95, 0.05 * size, 0),
       new Vector3(size, 0, 0),
@@ -101,7 +101,7 @@ export function createAxis(size, scene) {
   const axisY = Mesh.CreateLines(
     'axisY',
     [
-      new Vector3.Zero(),
+      Vector3.Zero(),
       new Vector3(0, size, 0),
       new Vector3(-0.05 * size, size * 0.95, 0),
       new Vector3(0, size, 0),
@@ -113,7 +113,7 @@ export function createAxis(size, scene) {
   const axisZ = Mesh.CreateLines(
     'axisZ',
     [
-      new Vector3.Zero(),
+      Vector3.Zero(),
       new Vector3(0, 0, size),
       new Vector3(0, -0.05 * size, size * 0.95),
       new Vector3(0, 0, size),
@@ -136,25 +136,25 @@ export function createFrustrum(camera, scene) {
   const l = Math.tan(camera.fov / 2) * camera.maxZ;
   const frustrum1 = Mesh.CreateLines(
     'frustrum1',
-    [new Vector3.Zero(), new Vector3(l, l, camera.maxZ)],
+    [Vector3.Zero(), new Vector3(l, l, camera.maxZ)],
     scene
   );
   frustrum1.color = c;
   const frustrum2 = Mesh.CreateLines(
     'frustrum2',
-    [new Vector3.Zero(), new Vector3(l, -l, camera.maxZ)],
+    [Vector3.Zero(), new Vector3(l, -l, camera.maxZ)],
     scene
   );
   frustrum2.color = c;
   const frustrum3 = Mesh.CreateLines(
     'frustrum3',
-    [new Vector3.Zero(), new Vector3(-l, l, camera.maxZ)],
+    [Vector3.Zero(), new Vector3(-l, l, camera.maxZ)],
     scene
   );
   frustrum3.color = c;
   const frustrum4 = Mesh.CreateLines(
     'frustrum4',
-    [new Vector3.Zero(), new Vector3(-l, -l, camera.maxZ)],
+    [Vector3.Zero(), new Vector3(-l, -l, camera.maxZ)],
     scene
   );
   frustrum4.color = c;

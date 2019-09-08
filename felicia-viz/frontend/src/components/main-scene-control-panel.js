@@ -5,7 +5,9 @@ import { Form } from '@streetscape.gl/monochrome';
 
 import {
   OCCUPANCY_GRID_MAP_MESSAGE,
+  POINTCLOUD_FRAME_MESSAGE,
   POSEF_WITH_TIMESTAMP_MESSAGE,
+  POSE3F_WITH_TIMESTAMP_MESSAGE,
 } from '@felicia-viz/communication';
 import { TopicList } from '@felicia-viz/ui';
 
@@ -27,7 +29,12 @@ export default class MainSceneControlPanel extends Component {
         return (
           <TopicList
             {...self}
-            typeNames={[OCCUPANCY_GRID_MAP_MESSAGE, POSEF_WITH_TIMESTAMP_MESSAGE]}
+            typeNames={[
+              OCCUPANCY_GRID_MAP_MESSAGE,
+              POINTCLOUD_FRAME_MESSAGE,
+              POSEF_WITH_TIMESTAMP_MESSAGE,
+              POSE3F_WITH_TIMESTAMP_MESSAGE,
+            ]}
           />
         );
       },

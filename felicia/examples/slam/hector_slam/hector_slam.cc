@@ -61,11 +61,11 @@ void HectorSlam::Update(drivers::LidarFrame&& lidar_frame) {
   }
   last_scan_matched_pose_ = estimated;
   client_->OnPoseUpdated(last_scan_matched_pose_, lidar_frame.timestamp());
-  LOG(INFO) << "pose: " << last_scan_matched_pose_.point() << ", "
+  LOG(INFO) << "pose: " << last_scan_matched_pose_.position() << ", "
             << last_scan_matched_pose_.theta();
 
-  float distance_diff =
-      last_scan_matched_pose_.point().Distance(last_map_updated_pose_.point());
+  float distance_diff = last_scan_matched_pose_.position().Distance(
+      last_map_updated_pose_.position());
   float angle_diff = std::abs(last_scan_matched_pose_.theta() -
                               last_map_updated_pose_.theta());
 

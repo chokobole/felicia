@@ -4,13 +4,17 @@ import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTextur
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
 
 export default class OccupancyGridMap {
-  constructor(worker) {
+  constructor(worker, width, height, scene) {
     this.worker = worker;
 
     this.worker.onmessage = event => {
       this.dynamicTexture.getContext().putImageData(event.data, 0, 0);
       this.dynamicTexture.update();
     };
+
+    if (width && height && scene) {
+      this._createMesh('occupancy-grid-map', width, height, scene);
+    }
   }
 
   update(occupancyGridMap, scene) {

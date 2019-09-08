@@ -98,45 +98,45 @@ message Point3dMessage {
 }
 
 message PosefMessage {
-  PointfMessage point = 1;
+  PointfMessage position = 1;
   float theta = 2;
 }
 
 message PosedMessage {
-  PointdMessage point = 1;
+  PointdMessage position = 1;
   double theta = 2;
 }
 
 message Pose3fMessage {
-  Point3fMessage point = 1;
+  Point3fMessage position = 1;
   QuaternionfMessage orientation = 2;
 }
 
 message Pose3dMessage {
-  Point3dMessage point = 1;
+  Point3dMessage position = 1;
   QuaterniondMessage orientation = 2;
 }
 
 message PosefWithTimestampMessage {
-  PointfMessage point = 1;
+  PointfMessage position = 1;
   float theta = 2;
   int64 timestamp = 3;
 }
 
 message PosedWithTimestampMessage {
-  PointdMessage point = 1;
+  PointdMessage position = 1;
   double theta = 2;
   int64 timestamp = 3;
 }
 
 message Pose3fWithTimestampMessage {
-  Point3fMessage point = 1;
+  Point3fMessage position = 1;
   QuaternionfMessage orientation = 2;
   int64 timestamp = 3;
 }
 
 message Pose3dWithTimestampMessage {
-  Point3dMessage point = 1;
+  Point3dMessage position = 1;
   QuaterniondMessage orientation = 2;
   int64 timestamp = 3;
 }

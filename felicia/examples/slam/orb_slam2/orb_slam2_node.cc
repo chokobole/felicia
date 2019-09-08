@@ -67,8 +67,9 @@ void OrbSlam2Node::OnMonoFrameMessage(
   if (!s.ok()) return;
   cv::Mat mono_image;
   mono_frame.ToCvMat(&mono_image, false);
-  orb_slam2_->TrackMonocular(mono_image, mono_frame.timestamp().InSecondsF());
-  Publish(mono_frame.timestamp());
+  cv::Mat w2c = orb_slam2_->TrackMonocular(mono_image,
+                                           mono_frame.timestamp().InSecondsF());
+  Publish(w2c, mono_frame.timestamp());
 }
 
 void OrbSlam2Node::OnRGBDFrameMessage(
@@ -84,9 +85,9 @@ void OrbSlam2Node::OnRGBDFrameMessage(
   rgb_frame.ToCvMat(&rgb_image, false);
   cv::Mat depth_image;
   depth_frame.ToCvMat(&depth_image, false);
-  orb_slam2_->TrackRGBD(rgb_image, depth_image,
-                        rgb_frame.timestamp().InSecondsF());
-  Publish(rgb_frame.timestamp());
+  cv::Mat w2c = orb_slam2_->TrackRGBD(rgb_image, depth_image,
+                                      rgb_frame.timestamp().InSecondsF());
+  Publish(w2c, rgb_frame.timestamp());
 }
 
 void OrbSlam2Node::OnStereoFrameMessage(
@@ -103,9 +104,9 @@ void OrbSlam2Node::OnStereoFrameMessage(
   left_color_frame.ToCvMat(&left_image, false);
   cv::Mat right_image;
   right_color_frame.ToCvMat(&right_image, false);
-  orb_slam2_->TrackStereo(left_image, right_image,
-                          left_color_frame.timestamp().InSecondsF());
-  Publish(left_color_frame.timestamp());
+  cv::Mat w2c = orb_slam2_->TrackStereo(
+      left_image, right_image, left_color_frame.timestamp().InSecondsF());
+  Publish(w2c, left_color_frame.timestamp());
 }
 
 void OrbSlam2Node::RequestSubscribe() {
@@ -173,7 +174,7 @@ void OrbSlam2Node::RequestPublish() {
   }
 }
 
-void OrbSlam2Node::Publish(base::TimeDelta timestamp) {
+void OrbSlam2Node::Publish(cv::Mat w2c, base::TimeDelta timestamp) {
   if (!frame_topic_.empty() && frame_publisher_.IsRegistered()) {
     cv::Mat frame = orb_slam2_->DrawCurrentFrame();
     drivers::CameraFormat camera_format(frame.cols, frame.rows,
@@ -189,17 +190,41 @@ void OrbSlam2Node::Publish(base::TimeDelta timestamp) {
     std::vector<ORB_SLAM2::MapPoint*> map_points =
         orb_slam2_->GetAllMapPoints();
     drivers::PointcloudFrame pointcloud;
-    Coordinate from_coordinate(Coordinate::COORDINATE_SYSTEM_IMAGE);
     pointcloud.points().set_type(DATA_TYPE_32F_C3);
+    pointcloud.points().reserve(map_points.size());
     Data::View<Point3f> points = pointcloud.points().AsView<Point3f>();
     for (ORB_SLAM2::MapPoint* map_point : map_points) {
       cv::Mat m = map_point->GetWorldPos();
-      Point3f p(m.at<float>(0), m.at<float>(1), m.at<float>(2));
-      points.push_back(
-          from_coordinate.Convert(p, Coordinate::COORDINATE_SYSTEM_IMAGE));
+      points.emplace_back(-m.at<float>(0), m.at<float>(2), -m.at<float>(1));
     }
     map_publisher_.Publish(pointcloud.ToPointcloudFrameMessage(false));
   }
+
+  if (!pose_topic_.empty() && pose_publisher_.IsRegistered()) {
+    if (!w2c.empty()) {
+      pose_publisher_.Publish(Pose3fWithTimestampFromCvMat(w2c, timestamp));
+    }
+  }
+}
+
+Pose3fWithTimestampMessage OrbSlam2Node::Pose3fWithTimestampFromCvMat(
+    cv::Mat w2c, base::TimeDelta timestamp) const {
+  Eigen::Matrix3f R;
+  R << w2c.at<float>(0, 0), w2c.at<float>(0, 1), w2c.at<float>(0, 2),
+      w2c.at<float>(1, 0), w2c.at<float>(1, 1), w2c.at<float>(1, 2),
+      w2c.at<float>(2, 0), w2c.at<float>(2, 1), w2c.at<float>(2, 2);
+  Eigen::Vector3f t;
+  t << w2c.at<float>(0, 3), w2c.at<float>(1, 3), w2c.at<float>(2, 3);
+
+  Eigen::Matrix3f orb_to_felicia;
+  orb_to_felicia << -1, 0, 0, 0, 0, 1, 0, -1, 0;
+
+  Eigen::Vector3f position = orb_to_felicia * R.transpose() * -t;
+  Eigen::Quaternionf orientation(orb_to_felicia *
+                                 (orb_to_felicia * R).transpose());
+
+  Pose3f pose(Point3f{position}, Quaternionf{orientation});
+  return Pose3fToPose3fWithTimestampMessage(pose, timestamp);
 }
 
 }  // namespace orb_slam2

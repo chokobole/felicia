@@ -15,50 +15,50 @@ template <typename T>
 class Pose {
  public:
   constexpr Pose() : theta_(0) {}
-  constexpr Pose(T x, T y, T theta) : point_(x, y), theta_(theta) {}
-  constexpr Pose(const Point<T>& point, T theta)
-      : point_(point), theta_(theta) {}
+  constexpr Pose(T x, T y, T theta) : position_(x, y), theta_(theta) {}
+  constexpr Pose(const Point<T>& position, T theta)
+      : position_(position), theta_(theta) {}
   constexpr Pose(const Pose& other) = default;
   Pose& operator=(const Pose& other) = default;
 
-  constexpr Point<T>& point() { return point_; }
-  constexpr const Point<T>& point() const { return point_; }
+  constexpr Point<T>& position() { return position_; }
+  constexpr const Point<T>& position() const { return position_; }
 
-  void set_x(T x) { point_.set_x(x); }
-  void set_y(T y) { point_.set_y(y); }
+  void set_x(T x) { position_.set_x(x); }
+  void set_y(T y) { position_.set_y(y); }
   void set_theta(T theta) { theta_ = theta; }
 
-  constexpr T x() const { return point_.x(); }
-  constexpr T y() const { return point_.y(); }
+  constexpr T x() const { return position_.x(); }
+  constexpr T y() const { return position_.y(); }
   constexpr T theta() const { return theta_; }
 
   constexpr bool IsValid() const {
-    return point_.IsValid() && std::isfinite(theta_);
+    return position_.IsValid() && std::isfinite(theta_);
   }
 
   double Distance(const Pose& other) const {
-    return point_.Distance(other.point_);
+    return position_.Distance(other.position_);
   }
 
   Pose Translate(const Vector<T>& vector) const {
-    return {point_.Translate(vector), theta_};
+    return {position_.Translate(vector), theta_};
   }
   Pose& TranslateInPlace(const Vector<T>& vector) {
-    point_.TranslateInPlace(vector);
+    position_.TranslateInPlace(vector);
     return *this;
   }
 
   template <typename U>
   Pose Scale(U s) const {
-    return Pose{point_.Scale(s), theta_};
+    return Pose{position_.Scale(s), theta_};
   }
   template <typename U>
   Pose& ScaleInPlace(U s) {
-    point_.ScaleInPlace(s);
+    position_.ScaleInPlace(s);
     return *this;
   }
 
-  Pose Rotate(T theta) { return Pose{point_, theta_ + theta}; }
+  Pose Rotate(T theta) { return Pose{position_, theta_ + theta}; }
   Pose& RotateInPlace(T theta) {
     theta_ += theta;
     return *this;
@@ -66,18 +66,18 @@ class Pose {
 
   Transform<T> ToTransform() const {
     Transform<T> transform;
-    transform.AddRotation(theta_).AddTranslate(point_.x(), point_.y());
+    transform.AddRotation(theta_).AddTranslate(position_.x(), position_.y());
     return transform;
   }
 
  private:
-  Point<T> point_;
+  Point<T> position_;
   T theta_;
 };
 
 template <typename T>
 inline bool operator==(const Pose<T>& lhs, const Pose<T>& rhs) {
-  return lhs.point() == rhs.point() && lhs.theta() == rhs.theta();
+  return lhs.position() == rhs.position() && lhs.theta() == rhs.theta();
 }
 
 template <typename T>
@@ -91,8 +91,8 @@ typedef Pose<double> Posed;
 template <typename PoseMessageType, typename PointMessageType, typename T>
 PoseMessageType PoseToPoseMessage(const Pose<T>& pose) {
   PoseMessageType message;
-  *message.mutable_point() =
-      PointToPointMessage<PointMessageType>(pose.point());
+  *message.mutable_position() =
+      PointToPointMessage<PointMessageType>(pose.position());
   message.set_theta(pose.theta());
   return message;
 }
@@ -102,7 +102,7 @@ EXPORT PosedMessage PosedToPosedMessage(const Posed& pose);
 
 template <typename T, typename MessageType>
 Pose<T> PoseMessageToPose(const MessageType& message) {
-  return {PointMessageToPoint<T>(message.point()), message.theta()};
+  return {PointMessageToPoint<T>(message.position()), message.theta()};
 }
 
 EXPORT Posef PosefMessageToPosef(const PosefMessage& message);
@@ -113,8 +113,8 @@ template <typename PoseWithTimestampMessageType, typename PointMessageType,
 PoseWithTimestampMessageType PoseToPoseWithTimestampMessage(
     const Pose<T>& pose, base::TimeDelta timestamp) {
   PoseWithTimestampMessageType message;
-  *message.mutable_point() =
-      PointToPointMessage<PointMessageType>(pose.point());
+  *message.mutable_position() =
+      PointToPointMessage<PointMessageType>(pose.position());
   message.set_theta(pose.theta());
   message.set_timestamp(timestamp.InMicroseconds());
   return message;
@@ -127,7 +127,7 @@ PosedToPosedWithTimestampMessage(const Posed& pose, base::TimeDelta timestamp);
 
 template <typename T, typename MessageType>
 Pose<T> PoseWithTimestampMessageToPose(const MessageType& message) {
-  return {PointMessageToPoint<T>(message.point()), message.theta()};
+  return {PointMessageToPoint<T>(message.position()), message.theta()};
 }
 
 EXPORT Posef
@@ -140,67 +140,70 @@ class Pose3 {
  public:
   constexpr Pose3() = default;
   constexpr Pose3(T x, T y, T z, const Quaternion<T>& orientation)
-      : point_(x, y, z), orientation_(orientation) {}
-  constexpr Pose3(const Point3<T>& point, const Quaternion<T>& orientation)
-      : point_(point), orientation_(orientation) {}
+      : position_(x, y, z), orientation_(orientation) {}
+  constexpr Pose3(const Point3<T>& position, const Quaternion<T>& orientation)
+      : position_(position), orientation_(orientation) {}
   constexpr Pose3(const Pose3& other) = default;
   Pose3& operator=(const Pose3& other) = default;
 
-  constexpr Point3<T>& point() { return point_; }
-  constexpr const Point3<T>& point() const { return point_; }
+  constexpr Point3<T>& position() { return position_; }
+  constexpr const Point3<T>& position() const { return position_; }
   constexpr Quaternion<T>& orientation() { return orientation_; }
   constexpr const Quaternion<T>& orientation() const { return orientation_; }
 
-  void set_x(T x) { point_.set_x(x); }
-  void set_y(T y) { point_.set_y(y); }
-  void set_z(T z) { point_.set_z(z); }
-  void set_orientation(T orientation) { orientation_ = orientation; }
+  void set_x(T x) { position_.set_x(x); }
+  void set_y(T y) { position_.set_y(y); }
+  void set_z(T z) { position_.set_z(z); }
+  void set_orientation(const Quaternion<T>& orientation) {
+    orientation_ = orientation;
+  }
 
-  constexpr T x() const { return point_.x(); }
-  constexpr T y() const { return point_.y(); }
-  constexpr T z() const { return point_.z(); }
+  constexpr T x() const { return position_.x(); }
+  constexpr T y() const { return position_.y(); }
+  constexpr T z() const { return position_.z(); }
 
   constexpr bool IsValid() const {
-    return point_.IsValid() && orientation_.IsValid();
+    return position_.IsValid() && orientation_.IsValid();
   }
 
   double Distance(const Pose3& other) const {
-    return point_.Distance(other.point_);
+    return position_.Distance(other.position_);
   }
 
   Pose3 Translate(const Vector3<T>& vector) const {
-    return {point_.Translate(vector), orientation_};
+    return {position_.Translate(vector), orientation_};
   }
   Pose3& TranslateInPlace(const Vector3<T>& vector) {
-    point_.TranslateInPlace(vector);
+    position_.TranslateInPlace(vector);
     return *this;
   }
 
   template <typename U>
   Pose3 Scale(U s) const {
-    return Pose3{point_.Scale(s), orientation_};
+    return Pose3{position_.Scale(s), orientation_};
   }
   template <typename U>
   Pose3& ScaleInPlace(U s) {
-    point_.ScaleInPlace(s);
+    position_.ScaleInPlace(s);
     return *this;
   }
 
   Transform3<T> ToTransform() const {
     Transform3<T> transform;
     transform.AddRotation(orientation_)
-        .AddTranslate(point_.x(), point_.y(), point_.z());
+        .AddTranslate(position_.x(), position_.y(), position_.z());
     return transform;
   }
 
  private:
-  Point3<T> point_;
+  Point3<T> position_;
   Quaternion<T> orientation_;
 };
 
 template <typename T>
 inline bool operator==(const Pose3<T>& lhs, const Pose3<T>& rhs) {
-  return lhs.point() == rhs.point() && lhs.orientation() == rhs.orientation();
+  return lhs.position() == rhs.position() &&
+         lhs.orientation() == rhs.orientation();
 }
 
 template <typename T>
@@ -215,8 +218,8 @@ template <typename Pose3MessageType, typename Point3MessageType,
           typename QuaternionMessageType, typename T>
 Pose3MessageType Pose3ToPose3Message(const Pose3<T>& pose) {
   Pose3MessageType message;
-  *message.mutable_point() =
-      Point3ToPoint3Message<Point3MessageType>(pose.point());
+  *message.mutable_position() =
+      Point3ToPoint3Message<Point3MessageType>(pose.position());
   *message.mutable_orientation() =
       QuaternionToQuaternionMessage<QuaternionMessageType>(pose.orientation());
   return message;
@@ -227,7 +230,7 @@ EXPORT Pose3dMessage Pose3dToPose3dMessage(const Pose3d& pose);
 
 template <typename T, typename MessageType>
 Pose3<T> Pose3MessageToPose3(const MessageType& message) {
-  return {Point3MessageToPoint3<T>(message.point()),
+  return {Point3MessageToPoint3<T>(message.position()),
           QuaternionMessageToQuaternion<T>(message.orientation())};
 }
 
@@ -239,8 +242,8 @@ template <typename Pose3WithTimestampMessageType, typename Point3MessageType,
 Pose3WithTimestampMessageType Pose3ToPose3WithTimestampMessage(
     const Pose3<T>& pose, base::TimeDelta timestamp) {
   Pose3WithTimestampMessageType message;
-  *message.mutable_point() =
-      Point3ToPoint3Message<Point3MessageType>(pose.point());
+  *message.mutable_position() =
+      Point3ToPoint3Message<Point3MessageType>(pose.position());
   *message.mutable_orientation() =
       QuaternionToQuaternionMessage<QuaternionMessageType>(pose.orientation());
   message.set_timestamp(timestamp.InMicroseconds());
@@ -254,7 +257,7 @@ EXPORT Pose3dWithTimestampMessage Pose3dToPose3dWithTimestampMessage(
 
 template <typename T, typename MessageType>
 Pose3<T> Pose3WithTimestampMessageToPose3(const MessageType& message) {
-  return {Point3MessageToPoint3<T>(message.point()),
+  return {Point3MessageToPoint3<T>(message.position()),
           QuaternionMessageToQuaternion<T>(message.orientation())};
 }
 

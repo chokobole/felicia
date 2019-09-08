@@ -59,14 +59,14 @@ Posef ScanMatcher<MapType>::Match(const Posef& pose,
                                   MapType* map, int max_iterations) {
   if (points.size() == 0) return pose;
 
-  Posef estimated{map->ToMapCoordinate(pose.point()), pose.theta()};
+  Posef estimated{map->ToMapCoordinate(pose.position()), pose.theta()};
   for (int i = 0; i <= max_iterations; ++i) {
     base::Optional<Posef> new_estimated = Estimate(estimated, points, map);
     if (!new_estimated.has_value()) break;
     estimated = new_estimated.value();
   }
 
-  return {map->ToWorldCoordinate(estimated.point()),
+  return {map->ToWorldCoordinate(estimated.position()),
           normalize_angle(estimated.theta(), 0.f, k2PiFloat)};
 }
 

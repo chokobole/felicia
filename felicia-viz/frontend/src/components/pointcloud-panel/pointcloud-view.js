@@ -33,14 +33,14 @@ export default class PointcloudView extends Component {
     const light = new HemisphericLight('hemiLight', new Vector3(0, 1, 0), scene);
     light.intensity = 1;
 
-    const camera = new ArcRotateCamera('camera', 0, 0, 0, new Vector3(0, 0, -2), scene);
-    camera.setTarget(new Vector3.Zero());
+    const camera = new ArcRotateCamera('camera', 0, 0, 0, Vector3.Zero(), scene);
+    camera.setPosition(new Vector3(0, 0, -1));
     camera.lowerRadiusLimit = 1;
     camera.wheelPrecision = 10;
     camera.attachControl(this.canvas, true);
 
     const axis = createAxis(0.1, scene);
-    axis.position = new Vector3.Zero();
+    axis.position = Vector3.Zero();
     createFrustrum(camera, scene);
 
     engine.runRenderLoop(() => {

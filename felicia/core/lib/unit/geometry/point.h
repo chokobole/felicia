@@ -17,6 +17,8 @@ class Point {
  public:
   constexpr Point() : x_(0), y_(0) {}
   constexpr Point(T x, T y) : x_(x), y_(y) {}
+  constexpr explicit Point(const Eigen::Matrix<T, 2, 1>& matrix)
+      : x_(matrix[0]), y_(matrix[1]) {}
   constexpr Point(const Point& other) = default;
   Point& operator=(const Point& other) = default;
 
@@ -152,6 +154,8 @@ class Point3 {
   constexpr Point3(T x, T y, T z) : x_(x), y_(y), z_(z) {}
   constexpr explicit Point3(const Point<T>& point)
       : x_(point.x()), y_(point.y()), z_(0) {}
+  constexpr explicit Point3(const Eigen::Matrix<T, 3, 1>& matrix)
+      : x_(matrix[0]), y_(matrix[1]), z_(matrix[2]) {}
   constexpr Point3(const Point3& other) = default;
   Point3& operator=(const Point3& other) = default;
 

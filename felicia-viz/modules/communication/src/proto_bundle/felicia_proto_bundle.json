@@ -508,7 +508,7 @@
         },
         "PosefMessage": {
           "fields": {
-            "point": {
+            "position": {
               "type": "PointfMessage",
               "id": 1
             },
@@ -520,7 +520,7 @@
         },
         "PosedMessage": {
           "fields": {
-            "point": {
+            "position": {
               "type": "PointdMessage",
               "id": 1
             },
@@ -532,7 +532,7 @@
         },
         "Pose3fMessage": {
           "fields": {
-            "point": {
+            "position": {
               "type": "Point3fMessage",
               "id": 1
             },
@@ -544,7 +544,7 @@
         },
         "Pose3dMessage": {
           "fields": {
-            "point": {
+            "position": {
               "type": "Point3dMessage",
               "id": 1
             },
@@ -556,7 +556,7 @@
         },
         "PosefWithTimestampMessage": {
           "fields": {
-            "point": {
+            "position": {
               "type": "PointfMessage",
               "id": 1
             },
@@ -572,7 +572,7 @@
         },
         "PosedWithTimestampMessage": {
           "fields": {
-            "point": {
+            "position": {
               "type": "PointdMessage",
               "id": 1
             },
@@ -588,7 +588,7 @@
         },
         "Pose3fWithTimestampMessage": {
           "fields": {
-            "point": {
+            "position": {
               "type": "Point3fMessage",
               "id": 1
             },
@@ -604,7 +604,7 @@
         },
         "Pose3dWithTimestampMessage": {
           "fields": {
-            "point": {
+            "position": {
               "type": "Point3dMessage",
               "id": 1
             },

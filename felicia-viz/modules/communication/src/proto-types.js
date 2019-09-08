@@ -15,6 +15,7 @@ export const TOPIC_INFO = 'felicia.TopicInfo';
 
 export const OCCUPANCY_GRID_MAP_MESSAGE = 'felicia.slam.OccupancyGridMapMessage';
 export const POSEF_WITH_TIMESTAMP_MESSAGE = 'felicia.PosefWithTimestampMessage';
+export const POSE3F_WITH_TIMESTAMP_MESSAGE = 'felicia.Pose3fWithTimestampMessage';
 
 const ChannelDefType = FeliciaProtoRoot.lookupEnum('felicia.ChannelDef.Type');
 const TopicInfo = FeliciaProtoRoot.lookupType(TOPIC_INFO);
@@ -39,6 +40,9 @@ PROTO_TYPES[TOPIC_INFO] = TopicInfo;
 PROTO_TYPES[OCCUPANCY_GRID_MAP_MESSAGE] = FeliciaProtoRoot.lookupType(OCCUPANCY_GRID_MAP_MESSAGE);
 PROTO_TYPES[POSEF_WITH_TIMESTAMP_MESSAGE] = FeliciaProtoRoot.lookupType(
   POSEF_WITH_TIMESTAMP_MESSAGE
+);
+PROTO_TYPES[POSE3F_WITH_TIMESTAMP_MESSAGE] = FeliciaProtoRoot.lookupType(
+  POSE3F_WITH_TIMESTAMP_MESSAGE
 );
 
 export function hasWSChannel(topicInfo) {

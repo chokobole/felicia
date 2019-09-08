@@ -50,7 +50,10 @@ class OrbSlam2Node : public NodeLifecycle {
   void RequestSubscribe();
   void RequestPublish();
 
-  void Publish(base::TimeDelta timestamp);
+  void Publish(cv::Mat w2c, base::TimeDelta timestamp);
+
+  Pose3fWithTimestampMessage Pose3fWithTimestampFromCvMat(
+      cv::Mat w2c, base::TimeDelta timestamp) const;
 
   NodeInfo node_info_;
   const SlamNodeCreateFlag& slam_node_create_flag_;
@@ -67,7 +70,7 @@ class OrbSlam2Node : public NodeLifecycle {
   Subscriber<drivers::CameraFrameMessage> right_color_subscriber_;
   Subscriber<drivers::DepthCameraFrameMessage> depth_subscriber_;
   Publisher<drivers::CameraFrameMessage> frame_publisher_;
-  Publisher<PosefWithTimestampMessage> pose_publisher_;
+  Publisher<Pose3fWithTimestampMessage> pose_publisher_;
   Publisher<drivers::PointcloudFrameMessage> map_publisher_;
   StereoSynchronizer stereo_synchronizer;
   RGBDSynchronizer rgbd_synchronizer;

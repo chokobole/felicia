@@ -5,7 +5,7 @@ import { createPointcloud } from 'util/babylon-util';
 import DataMessageReader, { PointReader, ColorReader } from 'util/data-message-reader';
 
 export default class Pointcloud {
-  constructor(worker) {
+  constructor(worker, size, scene) {
     // FIXME: If i directly load worker here, then it can't build.
     this.worker = worker;
 
@@ -15,6 +15,16 @@ export default class Pointcloud {
       this.mesh.updateVerticesData(VertexBuffer.ColorKind, colors);
       this.mesh.updateVerticesData(VertexBuffer.PositionKind, positions);
     };
+
+    if (size && scene) {
+      this.mesh = createPointcloud(size, scene);
+      this.size = size;
+    }
+  }
+
+  // TODO: Need to implement better allocation strategy.
+  _allocate = size => {
+    return size > 100000 ? size : 100000;
   }
 
   update(frame, scene) {
@@ -48,25 +58,40 @@ export function fillPointcloud(colors, positions, frame) {
   const colorsReader = new ColorReader(frame.colors);
 
   const size = positions.length / 3;
-  for (let i = 0; i < size; i += 1) {
-    const colorsIdx = i * 4;
-    const positionsIdx = i * 3;
-    if (pointsReader.hasData(i)) {
-      [
-        positions[positionsIdx],
-        positions[positionsIdx + 1],
-        positions[positionsIdx + 2],
-      ] = pointsReader.nextPoint3(i);
-      if (colorsReader.hasData(i)) {
+  if (colorsReader.length() > 0) {
+    for (let i = 0; i < size; i += 1) {
+      const colorsIdx = i * 4;
+      const positionsIdx = i * 3;
+      if (pointsReader.hasData(i)) {
         [
-          colors[colorsIdx],
-          colors[colorsIdx + 1],
-          colors[colorsIdx + 2],
-          colors[colorsIdx + 3],
-        ] = colorsReader.nextColor4f(i);
+          positions[positionsIdx],
+          positions[positionsIdx + 1],
+          positions[positionsIdx + 2],
+        ] = pointsReader.nextPoint3(i);
+        if (colorsReader.hasData(i)) {
+          [
+            colors[colorsIdx],
+            colors[colorsIdx + 1],
+            colors[colorsIdx + 2],
+            colors[colorsIdx + 3],
+          ] = colorsReader.nextColor4f(i);
+        }
+      } else {
+        positions[positionsIdx + 2] = -1000000;
       }
-    } else {
-      positions[positionsIdx + 2] = -1000000;
+    }
+  } else {
+    for (let i = 0; i < size; i += 1) {
+      const positionsIdx = i * 3;
+      if (pointsReader.hasData(i)) {
+        [
+          positions[positionsIdx],
+          positions[positionsIdx + 1],
+          positions[positionsIdx + 2],
+        ] = pointsReader.nextPoint3(i);
+      } else {
+        positions[positionsIdx + 2] = -1000000;
+      }
     }
   }
 }

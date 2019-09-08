@@ -87,7 +87,7 @@ export default class DataMessageReader {
       case DataElementType.values.ELEMENT_TYPE_64F:
         return this.dataView.getFloat64.bind(this.dataView);
       default:
-        throw new Error('Unknown bind type');
+        return null;
     }
   }
 

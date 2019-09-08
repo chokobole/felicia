@@ -1,12 +1,12 @@
 import { observable, action } from 'mobx';
 
 import TopicSubscribable from 'store/topic-subscribable';
-import { toVector3, toQuarternion } from 'util/babylon-util';
+import { toVector3, toQuaternion } from 'util/babylon-util';
 
 export class ImuFrameMessage {
   constructor(message) {
     const { orientation, angularVelocity, linearAcceleration, timestamp } = message.data;
-    this.orientation = toQuarternion(orientation);
+    this.orientation = toQuaternion(orientation);
     this.angularVelocity = toVector3(angularVelocity);
     this.linearAcceleration = toVector3(linearAcceleration);
     this.timestamp = timestamp;

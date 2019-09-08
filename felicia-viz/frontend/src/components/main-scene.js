@@ -11,10 +11,17 @@ import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import '@babylonjs/core/Meshes/meshBuilder';
 
 import UI_TYPES from 'store/ui/ui-types';
-import { OccupancyGridMapMessage, PoseWithTimestampMessage } from 'store/ui/main-scene-state';
+import {
+  OccupancyGridMapMessage,
+  PosefWithTimestampMessage,
+  Pose3fWithTimestampMessage,
+} from 'store/ui/main-scene-state';
+import { PointcloudFrameMessage } from 'store/ui/pointcloud-panel-state';
 import { backgroundColor, createScene } from 'util/babylon-util';
 import OccupancyGridMap from 'util/occupancy-grid-map';
 import OccupancyGridMapWorker from 'util/occupancy-grid-map-webworker.js';
+import Pointcloud from 'util/pointcloud';
+import PointcloudFrameWorker from 'util/pointcloud-frame-webworker.js';
 import Pose from 'util/pose';
 
 @inject('store')
@@ -25,7 +32,11 @@ export default class MainScene extends Component {
     height: PropTypes.string,
     store: PropTypes.object.isRequired,
     occupancyGridMap: PropTypes.instanceOf(OccupancyGridMapMessage),
-    pose: PropTypes.instanceOf(PoseWithTimestampMessage),
+    pose: PropTypes.oneOfType([
+      PropTypes.instanceOf(PosefWithTimestampMessage),
+      PropTypes.instanceOf(Pose3fWithTimestampMessage),
+    ]),
+    pointcloudFrame: PropTypes.instanceOf(PointcloudFrameMessage),
   };
 
   static defaultProps = {
@@ -33,6 +44,7 @@ export default class MainScene extends Component {
     height: '100%',
     occupancyGridMap: null,
     pose: null,
+    pointcloudFrame: null,
   };
 
   componentDidMount() {
@@ -42,11 +54,12 @@ export default class MainScene extends Component {
     const camera = new ArcRotateCamera('main-scene-camera', 0, 0, 0, Vector3.Zero(), scene);
     camera.position = new Vector3(0, -30, 30);
     camera.attachControl(this.canvas, true);
+    this.camera = camera;
 
     const light = new HemisphericLight('main-scene-light', new Vector3(0, 0, 1), scene);
     light.intensity = 0.7;
 
-    const material = new GridMaterial('main-scene-grid', scene);
+    const material = new GridMaterial('main-scene-grid-material', scene);
     material.mainColor = backgroundColor();
     material.opacity = 0.8;
 
@@ -75,11 +88,17 @@ export default class MainScene extends Component {
   }
 
   shouldComponentUpdate(nextProps) {
-    const { occupancyGridMap, pose } = this.props;
+    const { occupancyGridMap, pose, pointcloudFrame } = this.props;
     let updated = false;
     if (occupancyGridMap !== nextProps.occupancyGridMap) {
       if (!this.occupancyGridMap) {
-        this.occupancyGridMap = new OccupancyGridMap(new OccupancyGridMapWorker());
+        const { width, height } = occupancyGridMap.size;
+        this.occupancyGridMap = new OccupancyGridMap(
+          new OccupancyGridMapWorker(),
+          width,
+          height,
+          this.scene
+        );
       }
       this.occupancyGridMap.update(nextProps.occupancyGridMap, this.scene);
       updated = true;
@@ -87,9 +106,22 @@ export default class MainScene extends Component {
 
     if (pose !== nextProps.pose) {
       if (!this.pose) {
-        this.pose = new Pose();
+        this.pose = new Pose(1, this.scene);
       }
-      this.pose.update(1, nextProps.pose, this.scene);
+      this.pose.update(nextProps.pose);
+      this.camera.lockedTarget = this.pose.mesh.position;
+      this.camera.position = this.pose.mesh
+        .getPositionExpressedInLocalSpace()
+        .add(new Vector3(0, 0, 100));
+
+      updated = true;
+    }
+
+    if (pointcloudFrame !== nextProps.pointcloudFrame) {
+      if (!this.pointcloud) {
+        this.pointcloud = new Pointcloud(new PointcloudFrameWorker());
+      }
+      this.pointcloud.update(nextProps.pointcloudFrame, this.scene);
       updated = true;
     }
 
