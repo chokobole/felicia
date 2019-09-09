@@ -23,7 +23,7 @@ fel_cc_library(
         "//felicia/core/lib",
         "//felicia/drivers/camera",
         "//felicia/drivers/imu",
-        "//felicia/drivers/pointcloud",
+        "//felicia/map:pointcloud",
         "@realsense",
     ]),
 )

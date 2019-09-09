@@ -1,21 +1,20 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Vector3 } from '@babylonjs/core/Maths/math';
+import React, { Component } from 'react';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
+import { Vector3 } from '@babylonjs/core/Maths/math';
 import '@babylonjs/core/Meshes/meshBuilder';
 
 import { babylonCanvasStyle } from 'custom-styles';
-import { PointcloudFrameMessage } from 'store/ui/pointcloud-panel-state';
+import Pointcloud, { PointcloudMessage } from 'messages/pointcloud';
 import { createAxis, createFrustrum, createScene } from 'util/babylon-util';
-import Pointcloud from 'util/pointcloud';
-import Worker from 'util/pointcloud-frame-webworker.js';
+import Worker from 'webworkers/pointcloud-webworker';
 
 export default class PointcloudView extends Component {
   static propTypes = {
     width: PropTypes.string,
     height: PropTypes.string,
-    frame: PropTypes.instanceOf(PointcloudFrameMessage),
+    frame: PropTypes.instanceOf(PointcloudMessage),
   };
 
   static defaultProps = {

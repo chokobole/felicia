@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { FloatPanel } from '@streetscape.gl/monochrome';
 
 import { Activatable } from '@felicia-viz/ui';
@@ -38,7 +38,7 @@ export default class CameraPanel extends Component {
     const { id, store } = this.props;
     const { height } = panelState;
     const viewState = store.uiState.findView(id);
-    const { frame, filter } = viewState;
+    const { frame } = viewState;
 
     return (
       <FloatPanel
@@ -46,8 +46,8 @@ export default class CameraPanel extends Component {
         {...this.floatPanelSettings}
         onUpdate={this._onUpdate}
         style={FLOAT_PANEL_STYLE}>
-        <Activatable id={id} type={UI_TYPES.CameraPanel.name} uiState={store.uiState}>
-          <CameraView frame={frame} height={`${height}px`} filter={filter} />
+        <Activatable id={id} type={UI_TYPES.CameraView.name} uiState={store.uiState}>
+          <CameraView frame={frame} height={`${height}px`} />
         </Activatable>
       </FloatPanel>
     );

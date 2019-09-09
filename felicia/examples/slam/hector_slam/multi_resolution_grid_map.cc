@@ -100,7 +100,7 @@ float MultiResolutionGridMap::scale_to_map() const {
   return maps_[0]->scale_to_map();
 }
 
-slam::OccupancyGridMapMessage MultiResolutionGridMap::ToOccupancyGridMapMessage(
+map::OccupancyGridMapMessage MultiResolutionGridMap::ToOccupancyGridMapMessage(
     base::TimeDelta timestamp) const {
   return maps_[0]->ToOccupancyGridMapMessage(timestamp);
 }

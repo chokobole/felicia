@@ -1,7 +1,6 @@
 /* eslint import/prefer-default-export: "off" */
-/* eslint no-bitwise: ["off"] */
 /* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["pixels"] }] */
-import { PixelFormat } from '@felicia-viz/communication';
+import { PixelFormat } from '@felicia-viz/communication/proto-types';
 
 export const RGBA = {
   rIdx: 0,

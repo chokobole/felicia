@@ -22,16 +22,6 @@ fel_proto_library(
     visibility = ["//visibility:public"],
 )
 
-fel_proto_library(
-    name = "map_proto",
-    srcs = [
-        "map/map_message.proto",
-    ],
-    default_header = True,
-    protodeps = ["//felicia/core/protobuf:protos_all_proto"],
-    visibility = ["//visibility:public"],
-)
-
 SLAM_HDRS = [
     "types.h",
     "camera/camera_matrix.h",
@@ -63,8 +53,6 @@ fel_cc_library(
         "dataset/sensor_data.h",
         "dataset/sensor_meta_data.h",
         "dataset/tum_dataset_loader.h",
-        "map/grid_map.h",
-        "map/occupancy_grid_map.h",
     ] + SLAM_HDRS,
     deps = [
         ":opencv_camera",

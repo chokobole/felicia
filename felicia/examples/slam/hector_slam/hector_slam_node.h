@@ -67,7 +67,7 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
   std::unique_ptr<HectorSlam> hector_slam_;
   Subscriber<drivers::LidarFrameMessage> lidar_subscriber_;
   Publisher<PosefWithTimestampMessage> pose_publisher_;
-  Publisher<slam::OccupancyGridMapMessage> map_publisher_;
+  Publisher<map::OccupancyGridMapMessage> map_publisher_;
 };
 
 }  // namespace hector_slam

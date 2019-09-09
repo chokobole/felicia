@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { FloatPanel } from '@streetscape.gl/monochrome';
 
 import { Activatable } from '@felicia-viz/ui';
@@ -46,7 +46,7 @@ export default class PointcloudPanel extends Component {
         {...this.floatPanelSettings}
         onUpdate={this._onUpdate}
         style={FLOAT_PANEL_STYLE}>
-        <Activatable id={id} type={UI_TYPES.PointcloudPanel.name} uiState={store.uiState}>
+        <Activatable id={id} type={UI_TYPES.PointcloudView.name} uiState={store.uiState}>
           <PointcloudView frame={frame} width={`${width}px`} height={`${height}px`} />
         </Activatable>
       </FloatPanel>

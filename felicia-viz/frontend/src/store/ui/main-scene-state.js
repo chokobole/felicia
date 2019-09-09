@@ -2,47 +2,15 @@ import { observable, action } from 'mobx';
 
 import {
   OCCUPANCY_GRID_MAP_MESSAGE,
-  POINTCLOUD_FRAME_MESSAGE,
+  POINTCLOUD_MESSAGE,
   POSEF_WITH_TIMESTAMP_MESSAGE,
   POSE3F_WITH_TIMESTAMP_MESSAGE,
-} from '@felicia-viz/communication';
+} from '@felicia-viz/communication/proto-types';
 
+import { OccupancyGridMapMessage } from 'messages/occupancy-grid-map';
+import { PointcloudMessage } from 'messages/pointcloud';
+import { PoseWithTimestampMessage, Pose3WithTimestampMessage } from 'messages/pose';
 import TopicSubscribable from 'store/topic-subscribable';
-import { toVector3, toQuaternion } from 'util/babylon-util';
-import { PointcloudFrameMessage } from './pointcloud-panel-state';
-
-export class OccupancyGridMapMessage {
-  constructor(message) {
-    const { data, size, resolution, origin, timestamp } = message.data;
-    this.size = size;
-    this.resolution = resolution;
-    this.origin = origin;
-    this.data = data;
-    this.timestamp = timestamp;
-  }
-}
-
-export class PosefWithTimestampMessage {
-  constructor(message) {
-    const { data } = message;
-    const { position, theta, timestamp } = data;
-    this.position = toVector3(position);
-    this.theta = theta;
-    this.timestamp = timestamp;
-    this.is3D = false;
-  }
-}
-
-export class Pose3fWithTimestampMessage {
-  constructor(message) {
-    const { data } = message;
-    const { position, orientation, timestamp } = data;
-    this.position = toVector3(position);
-    this.orientation = toQuaternion(orientation);
-    this.timestamp = timestamp;
-    this.is3D = true;
-  }
-}
 
 export default class MainSceneState extends TopicSubscribable {
   @observable occupancyGridMap = null;
@@ -52,25 +20,26 @@ export default class MainSceneState extends TopicSubscribable {
   @observable pose = null;
 
   @action update(message) {
-    switch (message.type) {
+    const { type, data } = message;
+    switch (type) {
       case OCCUPANCY_GRID_MAP_MESSAGE:
-        this.occupancyGridMap = new OccupancyGridMapMessage(message);
+        this.occupancyGridMap = new OccupancyGridMapMessage(data);
         break;
-      case POINTCLOUD_FRAME_MESSAGE:
-        this.pointcloudFrame = new PointcloudFrameMessage(message);
+      case POINTCLOUD_MESSAGE:
+        this.pointcloudFrame = new PointcloudMessage(data);
         break;
       case POSEF_WITH_TIMESTAMP_MESSAGE:
-        this.pose = new PosefWithTimestampMessage(message);
+        this.pose = new PoseWithTimestampMessage(data);
         break;
       case POSE3F_WITH_TIMESTAMP_MESSAGE:
-        this.pose = new Pose3fWithTimestampMessage(message);
+        this.pose = new Pose3WithTimestampMessage(data);
         break;
       default:
         break;
     }
   }
 
-  type = () => {
+  viewType = () => {
     return 'MainScene';
   };
 }

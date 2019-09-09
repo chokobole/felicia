@@ -1,7 +1,4 @@
-import { observable, action } from 'mobx';
-
-import TopicSubscribable from 'store/topic-subscribable';
-
+/* eslint import/prefer-default-export: "off" */
 export class LidarFrameMessage {
   constructor(message) {
     const {
@@ -15,7 +12,7 @@ export class LidarFrameMessage {
       ranges,
       intensities,
       timestamp,
-    } = message.data;
+    } = message;
     this.angleStart = angleStart;
     this.angleEnd = angleEnd;
     this.angleDelta = angleDelta;
@@ -27,16 +24,4 @@ export class LidarFrameMessage {
     this.intensities = intensities;
     this.timestamp = timestamp;
   }
-}
-
-export default class LidarPanelState extends TopicSubscribable {
-  @observable frame = null;
-
-  @action update(message) {
-    this.frame = new LidarFrameMessage(message);
-  }
-
-  type = () => {
-    return 'LidarPanel';
-  };
 }

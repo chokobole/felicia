@@ -166,8 +166,8 @@ void ZedCameraPublishingNode::StartCamera() {
     params.init_params.coordinate_units = sl::UNIT_METER;
     params.init_params.coordinate_system =
         sl::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP;
-    params.pointcloud_frame_callback = base::BindRepeating(
-        &ZedCameraPublishingNode::OnPointcloudFrame, base::Unretained(this));
+    params.pointcloud_callback = base::BindRepeating(
+        &ZedCameraPublishingNode::OnPointcloud, base::Unretained(this));
   }
 
   Status s = camera_->Start(params);
@@ -212,12 +212,10 @@ void ZedCameraPublishingNode::OnDepthFrame(
   depth_publisher_.Publish(depth_camera_frame.ToDepthCameraFrameMessage(false));
 }
 
-void ZedCameraPublishingNode::OnPointcloudFrame(
-    drivers::PointcloudFrame&& pointcloud_frame) {
+void ZedCameraPublishingNode::OnPointcloud(map::Pointcloud&& pointcloud) {
   if (pointcloud_publisher_.IsUnregistered()) return;
 
-  pointcloud_publisher_.Publish(
-      pointcloud_frame.ToPointcloudFrameMessage(false));
+  pointcloud_publisher_.Publish(pointcloud.ToPointcloudMessage(false));
 }
 
 void ZedCameraPublishingNode::OnCameraError(const Status& s) {

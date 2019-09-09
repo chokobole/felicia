@@ -4,6 +4,7 @@ import TopicList from './components/common/topic-list';
 import { PanelItemContainer, renderText } from './components/common/panel-item';
 import ResizeDetector from './components/common/resize-detector';
 import ResizableCanvas from './components/common/resizable-canvas';
+import UIState from './ui-state';
 
 /* eslint import/prefer-default-export: "off" */
 export {
@@ -14,4 +15,5 @@ export {
   renderText,
   ResizeDetector,
   ResizableCanvas,
+  UIState,
 };

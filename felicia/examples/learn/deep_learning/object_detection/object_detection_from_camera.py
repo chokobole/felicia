@@ -80,7 +80,7 @@ class ObjectDetectionNode(fel.NodeLifecycle):
             image_with_bounding_boxes = self.object_detection.run(
                 image_np, self.draw_on_image)
 
-            self.publisher.publish(image_with_bounding_boxes, self.on_publish)
+            self.publisher.publish(image_with_bounding_boxes)
 
     def on_camera_error(self, status):
         fel.log_if(fel.ERROR, not status.ok(), status.error_message())

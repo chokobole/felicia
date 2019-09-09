@@ -92,7 +92,7 @@ Status RsCamera::Start(const RsCamera::StartParams& params) {
 
   bool has_color_callback = !params.color_frame_callback.is_null();
   bool has_depth_callback = !params.depth_frame_callback.is_null();
-  bool has_pointcloud_callback = !params.pointcloud_frame_callback.is_null();
+  bool has_pointcloud_callback = !params.pointcloud_callback.is_null();
   bool has_imu_callback = !params.imu_frame_callback.is_null();
 
   if (params.status_callback.is_null()) {
@@ -173,7 +173,7 @@ Status RsCamera::Start(const RsCamera::StartParams& params) {
     depth_frame_callback_ = params.depth_frame_callback;
   }
   if (has_pointcloud_callback) {
-    pointcloud_frame_callback_ = params.pointcloud_frame_callback;
+    pointcloud_callback_ = params.pointcloud_callback;
   }
   if (has_imu_callback) {
     imu_filter_ = ImuFilterFactory::NewImuFilter(params.imu_filter_kind);
@@ -207,7 +207,7 @@ Status RsCamera::Stop() {
   color_frame_callback_.Reset();
   depth_frame_callback_.Reset();
   imu_frame_callback_.Reset();
-  pointcloud_frame_callback_.Reset();
+  pointcloud_callback_.Reset();
   status_callback_.Reset();
 
   camera_state_.ToStopped();
@@ -465,7 +465,7 @@ void RsCamera::OnFrame(rs2::frame frame) {
       frameset = named_filter.filter->process(frameset);
     }
 
-    if (!pointcloud_frame_callback_.is_null()) {
+    if (!pointcloud_callback_.is_null()) {
       for (auto frame : frameset) {
         if (frame.is<rs2::points>()) {
           HandlePoints(frame.as<rs2::points>(), timestamp, frameset);
@@ -539,7 +539,7 @@ void RsCamera::HandleVideoFrame(rs2::video_frame frame,
 
 void RsCamera::HandlePoints(rs2::points points, base::TimeDelta timestamp,
                             const rs2::frameset& frameset) {
-  if (pointcloud_frame_callback_.is_null()) return;
+  if (pointcloud_callback_.is_null()) return;
 
   auto pc_filter_iter = std::find_if(
       named_filters_.begin(), named_filters_.end(),
@@ -550,13 +550,11 @@ void RsCamera::HandlePoints(rs2::points points, base::TimeDelta timestamp,
 
   rs2_stream texture_source_id = static_cast<rs2_stream>(
       pc_filter_iter->filter->get_option(rs2_option::RS2_OPTION_STREAM_FILTER));
-  PointcloudFrame pointcloud_frame;
-  pointcloud_frame.points().set_type(DATA_TYPE_32F_C3);
-  pointcloud_frame.colors().set_type(DATA_TYPE_8U_C3);
-  Data::View<Point3f> points_vector =
-      pointcloud_frame.points().AsView<Point3f>();
-  Data::View<Color3u> colors_vector =
-      pointcloud_frame.colors().AsView<Color3u>();
+  map::Pointcloud pointcloud;
+  pointcloud.points().set_type(DATA_TYPE_32F_C3);
+  pointcloud.colors().set_type(DATA_TYPE_8U_C3);
+  Data::View<Point3f> points_vector = pointcloud.points().AsView<Point3f>();
+  Data::View<Color3u> colors_vector = pointcloud.colors().AsView<Color3u>();
   bool use_texture = texture_source_id != RS2_STREAM_ANY;
   rs2::frameset::iterator texture_frame_itr = frameset.end();
   if (use_texture) {
@@ -667,8 +665,8 @@ void RsCamera::HandlePoints(rs2::points points, base::TimeDelta timestamp,
       }
     }
   }
-  pointcloud_frame.set_timestamp(timestamp);
-  pointcloud_frame_callback_.Run(std::move(pointcloud_frame));
+  pointcloud.set_timestamp(timestamp);
+  pointcloud_callback_.Run(std::move(pointcloud));
 }
 
 base::Optional<CameraFrame> RsCamera::ConvertToRequestedPixelFormat(

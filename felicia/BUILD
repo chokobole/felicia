@@ -251,6 +251,7 @@ fel_cc_shared_library(
         "//felicia/drivers/camera",
         "//felicia/drivers/imu",
         "//felicia/drivers/lidar",
+        "//felicia/map",
         "//felicia/slam",
     ],
 )

@@ -4,7 +4,7 @@
 #include "felicia/core/lib/file/file_util.h"
 #include "felicia/drivers/camera/camera_frame.h"
 #include "felicia/drivers/camera/depth_camera_frame.h"
-#include "felicia/drivers/pointcloud/pointcloud_frame.h"
+#include "felicia/map/pointcloud.h"
 
 namespace felicia {
 namespace orb_slam2 {
@@ -189,7 +189,7 @@ void OrbSlam2Node::Publish(cv::Mat w2c, base::TimeDelta timestamp) {
   if (!map_topic_.empty() && map_publisher_.IsRegistered()) {
     std::vector<ORB_SLAM2::MapPoint*> map_points =
         orb_slam2_->GetAllMapPoints();
-    drivers::PointcloudFrame pointcloud;
+    map::Pointcloud pointcloud;
     pointcloud.points().set_type(DATA_TYPE_32F_C3);
     pointcloud.points().reserve(map_points.size());
     Data::View<Point3f> points = pointcloud.points().AsView<Point3f>();
@@ -197,7 +197,7 @@ void OrbSlam2Node::Publish(cv::Mat w2c, base::TimeDelta timestamp) {
       cv::Mat m = map_point->GetWorldPos();
       points.emplace_back(-m.at<float>(0), m.at<float>(2), -m.at<float>(1));
     }
-    map_publisher_.Publish(pointcloud.ToPointcloudFrameMessage(false));
+    map_publisher_.Publish(pointcloud.ToPointcloudMessage(false));
   }
 
   if (!pose_topic_.empty() && pose_publisher_.IsRegistered()) {

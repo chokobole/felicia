@@ -1526,8 +1526,36 @@
                   "id": 10
                 }
               }
+            }
+          }
+        },
+        "map": {
+          "nested": {
+            "OccupancyGridMapMessage": {
+              "fields": {
+                "size": {
+                  "type": "SizeiMessage",
+                  "id": 1
+                },
+                "resolution": {
+                  "type": "float",
+                  "id": 2
+                },
+                "origin": {
+                  "type": "PointfMessage",
+                  "id": 3
+                },
+                "data": {
+                  "type": "bytes",
+                  "id": 4
+                },
+                "timestamp": {
+                  "type": "int64",
+                  "id": 5
+                }
+              }
             },
-            "PointcloudFrameMessage": {
+            "PointcloudMessage": {
               "fields": {
                 "points": {
                   "type": "DataMessage",
@@ -1596,30 +1624,6 @@
                 "F": {
                   "type": "bytes",
                   "id": 6
-                }
-              }
-            },
-            "OccupancyGridMapMessage": {
-              "fields": {
-                "size": {
-                  "type": "SizeiMessage",
-                  "id": 1
-                },
-                "resolution": {
-                  "type": "float",
-                  "id": 2
-                },
-                "origin": {
-                  "type": "PointfMessage",
-                  "id": 3
-                },
-                "data": {
-                  "type": "bytes",
-                  "id": 4
-                },
-                "timestamp": {
-                  "type": "int64",
-                  "id": 5
                 }
               }
             }

@@ -1,11 +1,11 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { Vector3, Quaternion } from '@babylonjs/core/Maths/math';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import '@babylonjs/core/Meshes/meshBuilder';
 
 import { babylonCanvasStyle } from 'custom-styles';
-import { ImuFrameMessage } from 'store/ui/imu-panel-state';
+import { ImuFrameMessage } from 'messages/imu-frame';
 import { createAxis, createScene } from 'util/babylon-util';
 
 export default class ImuView extends Component {

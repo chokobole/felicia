@@ -1,14 +1,15 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
+import React, { Component } from 'react';
 import { NotificationContainer } from 'react-notifications';
 
-import { TopicInfoSubscriber } from '@felicia-viz/communication';
+import TopicInfoSubscriber from '@felicia-viz/communication/topic-info-subscriber';
 
 import ControlPanel from 'components/control-panel';
 import MainScene from 'components/main-scene';
 import ToolBar from 'components/tool-bar';
-import UI_TYPES from 'store/ui/ui-types';
+import SUBSCRIBER from 'store/subscriber';
+import UI_TYPES, { MainSceneType } from 'store/ui/ui-types';
 
 import 'fonts/felicia-icons.css';
 import 'react-notifications/lib/notifications.css';
@@ -20,6 +21,13 @@ export default class App extends Component {
   static propTypes = {
     store: PropTypes.object.isRequired,
   };
+
+  constructor(props) {
+    super(props);
+    const { store } = this.props;
+    const { uiState } = store;
+    uiState.init(UI_TYPES, MainSceneType.name, SUBSCRIBER);
+  }
 
   componentDidMount() {
     const { store } = this.props;
@@ -58,11 +66,13 @@ export default class App extends Component {
 
   _renderViews() {
     const { store } = this.props;
+    const { uiState } = store;
 
     return (
       <React.Fragment>
-        {store.uiState.viewStates.map(viewState => {
-          const uiType = UI_TYPES[viewState.type()];
+        {uiState.viewStates.map(viewState => {
+          const type = viewState.viewType();
+          const uiType = UI_TYPES[type];
           if (viewState.id === 0) return null;
           return uiType.renderView(viewState.id);
         })}
@@ -72,13 +82,15 @@ export default class App extends Component {
 
   render() {
     const { store } = this.props;
-    const viewState = store.uiState.findView(0);
+    const { uiState } = store;
+    const viewState = uiState.findView(0);
     const { occupancyGridMap, pose, pointcloudFrame } = viewState;
 
     return (
       <div id='container'>
         <ControlPanel />
         <MainScene
+          uiState={uiState}
           occupancyGridMap={occupancyGridMap}
           pose={pose}
           pointcloudFrame={pointcloudFrame}

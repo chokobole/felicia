@@ -87,8 +87,8 @@ def convert_to_image_with_bounding_boxes(image,
             bounding_box.box.bottom_right.y = ymax * height
             if classes[i] in category_index.keys():
                 class_name = category_index[classes[i]]['name']
-                color = bounding_box.color
-                color.r, color.g, color.b = COLOR_PALETTE[palette_map[classes[i]]]
+                r, g, b = COLOR_PALETTE[palette_map[classes[i]]]
+                bounding_box.color.rgb = (r << 16) | (g << 8) | b
             else:
                 class_name = 'N/A'
             bounding_box.label = class_name

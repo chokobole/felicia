@@ -1,8 +1,7 @@
-/* eslint no-bitwise: ["off"] */
 /* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["imageData", "colors", "pixels", "positions"] }] */
 import colormap from 'colormap';
 
-import { PixelFormat } from '@felicia-viz/communication';
+import { PixelFormat } from '@felicia-viz/communication/proto-types';
 
 import { RGBA, RGB, BGRA, BGRX, BGR, ARGB } from 'util/color';
 

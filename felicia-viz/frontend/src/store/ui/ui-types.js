@@ -12,14 +12,14 @@ import ImuPanel, { ImuControlPanel } from 'components/imu-panel';
 import LidarPanel, { LidarControlPanel } from 'components/lidar-panel';
 import MainSceneControlPanel from 'components/main-scene-control-panel';
 import PointcloudPanel, { PointcloudControlPanel } from 'components/pointcloud-panel';
-import CameraPanelState from 'store/ui/camera-panel-state';
-import DepthCameraPanelState from 'store/ui/depth-camera-panel-state';
-import ImageWithBoundingBoxesPanelState from 'store/ui/image-with-bounding-boxes-panel-state';
-import ImageWithHumansPanelState from 'store/ui/image-with-humans-panel-state';
-import ImuPanelState from 'store/ui/imu-panel-state';
-import LidarPanelState from 'store/ui/lidar-panel-state';
+import CameraViewState from 'store/ui/camera-view-state';
+import DepthCameraViewState from 'store/ui/depth-camera-view-state';
+import ImageWithBoundingBoxesViewState from 'store/ui/image-with-bounding-boxes-view-state';
+import ImageWithHumansViewState from 'store/ui/image-with-humans-view-state';
+import ImuViewState from 'store/ui/imu-view-state';
+import LidarViewState from 'store/ui/lidar-view-state';
 import MainSceneState from 'store/ui/main-scene-state';
-import PointcloudPanelState from 'store/ui/pointcloud-panel-state';
+import PointcloudViewState from 'store/ui/pointcloud-view-state';
 
 const UI_TYPES = {};
 
@@ -37,10 +37,10 @@ export const MainSceneType = {
 
 UI_TYPES[MainSceneType.name] = MainSceneType;
 
-export const CameraPanelType = {
-  name: 'CameraPanel',
+export const CameraViewType = {
+  name: 'CameraView',
   className: 'camera-panel',
-  state: CameraPanelState,
+  state: CameraViewState,
   renderView: id => {
     return <CameraPanel key={id} id={id} />;
   },
@@ -49,12 +49,12 @@ export const CameraPanelType = {
   },
 };
 
-UI_TYPES[CameraPanelType.name] = CameraPanelType;
+UI_TYPES[CameraViewType.name] = CameraViewType;
 
-export const DepthCameraPanelType = {
-  name: 'DepthCameraPanel',
+export const DepthCameraViewType = {
+  name: 'DepthCameraView',
   className: 'depth-camera-panel',
-  state: DepthCameraPanelState,
+  state: DepthCameraViewState,
   renderView: id => {
     return <DepthCameraPanel key={id} id={id} />;
   },
@@ -63,12 +63,12 @@ export const DepthCameraPanelType = {
   },
 };
 
-UI_TYPES[DepthCameraPanelType.name] = DepthCameraPanelType;
+UI_TYPES[DepthCameraViewType.name] = DepthCameraViewType;
 
-export const ImageWithBoundingBoxesPanelType = {
-  name: 'ImageWithBoundingBoxesPanel',
+export const ImageWithBoundingBoxesViewType = {
+  name: 'ImageWithBoundingBoxesView',
   className: 'image-with-bounding-boxes-panel',
-  state: ImageWithBoundingBoxesPanelState,
+  state: ImageWithBoundingBoxesViewState,
   renderView: id => {
     return <ImageWithBoundingBoxesPanel key={id} id={id} />;
   },
@@ -77,12 +77,12 @@ export const ImageWithBoundingBoxesPanelType = {
   },
 };
 
-UI_TYPES[ImageWithBoundingBoxesPanelType.name] = ImageWithBoundingBoxesPanelType;
+UI_TYPES[ImageWithBoundingBoxesViewType.name] = ImageWithBoundingBoxesViewType;
 
-export const ImageWithHumansPanelType = {
-  name: 'ImageWithHumansPanel',
+export const ImageWithHumansViewType = {
+  name: 'ImageWithHumansView',
   className: 'image-with-humans-panel',
-  state: ImageWithHumansPanelState,
+  state: ImageWithHumansViewState,
   renderView: id => {
     return <ImageWithHumansPanel key={id} id={id} />;
   },
@@ -91,12 +91,12 @@ export const ImageWithHumansPanelType = {
   },
 };
 
-UI_TYPES[ImageWithHumansPanelType.name] = ImageWithHumansPanelType;
+UI_TYPES[ImageWithHumansViewType.name] = ImageWithHumansViewType;
 
-export const ImuPanelType = {
-  name: 'ImuPanel',
+export const ImuViewType = {
+  name: 'ImuView',
   className: 'imu-panel',
-  state: ImuPanelState,
+  state: ImuViewState,
   renderView: id => {
     return <ImuPanel key={id} id={id} />;
   },
@@ -105,12 +105,12 @@ export const ImuPanelType = {
   },
 };
 
-UI_TYPES[ImuPanelType.name] = ImuPanelType;
+UI_TYPES[ImuViewType.name] = ImuViewType;
 
-export const LidarPanelType = {
-  name: 'LidarPanel',
+export const LidarViewType = {
+  name: 'LidarView',
   className: 'lidar-panel',
-  state: LidarPanelState,
+  state: LidarViewState,
   renderView: id => {
     return <LidarPanel key={id} id={id} />;
   },
@@ -119,12 +119,12 @@ export const LidarPanelType = {
   },
 };
 
-UI_TYPES[LidarPanelType.name] = LidarPanelType;
+UI_TYPES[LidarViewType.name] = LidarViewType;
 
-export const PointcloudPanelType = {
-  name: 'PointcloudPanel',
+export const PointcloudViewType = {
+  name: 'PointcloudView',
   className: 'pointcloud-panel',
-  state: PointcloudPanelState,
+  state: PointcloudViewState,
   renderView: id => {
     return <PointcloudPanel key={id} id={id} />;
   },
@@ -133,6 +133,6 @@ export const PointcloudPanelType = {
   },
 };
 
-UI_TYPES[PointcloudPanelType.name] = PointcloudPanelType;
+UI_TYPES[PointcloudViewType.name] = PointcloudViewType;
 
 export default UI_TYPES;

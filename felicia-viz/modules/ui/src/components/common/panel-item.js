@@ -1,5 +1,4 @@
 /* eslint import/prefer-default-export: "off" */
-
 import React from 'react';
 import styled from 'styled-components';
 import { Label } from '@streetscape.gl/monochrome';

@@ -1,9 +1,9 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { Form } from '@streetscape.gl/monochrome';
 
-import { IMAGE_WITH_HUMANS_MESSAGE } from '@felicia-viz/communication';
+import { IMAGE_WITH_HUMANS_MESSAGE } from '@felicia-viz/communication/proto-types';
 import { TopicDropdown } from '@felicia-viz/ui';
 
 import { FORM_STYLE } from 'custom-styles';

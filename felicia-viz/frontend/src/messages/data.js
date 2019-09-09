@@ -1,5 +1,4 @@
-/* eslint no-bitwise: ["off"] */
-import { DataElementType, DataChannelType } from '@felicia-viz/communication';
+import { DataChannelType, DataElementType } from '@felicia-viz/communication/proto-types';
 
 export function getDataView(data) {
   const { buffer, byteOffset, byteLength } = data;
@@ -53,13 +52,12 @@ export function getElementAndChannelType(type) {
   };
 }
 
-export default class DataMessageReader {
+export default class Data {
   constructor(message) {
-    this.message = message;
-    const { type, data } = this.message;
-    const { elementType, channelType } = getElementAndChannelType(type);
+    const { elementType, channelType, data } = message;
     this.elementType = elementType;
     this.channelType = channelType;
+    this.data = data;
     this.dataView = getDataView(data);
     this.readFunc = this._bindReadFunc();
   }
@@ -126,7 +124,7 @@ export default class DataMessageReader {
   }
 }
 
-export class PointReader extends DataMessageReader {
+export class Points extends Data {
   constructor(message) {
     super(message);
     switch (this.channelSize()) {
@@ -158,7 +156,7 @@ export class PointReader extends DataMessageReader {
   }
 }
 
-export class ColorReader extends DataMessageReader {
+export class Colors extends Data {
   constructor(message) {
     super(message);
     if (this.elementType === DataElementType.values.ELEMENT_TYPE_8U) {
@@ -240,5 +238,15 @@ export class ColorReader extends DataMessageReader {
           break;
       }
     }
+  }
+}
+
+export class DataMessage {
+  constructor(message) {
+    const { type, data } = message;
+    const { elementType, channelType } = getElementAndChannelType(type);
+    this.elementType = elementType;
+    this.channelType = channelType;
+    this.data = data;
   }
 }

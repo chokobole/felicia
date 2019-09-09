@@ -1,9 +1,9 @@
 import { action, observable, toJS } from 'mobx';
 import { NotificationManager } from 'react-notifications';
 
-import { TOPIC_INFO, hasWSChannel } from '@felicia-viz/communication';
+import { TOPIC_INFO, hasWSChannel } from '@felicia-viz/communication/proto-types';
 
-import SUBSCRIBER from 'util/subscriber';
+import SUBSCRIBER from 'store/subscriber';
 
 // TODO: Maybe we need loadash?
 function arraysEqual(a, b) {

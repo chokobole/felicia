@@ -1,8 +1,8 @@
 /* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["colors", "positions"] }] */
 import { VertexBuffer } from '@babylonjs/core/Meshes/buffer';
 
+import { DataMessage, Points } from 'messages/data';
 import { createPointcloud } from 'util/babylon-util';
-import DataMessageReader, { PointReader, ColorReader } from 'util/data-message-reader';
 
 export default class Pointcloud {
   constructor(worker, size, scene) {
@@ -25,11 +25,11 @@ export default class Pointcloud {
   // TODO: Need to implement better allocation strategy.
   _allocate = size => {
     return size > 100000 ? size : 100000;
-  }
+  };
 
   update(frame, scene) {
     const { points } = frame;
-    const size = new DataMessageReader(points).length();
+    const size = new Points(points).length();
     if (!this.mesh || this.size < size) {
       if (this.mesh) {
         this.mesh.dispose();
@@ -53,45 +53,11 @@ export default class Pointcloud {
   }
 }
 
-export function fillPointcloud(colors, positions, frame) {
-  const pointsReader = new PointReader(frame.points);
-  const colorsReader = new ColorReader(frame.colors);
-
-  const size = positions.length / 3;
-  if (colorsReader.length() > 0) {
-    for (let i = 0; i < size; i += 1) {
-      const colorsIdx = i * 4;
-      const positionsIdx = i * 3;
-      if (pointsReader.hasData(i)) {
-        [
-          positions[positionsIdx],
-          positions[positionsIdx + 1],
-          positions[positionsIdx + 2],
-        ] = pointsReader.nextPoint3(i);
-        if (colorsReader.hasData(i)) {
-          [
-            colors[colorsIdx],
-            colors[colorsIdx + 1],
-            colors[colorsIdx + 2],
-            colors[colorsIdx + 3],
-          ] = colorsReader.nextColor4f(i);
-        }
-      } else {
-        positions[positionsIdx + 2] = -1000000;
-      }
-    }
-  } else {
-    for (let i = 0; i < size; i += 1) {
-      const positionsIdx = i * 3;
-      if (pointsReader.hasData(i)) {
-        [
-          positions[positionsIdx],
-          positions[positionsIdx + 1],
-          positions[positionsIdx + 2],
-        ] = pointsReader.nextPoint3(i);
-      } else {
-        positions[positionsIdx + 2] = -1000000;
-      }
-    }
+export class PointcloudMessage {
+  constructor(message) {
+    const { points, colors, timestamp } = message;
+    this.points = new DataMessage(points);
+    this.colors = new DataMessage(colors);
+    this.timestamp = timestamp;
   }
 }

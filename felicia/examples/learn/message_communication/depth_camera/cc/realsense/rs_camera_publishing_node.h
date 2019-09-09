@@ -29,7 +29,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
 
   void OnColorFrame(drivers::CameraFrame&& color_frame);
   void OnDepthFrame(drivers::DepthCameraFrame&& depth_frame);
-  void OnPointcloudFrame(drivers::PointcloudFrame&& pointcloud_frame);
+  void OnPointcloud(map::Pointcloud&& pointcloud);
   void OnImuFrame(const drivers::ImuFrame& imu_frame);
 
   void OnCameraError(const Status& s);
@@ -43,7 +43,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
   drivers::CameraDescriptor camera_descriptor_;
   Publisher<drivers::CameraFrameMessage> color_publisher_;
   Publisher<drivers::DepthCameraFrameMessage> depth_publisher_;
-  Publisher<drivers::PointcloudFrameMessage> pointcloud_publisher_;
+  Publisher<map::PointcloudMessage> pointcloud_publisher_;
   Publisher<drivers::ImuFrameMessage> imu_publisher_;
   std::unique_ptr<drivers::RsCamera> camera_;
   base::TimeDelta last_timestamp_;

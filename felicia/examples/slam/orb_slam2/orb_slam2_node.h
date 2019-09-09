@@ -10,9 +10,9 @@
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/drivers/camera/camera_frame_message.pb.h"
 #include "felicia/drivers/camera/depth_camera_frame_message.pb.h"
-#include "felicia/drivers/pointcloud/pointcloud_frame_message.pb.h"
 #include "felicia/examples/slam/orb_slam2_flag.h"
 #include "felicia/examples/slam/slam_node_create_flag.h"
+#include "felicia/map/map_message.pb.h"
 
 #include "System.h"
 
@@ -71,7 +71,7 @@ class OrbSlam2Node : public NodeLifecycle {
   Subscriber<drivers::DepthCameraFrameMessage> depth_subscriber_;
   Publisher<drivers::CameraFrameMessage> frame_publisher_;
   Publisher<Pose3fWithTimestampMessage> pose_publisher_;
-  Publisher<drivers::PointcloudFrameMessage> map_publisher_;
+  Publisher<map::PointcloudMessage> map_publisher_;
   StereoSynchronizer stereo_synchronizer;
   RGBDSynchronizer rgbd_synchronizer;
   StereoMessageFilter stereo_filter_;

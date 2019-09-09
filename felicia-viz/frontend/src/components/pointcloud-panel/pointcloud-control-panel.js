@@ -1,9 +1,9 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { Form } from '@streetscape.gl/monochrome';
 
-import { POINTCLOUD_FRAME_MESSAGE } from '@felicia-viz/communication';
+import { POINTCLOUD_MESSAGE } from '@felicia-viz/communication/proto-types';
 import { TopicDropdown, renderText } from '@felicia-viz/ui';
 
 import { FORM_STYLE } from 'custom-styles';
@@ -33,7 +33,7 @@ export default class PointcloudControlPanel extends Component {
           type: 'custom',
           title: 'topic',
           render: self => {
-            return <TopicDropdown {...self} typeName={POINTCLOUD_FRAME_MESSAGE} />;
+            return <TopicDropdown {...self} typeName={POINTCLOUD_MESSAGE} />;
           },
         },
       },

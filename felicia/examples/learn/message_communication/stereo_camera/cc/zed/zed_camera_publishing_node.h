@@ -31,7 +31,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
   void OnLeftCameraFrame(drivers::CameraFrame&& camera_frame);
   void OnRightCameraFrame(drivers::CameraFrame&& camera_frame);
   void OnDepthFrame(drivers::DepthCameraFrame&& depth_camera_frame);
-  void OnPointcloudFrame(drivers::PointcloudFrame&& pointcloud_frame);
+  void OnPointcloud(map::Pointcloud&& pointcloud);
 
   void OnCameraError(const Status& s);
 
@@ -45,7 +45,7 @@ class ZedCameraPublishingNode : public NodeLifecycle {
   Publisher<drivers::CameraFrameMessage> left_camera_publisher_;
   Publisher<drivers::CameraFrameMessage> right_camera_publisher_;
   Publisher<drivers::DepthCameraFrameMessage> depth_publisher_;
-  Publisher<drivers::PointcloudFrameMessage> pointcloud_publisher_;
+  Publisher<map::PointcloudMessage> pointcloud_publisher_;
   std::unique_ptr<drivers::ZedCamera> camera_;
 };
 

@@ -51,7 +51,7 @@ class MultiResolutionGridMap {
 
   float scale_to_map() const;
 
-  slam::OccupancyGridMapMessage ToOccupancyGridMapMessage(
+  map::OccupancyGridMapMessage ToOccupancyGridMapMessage(
       base::TimeDelta timestamp) const;
 
   void ToCsvFile(const base::FilePath& file_path) const;

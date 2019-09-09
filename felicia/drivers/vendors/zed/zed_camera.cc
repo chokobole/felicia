@@ -181,7 +181,7 @@ Status ZedCamera::Start(const ZedCamera::StartParams& params) {
   left_camera_frame_callback_ = params.left_camera_frame_callback;
   right_camera_frame_callback_ = params.right_camera_frame_callback;
   depth_camera_frame_callback_ = params.depth_camera_frame_callback;
-  pointcloud_frame_callback_ = params.pointcloud_frame_callback;
+  pointcloud_callback_ = params.pointcloud_callback;
   status_callback_ = params.status_callback;
   runtime_params_ = params.runtime_params;
   camera_state_.ToStarted();
@@ -192,7 +192,7 @@ Status ZedCamera::Start(const ZedCamera::StartParams& params) {
   if (!depth_camera_frame_callback_.is_null()) {
     runtime_params_.enable_depth = true;
   }
-  if (!pointcloud_frame_callback_.is_null()) {
+  if (!pointcloud_callback_.is_null()) {
     runtime_params_.enable_point_cloud = true;
   }
 
@@ -386,14 +386,13 @@ void ZedCamera::DoGrab() {
         ConvertToDepthCameraFrame(image, timestamp, min, max);
     depth_camera_frame_callback_.Run(std::move(depth_camera_frame));
   }
-  if (!pointcloud_frame_callback_.is_null()) {
+  if (!pointcloud_callback_.is_null()) {
     base::TimeDelta delta = timestamp - last_timestamp_;
     if (delta > base::TimeDelta::FromSeconds(1)) {
       sl::Mat cloud;
       camera_->retrieveMeasure(cloud, sl::MEASURE_XYZRGBA);
-      PointcloudFrame pointcloud_frame =
-          ConvertToPointcloudFrame(cloud, timestamp);
-      pointcloud_frame_callback_.Run(std::move(pointcloud_frame));
+      map::Pointcloud pointcloud = ConvertToPointcloud(cloud, timestamp);
+      pointcloud_callback_.Run(std::move(pointcloud));
       last_timestamp_ = timestamp;
     }
   }
@@ -494,11 +493,11 @@ DepthCameraFrame ZedCamera::ConvertToDepthCameraFrame(sl::Mat image,
   return DepthCameraFrame(std::move(frame), min, max);
 }
 
-PointcloudFrame ZedCamera::ConvertToPointcloudFrame(sl::Mat cloud,
-                                                    base::TimeDelta timestamp) {
+map::Pointcloud ZedCamera::ConvertToPointcloud(sl::Mat cloud,
+                                               base::TimeDelta timestamp) {
   const float* cloud_ptr = cloud.getPtr<sl::float4>()->ptr();
   size_t size = cloud.getWidth() * cloud.getHeight();
-  PointcloudFrame frame;
+  map::Pointcloud frame;
   struct Color8_4 {
     uint8_t r;
     uint8_t g;

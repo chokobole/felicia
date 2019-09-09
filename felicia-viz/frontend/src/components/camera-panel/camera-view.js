@@ -1,16 +1,20 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 
 import { ResizableCanvas } from '@felicia-viz/ui';
 
-import { CameraFrameMessage } from 'store/ui/camera-panel-state';
-import Worker from 'util/camera-frame-webworker.js';
+import { CameraFrameMessage } from 'messages/camera-frame';
+import { DepthCameraFrameMessage } from 'messages/depth-camera-frame';
+import Worker from 'webworkers/camera-frame-webworker';
 
 export default class CameraView extends Component {
   static propTypes = {
     width: PropTypes.string,
     height: PropTypes.string,
-    frame: PropTypes.instanceOf(CameraFrameMessage),
+    frame: PropTypes.oneOfType([
+      PropTypes.instanceOf(CameraFrameMessage),
+      PropTypes.instanceOf(DepthCameraFrameMessage),
+    ]),
     filter: PropTypes.string,
     frameToAlign: PropTypes.instanceOf(CameraFrameMessage),
   };

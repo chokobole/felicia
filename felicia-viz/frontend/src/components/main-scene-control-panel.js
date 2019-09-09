@@ -1,14 +1,14 @@
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import { Form } from '@streetscape.gl/monochrome';
 
 import {
   OCCUPANCY_GRID_MAP_MESSAGE,
-  POINTCLOUD_FRAME_MESSAGE,
+  POINTCLOUD_MESSAGE,
   POSEF_WITH_TIMESTAMP_MESSAGE,
   POSE3F_WITH_TIMESTAMP_MESSAGE,
-} from '@felicia-viz/communication';
+} from '@felicia-viz/communication/proto-types';
 import { TopicList } from '@felicia-viz/ui';
 
 import { FORM_STYLE } from 'custom-styles';
@@ -31,7 +31,7 @@ export default class MainSceneControlPanel extends Component {
             {...self}
             typeNames={[
               OCCUPANCY_GRID_MAP_MESSAGE,
-              POINTCLOUD_FRAME_MESSAGE,
+              POINTCLOUD_MESSAGE,
               POSEF_WITH_TIMESTAMP_MESSAGE,
               POSE3F_WITH_TIMESTAMP_MESSAGE,
             ]}

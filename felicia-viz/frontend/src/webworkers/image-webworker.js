@@ -6,8 +6,7 @@ self.onmessage = event => {
   let message = null;
   const { imageData, image, data } = event.data;
   const pixels = imageData.data;
-  const { size, pixelFormat } = image;
-  const { width, height } = size;
+  const { width, height, pixelFormat } = image;
   if (!fillPixels(pixels, width, height, image.data, pixelFormat)) return;
 
   message = {

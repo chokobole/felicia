@@ -16,8 +16,8 @@
 #include "felicia/drivers/imu/imu_filter_factory.h"
 #include "felicia/drivers/imu/imu_filter_interface.h"
 #include "felicia/drivers/imu/imu_frame.h"
-#include "felicia/drivers/pointcloud/pointcloud_frame.h"
 #include "felicia/drivers/vendors/realsense/rs_capability.h"
+#include "felicia/map/pointcloud.h"
 
 namespace felicia {
 namespace drivers {
@@ -64,9 +64,9 @@ class RsCamera : public DepthCameraInterface {
 
     CameraFrameCallback color_frame_callback;
     DepthCameraFrameCallback depth_frame_callback;
-    PointcloudFrameCallback
-        pointcloud_frame_callback;  // Currently only worked when
-                                    // |synched_frame_callback| is not null.
+    map::PointcloudCallback
+        pointcloud_callback;  // Currently only worked when
+                              // |synched_frame_callback| is not null.
     ImuFrameCallback imu_frame_callback;
     StatusCallback status_callback;
   };
@@ -145,7 +145,7 @@ class RsCamera : public DepthCameraInterface {
   ImuFormat accel_format_;
   std::unique_ptr<ImuFilterInterface> imu_filter_;
   ImuFrameCallback imu_frame_callback_;
-  PointcloudFrameCallback pointcloud_frame_callback_;
+  map::PointcloudCallback pointcloud_callback_;
 
   Coordinate coordinate_;
   ThreadSafeTimestamper timestamper_;

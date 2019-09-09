@@ -1,8 +1,7 @@
 /* global self */
 /* eslint no-restricted-globals: ["off"] */
-/* eslint no-bitwise: ["off"] */
+import { getDataView } from 'messages/data';
 import { RGBA } from 'util/color';
-import { getDataView } from 'util/data-message-reader';
 
 self.onmessage = event => {
   const { imageData, frame, scale } = event.data;

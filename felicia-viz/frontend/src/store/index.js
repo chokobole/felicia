@@ -1,6 +1,7 @@
-import { observable } from 'mobx';
+import { observable, action } from 'mobx';
 
-import UIState from 'store/ui-state';
+import { UIState } from '@felicia-viz/ui';
+
 import TopicInfo from 'store/topic-info';
 
 export class FeliciaVizStore {
@@ -8,7 +9,7 @@ export class FeliciaVizStore {
 
   @observable topicInfo = new TopicInfo();
 
-  update(message) {
+  @action update(message) {
     this.topicInfo.update(message);
     this.uiState.update(message);
   }

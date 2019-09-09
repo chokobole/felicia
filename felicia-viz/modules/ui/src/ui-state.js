@@ -1,9 +1,6 @@
 import { observable, action } from 'mobx';
 
-import { TOPIC_INFO, hasWSChannel } from '@felicia-viz/communication';
-
-import UI_TYPES, { MainSceneType } from 'store/ui/ui-types';
-import SUBSCRIBER from 'util/subscriber';
+import { TOPIC_INFO, hasWSChannel } from '@felicia-viz/communication/proto-types';
 
 class ViewState {
   @observable id = null;
@@ -12,6 +9,10 @@ class ViewState {
 
   constructor(uiState) {
     this.uiState = uiState;
+  }
+
+  setSubscriber(subscriber) {
+    this.subscriber = subscriber;
   }
 
   @action reset() {
@@ -30,7 +31,7 @@ class ViewState {
 
     const viewState = uiState.findView(id);
     viewState.topics.forEach(topic => {
-      SUBSCRIBER.unsubscribeTopic(id, topic);
+      this.subscriber.unsubscribeTopic(id, topic);
     });
     uiState.removeView(id);
 
@@ -51,17 +52,18 @@ export default class UIState {
 
   id = 0;
 
-  constructor() {
-    this.addView(MainSceneType.name);
+  init(uiTypes, mainSceneType, subscriber) {
+    this.uiTypes = Object.values(uiTypes);
+    this.addView(mainSceneType);
+    this.activeViewState.setSubscriber(subscriber);
   }
 
   @action addView(type) {
-    const values = Object.values(UI_TYPES);
     // eslint-disable-next-line no-restricted-syntax
-    for (const value of values) {
-      if (type === value.name) {
+    for (const uiType of this.uiTypes) {
+      if (type === uiType.name) {
         // eslint-disable-next-line new-cap
-        this.viewStates.push(new value.state(this.id));
+        this.viewStates.push(new uiType.state(this.id));
         this.activeViewState.set(this.id, type);
         this.id += 1;
         break;

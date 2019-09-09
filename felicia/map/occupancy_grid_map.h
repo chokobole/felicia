@@ -1,5 +1,5 @@
-#ifndef FELICIA_SLAM_MAP_OCCUPANCY_GRID_MAP_H_
-#define FELICIA_SLAM_MAP_OCCUPANCY_GRID_MAP_H_
+#ifndef FELICIA_MAP_OCCUPANCY_GRID_MAP_H_
+#define FELICIA_MAP_OCCUPANCY_GRID_MAP_H_
 
 #include <vector>
 
@@ -10,11 +10,11 @@
 #include "felicia/core/lib/math/math_util.h"
 #include "felicia/core/lib/unit/geometry/pose.h"
 #include "felicia/core/lib/unit/geometry/transform.h"
-#include "felicia/slam/map/grid_map.h"
-#include "felicia/slam/map/map_message.pb.h"
+#include "felicia/map/grid_map.h"
+#include "felicia/map/map_message.pb.h"
 
 namespace felicia {
-namespace slam {
+namespace map {
 
 template <typename CellType>
 class OccupancyGridMap : public GridMap<CellType> {
@@ -203,7 +203,7 @@ void OccupancyGridMap<CellType>::ToCsvFile(
   file.Write(0, csv_data.c_str(), csv_data.length());
 }
 
-}  // namespace slam
+}  // namespace map
 }  // namespace felicia
 
-#endif  // FELICIA_SLAM_MAP_OCCUPANCY_GRID_MAP_H_
+#endif  // FELICIA_MAP_OCCUPANCY_GRID_MAP_H_

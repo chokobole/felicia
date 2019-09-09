@@ -1,8 +1,9 @@
 syntax = "proto3";
 
+import "felicia/core/protobuf/data.proto";
 import "felicia/core/protobuf/geometry.proto";
 
-package felicia.slam;
+package felicia.map;
 
 message OccupancyGridMapMessage {
   // Map size
@@ -16,4 +17,10 @@ message OccupancyGridMapMessage {
   // The values out of this range are regarded as unknown.
   bytes data = 4;
   int64 timestamp = 5;
+}
+
+message PointcloudMessage {
+  DataMessage points = 1;
+  DataMessage colors = 2;
+  int64 timestamp = 3;
 }

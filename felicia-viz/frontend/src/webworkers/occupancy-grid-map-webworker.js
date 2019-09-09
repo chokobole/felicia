@@ -1,5 +1,4 @@
 /* global self */
-/* eslint no-bitwise: ["off"] */
 /* eslint no-restricted-globals: ["off"] */
 self.onmessage = event => {
   const { imageData, occupancyGridMap } = event.data;

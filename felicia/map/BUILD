@@ -4,9 +4,9 @@ load("//bazel:felicia_proto.bzl", "fel_proto_library")
 package(default_visibility = ["//felicia:internal"])
 
 fel_proto_library(
-    name = "pointcloud_proto",
+    name = "map_proto",
     srcs = [
-        "pointcloud_frame_message.proto",
+        "map_message.proto",
     ],
     default_header = True,
     protodeps = ["//felicia/core/protobuf:protos_all_proto"],
@@ -14,12 +14,31 @@ fel_proto_library(
 )
 
 fel_cc_library(
+    name = "map",
+    deps = [
+        ":occupancy_grid_map",
+        ":pointcloud",
+    ],
+)
+
+fel_cc_library(
+    name = "occupancy_grid_map",
+    hdrs = [
+        "grid_map.h",
+        "occupancy_grid_map.h",
+    ],
+    deps = [
+        "//felicia/core/lib",
+    ],
+)
+
+fel_cc_library(
     name = "pointcloud",
     srcs = [
-        "pointcloud_frame.cc",
+        "pointcloud.cc",
     ],
     hdrs = [
-        "pointcloud_frame.h",
+        "pointcloud.h",
     ],
     deps = [
         "//felicia/core/lib",

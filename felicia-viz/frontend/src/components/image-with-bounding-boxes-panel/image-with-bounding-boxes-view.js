@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 
 import { ResizableCanvas } from '@felicia-viz/ui';
 
-import { ImageWithBoundingBoxesMessage } from 'store/ui/image-with-bounding-boxes-panel-state';
-import Worker from 'util/image-webworker.js';
+import { ImageWithBoundingBoxesMessage } from 'messages/image-with-bounding-boxes';
+import Worker from 'webworkers/image-webworker';
 
 export default class ImageWithBoundingBoxesView extends Component {
   static propTypes = {
@@ -70,7 +70,7 @@ export default class ImageWithBoundingBoxesView extends Component {
     if (!frame) return;
 
     const { image, boundingBoxes } = frame;
-    const { width, height } = image.size;
+    const { width, height } = image;
 
     this.worker.postMessage({
       imageData: this.proxyContext.getImageData(0, 0, width, height),
@@ -104,7 +104,10 @@ export default class ImageWithBoundingBoxesView extends Component {
       const { color, box, label, score } = boundingBoxes[i];
       if (score >= threshold) {
         const { topLeft, bottomRight } = box;
-        const { r, g, b } = color;
+        const { rgb } = color;
+        const r = (rgb >> 16) & 0xff;
+        const g = (rgb >> 8) & 0xff;
+        const b = rgb & 0xff;
         const { x, y } = topLeft;
         const w = bottomRight.x - topLeft.x;
         const h = bottomRight.y - topLeft.y;

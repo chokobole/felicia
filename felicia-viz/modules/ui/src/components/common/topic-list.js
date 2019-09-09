@@ -1,11 +1,11 @@
 /* eslint react/jsx-no-bind: ["off"] */
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 import styled from '@emotion/styled';
 
-import { hasWSChannel, findWSChannel } from '@felicia-viz/communication';
+import { findWSChannel, hasWSChannel } from '@felicia-viz/communication/proto-types';
 
 const LabelContainer = styled.div(() => ({
   display: 'flex',

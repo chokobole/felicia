@@ -1,12 +1,11 @@
-/* eslint no-bitwise: ["off"] */
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 
+import { HumanBody, HumanBodyModel } from '@felicia-viz/communication/proto-types';
 import { ResizableCanvas } from '@felicia-viz/ui';
-import { HumanBody, HumanBodyModel } from '@felicia-viz/communication';
 
-import { ImageWithHumansMessage } from 'store/ui/image-with-humans-panel-state';
-import Worker from 'util/image-webworker.js';
+import { ImageWithHumansMessage } from 'messages/image-with-humans';
+import Worker from 'webworkers/image-webworker';
 
 const {
   HUMAN_BODY_NONE,
@@ -474,7 +473,7 @@ export default class ImageWithHumansView extends Component {
     if (!frame) return;
 
     const { image, model, humans } = frame;
-    const { width, height } = image.size;
+    const { width, height } = image;
 
     this.worker.postMessage({
       imageData: this.proxyContext.getImageData(0, 0, width, height),

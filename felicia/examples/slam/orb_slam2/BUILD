@@ -52,7 +52,7 @@ fel_cc_library(
         ":@orb_slam2",
         "//felicia/core/communication",
         "//felicia/drivers/camera",
-        "//felicia/drivers/pointcloud",
+        "//felicia/map:pointcloud",
         "//felicia/examples/slam:slam_node_create_flag",
         "//felicia/slam",
     ]),

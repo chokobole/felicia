@@ -23,6 +23,7 @@ fel_cc_library(
         "//felicia/core/communication",
         "//felicia/drivers/lidar",
         "//felicia/examples/slam:slam_node_create_flag",
+        "//felicia/map:occupancy_grid_map",
         "//felicia/slam",
     ],
 )

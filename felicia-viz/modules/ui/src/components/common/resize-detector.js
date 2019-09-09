@@ -1,5 +1,5 @@
-import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import React, { PureComponent } from 'react';
 import ResizeObserver from 'resize-observer-polyfill';
 
 export default class ResizeDetector extends PureComponent {

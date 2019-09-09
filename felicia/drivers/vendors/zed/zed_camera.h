@@ -10,9 +10,9 @@
 #include "felicia/core/lib/coordinate/coordinate.h"
 #include "felicia/drivers/camera/depth_camera_frame.h"
 #include "felicia/drivers/camera/stereo_camera_interface.h"
-#include "felicia/drivers/pointcloud/pointcloud_frame.h"
 #include "felicia/drivers/vendors/zed/zed_camera_descriptor.h"
 #include "felicia/drivers/vendors/zed/zed_capability.h"
+#include "felicia/map/pointcloud.h"
 
 namespace felicia {
 namespace drivers {
@@ -50,7 +50,7 @@ class ZedCamera : public StereoCameraInterface,
     CameraFrameCallback left_camera_frame_callback;
     CameraFrameCallback right_camera_frame_callback;
     DepthCameraFrameCallback depth_camera_frame_callback;
-    PointcloudFrameCallback pointcloud_frame_callback;
+    map::PointcloudCallback pointcloud_callback;
     StatusCallback status_callback;
   };
 
@@ -97,8 +97,7 @@ class ZedCamera : public StereoCameraInterface,
                                              base::TimeDelta timestamp,
                                              float min, float max);
 
-  PointcloudFrame ConvertToPointcloudFrame(sl::Mat cloud,
-                                           base::TimeDelta timestamp);
+  map::Pointcloud ConvertToPointcloud(sl::Mat cloud, base::TimeDelta timestamp);
 
   static Status OpenCamera(const int device_id, sl::InitParameters& params,
                            ScopedCamera* camera);
@@ -109,7 +108,7 @@ class ZedCamera : public StereoCameraInterface,
   sl::RuntimeParameters runtime_params_;
 
   DepthCameraFrameCallback depth_camera_frame_callback_;
-  PointcloudFrameCallback pointcloud_frame_callback_;
+  map::PointcloudCallback pointcloud_callback_;
 
   base::Thread thread_;
   base::Lock lock_;

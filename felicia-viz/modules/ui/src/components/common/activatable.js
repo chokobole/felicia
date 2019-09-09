@@ -1,12 +1,14 @@
-import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import React, { PureComponent } from 'react';
+
+import UIState from '../../ui-state';
 
 export default class Activatable extends PureComponent {
   static propTypes = {
     id: PropTypes.number.isRequired,
     type: PropTypes.string.isRequired,
     children: PropTypes.node.isRequired,
-    uiState: PropTypes.object.isRequired,
+    uiState: PropTypes.instanceOf(UIState).isRequired,
   };
 
   _onMouseDown = () => {

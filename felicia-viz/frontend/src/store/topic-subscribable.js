@@ -1,6 +1,6 @@
 import { observable, action } from 'mobx';
 
-import SUBSCRIBER from 'util/subscriber';
+import SUBSCRIBER from 'store/subscriber';
 
 export default class TopicSubscribable {
   @observable topics = new Map();

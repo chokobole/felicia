@@ -1,9 +1,9 @@
 /* global self */
 /* eslint no-restricted-globals: ["off"] */
-import { PixelFormat } from '@felicia-viz/communication';
+import { PixelFormat } from '@felicia-viz/communication/proto-types';
 
+import { getDataView } from 'messages/data';
 import { fillPixels } from 'util/color';
-import { getDataView } from 'util/data-message-reader';
 import Histogram from 'util/histogram';
 
 let histogram;
@@ -12,8 +12,9 @@ self.onmessage = event => {
   let message = null;
   const { imageData, frame, filter, frameToAlign } = event.data;
   const pixels = imageData.data;
-  const { pixelFormat, width, height, min, max, data, converted } = frame;
+  const { converted, data, width, height, pixelFormat } = frame;
   if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_Z16) {
+    const { min, max } = frame;
     if (!histogram) {
       histogram = new Histogram();
     }

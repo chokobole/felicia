@@ -21,7 +21,7 @@ fel_cc_library(
     deps = if_has_zed([
         "//felicia/core/lib",
         "//felicia/drivers/camera",
-        "//felicia/drivers/pointcloud",
+        "//felicia/map:pointcloud",
         "@zed",
         "@cuda",
     ]),

@@ -321,7 +321,7 @@ class HumanPoseEstimationNode(fel.NodeLifecycle):
                             self._add_human_body(
                                 key_points, human, map_to_body)
 
-            self.publisher.publish(image_with_humans, self.on_publish)
+            self.publisher.publish(image_with_humans)
 
     def on_camera_error(self, status):
         fel.log_if(fel.ERROR, not status.ok(), status.error_message())

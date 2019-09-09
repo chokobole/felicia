@@ -1,4 +1,4 @@
-import { Subscriber } from '@felicia-viz/communication';
+import Subscriber from '@felicia-viz/communication/subscriber';
 
 import STORE from 'store';
 

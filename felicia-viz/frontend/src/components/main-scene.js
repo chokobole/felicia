@@ -1,6 +1,5 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { inject, observer } from 'mobx-react';
+import React, { Component } from 'react';
 import { ActionManager } from '@babylonjs/core/Actions/actionManager';
 import { ExecuteCodeAction } from '@babylonjs/core/Actions/directActions';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
@@ -10,33 +9,27 @@ import { Vector3 } from '@babylonjs/core/Maths/math';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import '@babylonjs/core/Meshes/meshBuilder';
 
-import UI_TYPES from 'store/ui/ui-types';
-import {
-  OccupancyGridMapMessage,
-  PosefWithTimestampMessage,
-  Pose3fWithTimestampMessage,
-} from 'store/ui/main-scene-state';
-import { PointcloudFrameMessage } from 'store/ui/pointcloud-panel-state';
-import { backgroundColor, createScene } from 'util/babylon-util';
-import OccupancyGridMap from 'util/occupancy-grid-map';
-import OccupancyGridMapWorker from 'util/occupancy-grid-map-webworker.js';
-import Pointcloud from 'util/pointcloud';
-import PointcloudFrameWorker from 'util/pointcloud-frame-webworker.js';
-import Pose from 'util/pose';
+import { UIState } from '@felicia-viz/ui';
 
-@inject('store')
-@observer
+import OccupancyGridMap, { OccupancyGridMapMessage } from 'messages/occupancy-grid-map';
+import Pointcloud, { PointcloudMessage } from 'messages/pointcloud';
+import Pose, { PoseWithTimestampMessage, Pose3WithTimestampMessage } from 'messages/pose';
+import UI_TYPES from 'store/ui/ui-types';
+import { backgroundColor, createScene } from 'util/babylon-util';
+import OccupancyGridMapWorker from 'webworkers/occupancy-grid-map-webworker';
+import PointcloudWorker from 'webworkers/pointcloud-webworker';
+
 export default class MainScene extends Component {
   static propTypes = {
     width: PropTypes.string,
     height: PropTypes.string,
-    store: PropTypes.object.isRequired,
+    uiState: PropTypes.instanceOf(UIState).isRequired,
     occupancyGridMap: PropTypes.instanceOf(OccupancyGridMapMessage),
     pose: PropTypes.oneOfType([
-      PropTypes.instanceOf(PosefWithTimestampMessage),
-      PropTypes.instanceOf(Pose3fWithTimestampMessage),
+      PropTypes.instanceOf(PoseWithTimestampMessage),
+      PropTypes.instanceOf(Pose3WithTimestampMessage),
     ]),
-    pointcloudFrame: PropTypes.instanceOf(PointcloudFrameMessage),
+    pointcloudFrame: PropTypes.instanceOf(PointcloudMessage),
   };
 
   static defaultProps = {
@@ -74,8 +67,7 @@ export default class MainScene extends Component {
           parameter: 'c',
         },
         () => {
-          const { store } = this.props;
-          const { uiState } = store;
+          const { uiState } = this.props;
           uiState.activeViewState.set(0, UI_TYPES.MainScene.name);
         }
       )
@@ -92,7 +84,7 @@ export default class MainScene extends Component {
     let updated = false;
     if (occupancyGridMap !== nextProps.occupancyGridMap) {
       if (!this.occupancyGridMap) {
-        const { width, height } = occupancyGridMap.size;
+        const { width, height } = nextProps.occupancyGridMap.size;
         this.occupancyGridMap = new OccupancyGridMap(
           new OccupancyGridMapWorker(),
           width,
@@ -119,7 +111,7 @@ export default class MainScene extends Component {
 
     if (pointcloudFrame !== nextProps.pointcloudFrame) {
       if (!this.pointcloud) {
-        this.pointcloud = new Pointcloud(new PointcloudFrameWorker());
+        this.pointcloud = new Pointcloud(new PointcloudWorker());
       }
       this.pointcloud.update(nextProps.pointcloudFrame, this.scene);
       updated = true;

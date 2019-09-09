@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import React, { Component } from 'react';
 
 import { ResizeDetector } from '@felicia-viz/ui';
 
-import { LidarFrameMessage } from 'store/ui/lidar-panel-state';
-import Worker from 'util/lidar-frame-webworker.js';
+import { LidarFrameMessage } from 'messages/lidar-frame';
+import Worker from 'webworkers/lidar-frame-webworker';
 
 export default class LidarView extends Component {
   static propTypes = {

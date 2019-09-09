@@ -184,8 +184,8 @@ void RsCameraPublishingNode::StartCamera() {
                                               drivers::RS_DEPTH.stream_index)));
       }
     }
-    params.pointcloud_frame_callback = base::BindRepeating(
-        &RsCameraPublishingNode::OnPointcloudFrame, base::Unretained(this));
+    params.pointcloud_callback = base::BindRepeating(
+        &RsCameraPublishingNode::OnPointcloud, base::Unretained(this));
   }
 
   if (!imu_topic_.empty()) {
@@ -237,12 +237,10 @@ void RsCameraPublishingNode::OnDepthFrame(
   depth_publisher_.Publish(depth_frame.ToDepthCameraFrameMessage(false));
 }
 
-void RsCameraPublishingNode::OnPointcloudFrame(
-    drivers::PointcloudFrame&& pointcloud_frame) {
+void RsCameraPublishingNode::OnPointcloud(map::Pointcloud&& pointcloud) {
   if (pointcloud_publisher_.IsUnregistered()) return;
 
-  pointcloud_publisher_.Publish(
-      pointcloud_frame.ToPointcloudFrameMessage(false));
+  pointcloud_publisher_.Publish(pointcloud.ToPointcloudMessage(false));
 }
 
 void RsCameraPublishingNode::OnImuFrame(const drivers::ImuFrame& imu_frame) {
