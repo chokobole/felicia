@@ -11,7 +11,6 @@ import ImageWithHumansPanel, {
 import ImuPanel, { ImuControlPanel } from 'components/imu-panel';
 import LidarPanel, { LidarControlPanel } from 'components/lidar-panel';
 import MainSceneControlPanel from 'components/main-scene-control-panel';
-import PointcloudPanel, { PointcloudControlPanel } from 'components/pointcloud-panel';
 import CameraViewState from 'store/ui/camera-view-state';
 import DepthCameraViewState from 'store/ui/depth-camera-view-state';
 import ImageWithBoundingBoxesViewState from 'store/ui/image-with-bounding-boxes-view-state';
@@ -19,7 +18,6 @@ import ImageWithHumansViewState from 'store/ui/image-with-humans-view-state';
 import ImuViewState from 'store/ui/imu-view-state';
 import LidarViewState from 'store/ui/lidar-view-state';
 import MainSceneState from 'store/ui/main-scene-state';
-import PointcloudViewState from 'store/ui/pointcloud-view-state';
 
 const UI_TYPES = {};
 
@@ -120,19 +118,5 @@ export const LidarViewType = {
 };
 
 UI_TYPES[LidarViewType.name] = LidarViewType;
-
-export const PointcloudViewType = {
-  name: 'PointcloudView',
-  className: 'pointcloud-panel',
-  state: PointcloudViewState,
-  renderView: id => {
-    return <PointcloudPanel key={id} id={id} />;
-  },
-  renderControlView: () => {
-    return <PointcloudControlPanel />;
-  },
-};
-
-UI_TYPES[PointcloudViewType.name] = PointcloudViewType;
 
 export default UI_TYPES;
