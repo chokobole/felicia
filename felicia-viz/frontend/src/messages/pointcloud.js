@@ -34,8 +34,9 @@ export default class Pointcloud {
       if (this.mesh) {
         this.mesh.dispose();
       }
-      this.mesh = createPointcloud(size, scene);
-      this.size = size;
+      const allocationSize = this._allocate(size);
+      this.mesh = createPointcloud(allocationSize, scene);
+      this.size = allocationSize;
     }
 
     const colors = this.mesh.getVerticesData(VertexBuffer.ColorKind);
