@@ -166,6 +166,7 @@ void ZedCameraPublishingNode::StartCamera() {
     params.init_params.coordinate_units = sl::UNIT_METER;
     params.init_params.coordinate_system =
         sl::COORDINATE_SYSTEM_LEFT_HANDED_Y_UP;
+    params.pointcloud_interval = base::TimeDelta::FromSeconds(1);
     params.pointcloud_callback = base::BindRepeating(
         &ZedCameraPublishingNode::OnPointcloud, base::Unretained(this));
   }

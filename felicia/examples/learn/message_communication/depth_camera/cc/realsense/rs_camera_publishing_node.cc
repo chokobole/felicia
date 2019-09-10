@@ -184,6 +184,7 @@ void RsCameraPublishingNode::StartCamera() {
                                               drivers::RS_DEPTH.stream_index)));
       }
     }
+    params.pointcloud_interval = base::TimeDelta::FromSeconds(1);
     params.pointcloud_callback = base::BindRepeating(
         &RsCameraPublishingNode::OnPointcloud, base::Unretained(this));
   }

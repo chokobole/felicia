@@ -178,6 +178,7 @@ Status ZedCamera::Start(const ZedCamera::StartParams& params) {
 
   camera_ = std::move(camera);
   thread_.Start();
+  pointcloud_interval_ = params.pointcloud_interval;
   left_camera_frame_callback_ = params.left_camera_frame_callback;
   right_camera_frame_callback_ = params.right_camera_frame_callback;
   depth_camera_frame_callback_ = params.depth_camera_frame_callback;
@@ -387,13 +388,20 @@ void ZedCamera::DoGrab() {
     depth_camera_frame_callback_.Run(std::move(depth_camera_frame));
   }
   if (!pointcloud_callback_.is_null()) {
-    base::TimeDelta delta = timestamp - last_timestamp_;
-    if (delta > base::TimeDelta::FromSeconds(1)) {
+    bool enable = false;
+    if (pointcloud_interval_.is_zero()) {
+      enable = true;
+    } else {
+      base::TimeDelta delta = timestamp - last_pointcloud_timestamp_;
+      enable = delta > pointcloud_interval_;
+    }
+
+    if (enable) {
       sl::Mat cloud;
       camera_->retrieveMeasure(cloud, sl::MEASURE_XYZRGBA);
       map::Pointcloud pointcloud = ConvertToPointcloud(cloud, timestamp);
       pointcloud_callback_.Run(std::move(pointcloud));
-      last_timestamp_ = timestamp;
+      last_pointcloud_timestamp_ = timestamp;
     }
   }
 

@@ -46,6 +46,7 @@ class ZedCamera : public StereoCameraInterface,
     CameraFormat requested_camera_format;
     sl::InitParameters init_params;
     sl::RuntimeParameters runtime_params;
+    base::TimeDelta pointcloud_interval;
 
     CameraFrameCallback left_camera_frame_callback;
     CameraFrameCallback right_camera_frame_callback;
@@ -114,7 +115,8 @@ class ZedCamera : public StereoCameraInterface,
   base::Lock lock_;
   bool is_stopping_ GUARDED_BY(lock_);
 
-  base::TimeDelta last_timestamp_;  // It's used to control pointcloud rate.
+  base::TimeDelta last_pointcloud_timestamp_;
+  base::TimeDelta pointcloud_interval_;
 
   Coordinate coordinate_;
 

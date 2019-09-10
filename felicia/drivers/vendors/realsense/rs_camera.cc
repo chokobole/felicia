@@ -174,6 +174,7 @@ Status RsCamera::Start(const RsCamera::StartParams& params) {
   }
   if (has_pointcloud_callback) {
     pointcloud_callback_ = params.pointcloud_callback;
+    pointcloud_interval_ = params.pointcloud_interval;
   }
   if (has_imu_callback) {
     imu_filter_ = ImuFilterFactory::NewImuFilter(params.imu_filter_kind);
@@ -466,10 +467,20 @@ void RsCamera::OnFrame(rs2::frame frame) {
     }
 
     if (!pointcloud_callback_.is_null()) {
-      for (auto frame : frameset) {
-        if (frame.is<rs2::points>()) {
-          HandlePoints(frame.as<rs2::points>(), timestamp, frameset);
-          break;
+      bool enable = false;
+      if (pointcloud_interval_.is_zero()) {
+        enable = true;
+      } else {
+        base::TimeDelta delta = timestamp - last_pointcloud_timestamp_;
+        enable = delta > pointcloud_interval_;
+      }
+
+      if (enable) {
+        for (auto frame : frameset) {
+          if (frame.is<rs2::points>()) {
+            HandlePoints(frame.as<rs2::points>(), timestamp, frameset);
+            break;
+          }
         }
       }
     }

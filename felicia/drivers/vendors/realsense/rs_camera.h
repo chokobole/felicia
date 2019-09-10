@@ -61,6 +61,7 @@ class RsCamera : public DepthCameraInterface {
     ImuFormat requested_accel_format;
     ImuFilterFactory::ImuFilterKind imu_filter_kind;
     std::vector<NamedFilter> named_filters;
+    base::TimeDelta pointcloud_interval;
 
     CameraFrameCallback color_frame_callback;
     DepthCameraFrameCallback depth_frame_callback;
@@ -149,6 +150,9 @@ class RsCamera : public DepthCameraInterface {
 
   Coordinate coordinate_;
   ThreadSafeTimestamper timestamper_;
+
+  base::TimeDelta last_pointcloud_timestamp_;
+  base::TimeDelta pointcloud_interval_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(RsCamera);
 };
