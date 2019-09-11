@@ -1,6 +1,6 @@
 /* global self */
 /* eslint no-restricted-globals: ["off"] */
-import { Points, Colors } from 'messages/data';
+import { Points, Colors } from '@felicia-viz/proto/messages/data-message';
 
 self.onmessage = event => {
   const { colors, positions, frame } = event.data;

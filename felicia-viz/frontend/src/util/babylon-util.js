@@ -1,21 +1,11 @@
 /* eslint import/prefer-default-export: "off" */
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { Color3, Quaternion, Vector3 } from '@babylonjs/core/Maths/math';
+import { Color3, Vector3 } from '@babylonjs/core/Maths/math';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { Scene } from '@babylonjs/core/scene';
-
-export function toVector3(v) {
-  const { x, y, z } = v;
-  return new Vector3(x, y, z);
-}
-
-export function toQuaternion(q) {
-  const { x, y, z, w } = q;
-  return new Quaternion(x, y, z, w);
-}
 
 export function backgroundColor() {
   return new Color3(51 / 255, 51 / 255, 51 / 255);

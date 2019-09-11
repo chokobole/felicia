@@ -1,9 +1,10 @@
 import { observable, action } from 'mobx';
 
-import { CAMERA_FRAME_MESSAGE } from '@felicia-viz/communication/proto-types';
+import CameraFrameMessage, {
+  CAMERA_FRAME_MESSAGE,
+} from '@felicia-viz/proto/messages/camera-frame-message';
+import DepthCameraFrameMessage from '@felicia-viz/proto/messages/depth-camera-frame-message';
 
-import { CameraFrameMessage } from 'messages/camera-frame';
-import { DepthCameraFrameMessage } from 'messages/depth-camera-frame';
 import TopicSubscribable from 'store/topic-subscribable';
 
 export default class DepthCameraViewState extends TopicSubscribable {

@@ -1,4 +1,7 @@
-import { DataChannelType, DataElementType } from '@felicia-viz/communication/proto-types';
+import FeliciaProtoRoot from '../felicia-proto-root';
+
+export const DataChannelType = FeliciaProtoRoot.lookupEnum('felicia.DataMessage.ChannelType');
+export const DataElementType = FeliciaProtoRoot.lookupEnum('felicia.DataMessage.ElementType');
 
 export function getDataView(data) {
   const { buffer, byteOffset, byteLength } = data;

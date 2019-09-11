@@ -1,4 +1,4 @@
-import { TOPIC_INFO } from '@felicia-viz/communication/proto-types';
+import { TOPIC_INFO } from '@felicia-viz/proto';
 
 import TOPIC_MAP from 'topic-map';
 

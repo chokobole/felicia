@@ -1,4 +1,4 @@
-import PROTO_TYPES, { TOPIC_INFO } from '@felicia-viz/communication/proto-types';
+import PROTO_TYPES, { TOPIC_INFO } from '@felicia-viz/proto';
 
 import feliciaJs from 'felicia_js.node';
 import { isWin } from 'lib/environment';

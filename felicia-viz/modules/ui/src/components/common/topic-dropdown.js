@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { Dropdown, Label } from '@streetscape.gl/monochrome';
 
-import { findWSChannel, hasWSChannel } from '@felicia-viz/communication/proto-types';
+import { findWSChannel, hasWSChannel } from '@felicia-viz/communication/subscriber';
 
 import { PanelItemContainer } from './panel-item';
 

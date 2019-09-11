@@ -9,11 +9,19 @@ import { Vector3 } from '@babylonjs/core/Maths/math';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import '@babylonjs/core/Meshes/meshBuilder';
 
+import {
+  PoseWithTimestampMessage,
+  Pose3WithTimestampMessage,
+} from '@felicia-viz/proto/messages/geometry';
+import {
+  OccupancyGridMapMessage,
+  PointcloudMessage,
+} from '@felicia-viz/proto/messages/map-message';
 import { UIState } from '@felicia-viz/ui';
 
-import OccupancyGridMap, { OccupancyGridMapMessage } from 'messages/occupancy-grid-map';
-import Pointcloud, { PointcloudMessage } from 'messages/pointcloud';
-import Pose, { PoseWithTimestampMessage, Pose3WithTimestampMessage } from 'messages/pose';
+import OccupancyGridMap from 'messages/occupancy-grid-map';
+import Pointcloud from 'messages/pointcloud';
+import Pose from 'messages/pose';
 import UI_TYPES from 'store/ui/ui-types';
 import { backgroundColor, createScene } from 'util/babylon-util';
 import OccupancyGridMapWorker from 'webworkers/occupancy-grid-map-webworker';

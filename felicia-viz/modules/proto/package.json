@@ -1,13 +1,17 @@
 {
-  "name": "@felicia-viz/communication",
+  "name": "@felicia-viz/proto",
   "version": "0.0.1",
-  "description": "Communication toolkit for felicia-viz",
+  "description": "protobuf types for felicia-viz",
   "main": "dist/es5/index.js",
   "module": "dist/esm/index.js",
   "esnext": "dist/es6/index.js",
   "files": [
     "dist"
   ],
+  "dependencies": {
+    "@babylonjs/core": "^4.0.3",
+    "protobufjs": "^6.8.8"
+  },
   "scripts": {
     "clean": "rm -fr dist && mkdir -p dist",
     "build-es6": "BABEL_ENV=es6 babel src --root-mode upward --out-dir dist/es6 --source-maps --ignore 'node_modules/'",

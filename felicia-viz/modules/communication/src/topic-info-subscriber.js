@@ -1,5 +1,6 @@
+import { TOPIC_INFO } from '@felicia-viz/proto';
+
 import Connection from './connection';
-import { TOPIC_INFO } from './proto-types';
 import Worker from './subscriber-webworker';
 
 export default class TopicInfoSubscriber {

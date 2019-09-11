@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { Form } from '@streetscape.gl/monochrome';
 
-import { LIDAR_FRAME_MESSAGE } from '@felicia-viz/communication/proto-types';
+import { LIDAR_FRAME_MESSAGE } from '@felicia-viz/proto/messages/lidar-frame-message';
 import { TopicDropdown, renderText } from '@felicia-viz/ui';
 
 import { FORM_STYLE } from 'custom-styles';

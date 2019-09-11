@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { Form } from '@streetscape.gl/monochrome';
 
-import { IMAGE_WITH_BOUNDING_BOXES_MESSAGE } from '@felicia-viz/communication/proto-types';
+import { IMAGE_WITH_BOUNDING_BOXES_MESSAGE } from '@felicia-viz/proto/messages/bounding-box';
 import { TopicDropdown } from '@felicia-viz/ui';
 
 import { FORM_STYLE } from 'custom-styles';

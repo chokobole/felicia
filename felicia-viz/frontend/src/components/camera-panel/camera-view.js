@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
+import CameraFrameMessage from '@felicia-viz/proto/messages/camera-frame-message';
+import DepthCameraFrameMessage from '@felicia-viz/proto/messages/depth-camera-frame-message';
 import { ResizableCanvas } from '@felicia-viz/ui';
 
-import { CameraFrameMessage } from 'messages/camera-frame';
-import { DepthCameraFrameMessage } from 'messages/depth-camera-frame';
 import Worker from 'webworkers/camera-frame-webworker';
 
 export default class CameraView extends Component {
@@ -61,7 +61,7 @@ export default class CameraView extends Component {
 
     if (!frame) return;
 
-    const { width, height } = frame;
+    const { width, height } = frame.cameraFormat.size;
     const { filter, frameToAlign } = this.props; // for depth-camera
 
     this.worker.postMessage({

@@ -1,6 +1,7 @@
 import { observable, action } from 'mobx';
 
-import { LidarFrameMessage } from 'messages/lidar-frame';
+import LidarFrameMessage from '@felicia-viz/proto/messages/lidar-frame-message';
+
 import TopicSubscribable from 'store/topic-subscribable';
 
 export default class LidarViewState extends TopicSubscribable {

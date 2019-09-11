@@ -1,7 +1,10 @@
 /* global self */
 /* eslint no-restricted-globals: ["off"] */
 import Module from 'wasm/felicia_wasm.js'; // eslint-disable-line
-import PROTO_TYPES, { PixelFormat, CAMERA_FRAME_MESSAGE, TOPIC_INFO } from './proto-types';
+
+import PROTO_TYPES, { TOPIC_INFO } from '@felicia-viz/proto';
+import { CAMERA_FRAME_MESSAGE } from '@felicia-viz/proto/messages/camera-frame-message';
+import { PixelFormat } from '@felicia-viz/proto/messages/ui';
 
 self.onmessage = event => {
   let message = null;

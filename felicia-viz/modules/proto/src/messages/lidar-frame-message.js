@@ -1,5 +1,6 @@
-/* eslint import/prefer-default-export: "off" */
-export class LidarFrameMessage {
+export const LIDAR_FRAME_MESSAGE = 'felicia.drivers.LidarFrameMessage';
+
+export default class LidarFrameMessage {
   constructor(message) {
     const {
       angleStart,

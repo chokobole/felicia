@@ -1,11 +1,12 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { Vector3, Quaternion } from '@babylonjs/core/Maths/math';
+import { Vector3 } from '@babylonjs/core/Maths/math';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import '@babylonjs/core/Meshes/meshBuilder';
 
+import ImuFrameMessage from '@felicia-viz/proto/messages/imu-frame-message';
+
 import { babylonCanvasStyle } from 'custom-styles';
-import { ImuFrameMessage } from 'messages/imu-frame';
 import { createAxis, createScene } from 'util/babylon-util';
 
 export default class ImuView extends Component {
@@ -38,8 +39,8 @@ export default class ImuView extends Component {
   shouldComponentUpdate(nextProps) {
     const { frame } = this.props;
     if (frame !== nextProps.frame) {
-      const { x, y, z, w } = nextProps.frame.orientation;
-      this.localOrigin.rotationQuaternion = new Quaternion(x, y, z, w);
+      const { orientation } = nextProps.frame;
+      this.localOrigin.rotationQuaternion = orientation.toBabylonQuaternion();
       return true;
     }
 

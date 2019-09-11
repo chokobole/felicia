@@ -1,6 +1,7 @@
 import { observable, action } from 'mobx';
 
-import { ImuFrameMessage } from 'messages/imu-frame';
+import ImuFrameMessage from '@felicia-viz/proto/messages/imu-frame-message';
+
 import TopicSubscribable from 'store/topic-subscribable';
 
 export default class ImuViewState extends TopicSubscribable {

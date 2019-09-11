@@ -1,6 +1,7 @@
 import { observable, action } from 'mobx';
 
-import { TOPIC_INFO, hasWSChannel } from '@felicia-viz/communication/proto-types';
+import { hasWSChannel } from '@felicia-viz/communication/subscriber';
+import { TOPIC_INFO } from '@felicia-viz/proto';
 
 class ViewState {
   @observable id = null;

@@ -1,7 +1,8 @@
 /* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["colors", "positions"] }] */
 import { VertexBuffer } from '@babylonjs/core/Meshes/buffer';
 
-import { DataMessage, Points } from 'messages/data';
+import { Points } from '@felicia-viz/proto/messages/data-message';
+
 import { createPointcloud } from 'util/babylon-util';
 
 export default class Pointcloud {
@@ -51,14 +52,5 @@ export default class Pointcloud {
 
   terminateWorker() {
     this.worker.terminate();
-  }
-}
-
-export class PointcloudMessage {
-  constructor(message) {
-    const { points, colors, timestamp } = message;
-    this.points = new DataMessage(points);
-    this.colors = new DataMessage(colors);
-    this.timestamp = timestamp;
   }
 }

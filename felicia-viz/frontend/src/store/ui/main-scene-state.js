@@ -1,15 +1,18 @@
 import { observable, action } from 'mobx';
 
 import {
-  OCCUPANCY_GRID_MAP_MESSAGE,
-  POINTCLOUD_MESSAGE,
   POSEF_WITH_TIMESTAMP_MESSAGE,
   POSE3F_WITH_TIMESTAMP_MESSAGE,
-} from '@felicia-viz/communication/proto-types';
+  PoseWithTimestampMessage,
+  Pose3WithTimestampMessage,
+} from '@felicia-viz/proto/messages/geometry';
+import {
+  OCCUPANCY_GRID_MAP_MESSAGE,
+  POINTCLOUD_MESSAGE,
+  OccupancyGridMapMessage,
+  PointcloudMessage,
+} from '@felicia-viz/proto/messages/map-message';
 
-import { OccupancyGridMapMessage } from 'messages/occupancy-grid-map';
-import { PointcloudMessage } from 'messages/pointcloud';
-import { PoseWithTimestampMessage, Pose3WithTimestampMessage } from 'messages/pose';
 import TopicSubscribable from 'store/topic-subscribable';
 
 export default class MainSceneState extends TopicSubscribable {

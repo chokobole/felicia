@@ -1,10 +1,13 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
-import { HumanBody, HumanBodyModel } from '@felicia-viz/communication/proto-types';
+import {
+  HumanBody,
+  HumanBodyModel,
+  ImageWithHumansMessage,
+} from '@felicia-viz/proto/messages/human';
 import { ResizableCanvas } from '@felicia-viz/ui';
 
-import { ImageWithHumansMessage } from 'messages/image-with-humans';
 import Worker from 'webworkers/image-webworker';
 
 const {
@@ -473,7 +476,7 @@ export default class ImageWithHumansView extends Component {
     if (!frame) return;
 
     const { image, model, humans } = frame;
-    const { width, height } = image;
+    const { width, height } = image.size;
 
     this.worker.postMessage({
       imageData: this.proxyContext.getImageData(0, 0, width, height),

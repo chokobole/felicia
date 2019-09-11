@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
+import LidarFrameMessage from '@felicia-viz/proto/messages/lidar-frame-message';
 import { ResizeDetector } from '@felicia-viz/ui';
 
-import { LidarFrameMessage } from 'messages/lidar-frame';
 import Worker from 'webworkers/lidar-frame-webworker';
 
 export default class LidarView extends Component {

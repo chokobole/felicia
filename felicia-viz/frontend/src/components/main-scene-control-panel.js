@@ -4,11 +4,13 @@ import React, { Component } from 'react';
 import { Form } from '@streetscape.gl/monochrome';
 
 import {
-  OCCUPANCY_GRID_MAP_MESSAGE,
-  POINTCLOUD_MESSAGE,
   POSEF_WITH_TIMESTAMP_MESSAGE,
   POSE3F_WITH_TIMESTAMP_MESSAGE,
-} from '@felicia-viz/communication/proto-types';
+} from '@felicia-viz/proto/messages/geometry';
+import {
+  OCCUPANCY_GRID_MAP_MESSAGE,
+  POINTCLOUD_MESSAGE,
+} from '@felicia-viz/proto/messages/map-message';
 import { TopicList } from '@felicia-viz/ui';
 
 import { FORM_STYLE } from 'custom-styles';

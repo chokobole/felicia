@@ -3,11 +3,9 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { Form } from '@streetscape.gl/monochrome';
 
-import {
-  CAMERA_FRAME_MESSAGE,
-  DEPTH_CAMERA_FRAME_MESSAGE,
-  PixelFormat,
-} from '@felicia-viz/communication/proto-types';
+import { PixelFormat } from '@felicia-viz/proto/messages/ui';
+import { CAMERA_FRAME_MESSAGE } from '@felicia-viz/proto/messages/camera-frame-message';
+import { DEPTH_CAMERA_FRAME_MESSAGE } from '@felicia-viz/proto/messages/depth-camera-frame-message';
 import { TopicDropdown, renderText } from '@felicia-viz/ui';
 
 import { FORM_STYLE } from 'custom-styles';
@@ -73,7 +71,9 @@ export default class DepthCameraControlPanel extends Component {
     const { frame, filter } = viewState;
 
     if (frame) {
-      const { width, height, frameRate, pixelFormat, min, max, timestamp } = frame;
+      const { cameraFormat, min, max, timestamp } = frame;
+      const { size, pixelFormat, frameRate } = cameraFormat;
+      const { width, height } = size;
       return {
         width,
         height,

@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { Form } from '@streetscape.gl/monochrome';
 
-import { CAMERA_FRAME_MESSAGE, PixelFormat } from '@felicia-viz/communication/proto-types';
+import { PixelFormat } from '@felicia-viz/proto/messages/ui';
+import { CAMERA_FRAME_MESSAGE } from '@felicia-viz/proto/messages/camera-frame-message';
 import { TopicDropdown, renderText } from '@felicia-viz/ui';
 
 import { FORM_STYLE } from 'custom-styles';
@@ -52,7 +53,9 @@ export default class CameraControlPanel extends Component {
     const { frame } = viewState;
 
     if (frame) {
-      const { width, height, frameRate, pixelFormat, timestamp } = frame;
+      const { cameraFormat, timestamp } = frame;
+      const { size, pixelFormat, frameRate } = cameraFormat;
+      const { width, height } = size;
       return {
         width,
         height,

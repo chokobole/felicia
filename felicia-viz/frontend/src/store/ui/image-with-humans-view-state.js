@@ -1,6 +1,7 @@
 import { observable, action } from 'mobx';
 
-import { ImageWithHumansMessage } from 'messages/image-with-humans';
+import { ImageWithHumansMessage } from '@felicia-viz/proto/messages/human';
+
 import TopicSubscribable from 'store/topic-subscribable';
 
 export default class ImageWithHumansViewState extends TopicSubscribable {

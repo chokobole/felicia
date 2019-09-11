@@ -1,6 +1,7 @@
 /* global self */
 /* eslint no-restricted-globals: ["off"] */
-import { getDataView } from 'messages/data';
+import { getDataView } from '@felicia-viz/proto/messages/data-message';
+
 import { RGBA } from 'util/color';
 
 self.onmessage = event => {

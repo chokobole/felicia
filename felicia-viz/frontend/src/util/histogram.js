@@ -1,9 +1,9 @@
 /* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["imageData", "colors", "pixels", "positions"] }] */
 import colormap from 'colormap';
 
-import { PixelFormat } from '@felicia-viz/communication/proto-types';
+import { PixelFormat } from '@felicia-viz/proto/messages/ui';
 
-import { RGBA, RGB, BGRA, BGRX, BGR, ARGB } from 'util/color';
+import { RGBA, RGBX, RGB, BGRA, BGRX, BGR, ARGB } from 'util/color';
 
 function blendPixels(pixels, width, height, data, colorIndexes) {
   const pixelData = new Uint8ClampedArray(data);
@@ -51,13 +51,12 @@ function blendPixels(pixels, width, height, data, colorIndexes) {
 function align(pixels, frameToAlign, width, height) {
   if (!frameToAlign) return;
 
-  const { pixelFormat, data, converted } = frameToAlign;
+  const { data, converted, cameraFormat } = frameToAlign;
+  const { size, pixelFormat } = cameraFormat;
 
-  if (frameToAlign.width !== width || frameToAlign.height !== height) {
+  if (size.width !== width || size.height !== height) {
     console.error(
-      `Resolution mismatched, Depth: (${width}, ${height}) Color: (${frameToAlign.width}, ${
-        frameToAlign.height
-      })`
+      `Resolution mismatched, Depth: (${width}, ${height}) Color: (${size.width}, ${size.height})`
     );
     return;
   }
@@ -66,14 +65,16 @@ function align(pixels, frameToAlign, width, height) {
     blendPixels(pixels, width, height, data, BGRA);
   } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_BGR) {
     blendPixels(pixels, width, height, data, BGR);
-  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_ARGB) {
-    blendPixels(pixels, width, height, data, ARGB);
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_BGRX) {
+    blendPixels(pixels, width, height, data, BGRX);
   } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGBA) {
+    blendPixels(pixels, width, height, data, RGBX);
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGBX) {
     blendPixels(pixels, width, height, data, RGBA);
   } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGB) {
     blendPixels(pixels, width, height, data, RGB);
-  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_BGRX) {
-    blendPixels(pixels, width, height, data, BGRX);
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_ARGB) {
+    blendPixels(pixels, width, height, data, ARGB);
   } else {
     console.error(`To draw, you need to convert to BGRA format: ${pixelFormat}`);
   }

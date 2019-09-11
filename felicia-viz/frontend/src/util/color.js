@@ -1,6 +1,6 @@
 /* eslint import/prefer-default-export: "off" */
 /* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["pixels"] }] */
-import { PixelFormat } from '@felicia-viz/communication/proto-types';
+import { PixelFormat } from '@felicia-viz/proto/messages/ui';
 
 export const RGBA = {
   rIdx: 0,
@@ -9,6 +9,14 @@ export const RGBA = {
   aIdx: 3,
 };
 Object.freeze(RGBA);
+
+export const RGBX = {
+  rIdx: 0,
+  gIdx: 1,
+  bIdx: 2,
+  aIdx: -1,
+};
+Object.freeze(RGBX);
 
 export const RGB = {
   rIdx: 0,
@@ -112,14 +120,16 @@ export function fillPixels(pixels, width, height, data, pixelFormat) {
     colorIndexes = BGRA;
   } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_BGR) {
     colorIndexes = BGR;
-  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_ARGB) {
-    colorIndexes = ARGB;
-  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGBA) {
-    colorIndexes = RGBA;
-  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGB) {
-    colorIndexes = RGB;
   } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_BGRX) {
     colorIndexes = BGRX;
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGBA) {
+    colorIndexes = RGBA;
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGBX) {
+    colorIndexes = RGBX;
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_RGB) {
+    colorIndexes = RGB;
+  } else if (pixelFormat === PixelFormat.values.PIXEL_FORMAT_ARGB) {
+    colorIndexes = ARGB;
   } else if (
     pixelFormat === PixelFormat.values.PIXEL_FORMAT_Y8 ||
     pixelFormat === PixelFormat.values.PIXEL_FORMAT_Y16

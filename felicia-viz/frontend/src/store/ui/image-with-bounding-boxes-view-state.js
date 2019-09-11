@@ -1,6 +1,7 @@
 import { observable, action } from 'mobx';
 
-import { ImageWithBoundingBoxesMessage } from 'messages/image-with-bounding-boxes';
+import { ImageWithBoundingBoxesMessage } from '@felicia-viz/proto/messages/bounding-box';
+
 import TopicSubscribable from 'store/topic-subscribable';
 
 export default class ImageWithBoundingBoxesViewState extends TopicSubscribable {

@@ -75,14 +75,3 @@ export default class OccupancyGridMap {
     this.worker.terminate();
   }
 }
-
-export class OccupancyGridMapMessage {
-  constructor(message) {
-    const { data, size, resolution, origin, timestamp } = message;
-    this.size = size;
-    this.resolution = resolution;
-    this.origin = origin;
-    this.data = data;
-    this.timestamp = timestamp;
-  }
-}

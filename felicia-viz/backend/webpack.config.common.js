@@ -36,11 +36,10 @@ module.exports = env => {
   // Should move under development once published
   config.resolve.alias = {
     '@felicia-viz/communication': resolve('../modules/communication/src'),
+    '@felicia-viz/proto': resolve('../modules/proto/src'),
   };
 
-  config.resolve.modules = config.resolve.modules.concat(
-    resolve('../modules/communication/node_modules')
-  );
+  config.resolve.modules = config.resolve.modules.concat(resolve('../modules/proto/node_modules'));
 
   if (env.production) {
     // production
