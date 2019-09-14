@@ -1,3 +1,4 @@
+import { inject, observer } from 'mobx-react';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
@@ -6,9 +7,10 @@ import {
   HumanBodyModel,
   ImageWithHumansMessage,
 } from '@felicia-viz/proto/messages/human';
-import { ResizableCanvas } from '@felicia-viz/ui';
+import { ActivatableFloatPanel, ResizableCanvas } from '@felicia-viz/ui';
 
 import Worker from 'webworkers/image-webworker';
+import UI_TYPES from 'store/ui/ui-types';
 
 const {
   HUMAN_BODY_NONE,
@@ -410,10 +412,10 @@ function getKeyPointColor(humanBody) {
   return `rgb(${r}, ${g}, ${b})`;
 }
 
-export default class ImageWithHumansView extends Component {
+class ImageWithHumansViewImpl extends Component {
   static propTypes = {
-    width: PropTypes.string,
-    height: PropTypes.string,
+    width: PropTypes.string.isRequired,
+    height: PropTypes.string.isRequired,
     frame: PropTypes.instanceOf(ImageWithHumansMessage),
     lineWidth: PropTypes.number,
     radius: PropTypes.number,
@@ -421,8 +423,6 @@ export default class ImageWithHumansView extends Component {
   };
 
   static defaultProps = {
-    width: '100%',
-    height: '100%',
     frame: null,
     lineWidth: 5,
     radius: 5,
@@ -573,5 +573,50 @@ export default class ImageWithHumansView extends Component {
     const { width, height } = this.props;
 
     return <ResizableCanvas width={width} height={height} onCanvasLoad={this._onCanvasLoad} />;
+  }
+}
+
+@inject('store')
+@observer
+export default class ImageWithHumansView extends Component {
+  static propTypes = {
+    id: PropTypes.number.isRequired,
+    store: PropTypes.object.isRequired,
+  };
+
+  state = {
+    width: '100%',
+    height: 'auto',
+  };
+
+  _onResize = panelState => {
+    const { width, height } = this.state;
+    const w = `${panelState.width}px`;
+    const h = `${panelState.height}px`;
+    if (width === w && height === h) return;
+    this.setState({ width: w, height: h });
+  };
+
+  render() {
+    const { id, store } = this.props;
+    const { width, height } = this.state;
+    const { uiState } = store;
+    const viewState = store.uiState.findView(id);
+    const { frame, threshold } = viewState;
+
+    return (
+      <ActivatableFloatPanel
+        id={id}
+        type={UI_TYPES.ImageWithHumansView.name}
+        uiState={uiState}
+        onUpdate={this._onResize}>
+        <ImageWithHumansViewImpl
+          width={width}
+          height={height}
+          frame={frame}
+          threshold={threshold}
+        />
+      </ActivatableFloatPanel>
+    );
   }
 }

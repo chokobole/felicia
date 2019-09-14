@@ -1,8 +1,8 @@
 @font-face {
 	font-family: "felicia-icons";
-	src: url("felicia-icons.eot?0406487c2da4c3a828bc06b147c4d700?#iefix") format("embedded-opentype"),
-url("felicia-icons.woff2?0406487c2da4c3a828bc06b147c4d700") format("woff2"),
-url("felicia-icons.woff?0406487c2da4c3a828bc06b147c4d700") format("woff");
+	src: url("felicia-icons.eot?9c60c17ece1c3f969a6169cd2f125cdc?#iefix") format("embedded-opentype"),
+url("felicia-icons.woff2?9c60c17ece1c3f969a6169cd2f125cdc") format("woff2"),
+url("felicia-icons.woff?9c60c17ece1c3f969a6169cd2f125cdc") format("woff");
 }
 
 .felicia-icons {
@@ -16,22 +16,22 @@ url("felicia-icons.woff?0406487c2da4c3a828bc06b147c4d700") format("woff");
 	vertical-align: top;
 }
 
-.felicia-icons-camera-panel:before {
+.felicia-icons-camera-frame-view:before {
 	content: "\f101";
 }
-.felicia-icons-depth-camera-panel:before {
+.felicia-icons-depth-camera-frame-view:before {
 	content: "\f102";
 }
-.felicia-icons-image-with-bounding-boxes-panel:before {
+.felicia-icons-image-with-bounding-boxes-view:before {
 	content: "\f103";
 }
-.felicia-icons-image-with-humans-panel:before {
+.felicia-icons-image-with-humans-view:before {
 	content: "\f104";
 }
-.felicia-icons-imu-panel:before {
+.felicia-icons-imu-frame-view:before {
 	content: "\f105";
 }
-.felicia-icons-lidar-panel:before {
+.felicia-icons-lidar-frame-view:before {
 	content: "\f106";
 }
 .felicia-icons-plus:before {

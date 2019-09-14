@@ -1,15 +1,17 @@
+import { inject, observer } from 'mobx-react';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
 import { ImageWithBoundingBoxesMessage } from '@felicia-viz/proto/messages/bounding-box';
-import { ResizableCanvas } from '@felicia-viz/ui';
+import { ActivatableFloatPanel, ResizableCanvas } from '@felicia-viz/ui';
 
 import Worker from 'webworkers/image-webworker';
+import UI_TYPES from 'store/ui/ui-types';
 
-export default class ImageWithBoundingBoxesView extends Component {
+class ImageWithBoundingBoxesViewImpl extends Component {
   static propTypes = {
-    width: PropTypes.string,
-    height: PropTypes.string,
+    width: PropTypes.string.isRequired,
+    height: PropTypes.string.isRequired,
     frame: PropTypes.instanceOf(ImageWithBoundingBoxesMessage),
     fontSize: PropTypes.number,
     lineWidth: PropTypes.number,
@@ -17,8 +19,6 @@ export default class ImageWithBoundingBoxesView extends Component {
   };
 
   static defaultProps = {
-    width: '100%',
-    height: '100%',
     frame: null,
     fontSize: 15,
     lineWidth: 10,
@@ -127,5 +127,51 @@ export default class ImageWithBoundingBoxesView extends Component {
     const { width, height } = this.props;
 
     return <ResizableCanvas width={width} height={height} onCanvasLoad={this._onCanvasLoad} />;
+  }
+}
+
+@inject('store')
+@observer
+export default class ImageWithBoundingBoxesView extends Component {
+  static propTypes = {
+    id: PropTypes.number.isRequired,
+    store: PropTypes.object.isRequired,
+  };
+
+  state = {
+    width: '100%',
+    height: 'auto',
+  };
+
+  _onResize = panelState => {
+    const { width, height } = this.state;
+    const w = `${panelState.width}px`;
+    const h = `${panelState.height}px`;
+    if (width === w && height === h) return;
+    this.setState({ width: w, height: h });
+  };
+
+  render() {
+    const { id, store } = this.props;
+    const { width, height } = this.state;
+    const { uiState } = store;
+    const viewState = store.uiState.findView(id);
+    const { frame, lineWidth, threshold } = viewState;
+
+    return (
+      <ActivatableFloatPanel
+        id={id}
+        type={UI_TYPES.CameraFrameView.name}
+        uiState={uiState}
+        onUpdate={this._onResize}>
+        <ImageWithBoundingBoxesViewImpl
+          width={width}
+          height={height}
+          frame={frame}
+          lineWidth={lineWidth}
+          threshold={threshold}
+        />
+      </ActivatableFloatPanel>
+    );
   }
 }

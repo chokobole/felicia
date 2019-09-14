@@ -4,7 +4,7 @@ import LidarFrameMessage from '@felicia-viz/proto/messages/lidar-frame-message';
 
 import TopicSubscribable from 'store/topic-subscribable';
 
-export default class LidarViewState extends TopicSubscribable {
+export default class LidarFrameViewState extends TopicSubscribable {
   @observable frame = null;
 
   @action update(message) {
@@ -12,6 +12,6 @@ export default class LidarViewState extends TopicSubscribable {
   }
 
   viewType = () => {
-    return 'LidarView';
+    return 'LidarFrameView';
   };
 }

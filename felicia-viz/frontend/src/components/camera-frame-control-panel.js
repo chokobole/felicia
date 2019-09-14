@@ -3,32 +3,30 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { Form } from '@streetscape.gl/monochrome';
 
-import { LIDAR_FRAME_MESSAGE } from '@felicia-viz/proto/messages/lidar-frame-message';
+import { PixelFormat } from '@felicia-viz/proto/messages/ui';
+import { CAMERA_FRAME_MESSAGE } from '@felicia-viz/proto/messages/camera-frame-message';
 import { TopicDropdown, renderText } from '@felicia-viz/ui';
 
 import { FORM_STYLE } from 'custom-styles';
 
 @inject('store')
 @observer
-export default class LidarControlPanel extends Component {
+export default class CameraFrameControlPanel extends Component {
   static propTypes = {
     store: PropTypes.object.isRequired,
   };
 
   SETTINGS = {
-    header: { type: 'header', title: 'Lidar Control' },
+    header: { type: 'header', title: 'CameraFrame Control' },
     sectionSeperator: { type: 'separator' },
     info: {
       type: 'header',
       title: 'Info',
       children: {
-        angleStart: { type: 'custom', title: 'angleStart', render: renderText },
-        angleEnd: { type: 'custom', title: 'angleEnd', render: renderText },
-        angleDelta: { type: 'custom', title: 'angleDelta', render: renderText },
-        timeDelta: { type: 'custom', title: 'timeDelta', render: renderText },
-        scanTime: { type: 'custom', title: 'scanTime', render: renderText },
-        rangeMin: { type: 'custom', title: 'rangeMin', render: renderText },
-        rangeMax: { type: 'custom', title: 'rangeMax', render: renderText },
+        width: { type: 'custom', title: 'width', render: renderText },
+        height: { type: 'custom', title: 'height', render: renderText },
+        frameRate: { type: 'custom', title: 'frameRate', render: renderText },
+        pixelFormat: { type: 'custom', title: 'pixelFormat', render: renderText },
         timestamp: { type: 'custom', title: 'timestamp', render: renderText },
       },
     },
@@ -40,7 +38,7 @@ export default class LidarControlPanel extends Component {
           type: 'custom',
           title: 'topic',
           render: self => {
-            return <TopicDropdown {...self} typeName={LIDAR_FRAME_MESSAGE} />;
+            return <TopicDropdown {...self} typeName={CAMERA_FRAME_MESSAGE} />;
           },
         },
       },
@@ -55,35 +53,22 @@ export default class LidarControlPanel extends Component {
     const { frame } = viewState;
 
     if (frame) {
-      const {
-        angleStart,
-        angleEnd,
-        angleDelta,
-        timeDelta,
-        scanTime,
-        rangeMin,
-        rangeMax,
-        timestamp,
-      } = frame;
+      const { cameraFormat, timestamp } = frame;
+      const { size, pixelFormat, frameRate } = cameraFormat;
+      const { width, height } = size;
       return {
-        angleStart,
-        angleEnd,
-        angleDelta,
-        timeDelta,
-        scanTime,
-        rangeMin,
-        rangeMax,
+        width,
+        height,
+        frameRate,
+        pixelFormat: PixelFormat.valuesById[pixelFormat],
         timestamp,
       };
     }
     return {
-      angleStart: '',
-      angleEnd: '',
-      angleDelta: '',
-      timeDelta: '',
-      scanTime: '',
-      rangeMin: '',
-      rangeMax: '',
+      width: '',
+      height: '',
+      frameRate: '',
+      pixelFormat: '',
       timestamp: '',
     };
   }

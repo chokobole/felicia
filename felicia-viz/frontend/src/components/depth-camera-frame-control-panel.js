@@ -5,19 +5,21 @@ import { Form } from '@streetscape.gl/monochrome';
 
 import { PixelFormat } from '@felicia-viz/proto/messages/ui';
 import { CAMERA_FRAME_MESSAGE } from '@felicia-viz/proto/messages/camera-frame-message';
+import { DEPTH_CAMERA_FRAME_MESSAGE } from '@felicia-viz/proto/messages/depth-camera-frame-message';
 import { TopicDropdown, renderText } from '@felicia-viz/ui';
 
 import { FORM_STYLE } from 'custom-styles';
+import ColormapDropdown from './colormap-dropdown';
 
 @inject('store')
 @observer
-export default class CameraControlPanel extends Component {
+export default class DepthCameraFrameControlPanel extends Component {
   static propTypes = {
     store: PropTypes.object.isRequired,
   };
 
   SETTINGS = {
-    header: { type: 'header', title: 'Camera Control' },
+    header: { type: 'header', title: 'DepthCameraFrame Control' },
     sectionSeperator: { type: 'separator' },
     info: {
       type: 'header',
@@ -27,6 +29,8 @@ export default class CameraControlPanel extends Component {
         height: { type: 'custom', title: 'height', render: renderText },
         frameRate: { type: 'custom', title: 'frameRate', render: renderText },
         pixelFormat: { type: 'custom', title: 'pixelFormat', render: renderText },
+        min: { type: 'custom', title: 'min', render: renderText },
+        max: { type: 'custom', title: 'max', render: renderText },
         timestamp: { type: 'custom', title: 'timestamp', render: renderText },
       },
     },
@@ -37,6 +41,20 @@ export default class CameraControlPanel extends Component {
         topic: {
           type: 'custom',
           title: 'topic',
+          render: self => {
+            return <TopicDropdown {...self} typeName={DEPTH_CAMERA_FRAME_MESSAGE} />;
+          },
+        },
+        filter: {
+          type: 'custom',
+          title: 'filter',
+          render: self => {
+            return <ColormapDropdown {...self} />;
+          },
+        },
+        topicToAlign: {
+          type: 'custom',
+          title: 'topicToAlign',
           render: self => {
             return <TopicDropdown {...self} typeName={CAMERA_FRAME_MESSAGE} />;
           },
@@ -50,10 +68,10 @@ export default class CameraControlPanel extends Component {
   _fetchValues() {
     const { store } = this.props;
     const viewState = store.uiState.activeViewState.getState();
-    const { frame } = viewState;
+    const { frame, filter } = viewState;
 
     if (frame) {
-      const { cameraFormat, timestamp } = frame;
+      const { cameraFormat, min, max, timestamp } = frame;
       const { size, pixelFormat, frameRate } = cameraFormat;
       const { width, height } = size;
       return {
@@ -61,7 +79,10 @@ export default class CameraControlPanel extends Component {
         height,
         frameRate,
         pixelFormat: PixelFormat.valuesById[pixelFormat],
+        min,
+        max,
         timestamp,
+        filter,
       };
     }
     return {
@@ -69,7 +90,10 @@ export default class CameraControlPanel extends Component {
       height: '',
       frameRate: '',
       pixelFormat: '',
+      min: '',
+      max: '',
       timestamp: '',
+      filter,
     };
   }
 

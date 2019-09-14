@@ -1,3 +1,4 @@
+import { inject, observer } from 'mobx-react';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { Vector3 } from '@babylonjs/core/Maths/math';
@@ -5,20 +6,20 @@ import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import '@babylonjs/core/Meshes/meshBuilder';
 
 import ImuFrameMessage from '@felicia-viz/proto/messages/imu-frame-message';
+import { ActivatableFloatPanel } from '@felicia-viz/ui';
 
 import { babylonCanvasStyle } from 'custom-styles';
 import { createAxis, createScene } from 'util/babylon-util';
+import UI_TYPES from 'store/ui/ui-types';
 
-export default class ImuView extends Component {
+class ImuFrameViewImpl extends Component {
   static propTypes = {
-    width: PropTypes.string, // eslint-disable-line
-    height: PropTypes.string, // eslint-disable-line
+    width: PropTypes.string.isRequired,
+    height: PropTypes.string.isRequired,
     frame: PropTypes.instanceOf(ImuFrameMessage),
   };
 
   static defaultProps = {
-    width: '100%',
-    height: '100%',
     frame: null,
   };
 
@@ -58,5 +59,45 @@ export default class ImuView extends Component {
 
   render() {
     return <canvas style={babylonCanvasStyle(this.props)} ref={this._onCanvasLoad} />;
+  }
+}
+
+@inject('store')
+@observer
+export default class ImuFrameView extends Component {
+  static propTypes = {
+    id: PropTypes.number.isRequired,
+    store: PropTypes.object.isRequired,
+  };
+
+  state = {
+    width: '100%',
+    height: 'auto',
+  };
+
+  _onResize = panelState => {
+    const { width, height } = this.state;
+    const w = `${panelState.width}px`;
+    const h = `${panelState.height}px`;
+    if (width === w && height === h) return;
+    this.setState({ width: w, height: h });
+  };
+
+  render() {
+    const { id, store } = this.props;
+    const { width, height } = this.state;
+    const { uiState } = store;
+    const viewState = store.uiState.findView(id);
+    const { frame } = viewState;
+
+    return (
+      <ActivatableFloatPanel
+        id={id}
+        type={UI_TYPES.ImuFrameView.name}
+        uiState={uiState}
+        onUpdate={this._onResize}>
+        <ImuFrameViewImpl width={width} height={height} frame={frame} />
+      </ActivatableFloatPanel>
+    );
   }
 }

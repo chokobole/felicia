@@ -20,7 +20,7 @@ export default class ControlPanel extends Component {
 
   _renderContent = type => {
     if (type === null) return null;
-    return UI_TYPES[type].renderControlView();
+    return UI_TYPES[type].renderControlPanel();
   };
 
   render() {

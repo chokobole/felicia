@@ -23,12 +23,6 @@ export const UI_THEME = {
   shadow: '0 2px 4px 0 rgba(0, 0, 0, 0.15)',
 };
 
-export const FLOAT_PANEL_STYLE = {
-  wrapper: {
-    zIndex: 9999,
-  },
-};
-
 export const TOOLTIP_STYLE = {
   arrowSize: 0,
   borderWidth: 0,

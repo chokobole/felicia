@@ -7,7 +7,7 @@ import DepthCameraFrameMessage from '@felicia-viz/proto/messages/depth-camera-fr
 
 import TopicSubscribable from 'store/topic-subscribable';
 
-export default class DepthCameraViewState extends TopicSubscribable {
+export default class DepthCameraFrameViewState extends TopicSubscribable {
   @observable frame = null;
 
   @observable filter = 'jet';
@@ -30,6 +30,6 @@ export default class DepthCameraViewState extends TopicSubscribable {
   }
 
   viewType = () => {
-    return 'DepthCameraView';
+    return 'DepthCameraFrameView';
   };
 }

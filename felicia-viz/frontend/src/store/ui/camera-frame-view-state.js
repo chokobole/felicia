@@ -4,7 +4,7 @@ import CameraFrameMessage from '@felicia-viz/proto/messages/camera-frame-message
 
 import TopicSubscribable from 'store/topic-subscribable';
 
-export default class CameraViewState extends TopicSubscribable {
+export default class CameraFrameViewState extends TopicSubscribable {
   @observable frame = null;
 
   @action update(message) {
@@ -12,6 +12,6 @@ export default class CameraViewState extends TopicSubscribable {
   }
 
   viewType = () => {
-    return 'CameraView';
+    return 'CameraFrameView';
   };
 }

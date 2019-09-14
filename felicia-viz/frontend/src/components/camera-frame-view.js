@@ -1,16 +1,18 @@
+import { inject, observer } from 'mobx-react';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 
 import CameraFrameMessage from '@felicia-viz/proto/messages/camera-frame-message';
 import DepthCameraFrameMessage from '@felicia-viz/proto/messages/depth-camera-frame-message';
-import { ResizableCanvas } from '@felicia-viz/ui';
+import { ActivatableFloatPanel, ResizableCanvas } from '@felicia-viz/ui';
 
 import Worker from 'webworkers/camera-frame-webworker';
+import UI_TYPES from 'store/ui/ui-types';
 
-export default class CameraView extends Component {
+export class CameraFrameViewImpl extends Component {
   static propTypes = {
-    width: PropTypes.string,
-    height: PropTypes.string,
+    width: PropTypes.string.isRequired,
+    height: PropTypes.string.isRequired,
     frame: PropTypes.oneOfType([
       PropTypes.instanceOf(CameraFrameMessage),
       PropTypes.instanceOf(DepthCameraFrameMessage),
@@ -20,8 +22,6 @@ export default class CameraView extends Component {
   };
 
   static defaultProps = {
-    width: '100%',
-    height: 'auto',
     frame: null,
     filter: '',
     frameToAlign: null,
@@ -94,5 +94,45 @@ export default class CameraView extends Component {
     const { width, height } = this.props;
 
     return <ResizableCanvas width={width} height={height} onCanvasLoad={this._onCanvasLoad} />;
+  }
+}
+
+@inject('store')
+@observer
+export default class CameraFrameView extends Component {
+  static propTypes = {
+    id: PropTypes.number.isRequired,
+    store: PropTypes.object.isRequired,
+  };
+
+  state = {
+    width: '100%',
+    height: 'auto',
+  };
+
+  _onResize = panelState => {
+    const { width, height } = this.state;
+    const w = `${panelState.width}px`;
+    const h = `${panelState.height}px`;
+    if (width === w && height === h) return;
+    this.setState({ width: w, height: h });
+  };
+
+  render() {
+    const { id, store } = this.props;
+    const { width, height } = this.state;
+    const { uiState } = store;
+    const viewState = store.uiState.findView(id);
+    const { frame } = viewState;
+
+    return (
+      <ActivatableFloatPanel
+        id={id}
+        type={UI_TYPES.CameraFrameView.name}
+        uiState={uiState}
+        onUpdate={this._onResize}>
+        <CameraFrameViewImpl width={width} height={height} frame={frame} />
+      </ActivatableFloatPanel>
+    );
   }
 }

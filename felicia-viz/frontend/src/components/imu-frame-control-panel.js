@@ -66,7 +66,7 @@ class History {
 
 @inject('store')
 @observer
-export default class ImuControlPanel extends Component {
+export default class ImuFrameControlPanel extends Component {
   static propTypes = {
     store: PropTypes.object.isRequired,
   };
@@ -76,7 +76,7 @@ export default class ImuControlPanel extends Component {
   linearAccelerations = new History(100);
 
   SETTINGS = {
-    header: { type: 'header', title: 'Imu Control' },
+    header: { type: 'header', title: 'ImuFrame Control' },
     sectionSeperator: { type: 'separator' },
     info: {
       type: 'header',
