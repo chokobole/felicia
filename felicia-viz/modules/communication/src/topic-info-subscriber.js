@@ -1,4 +1,4 @@
-import { TOPIC_INFO } from '@felicia-viz/proto';
+import { TOPIC_INFO } from '@felicia-viz/proto/messages/master-data';
 
 import Connection from './connection';
 import Worker from './subscriber-webworker';

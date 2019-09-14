@@ -1,19 +1,7 @@
-import { ChannelDefType } from '@felicia-viz/proto';
+import { hasWSChannel } from '@felicia-viz/proto/messages/master-data';
 
 import Connection from './connection';
 import Worker from './subscriber-webworker';
-
-export function findWSChannel(topicInfo) {
-  return topicInfo.topicSource.channelDefs.find(channelDef => {
-    return ChannelDefType.valuesById[channelDef.type] === 'CHANNEL_TYPE_WS';
-  });
-}
-
-export function hasWSChannel(topicInfo) {
-  return topicInfo.topicSource.channelDefs.some(channelDef => {
-    return ChannelDefType.valuesById[channelDef.type] === 'CHANNEL_TYPE_WS';
-  });
-}
 
 class Subscriber {
   constructor(ipEndpoint) {

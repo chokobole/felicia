@@ -1,8 +1,7 @@
 import { action, observable, toJS } from 'mobx';
 import { NotificationManager } from 'react-notifications';
 
-import { hasWSChannel } from '@felicia-viz/communication/subscriber';
-import { TOPIC_INFO } from '@felicia-viz/proto';
+import { TOPIC_INFO, hasWSChannel } from '@felicia-viz/proto/messages/master-data';
 
 import SUBSCRIBER from 'store/subscriber';
 

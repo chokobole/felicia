@@ -2,7 +2,8 @@
 /* eslint no-restricted-globals: ["off"] */
 import Module from 'wasm/felicia_wasm.js'; // eslint-disable-line
 
-import PROTO_TYPES, { TOPIC_INFO } from '@felicia-viz/proto';
+import FeliciaProtoRoot from '@felicia-viz/proto/felicia-proto-root';
+import { TOPIC_INFO } from '@felicia-viz/proto/messages/master-data';
 import { CAMERA_FRAME_MESSAGE } from '@felicia-viz/proto/messages/camera-frame-message';
 import { PixelFormat } from '@felicia-viz/proto/messages/ui';
 
@@ -23,7 +24,7 @@ self.onmessage = event => {
       type,
     };
   } else {
-    const protoType = PROTO_TYPES[type];
+    const protoType = FeliciaProtoRoot.lookupType(type);
     if (!protoType) {
       console.error(`Don't know how to handle the message type ${type}`);
       return;

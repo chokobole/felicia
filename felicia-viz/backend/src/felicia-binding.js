@@ -1,4 +1,4 @@
-import PROTO_TYPES, { TOPIC_INFO } from '@felicia-viz/proto';
+import { TOPIC_INFO, TopicInfoStatus } from '@felicia-viz/proto/messages/master-data';
 
 import feliciaJs from 'felicia_js.node';
 import { isWin } from 'lib/environment';
@@ -41,7 +41,7 @@ export default () => {
       message => {
         console.log(`[TOPIC] : ${JSON.stringify(message.message)}`);
         const topicInfo = message.message;
-        if (topicInfo.status === PROTO_TYPES[TOPIC_INFO].Status.REGISTERED) {
+        if (topicInfo.status === TopicInfoStatus.values.REGISTERED) {
           TOPIC_MAP.set(topicInfo.topic, topicInfo);
         } else {
           TOPIC_MAP.delete(topicInfo.topic);

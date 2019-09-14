@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import styled from '@emotion/styled';
 
-import { findWSChannel, hasWSChannel } from '@felicia-viz/communication/subscriber';
+import { findWSChannel, hasWSChannel } from '@felicia-viz/proto/messages/master-data';
 
 const LabelContainer = styled.div(() => ({
   display: 'flex',
