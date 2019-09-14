@@ -8,7 +8,6 @@ import TopicInfoSubscriber from '@felicia-viz/communication/topic-info-subscribe
 import ControlPanel from 'components/control-panel';
 import MainScene from 'components/main-scene';
 import ToolBar from 'components/tool-bar';
-import SUBSCRIBER from 'store/subscriber';
 import UI_TYPES, { MainSceneType } from 'store/ui/ui-types';
 
 import 'fonts/felicia-icons.css';
@@ -26,7 +25,7 @@ export default class App extends Component {
     super(props);
     const { store } = this.props;
     const { uiState } = store;
-    uiState.init(UI_TYPES, MainSceneType.name, SUBSCRIBER);
+    uiState.init(UI_TYPES, MainSceneType.name);
   }
 
   componentDidMount() {

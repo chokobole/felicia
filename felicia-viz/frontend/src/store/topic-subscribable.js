@@ -18,4 +18,11 @@ export default class TopicSubscribable {
     this.topics.delete(typeName);
     SUBSCRIBER.unsubscribeTopic(this.id, topic);
   }
+
+  @action clear() {
+    this.topics.forEach(topic => {
+      SUBSCRIBER.unsubscribeTopic(this.id, topic);
+    });
+    this.topics.clear();
+  }
 }

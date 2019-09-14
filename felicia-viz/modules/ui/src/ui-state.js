@@ -12,10 +12,6 @@ class ViewState {
     this.uiState = uiState;
   }
 
-  setSubscriber(subscriber) {
-    this.subscriber = subscriber;
-  }
-
   @action reset() {
     this.id = null;
     this.type = null;
@@ -31,9 +27,7 @@ class ViewState {
     if (type === null) return;
 
     const viewState = uiState.findView(id);
-    viewState.topics.forEach(topic => {
-      this.subscriber.unsubscribeTopic(id, topic);
-    });
+    viewState.clear();
     uiState.removeView(id);
 
     this.reset();
@@ -53,10 +47,9 @@ export default class UIState {
 
   id = 0;
 
-  init(uiTypes, mainSceneType, subscriber) {
+  init(uiTypes, mainSceneType) {
     this.uiTypes = Object.values(uiTypes);
     this.addView(mainSceneType);
-    this.activeViewState.setSubscriber(subscriber);
   }
 
   @action addView(type) {
