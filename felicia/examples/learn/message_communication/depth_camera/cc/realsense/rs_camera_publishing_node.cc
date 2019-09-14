@@ -192,6 +192,8 @@ void RsCameraPublishingNode::StartCamera() {
   if (!imu_topic_.empty()) {
     params.requested_accel_format = drivers::ImuFormat(63);
     params.requested_gyro_format = drivers::ImuFormat(200);
+    params.gyro_interval = base::TimeDelta::FromMilliseconds(100);
+    params.accel_interval = base::TimeDelta::FromMilliseconds(100);
     params.imu_filter_kind = drivers::ImuFilterFactory::MADGWICK_FILTER_KIND;
     params.imu_frame_callback = base::BindRepeating(
         &RsCameraPublishingNode::OnImuFrame, base::Unretained(this));
@@ -247,13 +249,7 @@ void RsCameraPublishingNode::OnPointcloud(map::Pointcloud&& pointcloud) {
 void RsCameraPublishingNode::OnImuFrame(const drivers::ImuFrame& imu_frame) {
   if (imu_publisher_.IsUnregistered()) return;
 
-  if (imu_frame.timestamp() - last_timestamp_ <
-      base::TimeDelta::FromMilliseconds(100))
-    return;
-
   imu_publisher_.Publish(imu_frame.ToImuFrameMessage());
-
-  last_timestamp_ = imu_frame.timestamp();
 }
 
 void RsCameraPublishingNode::OnCameraError(const Status& s) { LOG(ERROR) << s; }

@@ -179,6 +179,8 @@ Status RsCamera::Start(const RsCamera::StartParams& params) {
   if (has_imu_callback) {
     imu_filter_ = ImuFilterFactory::NewImuFilter(params.imu_filter_kind);
     imu_frame_callback_ = params.imu_frame_callback;
+    accel_interval_ = params.accel_interval;
+    gyro_interval_ = params.gyro_interval;
   }
   status_callback_ = params.status_callback;
 
@@ -510,13 +512,17 @@ void RsCamera::OnImuFrame(rs2::frame frame) {
   if (stream == RS_GYRO.stream_type) {
     imu_frame.set_angular_velocity(converted);
     imu_filter_->UpdateAngularVelocity(converted, timestamp);
+    if (!gyro_interval_.is_zero() && timestamp - last_gyro_timestamp_ < gyro_interval_) return;
+    last_gyro_timestamp_ = timestamp;
   } else {
     imu_frame.set_linear_acceleration(converted);
     imu_filter_->UpdateLinearAcceleration(converted);
+    if (!accel_interval_.is_zero() && timestamp - last_accel_timestamp_ < accel_interval_) return;
+    last_accel_timestamp_ = timestamp;
   }
+
   imu_frame.set_timestamp(timestamp);
   imu_frame.set_orientation(imu_filter_->orientation());
-
   imu_frame_callback_.Run(imu_frame);
 }
 

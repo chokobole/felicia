@@ -46,7 +46,6 @@ class RsCameraPublishingNode : public NodeLifecycle {
   Publisher<map::PointcloudMessage> pointcloud_publisher_;
   Publisher<drivers::ImuFrameMessage> imu_publisher_;
   std::unique_ptr<drivers::RsCamera> camera_;
-  base::TimeDelta last_timestamp_;
 };
 
 }  // namespace felicia
