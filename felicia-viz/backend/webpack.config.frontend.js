@@ -29,6 +29,10 @@ module.exports = env => {
     },
   });
 
+  config.resolve.alias = Object.assign(config.resolve.alias, {
+    '@felicia-viz/deeplearning': resolve(rootPath, 'modules/deeplearning/src'),
+  });
+
   config.resolve.modules = config.resolve.modules.concat(
     resolve(rootPath, 'frontend/src'),
     resolve(rootPath, 'frontend/node_modules')

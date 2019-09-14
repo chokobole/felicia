@@ -18,14 +18,14 @@ import {
   PointcloudMessage,
 } from '@felicia-viz/proto/messages/map-message';
 import { UIState } from '@felicia-viz/ui';
+import OccupancyGridMap from '@felicia-viz/ui/messages/occupancy-grid-map';
+import Pointcloud from '@felicia-viz/ui/messages/pointcloud';
+import Pose from '@felicia-viz/ui/messages/pose';
+import OccupancyGridMapWorker from '@felicia-viz/ui/webworkers/occupancy-grid-map-webworker';
+import PointcloudWorker from '@felicia-viz/ui/webworkers/pointcloud-webworker';
+import { backgroundColor, createScene } from '@felicia-viz/ui/util/babylon-util';
 
-import OccupancyGridMap from 'messages/occupancy-grid-map';
-import Pointcloud from 'messages/pointcloud';
-import Pose from 'messages/pose';
 import UI_TYPES from 'store/ui/ui-types';
-import { backgroundColor, createScene } from 'util/babylon-util';
-import OccupancyGridMapWorker from 'webworkers/occupancy-grid-map-webworker';
-import PointcloudWorker from 'webworkers/pointcloud-webworker';
 
 export default class MainScene extends Component {
   static propTypes = {

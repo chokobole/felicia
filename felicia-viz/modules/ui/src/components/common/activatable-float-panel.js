@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { FloatPanel } from '@streetscape.gl/monochrome';
 
-import UIState from '../../ui-state';
+import UIState from '../../store/ui-state';
 import Activatable from './activatable';
 
 export default class ActivatableFloatPanel extends Component {

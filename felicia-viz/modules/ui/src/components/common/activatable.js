@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 
-import UIState from '../../ui-state';
+import UIState from '../../store/ui-state';
 
 export default class Activatable extends PureComponent {
   static propTypes = {

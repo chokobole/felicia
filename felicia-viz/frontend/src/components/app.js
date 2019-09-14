@@ -4,10 +4,20 @@ import React, { Component } from 'react';
 import { NotificationContainer } from 'react-notifications';
 
 import TopicInfoSubscriber from '@felicia-viz/communication/topic-info-subscriber';
+// TODO: Make below as a plugin
+// import {
+//   ImageWithBoundingBoxesControlPanel,
+//   ImageWithBoundingBoxesView,
+//   ImageWithBoundingBoxesViewState,
+//   ImageWithHumansControlPanel,
+//   ImageWithHumansView,
+//   ImageWithHumansViewState,
+// } from '@felicia-viz/deeplearning';
 
 import ControlPanel from 'components/control-panel';
 import MainScene from 'components/main-scene';
 import ToolBar from 'components/tool-bar';
+import SUBSCRIBER from 'store/subscriber';
 import UI_TYPES, { MainSceneType } from 'store/ui/ui-types';
 
 import 'fonts/felicia-icons.css';
@@ -23,9 +33,37 @@ export default class App extends Component {
 
   constructor(props) {
     super(props);
+
+    // const ImageWithBoundingBoxesViewType = {
+    //   name: 'ImageWithBoundingBoxesView',
+    //   className: 'image-with-bounding-boxes-view',
+    //   state: ImageWithBoundingBoxesViewState,
+    //   renderView: id => {
+    //     return <ImageWithBoundingBoxesView key={id} id={id} />;
+    //   },
+    //   renderControlPanel: () => {
+    //     return <ImageWithBoundingBoxesControlPanel />;
+    //   },
+    // };
+
+    // UI_TYPES[ImageWithBoundingBoxesViewType.name] = ImageWithBoundingBoxesViewType;
+
+    // const ImageWithHumansViewType = {
+    //   name: 'ImageWithHumansView',
+    //   className: 'image-with-humans-view',
+    //   state: ImageWithHumansViewState,
+    //   renderView: id => {
+    //     return <ImageWithHumansView key={id} id={id} />;
+    //   },
+    //   renderControlPanel: () => {
+    //     return <ImageWithHumansControlPanel />;
+    //   },
+    // };
+
+    // UI_TYPES[ImageWithHumansViewType.name] = ImageWithHumansViewType;
+
     const { store } = this.props;
-    const { uiState } = store;
-    uiState.init(UI_TYPES, MainSceneType.name);
+    store.uiState.init(UI_TYPES, MainSceneType.name, SUBSCRIBER);
   }
 
   componentDidMount() {

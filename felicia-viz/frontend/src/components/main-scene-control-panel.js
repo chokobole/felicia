@@ -12,8 +12,7 @@ import {
   POINTCLOUD_MESSAGE,
 } from '@felicia-viz/proto/messages/map-message';
 import { TopicList } from '@felicia-viz/ui';
-
-import { FORM_STYLE } from 'custom-styles';
+import { FORM_STYLE } from '@felicia-viz/ui/custom-styles';
 
 @inject('store')
 @observer

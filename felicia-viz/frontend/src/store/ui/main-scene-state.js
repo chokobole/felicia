@@ -12,8 +12,7 @@ import {
   OccupancyGridMapMessage,
   PointcloudMessage,
 } from '@felicia-viz/proto/messages/map-message';
-
-import TopicSubscribable from 'store/topic-subscribable';
+import { TopicSubscribable } from '@felicia-viz/ui';
 
 export default class MainSceneState extends TopicSubscribable {
   @observable occupancyGridMap = null;
