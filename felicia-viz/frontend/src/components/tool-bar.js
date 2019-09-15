@@ -4,7 +4,7 @@ import { Tooltip, Popover, Button } from '@streetscape.gl/monochrome';
 import STORE from '@felicia-viz/ui/store';
 
 import { TOOLTIP_STYLE, TOOLBAR_BUTTON_STYLE, TOOLBAR_MENU_STYLE } from 'custom-styles';
-import UI_TYPES from 'store/ui/ui-types';
+import UI_TYPES, { MainSceneType } from 'store/ui/ui-types';
 
 export default class Toolbar extends PureComponent {
   _renderPanelButton = (item, opts = {}) => {
@@ -28,7 +28,9 @@ export default class Toolbar extends PureComponent {
   _renderPanelSelector = () => {
     return (
       <div className='menu'>
-        {Object.values(UI_TYPES).map(item => this._renderPanelButton(item))}
+        {Object.values(UI_TYPES)
+          .filter(item => item.name !== MainSceneType.name)
+          .map(item => this._renderPanelButton(item))}
       </div>
     );
   };

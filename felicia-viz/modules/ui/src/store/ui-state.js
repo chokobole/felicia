@@ -24,6 +24,8 @@ class ViewState {
   @action unset() {
     const { type, id, uiState } = this;
     if (type === null) return;
+    // Don't unset MainScene
+    if (id === 0) return;
 
     const viewState = uiState.findView(id);
     viewState.clear();
