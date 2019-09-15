@@ -12,7 +12,15 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  overflow:hidden;
+  overflow: hidden;
+}
+
+#command-panel {
+  position: fixed;
+  width: 500px;
+  height: 325px;
+  top: 25px;
+  left: calc(50vw - 250px);
 }
 
 #control-panel {
@@ -23,7 +31,7 @@ body {
 
   main {
     transform: translateX(-348px);
-    transition: transform .7s;
+    transition: transform 0.7s;
 
     &.is-opened {
       transform: translateX(0px);
@@ -42,6 +50,23 @@ body {
   line-height: unset;
 }
 
-@import 'toolbar';
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: $background;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $color-control-subtle;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: $color-control-hover;
+}
+
+@import 'command-panel';
 @import 'control-panel';
 @import 'metric-panel';
+@import 'toolbar';

@@ -2,8 +2,9 @@
 
 export const UI_THEME = {
   extends: 'dark',
-  background: 'rgba(51,51,51,0.9)',
+  background: 'rgba(51, 51, 51, 0.9)',
   backgroundAlt: '#222222',
+  backgroundHighlight: 'rgba(30, 84, 201, 0.8)',
 
   controlColorPrimary: '#858586',
   controlColorSecondary: '#636364',
@@ -15,6 +16,7 @@ export const UI_THEME = {
   textColorSecondary: '#D0D0D1',
   textColorDisabled: '#717172',
   textColorInvert: '#1B1B1C',
+  textColorHighlight: '#110ece',
 
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif',
   fontSize: 14,
@@ -48,5 +50,32 @@ export const TOOLBAR_MENU_STYLE = {
   body: {
     left: 56,
     boxShadow: 'none',
+  },
+};
+
+export const COMMAND_PANEL_THEME = {
+  input: {
+    width: '100%',
+    height: '30px',
+    padding: '10px 20px',
+    fontWeight: '300',
+    fontSize: '16px',
+    border: '1px solid #aaa',
+    borderRadius: '4px',
+  },
+  suggestion: {
+    cursor: 'pointer',
+    padding: '10px 20px',
+  },
+  suggestionHighlighted: {},
+  suggestionsContainerOpen: {
+    maxHeight: '300px',
+    overflowY: 'auto',
+    boxShadow: '0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23)',
+  },
+  suggestionsList: {
+    margin: 0,
+    padding: 0,
+    listStyleType: 'none',
   },
 };

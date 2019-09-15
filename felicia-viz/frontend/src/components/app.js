@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
+import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { NotificationContainer } from 'react-notifications';
 
@@ -16,20 +16,25 @@ import TopicInfoSubscriber from '@felicia-viz/communication/topic-info-subscribe
 import { FeliciaVizStore } from '@felicia-viz/ui/store';
 import SUBSCRIBER from '@felicia-viz/ui/store/subscriber';
 
+import 'fonts/felicia-icons.css';
+import 'react-notifications/lib/notifications.css';
+import 'stylesheets/main.scss';
+
+import CommandPanel from 'components/command-panel';
 import ControlPanel from 'components/control-panel';
 import MainScene from 'components/main-scene';
 import ToolBar from 'components/tool-bar';
 import UI_TYPES, { MainSceneType } from 'store/ui/ui-types';
-
-import 'fonts/felicia-icons.css';
-import 'react-notifications/lib/notifications.css';
-import 'stylesheets/main.scss';
 
 @inject('store')
 @observer
 export default class App extends Component {
   static propTypes = {
     store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
+  };
+
+  state = {
+    isCommandPanelVisible: false,
   };
 
   constructor(props) {
@@ -92,14 +97,27 @@ export default class App extends Component {
     switch (e.keyCode) {
       case 8:
       case 46: {
+        // BackSpace
         // Delete
         const { store } = this.props;
         store.uiState.activeViewState.unset();
         break;
       }
+      case 80: {
+        if (e.ctrlKey && e.shiftKey) {
+          // Ctrl + Shift + P
+          this.setState({ isCommandPanelVisible: true });
+          e.preventDefault();
+        }
+        break;
+      }
       default:
         break;
     }
+  };
+
+  _onCommandPanelBlur = () => {
+    this.setState({ isCommandPanelVisible: false });
   };
 
   _renderViews() {
@@ -120,12 +138,14 @@ export default class App extends Component {
 
   render() {
     const { store } = this.props;
+    const { isCommandPanelVisible } = this.state;
     const { uiState } = store;
     const viewState = uiState.findView(0);
     const { occupancyGridMap, pose, pointcloudFrame } = viewState;
 
     return (
       <div id='container'>
+        {isCommandPanelVisible && <CommandPanel onBlur={this._onCommandPanelBlur} />}
         <ControlPanel />
         <MainScene
           uiState={uiState}
