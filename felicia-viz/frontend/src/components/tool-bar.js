@@ -1,8 +1,9 @@
 import React, { PureComponent } from 'react';
 import { Tooltip, Popover, Button } from '@streetscape.gl/monochrome';
 
+import STORE from '@felicia-viz/ui/store';
+
 import { TOOLTIP_STYLE, TOOLBAR_BUTTON_STYLE, TOOLBAR_MENU_STYLE } from 'custom-styles';
-import STORE from 'store';
 import UI_TYPES from 'store/ui/ui-types';
 
 export default class Toolbar extends PureComponent {

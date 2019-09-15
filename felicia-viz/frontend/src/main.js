@@ -4,8 +4,9 @@ import { AppContainer } from 'react-hot-loader';
 import { Provider } from 'mobx-react';
 import { ThemeProvider } from '@streetscape.gl/monochrome';
 
+import STORE from '@felicia-viz/ui/store';
+
 import App from './components/app';
-import STORE from './store';
 import { UI_THEME } from './custom-styles';
 
 const rootElement = document.getElementById('root');

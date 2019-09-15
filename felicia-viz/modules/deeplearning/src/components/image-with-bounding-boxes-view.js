@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 
 import { ImageWithBoundingBoxesMessage } from '@felicia-viz/proto/messages/bounding-box';
 import { ActivatableFloatPanel, ResizableCanvas } from '@felicia-viz/ui';
+import { FeliciaVizStore } from '@felicia-viz/ui/store';
 import ImageWorker from '@felicia-viz/ui/webworkers/image-webworker';
 
 class ImageWithBoundingBoxesViewImpl extends Component {
@@ -133,7 +134,7 @@ class ImageWithBoundingBoxesViewImpl extends Component {
 export default class ImageWithBoundingBoxesView extends Component {
   static propTypes = {
     id: PropTypes.number.isRequired,
-    store: PropTypes.object.isRequired,
+    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
   };
 
   state = {

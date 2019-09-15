@@ -5,9 +5,10 @@ import React, { Component } from 'react';
 import CameraFrameMessage from '@felicia-viz/proto/messages/camera-frame-message';
 import DepthCameraFrameMessage from '@felicia-viz/proto/messages/depth-camera-frame-message';
 
+import { FeliciaVizStore } from '../store';
+import CameraFrameWorker from '../webworkers/camera-frame-webworker';
 import ActivatableFloatPanel from './common/activatable-float-panel';
 import ResizableCanvas from './common/resizable-canvas';
-import CameraFrameWorker from '../webworkers/camera-frame-webworker';
 
 export class CameraFrameViewImpl extends Component {
   static propTypes = {
@@ -102,7 +103,7 @@ export class CameraFrameViewImpl extends Component {
 export default class CameraFrameView extends Component {
   static propTypes = {
     id: PropTypes.number.isRequired,
-    store: PropTypes.object.isRequired,
+    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
   };
 
   state = {

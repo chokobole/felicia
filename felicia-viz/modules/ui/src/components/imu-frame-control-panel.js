@@ -5,9 +5,10 @@ import { Form, MetricCard, MetricChart } from '@streetscape.gl/monochrome';
 
 import { IMU_FRAME_MESSAGE } from '@felicia-viz/proto/messages/imu-frame-message';
 
-import TopicDropdown from './common/topic-dropdown';
-import { PanelItemContainer, renderText } from './common/panel-item';
 import { FORM_STYLE, METRIC_CARD_STYLE } from '../custom-styles';
+import { FeliciaVizStore } from '../store';
+import { PanelItemContainer, renderText } from './common/panel-item';
+import TopicDropdown from './common/topic-dropdown';
 
 function renderImuGraph(self) {
   const { title, value } = self;
@@ -69,7 +70,7 @@ class History {
 @observer
 export default class ImuFrameControlPanel extends Component {
   static propTypes = {
-    store: PropTypes.object.isRequired,
+    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
   };
 
   angularVelocities = new History(100);

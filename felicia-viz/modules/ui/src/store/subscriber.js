@@ -1,6 +1,6 @@
 import Subscriber from '@felicia-viz/communication/subscriber';
 
-import STORE from 'store';
+import STORE from './index';
 
 const SUBSCRIBER = new Subscriber(event => {
   const { data, type, destinations } = event.data;

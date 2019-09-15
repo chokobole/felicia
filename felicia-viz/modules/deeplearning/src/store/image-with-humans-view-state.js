@@ -1,7 +1,7 @@
 import { observable, action } from 'mobx';
 
 import { ImageWithHumansMessage } from '@felicia-viz/proto/messages/human';
-import { TopicSubscribable } from '@felicia-viz/ui';
+import TopicSubscribable from '@felicia-viz/ui/store/topic-subscribable';
 
 export default class ImageWithHumansViewState extends TopicSubscribable {
   @observable frame = null;

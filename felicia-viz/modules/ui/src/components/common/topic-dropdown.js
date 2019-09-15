@@ -6,6 +6,7 @@ import { Dropdown, Label } from '@streetscape.gl/monochrome';
 
 import { findWSChannel, hasWSChannel } from '@felicia-viz/proto/messages/master-data';
 
+import { FeliciaVizStore } from '../../store';
 import { PanelItemContainer } from './panel-item';
 
 @inject('store')
@@ -14,7 +15,7 @@ export default class TopicDropdown extends Component {
   static propTypes = {
     title: PropTypes.string.isRequired,
     typeName: PropTypes.string.isRequired,
-    store: PropTypes.object.isRequired,
+    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
     isEnabled: PropTypes.bool.isRequired,
   };
 

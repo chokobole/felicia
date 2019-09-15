@@ -7,6 +7,8 @@ import styled from '@emotion/styled';
 
 import { findWSChannel, hasWSChannel } from '@felicia-viz/proto/messages/master-data';
 
+import { FeliciaVizStore } from '../../store';
+
 const LabelContainer = styled.div(() => ({
   display: 'flex',
   flexDirection: 'column',
@@ -28,7 +30,7 @@ export default class TopicList extends Component {
   static propTypes = {
     typeNames: PropTypes.arrayOf(PropTypes.string).isRequired,
     style: PropTypes.object,
-    store: PropTypes.object.isRequired,
+    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
     theme: PropTypes.object.isRequired,
   };
 

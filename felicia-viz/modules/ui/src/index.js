@@ -6,8 +6,6 @@ import TopicList from './components/common/topic-list';
 import { PanelItemContainer, renderText } from './components/common/panel-item';
 import ResizeDetector from './components/common/resize-detector';
 import ResizableCanvas from './components/common/resizable-canvas';
-import TopicSubscribable from './store/topic-subscribable';
-import UIState from './store/ui-state';
 
 export {
   Activatable,
@@ -18,6 +16,4 @@ export {
   renderText,
   ResizeDetector,
   ResizableCanvas,
-  TopicSubscribable,
-  UIState,
 };

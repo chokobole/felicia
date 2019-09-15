@@ -8,6 +8,7 @@ import {
   ImageWithHumansMessage,
 } from '@felicia-viz/proto/messages/human';
 import { ActivatableFloatPanel, ResizableCanvas } from '@felicia-viz/ui';
+import { FeliciaVizStore } from '@felicia-viz/ui/store';
 import ImageWorker from '@felicia-viz/ui/webworkers/image-webworker';
 
 const {
@@ -579,7 +580,7 @@ class ImageWithHumansViewImpl extends Component {
 export default class ImageWithHumansView extends Component {
   static propTypes = {
     id: PropTypes.number.isRequired,
-    store: PropTypes.object.isRequired,
+    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
   };
 
   state = {

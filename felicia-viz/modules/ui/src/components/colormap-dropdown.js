@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { Dropdown, Label } from '@streetscape.gl/monochrome';
 
-import { PanelItemContainer } from '@felicia-viz/ui';
+import { FeliciaVizStore } from '../store';
+import { PanelItemContainer } from './common/panel-item';
 
 const COLORMAPS = [
   'jet',
@@ -57,7 +58,7 @@ const COLORMAPS = [
 export default class ColormapDropdown extends Component {
   static propTypes = {
     title: PropTypes.string.isRequired,
-    store: PropTypes.object.isRequired,
+    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
   };
 
   constructor(props) {

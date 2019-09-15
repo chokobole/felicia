@@ -7,9 +7,10 @@ import '@babylonjs/core/Meshes/meshBuilder';
 
 import ImuFrameMessage from '@felicia-viz/proto/messages/imu-frame-message';
 
-import ActivatableFloatPanel from './common/activatable-float-panel';
-import { createAxis, createScene } from '../util/babylon-util';
 import { babylonCanvasStyle } from '../custom-styles';
+import { FeliciaVizStore } from '../store';
+import { createAxis, createScene } from '../util/babylon-util';
+import ActivatableFloatPanel from './common/activatable-float-panel';
 
 class ImuFrameViewImpl extends Component {
   static propTypes = {
@@ -66,7 +67,7 @@ class ImuFrameViewImpl extends Component {
 export default class ImuFrameView extends Component {
   static propTypes = {
     id: PropTypes.number.isRequired,
-    store: PropTypes.object.isRequired,
+    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
   };
 
   state = {

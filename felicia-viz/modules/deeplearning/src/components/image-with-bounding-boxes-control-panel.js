@@ -6,12 +6,13 @@ import { Form } from '@streetscape.gl/monochrome';
 import { IMAGE_WITH_BOUNDING_BOXES_MESSAGE } from '@felicia-viz/proto/messages/bounding-box';
 import { TopicDropdown } from '@felicia-viz/ui';
 import { FORM_STYLE } from '@felicia-viz/ui/custom-styles';
+import { FeliciaVizStore } from '@felicia-viz/ui/store';
 
 @inject('store')
 @observer
 export default class ImageWithBoundingBoxesControlPanel extends Component {
   static propTypes = {
-    store: PropTypes.object.isRequired,
+    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
   };
 
   SETTINGS = {

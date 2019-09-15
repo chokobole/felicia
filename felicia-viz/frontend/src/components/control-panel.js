@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import styled from 'styled-components';
 
-import { FeliciaVizStore } from 'store';
+import { FeliciaVizStore } from '@felicia-viz/ui/store';
+
 import UI_TYPES from 'store/ui/ui-types';
 
 const Title = styled.h3`

@@ -11,6 +11,7 @@ import {
   OCCUPANCY_GRID_MAP_MESSAGE,
   POINTCLOUD_MESSAGE,
 } from '@felicia-viz/proto/messages/map-message';
+import { FeliciaVizStore } from '@felicia-viz/ui/store';
 import { TopicList } from '@felicia-viz/ui';
 import { FORM_STYLE } from '@felicia-viz/ui/custom-styles';
 
@@ -18,7 +19,7 @@ import { FORM_STYLE } from '@felicia-viz/ui/custom-styles';
 @observer
 export default class MainSceneControlPanel extends Component {
   static propTypes = {
-    store: PropTypes.object.isRequired,
+    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
   };
 
   SETTINGS = {

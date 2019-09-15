@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 
 import { ActivatableFloatPanel } from '@felicia-viz/ui';
 
+import { FeliciaVizStore } from '../store';
 import { CameraFrameViewImpl } from './camera-frame-view';
 
 @inject('store')
@@ -11,7 +12,7 @@ import { CameraFrameViewImpl } from './camera-frame-view';
 export default class DepthCameraFrameView extends Component {
   static propTypes = {
     id: PropTypes.number.isRequired,
-    store: PropTypes.object.isRequired,
+    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
   };
 
   state = {

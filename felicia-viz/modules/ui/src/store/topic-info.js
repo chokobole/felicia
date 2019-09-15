@@ -1,21 +1,10 @@
 import { action, observable, toJS } from 'mobx';
 import { NotificationManager } from 'react-notifications';
+import { shallowEqualArrays } from 'shallow-equal';
 
 import { TOPIC_INFO, hasWSChannel } from '@felicia-viz/proto/messages/master-data';
 
-import SUBSCRIBER from 'store/subscriber';
-
-// TODO: Maybe we need loadash?
-function arraysEqual(a, b) {
-  if (a === b) return true;
-  if (a === null || b === null) return false;
-  if (a.length !== b.length) return false;
-
-  for (let i = 0; i < a.length; i += 1) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
-}
+import SUBSCRIBER from './subscriber';
 
 export default class TopicInfo {
   @observable topics = [];
@@ -51,7 +40,7 @@ export default class TopicInfo {
       }
     });
 
-    if (updated || !arraysEqual(this.topics, newTopics)) {
+    if (updated || !shallowEqualArrays(this.topics, newTopics)) {
       this.updateTopics(newTopics);
     }
   }

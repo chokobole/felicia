@@ -13,11 +13,12 @@ import TopicInfoSubscriber from '@felicia-viz/communication/topic-info-subscribe
 //   ImageWithHumansView,
 //   ImageWithHumansViewState,
 // } from '@felicia-viz/deeplearning';
+import { FeliciaVizStore } from '@felicia-viz/ui/store';
+import SUBSCRIBER from '@felicia-viz/ui/store/subscriber';
 
 import ControlPanel from 'components/control-panel';
 import MainScene from 'components/main-scene';
 import ToolBar from 'components/tool-bar';
-import SUBSCRIBER from 'store/subscriber';
 import UI_TYPES, { MainSceneType } from 'store/ui/ui-types';
 
 import 'fonts/felicia-icons.css';
@@ -28,7 +29,7 @@ import 'stylesheets/main.scss';
 @observer
 export default class App extends Component {
   static propTypes = {
-    store: PropTypes.object.isRequired,
+    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
   };
 
   constructor(props) {

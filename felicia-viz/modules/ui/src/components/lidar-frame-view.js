@@ -4,9 +4,10 @@ import React, { Component } from 'react';
 
 import LidarFrameMessage from '@felicia-viz/proto/messages/lidar-frame-message';
 
+import { FeliciaVizStore } from '../store';
+import LidarFrameWorker from '../webworkers/lidar-frame-webworker';
 import ActivatableFloatPanel from './common/activatable-float-panel';
 import ResizeDetector from './common/resize-detector';
-import LidarFrameWorker from '../webworkers/lidar-frame-webworker';
 
 class LidarFrameViewImpl extends Component {
   static propTypes = {
@@ -111,7 +112,7 @@ class LidarFrameViewImpl extends Component {
 export default class LidarFrameView extends Component {
   static propTypes = {
     id: PropTypes.number.isRequired,
-    store: PropTypes.object.isRequired,
+    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
   };
 
   state = {

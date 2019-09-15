@@ -6,15 +6,16 @@ import { Form } from '@streetscape.gl/monochrome';
 import { PixelFormat } from '@felicia-viz/proto/messages/ui';
 import { CAMERA_FRAME_MESSAGE } from '@felicia-viz/proto/messages/camera-frame-message';
 
+import { FORM_STYLE } from '../custom-styles';
+import { FeliciaVizStore } from '../store';
 import TopicDropdown from './common/topic-dropdown';
 import { renderText } from './common/panel-item';
-import { FORM_STYLE } from '../custom-styles';
 
 @inject('store')
 @observer
 export default class CameraFrameControlPanel extends Component {
   static propTypes = {
-    store: PropTypes.object.isRequired,
+    store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
   };
 
   SETTINGS = {
