@@ -7,11 +7,18 @@ export default class Activatable extends PureComponent {
   static propTypes = {
     id: PropTypes.number.isRequired,
     type: PropTypes.string.isRequired,
+    width: PropTypes.string,
+    height: PropTypes.string,
     children: PropTypes.node.isRequired,
     uiState: PropTypes.instanceOf(UIState).isRequired,
   };
 
-  _onMouseDown = () => {
+  static defaultProps = {
+    width: '100%',
+    height: '100%',
+  };
+
+  _onPointerDown = () => {
     const { id, type, uiState } = this.props;
 
     console.log(`${id} is activated.`);
@@ -19,10 +26,10 @@ export default class Activatable extends PureComponent {
   };
 
   render() {
-    const { children } = this.props;
+    const { width, height, children } = this.props;
 
     return (
-      <div onMouseDown={this._onMouseDown} role='none'>
+      <div style={{ width, height }} onPointerDown={this._onPointerDown} role='none'>
         {children}
       </div>
     );
