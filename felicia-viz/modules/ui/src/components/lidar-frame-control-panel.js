@@ -42,7 +42,7 @@ export default class LidarFrameControlPanel extends Component {
           type: 'custom',
           title: 'topic',
           render: self => {
-            return <TopicDropdown {...self} typeName={LIDAR_FRAME_MESSAGE} />;
+            return <TopicDropdown {...self} typeNames={[LIDAR_FRAME_MESSAGE]} />;
           },
         },
       },
@@ -53,7 +53,7 @@ export default class LidarFrameControlPanel extends Component {
 
   _fetchValues() {
     const { store } = this.props;
-    const viewState = store.uiState.activeViewState.getState();
+    const viewState = store.uiState.getActiveViewState();
     const { frame } = viewState;
 
     if (frame) {

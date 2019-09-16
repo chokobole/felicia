@@ -21,15 +21,17 @@ export default class ControlPanel extends Component {
 
   _renderContent = type => {
     if (type === null) return null;
-    return UI_TYPES[type].renderControlPanel();
+    const f = UI_TYPES[type].renderControlPanel;
+    if (f) return f();
+    return null;
   };
 
   render() {
     const { store } = this.props;
-    const { id, type } = store.uiState.activeViewState;
+    const { controlPanelType } = store.uiState;
 
     let className = '';
-    if (id !== null) {
+    if (controlPanelType !== null) {
       className = 'is-opened';
     }
 
@@ -39,7 +41,7 @@ export default class ControlPanel extends Component {
           <Title>Felicia Viz</Title>
         </header>
 
-        <main className={className}>{this._renderContent(type)}</main>
+        <main className={className}>{this._renderContent(controlPanelType)}</main>
       </div>
     );
   }

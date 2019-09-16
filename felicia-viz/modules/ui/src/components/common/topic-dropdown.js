@@ -14,13 +14,13 @@ import { PanelItemContainer } from './panel-item';
 export default class TopicDropdown extends Component {
   static propTypes = {
     title: PropTypes.string.isRequired,
-    typeName: PropTypes.string.isRequired,
+    typeNames: PropTypes.arrayOf(PropTypes.string).isRequired,
     store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
     isEnabled: PropTypes.bool.isRequired,
   };
 
   _onTopicChange = value => {
-    const { typeName, store } = this.props;
+    const { store } = this.props;
     const topics = toJS(store.topicInfo.topics);
     let found = topics.find(v => {
       return v.topic === value;
@@ -30,10 +30,11 @@ export default class TopicDropdown extends Component {
       return;
     }
 
+    const { typeName } = found;
     found = findWSChannel(found);
 
     if (found) {
-      const viewState = store.uiState.activeViewState.getState();
+      const viewState = store.uiState.getActiveViewState();
       viewState.setTopic(typeName, value, found.ipEndpoint);
     } else {
       console.error(`Failed to find ip endpoint for ${value}`);
@@ -41,21 +42,25 @@ export default class TopicDropdown extends Component {
   };
 
   render() {
-    const { title, typeName, store, isEnabled } = this.props;
-    const viewState = store.uiState.activeViewState.getState();
-    let value = '';
-    if (viewState.topics.has(typeName)) {
-      value = viewState.topics.get(typeName);
-    }
+    const { title, typeNames, store, isEnabled } = this.props;
+    const viewState = store.uiState.getActiveViewState();
 
+    let data = {};
+    let value = '';
     const topics = toJS(store.topicInfo.topics);
-    const data = topics.reduce((obj, v) => {
-      const { topic } = v;
-      if (hasWSChannel(v) && typeName === v.typeName) {
-        obj[topic] = topic; // eslint-disable-line no-param-reassign
+    // eslint-disable-next-line no-restricted-syntax
+    for (const typeName of typeNames) {
+      if (viewState.topics.has(typeName)) {
+        value = viewState.topics.get(typeName);
       }
-      return obj;
-    }, {});
+      data = topics.reduce((obj, v) => {
+        const { topic } = v;
+        if (hasWSChannel(v) && typeName === v.typeName) {
+          obj[topic] = topic; // eslint-disable-line no-param-reassign
+        }
+        return obj;
+      }, data);
+    }
     if (value === '') {
       data[''] = '';
     }

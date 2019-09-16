@@ -12,22 +12,18 @@ import LidarFrameView from '@felicia-viz/ui/components/lidar-frame-view';
 import DepthCameraFrameViewState from '@felicia-viz/ui/store/ui/depth-camera-frame-view-state';
 import ImuFrameViewState from '@felicia-viz/ui/store/ui/imu-frame-view-state';
 import LidarFrameViewState from '@felicia-viz/ui/store/ui/lidar-frame-view-state';
+import OccupancyGridMapControlPanel from '@felicia-viz/ui/components/occupancy-grid-map-control-panel';
+import PointcloudControlPanel from '@felicia-viz/ui/components/pointcloud-control-panel';
+import PoseWithTimestampControlPanel from '@felicia-viz/ui/components/pose-with-timestamp-control-panel';
+import Pose3WithTimestampControlPanel from '@felicia-viz/ui/components/pose3-with-timestamp-control-panel';
 
-import MainSceneControlPanel from 'components/main-scene-control-panel';
 import MainSceneState from 'store/ui/main-scene-state';
 
 const UI_TYPES = {};
 
 export const MainSceneType = {
   name: 'MainScene',
-  className: 'main-scene',
   state: MainSceneState,
-  renderView: () => {
-    throw new Error('You called renderView of MainScene.');
-  },
-  renderControlPanel: () => {
-    return <MainSceneControlPanel />;
-  },
 };
 
 UI_TYPES[MainSceneType.name] = MainSceneType;
@@ -87,5 +83,41 @@ export const LidarFrameViewType = {
 };
 
 UI_TYPES[LidarFrameViewType.name] = LidarFrameViewType;
+
+export const OccupancyGridMapControlPanelType = {
+  name: 'OccupancyGridMapControlPanel',
+  renderControlPanel: () => {
+    return <OccupancyGridMapControlPanel />;
+  },
+};
+
+UI_TYPES[OccupancyGridMapControlPanelType.name] = OccupancyGridMapControlPanelType;
+
+export const PointcloudControlPanelType = {
+  name: 'PointcloudControlPanel',
+  renderControlPanel: () => {
+    return <PointcloudControlPanel />;
+  },
+};
+
+UI_TYPES[PointcloudControlPanelType.name] = PointcloudControlPanelType;
+
+export const PoseWithTimestampControlPanelType = {
+  name: 'PoseWithTimestampControlPanel',
+  renderControlPanel: () => {
+    return <PoseWithTimestampControlPanel />;
+  },
+};
+
+UI_TYPES[PoseWithTimestampControlPanelType.name] = PoseWithTimestampControlPanelType;
+
+export const Pose3WithTimestampControlPanelType = {
+  name: 'Pose3WithTimestampControlPanel',
+  renderControlPanel: () => {
+    return <Pose3WithTimestampControlPanel />;
+  },
+};
+
+UI_TYPES[Pose3WithTimestampControlPanelType.name] = Pose3WithTimestampControlPanelType;
 
 export default UI_TYPES;

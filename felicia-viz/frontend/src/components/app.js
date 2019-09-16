@@ -91,6 +91,9 @@ export default class App extends Component {
       this.setState({ isCommandPanelVisible: true });
       e.preventDefault();
     });
+    this.keyBinding.registerAction(['Control', 'b'], () => {
+      store.uiState.unsetControlPanel();
+    });
   }
 
   componentWillUnmount() {
@@ -124,18 +127,13 @@ export default class App extends Component {
     const { isCommandPanelVisible } = this.state;
     const { uiState } = store;
     const viewState = uiState.findView(0);
-    const { occupancyGridMap, pose, pointcloudFrame } = viewState;
+    const { map, pose } = viewState;
 
     return (
       <div id='container'>
         {isCommandPanelVisible && <CommandPanel onBlur={this._onCommandPanelBlur} />}
         <ControlPanel />
-        <MainScene
-          uiState={uiState}
-          occupancyGridMap={occupancyGridMap}
-          pose={pose}
-          pointcloudFrame={pointcloudFrame}
-        />
+        <MainScene uiState={uiState} map={map} pose={pose} />
         {this._renderViews()}
         <ToolBar />
         <NotificationContainer />

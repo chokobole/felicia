@@ -39,6 +39,16 @@ export class SizeMessage {
     this.width = width;
     this.height = height;
   }
+
+  toString() {
+    const { width, height } = this;
+    return `(${width}, ${height})`;
+  }
+
+  toShortString() {
+    const { width, height } = this;
+    return `(${width.toFixed(2)}, ${height.toFixed(2)})`;
+  }
 }
 
 export class QuaternionMessage {
@@ -54,9 +64,19 @@ export class QuaternionMessage {
     const { x, y, z, w } = this;
     return new Quaternion(x, y, z, w);
   }
+
+  toString() {
+    const { x, y, z, w } = this;
+    return `(${x}, ${y}, ${z}, ${w})`;
+  }
+
+  toShortString() {
+    const { x, y, z, w } = this;
+    return `(${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)}, ${w.toFixed(2)})`;
+  }
 }
 
-class BabylonVectorConvertable2 {
+class Vector2Base {
   toBabylonVector2() {
     const { x, y } = this;
     return new Vector2(x, y);
@@ -66,9 +86,19 @@ class BabylonVectorConvertable2 {
     const { x, y } = this;
     return new Vector3(x, y, 0);
   }
+
+  toString() {
+    const { x, y } = this;
+    return `(${x}, ${y})`;
+  }
+
+  toShortString() {
+    const { x, y } = this;
+    return `(${x.toFixed(2)}, ${y.toFixed(2)})`;
+  }
 }
 
-class BabylonVectorConvertable3 {
+class Vector3Base {
   toBabylonVector2() {
     const { x, y } = this;
     return new Vector2(x, y);
@@ -78,9 +108,19 @@ class BabylonVectorConvertable3 {
     const { x, y, z } = this;
     return new Vector3(x, y, z);
   }
+
+  toString() {
+    const { x, y, z } = this;
+    return `(${x}, ${y}, ${z})`;
+  }
+
+  toShortString() {
+    const { x, y, z } = this;
+    return `(${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)})`;
+  }
 }
 
-export class VectorMessage extends BabylonVectorConvertable2 {
+export class VectorMessage extends Vector2Base {
   constructor(message) {
     super();
     const { x, y } = message;
@@ -89,7 +129,7 @@ export class VectorMessage extends BabylonVectorConvertable2 {
   }
 }
 
-export class Vector3Message extends BabylonVectorConvertable3 {
+export class Vector3Message extends Vector3Base {
   constructor(message) {
     super();
     const { x, y, z } = message;
@@ -99,7 +139,7 @@ export class Vector3Message extends BabylonVectorConvertable3 {
   }
 }
 
-export class PointMessage extends BabylonVectorConvertable2 {
+export class PointMessage extends Vector2Base {
   constructor(message) {
     super();
     const { x, y } = message;
@@ -108,7 +148,7 @@ export class PointMessage extends BabylonVectorConvertable2 {
   }
 }
 
-export class Point3Message extends BabylonVectorConvertable3 {
+export class Point3Message extends Vector3Base {
   constructor(message) {
     super();
     const { x, y, z } = message;

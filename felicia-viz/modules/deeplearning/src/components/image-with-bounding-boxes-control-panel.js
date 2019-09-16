@@ -31,7 +31,7 @@ export default class ImageWithBoundingBoxesControlPanel extends Component {
           type: 'custom',
           title: 'topic',
           render: self => {
-            return <TopicDropdown {...self} typeName={IMAGE_WITH_BOUNDING_BOXES_MESSAGE} />;
+            return <TopicDropdown {...self} typeNames={[IMAGE_WITH_BOUNDING_BOXES_MESSAGE]} />;
           },
         },
         lineWidth: {
@@ -54,7 +54,7 @@ export default class ImageWithBoundingBoxesControlPanel extends Component {
 
   _onChange = values => {
     const { store } = this.props;
-    const viewState = store.uiState.activeViewState.getState();
+    const viewState = store.uiState.getActiveViewState();
     const { lineWidth, threshold } = values;
     if (lineWidth && viewState.lineWidth !== lineWidth) {
       viewState.setLineWidth(lineWidth);
@@ -67,7 +67,7 @@ export default class ImageWithBoundingBoxesControlPanel extends Component {
 
   _fetchValues() {
     const { store } = this.props;
-    const viewState = store.uiState.activeViewState.getState();
+    const viewState = store.uiState.getActiveViewState();
     const { lineWidth, threshold } = viewState;
 
     return {

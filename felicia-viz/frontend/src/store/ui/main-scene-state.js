@@ -15,9 +15,7 @@ import {
 import TopicSubscribable from '@felicia-viz/ui/store/topic-subscribable';
 
 export default class MainSceneState extends TopicSubscribable {
-  @observable occupancyGridMap = null;
-
-  @observable pointcloudFrame = null;
+  @observable map = null;
 
   @observable pose = null;
 
@@ -25,10 +23,10 @@ export default class MainSceneState extends TopicSubscribable {
     const { type, data } = message;
     switch (type) {
       case OCCUPANCY_GRID_MAP_MESSAGE:
-        this.occupancyGridMap = new OccupancyGridMapMessage(data);
+        this.map = new OccupancyGridMapMessage(data);
         break;
       case POINTCLOUD_MESSAGE:
-        this.pointcloudFrame = new PointcloudMessage(data);
+        this.map = new PointcloudMessage(data);
         break;
       case POSEF_WITH_TIMESTAMP_MESSAGE:
         this.pose = new PoseWithTimestampMessage(data);

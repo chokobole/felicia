@@ -1,7 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { ActionManager } from '@babylonjs/core/Actions/actionManager';
-import { ExecuteCodeAction } from '@babylonjs/core/Actions/directActions';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { GridMaterial } from '@babylonjs/materials/grid';
@@ -20,32 +18,29 @@ import {
 import OccupancyGridMap from '@felicia-viz/ui/messages/occupancy-grid-map';
 import Pointcloud from '@felicia-viz/ui/messages/pointcloud';
 import Pose from '@felicia-viz/ui/messages/pose';
-import UIState from '@felicia-viz/ui/store/ui-state';
 import OccupancyGridMapWorker from '@felicia-viz/ui/webworkers/occupancy-grid-map-webworker';
 import PointcloudWorker from '@felicia-viz/ui/webworkers/pointcloud-webworker';
 import { backgroundColor, createScene } from '@felicia-viz/ui/util/babylon-util';
-
-import UI_TYPES from 'store/ui/ui-types';
 
 export default class MainScene extends Component {
   static propTypes = {
     width: PropTypes.string,
     height: PropTypes.string,
-    uiState: PropTypes.instanceOf(UIState).isRequired,
-    occupancyGridMap: PropTypes.instanceOf(OccupancyGridMapMessage),
+    map: PropTypes.oneOfType([
+      PropTypes.instanceOf(OccupancyGridMapMessage),
+      PropTypes.instanceOf(PointcloudMessage),
+    ]),
     pose: PropTypes.oneOfType([
       PropTypes.instanceOf(PoseWithTimestampMessage),
       PropTypes.instanceOf(Pose3WithTimestampMessage),
     ]),
-    pointcloudFrame: PropTypes.instanceOf(PointcloudMessage),
   };
 
   static defaultProps = {
     width: '100%',
     height: '100%',
-    occupancyGridMap: null,
+    map: null,
     pose: null,
-    pointcloudFrame: null,
   };
 
   componentDidMount() {
@@ -67,40 +62,33 @@ export default class MainScene extends Component {
     const plane = Mesh.CreatePlane('main-scene-plane', 10, scene, false, Mesh.DOUBLESIDE);
     plane.material = material;
 
-    const actionManager = new ActionManager(scene);
-    actionManager.registerAction(
-      new ExecuteCodeAction(
-        {
-          trigger: ActionManager.OnKeyDownTrigger,
-          parameter: 'c',
-        },
-        () => {
-          const { uiState } = this.props;
-          uiState.activeViewState.set(0, UI_TYPES.MainScene.name);
-        }
-      )
-    );
-    scene.actionManager = actionManager;
-
     engine.runRenderLoop(() => {
       scene.render();
     });
   }
 
   shouldComponentUpdate(nextProps) {
-    const { occupancyGridMap, pose, pointcloudFrame } = this.props;
+    const { map, pose } = this.props;
     let updated = false;
-    if (occupancyGridMap !== nextProps.occupancyGridMap) {
-      if (!this.occupancyGridMap) {
-        const { width, height } = nextProps.occupancyGridMap.size;
-        this.occupancyGridMap = new OccupancyGridMap(
-          new OccupancyGridMapWorker(),
-          width,
-          height,
-          this.scene
-        );
+    if (map !== nextProps.map) {
+      if (map instanceof OccupancyGridMapMessage) {
+        if (!this.map || !(this.map instanceof OccupancyGridMap)) {
+          if (this.map) {
+            this.map.terminateWorker();
+          }
+          const { width, height } = nextProps.map.size;
+          this.map = new OccupancyGridMap(new OccupancyGridMapWorker(), width, height, this.scene);
+        }
+        this.map.update(nextProps.map, this.scene);
+      } else if (map instanceof PointcloudMessage) {
+        if (!this.map || !(this.map instanceof Pointcloud)) {
+          if (this.map) {
+            this.map.terminateWorker();
+          }
+          this.map = new Pointcloud(new PointcloudWorker());
+        }
+        this.map.update(nextProps.map, this.scene);
       }
-      this.occupancyGridMap.update(nextProps.occupancyGridMap, this.scene);
       updated = true;
     }
 
@@ -117,14 +105,6 @@ export default class MainScene extends Component {
       updated = true;
     }
 
-    if (pointcloudFrame !== nextProps.pointcloudFrame) {
-      if (!this.pointcloud) {
-        this.pointcloud = new Pointcloud(new PointcloudWorker());
-      }
-      this.pointcloud.update(nextProps.pointcloudFrame, this.scene);
-      updated = true;
-    }
-
     if (updated) return true;
 
     const { width, height } = this.props;
@@ -136,12 +116,8 @@ export default class MainScene extends Component {
   }
 
   componentWillUnmount() {
-    if (this.occupancyGridMap) {
-      this.occupancyGridMap.terminateWorker();
-    }
-
-    if (this.pointcloud) {
-      this.pointcloud.terminateWorker();
+    if (this.map) {
+      this.map.terminateWorker();
     }
   }
 

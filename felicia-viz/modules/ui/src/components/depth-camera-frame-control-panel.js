@@ -44,7 +44,7 @@ export default class DepthCameraFrameControlPanel extends Component {
           type: 'custom',
           title: 'topic',
           render: self => {
-            return <TopicDropdown {...self} typeName={DEPTH_CAMERA_FRAME_MESSAGE} />;
+            return <TopicDropdown {...self} typeNames={[DEPTH_CAMERA_FRAME_MESSAGE]} />;
           },
         },
         filter: {
@@ -58,7 +58,7 @@ export default class DepthCameraFrameControlPanel extends Component {
           type: 'custom',
           title: 'topicToAlign',
           render: self => {
-            return <TopicDropdown {...self} typeName={CAMERA_FRAME_MESSAGE} />;
+            return <TopicDropdown {...self} typeNames={[CAMERA_FRAME_MESSAGE]} />;
           },
         },
       },
@@ -69,7 +69,7 @@ export default class DepthCameraFrameControlPanel extends Component {
 
   _fetchValues() {
     const { store } = this.props;
-    const viewState = store.uiState.activeViewState.getState();
+    const viewState = store.uiState.getActiveViewState();
     const { frame, filter } = viewState;
 
     if (frame) {

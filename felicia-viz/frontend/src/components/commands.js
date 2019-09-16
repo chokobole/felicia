@@ -2,6 +2,30 @@ import STORE from '@felicia-viz/ui/store';
 
 const COMMANDS = [
   {
+    name: 'Show OccupancyGridMapControlPanel',
+    action: () => {
+      STORE.uiState.setControlPanel('OccupancyGridMapControlPanel');
+    },
+  },
+  {
+    name: 'Show PointcloudControlPanel',
+    action: () => {
+      STORE.uiState.setControlPanel('PointcloudControlPanel');
+    },
+  },
+  {
+    name: 'Show PoseWithTimestampControlPanel',
+    action: () => {
+      STORE.uiState.setControlPanel('PoseWithTimestampControlPanel');
+    },
+  },
+  {
+    name: 'Show Pose3WithTimestampControlPanel',
+    action: () => {
+      STORE.uiState.setControlPanel('Pose3WithTimestampControlPanel');
+    },
+  },
+  {
     name: 'Add CameraFrameView',
     action: () => {
       STORE.uiState.addView('CameraFrameView');

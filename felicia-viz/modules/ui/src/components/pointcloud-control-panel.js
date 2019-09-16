@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { Form } from '@streetscape.gl/monochrome';
 
-import { PixelFormat } from '@felicia-viz/proto/messages/ui';
-import { CAMERA_FRAME_MESSAGE } from '@felicia-viz/proto/messages/camera-frame-message';
+import { Colors, Points } from '@felicia-viz/proto/messages/data-message';
+import { POINTCLOUD_MESSAGE, PointcloudMessage } from '@felicia-viz/proto/messages/map-message';
 
 import { FORM_STYLE } from '../custom-styles';
 import { FeliciaVizStore } from '../store';
@@ -13,22 +13,20 @@ import { renderText } from './common/panel-item';
 
 @inject('store')
 @observer
-export default class CameraFrameControlPanel extends Component {
+export default class PointcloudControlPanel extends Component {
   static propTypes = {
     store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
   };
 
   SETTINGS = {
-    header: { type: 'header', title: 'CameraFrame Control' },
+    header: { type: 'header', title: 'Pointcloud Control' },
     sectionSeperator: { type: 'separator' },
     info: {
       type: 'header',
       title: 'Info',
       children: {
-        width: { type: 'custom', title: 'width', render: renderText },
-        height: { type: 'custom', title: 'height', render: renderText },
-        frameRate: { type: 'custom', title: 'frameRate', render: renderText },
-        pixelFormat: { type: 'custom', title: 'pixelFormat', render: renderText },
+        points: { type: 'custom', title: 'points', render: renderText },
+        colors: { type: 'custom', title: 'colors', render: renderText },
         timestamp: { type: 'custom', title: 'timestamp', render: renderText },
       },
     },
@@ -40,7 +38,7 @@ export default class CameraFrameControlPanel extends Component {
           type: 'custom',
           title: 'topic',
           render: self => {
-            return <TopicDropdown {...self} typeNames={[CAMERA_FRAME_MESSAGE]} />;
+            return <TopicDropdown {...self} typeNames={[POINTCLOUD_MESSAGE]} />;
           },
         },
       },
@@ -52,25 +50,19 @@ export default class CameraFrameControlPanel extends Component {
   _fetchValues() {
     const { store } = this.props;
     const viewState = store.uiState.getActiveViewState();
-    const { frame } = viewState;
+    const { map } = viewState;
 
-    if (frame) {
-      const { cameraFormat, timestamp } = frame;
-      const { size, pixelFormat, frameRate } = cameraFormat;
-      const { width, height } = size;
+    if (map && map instanceof PointcloudMessage) {
+      const { points, colors, timestamp } = map;
       return {
-        width,
-        height,
-        frameRate,
-        pixelFormat: PixelFormat.valuesById[pixelFormat],
+        points: new Points(points).length(),
+        colors: new Colors(colors).length(),
         timestamp,
       };
     }
     return {
-      width: '',
-      height: '',
-      frameRate: '',
-      pixelFormat: '',
+      points: '',
+      colors: '',
       timestamp: '',
     };
   }

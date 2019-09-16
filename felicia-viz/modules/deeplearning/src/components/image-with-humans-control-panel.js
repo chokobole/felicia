@@ -31,7 +31,7 @@ export default class ImageWithHumansControlPanel extends Component {
           type: 'custom',
           title: 'topic',
           render: self => {
-            return <TopicDropdown {...self} typeName={IMAGE_WITH_HUMANS_MESSAGE} />;
+            return <TopicDropdown {...self} typeNames={[IMAGE_WITH_HUMANS_MESSAGE]} />;
           },
         },
         threshold: {
@@ -47,7 +47,7 @@ export default class ImageWithHumansControlPanel extends Component {
 
   _onChange = values => {
     const { store } = this.props;
-    const viewState = store.uiState.activeViewState.getState();
+    const viewState = store.uiState.getActiveViewState();
     const { threshold } = values;
     if (threshold && viewState.threshold !== threshold) {
       viewState.setThreshold(threshold);
@@ -56,7 +56,7 @@ export default class ImageWithHumansControlPanel extends Component {
 
   _fetchValues() {
     const { store } = this.props;
-    const viewState = store.uiState.activeViewState.getState();
+    const viewState = store.uiState.getActiveViewState();
     const { threshold } = viewState;
 
     return {

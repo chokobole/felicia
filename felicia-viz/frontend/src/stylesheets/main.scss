@@ -50,22 +50,6 @@ body {
   line-height: unset;
 }
 
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: $background;
-}
-
-::-webkit-scrollbar-thumb {
-  background: $color-control-subtle;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: $color-control-hover;
-}
-
 @import 'command-panel';
 @import 'control-panel';
 @import 'metric-panel';

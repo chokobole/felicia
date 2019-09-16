@@ -45,6 +45,10 @@ class ActivatableFloatPanel extends Component {
     this.ref.focus();
   }
 
+  componentWillUnmount() {
+    if (this.keyBinding) this.keyBinding.unbind();
+  }
+
   _onUpdate = panelState => {
     const { onUpdate } = this.props;
 
@@ -57,7 +61,7 @@ class ActivatableFloatPanel extends Component {
 
   _onFocus = () => {
     const { id, type, uiState } = this.props;
-    uiState.activeViewState.set(id, type);
+    uiState.markActive(id, type);
 
     const acc = 2;
     const maxVelocity = 30;
@@ -128,7 +132,7 @@ class ActivatableFloatPanel extends Component {
     this.keyBinding.registerAction(
       navigator.platform.startsWith('Mac') ? ['Backspace'] : ['Delete'],
       () => {
-        uiState.activeViewState.unset();
+        uiState.markInactive();
       }
     );
   };

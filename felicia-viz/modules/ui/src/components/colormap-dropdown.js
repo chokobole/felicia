@@ -72,13 +72,13 @@ export default class ColormapDropdown extends Component {
 
   _onFilterChange = value => {
     const { store } = this.props;
-    const viewState = store.uiState.activeViewState.getState();
+    const viewState = store.uiState.getActiveViewState();
     viewState.setFilter(value);
   };
 
   render() {
     const { title, store } = this.props;
-    const viewState = store.uiState.activeViewState.getState();
+    const viewState = store.uiState.getActiveViewState();
 
     return (
       <PanelItemContainer>
