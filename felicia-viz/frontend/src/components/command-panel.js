@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import AutoSuggest from 'react-autosuggest';
 import { withTheme } from '@streetscape.gl/monochrome';
 
-import KeyBinding from '@felicia-viz/ui/util/key-binding';
+import KEY_BINDING from '@felicia-viz/ui/util/key-binding';
 
 import { COMMAND_PANEL_THEME } from 'custom-styles';
 import COMMANDS, { matchCommand, runAction } from './commands';
@@ -19,25 +19,31 @@ class CommandPanel extends Component {
   };
 
   componentDidMount() {
-    this.keyBinding = new KeyBinding(this.input);
-    this.keyBinding.bind();
-    this.keyBinding.registerAction(['Escape'], e => {
-      this.blur();
-      e.preventDefault();
-    });
-    this.keyBinding.registerAction(['Enter'], e => {
-      const { value } = this.state;
-      if (value !== '') {
-        runAction(value);
+    KEY_BINDING.bind(this.input);
+    this.keyBindingIds = [];
+    this.keyBindingIds.push(
+      KEY_BINDING.registerAction(['Escape'], e => {
         this.blur();
         e.preventDefault();
-      }
-    });
+      })
+    );
+    this.keyBindingIds.push(
+      KEY_BINDING.registerAction(['Enter'], e => {
+        const { value } = this.state;
+        if (value !== '') {
+          runAction(value);
+          this.blur();
+          e.preventDefault();
+        }
+      })
+    );
     this.focus();
   }
 
   componentWillUnmount() {
-    this.keyBinding.unbind();
+    this.keyBindingIds.forEach(id => KEY_BINDING.unregisterAction(id));
+    this.keyBindingIds = null;
+    KEY_BINDING.unbind(this.input);
   }
 
   // eslint-disable-next-line no-unused-vars

@@ -15,7 +15,7 @@ import TopicInfoSubscriber from '@felicia-viz/communication/topic-info-subscribe
 // } from '@felicia-viz/deeplearning';
 import { FeliciaVizStore } from '@felicia-viz/ui/store';
 import SUBSCRIBER from '@felicia-viz/ui/store/subscriber';
-import KeyBinding from '@felicia-viz/ui/util/key-binding';
+import KEY_BINDING from '@felicia-viz/ui/util/key-binding';
 
 import 'fonts/felicia-icons.css';
 import 'react-notifications/lib/notifications.css';
@@ -85,21 +85,27 @@ export default class App extends Component {
     });
     this.topicInfoSubscriber.initialize();
 
-    this.keyBinding = new KeyBinding(document);
-    this.keyBinding.bind();
-    this.keyBinding.registerAction(['Control', 'P'], e => {
-      this.setState({ isCommandPanelVisible: true });
-      e.preventDefault();
-    });
-    this.keyBinding.registerAction(['Control', 'b'], () => {
-      store.uiState.unsetControlPanel();
-    });
+    KEY_BINDING.bind(document);
+    this.keyBindingIds = [];
+    this.keyBindingIds.push(
+      KEY_BINDING.registerAction(['Control', 'Shift', 'KeyP'], e => {
+        this.setState({ isCommandPanelVisible: true });
+        e.preventDefault();
+      })
+    );
+    this.keyBindingIds.push(
+      KEY_BINDING.registerAction(['Control', 'KeyB'], () => {
+        store.uiState.unsetControlPanel();
+      })
+    );
   }
 
   componentWillUnmount() {
     this.topicInfoSubscriber.close();
 
-    this.keyBinding.unbind();
+    this.keyBindingIds.forEach(id => KEY_BINDING.unregisterAction(id));
+    this.keyBindingIds = null;
+    KEY_BINDING.unbind(document);
   }
 
   _onCommandPanelBlur = () => {
@@ -125,15 +131,14 @@ export default class App extends Component {
   render() {
     const { store } = this.props;
     const { isCommandPanelVisible } = this.state;
-    const { uiState } = store;
-    const viewState = uiState.findView(0);
+    const viewState = store.uiState.findView(0);
     const { map, pose } = viewState;
 
     return (
       <div id='container'>
         {isCommandPanelVisible && <CommandPanel onBlur={this._onCommandPanelBlur} />}
         <ControlPanel />
-        <MainScene uiState={uiState} map={map} pose={pose} />
+        <MainScene map={map} pose={pose} />
         {this._renderViews()}
         <ToolBar />
         <NotificationContainer />

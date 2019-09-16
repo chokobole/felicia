@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { FloatPanel, withTheme } from '@streetscape.gl/monochrome';
 
 import UIState from '../../store/ui-state';
-import KeyBinding from '../../util/key-binding';
+import KEY_BINDING from '../../util/key-binding';
 import Activatable from './activatable';
 
 class ActivatableFloatPanel extends Component {
@@ -41,12 +41,11 @@ class ActivatableFloatPanel extends Component {
   componentDidMount() {
     const { onUpdate } = this.props;
     onUpdate(this.state);
-    this.keyBinding = new KeyBinding(this.ref);
     this.ref.focus();
   }
 
   componentWillUnmount() {
-    if (this.keyBinding) this.keyBinding.unbind();
+    this._releaseKeyBindings();
   }
 
   _onUpdate = panelState => {
@@ -68,72 +67,83 @@ class ActivatableFloatPanel extends Component {
     this.setState({
       focused: true,
     });
-    this.keyBinding.bind();
-    this.keyBinding.registerAction(
-      ['ArrowUp'],
-      () => {
-        const { y } = this.state;
-        let { velocityY } = this.state;
-        if (velocityY > 0) velocityY = 0;
-        this.setState({
-          y: Math.max(0, y + velocityY),
-          velocityY: Math.max(velocityY - acc, -maxVelocity),
-        });
-      },
-      () => {
-        this.setState({ velocityY: 0 });
-      }
+    KEY_BINDING.bind(this.ref);
+    this.keyBindingIds = [];
+    this.keyBindingIds.push(
+      KEY_BINDING.registerAction(
+        ['ArrowUp'],
+        () => {
+          const { y } = this.state;
+          let { velocityY } = this.state;
+          if (velocityY > 0) velocityY = 0;
+          this.setState({
+            y: Math.max(0, y + velocityY),
+            velocityY: Math.max(velocityY - acc, -maxVelocity),
+          });
+        },
+        () => {
+          this.setState({ velocityY: 0 });
+        }
+      )
     );
-    this.keyBinding.registerAction(
-      ['ArrowDown'],
-      () => {
-        const { height, y } = this.state;
-        let { velocityY } = this.state;
-        if (velocityY < 0) velocityY = 0;
-        this.setState({
-          y: Math.min(window.innerHeight - height, y + velocityY),
-          velocityY: Math.min(velocityY + acc, maxVelocity),
-        });
-      },
-      () => {
-        this.setState({ velocityY: 0 });
-      }
+    this.keyBindingIds.push(
+      KEY_BINDING.registerAction(
+        ['ArrowDown'],
+        () => {
+          const { height, y } = this.state;
+          let { velocityY } = this.state;
+          if (velocityY < 0) velocityY = 0;
+          this.setState({
+            y: Math.min(window.innerHeight - height, y + velocityY),
+            velocityY: Math.min(velocityY + acc, maxVelocity),
+          });
+        },
+        () => {
+          this.setState({ velocityY: 0 });
+        }
+      )
     );
-    this.keyBinding.registerAction(
-      ['ArrowLeft'],
-      () => {
-        const { x } = this.state;
-        let { velocityX } = this.state;
-        if (velocityX > 0) velocityX = 0;
-        this.setState({
-          x: Math.max(0, x + velocityX),
-          velocityX: Math.max(velocityX - acc, -maxVelocity),
-        });
-      },
-      () => {
-        this.setState({ velocityX: 0 });
-      }
+    this.keyBindingIds.push(
+      KEY_BINDING.registerAction(
+        ['ArrowLeft'],
+        () => {
+          const { x } = this.state;
+          let { velocityX } = this.state;
+          if (velocityX > 0) velocityX = 0;
+          this.setState({
+            x: Math.max(0, x + velocityX),
+            velocityX: Math.max(velocityX - acc, -maxVelocity),
+          });
+        },
+        () => {
+          this.setState({ velocityX: 0 });
+        }
+      )
     );
-    this.keyBinding.registerAction(
-      ['ArrowRight'],
-      () => {
-        const { width, x } = this.state;
-        let { velocityX } = this.state;
-        if (velocityX < 0) velocityX = 0;
-        this.setState({
-          x: Math.min(window.innerWidth - width, x + velocityX),
-          velocityX: Math.min(velocityX + acc, maxVelocity),
-        });
-      },
-      () => {
-        this.setState({ velocityX: 0 });
-      }
+    this.keyBindingIds.push(
+      KEY_BINDING.registerAction(
+        ['ArrowRight'],
+        () => {
+          const { width, x } = this.state;
+          let { velocityX } = this.state;
+          if (velocityX < 0) velocityX = 0;
+          this.setState({
+            x: Math.min(window.innerWidth - width, x + velocityX),
+            velocityX: Math.min(velocityX + acc, maxVelocity),
+          });
+        },
+        () => {
+          this.setState({ velocityX: 0 });
+        }
+      )
     );
-    this.keyBinding.registerAction(
-      navigator.platform.startsWith('Mac') ? ['Backspace'] : ['Delete'],
-      () => {
-        uiState.markInactive();
-      }
+    this.keyBindingIds.push(
+      KEY_BINDING.registerAction(
+        navigator.platform.startsWith('Mac') ? ['Backspace'] : ['Delete'],
+        () => {
+          uiState.markInactive();
+        }
+      )
     );
   };
 
@@ -141,12 +151,18 @@ class ActivatableFloatPanel extends Component {
     this.setState({
       focused: false,
     });
-    this.keyBinding.unbind();
+    this._releaseKeyBindings();
   };
 
   _onRef = ref => {
     this.ref = ref;
   };
+
+  _releaseKeyBindings() {
+    this.keyBindingIds.forEach(id => KEY_BINDING.unregisterAction(id));
+    this.keyBindingIds = null;
+    KEY_BINDING.unbind(this.ref);
+  }
 
   render() {
     const { id, type, uiState, movable, minimizable, resizable, children } = this.props;
