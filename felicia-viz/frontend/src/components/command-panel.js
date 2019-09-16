@@ -3,6 +3,8 @@ import React, { Component } from 'react';
 import AutoSuggest from 'react-autosuggest';
 import { withTheme } from '@streetscape.gl/monochrome';
 
+import KeyBinding from '@felicia-viz/ui/util/key-binding';
+
 import { COMMAND_PANEL_THEME } from 'custom-styles';
 import COMMANDS, { matchCommand, runAction } from './commands';
 
@@ -17,32 +19,26 @@ class CommandPanel extends Component {
   };
 
   componentDidMount() {
-    this.input.addEventListener('keydown', this._onKeyDown);
+    this.keyBinding = new KeyBinding(this.input);
+    this.keyBinding.bind();
+    this.keyBinding.registerAction(['Escape'], e => {
+      this.blur();
+      e.preventDefault();
+    });
+    this.keyBinding.registerAction(['Enter'], e => {
+      const { value } = this.state;
+      if (value !== '') {
+        runAction(value);
+        this.blur();
+        e.preventDefault();
+      }
+    });
     this.focus();
   }
 
-  _onKeyDown = event => {
-    switch (event.keyCode) {
-      case 27: {
-        // ESC
-        this.blur();
-        event.preventDefault();
-        break;
-      }
-      case 13: {
-        // Enter
-        const { value } = this.state;
-        if (value !== '') {
-          runAction(value);
-          this.blur();
-          event.preventDefault();
-        }
-        break;
-      }
-      default:
-        break;
-    }
-  };
+  componentWillUnmount() {
+    this.keyBinding.unbind();
+  }
 
   // eslint-disable-next-line no-unused-vars
   _onChange = (event, { newValue, method }) => {

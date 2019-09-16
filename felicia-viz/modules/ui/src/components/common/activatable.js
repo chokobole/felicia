@@ -20,8 +20,6 @@ export default class Activatable extends PureComponent {
 
   _onPointerDown = () => {
     const { id, type, uiState } = this.props;
-
-    console.log(`${id} is activated.`);
     uiState.activeViewState.set(id, type);
   };
 

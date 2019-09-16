@@ -9,12 +9,19 @@
   "extends": ["airbnb", "prettier", "prettier/react"],
   "rules": {
     "import/no-unresolved": ["error", {"ignore": ["felicia_js.node", "@felicia-viz/ui", "@felicia-viz/communication", "@felicia-viz/proto"]}],
+    "jsx-a11y/no-noninteractive-tabindex": [
+      "error",
+      {
+        "tags": [],
+        "roles": ["tabpanel"]
+      }
+    ],
     "no-bitwise": "off",
     "no-console": "off",
     "no-underscore-dangle": "off",
     "react/forbid-prop-types": ["error", {"forbid": ["any", "array"]}],
     "react/jsx-filename-extension": ["error", { "extensions": [".js", ".jsx"] }],
-    "react/no-multi-comp": "off",
+    "react/no-multi-comp": "off"
   },
   "globals": {
     "document": "readonly",
@@ -22,6 +29,7 @@
     "HEARTBEAT_INTERVAL": "readonly",
     "HTTP_PORT": "readonly",
     "Image": "readonly",
+    "navigator": "readonly",
     "SERVER_ADDRESS": "readonly",
     "WebSocket": "readonly",
     "WEBSOCKET_PORT": "readonly",

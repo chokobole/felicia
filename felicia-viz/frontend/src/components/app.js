@@ -15,6 +15,7 @@ import TopicInfoSubscriber from '@felicia-viz/communication/topic-info-subscribe
 // } from '@felicia-viz/deeplearning';
 import { FeliciaVizStore } from '@felicia-viz/ui/store';
 import SUBSCRIBER from '@felicia-viz/ui/store/subscriber';
+import KeyBinding from '@felicia-viz/ui/util/key-binding';
 
 import 'fonts/felicia-icons.css';
 import 'react-notifications/lib/notifications.css';
@@ -84,37 +85,19 @@ export default class App extends Component {
     });
     this.topicInfoSubscriber.initialize();
 
-    document.addEventListener('keydown', this._onKeyDown);
+    this.keyBinding = new KeyBinding(document);
+    this.keyBinding.bind();
+    this.keyBinding.registerAction(['Control', 'P'], e => {
+      this.setState({ isCommandPanelVisible: true });
+      e.preventDefault();
+    });
   }
 
   componentWillUnmount() {
     this.topicInfoSubscriber.close();
 
-    document.removeEventListener('keydown', this._onKeyDown);
+    this.keyBinding.unbind();
   }
-
-  _onKeyDown = e => {
-    switch (e.keyCode) {
-      case 8:
-      case 46: {
-        // BackSpace
-        // Delete
-        const { store } = this.props;
-        store.uiState.activeViewState.unset();
-        break;
-      }
-      case 80: {
-        if (e.ctrlKey && e.shiftKey) {
-          // Ctrl + Shift + P
-          this.setState({ isCommandPanelVisible: true });
-          e.preventDefault();
-        }
-        break;
-      }
-      default:
-        break;
-    }
-  };
 
   _onCommandPanelBlur = () => {
     this.setState({ isCommandPanelVisible: false });
