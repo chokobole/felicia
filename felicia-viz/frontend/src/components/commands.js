@@ -4,24 +4,28 @@ const COMMANDS = [
   {
     name: 'Show OccupancyGridMapControlPanel',
     action: () => {
+      STORE.uiState.markActive(0);
       STORE.uiState.setControlPanel('OccupancyGridMapControlPanel');
     },
   },
   {
     name: 'Show PointcloudControlPanel',
     action: () => {
+      STORE.uiState.markActive(0);
       STORE.uiState.setControlPanel('PointcloudControlPanel');
     },
   },
   {
     name: 'Show PoseWithTimestampControlPanel',
     action: () => {
+      STORE.uiState.markActive(0);
       STORE.uiState.setControlPanel('PoseWithTimestampControlPanel');
     },
   },
   {
     name: 'Show Pose3WithTimestampControlPanel',
     action: () => {
+      STORE.uiState.markActive(0);
       STORE.uiState.setControlPanel('Pose3WithTimestampControlPanel');
     },
   },

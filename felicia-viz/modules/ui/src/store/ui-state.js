@@ -17,7 +17,7 @@ export default class UIState {
     this.addView(mainSceneType);
   }
 
-  @action markActive(id, controlPanelType) {
+  @action markActive(id, controlPanelType = null) {
     this.activeId = id;
     this.controlPanelType = controlPanelType;
   }
