@@ -30,52 +30,12 @@ function renderImuGraph(self) {
   );
 }
 
-class History {
-  constructor(size) {
-    this.size = size;
-    this.data = {
-      x: [{ x: 0, y: 0 }],
-      y: [{ x: 0, y: 0 }],
-      z: [{ x: 0, y: 0 }],
-    };
-  }
-
-  push(vec, timestamp) {
-    const { x, y, z } = vec;
-
-    if (x === 0 && y === 0 && z === 0) return;
-
-    if (this.data.x.length === this.size) {
-      this.data.x.shift();
-      this.data.y.shift();
-      this.data.z.shift();
-    }
-
-    this.data.x.push({ x: timestamp, y: x });
-    this.data.y.push({ x: timestamp, y });
-    this.data.z.push({ x: timestamp, y: z });
-  }
-
-  history() {
-    const { x, y, z } = this.data;
-    return {
-      x,
-      y,
-      z,
-    };
-  }
-}
-
 @inject('store')
 @observer
 export default class ImuFrameControlPanel extends Component {
   static propTypes = {
     store: PropTypes.instanceOf(FeliciaVizStore).isRequired,
   };
-
-  angularVelocities = new History(100);
-
-  linearAccelerations = new History(100);
 
   SETTINGS = {
     header: { type: 'header', title: 'ImuFrame Control' },
@@ -109,18 +69,21 @@ export default class ImuFrameControlPanel extends Component {
   _fetchValues() {
     const { store } = this.props;
     const viewState = store.uiState.getActiveViewState();
-    const { frame } = viewState;
+    const { frame, angularVelocities, linearAccelerations } = viewState;
 
     if (frame) {
-      const { angularVelocity, linearAcceleration, timestamp } = frame;
-      this.angularVelocities.push(angularVelocity, timestamp);
-      this.linearAccelerations.push(linearAcceleration, timestamp);
+      const { timestamp } = frame;
+      return {
+        angularVelocity: angularVelocities.history(),
+        linearAcceleration: linearAccelerations.history(),
+        timestamp,
+      };
     }
 
     return {
-      angularVelocity: this.angularVelocities.history(),
-      linearAcceleration: this.linearAccelerations.history(),
-      timestamp: frame ? frame.timestamp : '',
+      angularVelocity: angularVelocities.history(),
+      linearAcceleration: linearAccelerations.history(),
+      timestamp: '',
     };
   }
 
