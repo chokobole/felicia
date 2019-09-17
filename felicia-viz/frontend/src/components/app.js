@@ -132,13 +132,13 @@ export default class App extends Component {
     const { store } = this.props;
     const { isCommandPanelVisible } = this.state;
     const viewState = store.uiState.findView(0);
-    const { map, pose } = viewState;
+    const { camera, map, pose } = viewState;
 
     return (
       <div id='container'>
         {isCommandPanelVisible && <CommandPanel onBlur={this._onCommandPanelBlur} />}
         <ControlPanel />
-        <MainScene map={map} pose={pose} />
+        <MainScene camera={camera} map={map} pose={pose} />
         {this._renderViews()}
         <ToolBar />
         <NotificationContainer />

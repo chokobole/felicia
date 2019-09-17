@@ -2,6 +2,13 @@ import STORE from '@felicia-viz/ui/store';
 
 const COMMANDS = [
   {
+    name: 'Show CameraControlPanel',
+    action: () => {
+      STORE.uiState.markActive(0);
+      STORE.uiState.setControlPanel('CameraControlPanel');
+    },
+  },
+  {
     name: 'Show OccupancyGridMapControlPanel',
     action: () => {
       STORE.uiState.markActive(0);

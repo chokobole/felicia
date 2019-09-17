@@ -14,10 +14,20 @@ import {
 } from '@felicia-viz/proto/messages/map-message';
 import TopicSubscribable from '@felicia-viz/ui/store/topic-subscribable';
 
+export class CameraState {
+  @observable followPose = false;
+
+  @action setFollowPose(newFollowPose) {
+    this.followPose = newFollowPose;
+  }
+}
+
 export default class MainSceneState extends TopicSubscribable {
   @observable map = null;
 
   @observable pose = null;
+
+  @observable camera = new CameraState();
 
   @action update(message) {
     const { type, data } = message;

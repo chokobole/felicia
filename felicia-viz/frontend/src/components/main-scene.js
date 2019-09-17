@@ -22,10 +22,13 @@ import OccupancyGridMapWorker from '@felicia-viz/ui/webworkers/occupancy-grid-ma
 import PointcloudWorker from '@felicia-viz/ui/webworkers/pointcloud-webworker';
 import { backgroundColor, createScene } from '@felicia-viz/ui/util/babylon-util';
 
+import { CameraState } from 'store/ui/main-scene-state';
+
 export default class MainScene extends Component {
   static propTypes = {
     width: PropTypes.string,
     height: PropTypes.string,
+    camera: PropTypes.instanceOf(CameraState).isRequired,
     map: PropTypes.oneOfType([
       PropTypes.instanceOf(OccupancyGridMapMessage),
       PropTypes.instanceOf(PointcloudMessage),
@@ -97,10 +100,13 @@ export default class MainScene extends Component {
         this.pose = new Pose(1, this.scene);
       }
       this.pose.update(nextProps.pose);
-      this.camera.lockedTarget = this.pose.mesh.position;
-      this.camera.position = this.pose.mesh
-        .getPositionExpressedInLocalSpace()
-        .add(new Vector3(0, 0, 100));
+
+      if (nextProps.camera.followPose) {
+        this.camera.lockedTarget = this.pose.mesh.position;
+        this.camera.position = this.pose.mesh
+          .getPositionExpressedInLocalSpace()
+          .add(new Vector3(0, 0, 100));
+      }
 
       updated = true;
     }

@@ -17,6 +17,7 @@ import PointcloudControlPanel from '@felicia-viz/ui/components/pointcloud-contro
 import PoseWithTimestampControlPanel from '@felicia-viz/ui/components/pose-with-timestamp-control-panel';
 import Pose3WithTimestampControlPanel from '@felicia-viz/ui/components/pose3-with-timestamp-control-panel';
 
+import CameraControlPanel from 'components/camera-control-panel';
 import MainSceneState from 'store/ui/main-scene-state';
 
 const UI_TYPES = {};
@@ -83,6 +84,15 @@ export const LidarFrameViewType = {
 };
 
 UI_TYPES[LidarFrameViewType.name] = LidarFrameViewType;
+
+export const CameraControlPanelType = {
+  name: 'CameraControlPanel',
+  renderControlPanel: () => {
+    return <CameraControlPanel />;
+  },
+};
+
+UI_TYPES[CameraControlPanelType.name] = CameraControlPanelType;
 
 export const OccupancyGridMapControlPanelType = {
   name: 'OccupancyGridMapControlPanel',
