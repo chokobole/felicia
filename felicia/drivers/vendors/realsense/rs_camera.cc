@@ -512,12 +512,16 @@ void RsCamera::OnImuFrame(rs2::frame frame) {
   if (stream == RS_GYRO.stream_type) {
     imu_frame.set_angular_velocity(converted);
     imu_filter_->UpdateAngularVelocity(converted, timestamp);
-    if (!gyro_interval_.is_zero() && timestamp - last_gyro_timestamp_ < gyro_interval_) return;
+    if (!gyro_interval_.is_zero() &&
+        timestamp - last_gyro_timestamp_ < gyro_interval_)
+      return;
     last_gyro_timestamp_ = timestamp;
   } else {
     imu_frame.set_linear_acceleration(converted);
     imu_filter_->UpdateLinearAcceleration(converted);
-    if (!accel_interval_.is_zero() && timestamp - last_accel_timestamp_ < accel_interval_) return;
+    if (!accel_interval_.is_zero() &&
+        timestamp - last_accel_timestamp_ < accel_interval_)
+      return;
     last_accel_timestamp_ = timestamp;
   }
 

@@ -5,6 +5,7 @@
 
 #include "felicia/core/lib/file/csv_reader.h"
 #include "felicia/core/util/dataset/dataset_loader.h"
+#include "felicia/drivers/imu/imu_filter_interface.h"
 #include "felicia/slam/dataset/sensor_data.h"
 #include "felicia/slam/dataset/sensor_meta_data.h"
 
@@ -48,6 +49,7 @@ class EurocDatasetLoader
     CsvReader data_list_reader_;
     size_t current_ = 0;
     float frame_rate_ = -1;
+    std::unique_ptr<drivers::ImuFilterInterface> imu_filter_;
   };
 
   EurocDatasetLoader(const base::FilePath& path, int data_types);

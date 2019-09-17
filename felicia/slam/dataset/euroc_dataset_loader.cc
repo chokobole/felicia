@@ -4,6 +4,7 @@
 #include "third_party/chromium/base/strings/utf_string_conversions.h"
 
 #include "felicia/core/lib/file/yaml_reader.h"
+#include "felicia/drivers/imu/imu_filter_factory.h"
 #include "felicia/slam/dataset/dataset_utils.h"
 
 namespace felicia {
@@ -99,6 +100,11 @@ StatusOr<SensorData> EurocDatasetLoader::State::Next() {
         break;
       }
       case SensorData::DATA_TYPE_IMU: {
+        if (!imu_filter_.get()) {
+          imu_filter_ = drivers::ImuFilterFactory::NewImuFilter(
+              drivers::ImuFilterFactory::MADGWICK_FILTER_KIND);
+        }
+
         float v[6];
         for (int i = 0; i < 6; ++i) {
           status_or =
@@ -107,8 +113,14 @@ StatusOr<SensorData> EurocDatasetLoader::State::Next() {
           v[i] = status_or.ValueOrDie();
         }
         drivers::ImuFrame imu_frame;
-        imu_frame.set_linear_acceleration(Vector3f{v[0], v[1], v[2]});
-        imu_frame.set_angular_velocity(Vector3f{v[0], v[1], v[2]});
+        Vector3f angular_velocity(v[0], v[1], v[2]);
+        Vector3f linear_acceleration(v[3], v[4], v[5]);
+        imu_frame.set_linear_acceleration(linear_acceleration);
+        imu_frame.set_angular_velocity(angular_velocity);
+        imu_filter_->UpdateLinearAcceleration(linear_acceleration);
+        imu_filter_->UpdateAngularVelocity(angular_velocity, timestamp);
+        imu_frame.set_orientation(imu_filter_->orientation());
+        imu_frame.set_timestamp(timestamp);
         sensor_data.set_imu_frame(imu_frame);
         break;
       }
@@ -182,7 +194,7 @@ base::FilePath EurocDatasetLoader::State::PathToDataType() const {
     case SensorData::DATA_TYPE_RIGHT_CAMERA_GRAY_SCALE:
       return path_.AppendASCII("cam1");
     case SensorData::DATA_TYPE_IMU:
-      return path_.AppendASCII("cam1");
+      return path_.AppendASCII("imu0");
     case SensorData::DATA_TYPE_GROUND_TRUTH_POSITION:
       return path_.AppendASCII("leica0");
     case SensorData::DATA_TYPE_GROUND_TRUTH_POSE:

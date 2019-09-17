@@ -80,6 +80,20 @@ DatasetFlag::DatasetFlag() : current_dataset_kind_(DATASET_KIND_NONE) {
     lidar_topic_flag_ = std::make_unique<StringFlag>(flag);
   }
   {
+    StringFlag::Builder builder(MakeValueStore(&imu_topic_));
+    auto flag = builder.SetLongName("--imu_topic")
+                    .SetHelp("topic to publish imu")
+                    .Build();
+    imu_topic_flag_ = std::make_unique<StringFlag>(flag);
+  }
+  {
+    StringFlag::Builder builder(MakeValueStore(&pose_topic_));
+    auto flag = builder.SetLongName("--pose_topic")
+                    .SetHelp("topic to publish pose")
+                    .Build();
+    pose_topic_flag_ = std::make_unique<StringFlag>(flag);
+  }
+  {
     BoolFlag::Builder builder(MakeValueStore(&left_as_gray_scale_));
     auto flag = builder.SetLongName("--left_as_gray_scale")
                     .SetHelp("read left camera frame as a gray scale")
@@ -114,6 +128,20 @@ DatasetFlag::DatasetFlag() : current_dataset_kind_(DATASET_KIND_NONE) {
                     .Build();
     lidar_fps_flag_ = std::make_unique<FloatDefaultFlag>(flag);
   }
+  {
+    FloatDefaultFlag::Builder builder(MakeValueStore(&imu_fps_, 200.f));
+    auto flag = builder.SetLongName("--imu_fps")
+                    .SetHelp("imu fps to load data (default: 200)")
+                    .Build();
+    imu_fps_flag_ = std::make_unique<FloatDefaultFlag>(flag);
+  }
+  {
+    FloatDefaultFlag::Builder builder(MakeValueStore(&pose_fps_, 200.f));
+    auto flag = builder.SetLongName("--pose_fps")
+                    .SetHelp("pose fps to load data (default: 200)")
+                    .Build();
+    pose_fps_flag_ = std::make_unique<FloatDefaultFlag>(flag);
+  }
 }
 
 DatasetFlag::~DatasetFlag() = default;
@@ -140,6 +168,12 @@ int DatasetFlag::data_types() const {
   if (lidar_topic_flag_->is_set()) {
     ret |= slam::SensorData::DATA_TYPE_LIDAR;
   }
+  if (imu_topic_flag_->is_set()) {
+    ret |= slam::SensorData::DATA_TYPE_IMU;
+  }
+  if (pose_topic_flag_->is_set()) {
+    ret |= slam::SensorData::DATA_TYPE_GROUND_TRUTH_POSE;
+  }
   return ret;
 }
 
@@ -155,8 +189,9 @@ bool DatasetFlag::Parse(FlagParser& parser) {
   return PARSE_OPTIONAL_FLAG(
       parser, name_flag_, channel_type_flag_, left_color_topic_flag_,
       right_color_topic_flag_, depth_topic_flag_, lidar_topic_flag_,
-      left_as_gray_scale_flag_, right_as_gray_scale_flag_, color_fps_flag_,
-      depth_fps_flag_, lidar_fps_flag_);
+      imu_topic_flag_, pose_topic_flag_, left_as_gray_scale_flag_,
+      right_as_gray_scale_flag_, color_fps_flag_, depth_fps_flag_,
+      lidar_fps_flag_, imu_fps_flag_, pose_fps_flag_);
 }
 
 bool DatasetFlag::Validate() const {
@@ -164,8 +199,11 @@ bool DatasetFlag::Validate() const {
          CheckIfFlagPositive(color_fps_flag_) &&
          CheckIfFlagPositive(depth_fps_flag_) &&
          CheckIfFlagPositive(lidar_fps_flag_) &&
+         CheckIfFlagPositive(imu_fps_flag_) &&
+         CheckIfFlagPositive(pose_fps_flag_) &&
          CheckIfOneOfFlagWasSet(left_color_topic_flag_, right_color_topic_flag_,
-                                depth_topic_flag_, lidar_topic_flag_);
+                                depth_topic_flag_, lidar_topic_flag_,
+                                imu_topic_flag_, pose_topic_flag_);
 }
 
 }  // namespace felicia

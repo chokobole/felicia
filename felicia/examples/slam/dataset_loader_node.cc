@@ -16,9 +16,14 @@ DatasetLoaderNode::DatasetLoaderNode(const DatasetFlag& dataset_flag)
       right_color_topic_(dataset_flag.right_color_topic_flag()->value()),
       depth_topic_(dataset_flag.depth_topic_flag()->value()),
       lidar_topic_(dataset_flag.lidar_topic_flag()->value()),
+      imu_topic_(dataset_flag.imu_topic_flag()->value()),
+      pose_topic_(dataset_flag.pose_topic_flag()->value()),
       color_fps_(dataset_flag.color_fps_flag()->value()),
       depth_fps_(dataset_flag.depth_fps_flag()->value()),
-      lidar_fps_(dataset_flag.lidar_fps_flag()->value()) {}
+      lidar_fps_(dataset_flag.lidar_fps_flag()->value()),
+      imu_fps_(dataset_flag.imu_fps_flag()->value()),
+      pose_fps_(dataset_flag.pose_fps_flag()->value()),
+      topic_publish_count_(0) {}
 
 void DatasetLoaderNode::OnInit() {
   base::FilePath path = ToFilePath(dataset_flag_.path_flag()->value());
@@ -77,6 +82,7 @@ void DatasetLoaderNode::RequestPublish() {
         channel_type | ChannelDef::CHANNEL_TYPE_WS, settings,
         base::BindOnce(&DatasetLoaderNode::OnRequestPublish,
                        base::Unretained(this), data_type));
+    ++topic_publish_count_;
   }
 
   if (!right_color_topic_.empty()) {
@@ -89,23 +95,48 @@ void DatasetLoaderNode::RequestPublish() {
         channel_type | ChannelDef::CHANNEL_TYPE_WS, settings,
         base::BindOnce(&DatasetLoaderNode::OnRequestPublish,
                        base::Unretained(this), data_type));
+    ++topic_publish_count_;
   }
 
-  if (!depth_topic_.empty())
+  if (!depth_topic_.empty()) {
     depth_publisher_.RequestPublish(
         node_info_, depth_topic_, channel_type | ChannelDef::CHANNEL_TYPE_WS,
         settings,
         base::BindOnce(&DatasetLoaderNode::OnRequestPublish,
                        base::Unretained(this),
                        slam::SensorData::DATA_TYPE_DEPTH_CAMERA));
+    ++topic_publish_count_;
+  }
 
-  if (!lidar_topic_.empty())
+  if (!lidar_topic_.empty()) {
     lidar_publisher_.RequestPublish(
         node_info_, lidar_topic_, channel_type | ChannelDef::CHANNEL_TYPE_WS,
         settings,
         base::BindOnce(&DatasetLoaderNode::OnRequestPublish,
                        base::Unretained(this),
                        slam::SensorData::DATA_TYPE_LIDAR));
+    ++topic_publish_count_;
+  }
+
+  if (!imu_topic_.empty()) {
+    imu_publisher_.RequestPublish(
+        node_info_, imu_topic_, channel_type | ChannelDef::CHANNEL_TYPE_WS,
+        settings,
+        base::BindOnce(&DatasetLoaderNode::OnRequestPublish,
+                       base::Unretained(this),
+                       slam::SensorData::DATA_TYPE_IMU));
+    ++topic_publish_count_;
+  }
+
+  if (!pose_topic_.empty()) {
+    pose_publisher_.RequestPublish(
+        node_info_, pose_topic_, channel_type | ChannelDef::CHANNEL_TYPE_WS,
+        settings,
+        base::BindOnce(&DatasetLoaderNode::OnRequestPublish,
+                       base::Unretained(this),
+                       slam::SensorData::DATA_TYPE_GROUND_TRUTH_POSE));
+    ++topic_publish_count_;
+  }
 }
 
 void DatasetLoaderNode::LoadData(slam::SensorData::DataType data_type) {
@@ -120,12 +151,14 @@ void DatasetLoaderNode::LoadData(slam::SensorData::DataType data_type) {
     }
     return;
   }
+  double delay = 1;
   slam::SensorData sensor_data = status_or.ValueOrDie();
   if ((data_type == slam::SensorData::DATA_TYPE_LEFT_CAMERA ||
        data_type == slam::SensorData::DATA_TYPE_LEFT_CAMERA_GRAY_SCALE) &&
       !left_color_topic_.empty()) {
     left_color_publisher_.Publish(
         std::move(sensor_data).left_camera_frame().ToCameraFrameMessage(false));
+    delay = 1.0 / color_fps_;
   } else if ((data_type == slam::SensorData::DATA_TYPE_RIGHT_CAMERA ||
               data_type ==
                   slam::SensorData::DATA_TYPE_RIGHT_CAMERA_GRAY_SCALE) &&
@@ -133,26 +166,54 @@ void DatasetLoaderNode::LoadData(slam::SensorData::DataType data_type) {
     right_color_publisher_.Publish(std::move(sensor_data)
                                        .right_camera_frame()
                                        .ToCameraFrameMessage(false));
+    delay = 1.0 / color_fps_;
   } else if (data_type == slam::SensorData::DATA_TYPE_DEPTH_CAMERA &&
              !depth_topic_.empty()) {
     depth_publisher_.Publish(std::move(sensor_data)
                                  .depth_camera_frame()
                                  .ToDepthCameraFrameMessage(false));
+    delay = 1.0 / depth_fps_;
+  } else if (data_type == slam::SensorData::DATA_TYPE_IMU &&
+             !imu_topic_.empty()) {
+    bool publish = false;
+    if (topic_publish_count_ == 1) {
+      publish = true;
+    } else {
+      base::TimeDelta timestamp = timestamper_.timestamp();
+      if (imu_fps_ > 30 && timestamp - last_imu_timestamp_ >
+                               base::TimeDelta::FromSecondsD(1.0 / 30)) {
+        publish = true;
+        last_imu_timestamp_ = timestamp;
+      }
+    }
+
+    if (publish)
+      imu_publisher_.Publish(
+          std::move(sensor_data).imu_frame().ToImuFrameMessage());
+    delay = 1.0 / imu_fps_;
+  } else if (data_type == slam::SensorData::DATA_TYPE_GROUND_TRUTH_POSE &&
+             !pose_topic_.empty()) {
+    bool publish = false;
+    if (topic_publish_count_ == 1) {
+      publish = true;
+    } else {
+      base::TimeDelta timestamp = timestamper_.timestamp();
+      if (pose_fps_ > 30 && timestamp - last_pose_timestamp_ >
+                                base::TimeDelta::FromSecondsD(1.0 / 30)) {
+        publish = true;
+        last_pose_timestamp_ = timestamp;
+      }
+    }
+
+    if (publish)
+      pose_publisher_.Publish(Pose3fToPose3fWithTimestampMessage(
+          std::move(sensor_data).pose(), sensor_data.timestamp()));
+    delay = 1.0 / pose_fps_;
   } else {
     return;
   }
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
-  double delay = 1;
-  if (!left_color_topic_.empty()) {
-    delay = 1.0 / color_fps_;
-  } else if (!right_color_topic_.empty()) {
-    delay = 1.0 / color_fps_;
-  } else if (!depth_topic_.empty()) {
-    delay = 1.0 / depth_fps_;
-  } else if (!lidar_topic_.empty()) {
-    delay = 1.0 / lidar_fps_;
-  }
   master_proxy.PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&DatasetLoaderNode::LoadData, base::Unretained(this),
