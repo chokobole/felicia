@@ -7,14 +7,7 @@ const commonConfig = require('./webpack.config.common.js');
 
 module.exports = env => {
   const config = commonConfig(env);
-
-  let rootPath;
-  if (env.build) {
-    rootPath = '..';
-  } else {
-    // eslint-disable-next-line prefer-destructuring
-    rootPath = env.rootPath;
-  }
+  const rootPath = '..';
 
   Object.assign(config, {
     entry: {
@@ -83,6 +76,15 @@ module.exports = env => {
 
   if (env.production) {
     // production
+    config.plugins.unshift(
+      new HtmlWebpackPlugin({
+        template: resolve(rootPath, 'frontend/dist/index.html'),
+        inject: true,
+      }),
+      new webpack.DefinePlugin({
+        SERVER_ADDRESS: JSON.stringify('localhost'),
+      })
+    );
   } else {
     // development
     config.resolve.alias = Object.assign(config.resolve.alias, {

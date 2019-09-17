@@ -1,5 +1,3 @@
-import path from 'path';
-
 /* eslint import/no-extraneous-dependencies: ["error", {"devDependencies": true}] */
 import webpack from 'webpack';
 import webpackDevMiddleware from 'webpack-dev-middleware';
@@ -10,7 +8,6 @@ import webpackConfig from '../../webpack.config.frontend';
 export default app => {
   const config = webpackConfig({
     dev: true,
-    rootPath: path.resolve('..'),
   });
   const compiler = webpack(config);
 
