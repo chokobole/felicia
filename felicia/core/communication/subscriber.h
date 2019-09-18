@@ -269,6 +269,7 @@ void Subscriber<MessageTy>::ConnectToPublisher() {
         }
       }
     }
+    if (matched_channel_def.type() != ChannelDef::CHANNEL_TYPE_NONE) break;
     channel_type_ <<= 1;
   }
 

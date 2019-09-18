@@ -179,11 +179,11 @@
             "Type": {
               "values": {
                 "CHANNEL_TYPE_NONE": 0,
-                "CHANNEL_TYPE_TCP": 1,
-                "CHANNEL_TYPE_UDP": 2,
-                "CHANNEL_TYPE_WS": 4,
-                "CHANNEL_TYPE_UDS": 8,
-                "CHANNEL_TYPE_SHM": 16
+                "CHANNEL_TYPE_SHM": 1,
+                "CHANNEL_TYPE_UDS": 2,
+                "CHANNEL_TYPE_UDP": 4,
+                "CHANNEL_TYPE_TCP": 8,
+                "CHANNEL_TYPE_WS": 16
               }
             }
           }

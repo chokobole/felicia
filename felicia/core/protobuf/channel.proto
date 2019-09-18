@@ -55,11 +55,11 @@ message ShmEndPoint {
 message ChannelDef {
   enum Type {
     CHANNEL_TYPE_NONE = 0; // Default
-    CHANNEL_TYPE_TCP = 1;
-    CHANNEL_TYPE_UDP = 2;
-    CHANNEL_TYPE_WS = 4; // WebSocket
-    CHANNEL_TYPE_UDS = 8;  // UnixDomainSocket
-    CHANNEL_TYPE_SHM = 16; // SharedMemory
+    CHANNEL_TYPE_SHM = 1; // SharedMemory
+    CHANNEL_TYPE_UDS = 2; // UnixDomainSocket
+    CHANNEL_TYPE_UDP = 4;
+    CHANNEL_TYPE_TCP = 8;
+    CHANNEL_TYPE_WS = 16; // WebSocket
   }
 
   Type type = 1;
