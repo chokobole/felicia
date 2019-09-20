@@ -10,6 +10,8 @@
   ],
   "dependencies": {
     "@streetscape.gl/monochrome": "^1.0.0-beta.3",
+    "@types/react": "^16.9.2",
+    "@types/react-dom": "^16.9.0",
     "mobx": "^5.9.0",
     "mobx-react": "^5.4.3",
     "prop-types": "^15.7.2",

@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "noUnusedLocals": true,
+    "noImplicitAny": true,
+    "target": "esnext",
+    "module": "es2015",
+    "strict": true,
+    "jsx": "react",
+    "baseUrl": ".",
+    "paths": {
+      "*": ["./*", "frontend/src/*", "backend/src/*"],
+      "@felicia-viz/communication/*": ["modules/communication/src/*"],
+      "@felicia-viz/deeplearning": ["modules/deeplearning/src/index.ts"],
+      "@felicia-viz/deeplearning/*": ["modules/deeplearning/src/*"],
+      "@felicia-viz/proto/*": ["modules/proto/src/*"],
+      "@felicia-viz/ui": ["modules/ui/src/index.ts"],
+      "@felicia-viz/ui/*": ["modules/ui/src/*"]
+    },
+    "experimentalDecorators": true
+  },
+  "include": [
+    "backend/src/**/*",
+    "frontend/src/**/*",
+    "modules/communication/src/**/*",
+    "modules/deeplearning/src/**/*",
+    "modules/proto/src/**/*",
+    "modules/ui/src/**/*"
+  ],
+  "exclude": ["dist", "node_modules"]
+}

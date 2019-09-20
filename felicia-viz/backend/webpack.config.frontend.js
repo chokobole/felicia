@@ -11,7 +11,7 @@ module.exports = env => {
 
   Object.assign(config, {
     entry: {
-      app: resolve(rootPath, 'frontend/src/main.js'),
+      app: resolve(rootPath, 'frontend/src/main.tsx'),
     },
 
     output: {
@@ -32,18 +32,6 @@ module.exports = env => {
   );
 
   config.module.rules = config.module.rules.concat(
-    {
-      test: /\.js$/,
-      exclude: /node_modules/,
-      use: [
-        {
-          loader: 'babel-loader',
-          options: {
-            rootMode: 'upward',
-          },
-        },
-      ],
-    },
     {
       test: /\.s?css$/,
       use: [
@@ -80,9 +68,6 @@ module.exports = env => {
       new HtmlWebpackPlugin({
         template: resolve(rootPath, 'frontend/dist/index.html'),
         inject: true,
-      }),
-      new webpack.DefinePlugin({
-        SERVER_ADDRESS: JSON.stringify('localhost'),
       })
     );
   } else {
@@ -98,10 +83,7 @@ module.exports = env => {
       }),
       new webpack.optimize.OccurrenceOrderPlugin(),
       new webpack.HotModuleReplacementPlugin(),
-      new webpack.NoEmitOnErrorsPlugin(),
-      new webpack.DefinePlugin({
-        SERVER_ADDRESS: JSON.stringify('localhost'),
-      })
+      new webpack.NoEmitOnErrorsPlugin()
     );
   }
 

@@ -1,12 +1,12 @@
 {
-  "parser": "babel-eslint",
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaFeatures": {
-      "legacyDecorators": true
+      "jsx": true
     }
   },
-  "plugins": ["react"],
-  "extends": ["airbnb", "prettier", "prettier/react"],
+  "plugins": ["@typescript-eslint"],
+  "extends": ["airbnb", "prettier", "prettier/react", "plugin:@typescript-eslint/recommended"],
   "rules": {
     "import/no-unresolved": ["error", {"ignore": ["felicia_js.node", "@felicia-viz/ui", "@felicia-viz/communication", "@felicia-viz/proto"]}],
     "jsx-a11y/no-noninteractive-tabindex": [
@@ -19,8 +19,7 @@
     "no-bitwise": "off",
     "no-console": "off",
     "no-underscore-dangle": "off",
-    "react/forbid-prop-types": ["error", {"forbid": ["any", "array"]}],
-    "react/jsx-filename-extension": ["error", { "extensions": [".js", ".jsx"] }],
+    "react/jsx-filename-extension": ["error", { "extensions": [".js", ".jsx", ".tsx"] }],
     "react/no-multi-comp": "off"
   },
   "globals": {

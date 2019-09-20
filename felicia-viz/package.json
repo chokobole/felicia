@@ -6,8 +6,10 @@
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
     "clean": "lerna run clean && lerna clean",
-    "lint": "eslint .",
-    "format": "prettier --write \"**/*.js\" \"**/*.json\" \"!**/package-lock.json\""
+    "lint": "eslint . --ext .ts,.tsx,.js",
+    "format": "prettier --write \"**/*.js\" \"**/*.ts\" \"**/*.tsx\" \"**/*.json\" \"!**/package-lock.json\"",
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "npm run type-check -- --watch"
   },
   "repository": {
     "type": "git",
@@ -26,7 +28,9 @@
     "@babel/plugin-proposal-decorators": "^7.4.0",
     "@babel/preset-env": "^7.4.3",
     "@babel/preset-react": "^7.0.0",
-    "babel-eslint": "^10.0.1",
+    "@babel/preset-typescript": "^7.6.0",
+    "@typescript-eslint/eslint-plugin": "^2.3.0",
+    "@typescript-eslint/parser": "^2.3.0",
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-config-prettier": "^4.1.0",
@@ -37,7 +41,8 @@
     "lerna": "^3.13.1",
     "prettier": "^1.16.4",
     "rmdir-recursive": "0.0.1",
-    "tar-fs": "^2.0.0"
+    "tar-fs": "^2.0.0",
+    "typescript": "^3.6.3"
   },
   "dependencies": {}
 }

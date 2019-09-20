@@ -17,6 +17,7 @@ const CONFIG = {
         },
       ],
       '@babel/preset-react',
+      '@babel/preset-typescript',
     ],
     plugins: [
       [
@@ -78,7 +79,7 @@ module.exports = function getConfig(api) {
 
   const config = CONFIG[env] || CONFIG.default;
   // Uncomment to debug
-  console.error(env, config.plugins);
+  // console.error(env, config.plugins);
   return config;
 };
 

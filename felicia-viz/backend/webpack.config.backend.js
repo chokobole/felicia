@@ -10,7 +10,7 @@ const ROOT_PATH = resolve(__dirname, '..');
 
 const CONFIG = {
   entry: {
-    server: resolve('src/main.js'),
+    server: resolve('src/main.ts'),
   },
 
   target: 'node',

@@ -1,15 +1,28 @@
 const { resolve } = require('path');
 
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const webpack = require('webpack');
 
 const CONFIG = {
   module: {
     rules: [
       {
-        test: /webworker\.js$/,
+        test: /webworker\.(ts|js)$/,
         use: [
           {
             loader: 'worker-loader',
+          },
+        ],
+      },
+      {
+        test: /\.(ts|tsx|js)$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              rootMode: 'upward',
+            },
           },
         ],
       },
@@ -21,11 +34,13 @@ const CONFIG = {
       HEARTBEAT_INTERVAL: 30000,
       HTTP_PORT: 3000,
       WEBSOCKET_PORT: 3001,
+      SERVER_ADDRESS: JSON.stringify('localhost'),
       FELICIA_ROOT: JSON.stringify(resolve('../..')),
     }),
   ],
 
   resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.json'],
     modules: [resolve('..')],
   },
 };
@@ -53,6 +68,12 @@ module.exports = env => {
 
       devtool: 'source-map',
     });
+
+    config.plugins.push(
+      new ForkTsCheckerWebpackPlugin({
+        tsconfig: resolve('../tsconfig.json'),
+      })
+    );
 
     config.module.rules = config.module.rules.concat({
       enforce: 'pre',
