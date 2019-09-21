@@ -31,6 +31,14 @@ export default class TopicSubscribable {
     this.topics.clear();
   }
 
+  hasTopic(typeName: string) {
+    return this.topics.has(typeName);
+  }
+
+  getTopic(typeName: string) {
+    return this.topics.get(typeName);
+  }
+
   // eslint-disable-next-line class-method-use-this
   update(_: Message): void {}
 

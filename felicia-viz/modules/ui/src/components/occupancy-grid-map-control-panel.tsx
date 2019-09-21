@@ -40,21 +40,36 @@ export default class OccupancyGridMapControlPanel extends Component<{
             return <TopicDropdown {...self} typeNames={[OCCUPANCY_GRID_MAP_MESSAGE]} />;
           },
         },
+        enabled: {
+          type: 'toggle',
+          title: 'enabled',
+        },
       },
     },
   };
 
-  private _onChange = (): void => {};
+  private _onChange = (values: { enabled: boolean }): void => {
+    const { store } = this.props;
+    if (!store) return;
+    const viewState = store.uiState.getActiveViewState() as any;
+    const topic = viewState.getTopic(OCCUPANCY_GRID_MAP_MESSAGE);
+    if (topic && !values.enabled) {
+      viewState.unsetTopic(OCCUPANCY_GRID_MAP_MESSAGE, topic);
+    }
+  };
 
   private _fetchValues(): {
     size: string;
     resolution: string;
     origin: string;
     timestamp: string;
+    enabled: boolean;
   } {
+    let enabled = false;
     const { store } = this.props;
     if (store) {
       const viewState = store.uiState.getActiveViewState() as any;
+      enabled = viewState.hasTopic(OCCUPANCY_GRID_MAP_MESSAGE);
       const { map } = viewState;
 
       if (map && map instanceof OccupancyGridMapMessage) {
@@ -64,6 +79,7 @@ export default class OccupancyGridMapControlPanel extends Component<{
           resolution: resolution.toString(),
           origin: origin.toShortString(),
           timestamp: timestamp.toString(),
+          enabled,
         };
       }
     }
@@ -72,6 +88,7 @@ export default class OccupancyGridMapControlPanel extends Component<{
       resolution: '',
       origin: '',
       timestamp: '',
+      enabled,
     };
   }
 

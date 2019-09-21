@@ -37,20 +37,35 @@ export default class PointcloudControlPanel extends Component<{
             return <TopicDropdown {...self} typeNames={[POINTCLOUD_MESSAGE]} />;
           },
         },
+        enabled: {
+          type: 'toggle',
+          title: 'enabled',
+        },
       },
     },
   };
 
-  private _onChange = (): void => {};
+  private _onChange = (values: { enabled: boolean }): void => {
+    const { store } = this.props;
+    if (!store) return;
+    const viewState = store.uiState.getActiveViewState() as any;
+    const topic = viewState.getTopic(POINTCLOUD_MESSAGE);
+    if (topic && !values.enabled) {
+      viewState.unsetTopic(POINTCLOUD_MESSAGE, topic);
+    }
+  };
 
   private _fetchValues(): {
     points: string;
     colors: string;
     timestamp: string;
+    enabled: boolean;
   } {
+    let enabled = false;
     const { store } = this.props;
     if (store) {
       const viewState = store.uiState.getActiveViewState() as any;
+      enabled = viewState.hasTopic(POINTCLOUD_MESSAGE);
       const { map } = viewState;
 
       if (map && map instanceof PointcloudMessage) {
@@ -59,6 +74,7 @@ export default class PointcloudControlPanel extends Component<{
           points: new Points(points).length().toString(),
           colors: new Colors(colors).length().toString(),
           timestamp: timestamp.toString(),
+          enabled,
         };
       }
     }
@@ -66,6 +82,7 @@ export default class PointcloudControlPanel extends Component<{
       points: '',
       colors: '',
       timestamp: '',
+      enabled,
     };
   }
 
