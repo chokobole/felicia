@@ -15,7 +15,7 @@ export function backgroundColor4(): Color4 {
   return new Color4(51 / 255, 51 / 255, 51 / 255, 1);
 }
 
-export function createPointcloud(size: number, scene: Scene): Mesh {
+export function createPointcloud(name: string, size: number, scene: Scene): Mesh {
   const width = Math.ceil(size / 2);
   const height = 2;
 
@@ -61,12 +61,12 @@ export function createPointcloud(size: number, scene: Scene): Mesh {
     }
   }
 
-  const material = new StandardMaterial('material', scene);
+  const material = new StandardMaterial(`${name}-material`, scene);
   material.backFaceCulling = false;
   material.pointsCloud = true;
   material.pointSize = 1;
 
-  const mesh = new Mesh('pointcloud', scene);
+  const mesh = new Mesh(name, scene);
   mesh.material = material;
   const vertexData = new VertexData();
   VertexData.ComputeNormals(positions, indices, normals);
