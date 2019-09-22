@@ -5,17 +5,13 @@ import {
 } from '@felicia-viz/proto/messages/geometry';
 // @ts-ignore
 import { Form } from '@streetscape.gl/monochrome';
-import { inject, observer } from 'mobx-react';
 import React, { Component } from 'react';
 import { FORM_STYLE } from '../custom-styles';
-import { FeliciaVizStore } from '../store';
 import { renderText } from './common/panel-item';
 import TopicDropdown, { Props as TopicDropdownProps } from './common/topic-dropdown';
 
-@inject('store')
-@observer
 export default class PoseWithTimestampControlPanel extends Component<{
-  store?: FeliciaVizStore;
+  pose?: PoseWithTimestampMessage | null;
 }> {
   private SETTINGS = {
     header: { type: 'header', title: 'PoseWithTimestamp Control' },
@@ -56,19 +52,14 @@ export default class PoseWithTimestampControlPanel extends Component<{
     theta: string;
     timestamp: string;
   } {
-    const { store } = this.props;
-    if (store) {
-      const viewState = store.uiState.getActiveViewState() as any;
-      const { pose } = viewState;
-
-      if (pose && pose instanceof PoseWithTimestampMessage) {
-        const { position, theta, timestamp } = pose;
-        return {
-          position: position.toShortString(),
-          theta: theta.toString(),
-          timestamp: timestamp.toString(),
-        };
-      }
+    const { pose } = this.props;
+    if (pose) {
+      const { position, theta, timestamp } = pose;
+      return {
+        position: position.toShortString(),
+        theta: theta.toString(),
+        timestamp: timestamp.toString(),
+      };
     }
     return {
       position: '',

@@ -1,18 +1,16 @@
+import { Vector3Message } from '@felicia-viz/proto/messages/geometry';
 import Vector3Input from '@felicia-viz/ui/components/common/vector3-input';
 import { FormProps } from '@felicia-viz/ui/components/common/panel-item';
 import { FORM_STYLE } from '@felicia-viz/ui/custom-styles';
-import { FeliciaVizStore } from '@felicia-viz/ui/store';
+import STORE from '@felicia-viz/ui/store';
 // @ts-ignore
 import { Form } from '@streetscape.gl/monochrome';
-import { inject, observer } from 'mobx-react';
 import React, { Component } from 'react';
 import MainSceneState from '../store/ui/main-scene-state';
-import { Vector3Message } from 'modules/proto/src/messages/geometry';
 
-@inject('store')
-@observer
 export default class CameraControlPanel extends Component<{
-  store?: FeliciaVizStore;
+  followPose: boolean;
+  position: Vector3Message | null;
 }> {
   private SETTINGS = {
     header: { type: 'header', title: 'Camera Control' },
@@ -37,9 +35,7 @@ export default class CameraControlPanel extends Component<{
   };
 
   private _onChange = (values: { followPose?: boolean; position?: Vector3Message }): void => {
-    const { store } = this.props;
-    if (!store) return;
-    const viewState = store.uiState.getActiveViewState() as MainSceneState;
+    const viewState = STORE.uiState.getActiveViewState() as MainSceneState;
     const { camera } = viewState;
 
     if (camera) {
@@ -57,22 +53,10 @@ export default class CameraControlPanel extends Component<{
     followPose: boolean;
     position: Vector3Message | null;
   } {
-    const { store } = this.props;
-    if (store) {
-      const viewState = store.uiState.getActiveViewState() as MainSceneState;
-      const { camera } = viewState;
-
-      if (camera) {
-        const { followPose, position } = camera;
-        return {
-          followPose,
-          position,
-        };
-      }
-    }
+    const { followPose, position } = this.props;
     return {
-      followPose: false,
-      position: null,
+      followPose,
+      position,
     };
   }
 

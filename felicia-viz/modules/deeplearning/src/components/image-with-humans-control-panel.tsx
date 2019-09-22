@@ -3,7 +3,7 @@ import TopicDropdown, {
   Props as TopicDropdownProps,
 } from '@felicia-viz/ui/components/common/topic-dropdown';
 import { FORM_STYLE } from '@felicia-viz/ui/custom-styles';
-import { FeliciaVizStore } from '@felicia-viz/ui/store';
+import STORE from '@felicia-viz/ui/store';
 // @ts-ignore
 import { Form } from '@streetscape.gl/monochrome';
 import { inject, observer } from 'mobx-react';
@@ -13,7 +13,7 @@ import ImageWithHumansViewState from '../store/image-with-humans-view-state';
 @inject('store')
 @observer
 export default class ImageWithHumansControlPanel extends Component<{
-  store?: FeliciaVizStore;
+  threshold: number;
 }> {
   private SETTINGS = {
     header: { type: 'header', title: 'ImageWithHumans Control' },
@@ -46,9 +46,7 @@ export default class ImageWithHumansControlPanel extends Component<{
   };
 
   private _onChange = (values: { threshold: number }): void => {
-    const { store } = this.props;
-    if (!store) return;
-    const viewState = store.uiState.getActiveViewState() as ImageWithHumansViewState;
+    const viewState = STORE.uiState.getActiveViewState() as ImageWithHumansViewState;
     const { threshold } = values;
     if (threshold && viewState.threshold !== threshold) {
       viewState.setThreshold(threshold);
@@ -58,17 +56,9 @@ export default class ImageWithHumansControlPanel extends Component<{
   private _fetchValues(): {
     threshold: number;
   } {
-    const { store } = this.props;
-    if (store) {
-      const viewState = store.uiState.getActiveViewState() as ImageWithHumansViewState;
-      const { threshold } = viewState;
-
-      return {
-        threshold,
-      };
-    }
+    const { threshold } = this.props;
     return {
-      threshold: 0,
+      threshold,
     };
   }
 

@@ -3,17 +3,15 @@ import TopicDropdown, {
   Props as TopicDropdownProps,
 } from '@felicia-viz/ui/components/common/topic-dropdown';
 import { FORM_STYLE } from '@felicia-viz/ui/custom-styles';
-import { FeliciaVizStore } from '@felicia-viz/ui/store';
+import STORE from '@felicia-viz/ui/store';
 // @ts-ignore
 import { Form } from '@streetscape.gl/monochrome';
-import { inject, observer } from 'mobx-react';
 import React, { Component } from 'react';
 import ImageWithBoundingBoxesViewState from '../store/image-with-bounding-boxes-view-state';
 
-@inject('store')
-@observer
 export default class ImageWithBoundingBoxesControlPanel extends Component<{
-  store?: FeliciaVizStore;
+  lineWidth: number;
+  threshold: number;
 }> {
   private SETTINGS = {
     header: { type: 'header', title: 'ImageWithBoundingBoxes Control' },
@@ -53,9 +51,7 @@ export default class ImageWithBoundingBoxesControlPanel extends Component<{
   };
 
   private _onChange = (values: { lineWidth: number; threshold: number }): void => {
-    const { store } = this.props;
-    if (!store) return;
-    const viewState = store.uiState.getActiveViewState() as ImageWithBoundingBoxesViewState;
+    const viewState = STORE.uiState.getActiveViewState() as ImageWithBoundingBoxesViewState;
     const { lineWidth, threshold } = values;
     if (lineWidth && viewState.lineWidth !== lineWidth) {
       viewState.setLineWidth(lineWidth);
@@ -70,20 +66,10 @@ export default class ImageWithBoundingBoxesControlPanel extends Component<{
     lineWidth: number;
     threshold: number;
   } {
-    const { store } = this.props;
-    if (store) {
-      const viewState = store.uiState.getActiveViewState() as ImageWithBoundingBoxesViewState;
-      const { lineWidth, threshold } = viewState;
-
-      return {
-        lineWidth,
-        threshold,
-      };
-    }
-
+    const { lineWidth, threshold } = this.props;
     return {
-      lineWidth: 0,
-      threshold: 0,
+      lineWidth,
+      threshold,
     };
   }
 

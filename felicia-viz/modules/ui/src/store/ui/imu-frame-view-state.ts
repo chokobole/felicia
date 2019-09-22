@@ -15,7 +15,7 @@ export interface Data {
   z: Array<Point>;
 }
 
-class History {
+export class History {
   private size: number;
 
   private data: Data;

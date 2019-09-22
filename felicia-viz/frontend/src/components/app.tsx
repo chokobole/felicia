@@ -1,6 +1,16 @@
 import { Message } from '@felicia-viz/communication/subscriber';
 import TopicInfoSubscriber from '@felicia-viz/communication/topic-info-subscriber';
 import { FeliciaVizStore } from '@felicia-viz/ui/store';
+// Uncomment to add deeplearning packages
+// import {
+//   ImageWithBoundingBoxesControlPanel,
+//   ImageWithBoundingBoxesView,
+//   ImageWithHumansControlPanel,
+//   ImageWithHumansView,
+//   ImageWithBoundingBoxesViewState,
+//   ImageWithHumansViewState,
+// } from '@felicia-viz/deeplearning';
+// import { UIType } from '@felicia-viz/ui/store/ui-state';
 import SUBSCRIBER from '@felicia-viz/ui/store/subscriber';
 import KEY_BINDING from '@felicia-viz/ui/util/key-binding';
 import CommandPanel from 'components/command-panel';
@@ -41,11 +51,13 @@ export default class App extends Component<Props, State> {
     //   name: 'ImageWithBoundingBoxesView',
     //   className: 'image-with-bounding-boxes-view',
     //   state: ImageWithBoundingBoxesViewState,
-    //   renderView: (id: number) => {
+    //   renderView: (id: number): JSX.Element => {
     //     return <ImageWithBoundingBoxesView key={id} id={id} />;
     //   },
-    //   renderControlPanel: () => {
-    //     return <ImageWithBoundingBoxesControlPanel />;
+    //   renderControlPanel: (store: FeliciaVizStore): JSX.Element => {
+    //     const viewState = store.uiState.getActiveViewState() as ImageWithBoundingBoxesViewState;
+    //     const { lineWidth, threshold } = viewState;
+    //     return <ImageWithBoundingBoxesControlPanel lineWidth={lineWidth} threshold={threshold} />;
     //   },
     // };
 
@@ -55,11 +67,13 @@ export default class App extends Component<Props, State> {
     //   name: 'ImageWithHumansView',
     //   className: 'image-with-humans-view',
     //   state: ImageWithHumansViewState,
-    //   renderView: (id: number) => {
+    //   renderView: (id: number): JSX.Element => {
     //     return <ImageWithHumansView key={id} id={id} />;
     //   },
-    //   renderControlPanel: () => {
-    //     return <ImageWithHumansControlPanel />;
+    //   renderControlPanel: (store: FeliciaVizStore): JSX.Element => {
+    //     const viewState = store.uiState.getActiveViewState() as ImageWithHumansViewState;
+    //     const { threshold } = viewState;
+    //     return <ImageWithHumansControlPanel threshold={threshold} />;
     //   },
     // };
 

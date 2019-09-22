@@ -4,17 +4,15 @@ import {
 } from '@felicia-viz/proto/messages/map-message';
 // @ts-ignore
 import { Form } from '@streetscape.gl/monochrome';
-import { inject, observer } from 'mobx-react';
 import React, { Component } from 'react';
 import { FORM_STYLE } from '../custom-styles';
-import { FeliciaVizStore } from '../store';
+import STORE from '../store';
 import { renderText } from './common/panel-item';
 import TopicDropdown, { Props as TopicDropdownProps } from './common/topic-dropdown';
 
-@inject('store')
-@observer
 export default class OccupancyGridMapControlPanel extends Component<{
-  store?: FeliciaVizStore;
+  enabled: boolean;
+  map: OccupancyGridMapMessage | null;
 }> {
   private SETTINGS = {
     header: { type: 'header', title: 'OccupancyGridMap Control' },
@@ -49,12 +47,12 @@ export default class OccupancyGridMapControlPanel extends Component<{
   };
 
   private _onChange = (values: { enabled: boolean }): void => {
-    const { store } = this.props;
-    if (!store) return;
-    const viewState = store.uiState.getActiveViewState() as any;
-    const topic = viewState.getTopic(OCCUPANCY_GRID_MAP_MESSAGE);
-    if (topic && !values.enabled) {
-      viewState.unsetTopic(OCCUPANCY_GRID_MAP_MESSAGE, topic);
+    const viewState = STORE.uiState.getActiveViewState();
+    if (viewState) {
+      const topic = viewState.getTopic(OCCUPANCY_GRID_MAP_MESSAGE);
+      if (topic && !values.enabled) {
+        viewState.unsetTopic(OCCUPANCY_GRID_MAP_MESSAGE, topic);
+      }
     }
   };
 
@@ -65,23 +63,16 @@ export default class OccupancyGridMapControlPanel extends Component<{
     timestamp: string;
     enabled: boolean;
   } {
-    let enabled = false;
-    const { store } = this.props;
-    if (store) {
-      const viewState = store.uiState.getActiveViewState() as any;
-      enabled = viewState.hasTopic(OCCUPANCY_GRID_MAP_MESSAGE);
-      const { map } = viewState;
-
-      if (map && map instanceof OccupancyGridMapMessage) {
-        const { size, resolution, origin, timestamp } = map;
-        return {
-          size: size.toShortString(),
-          resolution: resolution.toString(),
-          origin: origin.toShortString(),
-          timestamp: timestamp.toString(),
-          enabled,
-        };
-      }
+    const { enabled, map } = this.props;
+    if (map) {
+      const { size, resolution, origin, timestamp } = map;
+      return {
+        size: size.toShortString(),
+        resolution: resolution.toString(),
+        origin: origin.toShortString(),
+        timestamp: timestamp.toString(),
+        enabled,
+      };
     }
     return {
       size: '',

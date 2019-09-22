@@ -6,13 +6,14 @@ import {
 } from '@felicia-viz/proto/messages/master-data';
 import { action, observable } from 'mobx';
 import TopicSubscribable from './topic-subscribable';
+import { FeliciaVizStore } from './index';
 
 export interface UIType {
   name: string;
   className?: string;
   state?: typeof TopicSubscribable;
   renderView?: (id: number) => JSX.Element;
-  renderControlPanel?: () => JSX.Element;
+  renderControlPanel?: (store: FeliciaVizStore) => JSX.Element;
 }
 
 export default class UIState {

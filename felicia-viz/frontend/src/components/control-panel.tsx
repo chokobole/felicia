@@ -14,10 +14,10 @@ const Title = styled.h3`
 export default class ControlPanel extends Component<{
   store?: FeliciaVizStore;
 }> {
-  private _renderContent = (type: string | null): JSX.Element | null => {
+  private _renderContent = (store: FeliciaVizStore, type: string | null): JSX.Element | null => {
     if (type === null) return null;
     const f = UI_TYPES[type].renderControlPanel;
-    if (f) return f();
+    if (f) return f(store);
     return null;
   };
 
@@ -37,7 +37,7 @@ export default class ControlPanel extends Component<{
           <Title>Felicia Viz</Title>
         </header>
 
-        <main className={className}>{this._renderContent(controlPanelType)}</main>
+        <main className={className}>{this._renderContent(store, controlPanelType)}</main>
       </div>
     );
   }

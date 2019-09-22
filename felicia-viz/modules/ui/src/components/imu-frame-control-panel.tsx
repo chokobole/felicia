@@ -1,12 +1,10 @@
-import { IMU_FRAME_MESSAGE } from '@felicia-viz/proto/messages/imu-frame-message';
+import ImuFrameMessage, { IMU_FRAME_MESSAGE } from '@felicia-viz/proto/messages/imu-frame-message';
 // @ts-ignore
 import { Form, MetricCard, MetricChart } from '@streetscape.gl/monochrome';
-import { inject, observer } from 'mobx-react';
 import React, { Component } from 'react';
 import { FORM_STYLE, METRIC_CARD_STYLE } from '../custom-styles';
-import { FeliciaVizStore } from '../store';
-import ImuFrameViewState, { Data } from '../store/ui/imu-frame-view-state';
-import { PanelItemContainer, renderText, FormProps } from './common/panel-item';
+import { Data, History } from '../store/ui/imu-frame-view-state';
+import { FormProps, PanelItemContainer, renderText } from './common/panel-item';
 import TopicDropdown, { Props as TopicDropdownProps } from './common/topic-dropdown';
 
 function renderImuGraph({ title, value }: FormProps<Data>): JSX.Element {
@@ -28,10 +26,10 @@ function renderImuGraph({ title, value }: FormProps<Data>): JSX.Element {
   );
 }
 
-@inject('store')
-@observer
 export default class ImuFrameControlPanel extends Component<{
-  store?: FeliciaVizStore;
+  frame: ImuFrameMessage | null;
+  angularVelocities: History | null;
+  linearAccelerations: History | null;
 }> {
   private SETTINGS = {
     header: { type: 'header', title: 'ImuFrame Control' },
@@ -67,19 +65,14 @@ export default class ImuFrameControlPanel extends Component<{
     linearAcceleration: Data;
     timestamp: string;
   } {
-    const { store } = this.props;
-    if (store) {
-      const viewState = store.uiState.getActiveViewState() as ImuFrameViewState;
-      const { frame, angularVelocities, linearAccelerations } = viewState;
-
-      if (frame) {
-        const { timestamp } = frame;
-        return {
-          angularVelocity: angularVelocities.history(),
-          linearAcceleration: linearAccelerations.history(),
-          timestamp: timestamp.toString(),
-        };
-      }
+    const { frame, angularVelocities, linearAccelerations } = this.props;
+    if (frame) {
+      const { timestamp } = frame;
+      return {
+        angularVelocity: angularVelocities!.history(),
+        linearAcceleration: linearAccelerations!.history(),
+        timestamp: timestamp.toString(),
+      };
     }
 
     return {

@@ -1,3 +1,13 @@
+import {
+  Pose3WithTimestampMessage,
+  PoseWithTimestampMessage,
+} from '@felicia-viz/proto/messages/geometry';
+import {
+  PointcloudMessage,
+  POINTCLOUD_MESSAGE,
+  OccupancyGridMapMessage,
+  OCCUPANCY_GRID_MAP_MESSAGE,
+} from '@felicia-viz/proto/messages/map-message';
 import CameraFrameControlPanel from '@felicia-viz/ui/components/camera-frame-control-panel';
 import CameraFrameView from '@felicia-viz/ui/components/camera-frame-view';
 import DepthCameraFrameControlPanel from '@felicia-viz/ui/components/depth-camera-frame-control-panel';
@@ -10,6 +20,7 @@ import OccupancyGridMapControlPanel from '@felicia-viz/ui/components/occupancy-g
 import PointcloudControlPanel from '@felicia-viz/ui/components/pointcloud-control-panel';
 import PoseWithTimestampControlPanel from '@felicia-viz/ui/components/pose-with-timestamp-control-panel';
 import Pose3WithTimestampControlPanel from '@felicia-viz/ui/components/pose3-with-timestamp-control-panel';
+import { FeliciaVizStore } from '@felicia-viz/ui/store';
 import { UIType } from '@felicia-viz/ui/store/ui-state';
 import CameraFrameViewState from '@felicia-viz/ui/store/ui/camera-frame-view-state';
 import DepthCameraFrameViewState from '@felicia-viz/ui/store/ui/depth-camera-frame-view-state';
@@ -32,11 +43,13 @@ export const CameraFrameViewType: UIType = {
   name: 'CameraFrameView',
   className: 'camera-frame-view',
   state: CameraFrameViewState,
-  renderView: (id: number) => {
+  renderView: (id: number): JSX.Element => {
     return <CameraFrameView key={id} id={id} />;
   },
-  renderControlPanel: () => {
-    return <CameraFrameControlPanel />;
+  renderControlPanel: (store: FeliciaVizStore): JSX.Element => {
+    const viewState = store.uiState.getActiveViewState() as CameraFrameViewState;
+    const { frame } = viewState;
+    return <CameraFrameControlPanel frame={frame} />;
   },
 };
 
@@ -46,11 +59,13 @@ export const DepthCameraFrameViewType: UIType = {
   name: 'DepthCameraFrameView',
   className: 'depth-camera-frame-view',
   state: DepthCameraFrameViewState,
-  renderView: (id: number) => {
+  renderView: (id: number): JSX.Element => {
     return <DepthCameraFrameView key={id} id={id} />;
   },
-  renderControlPanel: () => {
-    return <DepthCameraFrameControlPanel />;
+  renderControlPanel: (store: FeliciaVizStore): JSX.Element => {
+    const viewState = store.uiState.getActiveViewState() as DepthCameraFrameViewState;
+    const { frame, filter } = viewState;
+    return <DepthCameraFrameControlPanel frame={frame} filter={filter} />;
   },
 };
 
@@ -60,11 +75,19 @@ export const ImuFrameViewType: UIType = {
   name: 'ImuFrameView',
   className: 'imu-frame-view',
   state: ImuFrameViewState,
-  renderView: (id: number) => {
+  renderView: (id: number): JSX.Element => {
     return <ImuFrameView key={id} id={id} />;
   },
-  renderControlPanel: () => {
-    return <ImuFrameControlPanel />;
+  renderControlPanel: (store: FeliciaVizStore): JSX.Element => {
+    const viewState = store.uiState.getActiveViewState() as ImuFrameViewState;
+    const { frame, angularVelocities, linearAccelerations } = viewState;
+    return (
+      <ImuFrameControlPanel
+        frame={frame}
+        angularVelocities={angularVelocities}
+        linearAccelerations={linearAccelerations}
+      />
+    );
   },
 };
 
@@ -74,11 +97,13 @@ export const LidarFrameViewType: UIType = {
   name: 'LidarFrameView',
   className: 'lidar-frame-view',
   state: LidarFrameViewState,
-  renderView: (id: number) => {
+  renderView: (id: number): JSX.Element => {
     return <LidarFrameView key={id} id={id} />;
   },
-  renderControlPanel: () => {
-    return <LidarFrameControlPanel />;
+  renderControlPanel: (store: FeliciaVizStore): JSX.Element => {
+    const viewState = store.uiState.getActiveViewState() as LidarFrameViewState;
+    const { frame } = viewState;
+    return <LidarFrameControlPanel frame={frame} />;
   },
 };
 
@@ -86,8 +111,10 @@ UI_TYPES[LidarFrameViewType.name] = LidarFrameViewType;
 
 export const CameraControlPanelType: UIType = {
   name: 'CameraControlPanel',
-  renderControlPanel: () => {
-    return <CameraControlPanel />;
+  renderControlPanel: (store: FeliciaVizStore): JSX.Element => {
+    const viewState = store.uiState.getActiveViewState() as MainSceneState;
+    const { followPose, position } = viewState.camera;
+    return <CameraControlPanel followPose={followPose} position={position} />;
   },
 };
 
@@ -95,8 +122,11 @@ UI_TYPES[CameraControlPanelType.name] = CameraControlPanelType;
 
 export const OccupancyGridMapControlPanelType: UIType = {
   name: 'OccupancyGridMapControlPanel',
-  renderControlPanel: () => {
-    return <OccupancyGridMapControlPanel />;
+  renderControlPanel: (store: FeliciaVizStore): JSX.Element => {
+    const viewState = store.uiState.getActiveViewState() as MainSceneState;
+    const enabled = viewState.hasTopic(OCCUPANCY_GRID_MAP_MESSAGE);
+    const map = viewState.map instanceof OccupancyGridMapMessage ? viewState.map : null;
+    return <OccupancyGridMapControlPanel enabled={enabled} map={map} />;
   },
 };
 
@@ -104,8 +134,11 @@ UI_TYPES[OccupancyGridMapControlPanelType.name] = OccupancyGridMapControlPanelTy
 
 export const PointcloudControlPanelType: UIType = {
   name: 'PointcloudControlPanel',
-  renderControlPanel: () => {
-    return <PointcloudControlPanel />;
+  renderControlPanel: (store: FeliciaVizStore): JSX.Element => {
+    const viewState = store.uiState.getActiveViewState() as MainSceneState;
+    const enabled = viewState.hasTopic(POINTCLOUD_MESSAGE);
+    const map = viewState.map instanceof PointcloudMessage ? viewState.map : null;
+    return <PointcloudControlPanel enabled={enabled} map={map} />;
   },
 };
 
@@ -113,8 +146,10 @@ UI_TYPES[PointcloudControlPanelType.name] = PointcloudControlPanelType;
 
 export const PoseWithTimestampControlPanelType: UIType = {
   name: 'PoseWithTimestampControlPanel',
-  renderControlPanel: () => {
-    return <PoseWithTimestampControlPanel />;
+  renderControlPanel: (store: FeliciaVizStore): JSX.Element => {
+    const viewState = store.uiState.getActiveViewState() as MainSceneState;
+    const pose = viewState.pose instanceof PoseWithTimestampMessage ? viewState.pose : null;
+    return <PoseWithTimestampControlPanel pose={pose} />;
   },
 };
 
@@ -122,8 +157,10 @@ UI_TYPES[PoseWithTimestampControlPanelType.name] = PoseWithTimestampControlPanel
 
 export const Pose3WithTimestampControlPanelType: UIType = {
   name: 'Pose3WithTimestampControlPanel',
-  renderControlPanel: () => {
-    return <Pose3WithTimestampControlPanel />;
+  renderControlPanel: (store: FeliciaVizStore): JSX.Element => {
+    const viewState = store.uiState.getActiveViewState() as MainSceneState;
+    const pose = viewState.pose instanceof Pose3WithTimestampMessage ? viewState.pose : null;
+    return <Pose3WithTimestampControlPanel pose={pose} />;
   },
 };
 

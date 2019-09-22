@@ -1,10 +1,9 @@
 // @ts-ignore
 import { Dropdown, Label } from '@streetscape.gl/monochrome';
-import { inject, observer } from 'mobx-react';
 import React, { Component } from 'react';
-import { FeliciaVizStore } from '../store';
+import STORE from '../store';
 import DepthCameraFrameViewState from '../store/ui/depth-camera-frame-view-state';
-import { PanelItemContainer } from './common/panel-item';
+import { FormProps, PanelItemContainer } from './common/panel-item';
 
 const COLORMAPS = [
   'jet',
@@ -53,15 +52,8 @@ const COLORMAPS = [
   'cubehelix',
 ];
 
-export interface Props {
-  title: string;
-  store?: FeliciaVizStore;
-}
-
-@inject('store')
-@observer
-export default class ColormapDropdown extends Component<Props> {
-  constructor(props: Props) {
+export default class ColormapDropdown extends Component<FormProps<string>> {
+  constructor(props: FormProps<string>) {
     super(props);
 
     this.data = COLORMAPS.reduce(
@@ -74,23 +66,19 @@ export default class ColormapDropdown extends Component<Props> {
   }
 
   private _onFilterChange = (value: string): void => {
-    const { store } = this.props;
-    if (!store) return;
-    const viewState = store.uiState.getActiveViewState() as DepthCameraFrameViewState;
+    const viewState = STORE.uiState.getActiveViewState() as DepthCameraFrameViewState;
     viewState.setFilter(value);
   };
 
   private data: { [key: string]: string };
 
-  render(): JSX.Element | null {
-    const { title, store } = this.props;
-    if (!store) return null;
-    const viewState = store.uiState.getActiveViewState() as DepthCameraFrameViewState;
+  render(): JSX.Element {
+    const { title, value } = this.props;
 
     return (
       <PanelItemContainer>
         <Label>{title}</Label>
-        <Dropdown value={viewState.filter} data={this.data} onChange={this._onFilterChange} />
+        <Dropdown value={value} data={this.data} onChange={this._onFilterChange} />
       </PanelItemContainer>
     );
   }
