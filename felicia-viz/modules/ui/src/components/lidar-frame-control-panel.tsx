@@ -39,7 +39,7 @@ export default class LidarFrameControlPanel extends Component<{
           type: 'custom',
           title: 'topic',
           render: (self: TopicDropdownProps): JSX.Element => {
-            return <TopicDropdown {...self} typeNames={[LIDAR_FRAME_MESSAGE]} />;
+            return <TopicDropdown {...self} value={[LIDAR_FRAME_MESSAGE]} />;
           },
         },
       },

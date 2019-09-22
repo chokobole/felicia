@@ -103,6 +103,11 @@ class Vector2Base {
 
   y = 0;
 
+  eqauls(other: Vector2Base): boolean {
+    const { x, y } = this;
+    return x === other.x && y === other.y;
+  }
+
   toBabylonVector2(): Vector2 {
     const { x, y } = this;
     return new Vector2(x, y);
@@ -130,6 +135,11 @@ class Vector3Base {
   y = 0;
 
   z = 0;
+
+  eqauls(other: Vector3Base): boolean {
+    const { x, y, z } = this;
+    return x === other.x && y === other.y && z === other.z;
+  }
 
   toBabylonVector2(): Vector2 {
     const { x, y } = this;

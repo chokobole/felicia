@@ -34,7 +34,7 @@ export default class PointcloudControlPanel extends Component<{
           type: 'custom',
           title: 'topic',
           render: (self: TopicDropdownProps): JSX.Element => {
-            return <TopicDropdown {...self} typeNames={[POINTCLOUD_MESSAGE]} />;
+            return <TopicDropdown {...self} value={[POINTCLOUD_MESSAGE]} />;
           },
         },
         enabled: {
@@ -72,7 +72,7 @@ export default class PointcloudControlPanel extends Component<{
         const { points, colors, timestamp } = map;
         return {
           points: new Points(points).length().toString(),
-          colors: new Colors(colors).length().toString(),
+          colors: colors.data.byteLength > 0 ? new Colors(colors).length().toString() : '0',
           timestamp: timestamp.toString(),
           enabled,
         };

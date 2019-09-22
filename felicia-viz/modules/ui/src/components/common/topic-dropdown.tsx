@@ -5,13 +5,10 @@ import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
 import React, { Component } from 'react';
 import { FeliciaVizStore } from '../../store';
-import { PanelItemContainer } from './panel-item';
+import { PanelItemContainer, FormProps } from './panel-item';
 
-export interface Props {
-  title: string;
-  typeNames: string[];
+export interface Props extends FormProps<string[]> {
   store?: FeliciaVizStore;
-  isEnabled: boolean;
 }
 
 @inject('store')
@@ -41,18 +38,18 @@ export default class TopicDropdown extends Component<Props> {
   };
 
   render(): JSX.Element | null {
-    const { title, typeNames, store, isEnabled } = this.props;
+    const { title, value, store, isEnabled } = this.props;
     if (!store) return null;
     const viewState = store.uiState.getActiveViewState();
     if (!viewState) return null;
 
     let data: { [topic: string]: string } = {};
-    let value: string | undefined = '';
+    let currentTopic: string | undefined = '';
     const topics = toJS(store.topicInfo.topics);
     // eslint-disable-next-line no-restricted-syntax
-    for (const typeName of typeNames) {
+    for (const typeName of value) {
       if (viewState.topics.has(typeName)) {
-        value = viewState.topics.get(typeName);
+        currentTopic = viewState.topics.get(typeName);
       }
       data = topics.reduce((obj, v) => {
         const { topic } = v;
@@ -62,14 +59,19 @@ export default class TopicDropdown extends Component<Props> {
         return obj;
       }, data);
     }
-    if (value === '') {
+    if (currentTopic === '') {
       data[''] = '';
     }
 
     return (
       <PanelItemContainer>
         <Label>{title}</Label>
-        <Dropdown value={value} data={data} onChange={this._onTopicChange} isEnabled={isEnabled} />
+        <Dropdown
+          value={currentTopic}
+          data={data}
+          onChange={this._onTopicChange}
+          isEnabled={isEnabled}
+        />
       </PanelItemContainer>
     );
   }

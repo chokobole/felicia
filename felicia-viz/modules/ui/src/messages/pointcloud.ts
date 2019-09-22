@@ -36,7 +36,7 @@ export default class Pointcloud {
 
   private size: number;
 
-  private _createPointcloud(size: number, scene: Scene) {
+  private _createPointcloud(size: number, scene: Scene): void {
     const unitSize = 10000;
     while (this.size < size) {
       this.meshMap.set(this.id, createPointcloud(`pointcloud-${this.id}`, unitSize, scene));

@@ -37,7 +37,7 @@ export default class OccupancyGridMapControlPanel extends Component<{
           type: 'custom',
           title: 'topic',
           render: (self: TopicDropdownProps): JSX.Element => {
-            return <TopicDropdown {...self} typeNames={[OCCUPANCY_GRID_MAP_MESSAGE]} />;
+            return <TopicDropdown {...self} value={[OCCUPANCY_GRID_MAP_MESSAGE]} />;
           },
         },
         enabled: {

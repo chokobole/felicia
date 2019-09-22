@@ -27,13 +27,13 @@ worker.onmessage = (event: InputEvent): void => {
   const { meshInfos, frame } = event.data;
 
   const fPoints = new Points(frame.points);
-  const fColors = new Colors(frame.colors);
+  let fColors = frame.colors.data.byteLength > 0 ? new Colors(frame.colors) : null;
 
   let acc = 0;
   for (let i = 0; i < meshInfos.length; i += 1) {
     const { positions, colors } = meshInfos[i];
     const size = positions.length / 3;
-    if (fColors.length() > 0) {
+    if (fColors) {
       for (let j = 0, k = acc; j < size; j += 1, k += 1) {
         const positionsIdx = j * 3;
         const colorsIdx = j * 4;

@@ -1,3 +1,5 @@
+import Vector3Input from '@felicia-viz/ui/components/common/vector3-input';
+import { FormProps } from '@felicia-viz/ui/components/common/panel-item';
 import { FORM_STYLE } from '@felicia-viz/ui/custom-styles';
 import { FeliciaVizStore } from '@felicia-viz/ui/store';
 // @ts-ignore
@@ -5,6 +7,7 @@ import { Form } from '@streetscape.gl/monochrome';
 import { inject, observer } from 'mobx-react';
 import React, { Component } from 'react';
 import MainSceneState from '../store/ui/main-scene-state';
+import { Vector3Message } from 'modules/proto/src/messages/geometry';
 
 @inject('store')
 @observer
@@ -22,25 +25,37 @@ export default class CameraControlPanel extends Component<{
           type: 'toggle',
           title: 'followPose',
         },
+        position: {
+          type: 'custom',
+          title: 'position',
+          render: (self: FormProps<Vector3Message | null>): JSX.Element => {
+            return <Vector3Input {...self} />;
+          },
+        },
       },
     },
   };
 
-  private _onChange = (values: { followPose: boolean }): void => {
+  private _onChange = (values: { followPose?: boolean; position?: Vector3Message }): void => {
     const { store } = this.props;
     if (!store) return;
     const viewState = store.uiState.getActiveViewState() as MainSceneState;
     const { camera } = viewState;
 
     if (camera) {
-      if (camera.followPose !== values.followPose) {
+      if (values.followPose !== undefined && camera.followPose !== values.followPose) {
         camera.setFollowPose(values.followPose);
+      }
+
+      if (values.position !== undefined && camera.position !== values.position) {
+        camera.setPosition(values.position);
       }
     }
   };
 
   private _fetchValues(): {
     followPose: boolean;
+    position: Vector3Message | null;
   } {
     const { store } = this.props;
     if (store) {
@@ -48,14 +63,16 @@ export default class CameraControlPanel extends Component<{
       const { camera } = viewState;
 
       if (camera) {
-        const { followPose } = camera;
+        const { followPose, position } = camera;
         return {
           followPose,
+          position,
         };
       }
     }
     return {
       followPose: false,
+      position: null,
     };
   }
 

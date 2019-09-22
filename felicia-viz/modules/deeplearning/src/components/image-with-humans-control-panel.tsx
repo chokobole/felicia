@@ -31,7 +31,7 @@ export default class ImageWithHumansControlPanel extends Component<{
           type: 'custom',
           title: 'topic',
           render: (self: TopicDropdownProps): JSX.Element => {
-            return <TopicDropdown {...self} typeNames={[IMAGE_WITH_HUMANS_MESSAGE]} />;
+            return <TopicDropdown {...self} value={[IMAGE_WITH_HUMANS_MESSAGE]} />;
           },
         },
         threshold: {

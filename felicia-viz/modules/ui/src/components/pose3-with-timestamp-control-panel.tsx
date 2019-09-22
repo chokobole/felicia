@@ -40,7 +40,7 @@ export default class Pose3WithTimestampControlPanel extends Component<{
             return (
               <TopicDropdown
                 {...self}
-                typeNames={[POSE3F_WITH_TIMESTAMP_MESSAGE, POSE3D_WITH_TIMESTAMP_MESSAGE]}
+                value={[POSE3F_WITH_TIMESTAMP_MESSAGE, POSE3D_WITH_TIMESTAMP_MESSAGE]}
               />
             );
           },

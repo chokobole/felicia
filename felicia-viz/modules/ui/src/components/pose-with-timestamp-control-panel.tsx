@@ -40,7 +40,7 @@ export default class PoseWithTimestampControlPanel extends Component<{
             return (
               <TopicDropdown
                 {...self}
-                typeNames={[POSEF_WITH_TIMESTAMP_MESSAGE, POSED_WITH_TIMESTAMP_MESSAGE]}
+                value={[POSEF_WITH_TIMESTAMP_MESSAGE, POSED_WITH_TIMESTAMP_MESSAGE]}
               />
             );
           },

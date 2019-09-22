@@ -31,7 +31,7 @@ export default class ImageWithBoundingBoxesControlPanel extends Component<{
           type: 'custom',
           title: 'topic',
           render: (self: TopicDropdownProps): JSX.Element => {
-            return <TopicDropdown {...self} typeNames={[IMAGE_WITH_BOUNDING_BOXES_MESSAGE]} />;
+            return <TopicDropdown {...self} value={[IMAGE_WITH_BOUNDING_BOXES_MESSAGE]} />;
           },
         },
         lineWidth: {

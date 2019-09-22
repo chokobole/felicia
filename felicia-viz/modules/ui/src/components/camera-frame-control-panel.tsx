@@ -37,7 +37,7 @@ export default class CameraFrameControlPanel extends Component<{
           type: 'custom',
           title: 'topic',
           render: (self: TopicDropdownProps): JSX.Element => {
-            return <TopicDropdown {...self} typeNames={[CAMERA_FRAME_MESSAGE]} />;
+            return <TopicDropdown {...self} value={[CAMERA_FRAME_MESSAGE]} />;
           },
         },
       },

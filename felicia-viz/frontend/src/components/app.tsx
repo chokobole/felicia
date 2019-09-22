@@ -142,7 +142,12 @@ export default class App extends Component<Props, State> {
       <div id='container'>
         {isCommandPanelVisible && <CommandPanel onBlur={this._onCommandPanelBlur} />}
         <ControlPanel />
-        <MainScene camera={camera} map={map} pose={pose} />
+        <MainScene
+          followPose={camera.followPose}
+          cameraPosition={camera.position}
+          map={map}
+          pose={pose}
+        />
         {this._renderViews()}
         <ToolBar />
         <NotificationContainer />

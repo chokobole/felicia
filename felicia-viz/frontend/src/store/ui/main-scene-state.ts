@@ -4,6 +4,7 @@ import {
   Pose3WithTimestampMessage,
   POSEF_WITH_TIMESTAMP_MESSAGE,
   PoseWithTimestampMessage,
+  Vector3Message,
 } from '@felicia-viz/proto/messages/geometry';
 import {
   OccupancyGridMapMessage,
@@ -17,8 +18,14 @@ import { action, observable } from 'mobx';
 export class CameraState {
   @observable followPose = false;
 
+  @observable position = new Vector3Message({ x: 0, y: -30, z: 30 });
+
   @action setFollowPose(newFollowPose: boolean): void {
     this.followPose = newFollowPose;
+  }
+
+  @action setPosition(newPosition: Vector3Message): void {
+    this.position = newPosition;
   }
 }
 

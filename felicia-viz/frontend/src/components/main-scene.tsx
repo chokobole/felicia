@@ -8,6 +8,7 @@ import { GridMaterial } from '@babylonjs/materials/grid';
 import {
   Pose3WithTimestampMessage,
   PoseWithTimestampMessage,
+  Vector3Message,
 } from '@felicia-viz/proto/messages/geometry';
 import {
   OccupancyGridMapMessage,
@@ -20,12 +21,12 @@ import { backgroundColor3, createScene } from '@felicia-viz/ui/util/babylon-util
 import OccupancyGridMapWorker from '@felicia-viz/ui/webworkers/occupancy-grid-map-webworker';
 import PointcloudWorker from '@felicia-viz/ui/webworkers/pointcloud-webworker';
 import React, { Component } from 'react';
-import { CameraState } from 'store/ui/main-scene-state';
 
 export interface Props {
   width?: string;
   height?: string;
-  camera: CameraState;
+  followPose: boolean;
+  cameraPosition: Vector3Message;
   map: OccupancyGridMapMessage | PointcloudMessage | null;
   pose: PoseWithTimestampMessage | Pose3WithTimestampMessage | null;
 }
@@ -63,6 +64,11 @@ export default class MainScene extends Component<Props> {
     plane.material = material;
 
     engine.runRenderLoop(() => {
+      const { followPose, cameraPosition } = this.props;
+      if (followPose && this.pose) {
+        this.camera!.lockedTarget = this.pose.mesh;
+        this.camera!.position = this.pose.mesh.position.add(cameraPosition.toBabylonVector3());
+      }
       scene.render();
     });
   }
@@ -70,7 +76,7 @@ export default class MainScene extends Component<Props> {
   shouldComponentUpdate(nextProps: Props): boolean {
     if (!this.scene) return false;
 
-    const { map, pose } = this.props;
+    const { followPose, map, pose } = this.props;
     let updated = false;
     if (map !== nextProps.map) {
       if (map instanceof OccupancyGridMapMessage) {
@@ -101,18 +107,14 @@ export default class MainScene extends Component<Props> {
         this.pose = new Pose(1, this.scene);
       }
       this.pose!.update(nextProps.pose);
-
-      if (nextProps.camera.followPose) {
-        const { mesh } = this.pose!;
-        if (this.camera && mesh) {
-          this.camera.lockedTarget = mesh.position;
-          this.camera.position = mesh
-            .getPositionExpressedInLocalSpace()
-            .add(new Vector3(0, 0, 100));
-        }
-      }
-
       updated = true;
+    }
+
+    if (followPose !== nextProps.followPose) {
+      if (!nextProps.followPose) {
+        this.camera!.lockedTarget = null;
+        this.camera!.position = new Vector3(0, -30, 30);
+      }
     }
 
     if (updated) return true;

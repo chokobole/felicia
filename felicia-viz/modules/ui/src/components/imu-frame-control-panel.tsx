@@ -6,11 +6,10 @@ import React, { Component } from 'react';
 import { FORM_STYLE, METRIC_CARD_STYLE } from '../custom-styles';
 import { FeliciaVizStore } from '../store';
 import ImuFrameViewState, { Data } from '../store/ui/imu-frame-view-state';
-import { PanelItemContainer, renderText, TitledValue } from './common/panel-item';
+import { PanelItemContainer, renderText, FormProps } from './common/panel-item';
 import TopicDropdown, { Props as TopicDropdownProps } from './common/topic-dropdown';
 
-function renderImuGraph(self: TitledValue): JSX.Element {
-  const { title, value } = self;
+function renderImuGraph({ title, value }: FormProps<Data>): JSX.Element {
   return (
     <PanelItemContainer>
       <MetricCard title={title} className='metric-container' style={METRIC_CARD_STYLE}>
@@ -54,7 +53,7 @@ export default class ImuFrameControlPanel extends Component<{
           type: 'custom',
           title: 'topic',
           render: (self: TopicDropdownProps): JSX.Element => {
-            return <TopicDropdown {...self} typeNames={[IMU_FRAME_MESSAGE]} />;
+            return <TopicDropdown {...self} value={[IMU_FRAME_MESSAGE]} />;
           },
         },
       },

@@ -11,12 +11,15 @@ export const PanelItemContainer = styled.div`
   justify-content: space-between;
 `;
 
-export interface TitledValue {
+export interface FormProps<T> {
+  name: string;
   title: string;
-  value: string;
+  value: T;
+  isEnabled: boolean;
+  onChange: (settings: string, newValue: T) => void;
 }
 
-export function renderText({ title, value }: TitledValue): JSX.Element {
+export function renderText({ title, value }: FormProps<string>): JSX.Element {
   return (
     <PanelItemContainer>
       <Label>{title}</Label>

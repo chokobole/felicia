@@ -246,7 +246,7 @@ export class Colors extends Data {
             return ret;
           };
           this.nextColor4f = (idx: number): number[] => {
-            return this.nextColor4u!(idx).map(x => x / 255);
+            return this.nextColor4u(idx).map(x => x / 255);
           };
           break;
         }
@@ -257,7 +257,7 @@ export class Colors extends Data {
             return ret;
           };
           this.nextColor3f = (idx: number): number[] => {
-            return this.nextColor3u!(idx).map(x => x / 255);
+            return this.nextColor3u(idx).map(x => x / 255);
           };
           this.nextColor4u = (idx: number): number[] => {
             return this.nextData(idx);
@@ -280,7 +280,7 @@ export class Colors extends Data {
             return this.nextData(idx);
           };
           this.nextColor4u = (idx: number): number[] => {
-            return this.nextColor4f!(idx).map(x => Math.round(x * 255));
+            return this.nextColor4f(idx).map(x => Math.round(x * 255));
           };
           this.nextColor4f = (idx: number): number[] => {
             const ret = this.nextData(idx);
@@ -291,7 +291,7 @@ export class Colors extends Data {
         }
         case DataChannelType.values.CHANNEL_TYPE_C4: {
           this.nextColor3u = (idx: number): number[] => {
-            return this.nextColor3f!(idx).map(x => Math.round(x * 255));
+            return this.nextColor3f(idx).map(x => Math.round(x * 255));
           };
           this.nextColor3f = (idx: number): number[] => {
             const ret = this.nextData(idx);
