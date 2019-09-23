@@ -49,7 +49,8 @@ export default class MainScene extends Component<Props> {
     this.scene = scene;
 
     const camera = new ArcRotateCamera('main-scene-camera', 0, 0, 0, Vector3.Zero(), scene);
-    camera.position = new Vector3(0, -30, 30);
+    camera.position = new Vector3(0, 30, 30);
+    camera.upVector = new Vector3(0, 0, 1);
     camera.attachControl(this.canvas, true);
     this.camera = camera;
 
@@ -67,7 +68,18 @@ export default class MainScene extends Component<Props> {
       const { followPose, cameraPosition } = this.props;
       if (followPose && this.pose) {
         this.camera!.lockedTarget = this.pose.mesh;
-        this.camera!.position = this.pose.mesh.position.add(cameraPosition.toBabylonVector3());
+        const { mesh } = this.pose;
+        if (mesh.rotationQuaternion) {
+          const position = mesh.position.add(cameraPosition.toBabylonVector3());
+          position.rotateByQuaternionAroundPointToRef(
+            mesh.rotationQuaternion,
+            mesh.position,
+            position
+          );
+          this.camera!.position = position;
+        } else {
+          this.camera!.position = mesh.position.add(cameraPosition.toBabylonVector3());
+        }
       }
       scene.render();
     });
