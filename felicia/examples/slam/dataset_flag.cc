@@ -87,6 +87,13 @@ DatasetFlag::DatasetFlag() : current_dataset_kind_(DATASET_KIND_NONE) {
     imu_topic_flag_ = std::make_unique<StringFlag>(flag);
   }
   {
+    StringFlag::Builder builder(MakeValueStore(&pointcloud_topic_));
+    auto flag = builder.SetLongName("--pointcloud_topic")
+                    .SetHelp("topic to publish pointcloud")
+                    .Build();
+    pointcloud_topic_flag_ = std::make_unique<StringFlag>(flag);
+  }
+  {
     StringFlag::Builder builder(MakeValueStore(&pose_topic_));
     auto flag = builder.SetLongName("--pose_topic")
                     .SetHelp("topic to publish pose")
@@ -122,9 +129,9 @@ DatasetFlag::DatasetFlag() : current_dataset_kind_(DATASET_KIND_NONE) {
     depth_fps_flag_ = std::make_unique<FloatDefaultFlag>(flag);
   }
   {
-    FloatDefaultFlag::Builder builder(MakeValueStore(&lidar_fps_, 5.5f));
+    FloatDefaultFlag::Builder builder(MakeValueStore(&lidar_fps_, 30.f));
     auto flag = builder.SetLongName("--lidar_fps")
-                    .SetHelp("lidar fps to load data (default: 5.5)")
+                    .SetHelp("lidar fps to load data (default: 30)")
                     .Build();
     lidar_fps_flag_ = std::make_unique<FloatDefaultFlag>(flag);
   }
@@ -134,6 +141,13 @@ DatasetFlag::DatasetFlag() : current_dataset_kind_(DATASET_KIND_NONE) {
                     .SetHelp("imu fps to load data (default: 200)")
                     .Build();
     imu_fps_flag_ = std::make_unique<FloatDefaultFlag>(flag);
+  }
+  {
+    FloatDefaultFlag::Builder builder(MakeValueStore(&pointcloud_fps_, 30.f));
+    auto flag = builder.SetLongName("--pointcloud_fps")
+                    .SetHelp("pointcloud fps to load data (default: 30)")
+                    .Build();
+    pointcloud_fps_flag_ = std::make_unique<FloatDefaultFlag>(flag);
   }
   {
     FloatDefaultFlag::Builder builder(MakeValueStore(&pose_fps_, 200.f));
@@ -171,6 +185,9 @@ int DatasetFlag::data_types() const {
   if (imu_topic_flag_->is_set()) {
     ret |= slam::SensorData::DATA_TYPE_IMU;
   }
+  if (pointcloud_topic_flag_->is_set()) {
+    ret |= slam::SensorData::DATA_TYPE_POINTCLOUD;
+  }
   if (pose_topic_flag_->is_set()) {
     ret |= slam::SensorData::DATA_TYPE_GROUND_TRUTH_POSE;
   }
@@ -189,9 +206,10 @@ bool DatasetFlag::Parse(FlagParser& parser) {
   return PARSE_OPTIONAL_FLAG(
       parser, name_flag_, channel_type_flag_, left_color_topic_flag_,
       right_color_topic_flag_, depth_topic_flag_, lidar_topic_flag_,
-      imu_topic_flag_, pose_topic_flag_, left_as_gray_scale_flag_,
-      right_as_gray_scale_flag_, color_fps_flag_, depth_fps_flag_,
-      lidar_fps_flag_, imu_fps_flag_, pose_fps_flag_);
+      imu_topic_flag_, pointcloud_topic_flag_, pose_topic_flag_,
+      left_as_gray_scale_flag_, right_as_gray_scale_flag_, color_fps_flag_,
+      depth_fps_flag_, lidar_fps_flag_, imu_fps_flag_, pointcloud_fps_flag_,
+      pose_fps_flag_);
 }
 
 bool DatasetFlag::Validate() const {
@@ -200,10 +218,12 @@ bool DatasetFlag::Validate() const {
          CheckIfFlagPositive(depth_fps_flag_) &&
          CheckIfFlagPositive(lidar_fps_flag_) &&
          CheckIfFlagPositive(imu_fps_flag_) &&
+         CheckIfFlagPositive(pointcloud_fps_flag_) &&
          CheckIfFlagPositive(pose_fps_flag_) &&
          CheckIfOneOfFlagWasSet(left_color_topic_flag_, right_color_topic_flag_,
                                 depth_topic_flag_, lidar_topic_flag_,
-                                imu_topic_flag_, pose_topic_flag_);
+                                imu_topic_flag_, pointcloud_topic_flag_,
+                                pose_topic_flag_);
 }
 
 }  // namespace felicia

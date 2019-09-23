@@ -25,7 +25,6 @@ const worker: Worker = self as any;
 
 worker.onmessage = (event: InputEvent): void => {
   const { meshInfos, frame } = event.data;
-
   const fPoints = new Points(frame.points);
   let fColors = frame.colors.data.byteLength > 0 ? new Colors(frame.colors) : null;
 

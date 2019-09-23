@@ -67,32 +67,46 @@ StatusOr<SensorMetaData> KittiDatasetLoader::State::Init() {
 }
 
 StatusOr<SensorData> KittiDatasetLoader::State::Next() {
-  if (!times_reader_.IsOpened()) {
-    times_reader_.set_option(BufferedReader::REMOVE_CR_OR_LF);
-    Status s = times_reader_.Open(path_to_times_);
-    if (!s.ok()) return s;
-  }
-
   SensorData sensor_data;
   size_t current = current_++;
   std::string line;
   base::TimeDelta timestamp;
-  if (times_reader_.ReadLine(&line)) {
-    StatusOr<double> status_or =
-        TryConvertToDouble(line, path_to_times_, current_);
-    if (!status_or.ok()) return status_or.status();
-    timestamp = base::TimeDelta::FromSecondsD(status_or.ValueOrDie());
-    sensor_data.set_timestamp(timestamp);
+
+  if (should_read_times_) {
+    if (!times_reader_.IsOpened()) {
+      times_reader_.set_option(BufferedReader::REMOVE_CR_OR_LF);
+      Status s = times_reader_.Open(path_to_times_);
+      if (!s.ok()) {
+        if (data_type_ == SensorData::DATA_TYPE_LEFT_CAMERA ||
+            data_type_ == SensorData::DATA_TYPE_RIGHT_CAMERA ||
+            data_type_ == SensorData::DATA_TYPE_LEFT_CAMERA_GRAY_SCALE ||
+            data_type_ == SensorData::DATA_TYPE_RIGHT_CAMERA_GRAY_SCALE) {
+          return s;
+        } else {
+          should_read_times_ = false;
+          --current_;
+          return Next();
+        }
+      }
+    }
+
+    if (times_reader_.ReadLine(&line)) {
+      StatusOr<double> status_or =
+          TryConvertToDouble(line, path_to_times_, current);
+      if (!status_or.ok()) return status_or.status();
+      timestamp = base::TimeDelta::FromSecondsD(status_or.ValueOrDie());
+      sensor_data.set_timestamp(timestamp);
+    }
   }
 
+  std::stringstream ss;
+  ss << std::setfill('0') << std::setw(6) << current;
+  std::string name = ss.str();
   switch (data_type_) {
     case SensorData::DATA_TYPE_LEFT_CAMERA:
     case SensorData::DATA_TYPE_RIGHT_CAMERA:
     case SensorData::DATA_TYPE_LEFT_CAMERA_GRAY_SCALE:
     case SensorData::DATA_TYPE_RIGHT_CAMERA_GRAY_SCALE: {
-      std::stringstream ss;
-      ss << std::setfill('0') << std::setw(6) << current;
-      std::string name = ss.str();
       Image image;
       PixelFormat pixel_format;
       if (data_type_ == SensorData::DATA_TYPE_LEFT_CAMERA_GRAY_SCALE ||
@@ -105,13 +119,22 @@ StatusOr<SensorData> KittiDatasetLoader::State::Next() {
           image.Load(path_to_data_.AppendASCII(name).AddExtensionASCII(".png"),
                      pixel_format);
       if (!s.ok()) return s;
-      drivers::CameraFrame camera_frame(std::move(image), 0, timestamp);
+      drivers::CameraFrame camera_frame(std::move(image), 0,
+                                        sensor_data.timestamp());
       if (data_type_ == SensorData::DATA_TYPE_LEFT_CAMERA ||
           data_type_ == SensorData::DATA_TYPE_LEFT_CAMERA_GRAY_SCALE) {
         sensor_data.set_left_camera_frame(std::move(camera_frame));
       } else {
         sensor_data.set_right_camera_frame(std::move(camera_frame));
       }
+      break;
+    }
+    case SensorData::DATA_TYPE_POINTCLOUD: {
+      map::Pointcloud pointcloud;
+      Status s = pointcloud.Load(
+          path_to_data_.AppendASCII(name).AddExtensionASCII(".bin"));
+      if (!s.ok()) return s;
+      sensor_data.set_pointcloud(std::move(pointcloud));
       break;
     }
     default:
@@ -150,6 +173,8 @@ base::FilePath KittiDatasetLoader::State::PathToData() const {
       return path_.AppendASCII("image_0");
     case SensorData::DATA_TYPE_RIGHT_CAMERA_GRAY_SCALE:
       return path_.AppendASCII("image_1");
+    case SensorData::DATA_TYPE_POINTCLOUD:
+      return path_.AppendASCII("velodyne");
     default:
       NOTREACHED();
       return path_;

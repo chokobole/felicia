@@ -60,6 +60,8 @@ fel_cc_library(
         "//felicia/core/util",
         "//felicia/drivers/camera",
         "//felicia/drivers/imu",
+        "//felicia/drivers/lidar",
+        "//felicia/map",
     ],
 )
 

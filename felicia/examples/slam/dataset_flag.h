@@ -30,6 +30,9 @@ class DatasetFlag : public FlagParser::Delegate {
   const StringFlag* depth_topic_flag() const { return depth_topic_flag_.get(); }
   const StringFlag* lidar_topic_flag() const { return lidar_topic_flag_.get(); }
   const StringFlag* imu_topic_flag() const { return imu_topic_flag_.get(); }
+  const StringFlag* pointcloud_topic_flag() const {
+    return pointcloud_topic_flag_.get();
+  }
   const StringFlag* pose_topic_flag() const { return pose_topic_flag_.get(); }
   const BoolFlag* left_as_gray_scale_flag() const {
     return left_as_gray_scale_flag_.get();
@@ -47,6 +50,9 @@ class DatasetFlag : public FlagParser::Delegate {
     return lidar_fps_flag_.get();
   }
   const FloatDefaultFlag* imu_fps_flag() const { return imu_fps_flag_.get(); }
+  const FloatDefaultFlag* pointcloud_fps_flag() const {
+    return pointcloud_fps_flag_.get();
+  }
   const FloatDefaultFlag* pose_fps_flag() const { return pose_fps_flag_.get(); }
 
   DatasetKind dataset_kind() const { return current_dataset_kind_; }
@@ -59,9 +65,10 @@ class DatasetFlag : public FlagParser::Delegate {
   AUTO_DEFINE_USAGE_AND_HELP_TEXT_METHODS(
       dataset_kind_flag_, path_flag_, name_flag_, channel_type_flag_,
       left_color_topic_flag_, right_color_topic_flag_, depth_topic_flag_,
-      lidar_topic_flag_, imu_topic_flag_, pose_topic_flag_,
-      left_as_gray_scale_flag_, right_as_gray_scale_flag_, color_fps_flag_,
-      depth_fps_flag_, lidar_fps_flag_, imu_fps_flag_, pose_fps_flag_)
+      lidar_topic_flag_, imu_topic_flag_, pointcloud_topic_flag_,
+      pose_topic_flag_, left_as_gray_scale_flag_, right_as_gray_scale_flag_,
+      color_fps_flag_, depth_fps_flag_, lidar_fps_flag_, imu_fps_flag_,
+      pointcloud_fps_flag_, pose_fps_flag_)
 
  private:
   std::string dataset_kind_;
@@ -73,6 +80,7 @@ class DatasetFlag : public FlagParser::Delegate {
   std::string depth_topic_;
   std::string lidar_topic_;
   std::string imu_topic_;
+  std::string pointcloud_topic_;
   std::string pose_topic_;
   bool left_as_gray_scale_;
   bool right_as_gray_scale_;
@@ -80,6 +88,7 @@ class DatasetFlag : public FlagParser::Delegate {
   float depth_fps_;
   float lidar_fps_;
   float imu_fps_;
+  float pointcloud_fps_;
   float pose_fps_;
   std::unique_ptr<StringChoicesFlag> dataset_kind_flag_;
   std::unique_ptr<StringFlag> path_flag_;
@@ -90,6 +99,7 @@ class DatasetFlag : public FlagParser::Delegate {
   std::unique_ptr<StringFlag> depth_topic_flag_;
   std::unique_ptr<StringFlag> lidar_topic_flag_;
   std::unique_ptr<StringFlag> imu_topic_flag_;
+  std::unique_ptr<StringFlag> pointcloud_topic_flag_;
   std::unique_ptr<StringFlag> pose_topic_flag_;
   std::unique_ptr<BoolFlag> left_as_gray_scale_flag_;
   std::unique_ptr<BoolFlag> right_as_gray_scale_flag_;
@@ -97,6 +107,7 @@ class DatasetFlag : public FlagParser::Delegate {
   std::unique_ptr<FloatDefaultFlag> depth_fps_flag_;
   std::unique_ptr<FloatDefaultFlag> lidar_fps_flag_;
   std::unique_ptr<FloatDefaultFlag> imu_fps_flag_;
+  std::unique_ptr<FloatDefaultFlag> pointcloud_fps_flag_;
   std::unique_ptr<FloatDefaultFlag> pose_fps_flag_;
   DatasetKind current_dataset_kind_;
 

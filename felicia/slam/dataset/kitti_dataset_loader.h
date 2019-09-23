@@ -42,6 +42,7 @@ class KittiDatasetLoader
     // path to times.txt
     base::FilePath path_to_times_;
     BufferedReader times_reader_;
+    bool should_read_times_ = true;
     size_t current_ = 0;
   };
 

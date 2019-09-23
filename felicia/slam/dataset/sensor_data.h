@@ -10,6 +10,8 @@
 #include "felicia/drivers/camera/camera_frame.h"
 #include "felicia/drivers/camera/depth_camera_frame.h"
 #include "felicia/drivers/imu/imu_frame.h"
+#include "felicia/drivers/lidar/lidar_frame.h"
+#include "felicia/map/pointcloud.h"
 
 namespace felicia {
 namespace slam {
@@ -25,10 +27,11 @@ class EXPORT SensorData {
     DATA_TYPE_DEPTH_CAMERA = 1 << 4,
     DATA_TYPE_IMU = 1 << 5,
     DATA_TYPE_LIDAR = 1 << 6,
-    DATA_TYPE_ACCELERATION = 1 << 7,
-    DATA_TYPE_GROUND_TRUTH_POSE = 1 << 8,
-    DATA_TYPE_GROUND_TRUTH_POSITION = 1 << 9,
-    DATA_TYPE_END = 1 << 10,
+    DATA_TYPE_POINTCLOUD = 1 << 7,
+    DATA_TYPE_ACCELERATION = 1 << 8,
+    DATA_TYPE_GROUND_TRUTH_POSE = 1 << 9,
+    DATA_TYPE_GROUND_TRUTH_POSITION = 1 << 10,
+    DATA_TYPE_END = 1 << 11,
   };
 
   SensorData();
@@ -41,6 +44,7 @@ class EXPORT SensorData {
 #define DECLARE_METHOD(Type, name)   \
   bool has_##name() const;           \
   void set_##name(const Type& name); \
+  void set_##name(Type&& name);      \
   const Type& name() const&;         \
   Type&& name()&&
 
@@ -48,6 +52,8 @@ class EXPORT SensorData {
   DECLARE_METHOD(drivers::CameraFrame, right_camera_frame);
   DECLARE_METHOD(drivers::DepthCameraFrame, depth_camera_frame);
   DECLARE_METHOD(drivers::ImuFrame, imu_frame);
+  DECLARE_METHOD(drivers::LidarFrame, lidar_frame);
+  DECLARE_METHOD(map::Pointcloud, pointcloud);
   DECLARE_METHOD(Vector3f, acceleration);
   DECLARE_METHOD(Vector3f, velocity);
   DECLARE_METHOD(Vector3f, angular_velocity);
@@ -66,6 +72,8 @@ class EXPORT SensorData {
   base::Optional<drivers::CameraFrame> right_camera_frame_;
   base::Optional<drivers::DepthCameraFrame> depth_camera_frame_;
   base::Optional<drivers::ImuFrame> imu_frame_;
+  base::Optional<drivers::LidarFrame> lidar_frame_;
+  base::Optional<map::Pointcloud> pointcloud_;
   base::Optional<Vector3f> acceleration_;
   base::Optional<Vector3f> velocity_;
   base::Optional<Vector3f> angular_velocity_;

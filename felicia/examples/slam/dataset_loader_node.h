@@ -10,6 +10,7 @@
 #include "felicia/drivers/imu/imu_frame_message.pb.h"
 #include "felicia/drivers/lidar/lidar_frame_message.pb.h"
 #include "felicia/examples/slam/dataset_flag.h"
+#include "felicia/map/map_message.pb.h"
 #include "felicia/slam/dataset/sensor_data.h"
 #include "felicia/slam/dataset/sensor_meta_data.h"
 
@@ -40,11 +41,13 @@ class DatasetLoaderNode : public NodeLifecycle {
   const std::string depth_topic_;
   const std::string lidar_topic_;
   const std::string imu_topic_;
+  const std::string pointcloud_topic_;
   const std::string pose_topic_;
   const float color_fps_;
   const float depth_fps_;
   const float lidar_fps_;
   const float imu_fps_;
+  const float pointcloud_fps_;
   const float pose_fps_;
   DatasetLoaderType dataset_loader_;
   std::unique_ptr<DatasetLoaderType::Delegate> delegate_;
@@ -53,6 +56,7 @@ class DatasetLoaderNode : public NodeLifecycle {
   Publisher<drivers::DepthCameraFrameMessage> depth_publisher_;
   Publisher<drivers::LidarFrameMessage> lidar_publisher_;
   Publisher<drivers::ImuFrameMessage> imu_publisher_;
+  Publisher<map::PointcloudMessage> pointcloud_publisher_;
   Publisher<Pose3fWithTimestampMessage> pose_publisher_;
   Timestamper timestamper_;
   base::TimeDelta last_imu_timestamp_;

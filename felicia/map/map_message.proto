@@ -21,6 +21,7 @@ message OccupancyGridMapMessage {
 
 message PointcloudMessage {
   DataMessage points = 1;
-  DataMessage colors = 2;
-  int64 timestamp = 3;
+  DataMessage intencities = 2;
+  DataMessage colors = 3;
+  int64 timestamp = 4;
 }

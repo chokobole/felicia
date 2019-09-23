@@ -17,11 +17,13 @@ DatasetLoaderNode::DatasetLoaderNode(const DatasetFlag& dataset_flag)
       depth_topic_(dataset_flag.depth_topic_flag()->value()),
       lidar_topic_(dataset_flag.lidar_topic_flag()->value()),
       imu_topic_(dataset_flag.imu_topic_flag()->value()),
+      pointcloud_topic_(dataset_flag.pointcloud_topic_flag()->value()),
       pose_topic_(dataset_flag.pose_topic_flag()->value()),
       color_fps_(dataset_flag.color_fps_flag()->value()),
       depth_fps_(dataset_flag.depth_fps_flag()->value()),
       lidar_fps_(dataset_flag.lidar_fps_flag()->value()),
       imu_fps_(dataset_flag.imu_fps_flag()->value()),
+      pointcloud_fps_(dataset_flag.pointcloud_fps_flag()->value()),
       pose_fps_(dataset_flag.pose_fps_flag()->value()),
       topic_publish_count_(0) {}
 
@@ -128,6 +130,16 @@ void DatasetLoaderNode::RequestPublish() {
     ++topic_publish_count_;
   }
 
+  if (!pointcloud_topic_.empty()) {
+    pointcloud_publisher_.RequestPublish(
+        node_info_, pointcloud_topic_,
+        channel_type | ChannelDef::CHANNEL_TYPE_WS, settings,
+        base::BindOnce(&DatasetLoaderNode::OnRequestPublish,
+                       base::Unretained(this),
+                       slam::SensorData::DATA_TYPE_POINTCLOUD));
+    ++topic_publish_count_;
+  }
+
   if (!pose_topic_.empty()) {
     pose_publisher_.RequestPublish(
         node_info_, pose_topic_, channel_type | ChannelDef::CHANNEL_TYPE_WS,
@@ -152,7 +164,7 @@ void DatasetLoaderNode::LoadData(slam::SensorData::DataType data_type) {
     return;
   }
   double delay = 1;
-  slam::SensorData sensor_data = status_or.ValueOrDie();
+  slam::SensorData sensor_data = std::move(status_or.ValueOrDie());
   if ((data_type == slam::SensorData::DATA_TYPE_LEFT_CAMERA ||
        data_type == slam::SensorData::DATA_TYPE_LEFT_CAMERA_GRAY_SCALE) &&
       !left_color_topic_.empty()) {
@@ -191,6 +203,11 @@ void DatasetLoaderNode::LoadData(slam::SensorData::DataType data_type) {
       imu_publisher_.Publish(
           std::move(sensor_data).imu_frame().ToImuFrameMessage());
     delay = 1.0 / imu_fps_;
+  } else if (data_type == slam::SensorData::DATA_TYPE_POINTCLOUD &&
+             !pointcloud_topic_.empty()) {
+    pointcloud_publisher_.Publish(
+        std::move(sensor_data).pointcloud().ToPointcloudMessage(false));
+    delay = 1.0 / pointcloud_fps_;
   } else if (data_type == slam::SensorData::DATA_TYPE_GROUND_TRUTH_POSE &&
              !pose_topic_.empty()) {
     bool publish = false;

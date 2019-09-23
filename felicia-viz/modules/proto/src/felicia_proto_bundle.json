@@ -1561,13 +1561,17 @@
                   "type": "DataMessage",
                   "id": 1
                 },
-                "colors": {
+                "intencities": {
                   "type": "DataMessage",
                   "id": 2
                 },
+                "colors": {
+                  "type": "DataMessage",
+                  "id": 3
+                },
                 "timestamp": {
                   "type": "int64",
-                  "id": 3
+                  "id": 4
                 }
               }
             }
