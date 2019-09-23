@@ -137,6 +137,32 @@ StatusOr<SensorData> KittiDatasetLoader::State::Next() {
       sensor_data.set_pointcloud(std::move(pointcloud));
       break;
     }
+    case SensorData::DATA_TYPE_GROUND_TRUTH_POSE: {
+      if (!pose_reader_.IsOpened()) {
+        Status s = pose_reader_.Open(path_to_data_, " ");
+        if (!s.ok()) return s;
+      }
+      std::vector<std::string> rows;
+      float v[12] = {
+          0,
+      };
+      if (pose_reader_.ReadRows(&rows)) {
+        for (int i = 0; i < 12; ++i) {
+          StatusOr<double> status_or =
+              TryConvertToDouble(rows[i], path_to_data_, current);
+          if (!status_or.ok()) return status_or.status();
+          v[i] = status_or.ValueOrDie();
+        }
+      }
+      Eigen::Matrix3f R;
+      R << v[0], v[1], v[2], v[4], v[5], v[6], v[8], v[9], v[10];
+      Eigen::Quaternionf q(R);
+      Pose3f pose;
+      pose.set_orientation(Quaternionf{q.x(), q.y(), q.z(), q.w()});
+      pose.set_position(Point3f{v[3], v[7], v[11]});
+      sensor_data.set_pose(pose);
+      break;
+    }
     default:
       break;
   }
@@ -175,6 +201,8 @@ base::FilePath KittiDatasetLoader::State::PathToData() const {
       return path_.AppendASCII("image_1");
     case SensorData::DATA_TYPE_POINTCLOUD:
       return path_.AppendASCII("velodyne");
+    case SensorData::DATA_TYPE_GROUND_TRUTH_POSE:
+      return path_;
     default:
       NOTREACHED();
       return path_;

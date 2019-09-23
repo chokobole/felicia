@@ -15,7 +15,8 @@ namespace slam {
 // TumDataSetLoader loader("/path/to/tum", data_type);
 // StatusOr<SensorMetaData> sensor_meta_data = loader.Init();
 // StatusOr<SensorData> sensor_data = loader.Next();
-// For example, /path/to/tum points to the /path/to/rgbd_data_set/freiburg1_rpy.
+// For example, /path/to/tum should point to the
+// /path/to/rgbd_data_set/freiburg1_rpy.
 class TumDatasetLoader
     : public DatasetLoader<SensorMetaData, SensorData>::Delegate {
  public:

@@ -26,6 +26,7 @@ class Pose {
 
   void set_x(T x) { position_.set_x(x); }
   void set_y(T y) { position_.set_y(y); }
+  void set_position(const Point<T>& position) { position_ = position; }
   void set_theta(T theta) { theta_ = theta; }
 
   constexpr T x() const { return position_.x(); }
@@ -154,6 +155,7 @@ class Pose3 {
   void set_x(T x) { position_.set_x(x); }
   void set_y(T y) { position_.set_y(y); }
   void set_z(T z) { position_.set_z(z); }
+  void set_position(const Point3<T>& position) { position_ = position; }
   void set_orientation(const Quaternion<T>& orientation) {
     orientation_ = orientation;
   }

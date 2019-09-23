@@ -16,7 +16,7 @@ namespace slam {
 // EurocDataSetLoader loader("/path/to/euroc", data_type);
 // StatusOr<SensorMetaData> sensor_meta_data = loader.Init();
 // StatusOr<SensorData> sensor_data = loader.Next();
-// For example, /path/to/euroc points to the /path/to/mav0.
+// For example, /path/to/euroc should point to the /path/to/mav0.
 class EurocDatasetLoader
     : public DatasetLoader<SensorMetaData, SensorData>::Delegate {
  public:

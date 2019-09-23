@@ -4,6 +4,7 @@
 #include "third_party/chromium/base/files/file_path.h"
 
 #include "felicia/core/lib/file/buffered_reader.h"
+#include "felicia/core/lib/file/csv_reader.h"
 #include "felicia/core/util/dataset/dataset_loader.h"
 #include "felicia/slam/dataset/sensor_data.h"
 #include "felicia/slam/dataset/sensor_meta_data.h"
@@ -16,7 +17,9 @@ namespace slam {
 // KittiDatasetLoader loader("/path/to/euroc", data_type);
 // StatusOr<SensorMetaData> sensor_meta_data = loader.Init();
 // StatusOr<SensorData> sensor_data = loader.Next();
-// For example, /path/to/kitti points to the /path/to/dataset/sequences/00.
+// For example, /path/to/kitti should point to the
+// /path/to/dataset/sequences/00. But exceptionally, for groundtruth pose,
+// path/to/kitti should point to /path/to/dataset/poses/00.txt
 class KittiDatasetLoader
     : public DatasetLoader<SensorMetaData, SensorData>::Delegate {
  public:
@@ -41,6 +44,7 @@ class KittiDatasetLoader
     base::FilePath path_to_data_;
     // path to times.txt
     base::FilePath path_to_times_;
+    CsvReader pose_reader_;
     BufferedReader times_reader_;
     bool should_read_times_ = true;
     size_t current_ = 0;
