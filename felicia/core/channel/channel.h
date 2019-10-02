@@ -145,13 +145,13 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
 
   send_buffer_.Reset();
   std::string text;
-  MessageIoError err = MessageIO<MessageTy>::SerializeToString(&message, &text);
-  if (err == MessageIoError::OK) {
+  MessageIOError err = MessageIO::SerializeToString(&message, &text);
+  if (err == MessageIOError::OK) {
     send_buffer_.InvalidateAttachment();
     WriteImpl(text, callback);
   } else {
     if (!callback.is_null())
-      callback.Run(type(), errors::Unavailable(MessageIoErrorToString(err)));
+      callback.Run(type(), errors::Unavailable(MessageIOErrorToString(err)));
   }
 }
 
@@ -188,21 +188,19 @@ void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
 template <typename MessageTy>
 void Channel<MessageTy>::WriteImpl(const std::string& text,
                                    SendMessageCallback callback) {
-  MessageIoError err = MessageIoError::OK;
+  MessageIOError err = MessageIOError::OK;
   if (!send_buffer_.CanReuse(SendBuffer::ATTACH_KIND_GENERAL)) {
     int to_send;
-    err = MessageIO<MessageTy>::AttachToBuffer(text, send_buffer_.buffer(),
-                                               &to_send);
-    if (err == MessageIoError::ERR_NOT_ENOUGH_BUFFER) {
+    err = MessageIO::AttachToBuffer(text, send_buffer_.buffer(), &to_send);
+    if (err == MessageIOError::ERR_NOT_ENOUGH_BUFFER) {
       if (send_buffer_.SetEnoughCapacityIfDynamic(to_send)) {
-        err = MessageIO<MessageTy>::AttachToBuffer(text, send_buffer_.buffer(),
-                                                   &to_send);
+        err = MessageIO::AttachToBuffer(text, send_buffer_.buffer(), &to_send);
       }
     }
     send_buffer_.AttachGeneral(to_send);
   }
 
-  if (err == MessageIoError::OK) {
+  if (err == MessageIOError::OK) {
     is_sending_ = true;
     send_callback_ = callback;
     channel_impl_->WriteAsync(send_buffer_.buffer(), send_buffer_.size(),
@@ -210,7 +208,7 @@ void Channel<MessageTy>::WriteImpl(const std::string& text,
                                              base::Unretained(this)));
   } else {
     if (!callback.is_null())
-      callback.Run(type(), errors::Unavailable(MessageIoErrorToString(err)));
+      callback.Run(type(), errors::Unavailable(MessageIOErrorToString(err)));
   }
 }
 
@@ -234,11 +232,11 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
     return;
   }
 
-  MessageIoError err = MessageIO<MessageTy>::ParseHeaderFromBuffer(
+  MessageIOError err = MessageIO::ParseHeaderFromBuffer(
       receive_buffer_.StartOfBuffer(), &header_);
-  if (err != MessageIoError::OK) {
+  if (err != MessageIOError::OK) {
     std::move(receive_callback_)
-        .Run(errors::DataLoss(MessageIoErrorToString(err)));
+        .Run(errors::DataLoss(MessageIOErrorToString(err)));
     return;
   }
 
@@ -246,7 +244,7 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
   if (!receive_buffer_.SetEnoughCapacityIfDynamic(bytes)) {
     std::move(receive_callback_)
         .Run(errors::Aborted(
-            MessageIoErrorToString(MessageIoError::ERR_NOT_ENOUGH_BUFFER)));
+            MessageIOErrorToString(MessageIOError::ERR_NOT_ENOUGH_BUFFER)));
     return;
   }
 
@@ -259,9 +257,9 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
 template <typename MessageTy>
 void Channel<MessageTy>::OnReceiveMessage(const Status& s) {
   if (s.ok()) {
-    MessageIoError err = MessageIO<MessageTy>::ParseMessageFromBuffer(
+    MessageIOError err = MessageIO::ParseMessageFromBuffer(
         receive_buffer_.StartOfBuffer(), header_, false, message_);
-    if (err != MessageIoError::OK) {
+    if (err != MessageIOError::OK) {
       std::move(receive_callback_)
           .Run(errors::DataLoss("Failed to parse message from buffer."));
       return;

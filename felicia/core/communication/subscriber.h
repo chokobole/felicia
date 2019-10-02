@@ -83,7 +83,9 @@ class Subscriber {
 
   void Stop();
 
-  virtual void ResetMessage(const TopicInfo& topic_info) {}
+  virtual bool MaybeResolveMessgaeType(const TopicInfo& topic_info) {
+    return true;
+  }
 
   MessageTy message_;
   Pool<MessageTy, uint8_t> message_queue_;
@@ -246,7 +248,7 @@ void Subscriber<MessageTy>::OnFindPublisher(const TopicInfo& topic_info) {
   // If MesageTy is DynamicProtobufMessage, in other words, this class is
   // a instance of DynamicSubscriber, then subscriber resolves its type
   // using |type_name| inside |topic_info|.
-  ResetMessage(topic_info);
+  if (!MaybeResolveMessgaeType(topic_info)) return;
 
   // Subscriber holds this in case of data corruption. If it happens, subscriber
   // connects to publisher again using |topic_info_|.

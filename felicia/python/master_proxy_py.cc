@@ -107,28 +107,26 @@ void AddMasterProxy(py::module& m) {
       .def_static("run", &PyMasterProxy::Run,
                   py::call_guard<py::gil_scoped_release>())
       .def_static("request_register_node", &PyMasterProxy::RequestRegisterNode)
-      .def_static(
-          "post_task",
-          [](py::function callback) {
-            MasterProxy& master_proxy = MasterProxy::GetInstance();
-            master_proxy.PostTask(
-                FROM_HERE,
-                base::BindOnce(&PyClosure::Invoke,
-                               base::Owned(new PyClosure(callback))));
-          },
-          py::arg("callback"), py::call_guard<py::gil_scoped_release>())
-      .def_static(
-          "post_delayed_task",
-          [](py::function callback, base::TimeDelta delay) {
-            MasterProxy& master_proxy = MasterProxy::GetInstance();
-            master_proxy.PostDelayedTask(
-                FROM_HERE,
-                base::BindOnce(&PyClosure::Invoke,
-                               base::Owned(new PyClosure(callback))),
-                delay);
-          },
-          py::arg("callback"), py::arg("delay"),
-          py::call_guard<py::gil_scoped_release>());
+      .def_static("post_task",
+                  [](py::function callback) {
+                    MasterProxy& master_proxy = MasterProxy::GetInstance();
+                    master_proxy.PostTask(
+                        FROM_HERE,
+                        base::BindOnce(&PyClosure::Invoke,
+                                       base::Owned(new PyClosure(callback))));
+                  },
+                  py::arg("callback"), py::call_guard<py::gil_scoped_release>())
+      .def_static("post_delayed_task",
+                  [](py::function callback, base::TimeDelta delay) {
+                    MasterProxy& master_proxy = MasterProxy::GetInstance();
+                    master_proxy.PostDelayedTask(
+                        FROM_HERE,
+                        base::BindOnce(&PyClosure::Invoke,
+                                       base::Owned(new PyClosure(callback))),
+                        delay);
+                  },
+                  py::arg("callback"), py::arg("delay"),
+                  py::call_guard<py::gil_scoped_release>());
 }
 
 }  // namespace felicia

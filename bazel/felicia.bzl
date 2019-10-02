@@ -157,6 +157,12 @@ def if_has_realsense(a):
         "//conditions:default": [],
     })
 
+def if_has_ros(a):
+    return select({
+        "//felicia:has_ros": a,
+        "//conditions:default": [],
+    })
+
 def if_has_rplidar(a):
     return select({
         "//felicia:has_rplidar": a,

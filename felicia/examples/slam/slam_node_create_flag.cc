@@ -11,8 +11,8 @@ static const char* kOrb2Slam = "OrbSlam2";
 
 SlamNodeCreateFlag::SlamNodeCreateFlag() : current_slam_kind_(SLAM_KIND_NONE) {
   {
-    StringChoicesFlag::Builder builder(MakeValueStore(
-        &slam_kind_, base::EmptyString(), Choices<std::string> {
+    StringChoicesFlag::Builder builder(
+        MakeValueStore(&slam_kind_, base::EmptyString(), Choices<std::string> {
           kHectorSlam,
 #if defined(HAS_ORB_SLAM2)
               kOrb2Slam

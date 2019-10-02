@@ -18,7 +18,7 @@ void DynamicPublishingNode::RequestPublish(
     const std::string& message_type, const std::string& topic, int channel_defs,
     const communication::Settings& settings) {
   publisher_ = std::make_unique<DynamicPublisher>();
-  publisher_->ResetMessage(message_type);
+  if (!publisher_->ResolveType(message_type)) return;
 
   publisher_->RequestPublish(
       node_info_, topic, channel_defs, settings,

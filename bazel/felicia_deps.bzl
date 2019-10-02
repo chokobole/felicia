@@ -11,6 +11,7 @@ load("//third_party/env:env_configure.bzl", "env_configure")
 load("//third_party/opencv:opencv_configure.bzl", "opencv_configure")
 load("//third_party/py:python_configure.bzl", "python_configure")
 load("//third_party/realsense:realsense_configure.bzl", "realsense_configure")
+load("//third_party/ros:ros_configure.bzl", "ros_configure")
 load("//third_party/zed:zed_configure.bzl", "zed_configure")
 
 def load_deps():
@@ -21,6 +22,7 @@ def load_deps():
     opencv_configure(name = "opencv")
     python_configure(name = "local_config_python")
     realsense_configure(name = "realsense")
+    ros_configure(name = "ros")
     zed_configure(name = "zed")
 
     # Needed by protobuf

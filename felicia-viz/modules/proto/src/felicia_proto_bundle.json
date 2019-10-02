@@ -967,13 +967,17 @@
               "type": "string",
               "id": 2
             },
+            "implType": {
+              "type": "ImplType",
+              "id": 3
+            },
             "topicSource": {
               "type": "ChannelSource",
-              "id": 3
+              "id": 4
             },
             "status": {
               "type": "Status",
-              "id": 4
+              "id": 5
             }
           },
           "nested": {
@@ -981,6 +985,12 @@
               "values": {
                 "REGISTERED": 0,
                 "UNREGISTERED": 1
+              }
+            },
+            "ImplType": {
+              "values": {
+                "PROTOBUF": 0,
+                "ROS": 1
               }
             }
           }

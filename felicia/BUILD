@@ -172,6 +172,14 @@ config_setting(
 )
 
 config_setting(
+    name = "has_ros",
+    define_values = {
+        "has_ros": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
     name = "has_rplidar",
     define_values = {
         "has_rplidar": "true",

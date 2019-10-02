@@ -1,4 +1,8 @@
-load("//bazel:felicia.bzl", "fel_shared_library")
+load(
+    "//bazel:felicia.bzl",
+    "fel_shared_library",
+    "if_has_ros",
+)
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
@@ -23,12 +27,19 @@ fel_cc_library(
         "message_io.h",
         "message_io_error_list.h",
         "protobuf_loader.h",
+        "protobuf_message_io_impl.h",
         "protobuf_util.h",
+        "ros_message_io_impl.h",
     ],
+    defines = if_has_ros([
+        "HAS_ROS",
+    ]),
     deps = [
         "//felicia/core/lib",
         "//felicia/core/util:command_line_interface",
-    ],
+    ] + if_has_ros([
+        "@ros//:ros",
+    ]),
 )
 
 fel_cc_library(

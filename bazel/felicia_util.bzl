@@ -16,3 +16,16 @@ def norm_path(path):
             continue
         path_elms.append(path_elm)
     return "/".join(path_elms)
+
+def append_to_set(s, element):
+    has_element = False
+    for e in s:
+        if e == element:
+            has_element = True
+            break
+    if has_element == False:
+        s.append(element)
+
+def extend_to_set(s, element):
+    for e in element:
+        append_to_set(s, e)

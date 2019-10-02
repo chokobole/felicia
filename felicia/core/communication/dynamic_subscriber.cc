@@ -58,11 +58,18 @@ void DynamicSubscriber::Unsubscribe(const std::string& topic,
   StopMessageLoop(std::move(callback));
 }
 
-void DynamicSubscriber::ResetMessage(const TopicInfo& topic_info) {
+bool DynamicSubscriber::MaybeResolveMessgaeType(const TopicInfo& topic_info) {
+  if (topic_info.impl_type() == TopicInfo::ROS) {
+    LOG(ERROR) << "Can't subscribie dynamically for ROS message.";
+    return false;
+  }
+
   MasterProxy& master_proxy = MasterProxy::GetInstance();
-  message_.Reset(master_proxy.protobuf_loader()
-                     ->NewMessage(topic_info.type_name())
-                     ->New());
+  const google::protobuf::Message* message =
+      master_proxy.protobuf_loader()->NewMessage(topic_info.type_name());
+  if (!message) return false;
+  message_.Reset(message->New());
+  return true;
 }
 
 }  // namespace felicia

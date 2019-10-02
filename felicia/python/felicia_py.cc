@@ -27,40 +27,37 @@ void AddGlobalFunctions(py::module& m) {
   m.attr("ERROR") = ::logging::LOG_ERROR;
   m.attr("FATAL") = ::logging::LOG_FATAL;
 
-  m.def(
-       "log",
-       [](::logging::LogSeverity severity, const std::string& text) {
-         if (severity == ::logging::LOG_INFO)
-           LOG(INFO) << text;
-         else if (severity == ::logging::LOG_WARNING)
-           LOG(WARNING) << text;
-         else if (severity == ::logging::LOG_ERROR)
-           LOG(ERROR) << text;
-         else if (severity == ::logging::LOG_FATAL)
-           LOG(FATAL) << text;
-       },
-       py::arg("severity"), py::arg("text") = base::EmptyString())
-      .def(
-          "log_if",
-          [](::logging::LogSeverity severity, bool condition,
-             const std::string& text) {
-            if (severity == ::logging::LOG_INFO)
-              LOG_IF(INFO, condition) << text;
-            else if (severity == ::logging::LOG_WARNING)
-              LOG_IF(WARNING, condition) << text;
-            else if (severity == ::logging::LOG_ERROR)
-              LOG_IF(ERROR, condition) << text;
-            else if (severity == ::logging::LOG_FATAL)
-              LOG_IF(FATAL, condition) << text;
-          },
-          py::arg("severity"), py::arg("condition"),
-          py::arg("text") = base::EmptyString())
-      .def(
-          "check",
-          [](bool condition, const std::string& text) {
-            CHECK(condition) << text;
-          },
-          py::arg("condition"), py::arg("text") = base::EmptyString())
+  m.def("log",
+        [](::logging::LogSeverity severity, const std::string& text) {
+          if (severity == ::logging::LOG_INFO)
+            LOG(INFO) << text;
+          else if (severity == ::logging::LOG_WARNING)
+            LOG(WARNING) << text;
+          else if (severity == ::logging::LOG_ERROR)
+            LOG(ERROR) << text;
+          else if (severity == ::logging::LOG_FATAL)
+            LOG(FATAL) << text;
+        },
+        py::arg("severity"), py::arg("text") = base::EmptyString())
+      .def("log_if",
+           [](::logging::LogSeverity severity, bool condition,
+              const std::string& text) {
+             if (severity == ::logging::LOG_INFO)
+               LOG_IF(INFO, condition) << text;
+             else if (severity == ::logging::LOG_WARNING)
+               LOG_IF(WARNING, condition) << text;
+             else if (severity == ::logging::LOG_ERROR)
+               LOG_IF(ERROR, condition) << text;
+             else if (severity == ::logging::LOG_FATAL)
+               LOG_IF(FATAL, condition) << text;
+           },
+           py::arg("severity"), py::arg("condition"),
+           py::arg("text") = base::EmptyString())
+      .def("check",
+           [](bool condition, const std::string& text) {
+             CHECK(condition) << text;
+           },
+           py::arg("condition"), py::arg("text") = base::EmptyString())
       .def("not_reached", []() { NOTREACHED(); });
 }
 

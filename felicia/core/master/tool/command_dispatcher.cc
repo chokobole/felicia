@@ -19,8 +19,8 @@ constexpr size_t kIdLength = 13;
 constexpr size_t kNameLength = 20;
 constexpr size_t kTopicNameLength = 20;
 constexpr size_t kMessageTypeLength = 30;
-constexpr size_t kChannelProtocolLength = 12;
-constexpr size_t kChannelSourceLength = 22;
+constexpr size_t kChannelProtocolLength = 20;
+constexpr size_t kChannelSourceLength = 24;
 
 class ScopedMasterProxyStopper {
  public:
@@ -288,15 +288,20 @@ void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
 
     MasterProxy& master_proxy = MasterProxy::GetInstance();
 
-    const google::protobuf::Message* message =
-        master_proxy.protobuf_loader()->NewMessage(topic_info.type_name());
+    std::string definition = "Unknown";
+    if (topic_info.impl_type() == TopicInfo::PROTOBUF) {
+      const google::protobuf::Message* message =
+          master_proxy.protobuf_loader()->NewMessage(topic_info.type_name());
+      if (message) {
+        definition = message->GetDescriptor()->DebugString();
+      }
+    }
 
     std::cout << base::StringPrintf(
                      "TYPE: %s\n"
-                     "FORMAT: %s\n"
+                     "DEFINITION: %s\n"
                      "CHANNEL_SOURCE: %s\n",
-                     topic_info.type_name().c_str(),
-                     message->GetDescriptor()->DebugString().c_str(),
+                     topic_info.type_name().c_str(), definition.c_str(),
                      channel_source.DebugString().c_str())
               << std::endl;
   }

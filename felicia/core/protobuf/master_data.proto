@@ -28,10 +28,16 @@ message TopicInfo {
     UNREGISTERED = 1;
   }
 
+  enum ImplType {
+    PROTOBUF = 0;
+    ROS = 1;
+  }
+
   string topic = 1;
   string type_name = 2;
-  ChannelSource topic_source = 3;
-  Status status = 4;
+  ImplType impl_type = 3;
+  ChannelSource topic_source = 4;
+  Status status = 5;
 }
 
 // Element inside NodeFilter are mutually exclusive.

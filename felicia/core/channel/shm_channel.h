@@ -142,11 +142,11 @@ void ShmChannel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
     return;
   }
 
-  MessageIoError err = MessageIO<MessageTy>::ParseHeaderFromBuffer(
+  MessageIOError err = MessageIO::ParseHeaderFromBuffer(
       this->receive_buffer_.StartOfBuffer(), &this->header_);
-  if (err != MessageIoError::OK) {
+  if (err != MessageIOError::OK) {
     std::move(this->receive_callback_)
-        .Run(errors::DataLoss(MessageIoErrorToString(err)));
+        .Run(errors::DataLoss(MessageIOErrorToString(err)));
     return;
   }
 
@@ -154,14 +154,13 @@ void ShmChannel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
       this->header_.size()) {
     std::move(this->receive_callback_)
         .Run(errors::Aborted(
-            MessageIoErrorToString(MessageIoError::ERR_NOT_ENOUGH_BUFFER)));
+            MessageIOErrorToString(MessageIOError::ERR_NOT_ENOUGH_BUFFER)));
     return;
   }
 
-  err = MessageIO<MessageTy>::ParseMessageFromBuffer(
-      this->receive_buffer_.StartOfBuffer(), this->header_, true,
-      this->message_);
-  if (err != MessageIoError::OK) {
+  err = MessageIO::ParseMessageFromBuffer(this->receive_buffer_.StartOfBuffer(),
+                                          this->header_, true, this->message_);
+  if (err != MessageIOError::OK) {
     std::move(this->receive_callback_)
         .Run(errors::DataLoss("Failed to parse message from buffer."));
     return;

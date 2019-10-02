@@ -2,15 +2,24 @@
 
 namespace felicia {
 
-std::string MessageIoErrorToString(MessageIoError mesasge_io_error) {
+std::string MessageIOErrorToString(MessageIOError mesasge_io_error) {
   switch (mesasge_io_error) {
 #define MESSAGE_IO_ERR(ERR, ERR_STR) \
-  case MessageIoError::ERR:          \
+  case MessageIOError::ERR:          \
     return ERR_STR;
 #include "felicia/core/message/message_io_error_list.h"
 #undef MESSAGE_IO_ERR
   }
   NOTREACHED();
+}
+
+// static
+MessageIOError MessageIO::ParseHeaderFromBuffer(const char* buffer,
+                                                Header* header) {
+  if (!Header::FromBytes(buffer, header))
+    return MessageIOError::ERR_CORRUPTED_HEADER;
+
+  return MessageIOError::OK;
 }
 
 }  // namespace felicia

@@ -5,7 +5,11 @@ load(
     "update_attrs",
     "workspace_and_buildfile",
 )
-load("//bazel:felicia_util.bzl", "norm_path")
+load(
+    "//bazel:felicia_util.bzl",
+    "extend_to_set",
+    "norm_path",
+)
 
 def failed_to_find_bin_path(repository_ctx, bin, env_var = None):
     fmt_str = "Cannot find %s in PATH, please make sure %s is installed and add its directory in PATH"
@@ -28,6 +32,37 @@ def get_bin_path(repository_ctx, bin, env_var = None):
 def get_bash_bin_path(repository_ctx):
     """Gets the bash bin path."""
     return get_bin_path(repository_ctx, "bash", "BAZEL_SH")
+
+def failed_to_get_cflags_and_libs(pkgs):
+    return "Failed to get cflags and libs for [%s]" % ", ".join(pkgs)
+
+def _pkg_config_query(repository_ctx, cmd):
+    result = repository_ctx.execute(cmd)
+    if result.return_code != 0:
+        return None
+    ret = []
+    for f in result.stdout[:-1].split(" "):
+        ret.append("\"%s\"" % f)
+    return ret
+
+def pkg_config_cflags_and_libs(repository_ctx, pkgs):
+    if not is_executable(repository_ctx, "pkg-config"):
+        return None
+    pkg_config_bin_path = get_bin_path(repository_ctx, "pkg-config")
+    cflags = []
+    libs = []
+    for pkg in pkgs:
+        cmd = [pkg_config_bin_path, "--cflags", pkg]
+        result = _pkg_config_query(repository_ctx, cmd)
+        if result == None:
+            return None
+        extend_to_set(cflags, result)
+        cmd = [pkg_config_bin_path, "--libs", pkg]
+        result = _pkg_config_query(repository_ctx, cmd)
+        if result == None:
+            return None
+        extend_to_set(libs, result)
+    return struct(cflags = cflags, libs = libs)
 
 def is_executable(repository_ctx, bin, env_var = None):
     """Check bin whether exists and is executable."""

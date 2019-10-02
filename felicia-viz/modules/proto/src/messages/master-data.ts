@@ -30,9 +30,15 @@ export enum TopicInfoStatusProtobuf {
   UNREGISTERED = 1,
 }
 
+export enum TopicInfoImplTypeProtobuf {
+  PROTOBUF = 0,
+  ROS = 1,
+}
+
 export interface TopicInfoProtobuf {
   topic: string;
   typeName: string;
+  implType: TopicInfoImplTypeProtobuf;
   topicSource: ChannelSourceProtobuf;
   status: TopicInfoStatusProtobuf;
 }

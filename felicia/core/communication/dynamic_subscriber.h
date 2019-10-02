@@ -24,7 +24,7 @@ class DynamicSubscriber : public Subscriber<DynamicProtobufMessage> {
   const TopicInfo& topic_info() const { return topic_info_; }
 
  private:
-  void ResetMessage(const TopicInfo& topic_info) override;
+  bool MaybeResolveMessgaeType(const TopicInfo& topic_info) override;
 
   DISALLOW_COPY_AND_ASSIGN(DynamicSubscriber);
 };

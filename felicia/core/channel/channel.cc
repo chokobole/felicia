@@ -39,6 +39,18 @@ std::string EndPointToString(const ChannelDef& channel_def) {
     }
 #endif
   } else if (channel_def.has_shm_endpoint()) {
+#if defined(OS_WIN)
+    return base::EmptyString();
+#elif defined(OS_MACOSX)
+    return channel_def.shm_endpoint().broker_endpoint().service_name();
+#else
+    net::UDSEndPoint uds_endpoint;
+    if (ToNetUDSEndPoint(channel_def.shm_endpoint().broker_endpoint(),
+                         &uds_endpoint)
+            .ok()) {
+      return uds_endpoint.ToString();
+    }
+#endif
     return channel_def.shm_endpoint().DebugString();
   }
 

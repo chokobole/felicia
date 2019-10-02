@@ -8,10 +8,13 @@ DynamicPublisher::DynamicPublisher() = default;
 
 DynamicPublisher::~DynamicPublisher() = default;
 
-void DynamicPublisher::ResetMessage(const std::string& message_type) {
+bool DynamicPublisher::ResolveType(const std::string& message_type) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
-  message_prototype_.Reset(
-      master_proxy.protobuf_loader()->NewMessage(message_type)->New());
+  const google::protobuf::Message* message =
+      master_proxy.protobuf_loader()->NewMessage(message_type);
+  if (!message) return false;
+  message_prototype_.Reset(message->New());
+  return true;
 }
 
 void DynamicPublisher::PublishFromJson(const std::string& json_message,
@@ -38,8 +41,8 @@ void DynamicPublisher::PublishFromSerialized(const std::string& serialized,
   if (!message_prototype_.ParseFromArray(serialized.data(),
                                          serialized.length())) {
     callback.Run(ChannelDef::CHANNEL_TYPE_NONE,
-                 errors::InvalidArgument(MessageIoErrorToString(
-                     MessageIoError::ERR_FAILED_TO_PARSE)));
+                 errors::InvalidArgument(MessageIOErrorToString(
+                     MessageIOError::ERR_FAILED_TO_PARSE)));
     return;
   }
 

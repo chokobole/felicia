@@ -12,7 +12,7 @@ class DynamicPublisher : public Publisher<DynamicProtobufMessage> {
   DynamicPublisher();
   ~DynamicPublisher();
 
-  void ResetMessage(const std::string& message_type);
+  bool ResolveType(const std::string& message_type);
 
   void PublishFromJson(const std::string& json_message,
                        SendMessageCallback callback = SendMessageCallback());

@@ -34,7 +34,7 @@
 - (int32_t)transportType;
 @end
 
-@interface AvfCameraDelegate : NSObject <AVCaptureVideoDataOutputSampleBufferDelegate> {
+@interface AvfCameraDelegate : NSObject<AVCaptureVideoDataOutputSampleBufferDelegate> {
  @private
   // The following attributes are set via -setCaptureHeight:width:frameRate:fourcc:.
   int frameWidth_;

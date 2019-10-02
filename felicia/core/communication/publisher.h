@@ -4,6 +4,10 @@
 #include <memory>
 #include <string>
 
+#if defined(HAS_ROS)
+#include <ros/message_traits.h>
+#endif
+
 #include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/compiler_specific.h"
@@ -76,8 +80,7 @@ class Publisher {
   // Because DynamicProtobufMessage's type can't be determined at compile time.
   // we should workaround by doing runtime asking DynamicPublisher.
   virtual std::string GetMessageTypeName() const {
-    MessageTy message;
-    return message.GetTypeName();
+    return MessageIOImpl<MessageTy>::TypeName();
   }
 
   base::Lock lock_;
@@ -138,6 +141,11 @@ void Publisher<MessageTy>::RequestPublish(
   TopicInfo* topic_info = request->mutable_topic_info();
   topic_info->set_topic(topic);
   topic_info->set_type_name(GetMessageTypeName());
+#if defined(HAS_ROS)
+  if (ros::message_traits::IsMessage<MessageTy>::value) {
+    topic_info->set_impl_type(TopicInfo::ROS);
+  }
+#endif
   ChannelSource* channel_source = topic_info->mutable_topic_source();
   for (auto& channel_def : channel_defs) {
     *channel_source->add_channel_defs() = channel_def;
@@ -323,9 +331,9 @@ void Publisher<MessageTy>::SendMesasge(SendMessageCallback callback) {
   {
     base::AutoLock l(lock_);
     if (message_queue_ && !message_queue_->empty()) {
-      MessageIoError err = MessageIO<MessageTy>::SerializeToString(
-          &message_queue_->front(), &seriazlied);
-      if (err != MessageIoError::OK) {
+      MessageIOError err =
+          MessageIO::SerializeToString(&message_queue_->front(), &seriazlied);
+      if (err != MessageIOError::OK) {
         seriazlied.clear();
       }
       message_queue_->pop();
