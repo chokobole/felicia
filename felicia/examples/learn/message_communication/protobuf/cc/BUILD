@@ -8,19 +8,19 @@ load(
 package(default_visibility = ["//visibility:private"])
 
 fel_cc_binary(
-    name = "node_creator",
+    name = "protobuf_node_creator",
     srcs = [
-        "node_creator.cc",
-        "simple_publishing_node.cc",
-        "simple_publishing_node.h",
-        "simple_subscribing_node.cc",
-        "simple_subscribing_node.h",
+        "protobuf_node_creator.cc",
+        "protobuf_publishing_node.cc",
+        "protobuf_publishing_node.h",
+        "protobuf_subscribing_node.cc",
+        "protobuf_subscribing_node.h",
     ],
     deps = fel_shared_library() + [
         "//felicia/core:felicia_init",
         "//felicia/core/communication",
         "//felicia/core/master:master_proxy",
         "//felicia/examples/learn/message_communication/common/cc:node_create_flag",
-        "//felicia/examples/learn/message_communication/protobuf:message_spec_proto_cc",
+        "//felicia/examples/learn/message_communication/protobuf:simple_message_proto_cc",
     ],
 )

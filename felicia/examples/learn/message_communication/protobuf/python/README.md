@@ -57,10 +57,10 @@ Now register Node. It depends on whether you pass the `-p` flag.
 ```python
 if delegate.is_publshing_node_flag.value:
     fel.MasterProxy.request_register_node(
-        SimplePublishingNode, node_info, delegate)
+        ProtobufPublishingNode, node_info, delegate)
 else:
     fel.MasterProxy.request_register_node(
-        SimpleSubscribingNode, node_info, delegate)
+        ProtobufSubscribingNode, node_info, delegate)
 ```
 
 Lastly Run MasterProxy. This will blocks until `stop()` is called.
@@ -69,12 +69,12 @@ Lastly Run MasterProxy. This will blocks until `stop()` is called.
 fel.MasterProxy.run()
 ```
 
-Now look into the [simple_publishing_node.py](simple_publishing_node.py). Because `felicia` is designed with life cycle model, while registering 3 callbacks would be called. Maybe 2, if an error doens't happen.
+Now look into the [protobuf_publishing_node.py](protobuf_publishing_node.py). Because `felicia` is designed with life cycle model, while registering 3 callbacks would be called. Maybe 2, if an error doens't happen.
 
 ```python
 import felicia_py as fel
 
-class SimplePublishingNode(fel.NodeLifecycle):
+class ProtobufPublishingNode(fel.NodeLifecycle):
     def __init__(self, node_create_flag):
         super().__init__()
         self.topic = node_create_flag.topic_flag.value
@@ -108,7 +108,7 @@ def request_publish(self):
     settings.buffer_size = fel.Bytes.from_bytes(512)
 
     self.publisher.request_publish(self.node_info, self.topic, self.channel_def_type,
-                                   MessageSpec.DESCRIPTOR.full_name,
+                                   SimpleMessage.DESCRIPTOR.full_name,
                                    settings, self.on_request_publish)
 ```
 
@@ -116,11 +116,11 @@ If request is successfully delivered to the server, then callback `on_request_pu
 
 ```python
 def on_publish(self, status):
-    print("SimplePublishingNode.on_request_publish()")
+    print("ProtobufPublishingNode.on_request_publish()")
     fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
 def on_request_publish(self, status):
-    print("SimplePublishingNode.on_request_publish()")
+    print("ProtobufPublishingNode.on_request_publish()")
     fel.log_if(fel.ERROR, not status.ok(), status.error_message())
     self.repeating_publish()
 
@@ -145,11 +145,11 @@ will be called, too.
 
 ```python
 def on_request_unpublish(self, status):
-    print("SimplePublishingNode.on_request_unpublish()")
+    print("ProtobufPublishingNode.on_request_unpublish()")
     fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 ```
 
-[simple_subscribing_node.py](simple_subscribing_node.py) is very similar to above. When just seeing the key different part, you have to request subscribe. Unlike `publisher` you have to pass 2 more callbacks, and settings. Callback is called every `period` milliseconds inside the settings, and the other is called when there's an error occurred.
+[protobuf_subscribing_node.py](protobuf_subscribing_node.py) is very similar to above. When just seeing the key different part, you have to request subscribe. Unlike `publisher` you have to pass 2 more callbacks, and settings. Callback is called every `period` milliseconds inside the settings, and the other is called when there's an error occurred.
 
 ```python
 def request_subscribe(self):
@@ -161,7 +161,7 @@ def request_subscribe(self):
                                       ChannelDef.CHANNEL_TYPE_UDP |
                                       ChannelDef.CHANNEL_TYPE_UDS |
                                       ChannelDef.CHANNEL_TYPE_SHM,
-                                      MessageSpec, settings,
+                                      SimpleMessage, settings,
                                       self.on_message, self.on_message_error,
                                       self.on_request_subscribe)
 ```
@@ -206,7 +206,7 @@ To `Unsubscribe`, it's also very similar.
 
 ```python
 def on_request_unsubscribe(self, status):
-    print("SimpleSubscribingNode.on_request_unsubscribe()")
+    print("ProtobufSubscribingNode.on_request_unsubscribe()")
     fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
 def request_unsubscribe(self):

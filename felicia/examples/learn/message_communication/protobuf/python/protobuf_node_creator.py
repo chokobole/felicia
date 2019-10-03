@@ -6,8 +6,8 @@ from felicia.core.protobuf.master_data_pb2 import NodeInfo
 import felicia_py.command_line_interface as cli
 
 from felicia.examples.learn.message_communication.common.python.node_create_flag import NodeCreateFlag
-from simple_publishing_node import SimplePublishingNode
-from simple_subscribing_node import SimpleSubscribingNode
+from protobuf_publishing_node import ProtobufPublishingNode
+from protobuf_subscribing_node import ProtobufSubscribingNode
 
 
 def main():
@@ -15,7 +15,7 @@ def main():
 
     delegate = NodeCreateFlag()
     parser = cli.FlagParser()
-    parser.set_program_name('node_creator')
+    parser.set_program_name('protobuf_node_creator')
     if not parser.parse(len(sys.argv), sys.argv, delegate):
         sys.exit(1)
 
@@ -29,10 +29,10 @@ def main():
 
     if delegate.is_publshing_node_flag.value:
         fel.MasterProxy.request_register_node(
-            SimplePublishingNode, node_info, delegate)
+            ProtobufPublishingNode, node_info, delegate)
     else:
         fel.MasterProxy.request_register_node(
-            SimpleSubscribingNode, node_info, delegate)
+            ProtobufSubscribingNode, node_info, delegate)
 
     fel.MasterProxy.run()
 

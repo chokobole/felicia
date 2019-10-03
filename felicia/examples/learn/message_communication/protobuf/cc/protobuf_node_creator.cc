@@ -2,8 +2,8 @@
 #include "felicia/core/felicia_init.h"
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/examples/learn/message_communication/common/cc/node_create_flag.h"
-#include "felicia/examples/learn/message_communication/protobuf/cc/simple_publishing_node.h"
-#include "felicia/examples/learn/message_communication/protobuf/cc/simple_subscribing_node.h"
+#include "felicia/examples/learn/message_communication/protobuf/cc/protobuf_publishing_node.h"
+#include "felicia/examples/learn/message_communication/protobuf/cc/protobuf_subscribing_node.h"
 
 namespace felicia {
 
@@ -12,7 +12,7 @@ int RealMain(int argc, char* argv[]) {
 
   NodeCreateFlag delegate;
   FlagParser parser;
-  parser.set_program_name("node_creator");
+  parser.set_program_name("protobuf_node_creator");
   if (!parser.Parse(argc, argv, &delegate)) {
     return 1;
   }
@@ -37,11 +37,11 @@ int RealMain(int argc, char* argv[]) {
       ssl_server_context = SSLServerContext::NewSSLServerContext(
           cert_file_path, private_key_file_path);
     }
-    master_proxy.RequestRegisterNode<SimplePublishingNode>(
+    master_proxy.RequestRegisterNode<ProtobufPublishingNode>(
         node_info, delegate, ssl_server_context.get());
   } else {
-    master_proxy.RequestRegisterNode<SimpleSubscribingNode>(node_info,
-                                                            delegate);
+    master_proxy.RequestRegisterNode<ProtobufSubscribingNode>(node_info,
+                                                              delegate);
   }
 
   master_proxy.Run();

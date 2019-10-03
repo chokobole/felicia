@@ -1,41 +1,41 @@
 import felicia_py as fel
 from felicia.core.protobuf.channel_pb2 import ChannelDef
 
-from felicia.examples.learn.message_communication.protobuf.message_spec_pb2 import MessageSpec
+from felicia.examples.learn.message_communication.protobuf.simple_message_pb2 import SimpleMessage
 
 
-class SimpleSubscribingNode(fel.NodeLifecycle):
+class ProtobufSubscribingNode(fel.NodeLifecycle):
     def __init__(self, node_create_flag):
         super().__init__()
         self.topic = node_create_flag.topic_flag.value
         self.subscriber = fel.communication.Subscriber()
 
     def on_init(self):
-        print("SimpleSubscribingNode.on_init()")
+        print("ProtobufSubscribingNode.on_init()")
 
     def on_did_create(self, node_info):
-        print("SimpleSubscribingNode.on_did_create()")
+        print("ProtobufSubscribingNode.on_did_create()")
         self.node_info = node_info
         self.request_subscribe()
 
     def on_error(self, status):
-        print("SimpleSubscribingNode.on_error()")
+        print("ProtobufSubscribingNode.on_error()")
         fel.log(fel.ERROR, status.error_message())
 
     def on_message(self, message):
-        print("SimpleSubscribingNode.on_message()")
+        print("ProtobufSubscribingNode.on_message()")
         print("message : {}".format(message))
 
     def on_message_error(self, status):
-        print("SimpleSubscribingNode.on_message_error()")
+        print("ProtobufSubscribingNode.on_message_error()")
         fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
     def on_request_subscribe(self, status):
-        print("SimpleSubscribingNode.on_request_subscribe()")
+        print("ProtobufSubscribingNode.on_request_subscribe()")
         fel.log(fel.ERROR, status.error_message())
 
     def on_request_unsubscribe(self, status):
-        print("SimpleSubscribingNode.on_request_unsubscribe()")
+        print("ProtobufSubscribingNode.on_request_unsubscribe()")
         fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
     def request_subscribe(self):
@@ -47,7 +47,7 @@ class SimpleSubscribingNode(fel.NodeLifecycle):
                                           ChannelDef.CHANNEL_TYPE_UDP |
                                           ChannelDef.CHANNEL_TYPE_UDS |
                                           ChannelDef.CHANNEL_TYPE_SHM,
-                                          MessageSpec, settings,
+                                          SimpleMessage, settings,
                                           self.on_message, self.on_message_error,
                                           self.on_request_subscribe)
 

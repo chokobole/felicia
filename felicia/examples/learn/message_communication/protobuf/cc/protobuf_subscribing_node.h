@@ -1,16 +1,16 @@
-#ifndef FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_PROTOBUF_CC_SIMPLE_SUBSCRIBING_NODE_H_
-#define FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_PROTOBUF_CC_SIMPLE_SUBSCRIBING_NODE_H_
+#ifndef FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_PROTOBUF_CC_PROTOBUF_SUBSCRIBING_NODE_H_
+#define FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_PROTOBUF_CC_PROTOBUF_SUBSCRIBING_NODE_H_
 
 #include "felicia/core/communication/subscriber.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/examples/learn/message_communication/common/cc/node_create_flag.h"
-#include "felicia/examples/learn/message_communication/protobuf/message_spec.pb.h"
+#include "felicia/examples/learn/message_communication/protobuf/simple_message.pb.h"
 
 namespace felicia {
 
-class SimpleSubscribingNode : public NodeLifecycle {
+class ProtobufSubscribingNode : public NodeLifecycle {
  public:
-  explicit SimpleSubscribingNode(const NodeCreateFlag& node_create_flag);
+  explicit ProtobufSubscribingNode(const NodeCreateFlag& node_create_flag);
 
   // NodeLifecycle methods
   void OnInit() override;
@@ -18,7 +18,7 @@ class SimpleSubscribingNode : public NodeLifecycle {
   void OnError(const Status& s) override;
 
  private:
-  void OnMessage(MessageSpec&& message);
+  void OnMessage(SimpleMessage&& message);
   void OnMessageError(const Status& s);
   void OnRequestSubscribe(const Status& s);
   void OnRequestUnsubscribe(const Status& s);
@@ -29,8 +29,8 @@ class SimpleSubscribingNode : public NodeLifecycle {
   NodeInfo node_info_;
   const NodeCreateFlag& node_create_flag_;
   const std::string topic_;
-  Subscriber<MessageSpec> subscriber_;
+  Subscriber<SimpleMessage> subscriber_;
 };
 }  // namespace felicia
 
-#endif  // FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_PROTOBUF_CC_SIMPLE_SUBSCRIBING_NODE_H_
+#endif  // FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_PROTOBUF_CC_PROTOBUF_SUBSCRIBING_NODE_H_

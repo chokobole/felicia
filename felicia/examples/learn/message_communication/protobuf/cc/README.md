@@ -57,10 +57,10 @@ Now register Node. It depends on whether you pass the `-p` flag.
 
 ```c++
 if (delegate.is_publishing_node()) {
-  master_proxy.RequestRegisterNode<SimplePublishingNode>(
+  master_proxy.RequestRegisterNode<ProtobufPublishingNode>(
       node_info, delegate, ssl_server_context.get());
 } else {
-  master_proxy.RequestRegisterNode<SimpleSubscribingNode>(node_info,
+  master_proxy.RequestRegisterNode<ProtobufSubscribingNode>(node_info,
                                                           delegate);
 }
 ```
@@ -71,14 +71,14 @@ Lastly Run MasterProxy. This will blocks until `Stop()` is called.
 master_proxy.Run();
 ```
 
-Now look into the [simple_publishing_node.h](simple_publishing_node.h). Because `felicia` is designed with life cycle model, while registering 3 callbacks would be called. Maybe 2, if an error doens't happen.
+Now look into the [protobuf_publishing_node.h](protobuf_publishing_node.h). Because `felicia` is designed with life cycle model, while registering 3 callbacks would be called. Maybe 2, if an error doens't happen.
 
 ```c++
 namespace felicia {
 
-class SimplePublishingNode: public NodeLifecycle {
+class ProtobufPublishingNode: public NodeLifecycle {
  public:
-  SimplePublishingNode(const NodeCreateFlag& node_create_flag,
+  ProtobufPublishingNode(const NodeCreateFlag& node_create_flag,
                        SSLServerContext* ssl_server_context);
 
   // NodeLifecycle methods
@@ -99,7 +99,7 @@ Before requiest, `OnInit()` will be called. If the given `node_info` doesn't hav
 Then how is possibly publishing topics? If you want to publish topic, you have to use `Publisher<T>` and it is very simple to use. Very first, you have to request server that we hope to publish topic.
 
 ```c++
-void SimplePublishingNode::RequestPublish() {
+void ProtobufPublishingNode::RequestPublish() {
   communication::Settings settings;
   settings.buffer_size = Bytes::FromBytes(512);
   ...
@@ -109,7 +109,7 @@ void SimplePublishingNode::RequestPublish() {
 
   publisher_.RequestPublish(
       node_info_, topic_, channel_type, settings,
-      base::BindOnce(&SimplePublishingNode::OnRequestPublish,
+      base::BindOnce(&ProtobufPublishingNode::OnRequestPublish,
                      base::Unretained(this)));
 }
 ```
@@ -119,28 +119,28 @@ void SimplePublishingNode::RequestPublish() {
 If request is successfully delivered to the server, then callback `OnRequestPublish` will be called. Here simply we call `Publish` api every 1 second. But you can publish a topic whenever you want to.
 
 ```c++
-void SimplePublishingNode::OnPublish(ChannelDef::Type type, const Status& s) {
-  std::cout << "SimplePublishingNode::OnPublish() from "
+void ProtobufPublishingNode::OnPublish(ChannelDef::Type type, const Status& s) {
+  std::cout << "ProtobufPublishingNode::OnPublish() from "
             << ChannelDef::Type_Name(type) << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
 }
 
-void SimplePublishingNode::OnRequestPublish(const Status& s) {
-  std::cout << "SimplePublishingNode::OnRequestPublish()" << std::endl;
+void ProtobufPublishingNode::OnRequestPublish(const Status& s) {
+  std::cout << "ProtobufPublishingNode::OnRequestPublish()" << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
   RepeatingPublish();
 }
 
-void SimplePublishingNode::RepeatingPublish() {
+void ProtobufPublishingNode::RepeatingPublish() {
   publisher_.Publish(GenerateMessage(),
-                     base::BindOnce(&SimplePublishingNode::OnPublish,
+                     base::BindOnce(&ProtobufPublishingNode::OnPublish,
                                       base::Unretained(this)));
 
   if (!publisher_.IsUnregistered()) {
     MasterProxy& master_proxy = MasterProxy::GetInstance();
     master_proxy.PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&SimplePublishingNode::RepeatingPublish,
+        base::BindOnce(&ProtobufPublishingNode::RepeatingPublish,
                           base::Unretained(this)),
         base::TimeDelta::FromSeconds(1));
   }
@@ -150,10 +150,10 @@ void SimplePublishingNode::RepeatingPublish() {
 To use `Unpublish` method, you have to do like below.
 
 ```c++
-void SimplePublishingNode::RequestUnpublish() {
+void ProtobufPublishingNode::RequestUnpublish() {
   publisher_.RequestUnpublish(
       node_info_, topic_,
-      base::BindOnce(&SimplePublishingNode::OnRequestUnpublish,
+      base::BindOnce(&ProtobufPublishingNode::OnRequestUnpublish,
                      base::Unretained(this)));
 }
 ```
@@ -162,16 +162,16 @@ Same with above, if request is successfully delivered to the server, then callba
 will be called, too.
 
 ```c++
-void SimplePublishingNode::OnRequestUnpublish(const Status& s) {
-  std::cout << "SimplePublishingNode::OnRequestUnpublish()" << std::endl;
+void ProtobufPublishingNode::OnRequestUnpublish(const Status& s) {
+  std::cout << "ProtobufPublishingNode::OnRequestUnpublish()" << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
 }
 ```
 
-[simple_subscribing_node.cc](simple_subscribing_node.cc) is very similar to above. When just seeing the key different part, you have to request subscribe. Unlike `publisher` you have to pass 2 more callbacks, and settings. Callback is called every `period` milliseconds inside the settings, and the other is called when there's an error occurred.
+[protobuf_subscribing_node.cc](protobuf_subscribing_node.cc) is very similar to above. When just seeing the key different part, you have to request subscribe. Unlike `publisher` you have to pass 2 more callbacks, and settings. Callback is called every `period` milliseconds inside the settings, and the other is called when there's an error occurred.
 
 ```c++
-void SimpleSubscribingNode::RequestSubscribe() {
+void ProtobufSubscribingNode::RequestSubscribe() {
   communication::Settings settings;
   settings.buffer_size = Bytes::FromBytes(512);
   settings.channel_settings.tcp_settings.use_ssl =
@@ -182,11 +182,11 @@ void SimpleSubscribingNode::RequestSubscribe() {
       ChannelDef::CHANNEL_TYPE_TCP | ChannelDef::CHANNEL_TYPE_UDP |
           ChannelDef::CHANNEL_TYPE_UDS | ChannelDef::CHANNEL_TYPE_SHM,
       settings,
-      base::BindRepeating(&SimpleSubscribingNode::OnMessage,
+      base::BindRepeating(&ProtobufSubscribingNode::OnMessage,
                           base::Unretained(this)),
-      base::BindRepeating(&SimpleSubscribingNode::OnMessageError,
+      base::BindRepeating(&ProtobufSubscribingNode::OnMessageError,
                           base::Unretained(this)),
-      base::BindOnce(&SimpleSubscribingNode::OnRequestSubscribe,
+      base::BindOnce(&ProtobufSubscribingNode::OnRequestSubscribe,
                      base::Unretained(this)));
 }
 ```
@@ -219,15 +219,15 @@ struct Settings {
 To `Unsubscribe`, it's also very similar.
 
 ```c++
-void SimpleSubscribingNode::OnRequestUnsubscribe(const Status& s) {
-  std::cout << "SimpleSubscribingNode::OnRequestUnsubscribe()" << std::endl;
+void ProtobufSubscribingNode::OnRequestUnsubscribe(const Status& s) {
+  std::cout << "ProtobufSubscribingNode::OnRequestUnsubscribe()" << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
 }
 
-void SimpleSubscribingNode::RequestUnsubscribe() {
+void ProtobufSubscribingNode::RequestUnsubscribe() {
   subscriber_.RequestUnsubscribe(
       node_info_, topic_,
-      base::BindOnce(&SimpleSubscribingNode::OnRequestUnsubscribe,
+      base::BindOnce(&ProtobufSubscribingNode::OnRequestUnsubscribe,
                      base::Unretained(this)));
 }
 ```
