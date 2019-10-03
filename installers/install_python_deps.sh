@@ -14,4 +14,6 @@ if ! [ -x "$(command -v pip)" ]; then
   "$PYTHON_BIN" get-pip.py --user
 fi
 
-pip install numpy --user
+pip install numpy $1
+pip install empy $1  # For ROS C++ message generation
+pip install pyyaml $1  # For ROS Python message generation

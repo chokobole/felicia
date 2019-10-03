@@ -40,7 +40,7 @@ matrix:
       install:
         - ./installers/install_bazel.sh
         - ./installers/install_nodejs.sh
-        - ./installers/install_python_deps.sh
+        - ./installers/install_python_deps.sh --user
       script:
         - bazel build --cpu darwin_x86_64 //felicia/...
         - bazel test --cpu darwin_x86_64 --test_tag_filters -benchmark //felicia/...
@@ -58,7 +58,7 @@ matrix:
         - PATH="$PATH:/c/Python3:/c/Python3/Scripts:/c/Program Files/nodejs:/c/Users/travis/AppData/Roaming/npm"
       install:
         - choco install python3 --params "/InstallDir:C:\Python3"
-        - ./installers/install_python_deps.sh
+        - ./installers/install_python_deps.sh --user
         - choco install bazel --version 0.25.0
         - choco install nodejs.install --version 10.15.3
       script:

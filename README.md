@@ -6,14 +6,14 @@
 
 ## Prerequisites
 
-We use [bazel](https://www.bazel.build/) as a build tool. So please download it! To sync with window build, we fix the virstion to `0.20.0`.
+We use [bazel](https://www.bazel.build/) as a build tool. So please download it! To sync with window build, we fix the virstion to `0.25.0`.
 On linux and mac, simply you can do like below!
 
 ```bash
 ./installers/install_bazel.sh
 ```
 
-Also we need python and some dependencies such as `numpy`. Currently we tested on python3. Our suggestion is using `pipenv`.
+Also we need `python` and some dependencies such as `numpy`. Currently we tested on python3. Our suggestion is using `pipenv`.
 
 ```bash
 pipenv --three
@@ -21,6 +21,16 @@ pipenv --three
 ```
 
 Or you can set environment variable `PYTHON_BIN_PATH` to `/path/to/python/`.
+
+Lastly we need `nodejs` for nodejs binding. If you are working on linux or mac, then you can install it by `nvm`. On windows, you can install it by `choco`.
+
+```bash
+# Install nodejs using nvm on linux or mac
+./installers/install_nodejs.sh
+
+# install nodejs using choco on windows
+choco install nodejs.install --version 10.15.3
+```
 
 ### For Windows developers
 
