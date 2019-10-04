@@ -4,9 +4,19 @@ package(default_visibility = ["//felicia:internal"])
 
 fel_cc_library(
     name = "communication",
+    srcs = [
+        "dynamic_publisher.cc",
+        "dynamic_subscriber.cc",
+        "serialized_message_publisher.cc",
+        "serialized_message_subscriber.cc",
+    ],
     hdrs = [
+        "dynamic_publisher.h",
+        "dynamic_subscriber.h",
         "publisher.h",
         "register_state.h",
+        "serialized_message_publisher.h",
+        "serialized_message_subscriber.h",
         "settings.h",
         "subscriber.h",
         "subscriber_state.h",
@@ -15,18 +25,4 @@ fel_cc_library(
         "//felicia/core/channel",
         "//felicia/core/master:master_proxy",
     ],
-)
-
-fel_cc_library(
-    name = "dynamic_publisher",
-    srcs = ["dynamic_publisher.cc"],
-    hdrs = ["dynamic_publisher.h"],
-    deps = [":communication"],
-)
-
-fel_cc_library(
-    name = "dynamic_subscriber",
-    srcs = ["dynamic_subscriber.cc"],
-    hdrs = ["dynamic_subscriber.h"],
-    deps = [":communication"],
 )

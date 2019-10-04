@@ -19,6 +19,7 @@ fel_cc_library(
         "message_io.cc",
         "protobuf_loader.cc",
         "protobuf_util.cc",
+        "serialized_message.cc",
     ],
     hdrs = [
         "dynamic_protobuf_message.h",
@@ -30,6 +31,8 @@ fel_cc_library(
         "protobuf_message_io_impl.h",
         "protobuf_util.h",
         "ros_message_io_impl.h",
+        "serialized_message.h",
+        "serialized_message_io_impl.h",
     ],
     defines = if_has_ros([
         "HAS_ROS",

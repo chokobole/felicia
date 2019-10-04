@@ -77,10 +77,27 @@ class Publisher {
 
   void Release();
 
-  // Because DynamicProtobufMessage's type can't be determined at compile time.
-  // we should workaround by doing runtime asking DynamicPublisher.
+  // Because type of DynamicProtobufMessage or SerializedMessage can't be
+  // determined at compile time. We should workaround by doing runtime
+  // asking its Publisher.
   virtual std::string GetMessageTypeName() const {
     return MessageIOImpl<MessageTy>::TypeName();
+  }
+
+  virtual TopicInfo::ImplType GetMessageImplType() const {
+#if defined(HAS_ROS)
+    if (ros::message_traits::IsMessage<MessageTy>::value) {
+      return TopicInfo::ROS;
+    }
+#endif
+    return TopicInfo::PROTOBUF;
+  }
+
+  // Because SerializedMessage holds serialized text already, and we want it
+  // to move its content to |serialized| not by copying.
+  virtual MessageIOError SerializeToString(MessageTy* message,
+                                           std::string* serialized) {
+    return MessageIO::SerializeToString(message, serialized);
   }
 
   base::Lock lock_;
@@ -141,11 +158,7 @@ void Publisher<MessageTy>::RequestPublish(
   TopicInfo* topic_info = request->mutable_topic_info();
   topic_info->set_topic(topic);
   topic_info->set_type_name(GetMessageTypeName());
-#if defined(HAS_ROS)
-  if (ros::message_traits::IsMessage<MessageTy>::value) {
-    topic_info->set_impl_type(TopicInfo::ROS);
-  }
-#endif
+  topic_info->set_impl_type(GetMessageImplType());
   ChannelSource* channel_source = topic_info->mutable_topic_source();
   for (auto& channel_def : channel_defs) {
     *channel_source->add_channel_defs() = channel_def;
@@ -327,23 +340,20 @@ void Publisher<MessageTy>::SendMesasge(SendMessageCallback callback) {
 
   if (!can_send) return;
 
-  std::string seriazlied;
+  std::string serialized;
+  MessageIOError err;
   {
     base::AutoLock l(lock_);
     if (message_queue_ && !message_queue_->empty()) {
-      MessageIOError err =
-          MessageIO::SerializeToString(&message_queue_->front(), &seriazlied);
-      if (err != MessageIOError::OK) {
-        seriazlied.clear();
-      }
+      err = SerializeToString(&message_queue_->front(), &serialized);
       message_queue_->pop();
     }
   }
-  if (seriazlied.length() > 0) {
+  if (err == MessageIOError::OK) {
     bool reuse = false;
     for (auto& channel : channels_) {
       if (!channel->IsSendingMessage() && channel->HasReceivers()) {
-        channel->SendMessage(seriazlied, reuse, callback);
+        channel->SendMessage(serialized, reuse, callback);
         reuse |= true;
       }
     }

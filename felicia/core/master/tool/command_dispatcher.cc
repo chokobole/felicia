@@ -299,10 +299,12 @@ void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
 
     std::cout << base::StringPrintf(
                      "TYPE: %s\n"
+                     "IMPL_TYPE: %s\n"
                      "DEFINITION: %s\n"
                      "CHANNEL_SOURCE: %s\n",
-                     topic_info.type_name().c_str(), definition.c_str(),
-                     channel_source.DebugString().c_str())
+                     topic_info.type_name().c_str(),
+                     TopicInfo::ImplType_Name(topic_info.impl_type()).c_str(),
+                     definition.c_str(), channel_source.DebugString().c_str())
               << std::endl;
   }
 }

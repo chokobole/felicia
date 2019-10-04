@@ -64,5 +64,6 @@ class MessageIO {
 
 #include "felicia/core/message/protobuf_message_io_impl.h"
 #include "felicia/core/message/ros_message_io_impl.h"
+#include "felicia/core/message/serialized_message_io_impl.h"
 
 #endif  // FELICIA_CORE_MESSAGE_MESSAGE_IO_H_

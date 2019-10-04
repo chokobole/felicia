@@ -34,21 +34,6 @@ void DynamicPublisher::PublishFromJson(const std::string& json_message,
   Publisher<DynamicProtobufMessage>::Publish(message_prototype_, callback);
 }
 
-void DynamicPublisher::PublishFromSerialized(const std::string& serialized,
-                                             SendMessageCallback callback) {
-  DCHECK(message_prototype_.message());
-
-  if (!message_prototype_.ParseFromArray(serialized.data(),
-                                         serialized.length())) {
-    callback.Run(ChannelDef::CHANNEL_TYPE_NONE,
-                 errors::InvalidArgument(MessageIOErrorToString(
-                     MessageIOError::ERR_FAILED_TO_PARSE)));
-    return;
-  }
-
-  Publisher<DynamicProtobufMessage>::Publish(message_prototype_, callback);
-}
-
 std::string DynamicPublisher::GetMessageTypeName() const {
   return message_prototype_.GetTypeName();
 }

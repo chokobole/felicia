@@ -35,7 +35,7 @@ fel_cc_library(
     ],
     deps = [
         ":node_lifecycle",
-        "//felicia/core/communication:dynamic_subscriber",
+        "//felicia/core/communication",
         "//felicia/core/master:master_proxy",
     ],
 )
@@ -46,7 +46,7 @@ fel_cc_library(
     hdrs = ["dynamic_publishing_node.h"],
     deps = [
         ":node_lifecycle",
-        "//felicia/core/communication:dynamic_publisher",
+        "//felicia/core/communication",
         "//felicia/core/master:master_proxy",
     ],
 )

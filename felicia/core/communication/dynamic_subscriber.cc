@@ -59,8 +59,8 @@ void DynamicSubscriber::Unsubscribe(const std::string& topic,
 }
 
 bool DynamicSubscriber::MaybeResolveMessgaeType(const TopicInfo& topic_info) {
-  if (topic_info.impl_type() == TopicInfo::ROS) {
-    LOG(ERROR) << "Can't subscribie dynamically for ROS message.";
+  if (topic_info.impl_type() != TopicInfo::PROTOBUF) {
+    LOG(ERROR) << "Can't subscribie dynamically other than protobuf message.";
     return false;
   }
 

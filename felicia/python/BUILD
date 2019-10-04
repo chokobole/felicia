@@ -24,8 +24,7 @@ fel_cc_library(
     ],
     deps = [
         "//felicia/core:felicia_init",
-        "//felicia/core/communication:dynamic_publisher",
-        "//felicia/core/communication:dynamic_subscriber",
+        "//felicia/core/communication",
         "//felicia/core/master:master_proxy",
         "//felicia/core/node:node_lifecycle",
         "//felicia/core/util:command_line_interface",

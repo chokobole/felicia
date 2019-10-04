@@ -17,10 +17,6 @@ class DynamicPublisher : public Publisher<DynamicProtobufMessage> {
   void PublishFromJson(const std::string& json_message,
                        SendMessageCallback callback = SendMessageCallback());
 
-  void PublishFromSerialized(
-      const std::string& serialized,
-      SendMessageCallback callback = SendMessageCallback());
-
  private:
   std::string GetMessageTypeName() const override;
 
