@@ -14,7 +14,7 @@ void RosMsgSubscribingNode::OnDidCreate(const NodeInfo& node_info) {
   RequestSubscribe();
 }
 
-void RosMsgSubscribingNode::OnMessage(Message&& message) {
+void RosMsgSubscribingNode::OnMessage(SimpleMessage&& message) {
   std::cout << "message : " << message << std::endl;
 }
 

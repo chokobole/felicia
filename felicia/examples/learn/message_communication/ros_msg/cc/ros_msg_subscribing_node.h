@@ -1,15 +1,12 @@
 #ifndef FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_ROS_MSG_CC_ROS_MSG_SUBSCRIBING_NODE_H_
 #define FELICIA_EXAMPLES_LEARN_MESSAGE_COMMUNICATION_ROS_MSG_CC_ROS_MSG_SUBSCRIBING_NODE_H_
 
-#include <std_msgs/String.h>
-
 #include "felicia/core/communication/subscriber.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/examples/learn/message_communication/common/cc/node_create_flag.h"
+#include "felicia/examples/learn/message_communication/ros_msg/SimpleMessage.h"
 
 namespace felicia {
-
-typedef std_msgs::String Message;
 
 class RosMsgSubscribingNode : public NodeLifecycle {
  public:
@@ -19,14 +16,14 @@ class RosMsgSubscribingNode : public NodeLifecycle {
   void OnDidCreate(const NodeInfo& node_info) override;
 
  private:
-  void OnMessage(Message&& message);
+  void OnMessage(SimpleMessage&& message);
 
   void RequestSubscribe();
 
   NodeInfo node_info_;
   const NodeCreateFlag& node_create_flag_;
   const std::string topic_;
-  Subscriber<Message> subscriber_;
+  Subscriber<SimpleMessage> subscriber_;
 };
 }  // namespace felicia
 

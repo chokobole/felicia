@@ -46,9 +46,13 @@ void RosMsgPublishingNode::RepeatingPublish() {
   }
 }
 
-Message RosMsgPublishingNode::GenerateMessage() {
-  Message message;
-  message.data = "Hello World";
+SimpleMessage RosMsgPublishingNode::GenerateMessage() {
+  static int id = 0;
+  base::TimeDelta timestamp = timestamper_.timestamp();
+  SimpleMessage message;
+  message.id = id++;
+  message.timestamp = timestamp.InMicroseconds();
+  message.content = "hello world";
   return message;
 }
 

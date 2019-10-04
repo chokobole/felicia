@@ -21,12 +21,14 @@ fel_cc_binary(
             "ros_msg_subscribing_node.cc",
             "ros_msg_subscribing_node.h",
         ],
-        "//conditions:default": ["//felicia:only_main.cc"]
+        "//conditions:default": ["//felicia:only_main.cc"],
     }),
     deps = fel_shared_library() + [
         "//felicia/core:felicia_init",
         "//felicia/core/communication",
         "//felicia/core/master:master_proxy",
         "//felicia/examples/learn/message_communication/common/cc:node_create_flag",
-    ],
+    ] + if_has_ros([
+        "//felicia/examples/learn/message_communication/ros_msg:simple_message_ros_msg_cc",
+    ]),
 )
