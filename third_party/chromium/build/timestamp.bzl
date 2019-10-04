@@ -30,9 +30,9 @@ build_timestamp = rule(
     implementation = _build_timestamp_impl,
     attrs = {
         "_tool": attr.label(
-            allow_files = True,
+            allow_single_file = True,
             default = Label("//third_party/chromium/build:compute_build_timestamp.py"),
         ),
-        "dep": attr.label(mandatory = True, providers = [LastChangeInfo], allow_files = True),
+        "dep": attr.label(mandatory = True, providers = [LastChangeInfo]),
     },
 )

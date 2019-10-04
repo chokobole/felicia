@@ -66,7 +66,7 @@ def _generate_pyd_impl(ctx):
 generate_pyd = rule(
     implementation = _generate_pyd_impl,
     attrs = {
-        "file": attr.label(mandatory = True),
+        "file": attr.label(mandatory = True, allow_single_file = True),
         "out": attr.output(mandatory = True),
     },
 )

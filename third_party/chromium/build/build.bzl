@@ -47,7 +47,7 @@ buildflag_header = rule(
         "hdr": attr.string(),
         "dir": attr.string(),
         "_tool": attr.label(
-            allow_files = True,
+            allow_single_file = True,
             default = Label("//third_party/chromium/build:write_buildflag_header.py"),
         ),
     },
@@ -78,10 +78,10 @@ write_build_date_header = rule(
     implementation = _write_build_date_header_impl,
     attrs = {
         "_tool": attr.label(
-            allow_files = True,
+            allow_single_file = True,
             default = Label("//third_party/chromium/build:write_build_date_header.py"),
         ),
         "output": attr.string(mandatory = True),
-        "dep": attr.label(mandatory = True, providers = [TimestampInfo], allow_files = True),
+        "dep": attr.label(mandatory = True, providers = [TimestampInfo]),
     },
 )

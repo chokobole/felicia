@@ -91,7 +91,7 @@ def _fel_cc_hdrs_impl(ctx):
 fel_cc_hdrs = rule(
     implementation = _fel_cc_hdrs_impl,
     attrs = {
-        "hdrs": attr.label_list(allow_files = True),
+        "hdrs": attr.label_list(allow_files = [".h", ".hpp"]),
         "deps": attr.label_list(),
     },
 )

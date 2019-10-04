@@ -30,7 +30,7 @@ lastchange = rule(
     implementation = _lastchange_impl,
     attrs = {
         "_tool": attr.label(
-            allow_files = True,
+            allow_single_file = True,
             default = Label("//third_party/chromium/build/util:lastchange.py"),
         ),
     },
