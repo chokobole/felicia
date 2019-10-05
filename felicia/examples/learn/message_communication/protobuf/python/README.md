@@ -10,7 +10,7 @@ Before beginning, let's build the binary.
 
 ```bash
 bazel build //felicia/core/master/rpc:grpc_server_main
-bazel build //felicia/examples/learn/message_communication/python:node_creator
+bazel build //felicia/examples/learn/message_communication/python:protobuf_node_creator
 ```
 
 Done. Now let's begin and run the server!
@@ -21,17 +21,17 @@ bazel-bin/felicia/core/master/rpc/grpc_server_main
 
 On the second and third shell prompts, execute the ***publisher*** and ***subscriber***. In order to run an example node in publisher mode, you need to pass `-t`, a topic name to publish, with an additional argument `-p` to indicate we want to make it a publisher. You can also pass `--name` argument to the command. Then, server will try to generate a node with the name unless there is an already registered node with the name.
 
-Running a node_creator in ***publisher*** mode:
+Running a protobuf_node_creator in ***publisher*** mode:
 ```bash
-bazel-bin/felicia/examples/learn/message_communication/python/node_creator -p -t message
+bazel-bin/felicia/examples/learn/message_communication/python/protobuf_node_creator -p -t message
 ```
 
-Running a node creator in ***subscriber*** mode (without `-p` option):
+Running a node protobuf_node_creator in ***subscriber*** mode (without `-p` option):
 ```bash
 bazel-bin/felicia/examples/learn/message_communication/python/node_creator -t message
 ```
 
-For further details, take a look at [node_creator.py](node_creator.py).
+For further details, take a look at [protobuf_node_creator.py](protobuf_node_creator.py).
 
 At the very first time, you have to start `MasterProxy`.
 
