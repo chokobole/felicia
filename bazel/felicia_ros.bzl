@@ -162,7 +162,7 @@ def fel_ros_msg_library_cc(
     native.cc_library(
         name = cc_name,
         hdrs = if_has_ros(cc_outs),
-        deps = cc_libs,
+        deps = cc_libs + [dep + "_cc" for dep in deps],
         visibility = visibility,
         testonly = testonly,
         **kargs
@@ -200,7 +200,7 @@ def fel_ros_msg_library_py(
     native.py_library(
         name = py_name,
         srcs = if_has_ros(py_outs),
-        deps = py_libs,
+        deps = py_libs + [dep + "_py" for dep in deps],
         visibility = visibility,
         testonly = testonly,
         **kargs
@@ -215,7 +215,9 @@ def fel_ros_msg_library(
         native_deps = [],
         visibility = [],
         testonly = 0,
-        gen_srv = False):
+        gen_srv = False,
+        cc_libs = [],
+        py_libs = []):
     fel_ros_msg_library_cc(
         name = name,
         package = package,
@@ -224,6 +226,7 @@ def fel_ros_msg_library(
         includes = includes,
         native_deps = native_deps,
         gen_srv = gen_srv,
+        cc_libs = cc_libs,
         visibility = visibility,
         testonly = testonly,
     )
@@ -236,6 +239,7 @@ def fel_ros_msg_library(
         includes = includes,
         native_deps = native_deps,
         gen_srv = gen_srv,
+        py_libs = py_libs,
         visibility = visibility,
         testonly = testonly,
     )

@@ -57,4 +57,4 @@ namespace felicia {
 #endif
 ```
 
-In case that your message depends on native message, such as `std_msgs`, you have to add `native_deps = ["std_msgs"]`. And if you want to let your message export to other message, then you have to add `includes=["."]`, so that bazel can tell any other mesages which depend on the messages whose package named `felicia` are here.
+In case that your message depends on native message, such as `std_msgs`, you have to add `native_deps = ["std_msgs"]` and `cc_libs = ["@ros//:std_msgs"]`. And if you want to let your message export to other message, then you have to add `includes=["."]`, so that bazel can tell any other mesages which depend on the messages whose package named `felicia` are here.
