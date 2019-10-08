@@ -4,6 +4,10 @@
 #include <memory>
 #include <string>
 
+#if defined(HAS_ROS)
+#include <ros/header.h>
+#endif  // defined(HAS_ROS)
+
 #include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/compiler_specific.h"
@@ -72,6 +76,10 @@ class Subscriber {
   void OnFindPublisher(const TopicInfo& topic_info);
   void ConnectToPublisher();
   void OnConnectToPublisher(const Status& s);
+#if defined(HAS_ROS)
+  void OnWriteROSHeader(ChannelDef::Type, const Status& s);
+  void OnReadROSHeader(std::string* buffer, const Status& s);
+#endif  // defined(HAS_ROS)
 
   void StartMessageLoop();
   void StopMessageLoop(StatusOnceCallback callback = StatusOnceCallback());
@@ -126,6 +134,7 @@ void Subscriber<MessageTy>::RequestSubscribe(
   SubscribeTopicRequest* request = new SubscribeTopicRequest();
   *request->mutable_node_info() = node_info;
   request->set_topic(topic);
+  request->set_topic_type(MessageIOImpl<MessageTy>::TypeName());
   SubscribeTopicResponse* response = new SubscribeTopicResponse();
 
   master_proxy.SubscribeTopicAsync(
@@ -300,13 +309,78 @@ void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
       channel_->SetReceiveBufferSize(settings_.buffer_size);
     }
 
-    StartMessageLoop();
+#if defined(HAS_ROS)
+    if (settings_.channel_settings.receive_from_ros) {
+      ros::M_string header;
+      header["topic"] = topic_info_.topic().substr(strlen("ros://"));
+      header["md5sum"] = MessageIOImpl<MessageTy>::MD5Sum();
+      header["callerid"] = topic_info_.ros_node_name();
+      header["type"] = MessageIOImpl<MessageTy>::TypeName();
+      header["tcp_nodelay"] = "1";
+
+      boost::shared_array<uint8_t> write_buffer;
+      uint32_t len;
+      ros::Header::write(header, write_buffer, len);
+      std::string msg;
+      msg.resize(len);
+      memcpy(const_cast<char*>(msg.c_str()), write_buffer.get(), len);
+
+      channel_->SendRawMessage(
+          msg, false,
+          base::BindRepeating(&Subscriber<MessageTy>::OnWriteROSHeader,
+                              base::Unretained(this)));
+
+      std::string* receive_buffer = new std::string();
+      channel_->ReceiveRawMessage(
+          receive_buffer,
+          base::BindOnce(&Subscriber<MessageTy>::OnReadROSHeader,
+                         base::Unretained(this), base::Owned(receive_buffer)));
+    } else {
+#endif  // defined(HAS_ROS)
+      StartMessageLoop();
+#if defined(HAS_ROS)
+    }
+#endif  // defined(HAS_ROS)
   } else {
     LOG(ERROR) << "Failed to connect to publisher: " << s;
     channel_type_ <<= 1;
     ConnectToPublisher();
   }
 }
+
+#if defined(HAS_ROS)
+template <typename MessageTy>
+void Subscriber<MessageTy>::OnWriteROSHeader(ChannelDef::Type,
+                                             const Status& s) {
+  LOG_IF(ERROR, !s.ok()) << s;
+}
+
+template <typename MessageTy>
+void Subscriber<MessageTy>::OnReadROSHeader(std::string* buffer,
+                                            const Status& s) {
+  ros::Header header;
+  std::string error_message;
+  if (!header.parse(
+          reinterpret_cast<uint8_t*>(const_cast<char*>(buffer->c_str())),
+          buffer->length(), error_message)) {
+    channel_.reset();
+    internal::LogOrCallback(
+        on_error_callback_,
+        errors::Unavailable(base::StringPrintf(
+            "Failed to parse ROS Header: %s.", error_message.c_str())));
+  } else {
+    if (header.getValue("error", error_message)) {
+      channel_.reset();
+      internal::LogOrCallback(
+          on_error_callback_,
+          errors::Unavailable(base::StringPrintf(
+              "ROS Header contains error: %s.", error_message.c_str())));
+    } else {
+      StartMessageLoop();
+    }
+  }
+}
+#endif  // defined(HAS_ROS)
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::StartMessageLoop() {

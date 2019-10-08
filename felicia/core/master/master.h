@@ -50,6 +50,7 @@ class EXPORT Master {
  private:
   friend class GrpcServer;
   friend class MasterTest;
+  friend class ROSMasterProxy;
 
   void DoRegisterClient(std::unique_ptr<Client> client,
                         StatusOnceCallback callback);
@@ -62,6 +63,7 @@ class EXPORT Master {
   void DoUnpublishTopic(const NodeInfo& node_info, const std::string& topic,
                         StatusOnceCallback callback);
   void DoSubscribeTopic(const NodeInfo& node_info, const std::string& topic,
+                        const std::string& topic_type,
                         StatusOnceCallback callback);
   void DoUnsubscribeTopic(const NodeInfo& node_info, const std::string& topic,
                           StatusOnceCallback callback);

@@ -102,15 +102,16 @@ void UDPChannel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
     return;
   }
 
-  MessageIOError err = MessageIO::ParseHeaderFromBuffer(
-      this->receive_buffer_.StartOfBuffer(), &this->header_);
+  MessageIOError err =
+      MessageIO::ParseHeaderFromBuffer(this->receive_buffer_.StartOfBuffer(),
+                                       &this->header_, this->receive_from_ros_);
   if (err != MessageIOError::OK) {
     std::move(this->receive_callback_)
         .Run(errors::DataLoss(MessageIOErrorToString(err)));
     return;
   }
 
-  if (this->receive_buffer_.capacity() - sizeof(Header) <
+  if (this->receive_buffer_.capacity() - this->header_size_ <
       this->header_.size()) {
     std::move(this->receive_callback_)
         .Run(errors::Aborted(
@@ -119,7 +120,8 @@ void UDPChannel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
   }
 
   err = MessageIO::ParseMessageFromBuffer(this->receive_buffer_.StartOfBuffer(),
-                                          this->header_, true, this->message_);
+                                          this->header_, this->header_size_,
+                                          this->message_);
   if (err != MessageIOError::OK) {
     std::move(this->receive_callback_)
         .Run(errors::DataLoss("Failed to parse message from buffer."));

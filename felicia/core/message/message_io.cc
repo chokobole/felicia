@@ -15,8 +15,9 @@ std::string MessageIOErrorToString(MessageIOError mesasge_io_error) {
 
 // static
 MessageIOError MessageIO::ParseHeaderFromBuffer(const char* buffer,
-                                                Header* header) {
-  if (!Header::FromBytes(buffer, header))
+                                                Header* header,
+                                                bool receive_from_ros) {
+  if (!Header::FromBytes(buffer, header, receive_from_ros))
     return MessageIOError::ERR_CORRUPTED_HEADER;
 
   return MessageIOError::OK;

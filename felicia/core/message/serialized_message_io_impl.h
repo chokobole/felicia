@@ -25,6 +25,8 @@ class MessageIOImpl<
   static std::string TypeName() { return base::EmptyString(); }
 
   static std::string Definition() { return base::EmptyString(); }
+
+  static std::string MD5Sum() { return base::EmptyString(); }
 };
 
 }  // namespace felicia

@@ -26,36 +26,33 @@ class MessageIO {
   }
 
   static MessageIOError ParseHeaderFromBuffer(const char* buffer,
-                                              Header* header);
+                                              Header* header,
+                                              bool receive_from_ros);
 
   template <typename T>
   static MessageIOError ParseMessageFromBuffer(const char* buffer,
                                                const Header& header,
-                                               bool buffer_include_header,
-                                               T* message) {
+                                               size_t header_size, T* message) {
     std::string text;
     const char* start = buffer;
-    if (buffer_include_header) {
-      start += sizeof(Header);
-    }
+    start += header_size;
     return MessageIOImpl<T>::Deserialize(start, header.size(), message);
   }
 
   static MessageIOError AttachToBuffer(
       const std::string& text, scoped_refptr<net::GrowableIOBuffer> buffer,
-      int* size) {
+      size_t header_size, int* size) {
     // This should be before return `ERR_NOT_ENOUGH_BUFFER`. Caller might use
     // this |size| to reallocate buffer.
-    *size = sizeof(Header) + text.length();
+    *size = header_size + text.length();
 
     if (buffer->RemainingCapacity() < *size)
       return MessageIOError::ERR_NOT_ENOUGH_BUFFER;
 
     Header header;
     header.set_size(text.length());
-    memcpy(buffer->StartOfBuffer(), &header, sizeof(Header));
-    memcpy(buffer->StartOfBuffer() + sizeof(Header), text.data(),
-           text.length());
+    memcpy(buffer->StartOfBuffer(), &header, header_size);
+    memcpy(buffer->StartOfBuffer() + header_size, text.data(), text.length());
     return MessageIOError::OK;
   }
 };

@@ -29,6 +29,8 @@ bazel-bin/felicia/examples/learn/message_communication/ros_msg/cc/ros_msg_node_c
 
 We don't explain the same we had in [README.md](/felicia/examples/learn/message_communication/protobuf/cc/README.md).
 
+If you want to subscribe message from ROS, then add prefix `ros://` to topic. But in this case, topic should be resolved with namespace.
+
 The way of using API will be same from the c++ side, but if you are python user, there will be a slight difference, check out [README.md](/felicia/examples/learn/message_communication/ros_msg/python/README.md).
 
 We just want to explain more about bazel rule `fel_ros_msg_library`. At [BUILD](/felicia/examples/learn/message_communication/ros_msg/BUILD), you can see like below.

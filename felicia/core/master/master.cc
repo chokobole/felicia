@@ -4,7 +4,11 @@
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 #include "felicia/core/channel/channel_factory.h"
+#include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/master/heart_beat_listener.h"
+#if defined(HAS_ROS)
+#include "felicia/core/master/ros_master_proxy.h"
+#endif  // defined(HAS_ROS)
 
 namespace felicia {
 
@@ -177,10 +181,11 @@ void Master::SubscribeTopic(const SubscribeTopicRequest* arg,
   CHECK_NODE_EXISTS(node_info);
 
   const std::string& topic = arg->topic();
+  const std::string& topic_type = arg->topic_type();
   thread_->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&Master::DoSubscribeTopic, base::Unretained(this),
-                     node_info, topic, std::move(callback)));
+                     node_info, topic, topic_type, std::move(callback)));
 }
 
 void Master::UnsubscribeTopic(const UnsubscribeTopicRequest* arg,
@@ -354,6 +359,7 @@ void Master::DoUnpublishTopic(const NodeInfo& node_info,
 
 void Master::DoSubscribeTopic(const NodeInfo& node_info,
                               const std::string& topic,
+                              const std::string& topic_type,
                               StatusOnceCallback callback) {
   DCHECK(thread_->task_runner()->BelongsToCurrentThread());
   base::WeakPtr<Node> node = FindNode(node_info);
@@ -377,7 +383,16 @@ void Master::DoSubscribeTopic(const NodeInfo& node_info,
                << base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                      node_info.name().c_str());
     std::move(callback).Run(Status::OK());
-    NotifySubscriber(topic, node_info);
+    base::StringPiece t = topic;
+    if (ConsumePrefix(&t, "ros://")) {
+#if defined(HAS_ROS)
+      std::string ros_topic = t.as_string();
+      ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
+      ros_master_proxy.RegisterSubscriber(ros_topic, topic_type);
+#endif
+    } else {
+      NotifySubscriber(topic, node_info);
+    }
   } else if (reason == Reason::TopicAlreadySubscribingOnNode) {
     std::move(callback).Run(
         errors::TopicAlreadySubscribingOnNode(node_info, topic));
@@ -581,6 +596,12 @@ void Master::NotifySubscriber(const std::string& topic,
 }
 
 void Master::NotifyAllSubscribers(const TopicInfo& topic_info) {
+  if (!thread_->task_runner()->BelongsToCurrentThread()) {
+    thread_->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&Master::NotifyAllSubscribers,
+                              base::Unretained(this), topic_info));
+    return;
+  }
   NodeFilter node_filter;
   node_filter.set_subscribing_topic(topic_info.topic());
   std::vector<base::WeakPtr<Node>> subscribing_nodes = FindNodes(node_filter);

@@ -41,6 +41,7 @@ export interface TopicInfoProtobuf {
   implType: TopicInfoImplTypeProtobuf;
   topicSource: ChannelSourceProtobuf;
   status: TopicInfoStatusProtobuf;
+  rosNodeName: string;
 }
 
 export interface ClientFilterProtobuf {

@@ -353,7 +353,7 @@ void Publisher<MessageTy>::SendMesasge(SendMessageCallback callback) {
     bool reuse = false;
     for (auto& channel : channels_) {
       if (!channel->IsSendingMessage() && channel->HasReceivers()) {
-        channel->SendMessage(serialized, reuse, callback);
+        channel->SendRawMessage(serialized, reuse, callback);
         reuse |= true;
       }
     }

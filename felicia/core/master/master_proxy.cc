@@ -1,5 +1,7 @@
 #include "felicia/core/master/master_proxy.h"
 
+#include <csignal>
+
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
@@ -22,6 +24,11 @@ namespace felicia {
 namespace {
 
 bool g_on_background = false;
+
+void StopMasterProxy(int signal) {
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  master_proxy.Stop();
+}
 
 }  // namespace
 
@@ -59,6 +66,10 @@ ProtobufLoader* MasterProxy::protobuf_loader() {
 
 void MasterProxy::set_heart_beat_duration(base::TimeDelta heart_beat_duration) {
   client_info_.set_heart_beat_duration(heart_beat_duration.InMilliseconds());
+}
+
+void MasterProxy::set_on_stop_callback(base::OnceClosure callback) {
+  on_stop_callback_ = std::move(callback);
 }
 
 bool MasterProxy::IsBoundToCurrentThread() const {
@@ -131,6 +142,8 @@ Status MasterProxy::Stop() {
   } else {
     run_loop_->Quit();
   }
+  if (!on_stop_callback_.is_null())
+    std::move(on_stop_callback_).Run();
   return s;
 }
 
@@ -158,6 +171,7 @@ CLIENT_METHOD(ListTopics)
 #undef CLIENT_METHOD
 
 void MasterProxy::Run() {
+  RegisterSignals();
   if (g_on_background) return;
   run_loop_->Run();
 }
@@ -175,6 +189,17 @@ void MasterProxy::Setup(base::WaitableEvent* event) {
   heart_beat_signaller_.Start(
       client_info_, base::BindOnce(&MasterProxy::OnHeartBeatSignallerStart,
                                    base::Unretained(this), event));
+}
+
+void MasterProxy::RegisterSignals() {
+  // To handle general case when POSIX ask the process to quit.
+  std::signal(SIGTERM, &felicia::StopMasterProxy);
+  // To handle Ctrl + C.
+  std::signal(SIGINT, &felicia::StopMasterProxy);
+#if defined(OS_POSIX)
+  // To handle when the terminal is closed.
+  std::signal(SIGHUP, &felicia::StopMasterProxy);
+#endif
 }
 
 void MasterProxy::OnHeartBeatSignallerStart(

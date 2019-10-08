@@ -28,7 +28,7 @@ def _pkg_config_cflags_and_libs_or_die(repository_ctx, pkgs):
 def _ros_configure_impl(repository_ctx):
     if not is_linux(repository_ctx):
         _fail("Only implemented on linux.")
-    ros = _pkg_config_cflags_and_libs_or_die(repository_ctx, ["roscpp_serialization"])
+    ros = _pkg_config_cflags_and_libs_or_die(repository_ctx, ["roscpp"])
     actionlib_msgs = _pkg_config_cflags_and_libs_or_die(repository_ctx, ["actionlib_msgs"])
     controller_manager_msgs = _pkg_config_cflags_and_libs_or_die(repository_ctx, ["controller_manager_msgs"])
     control_msgs = _pkg_config_cflags_and_libs_or_die(repository_ctx, ["control_msgs"])

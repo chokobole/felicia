@@ -31,6 +31,8 @@ class MessageIOImpl<
   static std::string TypeName() { return T::descriptor()->full_name(); }
 
   static std::string Definition() { return T::descriptor()->DebugString(); }
+
+  static std::string MD5Sum() { return base::EmptyString(); }
 };
 
 template <typename T>
@@ -55,6 +57,8 @@ class MessageIOImpl<
   static std::string TypeName() { return base::EmptyString(); }
 
   static std::string Definition() { return base::EmptyString(); }
+
+  static std::string MD5Sum() { return base::EmptyString(); }
 };
 
 }  // namespace felicia

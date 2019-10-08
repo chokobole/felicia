@@ -63,6 +63,7 @@ export interface UnpublishTopicResponseProtobuf {}
 export interface SubscribeTopicRequestProtobuf {
   nodeInfo: NodeInfoProtobuf;
   topic: string;
+  topicType: string;
 }
 
 export interface SubscribeTopicResponseProtobuf {}

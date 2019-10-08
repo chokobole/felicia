@@ -55,6 +55,8 @@ struct Settings {
   Settings() = default;
   ~Settings() = default;
 
+  bool receive_from_ros = false;
+
   TCPSettings tcp_settings;
   WSSettings ws_settings;
 #if defined(OS_POSIX)

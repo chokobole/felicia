@@ -63,6 +63,7 @@ message UnpublishTopicResponse {
 message SubscribeTopicRequest {
   NodeInfo node_info = 1;
   string topic = 2;
+  string topic_type = 3;
 }
 
 message SubscribeTopicResponse {

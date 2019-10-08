@@ -6,23 +6,6 @@
 
 namespace felicia {
 
-namespace {
-
-#if defined(OS_POSIX)
-RPlidarPublishingNode* node = nullptr;
-
-void Shutdown(int signal) {
-  if (node) {
-    node->StopLidar();
-  }
-
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  master_proxy.Stop();
-}
-#endif
-
-}  // namespace
-
 RPlidarPublishingNode::RPlidarPublishingNode(
     const RPLidarFlag& rplidar_flag,
     const drivers::LidarEndpoint& lidar_endpoint)
@@ -32,15 +15,15 @@ RPlidarPublishingNode::RPlidarPublishingNode(
       lidar_endpoint_(lidar_endpoint) {}
 
 void RPlidarPublishingNode::OnInit() {
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  master_proxy.set_on_stop_callback(base::BindOnce(&RPlidarPublishingNode::StopLidar, base::Unretained(this)));
+
   lidar_ = drivers::RPlidarFactory::NewLidar(lidar_endpoint_);
   Status s = lidar_->Init();
   CHECK(s.ok()) << s;
 }
 
 void RPlidarPublishingNode::OnDidCreate(const NodeInfo& node_info) {
-#if defined(OS_POSIX)
-  node = this;
-#endif
   node_info_ = node_info;
   RequestPublish();
 }
@@ -113,14 +96,6 @@ void RPlidarPublishingNode::StartLidar() {
   }
 
   if (s.ok()) {
-#if defined(OS_POSIX)
-    // To handle general case when POSIX ask the process to quit.
-    std::signal(SIGTERM, &felicia::Shutdown);
-    // To handle Ctrl + C.
-    std::signal(SIGINT, &felicia::Shutdown);
-    // To handle when the terminal is closed.
-    std::signal(SIGHUP, &felicia::Shutdown);
-#endif
     lidar_->DoScanLoop();
     // MasterProxy& master_proxy = MasterProxy::GetInstance();
     // master_proxy.PostDelayedTask(

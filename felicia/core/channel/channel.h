@@ -47,6 +47,15 @@ class Channel {
 
   virtual bool HasReceivers() const { return true; }
 
+  void set_receive_from_ros(bool receive_from_ros) {
+    receive_from_ros_ = receive_from_ros;
+    if (receive_from_ros) {
+      header_size_ = 4;
+    } else {
+      header_size_ = sizeof(Header);
+    }
+  }
+
   bool IsSendingMessage() const { return is_sending_; }
   bool IsReceivingMessage() const { return !receive_callback_.is_null(); }
 
@@ -91,9 +100,10 @@ class Channel {
   }
 
   void SendMessage(const MessageTy& message, SendMessageCallback callback);
-  void SendMessage(const std::string& serialized, bool reuse,
-                   SendMessageCallback callback);
+  void SendRawMessage(const std::string& raw_message, bool reuse,
+                      SendMessageCallback callback);
   void ReceiveMessage(MessageTy* message, StatusOnceCallback callback);
+  void ReceiveRawMessage(std::string* raw_message, StatusOnceCallback callback);
 
   void SetSendBuffer(const SendBuffer& send_buffer) {
     send_buffer_ = send_buffer;
@@ -116,6 +126,8 @@ class Channel {
 
   virtual void WriteImpl(const std::string& text, SendMessageCallback callback);
   virtual void ReadImpl(MessageTy* message, StatusOnceCallback callback);
+  virtual void ReadRawImpl(std::string* raw_message,
+                           StatusOnceCallback callback);
 
   void OnSendMessage(const Status& s);
   void OnReceiveHeader(const Status& s);
@@ -125,6 +137,7 @@ class Channel {
 
   Header header_;
   MessageTy* message_ = nullptr;
+  std::string* raw_message_ = nullptr;
 
   std::unique_ptr<ChannelImpl> channel_impl_;
   SendBuffer send_buffer_;
@@ -133,6 +146,8 @@ class Channel {
   StatusOnceCallback receive_callback_;
 
   bool is_sending_ = false;
+  bool receive_from_ros_ = false;
+  size_t header_size_ = sizeof(Header);
 
   DISALLOW_COPY_AND_ASSIGN(Channel);
 };
@@ -156,8 +171,9 @@ void Channel<MessageTy>::SendMessage(const MessageTy& message,
 }
 
 template <typename MessageTy>
-void Channel<MessageTy>::SendMessage(const std::string& serialized, bool reuse,
-                                     SendMessageCallback callback) {
+void Channel<MessageTy>::SendRawMessage(const std::string& raw_message,
+                                        bool reuse,
+                                        SendMessageCallback callback) {
   DCHECK(channel_impl_);
   DCHECK(!is_sending_);
 
@@ -165,7 +181,7 @@ void Channel<MessageTy>::SendMessage(const std::string& serialized, bool reuse,
   if (!reuse) {
     send_buffer_.InvalidateAttachment();
   }
-  WriteImpl(serialized, callback);
+  WriteImpl(raw_message, callback);
 }
 
 template <typename MessageTy>
@@ -186,15 +202,28 @@ void Channel<MessageTy>::ReceiveMessage(MessageTy* message,
 }
 
 template <typename MessageTy>
+void Channel<MessageTy>::ReceiveRawMessage(std::string* raw_message,
+                                           StatusOnceCallback callback) {
+  DCHECK(channel_impl_);
+  DCHECK(receive_callback_.is_null());
+  DCHECK(!callback.is_null());
+
+  receive_buffer_.Reset();
+  ReadRawImpl(raw_message, std::move(callback));
+}
+
+template <typename MessageTy>
 void Channel<MessageTy>::WriteImpl(const std::string& text,
                                    SendMessageCallback callback) {
   MessageIOError err = MessageIOError::OK;
   if (!send_buffer_.CanReuse(SendBuffer::ATTACH_KIND_GENERAL)) {
     int to_send;
-    err = MessageIO::AttachToBuffer(text, send_buffer_.buffer(), &to_send);
+    err = MessageIO::AttachToBuffer(text, send_buffer_.buffer(), header_size_,
+                                    &to_send);
     if (err == MessageIOError::ERR_NOT_ENOUGH_BUFFER) {
       if (send_buffer_.SetEnoughCapacityIfDynamic(to_send)) {
-        err = MessageIO::AttachToBuffer(text, send_buffer_.buffer(), &to_send);
+        err = MessageIO::AttachToBuffer(text, send_buffer_.buffer(),
+                                        header_size_, &to_send);
       }
     }
     send_buffer_.AttachGeneral(to_send);
@@ -215,11 +244,23 @@ void Channel<MessageTy>::WriteImpl(const std::string& text,
 template <typename MessageTy>
 void Channel<MessageTy>::ReadImpl(MessageTy* message,
                                   StatusOnceCallback callback) {
-  receive_buffer_.SetEnoughCapacityIfDynamic(sizeof(Header));
+  receive_buffer_.SetEnoughCapacityIfDynamic(header_size_);
 
   message_ = message;
   receive_callback_ = std::move(callback);
-  channel_impl_->ReadAsync(receive_buffer_.buffer(), sizeof(Header),
+  channel_impl_->ReadAsync(receive_buffer_.buffer(), header_size_,
+                           base::BindOnce(&Channel<MessageTy>::OnReceiveHeader,
+                                          base::Unretained(this)));
+}
+
+template <typename MessageTy>
+void Channel<MessageTy>::ReadRawImpl(std::string* raw_message,
+                                     StatusOnceCallback callback) {
+  receive_buffer_.SetEnoughCapacityIfDynamic(header_size_);
+
+  raw_message_ = raw_message;
+  receive_callback_ = std::move(callback);
+  channel_impl_->ReadAsync(receive_buffer_.buffer(), header_size_,
                            base::BindOnce(&Channel<MessageTy>::OnReceiveHeader,
                                           base::Unretained(this)));
 }
@@ -233,14 +274,14 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
   }
 
   MessageIOError err = MessageIO::ParseHeaderFromBuffer(
-      receive_buffer_.StartOfBuffer(), &header_);
+      receive_buffer_.StartOfBuffer(), &header_, receive_from_ros_);
   if (err != MessageIOError::OK) {
     std::move(receive_callback_)
         .Run(errors::DataLoss(MessageIOErrorToString(err)));
     return;
   }
 
-  int bytes = sizeof(Header) + header_.size();
+  int bytes = header_size_ + header_.size();
   if (!receive_buffer_.SetEnoughCapacityIfDynamic(bytes)) {
     std::move(receive_callback_)
         .Run(errors::Aborted(
@@ -257,12 +298,18 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
 template <typename MessageTy>
 void Channel<MessageTy>::OnReceiveMessage(const Status& s) {
   if (s.ok()) {
-    MessageIOError err = MessageIO::ParseMessageFromBuffer(
-        receive_buffer_.StartOfBuffer(), header_, false, message_);
-    if (err != MessageIOError::OK) {
-      std::move(receive_callback_)
-          .Run(errors::DataLoss("Failed to parse message from buffer."));
-      return;
+    if (message_) {
+      MessageIOError err = MessageIO::ParseMessageFromBuffer(
+          receive_buffer_.StartOfBuffer(), header_, 0, message_);
+      if (err != MessageIOError::OK) {
+        std::move(receive_callback_)
+            .Run(errors::DataLoss("Failed to parse message from buffer."));
+        return;
+      }
+    } else {
+      CHECK(raw_message_);
+      *raw_message_ =
+          std::string(receive_buffer_.StartOfBuffer(), header_.size());
     }
   }
 

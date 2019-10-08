@@ -5,11 +5,14 @@ namespace felicia {
 Header::Header() : magic_value_(kMessageMagicValue) {}
 
 // static
-bool Header::FromBytes(const char* bytes, Header* header) {
-  uint32_t key = *reinterpret_cast<const uint32_t*>(bytes);
-  if (key != kMessageMagicValue) return false;
-  bytes += sizeof(uint32_t);
+bool Header::FromBytes(const char* bytes, Header* header,
+                       bool receive_from_ros) {
   header->set_size(*reinterpret_cast<const uint32_t*>(bytes));
+  if (!receive_from_ros) {
+    bytes += sizeof(uint32_t);
+    uint32_t key = *reinterpret_cast<const uint32_t*>(bytes);
+    if (key != kMessageMagicValue) return false;
+  }
 
   return true;
 }

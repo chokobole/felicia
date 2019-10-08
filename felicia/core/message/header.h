@@ -13,14 +13,15 @@ class EXPORT Header {
  public:
   Header();
 
-  static bool FromBytes(const char* bytes, Header* header);
+  static bool FromBytes(const char* bytes, Header* header,
+                        bool receive_from_ros);
 
   uint32_t size() const;
   void set_size(uint32_t size);
 
  private:
-  uint32_t magic_value_ = 0;
   uint32_t size_ = 0;
+  uint32_t magic_value_ = 0;
 
   static constexpr uint32_t kMessageMagicValue = 0x12452903u;
 };

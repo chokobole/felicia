@@ -978,6 +978,10 @@
             "status": {
               "type": "Status",
               "id": 5
+            },
+            "rosNodeName": {
+              "type": "string",
+              "id": 6
             }
           },
           "nested": {
@@ -1171,6 +1175,10 @@
             "topic": {
               "type": "string",
               "id": 2
+            },
+            "topicType": {
+              "type": "string",
+              "id": 3
             }
           }
         },

@@ -40,6 +40,7 @@ class ChannelFactory {
     else if (channel_type == ChannelDef::CHANNEL_TYPE_SHM) {
       channel = std::make_unique<ShmChannel<MessageTy>>(settings.shm_settings);
     }
+    channel->set_receive_from_ros(settings.receive_from_ros);
 
     return channel;
   }

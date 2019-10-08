@@ -38,6 +38,8 @@ class EXPORT MasterProxy final : public MasterClientInterface {
 
   void set_heart_beat_duration(base::TimeDelta heart_beat_duration);
 
+  void set_on_stop_callback(base::OnceClosure callback);
+
   bool IsBoundToCurrentThread() const;
 
   bool PostTask(const base::Location& from_here, base::OnceClosure callback);
@@ -100,6 +102,8 @@ class EXPORT MasterProxy final : public MasterClientInterface {
 
   void Setup(base::WaitableEvent* event);
 
+  void RegisterSignals();
+
   void OnHeartBeatSignallerStart(base::WaitableEvent* event,
                                  const ChannelSource& channel_source);
 
@@ -126,6 +130,8 @@ class EXPORT MasterProxy final : public MasterClientInterface {
   std::vector<std::unique_ptr<NodeLifecycle>> nodes_;
 
   std::unique_ptr<ProtobufLoader> protobuf_loader_;
+
+  base::OnceClosure on_stop_callback_;
 
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer scoped_com_initializer_;

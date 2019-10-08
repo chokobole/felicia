@@ -38,6 +38,7 @@ message TopicInfo {
   ImplType impl_type = 3;
   ChannelSource topic_source = 4;
   Status status = 5;
+  string ros_node_name = 6;
 }
 
 // Element inside NodeFilter are mutually exclusive.

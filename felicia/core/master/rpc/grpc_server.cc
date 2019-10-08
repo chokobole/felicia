@@ -1,5 +1,7 @@
 #include "felicia/core/master/rpc/grpc_server.h"
 
+#include <csignal>
+
 #include "grpcpp/grpcpp.h"
 #include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
@@ -9,6 +11,19 @@
 #include "felicia/core/master/rpc/grpc_util.h"
 
 namespace felicia {
+
+namespace {
+
+GrpcServer* g_grpc_server = nullptr;
+
+void ShutdownGrpcServer(int signal) {
+  if (g_grpc_server) {
+    g_grpc_server->Shutdown();
+    g_grpc_server = nullptr;
+  }
+}
+
+}  // namespace
 
 Status GrpcServer::Init() {
   std::string ip = ResolveGRPCServiceIp().ToString();
@@ -32,6 +47,7 @@ Status GrpcServer::Init() {
 }
 
 Status GrpcServer::Start() {
+  RegisterSignals();
   master_->Run();
 
   std::vector<std::unique_ptr<base::Thread>> threads;
@@ -48,6 +64,29 @@ Status GrpcServer::Start() {
                 });
 
   return Status::OK();
+}
+
+Status GrpcServer::Shutdown() {
+  server_->Shutdown();
+  master_service_->Shutdown();
+  master_->Stop();
+
+  if (!on_shutdown_callback_.is_null())
+    std::move(on_shutdown_callback_).Run();
+
+  return Status::OK();
+}
+
+void GrpcServer::RegisterSignals() {
+  g_grpc_server = this;
+  // To handle general case when POSIX ask the process to quit.
+  std::signal(SIGTERM, &felicia::ShutdownGrpcServer);
+  // To handle Ctrl + C.
+  std::signal(SIGINT, &felicia::ShutdownGrpcServer);
+#if defined(OS_POSIX)
+  // To handle when the terminal is closed.
+  std::signal(SIGHUP, &felicia::ShutdownGrpcServer);
+#endif
 }
 
 }  // namespace felicia

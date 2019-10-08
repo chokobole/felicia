@@ -29,6 +29,8 @@ bazel-bin/felicia/examples/learn/message_communication/ros_msg/python/ros_msg_no
 
 We don't explain the same we had in [README.md](/felicia/examples/learn/message_communication/protobuf/python/README.md).
 
+If you want to subscribe message from ROS, then add prefix `ros://` to topic. But in this case, topic should be resolved with namespace.
+
 You maybe find the difference around declaration of `publisher` and `subscriber`. Because there has a difference between `protobuf` and `ROS Message` of serialization and deserialization. You have to tell `felicia` what type of implemenation you are trying. Other than that the way of using API will be perfectly same!
 
 ```python

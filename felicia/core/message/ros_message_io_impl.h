@@ -24,7 +24,11 @@ class MessageIOImpl<
                                     T* ros_msg) {
     ros::serialization::IStream istream(
         reinterpret_cast<uint8_t*>(const_cast<char*>(start)), size);
-    ros::serialization::Serializer<T>::read(istream, *ros_msg);
+    try {
+      ros::serialization::Serializer<T>::read(istream, *ros_msg);
+    } catch (ros::serialization::StreamOverrunException& e) {
+      return MessageIOError::ERR_FAILED_TO_PARSE;
+    }
     return MessageIOError::OK;
   }
 
@@ -34,6 +38,10 @@ class MessageIOImpl<
 
   static std::string Definition() {
     return ros::message_traits::Definition<T>::value();
+  }
+
+  static std::string MD5Sum() {
+    return ros::message_traits::MD5Sum<T>::value();
   }
 };
 
