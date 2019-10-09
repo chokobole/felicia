@@ -32,7 +32,7 @@ class ProtobufSubscribingNode(fel.NodeLifecycle):
 
     def on_request_subscribe(self, status):
         print("ProtobufSubscribingNode.on_request_subscribe()")
-        fel.log(fel.ERROR, status.error_message())
+        fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
     def on_request_unsubscribe(self, status):
         print("ProtobufSubscribingNode.on_request_unsubscribe()")
