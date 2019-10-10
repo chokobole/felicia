@@ -142,8 +142,7 @@ Status MasterProxy::Stop() {
   } else {
     run_loop_->Quit();
   }
-  if (!on_stop_callback_.is_null())
-    std::move(on_stop_callback_).Run();
+  if (!on_stop_callback_.is_null()) std::move(on_stop_callback_).Run();
   return s;
 }
 

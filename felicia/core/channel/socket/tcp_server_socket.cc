@@ -75,6 +75,11 @@ void TCPServerSocket::AddSocket(std::unique_ptr<StreamSocket> socket) {
   accepted_sockets_.push_back(std::move(socket));
 }
 
+void TCPServerSocket::AddSocket(std::unique_ptr<TCPSocket> socket) {
+  DCHECK(socket->IsClient());
+  accepted_sockets_.push_back(std::move(socket));
+}
+
 bool TCPServerSocket::IsConnected() const {
   for (auto& accepted_socket : accepted_sockets_) {
     if (accepted_socket->IsConnected()) return true;

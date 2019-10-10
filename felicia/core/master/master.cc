@@ -312,8 +312,33 @@ void Master::DoPublishTopic(const NodeInfo& node_info,
                << base::StringPrintf("topic(%s) from node(%s)",
                                      topic_info.topic().c_str(),
                                      node_info.name().c_str());
-    std::move(callback).Run(Status::OK());
-    NotifyAllSubscribers(topic_info);
+#if defined(HAS_ROS)
+    base::StringPiece t = topic_info.topic();
+    if (ConsumePrefix(&t, "ros://")) {
+      bool has_tcp_channel = false;
+      for (const ChannelDef& channel_def :
+           topic_info.topic_source().channel_defs()) {
+        if (channel_def.type() == ChannelDef::CHANNEL_TYPE_TCP) {
+          has_tcp_channel = true;
+          break;
+        }
+      }
+      if (!has_tcp_channel) {
+        std::move(callback).Run(errors::Aborted(
+            "You should set CHANNEL_TYPE_TCP on to publish ROS topic."));
+        return;
+      }
+
+      ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
+      std::move(callback).Run(ros_master_proxy.RegisterPublisher(
+          t.as_string(), topic_info.type_name()));
+    } else {
+#endif  // defined(HAS_ROS)
+      std::move(callback).Run(Status::OK());
+      NotifyAllSubscribers(topic_info);
+#if defined(HAS_ROS)
+    }
+#endif  // defined(HAS_ROS)
   } else if (reason == Reason::TopicAlreadyPublishing) {
     std::move(callback).Run(errors::TopicAlreadyPublishing(topic_info));
   } else if (reason == Reason::UnknownFailed) {
@@ -382,17 +407,19 @@ void Master::DoSubscribeTopic(const NodeInfo& node_info,
     DLOG(INFO) << "[SubscribeTopic]: "
                << base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                      node_info.name().c_str());
-    std::move(callback).Run(Status::OK());
+#if defined(HAS_ROS)
     base::StringPiece t = topic;
     if (ConsumePrefix(&t, "ros://")) {
-#if defined(HAS_ROS)
-      std::string ros_topic = t.as_string();
       ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
-      ros_master_proxy.RegisterSubscriber(ros_topic, topic_type);
-#endif
+      std::move(callback).Run(
+          ros_master_proxy.RegisterSubscriber(t.as_string(), topic_type));
     } else {
+#endif  // defined(HAS_ROS)
+      std::move(callback).Run(Status::OK());
       NotifySubscriber(topic, node_info);
+#if defined(HAS_ROS)
     }
+#endif  // defined(HAS_ROS)
   } else if (reason == Reason::TopicAlreadySubscribingOnNode) {
     std::move(callback).Run(
         errors::TopicAlreadySubscribingOnNode(node_info, topic));
@@ -433,6 +460,27 @@ void Master::DoUnsubscribeTopic(const NodeInfo& node_info,
     std::move(callback).Run(errors::FailedToUnsubscribe(topic));
   }
 }
+
+#if defined(HAS_ROS)
+void Master::UnregisterROSTopics(
+    const std::vector<TopicInfo>& publishing_topic_infos,
+    const std::vector<std::string>& subscribing_topics) const {
+  ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
+  for (auto& topic_info : publishing_topic_infos) {
+    base::StringPiece t = topic_info.topic();
+    if (ConsumePrefix(&t, "ros://")) {
+      ros_master_proxy.UnregisterPublisher(t.as_string());
+    }
+  }
+
+  for (auto& topic : subscribing_topics) {
+    base::StringPiece t = topic;
+    if (ConsumePrefix(&t, "ros://")) {
+      ros_master_proxy.UnregisterSubscriber(t.as_string());
+    }
+  }
+}
+#endif  // defined(HAS_ROS)
 
 base::WeakPtr<Node> Master::FindNode(const NodeInfo& node_info) {
   base::AutoLock l(lock_);
@@ -502,23 +550,32 @@ void Master::AddClient(uint32_t id, std::unique_ptr<Client> client) {
 void Master::RemoveClient(const ClientInfo& client_info) {
   uint32_t id = client_info.id();
 
-  std::vector<TopicInfo> topic_infos;
+  std::vector<TopicInfo> publishing_topic_infos;
+#if defined(HAS_ROS)
+  std::vector<std::string> subscribing_topics;
+#endif
   {
     base::AutoLock l(lock_);
     auto it = client_map_.find(id);
     TopicFilter topic_filter;
     topic_filter.set_all(true);
-    topic_infos = it->second->FindTopicInfos(topic_filter);
+    publishing_topic_infos = it->second->FindTopicInfos(topic_filter);
+#if defined(HAS_ROS)
+    subscribing_topics = it->second->FindAllSubscribingTopics();
+#endif
     client_map_.erase(it);
     DLOG(INFO) << "Master::RemoveClient() " << id;
   }
 
-  for (auto& topic_info : topic_infos) {
-    topic_info.set_status(TopicInfo::UNREGISTERED);
-    thread_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&Master::NotifyAllSubscribers,
-                              base::Unretained(this), topic_info));
+  for (auto& publishing_topic_info : publishing_topic_infos) {
+    publishing_topic_info.set_status(TopicInfo::UNREGISTERED);
   }
+
+  NotifyAllSubscribers(publishing_topic_infos);
+
+#if defined(HAS_ROS)
+  UnregisterROSTopics(publishing_topic_infos, subscribing_topics);
+#endif  // defined(HAS_ROS)
 }
 
 void Master::AddNode(std::unique_ptr<Node> node) {
@@ -535,14 +592,35 @@ void Master::AddNode(std::unique_ptr<Node> node) {
 
 void Master::RemoveNode(const NodeInfo& node_info) {
   uint32_t id = node_info.client_id();
+  std::vector<TopicInfo> publishing_topic_infos;
+#if defined(HAS_ROS)
+  std::vector<std::string> subscribing_topics;
+#endif  // defined(HAS_ROS)
   {
     base::AutoLock l(lock_);
     auto it = client_map_.find(id);
     if (it != client_map_.end()) {
+      base::WeakPtr<Node> node = it->second->FindNode(node_info);
+      if (node) {
+        publishing_topic_infos = node->AllPublishingTopicInfos();
+#if defined(HAS_ROS)
+        subscribing_topics = node->AllSubscribingTopics();
+#endif  // defined(HAS_ROS)
+      }
       it->second->RemoveNode(node_info);
       DLOG(INFO) << "Master::RemoveNode() " << node_info.name();
     }
   }
+
+  for (auto& publishing_topic_info : publishing_topic_infos) {
+    publishing_topic_info.set_status(TopicInfo::UNREGISTERED);
+  }
+
+  NotifyAllSubscribers(publishing_topic_infos);
+
+#if defined(HAS_ROS)
+  UnregisterROSTopics(publishing_topic_infos, subscribing_topics);
+#endif  // defined(HAS_ROS)
 }
 
 bool Master::CheckIfClientExists(uint32_t id) {
@@ -598,7 +676,8 @@ void Master::NotifySubscriber(const std::string& topic,
 void Master::NotifyAllSubscribers(const TopicInfo& topic_info) {
   if (!thread_->task_runner()->BelongsToCurrentThread()) {
     thread_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&Master::NotifyAllSubscribers,
+        FROM_HERE, base::Bind((void (Master::*)(const TopicInfo&)) &
+                                  Master::NotifyAllSubscribers,
                               base::Unretained(this), topic_info));
     return;
   }
@@ -610,11 +689,15 @@ void Master::NotifyAllSubscribers(const TopicInfo& topic_info) {
   std::vector<base::WeakPtr<Node>> watcher_nodes = FindNodes(node_filter);
   subscribing_nodes.insert(subscribing_nodes.end(), watcher_nodes.begin(),
                            watcher_nodes.end());
-  {
-    for (auto& subscribing_node : subscribing_nodes) {
-      if (subscribing_node)
-        DoNotifySubscriber(subscribing_node->node_info(), topic_info);
-    }
+  for (auto& subscribing_node : subscribing_nodes) {
+    if (subscribing_node)
+      DoNotifySubscriber(subscribing_node->node_info(), topic_info);
+  }
+}
+
+void Master::NotifyAllSubscribers(const std::vector<TopicInfo>& topic_infos) {
+  for (auto& topic_info : topic_infos) {
+    NotifyAllSubscribers(topic_info);
   }
 }
 

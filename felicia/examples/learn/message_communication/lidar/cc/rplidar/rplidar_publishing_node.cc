@@ -16,7 +16,8 @@ RPlidarPublishingNode::RPlidarPublishingNode(
 
 void RPlidarPublishingNode::OnInit() {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
-  master_proxy.set_on_stop_callback(base::BindOnce(&RPlidarPublishingNode::StopLidar, base::Unretained(this)));
+  master_proxy.set_on_stop_callback(base::BindOnce(
+      &RPlidarPublishingNode::StopLidar, base::Unretained(this)));
 
   lidar_ = drivers::RPlidarFactory::NewLidar(lidar_endpoint_);
   Status s = lidar_->Init();

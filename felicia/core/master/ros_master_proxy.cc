@@ -5,6 +5,7 @@
 #include <ros/network.h>
 #include <ros/xmlrpc_manager.h>
 
+#include "third_party/chromium/base/strings/string_util.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 #include "felicia/core/lib/error/errors.h"
@@ -66,6 +67,9 @@ Status ROSMasterProxy::Init(Master* master) {
   xmlrpc_manager_->bind(
       "publisherUpdate",
       boost::bind(&ROSMasterProxy::PubUpdateCallback, this, _1, _2));
+  xmlrpc_manager_->bind(
+      "requestTopic",
+      boost::bind(&ROSMasterProxy::RequestTopicCallback, this, _1, _2));
 
   return Status::OK();
 }
@@ -90,7 +94,7 @@ Status ROSMasterProxy::GetPublishedTopicTypes(
     std::vector<TopicType>* topic_types) const {
   XmlRpc::XmlRpcValue request, response, payload;
   request[0] = ros::this_node::getName();
-  request[1] = "";
+  request[1] = base::EmptyString();
   Status s = Execute("getPublishedTopics", request, response, payload, false);
   if (!s.ok()) return s;
   topic_types->clear();
@@ -118,8 +122,18 @@ Status ROSMasterProxy::GetPublishedTopicType(const std::string& topic,
       "Failed to find type for published topic: %s.", topic.c_str()));
 }
 
+Status ROSMasterProxy::RegisterPublisher(const std::string& topic,
+                                         const std::string& topic_type) const {
+  XmlRpc::XmlRpcValue request, response, payload;
+  request[0] = ros::this_node::getName();
+  request[1] = topic;
+  request[2] = topic_type;
+  request[3] = xmlrpc_manager_->getServerURI();
+  return Execute("registerPublisher", request, response, payload, true);
+}
+
 Status ROSMasterProxy::RegisterSubscriber(const std::string& topic,
-                                          const std::string& topic_type) {
+                                          const std::string& topic_type) const {
   XmlRpc::XmlRpcValue request, response, payload;
   const std::string& this_server_uri = xmlrpc_manager_->getServerURI();
   request[0] = ros::this_node::getName();
@@ -139,12 +153,28 @@ Status ROSMasterProxy::RegisterSubscriber(const std::string& topic,
   return PubUpdate(topic, pub_uris);
 }
 
-Status ROSMasterProxy::RequestTopic(const std::string& pub_uri,
-                                    const std::string& topic) {
+Status ROSMasterProxy::UnregisterPublisher(const std::string& topic) const {
   XmlRpc::XmlRpcValue request, response, payload;
   request[0] = ros::this_node::getName();
   request[1] = topic;
-  request[2][0][0] = std::string("TCPROS");
+  request[2] = xmlrpc_manager_->getServerURI();
+  return Execute("unregisterPublisher", request, response, payload, false);
+}
+
+Status ROSMasterProxy::UnregisterSubscriber(const std::string& topic) const {
+  XmlRpc::XmlRpcValue request, response, payload;
+  request[0] = ros::this_node::getName();
+  request[1] = topic;
+  request[2] = xmlrpc_manager_->getServerURI();
+  return Execute("unregisterSubscriber", request, response, payload, false);
+}
+
+Status ROSMasterProxy::RequestTopic(const std::string& pub_uri,
+                                    const std::string& topic) const {
+  XmlRpc::XmlRpcValue request, response, payload;
+  request[0] = ros::this_node::getName();
+  request[1] = topic;
+  request[2][0][0] = "TCPROS";
   std::string peer_host;
   uint32_t peer_port;
   if (!ros::network::splitURI(pub_uri, peer_host, peer_port))
@@ -160,9 +190,9 @@ Status ROSMasterProxy::RequestTopic(const std::string& pub_uri,
     return errors::Aborted(base::StringPrintf(
         "No available protocol for topic: %s.", topic.c_str()));
 
-  std::string protocol = payload[0];
+  const std::string& protocol = payload[0];
   if (protocol == "TCPROS") {
-    std::string pub_host = payload[1];
+    const std::string& pub_host = payload[1];
     int pub_port = payload[2];
     TopicInfo topic_info;
     topic_info.set_topic(base::StringPrintf("ros://%s", topic.c_str()));
@@ -184,7 +214,7 @@ Status ROSMasterProxy::RequestTopic(const std::string& pub_uri,
 }
 
 void ROSMasterProxy::PubUpdateCallback(XmlRpc::XmlRpcValue& request,
-                                       XmlRpc::XmlRpcValue& response) {
+                                       XmlRpc::XmlRpcValue& response) const {
   std::vector<std::string> pub_uris;
   for (int idx = 0; idx < request[2].size(); idx++) {
     pub_uris.push_back(request[2][idx]);
@@ -198,8 +228,51 @@ void ROSMasterProxy::PubUpdateCallback(XmlRpc::XmlRpcValue& request,
   }
 }
 
-Status ROSMasterProxy::PubUpdate(const std::string& topic,
-                                 const std::vector<std::string>& pub_uris) {
+void ROSMasterProxy::RequestTopicCallback(XmlRpc::XmlRpcValue& request,
+                                          XmlRpc::XmlRpcValue& response) const {
+  const std::string& topic = request[1];
+  XmlRpc::XmlRpcValue& protocols = request[2];
+  for (int i = 0; i < protocols.size(); ++i) {
+    const std::string& protocol = protocols[i][0];
+    if (protocol == "TCPROS") {
+      TopicFilter topic_filter;
+      topic_filter.set_topic(base::StringPrintf("ros://%s", topic.c_str()));
+      std::vector<TopicInfo> topic_infos =
+          master_->FindTopicInfos(topic_filter);
+      if (topic_infos.size() > 0) {
+        const TopicInfo& topic_info = topic_infos[0];
+        const ChannelDef* tcp_channel_def = nullptr;
+        for (const ChannelDef& channel_def :
+             topic_info.topic_source().channel_defs()) {
+          if (channel_def.type() == ChannelDef::CHANNEL_TYPE_TCP) {
+            tcp_channel_def = &channel_def;
+            break;
+          }
+        }
+
+        if (!tcp_channel_def) break;
+
+        XmlRpc::XmlRpcValue tcpros_params;
+        tcpros_params[0] = "TCPROS";
+        tcpros_params[1] = tcp_channel_def->ip_endpoint().ip();
+        tcpros_params[2] =
+            static_cast<int>(tcp_channel_def->ip_endpoint().port());
+        response[0] = 1;
+        response[1] = base::EmptyString();
+        response[2] = tcpros_params;
+        return;
+      }
+    }
+  }
+
+  response[0] = 0;
+  response[1] =
+      base::StringPrintf("No available protocol for topic: %s.", topic.c_str());
+  response[2] = 0;
+}
+
+Status ROSMasterProxy::PubUpdate(
+    const std::string& topic, const std::vector<std::string>& pub_uris) const {
   if (pub_uris.size() == 0) {
     TopicInfo topic_info;
     topic_info.set_topic(base::StringPrintf("ros://%s", topic.c_str()));

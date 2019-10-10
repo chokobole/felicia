@@ -67,6 +67,11 @@ class EXPORT Master {
                         StatusOnceCallback callback);
   void DoUnsubscribeTopic(const NodeInfo& node_info, const std::string& topic,
                           StatusOnceCallback callback);
+#if defined(HAS_ROS)
+  void UnregisterROSTopics(
+      const std::vector<TopicInfo>& publishing_topic_infos,
+      const std::vector<std::string>& subscribing_topics) const;
+#endif  // defined(HAS_ROS)
 
   enum Reason {
     None,
@@ -111,6 +116,8 @@ class EXPORT Master {
                         const NodeInfo& subscribing_node_info);
   // Notify all the subscribers about TopicInfo |topic_info|.
   void NotifyAllSubscribers(const TopicInfo& topic_info);
+  // Notify all the subscribers about TopicInfo in |topic_infos|.
+  void NotifyAllSubscribers(const std::vector<TopicInfo>& topic_infos);
   // Notify watcher about TopicInfos which are currently being published.
   void NotifyWatcher();
 

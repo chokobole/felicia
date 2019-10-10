@@ -14,7 +14,7 @@ class EXPORT Header {
   Header();
 
   static bool FromBytes(const char* bytes, Header* header,
-                        bool receive_from_ros);
+                        bool use_ros_channel);
 
   uint32_t size() const;
   void set_size(uint32_t size);

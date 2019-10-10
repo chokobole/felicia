@@ -33,6 +33,8 @@ class TCPChannel : public Channel<MessageTy> {
 
   void AcceptOnceIntercept(AcceptOnceInterceptCallback callback);
 
+  void AddClientChannel(std::unique_ptr<TCPChannel<MessageTy>> channel);
+
   void Connect(const ChannelDef& channel_def,
                StatusOnceCallback callback) override;
 
@@ -107,6 +109,18 @@ void TCPChannel<MessageTy>::AcceptOnceIntercept(
 }
 
 template <typename MessageTy>
+void TCPChannel<MessageTy>::AddClientChannel(
+    std::unique_ptr<TCPChannel<MessageTy>> channel) {
+  DCHECK(this->channel_impl_);
+  TCPServerSocket* server_socket =
+      this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPServerSocket();
+  ChannelImpl* channel_impl = channel->channel_impl_.release();
+  std::unique_ptr<TCPSocket> client_socket;
+  client_socket.reset(channel_impl->ToSocket()->ToTCPSocket());
+  server_socket->AddSocket(std::move(client_socket));
+}
+
+template <typename MessageTy>
 void TCPChannel<MessageTy>::DoAcceptLoop() {
   TCPServerSocket* server_socket =
       this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPServerSocket();
@@ -166,6 +180,7 @@ void TCPChannel<MessageTy>::OnAccept2(
     StatusOr<std::unique_ptr<net::TCPSocket>> status_or) {
   if (status_or.ok()) {
     auto channel = std::make_unique<TCPChannel<MessageTy>>();
+    channel->set_use_ros_channel(this->use_ros_channel_);
     channel->channel_impl_ =
         std::make_unique<TCPClientSocket>(std::move(status_or.ValueOrDie()));
     std::move(callback).Run(std::move(channel));

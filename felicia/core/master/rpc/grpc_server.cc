@@ -71,8 +71,7 @@ Status GrpcServer::Shutdown() {
   master_service_->Shutdown();
   master_->Stop();
 
-  if (!on_shutdown_callback_.is_null())
-    std::move(on_shutdown_callback_).Run();
+  if (!on_shutdown_callback_.is_null()) std::move(on_shutdown_callback_).Run();
 
   return Status::OK();
 }

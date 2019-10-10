@@ -4,10 +4,6 @@
 #include <memory>
 #include <string>
 
-#if defined(HAS_ROS)
-#include <ros/header.h>
-#endif  // defined(HAS_ROS)
-
 #include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/compiler_specific.h"
@@ -17,6 +13,7 @@
 
 #include "felicia/core/channel/channel_factory.h"
 #include "felicia/core/communication/register_state.h"
+#include "felicia/core/communication/ros_header.h"
 #include "felicia/core/communication/settings.h"
 #include "felicia/core/communication/subscriber_state.h"
 #include "felicia/core/lib/containers/pool.h"
@@ -79,6 +76,7 @@ class Subscriber {
 #if defined(HAS_ROS)
   void OnWriteROSHeader(ChannelDef::Type, const Status& s);
   void OnReadROSHeader(std::string* buffer, const Status& s);
+  Status ValidateROSHeader(const ROSHeader& header) const;
 #endif  // defined(HAS_ROS)
 
   void StartMessageLoop();
@@ -310,23 +308,18 @@ void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
     }
 
 #if defined(HAS_ROS)
-    if (settings_.channel_settings.receive_from_ros) {
-      ros::M_string header;
-      header["topic"] = topic_info_.topic().substr(strlen("ros://"));
-      header["md5sum"] = MessageIOImpl<MessageTy>::MD5Sum();
-      header["callerid"] = topic_info_.ros_node_name();
-      header["type"] = MessageIOImpl<MessageTy>::TypeName();
-      header["tcp_nodelay"] = "1";
-
-      boost::shared_array<uint8_t> write_buffer;
-      uint32_t len;
-      ros::Header::write(header, write_buffer, len);
-      std::string msg;
-      msg.resize(len);
-      memcpy(const_cast<char*>(msg.c_str()), write_buffer.get(), len);
+    if (settings_.channel_settings.use_ros_channel) {
+      ROSHeader header;
+      header.topic = topic_info_.topic().substr(strlen("ros://"));
+      header.md5sum = MessageIOImpl<MessageTy>::MD5Sum();
+      header.callerid = topic_info_.ros_node_name();
+      header.type = MessageIOImpl<MessageTy>::TypeName();
+      header.tcp_nodelay = "1";
+      std::string write_buffer;
+      WriteROSHeaderToBuffer(header, &write_buffer, false);
 
       channel_->SendRawMessage(
-          msg, false,
+          write_buffer, false,
           base::BindRepeating(&Subscriber<MessageTy>::OnWriteROSHeader,
                               base::Unretained(this)));
 
@@ -358,27 +351,46 @@ void Subscriber<MessageTy>::OnWriteROSHeader(ChannelDef::Type,
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnReadROSHeader(std::string* buffer,
                                             const Status& s) {
-  ros::Header header;
-  std::string error_message;
-  if (!header.parse(
-          reinterpret_cast<uint8_t*>(const_cast<char*>(buffer->c_str())),
-          buffer->length(), error_message)) {
-    channel_.reset();
-    internal::LogOrCallback(
-        on_error_callback_,
-        errors::Unavailable(base::StringPrintf(
-            "Failed to parse ROS Header: %s.", error_message.c_str())));
-  } else {
-    if (header.getValue("error", error_message)) {
-      channel_.reset();
-      internal::LogOrCallback(
-          on_error_callback_,
-          errors::Unavailable(base::StringPrintf(
-              "ROS Header contains error: %s.", error_message.c_str())));
-    } else {
-      StartMessageLoop();
+  ROSHeader header;
+  Status new_status = s;
+  if (new_status.ok()) {
+    new_status = ReadROSHeaderFromBuffer(*buffer, &header, true);
+    if (new_status.ok()) {
+      new_status = ValidateROSHeader(header);
     }
   }
+
+  if (!new_status.ok()) {
+    channel_.reset();
+    internal::LogOrCallback(on_error_callback_, new_status);
+  } else {
+    StartMessageLoop();
+  }
+}
+
+template <typename MessageTy>
+Status Subscriber<MessageTy>::ValidateROSHeader(const ROSHeader& header) const {
+  const std::string topic = topic_info_.topic().substr(strlen("ros://"));
+  if (header.topic != topic) {
+    return errors::InvalidArgument(
+        base::StringPrintf("Topic is not matched : %s vs %s.",
+                           header.topic.c_str(), topic.c_str()));
+  }
+
+  const std::string md5sum = MessageIOImpl<MessageTy>::MD5Sum();
+  if (header.md5sum != md5sum) {
+    return errors::InvalidArgument(
+        base::StringPrintf("MD5Sum is not matched :%s vs %s.",
+                           header.md5sum.c_str(), md5sum.c_str()));
+  }
+
+  const std::string type = MessageIOImpl<MessageTy>::TypeName();
+  if (header.type != type) {
+    return errors::InvalidArgument(base::StringPrintf(
+        "Type is not matched :%s vs %s.", header.type.c_str(), type.c_str()));
+  }
+
+  return Status::OK();
 }
 #endif  // defined(HAS_ROS)
 

@@ -104,7 +104,7 @@ void UDPChannel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
 
   MessageIOError err =
       MessageIO::ParseHeaderFromBuffer(this->receive_buffer_.StartOfBuffer(),
-                                       &this->header_, this->receive_from_ros_);
+                                       &this->header_, this->use_ros_channel_);
   if (err != MessageIOError::OK) {
     std::move(this->receive_callback_)
         .Run(errors::DataLoss(MessageIOErrorToString(err)));

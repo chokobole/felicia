@@ -68,7 +68,7 @@ bool Client::HasNode(const NodeInfo& node_info) const {
                       NodeNameChecker{node_info}) != nodes_.end();
 }
 
-base::WeakPtr<Node> Client::FindNode(const NodeInfo& node_info) {
+base::WeakPtr<Node> Client::FindNode(const NodeInfo& node_info) const {
   DFAKE_SCOPED_LOCK(add_remove_);
   auto it =
       std::find_if(nodes_.begin(), nodes_.end(), NodeNameChecker{node_info});
@@ -80,7 +80,7 @@ base::WeakPtr<Node> Client::FindNode(const NodeInfo& node_info) {
 }
 
 std::vector<base::WeakPtr<Node>> Client::FindNodes(
-    const NodeFilter& node_filter) {
+    const NodeFilter& node_filter) const {
   DFAKE_SCOPED_LOCK(add_remove_);
   std::vector<base::WeakPtr<Node>> nodes;
   if (node_filter.all()) {
@@ -118,7 +118,8 @@ std::vector<base::WeakPtr<Node>> Client::FindNodes(
   return nodes;
 }
 
-std::vector<TopicInfo> Client::FindTopicInfos(const TopicFilter& topic_filter) {
+std::vector<TopicInfo> Client::FindTopicInfos(
+    const TopicFilter& topic_filter) const {
   DFAKE_SCOPED_LOCK(add_remove_);
   std::vector<TopicInfo> topic_infos;
   if (topic_filter.all()) {
@@ -137,6 +138,17 @@ std::vector<TopicInfo> Client::FindTopicInfos(const TopicFilter& topic_filter) {
   }
 
   return topic_infos;
+}
+
+std::vector<std::string> Client::FindAllSubscribingTopics() const {
+  DFAKE_SCOPED_LOCK(add_remove_);
+  std::vector<std::string> topics;
+  for (auto& node : nodes_) {
+    std::vector<std::string> tmp_topics = node->AllSubscribingTopics();
+    topics.insert(topics.end(), tmp_topics.begin(), tmp_topics.end());
+  }
+
+  return topics;
 }
 
 }  // namespace felicia

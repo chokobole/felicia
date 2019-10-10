@@ -27,7 +27,7 @@ class MessageIO {
 
   static MessageIOError ParseHeaderFromBuffer(const char* buffer,
                                               Header* header,
-                                              bool receive_from_ros);
+                                              bool use_ros_channel);
 
   template <typename T>
   static MessageIOError ParseMessageFromBuffer(const char* buffer,

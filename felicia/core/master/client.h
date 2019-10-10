@@ -29,11 +29,14 @@ class Client {
   // Check there has a Node whose |node_info| is same with a given |node_info|.
   bool HasNode(const NodeInfo& node_info) const;
   // Find the node whose |node_info| is same with a given |node_info|.
-  base::WeakPtr<Node> FindNode(const NodeInfo& node_info);
+  base::WeakPtr<Node> FindNode(const NodeInfo& node_info) const;
   // Find the nodes which meet the given condition |node_filter|.
-  std::vector<base::WeakPtr<Node>> FindNodes(const NodeFilter& node_filter);
+  std::vector<base::WeakPtr<Node>> FindNodes(
+      const NodeFilter& node_filter) const;
   // Find the topic infos which meet the given condition |topic_filter|.
-  std::vector<TopicInfo> FindTopicInfos(const TopicFilter& topic_filter);
+  std::vector<TopicInfo> FindTopicInfos(const TopicFilter& topic_filter) const;
+  // Find all subscribing topics
+  std::vector<std::string> FindAllSubscribingTopics() const;
 
  private:
   explicit Client(const ClientInfo& client_info);

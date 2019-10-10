@@ -26,6 +26,7 @@ class EXPORT TCPServerSocket : public TCPSocket {
 
   void AddSocket(std::unique_ptr<net::TCPSocket> socket);
   void AddSocket(std::unique_ptr<StreamSocket> socket);
+  void AddSocket(std::unique_ptr<TCPSocket> socket);
 
   // Socket methods
   bool IsServer() const override;

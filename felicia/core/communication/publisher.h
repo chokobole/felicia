@@ -18,6 +18,7 @@
 
 #include "felicia/core/channel/channel_factory.h"
 #include "felicia/core/communication/register_state.h"
+#include "felicia/core/communication/ros_header.h"
 #include "felicia/core/communication/settings.h"
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/error/status.h"
@@ -72,8 +73,16 @@ class Publisher {
   StatusOr<ChannelDef> Setup(Channel<MessageTy>* channel_def,
                              const channel::Settings& settings);
 
-  void SendMesasge(SendMessageCallback callback);
-  void OnAccept(const Status& s);
+  void SendMessage(SendMessageCallback callback);
+  void OnAccept(StatusOr<std::unique_ptr<TCPChannel<MessageTy>>> status_or);
+
+#if defined(HAS_ROS)
+  void OnWriteROSHeader(std::unique_ptr<TCPChannel<MessageTy>> client_channel,
+                        bool sent_error, ChannelDef::Type, const Status& s);
+  void OnReadROSHeader(std::unique_ptr<TCPChannel<MessageTy>> client_channel,
+                       std::string* buffer, const Status& s);
+  Status ValidateROSHeader(const ROSHeader& header) const;
+#endif  // defined(HAS_ROS)
 
   void Release();
 
@@ -180,7 +189,7 @@ void Publisher<MessageTy>::Publish(const MessageTy& message,
     if (message_queue_) message_queue_->push(message);
   }
 
-  SendMesasge(callback);
+  SendMessage(callback);
 }
 
 template <typename MessageTy>
@@ -191,7 +200,7 @@ void Publisher<MessageTy>::Publish(MessageTy&& message,
     if (message_queue_) message_queue_->push(std::move(message));
   }
 
-  SendMesasge(callback);
+  SendMessage(callback);
 }
 
 template <typename MessageTy>
@@ -230,8 +239,8 @@ StatusOr<ChannelDef> Publisher<MessageTy>::Setup(
   if (channel->IsTCPChannel()) {
     TCPChannel<MessageTy>* tcp_channel = channel->ToTCPChannel();
     status_or = tcp_channel->Listen();
-    tcp_channel->AcceptLoop(base::BindRepeating(
-        [](const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }));
+    tcp_channel->AcceptOnceIntercept(base::BindRepeating(
+        &Publisher<MessageTy>::OnAccept, base::Unretained(this)));
   } else if (channel->IsUDPChannel()) {
     UDPChannel<MessageTy>* udp_channel = channel->ToUDPChannel();
     status_or = udp_channel->Bind();
@@ -321,11 +330,11 @@ void Publisher<MessageTy>::OnUnpublishTopicAsync(
 }
 
 template <typename MessageTy>
-void Publisher<MessageTy>::SendMesasge(SendMessageCallback callback) {
+void Publisher<MessageTy>::SendMessage(SendMessageCallback callback) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(FROM_HERE,
-                          base::BindOnce(&Publisher<MessageTy>::SendMesasge,
+                          base::BindOnce(&Publisher<MessageTy>::SendMessage,
                                          base::Unretained(this), callback));
     return;
   }
@@ -361,10 +370,113 @@ void Publisher<MessageTy>::SendMesasge(SendMessageCallback callback) {
 
   master_proxy.PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&Publisher<MessageTy>::SendMesasge, base::Unretained(this),
+      base::BindOnce(&Publisher<MessageTy>::SendMessage, base::Unretained(this),
                      callback),
       period_);
 }
+
+template <typename MessageTy>
+void Publisher<MessageTy>::OnAccept(
+    StatusOr<std::unique_ptr<TCPChannel<MessageTy>>> status_or) {
+  for (auto& channel : channels_) {
+    if (channel->IsTCPChannel()) {
+      TCPChannel<MessageTy>* tcp_channel = channel->ToTCPChannel();
+      if (status_or.ok()) {
+#if defined(HAS_ROS)
+        if (tcp_channel->use_ros_channel()) {
+          std::string* receive_buffer = new std::string();
+          std::unique_ptr<TCPChannel<MessageTy>> client_channel =
+              std::move(status_or.ValueOrDie());
+          client_channel->ReceiveRawMessage(
+              receive_buffer,
+              base::BindOnce(&Publisher<MessageTy>::OnReadROSHeader,
+                             base::Unretained(this),
+                             base::Passed(std::move(client_channel)),
+                             base::Owned(receive_buffer)));
+        } else {
+#endif  // defined(HAS_ROS)
+          tcp_channel->AddClientChannel(std::move(status_or.ValueOrDie()));
+#if defined(HAS_ROS)
+        }
+#endif  // defined(HAS_ROS)
+      } else {
+        LOG(ERROR) << status_or.status();
+      }
+      tcp_channel->AcceptOnceIntercept(base::BindRepeating(
+          &Publisher<MessageTy>::OnAccept, base::Unretained(this)));
+      break;
+    }
+  }
+}
+
+#if defined(HAS_ROS)
+template <typename MessageTy>
+void Publisher<MessageTy>::OnReadROSHeader(
+    std::unique_ptr<TCPChannel<MessageTy>> client_channel, std::string* buffer,
+    const Status& s) {
+  Status new_status = s;
+  ROSHeader header;
+  if (new_status.ok()) {
+    Status new_status = ReadROSHeaderFromBuffer(*buffer, &header, false);
+    if (new_status.ok()) {
+      new_status = ValidateROSHeader(header);
+    }
+  }
+
+  if (new_status.ok()) {
+    header.message_definition = MessageIOImpl<MessageTy>::Definition();
+    header.latching = "0";
+  } else {
+    LOG(ERROR) << new_status;
+    header.error = new_status.error_message();
+  }
+
+  std::string write_buffer;
+  WriteROSHeaderToBuffer(header, &write_buffer, false);
+  client_channel->SendRawMessage(
+      write_buffer, false,
+      base::BindRepeating(
+          &Publisher<MessageTy>::OnWriteROSHeader, base::Unretained(this),
+          base::Passed(std::move(client_channel)), !header.error.empty()));
+}
+
+template <typename MessageTy>
+void Publisher<MessageTy>::OnWriteROSHeader(
+    std::unique_ptr<TCPChannel<MessageTy>> client_channel, bool sent_error,
+    ChannelDef::Type, const Status& s) {
+  if (s.ok()) {
+    if (sent_error) return;
+
+    for (auto& channel : channels_) {
+      if (channel->IsTCPChannel()) {
+        TCPChannel<MessageTy>* tcp_channel = channel->ToTCPChannel();
+        tcp_channel->AddClientChannel(std::move(client_channel));
+        return;
+      }
+    }
+  } else {
+    LOG(ERROR) << s;
+  }
+}
+
+template <typename MessageTy>
+Status Publisher<MessageTy>::ValidateROSHeader(const ROSHeader& header) const {
+  const std::string md5sum = MessageIOImpl<MessageTy>::MD5Sum();
+  if (header.md5sum != md5sum) {
+    return errors::InvalidArgument(
+        base::StringPrintf("MD5Sum is not matched :%s vs %s.",
+                           header.md5sum.c_str(), md5sum.c_str()));
+  }
+
+  const std::string type = MessageIOImpl<MessageTy>::TypeName();
+  if (header.type != type) {
+    return errors::InvalidArgument(base::StringPrintf(
+        "Type is not matched :%s vs %s.", header.type.c_str(), type.c_str()));
+  }
+
+  return Status::OK();
+}
+#endif  // defined(HAS_ROS)
 
 template <typename MessageTy>
 void Publisher<MessageTy>::Release() {

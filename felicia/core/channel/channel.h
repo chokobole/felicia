@@ -47,14 +47,15 @@ class Channel {
 
   virtual bool HasReceivers() const { return true; }
 
-  void set_receive_from_ros(bool receive_from_ros) {
-    receive_from_ros_ = receive_from_ros;
-    if (receive_from_ros) {
+  void set_use_ros_channel(bool use_ros_channel) {
+    use_ros_channel_ = use_ros_channel;
+    if (use_ros_channel) {
       header_size_ = 4;
     } else {
       header_size_ = sizeof(Header);
     }
   }
+  bool use_ros_channel() const { return use_ros_channel_; }
 
   bool IsSendingMessage() const { return is_sending_; }
   bool IsReceivingMessage() const { return !receive_callback_.is_null(); }
@@ -146,7 +147,7 @@ class Channel {
   StatusOnceCallback receive_callback_;
 
   bool is_sending_ = false;
-  bool receive_from_ros_ = false;
+  bool use_ros_channel_ = false;
   size_t header_size_ = sizeof(Header);
 
   DISALLOW_COPY_AND_ASSIGN(Channel);
@@ -274,7 +275,7 @@ void Channel<MessageTy>::OnReceiveHeader(const Status& s) {
   }
 
   MessageIOError err = MessageIO::ParseHeaderFromBuffer(
-      receive_buffer_.StartOfBuffer(), &header_, receive_from_ros_);
+      receive_buffer_.StartOfBuffer(), &header_, use_ros_channel_);
   if (err != MessageIOError::OK) {
     std::move(receive_callback_)
         .Run(errors::DataLoss(MessageIOErrorToString(err)));

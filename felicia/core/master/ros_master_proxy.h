@@ -37,10 +37,18 @@ class ROSMasterProxy {
   Status GetPublishedTopicType(const std::string& topic,
                                std::string* topic_type) const;
 
-  Status RegisterSubscriber(const std::string& topic,
-                            const std::string& topic_type);
+  Status RegisterPublisher(const std::string& topic,
+                           const std::string& topic_type) const;
 
-  Status RequestTopic(const std::string& pub_uri, const std::string& topic);
+  Status RegisterSubscriber(const std::string& topic,
+                            const std::string& topic_type) const;
+
+  Status UnregisterPublisher(const std::string& topic) const;
+
+  Status UnregisterSubscriber(const std::string& topic) const;
+
+  Status RequestTopic(const std::string& pub_uri,
+                      const std::string& topic) const;
 
  private:
   friend class base::NoDestructor<ROSMasterProxy>;
@@ -49,12 +57,15 @@ class ROSMasterProxy {
   ~ROSMasterProxy();
 
   void PubUpdateCallback(XmlRpc::XmlRpcValue& request,
-                         XmlRpc::XmlRpcValue& response);
+                         XmlRpc::XmlRpcValue& response) const;
+  void RequestTopicCallback(XmlRpc::XmlRpcValue& request,
+                            XmlRpc::XmlRpcValue& response) const;
+
   Status PubUpdate(const std::string& topic,
-                   const std::vector<std::string>& pub_uris);
+                   const std::vector<std::string>& pub_uris) const;
 
   ros::XMLRPCManagerPtr xmlrpc_manager_;
-  Master* master_;
+  mutable Master* master_;
 };
 
 }  // namespace felicia
