@@ -1,15 +1,12 @@
-#include "felicia/core/master/rpc/grpc_util.h"
+#include "felicia/core/rpc/grpc_util.h"
 
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
-#include "felicia/core/master/rpc/grpc_info.h"
-
 namespace felicia {
 
-std::shared_ptr<::grpc::Channel> ConnectGRPCService() {
-  std::string ip = ResolveGRPCServiceIp().ToString();
-  uint16_t port = ResolveGRPCServicePort();
+std::shared_ptr<::grpc::Channel> ConnectToGrpcServer(const std::string& ip,
+                                                     uint16_t port) {
   auto channel =
       ::grpc::CreateChannel(base::StringPrintf("%s:%d", ip.c_str(), port),
                             ::grpc::InsecureChannelCredentials());

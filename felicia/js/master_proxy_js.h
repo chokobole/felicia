@@ -19,7 +19,7 @@ class JsMasterProxy : public Napi::ObjectWrap<JsMasterProxy> {
   static void SetBackground(const Napi::CallbackInfo& info);
 
 #if defined(FEL_WIN_NO_GRPC)
-  static Napi::Value StartGrpcMasterClient(const Napi::CallbackInfo& info);
+  static Napi::Value StartMasterClient(const Napi::CallbackInfo& info);
   static Napi::Value is_client_info_set(const Napi::CallbackInfo& info);
 #endif
 

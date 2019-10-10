@@ -14,16 +14,18 @@ limitations under the License.
 ==============================================================================*/
 // Modifications copyright (C) 2019 felicia
 
-#ifndef FELICIA_CORE_MASTER_GRPC_CLEINT_CQ_TAG_
-#define FELICIA_CORE_MASTER_GRPC_CLEINT_CQ_TAG_
+#ifndef FELICIA_CORE_RPC_GRPC_CLEINT_CQ_TAG_H_
+#define FELICIA_CORE_RPC_GRPC_CLEINT_CQ_TAG_H_
 
 #include "third_party/chromium/base/macros.h"
+
+#include "felicia/core/lib/base/export.h"
 
 namespace felicia {
 
 // Represents a pending asynchronous client call as a tag that can be
 // stored in a `::grpc::CompletionQueue`.
-class GrpcClientCQTag {
+class EXPORT GrpcClientCQTag {
  public:
   GrpcClientCQTag() {}
   virtual ~GrpcClientCQTag() {}
@@ -38,4 +40,4 @@ class GrpcClientCQTag {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MASTER_GRPC_CLEINT_CQ_TAG_
+#endif  // FELICIA_CORE_RPC_GRPC_CLEINT_CQ_TAG_H_

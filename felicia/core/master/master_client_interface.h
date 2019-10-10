@@ -1,12 +1,6 @@
 #ifndef FELICIA_CORE_MASTER_MASTER_CLIENT_INTERFACE_H_
 #define FELICIA_CORE_MASTER_MASTER_CLIENT_INTERFACE_H_
 
-#include <string>
-#include <vector>
-
-#include "third_party/chromium/base/callback.h"
-#include "third_party/chromium/base/macros.h"
-
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/protobuf/master.pb.h"
@@ -38,8 +32,6 @@ class EXPORT MasterClientInterface {
   CLIENT_METHOD(ListTopics);
 
 #undef CLIENT_METHOD
-
-  DISALLOW_COPY_AND_ASSIGN(MasterClientInterface);
 };
 
 }  // namespace felicia

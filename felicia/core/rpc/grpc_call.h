@@ -14,8 +14,8 @@ limitations under the License.
 ==============================================================================*/
 // Modifications copyright (C) 2019 felicia
 
-#ifndef FELICIA_CORE_MASTER_RPC_GRPC_CALL_H_
-#define FELICIA_CORE_MASTER_RPC_GRPC_CALL_H_
+#ifndef FELICIA_CORE_RPC_GRPC_CALL_H_
+#define FELICIA_CORE_RPC_GRPC_CALL_H_
 
 #include "grpcpp/grpcpp.h"
 #include "third_party/chromium/base/macros.h"
@@ -266,4 +266,4 @@ class Call : UntypedCall<Service> {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MASTER_RPC_GRPC_CALL_H_
+#endif  // FELICIA_CORE_RPC_GRPC_CALL_H_

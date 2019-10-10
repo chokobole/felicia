@@ -11,13 +11,13 @@ bazel run //felicia/core/master/rpc/grpc_server_main
 On the other shell, now you should build the cli.
 
 ```bash
-bazel build //felicia/core/master/tool/grpc_master_client_cli
+bazel build //felicia/core/master/tool/master_client_cli
 ```
 
 And then you can use cli tool! Here belows are commands supported. You can type for example
 
 ```bash
-bazel-bin/felicia/core/master/tool/grpc_master_client_cli node ls -a
+bazel-bin/felicia/core/master/tool/master_client_cli node ls -a
 ```
 
 * Client command

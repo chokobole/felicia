@@ -114,11 +114,11 @@ fel_cc_library(
 )
 
 fel_cc_binary(
-    name = "grpc_master_client_cli",
-    srcs = ["grpc_master_client_cli.cc"],
+    name = "master_client_cli",
+    srcs = ["master_client_cli.cc"],
     deps = fel_shared_library() + [
         ":command_disptacher",
-        "//felicia/core/master/rpc:grpc_master_client",
+        "//felicia/core/master/rpc:master_client",
         "//felicia/core:felicia_init",
     ],
 )

@@ -7,14 +7,14 @@ Here you need three terminals, each for running grpc main server, publisher and 
 Before beginning, let's build the binary.
 
 ```bash
-bazel build --define has_rplidar=true //felicia/core/master/rpc:grpc_server_main
+bazel build --define has_rplidar=true //felicia/core/master/rpc:master_server_main
 bazel build --define has_rplidar=true //felicia/examples/learn/message_communication/lidar/cc:lidar_node_creator
 ```
 
 Done. Now let's begin and run the server!
 
 ```bash
-bazel-bin/felicia/core/master/rpc/grpc_server_main
+bazel-bin/felicia/core/master/rpc/master_server_main
 ```
 
 If you want to see the visual result, check out [felicia-viz](/felicia-viz/README.md)!

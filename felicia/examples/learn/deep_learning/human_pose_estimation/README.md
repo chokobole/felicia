@@ -23,7 +23,7 @@ sudo make install
 ## Build
 
 ```bash
-bazel build //felicia/core/master/rpc:grpc_server_main
+bazel build //felicia/core/master/rpc:master_server_main
 bazel build //felicia/examples/learn/deep_learning/human_pose_estimation:human_pose_estimation_from_camera
 ```
 

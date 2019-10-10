@@ -15,7 +15,7 @@ pip install seaborn
 ## Build
 
 ```bash
-bazel build //felicia/core/master/rpc:grpc_server_main
+bazel build //felicia/core/master/rpc:master_server_main
 bazel build //felicia/examples/learn/deep_learning/object_detection:object_detection_from_camera
 ```
 

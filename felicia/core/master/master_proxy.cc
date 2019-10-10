@@ -12,11 +12,12 @@
 
 #if defined(FEL_WIN_NO_GRPC)
 namespace felicia {
-extern std::unique_ptr<MasterClientInterface> NewGrpcMasterClient();
+extern std::unique_ptr<MasterClientInterface> NewMasterClient();
 }  // namespace felicia
 #else
-#include "felicia/core/master/rpc/grpc_master_client.h"
-#include "felicia/core/master/rpc/grpc_util.h"
+#include "felicia/core/master/rpc/master_client.h"
+#include "felicia/core/master/rpc/master_server_info.h"
+#include "felicia/core/rpc/grpc_util.h"
 #endif
 
 namespace felicia {
@@ -103,8 +104,8 @@ bool MasterProxy::PostDelayedTask(const base::Location& from_here,
 }
 
 #if defined(FEL_WIN_NO_GRPC)
-Status MasterProxy::StartGrpcMasterClient() {
-  master_client_interface_ = NewGrpcMasterClient();
+Status MasterProxy::StartMasterClient() {
+  master_client_interface_ = NewMasterClient();
   return master_client_interface_->Start();
 }
 
@@ -113,8 +114,10 @@ bool MasterProxy::is_client_info_set() const { return is_client_info_set_; }
 
 Status MasterProxy::Start() {
 #if !defined(FEL_WIN_NO_GRPC)
-  auto channel = ConnectGRPCService();
-  master_client_interface_ = std::make_unique<GrpcMasterClient>(channel);
+  std::string ip = ResolveMasterServerIp().ToString();
+  uint16_t port = ResolveMasterServerPort();
+  auto channel = ConnectToGrpcServer(ip, port);
+  master_client_interface_ = std::make_unique<MasterClient>(channel);
   Status s = master_client_interface_->Start();
   if (!s.ok()) return s;
 #endif

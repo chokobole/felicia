@@ -1,4 +1,4 @@
-#include "felicia/core/master/rpc/grpc_info.h"
+#include "felicia/core/master/rpc/master_server_info.h"
 
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/strings/string_number_conversions.h"
@@ -9,8 +9,8 @@ namespace felicia {
 
 static const uint16_t g_default_master_port = 8881;
 
-net::IPAddress ResolveGRPCServiceIp() {
-  const char* ip_env = getenv("FEL_GRPC_SERVICE_IP");
+net::IPAddress ResolveMasterServerIp() {
+  const char* ip_env = getenv("FEL_MASTER_SERVER_IP");
   if (ip_env) {
     net::IPAddress address;
     bool ret = address.AssignFromIPLiteral(ip_env);
@@ -21,8 +21,8 @@ net::IPAddress ResolveGRPCServiceIp() {
   return HostIPAddress(HOST_IP_ONLY_ALLOW_IPV4);
 }
 
-uint16_t ResolveGRPCServicePort() {
-  const char* port_env = getenv("FEL_GRPC_SERVICE_PORT");
+uint16_t ResolveMasterServerPort() {
+  const char* port_env = getenv("FEL_MASTER_SERVER_PORT");
   if (port_env) {
     int value;
     if (base::StringToInt(port_env, &value)) {

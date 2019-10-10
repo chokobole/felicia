@@ -119,8 +119,7 @@ void JsMasterProxy::Init(Napi::Env env, Napi::Object exports) {
   Napi::Function func = DefineClass(env, "MasterProxy", {
     StaticMethod("setBackground", &JsMasterProxy::SetBackground),
 #if defined(FEL_WIN_NO_GRPC)
-        StaticMethod("startGrpcMasterClient",
-                     &JsMasterProxy::StartGrpcMasterClient),
+        StaticMethod("startMasterClient", &JsMasterProxy::StartMasterClient),
         StaticMethod("isClientInfoSet", &JsMasterProxy::is_client_info_set),
 #endif
         StaticMethod("start", &JsMasterProxy::Start),
@@ -156,12 +155,11 @@ void JsMasterProxy::SetBackground(const Napi::CallbackInfo& info) {
 
 #if defined(FEL_WIN_NO_GRPC)
 // static
-Napi::Value JsMasterProxy::StartGrpcMasterClient(
-    const Napi::CallbackInfo& info) {
+Napi::Value JsMasterProxy::StartMasterClient(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
   ScopedEnvSetter scoped_env_setter(env);
   MasterProxy& master_proxy = MasterProxy::GetInstance();
-  return TypedCall(info, &MasterProxy::StartGrpcMasterClient, &master_proxy);
+  return TypedCall(info, &MasterProxy::StartMasterClient, &master_proxy);
 }
 
 // static

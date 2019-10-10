@@ -6,7 +6,7 @@ import {
 // @ts-ignore
 import feliciaJs from 'felicia_js.node';
 import { isWin } from 'lib/environment';
-import MasterProxyClient from 'master-proxy-client';
+import MasterClient from 'master-client';
 import handleMessage, { handleClose } from 'message';
 import TOPIC_MAP from 'topic-map';
 import websocket from 'websocket';
@@ -29,8 +29,8 @@ export default (): void => {
   feliciaJs.MasterProxy.setBackground();
 
   if (isWin) {
-    (global as any).MasterProxyClient = MasterProxyClient;
-    feliciaJs.MasterProxy.startGrpcMasterClient();
+    (global as any).MasterClient = MasterClient;
+    feliciaJs.MasterProxy.startMasterClient();
   }
 
   const s = feliciaJs.MasterProxy.start();

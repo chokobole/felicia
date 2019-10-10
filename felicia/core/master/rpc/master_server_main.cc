@@ -1,7 +1,5 @@
-#include <csignal>
-
 #include "felicia/core/felicia_init.h"
-#include "felicia/core/master/rpc/grpc_server.h"
+#include "felicia/core/master/rpc/master_server.h"
 #if defined(HAS_ROS)
 #include "felicia/core/master/ros_master_proxy.h"
 #endif  // defined(HAS_ROS)
@@ -22,15 +20,18 @@ void ShutdownROSMasterProxy() {
 int RealMain(int argc, char* argv[]) {
   FeliciaInit();
 
-  GrpcServer server;
-  server.Init();
+  MasterServer server;
+  Status s = server.Start();
+  CHECK(s.ok()) << s;
 #if defined(HAS_ROS)
   ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
-  ros_master_proxy.Init(server.master());
-  ros_master_proxy.Start();
+  s = ros_master_proxy.Init(server.master());
+  CHECK(s.ok()) << s;
+  s = ros_master_proxy.Start();
+  CHECK(s.ok()) << s;
   server.set_on_shutdown_callback(base::BindOnce(&ShutdownROSMasterProxy));
 #endif  // defined(HAS_ROS)
-  server.Start();
+  server.Run();
   return 0;
 }
 

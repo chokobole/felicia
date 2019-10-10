@@ -1,5 +1,5 @@
-#ifndef FELICIA_JS_GRPC_MASTER_CLIENT_H_
-#define FELICIA_JS_GRPC_MASTER_CLIENT_H_
+#ifndef FELICIA_JS_MASTER_CLIENT_H_
+#define FELICIA_JS_MASTER_CLIENT_H_
 
 #if defined(FEL_WIN_NO_GRPC)
 
@@ -9,10 +9,10 @@
 
 namespace felicia {
 
-class GrpcMasterClient : public MasterClientInterface {
+class MasterClient : public MasterClientInterface {
  public:
-  GrpcMasterClient();
-  ~GrpcMasterClient();
+  MasterClient();
+  ~MasterClient();
 
   Status Start() override;
   Status Stop() override;
@@ -36,13 +36,13 @@ class GrpcMasterClient : public MasterClientInterface {
 #undef CLIENT_METHOD
 
  private:
-  Napi::ObjectReference grpc_master_client_;
+  Napi::ObjectReference master_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(GrpcMasterClient);
+  DISALLOW_COPY_AND_ASSIGN(MasterClient);
 };
 
 }  // namespace felicia
 
 #endif  // defined(FEL_WIN_NO_GRPC)
 
-#endif  // FELICIA_JS_GRPC_MASTER_CLIENT_H_
+#endif  // FELICIA_JS_MASTER_CLIENT_H_

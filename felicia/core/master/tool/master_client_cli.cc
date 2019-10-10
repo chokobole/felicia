@@ -2,10 +2,10 @@
 
 #include "felicia/core/felicia_init.h"
 #include "felicia/core/master/master_proxy.h"
-#include "felicia/core/master/rpc/grpc_master_client.h"
-#include "felicia/core/master/rpc/grpc_util.h"
+#include "felicia/core/master/rpc/master_client.h"
 #include "felicia/core/master/tool/cli_flag.h"
 #include "felicia/core/master/tool/command_dispatcher.h"
+#include "felicia/core/rpc/grpc_util.h"
 
 namespace felicia {
 

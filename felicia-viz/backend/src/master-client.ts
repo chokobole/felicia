@@ -27,7 +27,7 @@ import { FELICIA_ROOT } from 'typings/settings';
 
 type Callback = (err: Error | null, response: string | null) => void;
 
-interface GrpcClient extends Client {
+interface MasterClientInterface extends Client {
   RegisterClient: (
     request: RegisterClientRequestProtobuf,
     callback: (err: Error | null, response: RegisterClientResponseProtobuf) => void
@@ -70,8 +70,8 @@ interface GrpcClient extends Client {
   ) => void;
 }
 
-export default class MasterProxyClient {
-  client: GrpcClient | null = null;
+export default class MasterClient {
+  client: MasterClientInterface | null = null;
 
   start(address: string) {
     const packageDefinition = loadSync(
@@ -88,7 +88,7 @@ export default class MasterProxyClient {
     this.client = new (feliciaProto.MasterService as typeof Client)(
       address,
       grpc.credentials.createInsecure()
-    ) as GrpcClient;
+    ) as MasterClientInterface;
   }
 
   registerClient(request: RegisterClientRequestProtobuf, callback: Callback): void {

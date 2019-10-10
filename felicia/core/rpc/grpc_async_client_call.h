@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_MASTER_RPC_GRPC_ASYNC_CALL_H_
-#define FELICIA_CORE_MASTER_RPC_GRPC_ASYNC_CALL_H_
+#ifndef FELICIA_CORE_RPC_GRPC_ASYNC_CALL_H_
+#define FELICIA_CORE_RPC_GRPC_ASYNC_CALL_H_
 
 #include <memory>
 
@@ -7,8 +7,8 @@
 #include "third_party/chromium/base/strings/strcat.h"
 
 #include "felicia/core/lib/error/errors.h"
-#include "felicia/core/master/rpc/grpc_client_cq_tag.h"
-#include "felicia/core/master/rpc/grpc_util.h"
+#include "felicia/core/rpc/grpc_client_cq_tag.h"
+#include "felicia/core/rpc/grpc_util.h"
 
 namespace felicia {
 
@@ -56,4 +56,4 @@ class GrpcAsyncClientCall : public GrpcClientCQTag {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MASTER_RPC_GRPC_ASYNC_CALL_H_
+#endif  // FELICIA_CORE_RPC_GRPC_ASYNC_CALL_H_

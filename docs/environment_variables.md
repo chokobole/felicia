@@ -8,10 +8,10 @@ There are useful variables you can play with.
 
 Duration to check if each node is alive. (in milliseconds)
 
-#### FEL_GRPC_SERVICE_IP
+#### FEL_MASTER_SERVER_IP
 
-IP address for grpc server to on. (Default: host ip address)
+IP address for master server to on. (Default: host ip address)
 
-#### FEL_GRPC_SERVICE_PORT
+#### FEL_MASTER_SERVER_PORT
 
-Port number for grpc server to on. (Default: 8881)
+Port number for master server to on. (Default: 8881)

@@ -7,14 +7,14 @@ Here you need three terminals, each for running grpc main server, publisher and 
 Before beginning, let's build the binary.
 
 ```bash
-bazel build //felicia/core/master/rpc:grpc_server_main
+bazel build //felicia/core/master/rpc:master_server_main
 bazel build --define has_ros=true //felicia/examples/learn/message_communication/ros_msg/python:ros_msg_node_creator
 ```
 
 Done. Now let's begin and run the server!
 
 ```bash
-bazel-bin/felicia/core/master/rpc/grpc_server_main
+bazel-bin/felicia/core/master/rpc/master_server_main
 ```
 
 Running a ros_msg_node_creator in ***publisher*** mode:

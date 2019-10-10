@@ -48,7 +48,7 @@ class EXPORT Master {
   void Gc();
 
  private:
-  friend class GrpcServer;
+  friend class MasterServer;
   friend class MasterTest;
   friend class ROSMasterProxy;
 

@@ -48,7 +48,7 @@ class EXPORT MasterProxy final : public MasterClientInterface {
                        base::OnceClosure callback, base::TimeDelta delay);
 
 #if defined(FEL_WIN_NO_GRPC)
-  Status StartGrpcMasterClient();
+  Status StartMasterClient();
 
   bool is_client_info_set() const;
 #endif

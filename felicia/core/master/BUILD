@@ -63,8 +63,8 @@ fel_cc_library(
     ] + select({
         "//felicia:win_no_grpc": [],
         "//conditions:default": [
-            "//felicia/core/master/rpc:grpc_master_client",
-            "//felicia/core/master/rpc:grpc_util",
+            "//felicia/core/master/rpc:master_client",
+            "//felicia/core/master/rpc:master_server_info",
         ],
     }),
 )
