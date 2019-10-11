@@ -8,7 +8,7 @@ py_binary(
     ],
     main = "human_pose_estimation_from_camera.py",
     deps = [
-        "//felicia/examples/learn/message_communication/common/python:import_order_resolver",
+        "//felicia/examples/learn/topic/common/python:import_order_resolver",
         "//felicia/python:felicia_py",
     ],
 )
