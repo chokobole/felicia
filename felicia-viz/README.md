@@ -4,7 +4,7 @@
 
 ```bash
 npm install
-npx run bootstrap
+npm run bootstrap
 ```
 
 ### To build wasm
