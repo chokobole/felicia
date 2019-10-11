@@ -75,6 +75,11 @@ def load_deps():
         tag = "v1.19.1",
     )
 
+    native.bind(
+        name = "grpc_python_plugin",
+        actual = "@com_github_grpc_grpc//:grpc_python_plugin",
+    )
+
     http_archive(
         name = "jpeg",
         urls = [
