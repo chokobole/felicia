@@ -350,7 +350,7 @@ void Publisher<MessageTy>::SendMessage(SendMessageCallback callback) {
   if (!can_send) return;
 
   std::string serialized;
-  MessageIOError err;
+  MessageIOError err = MessageIOError::ERR_FAILED_TO_SERIALIZE;
   {
     base::AutoLock l(lock_);
     if (message_queue_ && !message_queue_->empty()) {
