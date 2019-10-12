@@ -2,7 +2,35 @@
 
 [![Build Status](https://travis-ci.com/chokobole/felicia.svg?token=uWEvhLXsK9nuPxhDRPic&branch=master)](https://travis-ci.com/chokobole/felicia)
 
-**Cross platform**, **Secure**, **Productive** robot framework.
+Felicia is the chromium based robot framework like [ROS](https://www.ros.org/), a collections of tools and libraries to help developers build **fast**, **light** and **secure** robot software. Currently it is under development mostly alone, I think it is still useful for like Robot-vision developer who needs to deliver camera images fast or web developers who wants to subscribe messages by WebSocket without any performance drop. I hope someday it be spread through robot industry and academia so that I want many developers to be engaged with it! If you have any trouble, leave issues or contact to me by email!
+
+**Key** features:
+
+* Cross Platform.
+* Support Protobuf / ROS Message.
+* Provide C++ / Python APIs.
+* Provide different communication channels (TCP / UDP / Shared Memory / WebSocket / Unix Domain Socket).
+* Provide some of sensor APIs.
+  * Realsense D435i
+  * ZED Stereo Camrea
+  * RPLidar
+  * UVC compatible camera
+* Provide command-line-interface.
+* Provide visualization tool with browser.
+* Compatible with ROS1 topic protocol.
+
+**TODO** feautures:
+
+* Decentralize nodes.
+* Support TLS communicaiton.
+* Support OS-layer security.
+* Provide more channels such as Bluetooth, QUIC.
+* Provide more sensor APIs such as michrophone.
+* Provide simulator.
+* Compatible with ROS1 service protocol.
+* Compatible with ROS2 topic / service protocol.
+* Support Raspberry Pi 4.
+* Robot specific features such as SLAM.
 
 ## Prerequisites
 
@@ -34,7 +62,7 @@ choco install nodejs.install --version 10.15.3
 
 ### For Windows developers
 
-For only window developers, you have to do more. You have to download llvm from [llvm.org](http://llvm.org/builds/) also. Because you need `clang-cl` for compiler. And then to change default compiler for bazel, you have to set `USE_CLANG_CL` to `1` and `BAZEL_LLVM` to `/path/to/llvm` if you install llvm at not regular location. This feature is a quite new, so you need a recent released one. We tested on `0.20.0`.
+For only window developers, you have to do more. You have to download llvm from [llvm.org](http://llvm.org/builds/) also. Because you need `clang-cl` for compiler. And then to change default compiler for bazel, you have to set `USE_CLANG_CL` to `1` and `BAZEL_LLVM` to `/path/to/llvm` if you install llvm at not regular location. This feature is a quite new, so you need a recent released one. We tested on `0.25.0`.
 
 ## How to build
 
