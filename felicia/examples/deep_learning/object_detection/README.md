@@ -16,11 +16,11 @@ pip install seaborn
 
 ```bash
 bazel build //felicia/core/master/rpc:master_server_main
-bazel build //felicia/examples/learn/deep_learning/object_detection:object_detection_from_camera
+bazel build //felicia/examples/deep_learning/object_detection:object_detection_from_camera
 ```
 
 ## Run
 
 ```bash
-bazel-bin/felicia/examples/learn/deep_learning/object_detection/object_detection_from_camera
+bazel-bin/felicia/examples/deep_learning/object_detection/object_detection_from_camera
 ```

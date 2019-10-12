@@ -24,12 +24,12 @@ sudo make install
 
 ```bash
 bazel build //felicia/core/master/rpc:master_server_main
-bazel build //felicia/examples/learn/deep_learning/human_pose_estimation:human_pose_estimation_from_camera
+bazel build //felicia/examples/deep_learning/human_pose_estimation:human_pose_estimation_from_camera
 ```
 
 ## Run
 
 ```bash
 export PYTHONPATH=$PYTHONPATH:/usr/local/python
-LD_LIBRARY_PATH=/usr/local/lib bazel-bin/felicia/examples/learn/deep_learning/human_pose_estimation/human_pose_estimation_from_camera --model /path/to/model
+LD_LIBRARY_PATH=/usr/local/lib bazel-bin/felicia/examples/deep_learning/human_pose_estimation/human_pose_estimation_from_camera --model /path/to/model
 ```
