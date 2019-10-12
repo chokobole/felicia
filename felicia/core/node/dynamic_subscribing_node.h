@@ -12,7 +12,7 @@ namespace felicia {
 
 // The Difference between OneTopicDelegate and MultiTopicDelegate is
 // OneTopicDelegate: it really requests to subscribe topic to the Master.
-// MultiTopicDelegate: it needs a TopicInfoWatcher, which tells it if any
+// MultiTopicDelegate: it needs a ToicInfoWatcherNode, which tells it if any
 // updates on the topic, and it only subscribes. So Master dones't know
 // if the node really subscribe any topics.
 class DynamicSubscribingNode : public NodeLifecycle {

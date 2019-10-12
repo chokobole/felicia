@@ -38,12 +38,6 @@ bool Contains(base::StringPiece s, base::StringPiece expected) {
   return s.find(expected) != base::StringPiece::npos;
 }
 
-StringComparator::StringComparator(base::StringPiece text) : text_(text) {}
-
-bool StringComparator::operator()(const base::StringPiece text) {
-  return text_ == text;
-}
-
 std::string BoolToString(bool b) { return b ? "true" : "false"; }
 
 }  // namespace felicia

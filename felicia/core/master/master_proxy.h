@@ -21,7 +21,7 @@
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/master/heart_beat_signaller.h"
 #include "felicia/core/master/master_client_interface.h"
-#include "felicia/core/master/topic_info_watcher.h"
+#include "felicia/core/master/master_notification_watcher.h"
 #include "felicia/core/message/protobuf_loader.h"
 #include "felicia/core/node/node_lifecycle.h"
 
@@ -71,9 +71,14 @@ class EXPORT MasterProxy final : public MasterClientInterface {
   CLIENT_METHOD(UnpublishTopic);
   CLIENT_METHOD(SubscribeTopic);
   // UnsubscribeTopic needs additional remove callback from
-  // |topic_info_watcher_|
+  // |master_notification_watcher_|
   // CLIENT_METHOD(UnsubscribeTopic)
   CLIENT_METHOD(ListTopics);
+  CLIENT_METHOD(RegisterServiceClient);
+  CLIENT_METHOD(UnregisterServiceClient);
+  CLIENT_METHOD(RegisterServiceServer);
+  CLIENT_METHOD(UnregisterServiceServer);
+  CLIENT_METHOD(ListServices);
 
 #undef CLIENT_METHOD
 
@@ -84,10 +89,10 @@ class EXPORT MasterProxy final : public MasterClientInterface {
                 nullptr>
   void RequestRegisterNode(const NodeInfo& node_info, Args&&... args);
 
-  void SubscribeTopicAsync(const SubscribeTopicRequest* request,
-                           SubscribeTopicResponse* response,
-                           StatusOnceCallback callback,
-                           TopicInfoWatcher::NewTopicInfoCallback callback2);
+  void SubscribeTopicAsync(
+      const SubscribeTopicRequest* request, SubscribeTopicResponse* response,
+      StatusOnceCallback callback,
+      MasterNotificationWatcher::NewTopicInfoCallback callback2);
 
   void UnsubscribeTopicAsync(const UnsubscribeTopicRequest* request,
                              UnsubscribeTopicResponse* response,
@@ -110,11 +115,11 @@ class EXPORT MasterProxy final : public MasterClientInterface {
   void RegisterClient();
 
   void OnRegisterClient(base::WaitableEvent* event,
-                        RegisterClientRequest* request,
+                        const RegisterClientRequest* request,
                         RegisterClientResponse* response, const Status& s);
 
   void OnRegisterNodeAsync(std::unique_ptr<NodeLifecycle> node,
-                           RegisterNodeRequest* request,
+                           const RegisterNodeRequest* request,
                            RegisterNodeResponse* response, const Status& s);
 
   std::unique_ptr<base::MessageLoop> message_loop_;
@@ -124,7 +129,7 @@ class EXPORT MasterProxy final : public MasterClientInterface {
 
   ClientInfo client_info_;
 
-  TopicInfoWatcher topic_info_watcher_;
+  MasterNotificationWatcher master_notification_watcher_;
   HeartBeatSignaller heart_beat_signaller_;
 
   std::vector<std::unique_ptr<NodeLifecycle>> nodes_;

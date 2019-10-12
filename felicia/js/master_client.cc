@@ -64,7 +64,7 @@ Status MasterClient::Start() {
 
 Status MasterClient::Stop() { return Status::OK(); }
 
-#define CLIENT_METHOD(Method, method)                                          \
+#define MASTER_METHOD(Method, method, cancelable)                              \
   void MasterClient::Method##Async(const Method##Request* request,             \
                                    Method##Response* response,                 \
                                    StatusOnceCallback done) {                  \
@@ -114,19 +114,8 @@ Status MasterClient::Stop() { return Status::OK(); }
                  }                                                             \
                })});                                                           \
   }
-
-CLIENT_METHOD(RegisterClient, registerClient)
-CLIENT_METHOD(ListClients, listClient)
-CLIENT_METHOD(RegisterNode, registerNode)
-CLIENT_METHOD(UnregisterNode, unregisterNode)
-CLIENT_METHOD(ListNodes, listNodes)
-CLIENT_METHOD(PublishTopic, publishTopic)
-CLIENT_METHOD(UnpublishTopic, unpublishTopic)
-CLIENT_METHOD(SubscribeTopic, subscribeTopic)
-CLIENT_METHOD(UnsubscribeTopic, unsubscribeTopic)
-CLIENT_METHOD(ListTopics, listTopics)
-
-#undef CLIENT_METHOD
+#include "felicia/core/master/rpc/master_method_list.h"
+#undef MASTER_METHOD
 
 std::unique_ptr<MasterClientInterface> NewMasterClient() {
   return std::make_unique<MasterClient>();

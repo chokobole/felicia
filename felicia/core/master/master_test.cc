@@ -195,10 +195,10 @@ class MasterTest : public testing::Test {
     ChannelDef channel_def;
     channel_def.set_type(ChannelDef::CHANNEL_TYPE_TCP);
     FillRandomTCPChannelDef(&channel_def);
-    ChannelSource topic_info_watcher_source;
-    *topic_info_watcher_source.add_channel_defs() = channel_def;
-    *client_info.mutable_topic_info_watcher_source() =
-        topic_info_watcher_source;
+    ChannelSource master_notification_watcher_source;
+    *master_notification_watcher_source.add_channel_defs() = channel_def;
+    *client_info.mutable_master_notification_watcher_source() =
+        master_notification_watcher_source;
     *request->mutable_client_info() = client_info;
     RegisterClient(request, response, base::BindOnce(&ExpectOK, event_));
   }

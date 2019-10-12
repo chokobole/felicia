@@ -14,16 +14,10 @@ class MasterService : public rpc::Service<grpc::MasterService> {
  private:
   void EnqueueRequests() override;
 
-  FEL_SERVICE_METHOD_DECLARE(MasterService, RegisterClient);
-  FEL_SERVICE_METHOD_DECLARE(MasterService, ListClients);
-  FEL_SERVICE_METHOD_DECLARE(MasterService, RegisterNode);
-  FEL_SERVICE_METHOD_DECLARE(MasterService, UnregisterNode);
-  FEL_SERVICE_METHOD_DECLARE(MasterService, ListNodes);
-  FEL_SERVICE_METHOD_DECLARE(MasterService, PublishTopic);
-  FEL_SERVICE_METHOD_DECLARE(MasterService, UnpublishTopic);
-  FEL_SERVICE_METHOD_DECLARE(MasterService, SubscribeTopic);
-  FEL_SERVICE_METHOD_DECLARE(MasterService, UnsubscribeTopic);
-  FEL_SERVICE_METHOD_DECLARE(MasterService, ListTopics);
+#define MASTER_METHOD(Method, method, cancelable) \
+  FEL_SERVICE_METHOD_DECLARE(MasterService, Method);
+#include "felicia/core/master/rpc/master_method_list.h"
+#undef MASTER_METHOD
 
   Master* master_;
 };

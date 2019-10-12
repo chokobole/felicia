@@ -11,6 +11,7 @@
 #include "felicia/core/lib/error/errors.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/lib/net/net_util.h"
+#include "felicia/core/protobuf/channel.pb.h"
 
 namespace felicia {
 namespace rpc {
@@ -20,6 +21,15 @@ class Server {
  public:
   Server() = default;
   ~Server() = default;
+
+  ChannelDef channel_def() const {
+    ChannelDef channel_def;
+    channel_def.set_type(ChannelDef::CHANNEL_TYPE_TCP);
+    IPEndPoint* ip_endpoint = channel_def.mutable_ip_endpoint();
+    ip_endpoint->set_ip(HostIPAddress(HOST_IP_ONLY_ALLOW_IPV4).ToString());
+    ip_endpoint->set_port(port_);
+    return channel_def;
+  }
 
   virtual Status Start();
 
@@ -35,9 +45,10 @@ class Server {
   }
 
  protected:
+  // You need to set |port_| to server port here.
   virtual std::string ConfigureServerAddress() {
-    return base::StringPrintf("[::]:%d",
-                              static_cast<int>(PickRandomPort(true)));
+    port_ = PickRandomPort(true);
+    return base::StringPrintf("[::]:%d", static_cast<int>(port_));
   }
 
   virtual Status RegisterService(::grpc::ServerBuilder* builder) = 0;
@@ -47,14 +58,13 @@ class Server {
 
   std::unique_ptr<Service> service_;
   std::unique_ptr<::grpc::Server> server_;
-  std::string server_address_;
+  uint16_t port_;
 };
 
 template <typename Service>
 Status Server<Service>::Start() {
   ::grpc::ServerBuilder builder;
-  server_address_ = ConfigureServerAddress();
-  builder.AddListeningPort(server_address_,
+  builder.AddListeningPort(ConfigureServerAddress(),
                            ::grpc::InsecureServerCredentials());
   builder.SetMaxMessageSize(std::numeric_limits<int32_t>::max());
   Status s = RegisterService(&builder);

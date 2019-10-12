@@ -59,14 +59,14 @@ class Subscriber {
                           StatusOnceCallback callback = StatusOnceCallback());
 
  protected:
-  void OnSubscribeTopicAsync(SubscribeTopicRequest* request,
+  void OnSubscribeTopicAsync(const SubscribeTopicRequest* request,
                              SubscribeTopicResponse* response,
                              int channel_types,
                              const communication::Settings& settings,
                              OnMessageCallback on_message_callback,
                              StatusCallback on_error_callback,
                              StatusOnceCallback callback, const Status& s);
-  void OnUnubscribeTopicAsync(UnsubscribeTopicRequest* request,
+  void OnUnubscribeTopicAsync(const UnsubscribeTopicRequest* request,
                               UnsubscribeTopicResponse* response,
                               StatusOnceCallback callback, const Status& s);
 
@@ -173,7 +173,7 @@ void Subscriber<MessageTy>::RequestUnsubscribe(const NodeInfo& node_info,
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnSubscribeTopicAsync(
-    SubscribeTopicRequest* request, SubscribeTopicResponse* response,
+    const SubscribeTopicRequest* request, SubscribeTopicResponse* response,
     int channel_types, const communication::Settings& settings,
     OnMessageCallback on_message_callback, StatusCallback on_error_callback,
     StatusOnceCallback callback, const Status& s) {
@@ -200,7 +200,7 @@ void Subscriber<MessageTy>::OnSubscribeTopicAsync(
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnUnubscribeTopicAsync(
-    UnsubscribeTopicRequest* request, UnsubscribeTopicResponse* response,
+    const UnsubscribeTopicRequest* request, UnsubscribeTopicResponse* response,
     StatusOnceCallback callback, const Status& s) {
   if (!IsUnregistering()) {
     internal::LogOrCallback(std::move(callback),

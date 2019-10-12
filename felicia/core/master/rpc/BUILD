@@ -9,6 +9,11 @@ load("//bazel:felicia_proto.bzl", "fel_proto_library_cc")
 package(default_visibility = ["//felicia:internal"])
 
 fel_cc_library(
+    name = "master_method_list",
+    hdrs = ["master_method_list.h"],
+)
+
+fel_cc_library(
     name = "master_client",
     srcs = ["master_client.cc"],
     hdrs = ["master_client.h"],

@@ -5,7 +5,7 @@ In this example, you can learn how to use cli so you can query whatever you want
 On one shell, let's run server.
 
 ```bash
-bazel run //felicia/core/master/rpc/grpc_server_main
+bazel run //felicia/core/master/rpc/master_server_main
 ```
 
 On the other shell, now you should build the cli.
@@ -36,6 +36,12 @@ bazel-bin/felicia/core/master/tool/master_client_cli node ls -a
 |          | -s, --subscribing_topic | List nodes subscribing a given topic            |
 |          | -n, --name              | List a node whose name is equal to a given name |
 
+* Service command
+
+| COMMAND   | OPTION                  | DESCRIPTION                                               |
+| --------: | ----------------------: | --------------------------------------------------------: |
+| ls        | -a, -all                | List all the services                                     |
+|           | -s, --service           | List a given service                                      |
 
 * Topic command
 

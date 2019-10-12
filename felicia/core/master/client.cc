@@ -100,6 +100,18 @@ std::vector<base::WeakPtr<Node>> Client::FindNodes(
         nodes.push_back(node->AsWeakPtr());
       }
     }
+  } else if (!node_filter.requesting_service().empty()) {
+    for (auto& node : nodes_) {
+      if (node->IsRequestingService(node_filter.requesting_service())) {
+        nodes.push_back(node->AsWeakPtr());
+      }
+    }
+  } else if (!node_filter.serving_service().empty()) {
+    for (auto& node : nodes_) {
+      if (node->IsServingService(node_filter.serving_service())) {
+        nodes.push_back(node->AsWeakPtr());
+      }
+    }
   } else if (!node_filter.name().empty()) {
     for (auto& node : nodes_) {
       if (node->name() == node_filter.name()) {
@@ -140,6 +152,29 @@ std::vector<TopicInfo> Client::FindTopicInfos(
   return topic_infos;
 }
 
+std::vector<ServiceInfo> Client::FindServiceInfos(
+    const ServiceFilter& service_filter) const {
+  DFAKE_SCOPED_LOCK(add_remove_);
+  std::vector<ServiceInfo> service_infos;
+  if (service_filter.all()) {
+    for (auto& node : nodes_) {
+      std::vector<ServiceInfo> tmp_service_infos =
+          node->AllServingServiceInfos();
+      service_infos.insert(service_infos.end(), tmp_service_infos.begin(),
+                           tmp_service_infos.end());
+    }
+  } else if (!service_filter.service().empty()) {
+    for (auto& node : nodes_) {
+      if (node->IsServingService(service_filter.service())) {
+        service_infos.push_back(node->GetServiceInfo(service_filter.service()));
+        break;
+      }
+    }
+  }
+
+  return service_infos;
+}
+
 std::vector<std::string> Client::FindAllSubscribingTopics() const {
   DFAKE_SCOPED_LOCK(add_remove_);
   std::vector<std::string> topics;
@@ -149,6 +184,17 @@ std::vector<std::string> Client::FindAllSubscribingTopics() const {
   }
 
   return topics;
+}
+
+std::vector<std::string> Client::FindAllRequestingServices() const {
+  DFAKE_SCOPED_LOCK(add_remove_);
+  std::vector<std::string> services;
+  for (auto& node : nodes_) {
+    std::vector<std::string> tmp_services = node->AllRequestingServices();
+    services.insert(services.end(), tmp_services.begin(), tmp_services.end());
+  }
+
+  return services;
 }
 
 }  // namespace felicia

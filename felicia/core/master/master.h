@@ -19,7 +19,7 @@
 
 namespace felicia {
 
-extern Bytes kTopicInfoBytes;
+extern Bytes kMasterNotificationBytes;
 
 class EXPORT Master {
  public:
@@ -28,21 +28,10 @@ class EXPORT Master {
   void Run();
   void Stop();
 
-#define MASTER_METHOD(method)                                       \
-  void method(const method##Request* arg, method##Response* result, \
-              StatusOnceCallback callback)
-
-  MASTER_METHOD(RegisterClient);
-  MASTER_METHOD(ListClients);
-  MASTER_METHOD(RegisterNode);
-  MASTER_METHOD(UnregisterNode);
-  MASTER_METHOD(ListNodes);
-  MASTER_METHOD(PublishTopic);
-  MASTER_METHOD(UnpublishTopic);
-  MASTER_METHOD(SubscribeTopic);
-  MASTER_METHOD(UnsubscribeTopic);
-  MASTER_METHOD(ListTopics);
-
+#define MASTER_METHOD(Method, method, cancelable)                   \
+  void Method(const Method##Request* arg, Method##Response* result, \
+              StatusOnceCallback callback);
+#include "felicia/core/master/rpc/master_method_list.h"
 #undef MASTER_METHOD
 
   void Gc();
@@ -67,6 +56,18 @@ class EXPORT Master {
                         StatusOnceCallback callback);
   void DoUnsubscribeTopic(const NodeInfo& node_info, const std::string& topic,
                           StatusOnceCallback callback);
+  void DoRegisterServiceClient(const NodeInfo& node_info,
+                               const std::string& service,
+                               StatusOnceCallback callback);
+  void DoUnregisterServiceClient(const NodeInfo& node_info,
+                                 const std::string& service,
+                                 StatusOnceCallback callback);
+  void DoRegisterServiceServer(const NodeInfo& node_info,
+                               const ServiceInfo& service_info,
+                               StatusOnceCallback callback);
+  void DoUnregisterServiceServer(const NodeInfo& node_info,
+                                 const std::string& service,
+                                 StatusOnceCallback callback);
 #if defined(HAS_ROS)
   void UnregisterROSTopics(
       const std::vector<TopicInfo>& publishing_topic_infos,
@@ -79,6 +80,10 @@ class EXPORT Master {
     TopicNotPublishingOnNode,
     TopicAlreadySubscribingOnNode,
     TopicNotSubscribingOnNode,
+    ServiceAlreadyServing,
+    ServiceNotServingOnNode,
+    ServiceAlreadyRequestingOnNode,
+    ServiceNotRequestingOnNode,
     UnknownFailed,
   };
 
@@ -91,6 +96,10 @@ class EXPORT Master {
   // Find the topics infos which meet the give condition |topic_filter|. This
   // is thread-safe.
   std::vector<TopicInfo> FindTopicInfos(const TopicFilter& topic_filter);
+  // Find the service infos which meet the give condition |service_filter|. This
+  // is thread-safe.
+  std::vector<ServiceInfo> FindServiceInfos(
+      const ServiceFilter& service_filter);
 
   // Add the Client |client|. This is thread-safe.
   void AddClient(uint32_t id, std::unique_ptr<Client> client);
@@ -108,8 +117,8 @@ class EXPORT Master {
   // This is thread-safe.
   bool CheckIfNodeExists(const NodeInfo& node_info);
 
-  void DoNotifySubscriber(const NodeInfo& subscribing_node_info,
-                          const TopicInfo& topic_info);
+  void DoNotifyClient(const NodeInfo& node_info,
+                      const MasterNotification& master_notification);
 
   // Notify subscriber about TopicInfo which publishes |topic|.
   void NotifySubscriber(const std::string& topic,
@@ -118,11 +127,19 @@ class EXPORT Master {
   void NotifyAllSubscribers(const TopicInfo& topic_info);
   // Notify all the subscribers about TopicInfo in |topic_infos|.
   void NotifyAllSubscribers(const std::vector<TopicInfo>& topic_infos);
+  // Notify ServiceClient about ServiceInfo which serves |service|.
+  void NotifyServiceClient(const std::string& service,
+                           const NodeInfo& client_node_info);
+  // Notify all the ServiceClients about ServiceInfo |service_info|.
+  void NotifyAllServiceClients(const ServiceInfo& service_info);
+  // Notify all the ServiceClients about ServiceInfo in |service_infos|.
+  void NotifyAllServiceClients(const std::vector<ServiceInfo>& service_infos);
   // Notify watcher about TopicInfos which are currently being published.
   void NotifyWatcher();
 
-  void OnConnetToTopicInfoWatcher(std::unique_ptr<Channel<TopicInfo>> channel,
-                                  const TopicInfo& topic_info, const Status& s);
+  void OnConnetToMasterNotificationWatcher(
+      std::unique_ptr<Channel<MasterNotification>> channel,
+      const MasterNotification& master_notification, const Status& s);
 
   void SetCheckHeartBeatForTesting(bool check_heart_beat);
 

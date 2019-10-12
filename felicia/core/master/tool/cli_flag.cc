@@ -10,13 +10,14 @@ namespace felicia {
 
 static constexpr const char* kClient = "client";
 static constexpr const char* kNode = "node";
+static constexpr const char* kService = "service";
 static constexpr const char* kTopic = "topic";
 
 CliFlag::CliFlag() : current_command_(COMMAND_SELF) {
   {
     StringChoicesFlag::Builder builder(MakeValueStore<std::string>(
         &command_, base::EmptyString(),
-        Choices<std::string>{kClient, kNode, kTopic}));
+        Choices<std::string>{kClient, kNode, kService, kTopic}));
     auto flag = builder.SetName("COMMAND").Build();
     command_flag_ = std::make_unique<StringChoicesFlag>(flag);
   }
@@ -32,6 +33,8 @@ bool CliFlag::Parse(FlagParser& parser) {
           current_command_ = COMMAND_CLIENT;
         } else if (command_ == kNode) {
           current_command_ = COMMAND_NODE;
+        } else if (command_ == kService) {
+          current_command_ = COMMAND_SERVICE;
         } else if (command_ == kTopic) {
           current_command_ = COMMAND_TOPIC;
         }
@@ -44,6 +47,8 @@ bool CliFlag::Parse(FlagParser& parser) {
       return client_delegate_.Parse(parser);
     case COMMAND_NODE:
       return node_delegate_.Parse(parser);
+    case COMMAND_SERVICE:
+      return service_delegate_.Parse(parser);
     case COMMAND_TOPIC:
       return topic_delegate_.Parse(parser);
   }
@@ -57,6 +62,8 @@ bool CliFlag::Validate() const {
       return client_delegate_.Validate();
     case COMMAND_NODE:
       return node_delegate_.Validate();
+    case COMMAND_SERVICE:
+      return service_delegate_.Validate();
     case COMMAND_TOPIC:
       return topic_delegate_.Validate();
   }
@@ -70,6 +77,8 @@ std::vector<std::string> CliFlag::CollectUsages() const {
       return client_delegate_.CollectUsages();
     case COMMAND_NODE:
       return node_delegate_.CollectUsages();
+    case COMMAND_SERVICE:
+      return service_delegate_.CollectUsages();
     case COMMAND_TOPIC:
       return topic_delegate_.CollectUsages();
   }
@@ -83,6 +92,8 @@ std::string CliFlag::Description() const {
       return client_delegate_.Description();
     case COMMAND_NODE:
       return node_delegate_.Description();
+    case COMMAND_SERVICE:
+      return service_delegate_.Description();
     case COMMAND_TOPIC:
       return topic_delegate_.Description();
   }
@@ -96,6 +107,7 @@ std::vector<NamedHelpType> CliFlag::CollectNamedHelps() const {
                          std::vector<std::string>{
                              MakeNamedHelpText(kClient, "Manage clients"),
                              MakeNamedHelpText(kNode, "Manage nodes"),
+                             MakeNamedHelpText(kService, "Manage services"),
                              MakeNamedHelpText(kTopic, "Manage topics"),
                          }),
       };
@@ -104,6 +116,8 @@ std::vector<NamedHelpType> CliFlag::CollectNamedHelps() const {
       return client_delegate_.CollectNamedHelps();
     case COMMAND_NODE:
       return node_delegate_.CollectNamedHelps();
+    case COMMAND_SERVICE:
+      return service_delegate_.CollectNamedHelps();
     case COMMAND_TOPIC:
       return topic_delegate_.CollectNamedHelps();
   }

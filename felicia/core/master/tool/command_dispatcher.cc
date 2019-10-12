@@ -18,6 +18,7 @@ namespace {
 constexpr size_t kIdLength = 13;
 constexpr size_t kNameLength = 20;
 constexpr size_t kTopicNameLength = 20;
+constexpr size_t kServiceNameLength = 20;
 constexpr size_t kMessageTypeLength = 30;
 constexpr size_t kChannelProtocolLength = 20;
 constexpr size_t kChannelSourceLength = 24;
@@ -45,6 +46,9 @@ void CommandDispatcher::Dispatch(const CliFlag& delegate) const {
       break;
     case CliFlag::Command::COMMAND_NODE:
       Dispatch(delegate.node_delegate());
+      break;
+    case CliFlag::Command::COMMAND_SERVICE:
+      Dispatch(delegate.service_delegate());
       break;
     case CliFlag::Command::COMMAND_TOPIC:
       Dispatch(delegate.topic_delegate());
@@ -84,7 +88,7 @@ void CommandDispatcher::Dispatch(const ClientListFlag& delegate) const {
                      base::Owned(response)));
 }
 
-void CommandDispatcher::OnListClientsAsync(ListClientsRequest* request,
+void CommandDispatcher::OnListClientsAsync(const ListClientsRequest* request,
                                            ListClientsResponse* response,
                                            const Status& s) const {
   ScopedMasterProxyStopper stopper;
@@ -109,7 +113,7 @@ void CommandDispatcher::OnListClientsAsync(ListClientsRequest* request,
     writer.SetElement(row, 1,
                       EndPointToString(hbs_channel_source.channel_defs(0)));
     const ChannelSource& tiw_channel_source =
-        client_info.topic_info_watcher_source();
+        client_info.master_notification_watcher_source();
     writer.SetElement(row, 2,
                       EndPointToString(tiw_channel_source.channel_defs(0)));
     row++;
@@ -155,7 +159,7 @@ void CommandDispatcher::Dispatch(const NodeListFlag& delegate) const {
                      base::Owned(response)));
 }
 
-void CommandDispatcher::OnListNodesAsync(ListNodesRequest* request,
+void CommandDispatcher::OnListNodesAsync(const ListNodesRequest* request,
                                          ListNodesResponse* response,
                                          const Status& s) const {
   ScopedMasterProxyStopper stopper;
@@ -167,9 +171,10 @@ void CommandDispatcher::OnListNodesAsync(ListNodesRequest* request,
 
   TableWriterBuilder builder;
   if (response->has_pub_sub_topics()) {
-    auto writer = builder.AddColumn(TableWriter::Column{"TOPIC", 20})
-                      .AddColumn(TableWriter::Column{"TYPE", 10})
-                      .Build();
+    auto writer =
+        builder.AddColumn(TableWriter::Column{"TOPIC", kTopicNameLength})
+            .AddColumn(TableWriter::Column{"TYPE", 15})
+            .Build();
 
     auto& pub_sub_topics = response->pub_sub_topics();
     size_t row = 0;
@@ -200,6 +205,71 @@ void CommandDispatcher::OnListNodesAsync(ListNodesRequest* request,
 
     std::cout << writer.ToString() << std::endl;
   }
+}
+
+void CommandDispatcher::Dispatch(const ServiceFlag& delegate) const {
+  auto command = delegate.command();
+  switch (command) {
+    case ServiceFlag::Command::COMMAND_SELF:
+      NOTREACHED();
+      break;
+    case ServiceFlag::Command::COMMAND_LIST:
+      Dispatch(delegate.list_delegate());
+      break;
+  }
+}
+
+void CommandDispatcher::Dispatch(const ServiceListFlag& delegate) const {
+  ServiceFilter service_filter;
+  if (delegate.all_flag()->is_set()) {
+    service_filter.set_all(delegate.all_flag()->value());
+  } else {
+    DCHECK(delegate.service_flag()->is_set());
+    service_filter.set_service(delegate.service_flag()->value());
+  }
+  ListServicesRequest* request = new ListServicesRequest();
+  *request->mutable_service_filter() = service_filter;
+  ListServicesResponse* response = new ListServicesResponse();
+
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  master_proxy.ListServicesAsync(
+      request, response,
+      base::BindOnce(&CommandDispatcher::OnListServicesAsync,
+                     base::Unretained(this), base::Owned(request),
+                     base::Owned(response)));
+}
+
+void CommandDispatcher::OnListServicesAsync(const ListServicesRequest* request,
+                                            ListServicesResponse* response,
+                                            const Status& s) const {
+  ScopedMasterProxyStopper stopper;
+
+  if (!s.ok()) {
+    std::cerr << s << std::endl;
+    return;
+  }
+
+  auto service_infos = response->service_infos();
+  if (service_infos.size() == 0) return;
+
+  TableWriterBuilder builder;
+  auto writer =
+      builder.AddColumn(TableWriter::Column{"NAME", kServiceNameLength})
+          .AddColumn(TableWriter::Column{"TYPE", kMessageTypeLength})
+          .AddColumn(TableWriter::Column{"END POINT", kChannelSourceLength})
+          .Build();
+  size_t row = 0;
+  for (auto& service_info : service_infos) {
+    const ChannelSource& channel_source = service_info.service_source();
+    for (auto& channel_def : channel_source.channel_defs()) {
+      writer.SetElement(row, 0, service_info.service());
+      writer.SetElement(row, 1, service_info.type_name());
+      writer.SetElement(row, 2, EndPointToString(channel_def));
+      row++;
+    }
+  }
+
+  std::cout << writer.ToString() << std::endl;
 }
 
 void CommandDispatcher::Dispatch(const TopicFlag& delegate) const {
@@ -248,7 +318,7 @@ void CommandDispatcher::Dispatch(const TopicSubscribeFlag& delegate) const {
   topic_subscribe_command_dispatcher_.Dispatch(delegate);
 }
 
-void CommandDispatcher::OnListTopicsAsync(ListTopicsRequest* request,
+void CommandDispatcher::OnListTopicsAsync(const ListTopicsRequest* request,
                                           ListTopicsResponse* response,
                                           const Status& s) const {
   ScopedMasterProxyStopper stopper;

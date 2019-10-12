@@ -24,16 +24,6 @@ EXPORT bool EndsWith(base::StringPiece s, base::StringPiece expected);
 // If |s| contains |expected|, return true. Otherwise, return false.
 EXPORT bool Contains(base::StringPiece s, base::StringPiece expected);
 
-class EXPORT StringComparator {
- public:
-  explicit StringComparator(base::StringPiece text);
-
-  bool operator()(const base::StringPiece text);
-
- private:
-  base::StringPiece text_;
-};
-
 EXPORT std::string BoolToString(bool b);
 
 }  // namespace felicia

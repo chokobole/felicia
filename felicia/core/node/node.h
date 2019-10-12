@@ -37,12 +37,27 @@ class Node : public base::SupportsWeakPtr<Node> {
   std::vector<TopicInfo> AllPublishingTopicInfos() const;
   std::vector<std::string> AllSubscribingTopics() const;
 
+  void RegisterRequestingService(const std::string& service);
+  void RegisterServingService(const ServiceInfo& service_info);
+
+  void UnregisterRequestingService(const std::string& service);
+  void UnregisterServingService(const std::string& service);
+
+  bool IsRequestingService(const std::string& service) const;
+  bool IsServingService(const std::string& service) const;
+
+  const ServiceInfo& GetServiceInfo(const std::string& service) const;
+  std::vector<std::string> AllRequestingServices() const;
+  std::vector<ServiceInfo> AllServingServiceInfos() const;
+
  private:
   explicit Node(const NodeInfo& node_info);
 
   NodeInfo node_info_;
   base::flat_map<std::string, TopicInfo> topic_info_map_;
+  base::flat_map<std::string, ServiceInfo> service_info_map_;
   std::vector<std::string> subscribing_topics_;
+  std::vector<std::string> requesting_services_;
 
   DISALLOW_COPY_AND_ASSIGN(Node);
 };

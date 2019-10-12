@@ -166,9 +166,14 @@ CLIENT_METHOD(PublishTopic)
 CLIENT_METHOD(UnpublishTopic)
 CLIENT_METHOD(SubscribeTopic)
 // UnsubscribeTopic needs additional remove callback from
-// |topic_info_watcher_|
+// |master_notification_watcher_|
 // CLIENT_METHOD(UnsubscribeTopic)
 CLIENT_METHOD(ListTopics)
+CLIENT_METHOD(RegisterServiceClient)
+CLIENT_METHOD(UnregisterServiceClient)
+CLIENT_METHOD(RegisterServiceServer)
+CLIENT_METHOD(UnregisterServiceServer)
+CLIENT_METHOD(ListServices)
 
 #undef CLIENT_METHOD
 
@@ -185,9 +190,9 @@ void MasterProxy::Setup(base::WaitableEvent* event) {
     return;
   }
 
-  topic_info_watcher_.Start();
-  *client_info_.mutable_topic_info_watcher_source() =
-      topic_info_watcher_.channel_source();
+  master_notification_watcher_.Start();
+  *client_info_.mutable_master_notification_watcher_source() =
+      master_notification_watcher_.channel_source();
   heart_beat_signaller_.Start(
       client_info_, base::BindOnce(&MasterProxy::OnHeartBeatSignallerStart,
                                    base::Unretained(this), event));
@@ -232,7 +237,7 @@ void MasterProxy::RegisterClient() {
 }
 
 void MasterProxy::OnRegisterClient(base::WaitableEvent* event,
-                                   RegisterClientRequest* request,
+                                   const RegisterClientRequest* request,
                                    RegisterClientResponse* response,
                                    const Status& s) {
   if (s.ok()) {
@@ -249,7 +254,7 @@ void MasterProxy::OnRegisterClient(base::WaitableEvent* event,
 }
 
 void MasterProxy::OnRegisterNodeAsync(std::unique_ptr<NodeLifecycle> node,
-                                      RegisterNodeRequest* request,
+                                      const RegisterNodeRequest* request,
                                       RegisterNodeResponse* response,
                                       const Status& s) {
   if (!s.ok()) {
@@ -268,8 +273,9 @@ void MasterProxy::OnRegisterNodeAsync(std::unique_ptr<NodeLifecycle> node,
 void MasterProxy::SubscribeTopicAsync(
     const SubscribeTopicRequest* request, SubscribeTopicResponse* response,
     StatusOnceCallback callback,
-    TopicInfoWatcher::NewTopicInfoCallback callback2) {
-  topic_info_watcher_.RegisterCallback(request->topic(), callback2);
+    MasterNotificationWatcher::NewTopicInfoCallback callback2) {
+  master_notification_watcher_.RegisterTopicInfoCallback(request->topic(),
+                                                         callback2);
   master_client_interface_->SubscribeTopicAsync(request, response,
                                                 std::move(callback));
 }
@@ -277,7 +283,7 @@ void MasterProxy::SubscribeTopicAsync(
 void MasterProxy::UnsubscribeTopicAsync(const UnsubscribeTopicRequest* request,
                                         UnsubscribeTopicResponse* response,
                                         StatusOnceCallback callback) {
-  topic_info_watcher_.UnregisterCallback(request->topic());
+  master_notification_watcher_.UnregisterTopicInfoCallback(request->topic());
   master_client_interface_->UnsubscribeTopicAsync(request, response,
                                                   std::move(callback));
 }

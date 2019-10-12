@@ -35,8 +35,13 @@ class Client {
       const NodeFilter& node_filter) const;
   // Find the topic infos which meet the given condition |topic_filter|.
   std::vector<TopicInfo> FindTopicInfos(const TopicFilter& topic_filter) const;
+  // Find the service infos which meet the given condition |service_filter|.
+  std::vector<ServiceInfo> FindServiceInfos(
+      const ServiceFilter& service_filter) const;
   // Find all subscribing topics
   std::vector<std::string> FindAllSubscribingTopics() const;
+  // Find all requesting services
+  std::vector<std::string> FindAllRequestingServices() const;
 
  private:
   explicit Client(const ClientInfo& client_info);

@@ -24,15 +24,23 @@ class CommandDispatcher {
   void Dispatch(const ClientFlag& delegate) const;
   void Dispatch(const ClientListFlag& delegate) const;
 
-  void OnListClientsAsync(ListClientsRequest* request,
+  void OnListClientsAsync(const ListClientsRequest* request,
                           ListClientsResponse* response, const Status& s) const;
 
   // Node Commands
   void Dispatch(const NodeFlag& delegate) const;
   void Dispatch(const NodeListFlag& delegate) const;
 
-  void OnListNodesAsync(ListNodesRequest* request, ListNodesResponse* response,
-                        const Status& s) const;
+  void OnListNodesAsync(const ListNodesRequest* request,
+                        ListNodesResponse* response, const Status& s) const;
+
+  // Service Commands
+  void Dispatch(const ServiceFlag& delegate) const;
+  void Dispatch(const ServiceListFlag& delegate) const;
+
+  void OnListServicesAsync(const ListServicesRequest* request,
+                           ListServicesResponse* response,
+                           const Status& s) const;
 
   // Topic Commands
   void Dispatch(const TopicFlag& delegate) const;
@@ -40,7 +48,7 @@ class CommandDispatcher {
   void Dispatch(const TopicPublishFlag& delegate) const;
   void Dispatch(const TopicSubscribeFlag& delegate) const;
 
-  void OnListTopicsAsync(ListTopicsRequest* request,
+  void OnListTopicsAsync(const ListTopicsRequest* request,
                          ListTopicsResponse* response, const Status& s) const;
 
   TopicPublishCommandDispatcher topic_publish_command_dispatcher_;

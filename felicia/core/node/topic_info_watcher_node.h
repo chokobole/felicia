@@ -1,7 +1,7 @@
 #ifndef FELICIA_CORE_NODE_TOPIC_INFO_WATCHER_NODE_H_
 #define FELICIA_CORE_NODE_TOPIC_INFO_WATCHER_NODE_H_
 
-#include "felicia/core/master/topic_info_watcher.h"
+#include "felicia/core/master/master_notification_watcher.h"
 #include "felicia/core/node/node_lifecycle.h"
 
 namespace felicia {

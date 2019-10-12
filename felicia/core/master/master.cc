@@ -53,9 +53,10 @@ void Master::RegisterClient(const RegisterClientRequest* arg,
     return;
   }
 
-  if (!IsValidChannelSource(client_info.topic_info_watcher_source())) {
+  if (!IsValidChannelSource(client_info.master_notification_watcher_source())) {
     std::move(callback).Run(errors::ChannelSourceNotValid(
-        "topic_info_watcher", client_info.topic_info_watcher_source()));
+        "master_notification_watcher",
+        client_info.master_notification_watcher_source()));
     return;
   }
 
@@ -213,6 +214,70 @@ void Master::ListTopics(const ListTopicsRequest* arg,
   std::move(callback).Run(Status::OK());
 }
 
+void Master::RegisterServiceClient(const RegisterServiceClientRequest* arg,
+                                   RegisterServiceClientResponse* result,
+                                   StatusOnceCallback callback) {
+  const NodeInfo& node_info = arg->node_info();
+  CHECK_NODE_EXISTS(node_info);
+
+  const std::string& service = arg->service();
+  thread_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Master::DoRegisterServiceClient, base::Unretained(this),
+                     node_info, service, std::move(callback)));
+}
+
+void Master::UnregisterServiceClient(const UnregisterServiceClientRequest* arg,
+                                     UnregisterServiceClientResponse* result,
+                                     StatusOnceCallback callback) {
+  const NodeInfo& node_info = arg->node_info();
+  CHECK_NODE_EXISTS(node_info);
+
+  const std::string& service = arg->service();
+  thread_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Master::DoUnregisterServiceClient, base::Unretained(this),
+                     node_info, service, std::move(callback)));
+}
+
+void Master::RegisterServiceServer(const RegisterServiceServerRequest* arg,
+                                   RegisterServiceServerResponse* result,
+                                   StatusOnceCallback callback) {
+  const NodeInfo& node_info = arg->node_info();
+  CHECK_NODE_EXISTS(node_info);
+
+  const ServiceInfo& service_info = arg->service_info();
+  thread_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Master::DoRegisterServiceServer, base::Unretained(this),
+                     node_info, service_info, std::move(callback)));
+}
+
+void Master::UnregisterServiceServer(const UnregisterServiceServerRequest* arg,
+                                     UnregisterServiceServerResponse* result,
+                                     StatusOnceCallback callback) {
+  const NodeInfo& node_info = arg->node_info();
+  CHECK_NODE_EXISTS(node_info);
+
+  const std::string& service = arg->service();
+  thread_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Master::DoUnregisterServiceServer, base::Unretained(this),
+                     node_info, service, std::move(callback)));
+}
+
+void Master::ListServices(const ListServicesRequest* arg,
+                          ListServicesResponse* result,
+                          StatusOnceCallback callback) {
+  const ServiceFilter& service_filter = arg->service_filter();
+  std::vector<ServiceInfo> service_infos = FindServiceInfos(service_filter);
+  for (auto& service_info : service_infos) {
+    *result->add_service_infos() = service_info;
+  }
+  DLOG(INFO) << "[ListServices]";
+  std::move(callback).Run(Status::OK());
+}
+
 void Master::Gc() { LOG(ERROR) << "Not implemented"; }
 
 void Master::DoRegisterClient(std::unique_ptr<Client> client,
@@ -342,7 +407,7 @@ void Master::DoPublishTopic(const NodeInfo& node_info,
   } else if (reason == Reason::TopicAlreadyPublishing) {
     std::move(callback).Run(errors::TopicAlreadyPublishing(topic_info));
   } else if (reason == Reason::UnknownFailed) {
-    std::move(callback).Run(errors::FailedToPublish(topic_info));
+    std::move(callback).Run(errors::FailedToPublishTopic(topic_info));
   }
 }
 
@@ -378,7 +443,7 @@ void Master::DoUnpublishTopic(const NodeInfo& node_info,
   } else if (reason == Reason::TopicNotPublishingOnNode) {
     std::move(callback).Run(errors::TopicNotPublishingOnNode(node_info, topic));
   } else if (reason == Reason::UnknownFailed) {
-    std::move(callback).Run(errors::FailedToUnpublish(topic));
+    std::move(callback).Run(errors::FailedToUnpublishTopic(topic));
   }
 }
 
@@ -424,7 +489,7 @@ void Master::DoSubscribeTopic(const NodeInfo& node_info,
     std::move(callback).Run(
         errors::TopicAlreadySubscribingOnNode(node_info, topic));
   } else if (reason == Reason::UnknownFailed) {
-    std::move(callback).Run(errors::FailedToSubscribe(topic));
+    std::move(callback).Run(errors::FailedToSubscribeTopic(topic));
   }
 }
 
@@ -457,7 +522,150 @@ void Master::DoUnsubscribeTopic(const NodeInfo& node_info,
     std::move(callback).Run(
         errors::TopicNotSubscribingOnNode(node_info, topic));
   } else if (reason == Reason::UnknownFailed) {
-    std::move(callback).Run(errors::FailedToUnsubscribe(topic));
+    std::move(callback).Run(errors::FailedToUnsubscribeTopic(topic));
+  }
+}
+
+void Master::DoRegisterServiceClient(const NodeInfo& node_info,
+                                     const std::string& service,
+                                     StatusOnceCallback callback) {
+  DCHECK(thread_->task_runner()->BelongsToCurrentThread());
+  base::WeakPtr<Node> node = FindNode(node_info);
+  Reason reason;
+  {
+    base::AutoLock l(lock_);
+    if (node) {
+      if (node->IsRequestingService(service)) {
+        reason = Reason::ServiceAlreadyRequestingOnNode;
+      } else {
+        node->RegisterRequestingService(service);
+        reason = Reason::None;
+      }
+    } else {
+      reason = Reason::UnknownFailed;
+    }
+  }
+
+  if (reason == Reason::None) {
+    DLOG(INFO) << "[RegisterServiceClient]: "
+               << base::StringPrintf("service(%s) from node(%s)",
+                                     service.c_str(), node_info.name().c_str());
+    std::move(callback).Run(Status::OK());
+    NotifyServiceClient(service, node_info);
+  } else if (reason == Reason::ServiceAlreadyRequestingOnNode) {
+    std::move(callback).Run(
+        errors::ServiceAlreadyRequestingOnNode(node_info, service));
+  } else if (reason == Reason::UnknownFailed) {
+    std::move(callback).Run(errors::FailedToRegisterServiceClient(service));
+  }
+}
+
+void Master::DoUnregisterServiceClient(const NodeInfo& node_info,
+                                       const std::string& service,
+                                       StatusOnceCallback callback) {
+  DCHECK(thread_->task_runner()->BelongsToCurrentThread());
+  base::WeakPtr<Node> node = FindNode(node_info);
+  Reason reason;
+  {
+    base::AutoLock l(lock_);
+    if (node) {
+      if (node->IsRequestingService(service)) {
+        node->UnregisterRequestingService(service);
+        reason = Reason::None;
+      } else {
+        reason = Reason::ServiceNotRequestingOnNode;
+      }
+    } else {
+      reason = Reason::UnknownFailed;
+    }
+  }
+
+  if (reason == Reason::None) {
+    DLOG(INFO) << "[UnregisterServiceClient]: "
+               << base::StringPrintf("service(%s) from node(%s)",
+                                     service.c_str(), node_info.name().c_str());
+    std::move(callback).Run(Status::OK());
+  } else if (reason == Reason::ServiceNotRequestingOnNode) {
+    std::move(callback).Run(
+        errors::ServiceNotRequestingOnNode(node_info, service));
+  } else if (reason == Reason::UnknownFailed) {
+    std::move(callback).Run(errors::FailedToUnregisterServiceClient(service));
+  }
+}
+
+void Master::DoRegisterServiceServer(const NodeInfo& node_info,
+                                     const ServiceInfo& service_info,
+                                     StatusOnceCallback callback) {
+  DCHECK(thread_->task_runner()->BelongsToCurrentThread());
+  NodeFilter node_filter;
+  node_filter.set_serving_service(service_info.service());
+  std::vector<base::WeakPtr<Node>> server_nodes = FindNodes(node_filter);
+  Reason reason;
+  if (server_nodes.size() > 0) {
+    reason = Reason::ServiceAlreadyServing;
+  } else {
+    base::WeakPtr<Node> node = FindNode(node_info);
+    base::AutoLock l(lock_);
+    {
+      if (node) {
+        node->RegisterServingService(service_info);
+        reason = Reason::None;
+      } else {
+        reason = Reason::UnknownFailed;
+      }
+    }
+  }
+
+  if (reason == Reason::None) {
+    DLOG(INFO) << "[RegisterServiceServer]: "
+               << base::StringPrintf("service(%s) from node(%s)",
+                                     service_info.service().c_str(),
+                                     node_info.name().c_str());
+    std::move(callback).Run(Status::OK());
+    NotifyAllServiceClients(service_info);
+  } else if (reason == Reason::ServiceAlreadyServing) {
+    std::move(callback).Run(
+        errors::ServiceAlreadyServing(node_info, service_info));
+  } else if (reason == Reason::UnknownFailed) {
+    std::move(callback).Run(
+        errors::FailedToRegisterServiceServer(service_info));
+  }
+}
+
+void Master::DoUnregisterServiceServer(const NodeInfo& node_info,
+                                       const std::string& service,
+                                       StatusOnceCallback callback) {
+  DCHECK(thread_->task_runner()->BelongsToCurrentThread());
+  base::WeakPtr<Node> node = FindNode(node_info);
+  ServiceInfo service_info;
+  Reason reason;
+  {
+    base::AutoLock l(lock_);
+    if (node) {
+      if (!node->IsServingService(service)) {
+        reason = Reason::ServiceNotServingOnNode;
+      } else {
+        service_info = node->GetServiceInfo(service);  // intend to copy
+        node->UnregisterServingService(service);
+        reason = Reason::None;
+      }
+    } else {
+      reason = Reason::UnknownFailed;
+    }
+  }
+
+  if (reason == Reason::None) {
+    DLOG(INFO) << "[UnregisterServiceServer]: "
+               << base::StringPrintf("service(%s) from node(%s)",
+                                     service.c_str(), node_info.name().c_str());
+    std::move(callback).Run(Status::OK());
+    service_info.set_status(ServiceInfo::UNREGISTERED);
+    NotifyAllServiceClients(service_info);
+  } else if (reason == Reason::ServiceNotServingOnNode) {
+    std::move(callback).Run(
+        errors::ServiceNotServingOnNode(node_info, service));
+  } else if (reason == Reason::UnknownFailed) {
+    std::move(callback).Run(errors::FailedToUnregisterServiceServer(service));
   }
 }
 
@@ -494,12 +702,13 @@ std::vector<base::WeakPtr<Node>> Master::FindNodes(
   base::AutoLock l(lock_);
   std::vector<base::WeakPtr<Node>> nodes;
   auto it = client_map_.begin();
-  if (!node_filter.publishing_topic().empty()) {
+  if (!node_filter.publishing_topic().empty() ||
+      !node_filter.serving_service().empty()) {
     while (it != client_map_.end()) {
       std::vector<base::WeakPtr<Node>> tmp_nodes =
           it->second->FindNodes(node_filter);
       nodes.insert(nodes.end(), tmp_nodes.begin(), tmp_nodes.end());
-      // Because there can be only one publishing node.
+      // Because there can be only one publishing node or server node.
       if (nodes.size() > 0) return nodes;
       it++;
     }
@@ -539,6 +748,32 @@ std::vector<TopicInfo> Master::FindTopicInfos(const TopicFilter& topic_filter) {
   return topic_infos;
 }
 
+std::vector<ServiceInfo> Master::FindServiceInfos(
+    const ServiceFilter& service_filter) {
+  base::AutoLock l(lock_);
+  std::vector<ServiceInfo> service_infos;
+  auto it = client_map_.begin();
+  if (!service_filter.service().empty()) {
+    while (it != client_map_.end()) {
+      std::vector<ServiceInfo> tmp_service_infos =
+          it->second->FindServiceInfos(service_filter);
+      service_infos.insert(service_infos.begin(), tmp_service_infos.begin(),
+                           tmp_service_infos.end());
+      if (service_infos.size() > 0) return service_infos;
+      it++;
+    }
+  } else {
+    while (it != client_map_.end()) {
+      std::vector<ServiceInfo> tmp_service_infos =
+          it->second->FindServiceInfos(service_filter);
+      service_infos.insert(service_infos.begin(), tmp_service_infos.begin(),
+                           tmp_service_infos.end());
+      it++;
+    }
+  }
+  return service_infos;
+}
+
 void Master::AddClient(uint32_t id, std::unique_ptr<Client> client) {
   {
     base::AutoLock l(lock_);
@@ -551,6 +786,7 @@ void Master::RemoveClient(const ClientInfo& client_info) {
   uint32_t id = client_info.id();
 
   std::vector<TopicInfo> publishing_topic_infos;
+  std::vector<ServiceInfo> serving_service_infos;
 #if defined(HAS_ROS)
   std::vector<std::string> subscribing_topics;
 #endif
@@ -560,6 +796,9 @@ void Master::RemoveClient(const ClientInfo& client_info) {
     TopicFilter topic_filter;
     topic_filter.set_all(true);
     publishing_topic_infos = it->second->FindTopicInfos(topic_filter);
+    ServiceFilter service_filter;
+    service_filter.set_all(true);
+    serving_service_infos = it->second->FindServiceInfos(service_filter);
 #if defined(HAS_ROS)
     subscribing_topics = it->second->FindAllSubscribingTopics();
 #endif
@@ -571,7 +810,12 @@ void Master::RemoveClient(const ClientInfo& client_info) {
     publishing_topic_info.set_status(TopicInfo::UNREGISTERED);
   }
 
+  for (auto& serving_service_info : serving_service_infos) {
+    serving_service_info.set_status(ServiceInfo::UNREGISTERED);
+  }
+
   NotifyAllSubscribers(publishing_topic_infos);
+  NotifyAllServiceClients(serving_service_infos);
 
 #if defined(HAS_ROS)
   UnregisterROSTopics(publishing_topic_infos, subscribing_topics);
@@ -593,6 +837,7 @@ void Master::AddNode(std::unique_ptr<Node> node) {
 void Master::RemoveNode(const NodeInfo& node_info) {
   uint32_t id = node_info.client_id();
   std::vector<TopicInfo> publishing_topic_infos;
+  std::vector<ServiceInfo> serving_service_infos;
 #if defined(HAS_ROS)
   std::vector<std::string> subscribing_topics;
 #endif  // defined(HAS_ROS)
@@ -603,6 +848,7 @@ void Master::RemoveNode(const NodeInfo& node_info) {
       base::WeakPtr<Node> node = it->second->FindNode(node_info);
       if (node) {
         publishing_topic_infos = node->AllPublishingTopicInfos();
+        serving_service_infos = node->AllServingServiceInfos();
 #if defined(HAS_ROS)
         subscribing_topics = node->AllSubscribingTopics();
 #endif  // defined(HAS_ROS)
@@ -616,7 +862,12 @@ void Master::RemoveNode(const NodeInfo& node_info) {
     publishing_topic_info.set_status(TopicInfo::UNREGISTERED);
   }
 
+  for (auto& serving_service_info : serving_service_infos) {
+    serving_service_info.set_status(ServiceInfo::UNREGISTERED);
+  }
+
   NotifyAllSubscribers(publishing_topic_infos);
+  NotifyAllServiceClients(serving_service_infos);
 
 #if defined(HAS_ROS)
   UnregisterROSTopics(publishing_topic_infos, subscribing_topics);
@@ -635,19 +886,21 @@ bool Master::CheckIfNodeExists(const NodeInfo& node_info) {
   return it->second->HasNode(node_info);
 }
 
-void Master::DoNotifySubscriber(const NodeInfo& subscribing_node_info,
-                                const TopicInfo& topic_info) {
-  auto channel =
-      ChannelFactory::NewChannel<TopicInfo>(ChannelDef::CHANNEL_TYPE_TCP);
+void Master::DoNotifyClient(const NodeInfo& node_info,
+                            const MasterNotification& master_notification) {
+  // TODO(chokobole): Try not make one channel for each |master_notification|.
+  auto channel = ChannelFactory::NewChannel<MasterNotification>(
+      ChannelDef::CHANNEL_TYPE_TCP);
 
-  channel->SetSendBufferSize(kTopicInfoBytes);
+  channel->SetSendBufferSize(kMasterNotificationBytes);
 
   ChannelSource channel_source;
   {
     base::AutoLock l(lock_);
-    auto it = client_map_.find(subscribing_node_info.client_id());
+    auto it = client_map_.find(node_info.client_id());
     if (it == client_map_.end()) return;
-    channel_source = it->second->client_info().topic_info_watcher_source();
+    channel_source =
+        it->second->client_info().master_notification_watcher_source();
   }
 
   DCHECK_EQ(channel_source.channel_defs_size(), 1);
@@ -655,21 +908,30 @@ void Master::DoNotifySubscriber(const NodeInfo& subscribing_node_info,
             ChannelDef::CHANNEL_TYPE_TCP);
 
   channel->Connect(channel_source.channel_defs(0),
-                   base::BindOnce(&Master::OnConnetToTopicInfoWatcher,
+                   base::BindOnce(&Master::OnConnetToMasterNotificationWatcher,
                                   base::Unretained(this),
-                                  base::Passed(&channel), topic_info));
+                                  base::Passed(&channel), master_notification));
 }
 
 void Master::NotifySubscriber(const std::string& topic,
                               const NodeInfo& subscribing_node_info) {
+  if (!thread_->task_runner()->BelongsToCurrentThread()) {
+    thread_->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&Master::NotifySubscriber, base::Unretained(this),
+                              topic, subscribing_node_info));
+    return;
+  }
   NodeFilter node_filter;
   node_filter.set_publishing_topic(topic);
   std::vector<base::WeakPtr<Node>> publishing_nodes = FindNodes(node_filter);
   if (publishing_nodes.size() > 0) {
     base::WeakPtr<Node> publishing_node = publishing_nodes[0];
-    if (publishing_node)
-      DoNotifySubscriber(subscribing_node_info,
-                         publishing_node->GetTopicInfo(topic));
+    if (publishing_node) {
+      MasterNotification master_notification;
+      *master_notification.mutable_topic_info() =
+          publishing_node->GetTopicInfo(topic);
+      DoNotifyClient(subscribing_node_info, master_notification);
+    }
   }
 }
 
@@ -689,15 +951,69 @@ void Master::NotifyAllSubscribers(const TopicInfo& topic_info) {
   std::vector<base::WeakPtr<Node>> watcher_nodes = FindNodes(node_filter);
   subscribing_nodes.insert(subscribing_nodes.end(), watcher_nodes.begin(),
                            watcher_nodes.end());
+
+  MasterNotification master_notification;
+  *master_notification.mutable_topic_info() = topic_info;
   for (auto& subscribing_node : subscribing_nodes) {
     if (subscribing_node)
-      DoNotifySubscriber(subscribing_node->node_info(), topic_info);
+      DoNotifyClient(subscribing_node->node_info(), master_notification);
   }
 }
 
 void Master::NotifyAllSubscribers(const std::vector<TopicInfo>& topic_infos) {
   for (auto& topic_info : topic_infos) {
     NotifyAllSubscribers(topic_info);
+  }
+}
+
+void Master::NotifyServiceClient(const std::string& service,
+                                 const NodeInfo& client_node_info) {
+  if (!thread_->task_runner()->BelongsToCurrentThread()) {
+    thread_->task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&Master::NotifyServiceClient, base::Unretained(this),
+                   service, client_node_info));
+    return;
+  }
+  NodeFilter node_filter;
+  node_filter.set_serving_service(service);
+  std::vector<base::WeakPtr<Node>> server_nodes = FindNodes(node_filter);
+  if (server_nodes.size() > 0) {
+    base::WeakPtr<Node> server_node = server_nodes[0];
+    if (server_node) {
+      MasterNotification master_notification;
+      *master_notification.mutable_service_info() =
+          server_node->GetServiceInfo(service);
+      DoNotifyClient(client_node_info, master_notification);
+    }
+  }
+}
+
+void Master::NotifyAllServiceClients(const ServiceInfo& service_info) {
+  if (!thread_->task_runner()->BelongsToCurrentThread()) {
+    thread_->task_runner()->PostTask(
+        FROM_HERE, base::Bind((void (Master::*)(const ServiceInfo&)) &
+                                  Master::NotifyAllServiceClients,
+                              base::Unretained(this), service_info));
+    return;
+  }
+  NodeFilter node_filter;
+  node_filter.set_requesting_service(service_info.service());
+  std::vector<base::WeakPtr<Node>> client_nodes = FindNodes(node_filter);
+  node_filter.Clear();
+
+  MasterNotification master_notification;
+  *master_notification.mutable_service_info() = service_info;
+  for (auto& client_node : client_nodes) {
+    if (client_node)
+      DoNotifyClient(client_node->node_info(), master_notification);
+  }
+}
+
+void Master::NotifyAllServiceClients(
+    const std::vector<ServiceInfo>& service_infos) {
+  for (auto& service_info : service_infos) {
+    NotifyAllServiceClients(service_info);
   }
 }
 
@@ -712,23 +1028,25 @@ void Master::NotifyWatcher() {
     base::WeakPtr<Node> watcher_node = watcher_nodes[0];
     if (watcher_node) {
       for (TopicInfo& topic_info : topic_infos) {
-        DoNotifySubscriber(watcher_node->node_info(), topic_info);
+        MasterNotification master_notification;
+        *master_notification.mutable_topic_info() = topic_info;
+        DoNotifyClient(watcher_node->node_info(), master_notification);
       }
     }
   }
 }
 
-void Master::OnConnetToTopicInfoWatcher(
-    std::unique_ptr<Channel<TopicInfo>> channel, const TopicInfo& topic_info,
-    const Status& s) {
+void Master::OnConnetToMasterNotificationWatcher(
+    std::unique_ptr<Channel<MasterNotification>> channel,
+    const MasterNotification& master_notification, const Status& s) {
   if (s.ok()) {
     channel->SendMessage(
-        topic_info,
+        master_notification,
         base::BindRepeating([](ChannelDef::Type type, const Status& s) {
           LOG_IF(ERROR, !s.ok()) << "Failed to send message: " << s;
         }));
   } else {
-    LOG(ERROR) << "Failed to connect topic info channel: " << s;
+    LOG(ERROR) << "Failed to connect master notification channel: " << s;
   }
 }
 

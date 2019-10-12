@@ -17,23 +17,12 @@ class MasterClient : public MasterClientInterface {
   Status Start() override;
   Status Stop() override;
 
-#define CLIENT_METHOD(method)                                             \
-  void method##Async(const method##Request* request,                      \
-                     method##Response* response, StatusOnceCallback done) \
-      override
-
-  CLIENT_METHOD(RegisterClient);
-  CLIENT_METHOD(ListClients);
-  CLIENT_METHOD(RegisterNode);
-  CLIENT_METHOD(UnregisterNode);
-  CLIENT_METHOD(ListNodes);
-  CLIENT_METHOD(PublishTopic);
-  CLIENT_METHOD(UnpublishTopic);
-  CLIENT_METHOD(SubscribeTopic);
-  CLIENT_METHOD(UnsubscribeTopic);
-  CLIENT_METHOD(ListTopics);
-
-#undef CLIENT_METHOD
+#define MASTER_METHOD(Method, method, cancelable)                         \
+  void Method##Async(const Method##Request* request,                      \
+                     Method##Response* response, StatusOnceCallback done) \
+      override;
+#include "felicia/core/master/rpc/master_method_list.h"
+#undef MASTER_METHOD
 
  private:
   Napi::ObjectReference master_client_;

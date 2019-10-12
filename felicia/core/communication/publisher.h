@@ -61,12 +61,12 @@ class Publisher {
                         StatusOnceCallback callback = StatusOnceCallback());
 
  protected:
-  void OnPublishTopicAsync(PublishTopicRequest* request,
+  void OnPublishTopicAsync(const PublishTopicRequest* request,
                            PublishTopicResponse* response,
                            const communication::Settings& settings,
                            StatusOnceCallback callback, const Status& s);
 
-  void OnUnpublishTopicAsync(UnpublishTopicRequest* request,
+  void OnUnpublishTopicAsync(const UnpublishTopicRequest* request,
                              UnpublishTopicResponse* response,
                              StatusOnceCallback callback, const Status& s);
 
@@ -270,7 +270,7 @@ StatusOr<ChannelDef> Publisher<MessageTy>::Setup(
 
 template <typename MessageTy>
 void Publisher<MessageTy>::OnPublishTopicAsync(
-    PublishTopicRequest* request, PublishTopicResponse* response,
+    const PublishTopicRequest* request, PublishTopicResponse* response,
     const communication::Settings& settings, StatusOnceCallback callback,
     const Status& s) {
   if (!IsRegistering()) {
@@ -309,7 +309,7 @@ void Publisher<MessageTy>::OnPublishTopicAsync(
 
 template <typename MessageTy>
 void Publisher<MessageTy>::OnUnpublishTopicAsync(
-    UnpublishTopicRequest* request, UnpublishTopicResponse* response,
+    const UnpublishTopicRequest* request, UnpublishTopicResponse* response,
     StatusOnceCallback callback, const Status& s) {
   if (!IsUnregistering()) {
     internal::LogOrCallback(std::move(callback),

@@ -34,4 +34,19 @@ service MasterService {
 
   // List topics whose properties are correspondent to the ListTopicsRequest.
   rpc ListTopics(ListTopicsRequest) returns (ListTopicsResponse) {}
+
+  // Register service client with a given RegisterServiceClientRequest.
+  rpc RegisterServiceClient(RegisterServiceClientRequest) returns (RegisterServiceClientResponse) {}
+
+  // Unregister service client with a given UnregisterServiceClientRequest.
+  rpc UnregisterServiceClient(UnregisterServiceClientRequest) returns (UnregisterServiceClientResponse) {}
+
+  // Register service server with a given RegisterServiceServerRequest.
+  rpc RegisterServiceServer(RegisterServiceServerRequest) returns (RegisterServiceServerResponse) {}
+
+  // Unregister service server with a given UnregisterServiceServerRequest.
+  rpc UnregisterServiceServer(UnregisterServiceServerRequest) returns (UnregisterServiceServerResponse) {}
+
+  // List services whose properties are correspondent to the ListServicesRequest.
+  rpc ListServices(ListServicesRequest) returns (ListServicesResponse) {}
 }

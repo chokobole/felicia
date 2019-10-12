@@ -75,7 +75,7 @@ void Node::RegisterPublishingTopic(const TopicInfo& topic_info) {
 }
 
 void Node::RegisterSubscribingTopic(const std::string& topic) {
-  subscribing_topics_.emplace_back(topic);
+  subscribing_topics_.push_back(topic);
 }
 
 void Node::UnregisterPublishingTopic(const std::string& topic) {
@@ -84,8 +84,8 @@ void Node::UnregisterPublishingTopic(const std::string& topic) {
 }
 
 void Node::UnregisterSubscribingTopic(const std::string& topic) {
-  auto it = std::remove_if(subscribing_topics_.begin(),
-                           subscribing_topics_.end(), StringComparator{topic});
+  auto it = std::remove(subscribing_topics_.begin(), subscribing_topics_.end(),
+                        topic);
   subscribing_topics_.erase(it, subscribing_topics_.end());
 }
 
@@ -95,8 +95,8 @@ bool Node::IsPublishingTopic(const std::string& topic) const {
 }
 
 bool Node::IsSubsribingTopic(const std::string& topic) const {
-  auto it = std::find_if(subscribing_topics_.begin(), subscribing_topics_.end(),
-                         StringComparator{topic});
+  auto it =
+      std::find(subscribing_topics_.begin(), subscribing_topics_.end(), topic);
   return it != subscribing_topics_.end();
 }
 
@@ -123,6 +123,61 @@ std::vector<std::string> Node::AllSubscribingTopics() const {
     it++;
   }
   return topics;
+}
+
+void Node::RegisterRequestingService(const std::string& service) {
+  requesting_services_.push_back(service);
+}
+
+void Node::RegisterServingService(const ServiceInfo& service_info) {
+  service_info_map_[service_info.service()] = service_info;
+}
+
+void Node::UnregisterRequestingService(const std::string& service) {
+  auto it = service_info_map_.find(service);
+  service_info_map_.erase(it);
+}
+
+void Node::UnregisterServingService(const std::string& service) {
+  auto it = std::remove(requesting_services_.begin(),
+                        requesting_services_.end(), service);
+  requesting_services_.erase(it, requesting_services_.end());
+}
+
+bool Node::IsRequestingService(const std::string& service) const {
+  auto it = std::find(requesting_services_.begin(), requesting_services_.end(),
+                      service);
+  return it != requesting_services_.end();
+}
+
+bool Node::IsServingService(const std::string& service) const {
+  auto it = service_info_map_.find(service);
+  return it != service_info_map_.end();
+}
+
+const ServiceInfo& Node::GetServiceInfo(const std::string& service) const {
+  DCHECK(IsServingService(service));
+  return service_info_map_.find(service)->second;
+}
+
+std::vector<std::string> Node::AllRequestingServices() const {
+  std::vector<std::string> services;
+  auto it = requesting_services_.begin();
+  while (it != requesting_services_.end()) {
+    services.push_back(*it);
+    it++;
+  }
+  return services;
+}
+
+std::vector<ServiceInfo> Node::AllServingServiceInfos() const {
+  std::vector<ServiceInfo> service_infos;
+  auto it = service_info_map_.begin();
+  while (it != service_info_map_.end()) {
+    service_infos.push_back(it->second);
+    it++;
+  }
+  return service_infos;
 }
 
 bool NodeNameChecker::operator()(const std::unique_ptr<Node>& node) {

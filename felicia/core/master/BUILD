@@ -41,6 +41,7 @@ fel_cc_library(
     hdrs = ["master_client_interface.h"],
     deps = [
         "//felicia/core/lib",
+        "//felicia/core/master/rpc:master_method_list",
         "//felicia/core/protobuf:protos_all_cc",
     ],
 )
@@ -48,9 +49,9 @@ fel_cc_library(
 fel_cc_library(
     name = "master_proxy",
     srcs = [
+        "master_notification_watcher.cc",
+        "master_notification_watcher.h",
         "master_proxy.cc",
-        "topic_info_watcher.cc",
-        "topic_info_watcher.h",
     ],
     hdrs = [
         "master_proxy.h",
@@ -89,6 +90,7 @@ fel_cc_library(
     ]),
     deps = [
         ":heart_beat",
+        "//felicia/core/master/rpc:master_method_list",
         "//felicia/core/node",
         "//felicia/core/util",
     ] + if_has_ros([

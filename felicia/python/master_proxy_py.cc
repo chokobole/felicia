@@ -48,7 +48,7 @@ void PyMasterProxy::RequestRegisterNode(py::function constructor,
 
 // static
 void PyMasterProxy::OnRegisterNodeAsync(py::object object,
-                                        RegisterNodeRequest* request,
+                                        const RegisterNodeRequest* request,
                                         RegisterNodeResponse* response,
                                         const Status& s) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();

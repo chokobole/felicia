@@ -42,7 +42,7 @@ fel.MasterProxy.start()
 Inside `start()`, Do 4 things.
 * Connect to grpc server.
 * Start `HeartBeatSignaller`, which is responsible to make it alive by signalling heart beat to the server.
-* Start `TopicInfoWatcher`, which is responsible to watch any topic source, if a node wants to subscribe.
+* Start `MasterNotificationWatcher`, which is responsible to watch any topic source, if a node wants to subscribe.
 * Lastly if the 3 aboves are completed, then register itself to server.
 
 If you pass `--name` to the command line, then set the name.

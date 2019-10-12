@@ -5,6 +5,7 @@
 
 #include "felicia/core/master/tool/client_flag.h"
 #include "felicia/core/master/tool/node_flag.h"
+#include "felicia/core/master/tool/service_flag.h"
 #include "felicia/core/master/tool/topic_flag.h"
 #include "felicia/core/util/command_line_interface/flag.h"
 
@@ -16,6 +17,7 @@ class CliFlag : public FlagParser::Delegate {
     COMMAND_SELF,
     COMMAND_CLIENT,
     COMMAND_NODE,
+    COMMAND_SERVICE,
     COMMAND_TOPIC,
   };
 
@@ -24,6 +26,7 @@ class CliFlag : public FlagParser::Delegate {
 
   const ClientFlag& client_delegate() const { return client_delegate_; }
   const NodeFlag& node_delegate() const { return node_delegate_; }
+  const ServiceFlag& service_delegate() const { return service_delegate_; }
   const TopicFlag& topic_delegate() const { return topic_delegate_; }
   Command command() const { return current_command_; }
 
@@ -40,6 +43,7 @@ class CliFlag : public FlagParser::Delegate {
   std::unique_ptr<StringChoicesFlag> command_flag_;
   ClientFlag client_delegate_;
   NodeFlag node_delegate_;
+  ServiceFlag service_delegate_;
   TopicFlag topic_delegate_;
   Command current_command_;
 

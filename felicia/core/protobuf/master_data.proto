@@ -18,7 +18,7 @@ message PubSubTopics {
 message ClientInfo {
   uint32 id = 1;
   ChannelSource heart_beat_signaller_source = 2;
-  ChannelSource topic_info_watcher_source = 3;
+  ChannelSource master_notification_watcher_source = 3;
   uint32 heart_beat_duration = 4;  // in milliseconds
 }
 
@@ -41,6 +41,23 @@ message TopicInfo {
   string ros_node_name = 6;
 }
 
+message ServiceInfo {
+  enum Status {
+    REGISTERED = 0;
+    UNREGISTERED = 1;
+  }
+
+  string service = 1;
+  string type_name = 2;
+  ChannelSource service_source = 3;
+  Status status = 4;
+}
+
+message MasterNotification {
+  TopicInfo topic_info = 1;
+  ServiceInfo service_info = 2;
+}
+
 // Element inside NodeFilter are mutually exclusive.
 // If either of one is set at the same time, only one element is effective.
 message ClientFilter {
@@ -54,8 +71,10 @@ message NodeFilter {
   bool all = 1;
   string publishing_topic = 2;
   string subscribing_topic = 3;
-  string name = 4;
-  bool watcher = 5;
+  string requesting_service = 4;
+  string serving_service = 5;
+  string name = 6;
+  bool watcher = 7;
 }
 
 // Element inside TopicFilter are mutually exclusive.
@@ -63,6 +82,13 @@ message NodeFilter {
 message TopicFilter {
   bool all = 1;
   string topic = 2;
+}
+
+// Element inside ServiceFilter are mutually exclusive.
+// If either of one is set at the same time, only one element is effective.
+message ServiceFilter {
+  bool all = 1;
+  string service = 2;
 }
 
 message HeartBeat {

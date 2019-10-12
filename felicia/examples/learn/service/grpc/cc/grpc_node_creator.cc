@@ -29,6 +29,8 @@ int RealMain(int argc, char* argv[]) {
   }
 
   master_proxy.Run();
+
+  return 0;
 }
 
 }  // namespace felicia

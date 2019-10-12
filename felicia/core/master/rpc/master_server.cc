@@ -22,10 +22,10 @@ void ShutdownMasterServer(int signal) {
 }  // namespace
 
 std::string MasterServer::ConfigureServerAddress() {
-  std::string ip = ResolveMasterServerIp().ToString();
-  uint16_t port = ResolveMasterServerPort();
-  std::cout << "Running on " << ip << ":" << port << "..." << std::endl;
-  return base::StringPrintf("[::]:%d", port);
+  std::string ip = HostIPAddress(HOST_IP_ONLY_ALLOW_IPV4).ToString();
+  port_ = ResolveMasterServerPort();
+  std::cout << "Running on " << ip << ":" << port_ << "..." << std::endl;
+  return base::StringPrintf("[::]:%d", port_);
 }
 
 Status MasterServer::RegisterService(::grpc::ServerBuilder* builder) {

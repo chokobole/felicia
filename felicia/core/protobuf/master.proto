@@ -84,3 +84,43 @@ message ListTopicsRequest {
 message ListTopicsResponse {
   repeated TopicInfo topic_infos = 1;
 }
+
+message RegisterServiceClientRequest {
+  NodeInfo node_info = 1;
+  string service = 2;
+}
+
+message RegisterServiceClientResponse {
+}
+
+message UnregisterServiceClientRequest {
+  NodeInfo node_info = 1;
+  string service = 2;
+}
+
+message UnregisterServiceClientResponse {
+}
+
+message RegisterServiceServerRequest {
+  NodeInfo node_info = 1;
+  ServiceInfo service_info = 2;
+}
+
+message RegisterServiceServerResponse {
+}
+
+message UnregisterServiceServerRequest {
+  NodeInfo node_info = 1;
+  string service = 2;
+}
+
+message UnregisterServiceServerResponse {
+}
+
+message ListServicesRequest {
+  ServiceFilter service_filter = 1;
+}
+
+message ListServicesResponse {
+  repeated ServiceInfo service_infos = 1;
+}
