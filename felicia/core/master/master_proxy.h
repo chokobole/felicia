@@ -57,30 +57,12 @@ class EXPORT MasterProxy final : public MasterClientInterface {
   Status Start() override;
   Status Stop() override;
 
-#define CLIENT_METHOD(method)                                             \
-  void method##Async(const method##Request* request,                      \
-                     method##Response* response, StatusOnceCallback done) \
-      override
-
-  CLIENT_METHOD(RegisterClient);
-  CLIENT_METHOD(ListClients);
-  CLIENT_METHOD(RegisterNode);
-  CLIENT_METHOD(UnregisterNode);
-  CLIENT_METHOD(ListNodes);
-  CLIENT_METHOD(PublishTopic);
-  CLIENT_METHOD(UnpublishTopic);
-  CLIENT_METHOD(SubscribeTopic);
-  // UnsubscribeTopic needs additional remove callback from
-  // |master_notification_watcher_|
-  // CLIENT_METHOD(UnsubscribeTopic)
-  CLIENT_METHOD(ListTopics);
-  CLIENT_METHOD(RegisterServiceClient);
-  CLIENT_METHOD(UnregisterServiceClient);
-  CLIENT_METHOD(RegisterServiceServer);
-  CLIENT_METHOD(UnregisterServiceServer);
-  CLIENT_METHOD(ListServices);
-
-#undef CLIENT_METHOD
+#define MASTER_METHOD(Method, method, cancelable)                         \
+  void Method##Async(const Method##Request* request,                      \
+                     Method##Response* response, StatusOnceCallback done) \
+      override;
+#include "felicia/core/master/rpc/master_method_list.h"
+#undef MASTER_METHOD
 
   void Run();
 
@@ -89,19 +71,15 @@ class EXPORT MasterProxy final : public MasterClientInterface {
                 nullptr>
   void RequestRegisterNode(const NodeInfo& node_info, Args&&... args);
 
-  void SubscribeTopicAsync(
-      const SubscribeTopicRequest* request, SubscribeTopicResponse* response,
-      StatusOnceCallback callback,
-      MasterNotificationWatcher::NewTopicInfoCallback callback2);
-
-  void UnsubscribeTopicAsync(const UnsubscribeTopicRequest* request,
-                             UnsubscribeTopicResponse* response,
-                             StatusOnceCallback callback) override;
-
  private:
   friend class base::NoDestructor<MasterProxy>;
   friend class PyMasterProxy;
   friend class TopicInfoWatcherNode;
+  template <typename MessageTy>
+  friend class Subscriber;
+  template <typename ClientTy>
+  friend class ServiceClient;
+
   MasterProxy();
   ~MasterProxy();
 
@@ -121,6 +99,16 @@ class EXPORT MasterProxy final : public MasterClientInterface {
   void OnRegisterNodeAsync(std::unique_ptr<NodeLifecycle> node,
                            const RegisterNodeRequest* request,
                            RegisterNodeResponse* response, const Status& s);
+
+  void SubscribeTopicAsync(
+      const SubscribeTopicRequest* request, SubscribeTopicResponse* response,
+      StatusOnceCallback callback,
+      MasterNotificationWatcher::NewTopicInfoCallback topic_info_callback);
+
+  void RegisterServiceClientAsync(
+      const RegisterServiceClientRequest* request,
+      RegisterServiceClientResponse* response, StatusOnceCallback callback,
+      MasterNotificationWatcher::NewServiceInfoCallback service_info_callback);
 
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<base::RunLoop> run_loop_;

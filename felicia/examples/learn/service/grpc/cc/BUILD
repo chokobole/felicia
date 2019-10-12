@@ -10,7 +10,11 @@ package(default_visibility = ["//visibility:private"])
 fel_cc_binary(
     name = "grpc_node_creator",
     srcs = [
+        "grpc_client_node.cc",
+        "grpc_client_node.h",
         "grpc_node_creator.cc",
+        "grpc_server_node.cc",
+        "grpc_server_node.h",
         "grpc_service_flag.cc",
         "grpc_service_flag.h",
     ],

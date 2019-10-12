@@ -22,17 +22,26 @@ class Client {
   static std::string service_name() { return GrpcService::service_full_name(); }
 
   explicit Client(std::shared_ptr<::grpc::Channel> channel);
-  ~Client() = default;
+  virtual ~Client() = default;
 
   // Non-blocking
-  Status Run();
+  virtual Status Run() {
+    RunRpcsLoops(1);
+    return Status::OK();
+  }
 
-  Status Shutdown();
+  virtual Status Shutdown() {
+    ShutdownClient();
+    return Status::OK();
+  }
 
   void HandleRpcsLoop();
 
  protected:
   typedef typename GrpcService::Stub Stub;
+
+  void RunRpcsLoops(int num_threads);
+  void ShutdownClient();
 
   std::unique_ptr<Stub> stub_;
   ::grpc::CompletionQueue cq_;
@@ -46,9 +55,21 @@ Client<GrpcService>::Client(std::shared_ptr<::grpc::Channel> channel)
     : stub_(GrpcService::NewStub(channel)) {}
 
 template <typename GrpcService>
-Status Client<GrpcService>::Run() {
-  threads_.push_back(std::make_unique<base::Thread>(
-      base::StringPrintf("%s RPC Loop", service_name().c_str())));
+void Client<GrpcService>::HandleRpcsLoop() {
+  void* tag;
+  bool ok;
+  while (cq_.Next(&tag, &ok)) {
+    GrpcClientCQTag* callback_tag = static_cast<GrpcClientCQTag*>(tag);
+    callback_tag->OnCompleted(ok);
+  }
+}
+
+template <typename GrpcService>
+void Client<GrpcService>::RunRpcsLoops(int num_threads) {
+  for (int i = 0; i < num_threads; ++i) {
+    threads_.push_back(std::make_unique<base::Thread>(
+        base::StringPrintf("%s RPC Loop%d", service_name().c_str(), (i + 1))));
+  }
 
   std::for_each(threads_.begin(), threads_.end(),
                 [this](const std::unique_ptr<base::Thread>& thread) {
@@ -58,24 +79,11 @@ Status Client<GrpcService>::Run() {
                       base::BindOnce(&Client<GrpcService>::HandleRpcsLoop,
                                      base::Unretained(this)));
                 });
-
-  return Status::OK();
 }
 
 template <typename GrpcService>
-Status Client<GrpcService>::Shutdown() {
+void Client<GrpcService>::ShutdownClient() {
   cq_.Shutdown();
-  return Status::OK();
-}
-
-template <typename GrpcService>
-void Client<GrpcService>::HandleRpcsLoop() {
-  void* tag;
-  bool ok;
-  while (cq_.Next(&tag, &ok)) {
-    GrpcClientCQTag* callback_tag = static_cast<GrpcClientCQTag*>(tag);
-    callback_tag->OnCompleted(ok);
-  }
 }
 
 #define FEL_CLIENT_METHOD_DECLARE(method)            \

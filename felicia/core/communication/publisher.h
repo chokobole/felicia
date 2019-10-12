@@ -207,6 +207,15 @@ template <typename MessageTy>
 void Publisher<MessageTy>::RequestUnpublish(const NodeInfo& node_info,
                                             const std::string& topic,
                                             StatusOnceCallback callback) {
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  if (!master_proxy.IsBoundToCurrentThread()) {
+    master_proxy.PostTask(
+        FROM_HERE, base::BindOnce(&Publisher<MessageTy>::RequestUnpublish,
+                                  base::Unretained(this), node_info, topic,
+                                  std::move(callback)));
+    return;
+  }
+
   if (!IsRegistered()) {
     internal::LogOrCallback(std::move(callback),
                             register_state_.InvalidStateError());
@@ -220,7 +229,6 @@ void Publisher<MessageTy>::RequestUnpublish(const NodeInfo& node_info,
   request->set_topic(topic);
   UnpublishTopicResponse* response = new UnpublishTopicResponse();
 
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.UnpublishTopicAsync(
       request, response,
       base::BindOnce(&Publisher<MessageTy>::OnUnpublishTopicAsync,

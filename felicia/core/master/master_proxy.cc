@@ -170,7 +170,9 @@ CLIENT_METHOD(SubscribeTopic)
 // CLIENT_METHOD(UnsubscribeTopic)
 CLIENT_METHOD(ListTopics)
 CLIENT_METHOD(RegisterServiceClient)
-CLIENT_METHOD(UnregisterServiceClient)
+// UnregisterServiceClient needs additional remove callback from
+// |master_notification_watcher_|
+// CLIENT_METHOD(UnregisterServiceClient)
 CLIENT_METHOD(RegisterServiceServer)
 CLIENT_METHOD(UnregisterServiceServer)
 CLIENT_METHOD(ListServices)
@@ -273,11 +275,21 @@ void MasterProxy::OnRegisterNodeAsync(std::unique_ptr<NodeLifecycle> node,
 void MasterProxy::SubscribeTopicAsync(
     const SubscribeTopicRequest* request, SubscribeTopicResponse* response,
     StatusOnceCallback callback,
-    MasterNotificationWatcher::NewTopicInfoCallback callback2) {
+    MasterNotificationWatcher::NewTopicInfoCallback topic_info_callback) {
   master_notification_watcher_.RegisterTopicInfoCallback(request->topic(),
-                                                         callback2);
+                                                         topic_info_callback);
   master_client_interface_->SubscribeTopicAsync(request, response,
                                                 std::move(callback));
+}
+
+void MasterProxy::RegisterServiceClientAsync(
+    const RegisterServiceClientRequest* request,
+    RegisterServiceClientResponse* response, StatusOnceCallback callback,
+    MasterNotificationWatcher::NewServiceInfoCallback service_info_callback) {
+  master_notification_watcher_.RegisterServiceInfoCallback(
+      request->service(), service_info_callback);
+  master_client_interface_->RegisterServiceClientAsync(request, response,
+                                                       std::move(callback));
 }
 
 void MasterProxy::UnsubscribeTopicAsync(const UnsubscribeTopicRequest* request,
@@ -286,6 +298,15 @@ void MasterProxy::UnsubscribeTopicAsync(const UnsubscribeTopicRequest* request,
   master_notification_watcher_.UnregisterTopicInfoCallback(request->topic());
   master_client_interface_->UnsubscribeTopicAsync(request, response,
                                                   std::move(callback));
+}
+
+void MasterProxy::UnregisterServiceClientAsync(
+    const UnregisterServiceClientRequest* request,
+    UnregisterServiceClientResponse* response, StatusOnceCallback callback) {
+  master_notification_watcher_.UnregisterServiceInfoCallback(
+      request->service());
+  master_client_interface_->UnregisterServiceClientAsync(request, response,
+                                                         std::move(callback));
 }
 
 }  // namespace felicia

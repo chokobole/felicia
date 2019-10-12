@@ -1,5 +1,7 @@
 #include "felicia/core/felicia_init.h"
 #include "felicia/core/master/master_proxy.h"
+#include "felicia/examples/learn/service/grpc/cc/grpc_client_node.h"
+#include "felicia/examples/learn/service/grpc/cc/grpc_server_node.h"
 #include "felicia/examples/learn/service/grpc/cc/grpc_service_flag.h"
 
 namespace felicia {
@@ -25,7 +27,9 @@ int RealMain(int argc, char* argv[]) {
   node_info.set_name(delegate.name_flag()->value());
 
   if (delegate.is_server_flag()->value()) {
+    master_proxy.RequestRegisterNode<GrpcServerNode>(node_info, delegate);
   } else {
+    master_proxy.RequestRegisterNode<GrpcClientNode>(node_info, delegate);
   }
 
   master_proxy.Run();

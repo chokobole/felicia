@@ -13,11 +13,10 @@ std::shared_ptr<::grpc::Channel> ConnectToGrpcServer(const std::string& ip,
   if (!channel->WaitForConnected(
           gpr_time_add(gpr_now(GPR_CLOCK_REALTIME),
                        gpr_time_from_seconds(10, GPR_TIMESPAN)))) {
-    LOG(ERROR) << "Channel to server failed to connected";
-    NOTREACHED();
+    LOG(ERROR) << "Failed to connect to grpc server on port " << port;
     return nullptr;
   }
-  LOG(INFO) << "Channel to server is connected on port " << port;
+  LOG(INFO) << "Success to connect to grpc server on port " << port;
 
   return channel;
 }

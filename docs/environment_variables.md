@@ -10,8 +10,8 @@ Duration to check if each node is alive. (in milliseconds)
 
 #### FEL_MASTER_SERVER_IP
 
-IP address for master server to on. (Default: host ip address)
+IP address for the master server to on. (Default: host ip address)
 
 #### FEL_MASTER_SERVER_PORT
 
-Port number for master server to on. (Default: 8881)
+Port number for the master server to on. (Default: 8881)

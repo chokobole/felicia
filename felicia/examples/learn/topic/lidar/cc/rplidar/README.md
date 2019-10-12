@@ -2,7 +2,7 @@
 
 **Tested using A1**
 
-Here you need three terminals, each for running grpc main server, publisher and subscriber.
+Here you need three terminals, each for running the master server, publisher and subscriber.
 
 Before beginning, let's build the binary.
 

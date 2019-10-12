@@ -6,6 +6,7 @@
 #include "grpcpp/grpcpp.h"
 #include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/callback.h"
+#include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/base/threading/thread.h"
 
 #include "felicia/core/lib/error/errors.h"
@@ -20,7 +21,7 @@ template <typename Service>
 class Server {
  public:
   Server() = default;
-  ~Server() = default;
+  virtual ~Server() = default;
 
   ChannelDef channel_def() const {
     ChannelDef channel_def;
@@ -33,9 +34,16 @@ class Server {
 
   virtual Status Start();
 
-  // Blocking
+  // Non-blocking
   virtual Status Run() {
     RunRpcsLoops(1);
+    return Status::OK();
+  }
+
+  Status RunUntilShutdown() {
+    Status s = Run();
+    if (!s.ok()) return s;
+    threads_.clear();
     return Status::OK();
   }
 
@@ -58,7 +66,10 @@ class Server {
 
   std::unique_ptr<Service> service_;
   std::unique_ptr<::grpc::Server> server_;
+  std::vector<std::unique_ptr<base::Thread>> threads_;
   uint16_t port_;
+
+  DISALLOW_COPY_AND_ASSIGN(Server<Service>);
 };
 
 template <typename Service>
@@ -80,18 +91,17 @@ Status Server<Service>::Start() {
 
 template <typename Service>
 void Server<Service>::RunRpcsLoops(int num_threads) {
-  std::vector<std::unique_ptr<base::Thread>> threads;
   for (int i = 0; i < num_threads; ++i) {
-    threads.push_back(std::make_unique<base::Thread>(base::StringPrintf(
+    threads_.push_back(std::make_unique<base::Thread>(base::StringPrintf(
         "%s RPC Loop%d", Service::service_name().c_str(), (i + 1))));
   }
 
-  std::for_each(threads.begin(), threads.end(),
+  std::for_each(threads_.begin(), threads_.end(),
                 [this](const std::unique_ptr<base::Thread>& thread) {
                   thread->Start();
                   thread->task_runner()->PostTask(
                       FROM_HERE,
-                      base::BindOnce(&MasterService::HandleRpcsLoop,
+                      base::BindOnce(&Service::HandleRpcsLoop,
                                      base::Unretained(service_.get())));
                 });
 }

@@ -19,6 +19,8 @@ fel_cc_library(
         "ros_header.h",
         "serialized_message_publisher.h",
         "serialized_message_subscriber.h",
+        "service_client.h",
+        "service_server.h",
         "settings.h",
         "subscriber.h",
         "subscriber_state.h",
@@ -26,5 +28,6 @@ fel_cc_library(
     deps = [
         "//felicia/core/channel",
         "//felicia/core/master:master_proxy",
+        "//felicia/core/rpc",
     ],
 )

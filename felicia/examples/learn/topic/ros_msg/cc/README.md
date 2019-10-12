@@ -2,7 +2,7 @@
 
 In this example, you will learn how to communicate between nodes using `ROS Message`.
 
-Here you need three terminals, each for running grpc main server, publisher and subscriber.
+Here you need three terminals, each for running the master server, publisher and subscriber.
 
 Before beginning, let's build the binary.
 

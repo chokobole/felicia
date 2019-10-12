@@ -1,10 +1,10 @@
-# Hello World
+# Protobuf
 
 A 'Hello World' example of ***Python*** message communication programming.
 
 In this example, you will learn how to make your own custom messages and initiate communication between nodes.
 
-Here you need three terminals, each for running grpc main server, publisher and subscriber.
+Here you need three terminals, each for running the master server, publisher and subscriber.
 
 Before beginning, let's build the binary.
 
@@ -19,7 +19,7 @@ Done. Now let's begin and run the server!
 bazel-bin/felicia/core/master/rpc/master_server_main
 ```
 
-On the second and third shell prompts, execute the ***publisher*** and ***subscriber***. In order to run an example node in publisher mode, you need to pass `-t`, a topic name to publish, with an additional argument `-p` to indicate we want to make it a publisher. You can also pass `--name` argument to the command. Then, server will try to generate a node with the name unless there is an already registered node with the name.
+On the second and third shell prompts, execute the ***publisher*** and ***subscriber***. In order to run an example node in publisher mode, you need to pass `-t`, a topic name to publish, with an additional argument `-p` to indicate we want to make it a publisher. You can also pass `--name` argument to the command. Then, the master server will try to generate a node with the name unless there is an already registered node with the name.
 
 Running a protobuf_node_creator in ***publisher*** mode:
 ```bash
@@ -100,7 +100,7 @@ Inside `felicia_py.MasterProxy.request_register_node`, it tries to request grpc 
 Before requiest, `on_init()` will be called. If the given `node_info` doesn't have a name, then Server register node with a random unique name. If it succeeds to register the node, then `on_did_create(node_info)` is called. While this process, if it happens an error, `on_error(status)` will be called.
 
 
-Then how is possibly publishing topics? If you want to publish topic, you have to use `felicia_py.Publisher` and it is very simple to use. Very first, you have to request server that we hope to publish topic.
+Then how is possibly publishing topics? If you want to publish a topic, you have to use `felicia_py.Publisher` and it is very simple to use. Very first, you have to request to the master server that we hope to publish a topic.
 
 ```python
 def request_publish(self):
@@ -149,7 +149,7 @@ def on_request_unpublish(self, status):
     fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 ```
 
-[protobuf_subscribing_node.py](protobuf_subscribing_node.py) is very similar to above. When just seeing the key different part, you have to request subscribe. Unlike `publisher` you have to pass 2 more callbacks, and settings. Callback is called every `period` milliseconds inside the settings, and the other is called when there's an error occurred.
+[protobuf_subscribing_node.py](protobuf_subscribing_node.py) is very similar to above. But unlike `publisher` you have to pass 2 more callbacks, and settings. Callback is called every `period` milliseconds inside the settings, and the other is called when there's an error occurred.
 
 ```python
 def request_subscribe(self):

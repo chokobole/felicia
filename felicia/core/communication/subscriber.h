@@ -120,6 +120,16 @@ void Subscriber<MessageTy>::RequestSubscribe(
     const communication::Settings& settings,
     OnMessageCallback on_message_callback, StatusCallback on_error_callback,
     StatusOnceCallback callback) {
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  if (!master_proxy.IsBoundToCurrentThread()) {
+    master_proxy.PostTask(
+        FROM_HERE, base::BindOnce(&Subscriber<MessageTy>::RequestSubscribe,
+                                  base::Unretained(this), node_info, topic,
+                                  channel_types, settings, on_message_callback,
+                                  on_error_callback, std::move(callback)));
+    return;
+  }
+
   if (!IsUnregistered()) {
     internal::LogOrCallback(std::move(callback),
                             register_state_.InvalidStateError());
@@ -128,7 +138,6 @@ void Subscriber<MessageTy>::RequestSubscribe(
 
   register_state_.ToRegistering(FROM_HERE);
 
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
   SubscribeTopicRequest* request = new SubscribeTopicRequest();
   *request->mutable_node_info() = node_info;
   request->set_topic(topic);
@@ -149,6 +158,15 @@ template <typename MessageTy>
 void Subscriber<MessageTy>::RequestUnsubscribe(const NodeInfo& node_info,
                                                const std::string& topic,
                                                StatusOnceCallback callback) {
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  if (!master_proxy.IsBoundToCurrentThread()) {
+    master_proxy.PostTask(
+        FROM_HERE, base::BindOnce(&Subscriber<MessageTy>::RequestUnsubscribe,
+                                  base::Unretained(this), node_info, topic,
+                                  std::move(callback)));
+    return;
+  }
+
   if (!IsRegistered()) {
     internal::LogOrCallback(std::move(callback),
                             register_state_.InvalidStateError());
@@ -156,8 +174,6 @@ void Subscriber<MessageTy>::RequestUnsubscribe(const NodeInfo& node_info,
   }
 
   register_state_.ToUnregistering(FROM_HERE);
-
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
 
   UnsubscribeTopicRequest* request = new UnsubscribeTopicRequest();
   *request->mutable_node_info() = node_info;
