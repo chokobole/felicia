@@ -10,7 +10,7 @@ py_binary(
     main = "camera_node_creator.py",
     deps = [
         "//felicia/examples/learn/topic/common/python:camera_flag",
-        "//felicia/examples/learn/topic/common/python:import_order_resolver",
         "//felicia/python:felicia_py",
+        "//felicia/python:import_order_resolver",
     ],
 )

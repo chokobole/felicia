@@ -43,6 +43,13 @@ py_library(
     ],
 )
 
+py_library(
+    name = "import_order_resolver",
+    srcs = ["import_order_resolver.py"],
+    imports = ["."],
+    visibility = ["//visibility:public"],
+)
+
 fel_pybind_py_library(
     name = "felicia_py",
     cc_deps = ["//felicia/python:felicia_py_cc"],

@@ -9,9 +9,9 @@ py_binary(
     ],
     main = "protobuf_node_creator.py",
     deps = [
-        "//felicia/examples/learn/topic/common/python:import_order_resolver",
         "//felicia/examples/learn/topic/common/python:topic_create_flag",
         "//felicia/examples/learn/topic/protobuf:simple_message_proto_py",
         "//felicia/python:felicia_py",
+        "//felicia/python:import_order_resolver",
     ],
 )

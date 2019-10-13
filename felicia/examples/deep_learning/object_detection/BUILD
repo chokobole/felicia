@@ -8,7 +8,7 @@ py_binary(
     ],
     main = "object_detection_from_camera.py",
     deps = [
-        "//felicia/examples/learn/topic/common/python:import_order_resolver",
         "//felicia/python:felicia_py",
+        "//felicia/python:import_order_resolver",
     ],
 )

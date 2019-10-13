@@ -6,13 +6,6 @@ py_library(
 )
 
 py_library(
-    name = "import_order_resolver",
-    srcs = ["import_order_resolver.py"],
-    imports = ["."],
-    visibility = ["//felicia/examples:internal"],
-)
-
-py_library(
     name = "camera_flag",
     srcs = ["camera_flag.py"],
     visibility = ["//felicia/examples:internal"],

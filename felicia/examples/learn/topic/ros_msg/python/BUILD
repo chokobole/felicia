@@ -11,9 +11,9 @@ py_binary(
     ],
     main = "ros_msg_node_creator.py",
     deps = [
-        "//felicia/examples/learn/topic/common/python:import_order_resolver",
         "//felicia/examples/learn/topic/common/python:topic_create_flag",
         "//felicia/python:felicia_py",
+        "//felicia/python:import_order_resolver",
     ] + if_has_ros([
         "//felicia/examples/learn/topic/ros_msg:simple_message_ros_msg_py",
     ]),
