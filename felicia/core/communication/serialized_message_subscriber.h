@@ -8,15 +8,15 @@ namespace felicia {
 
 class SerializedMessageSubscriber : public Subscriber<SerializedMessage> {
  public:
-  SerializedMessageSubscriber();
+  explicit SerializedMessageSubscriber(
+      TopicInfo::ImplType impl_type = TopicInfo::PROTOBUF);
   ~SerializedMessageSubscriber();
 
-  void SetMessageTypeName(const std::string& message_type_name);
   std::string GetMessageTypeName() const;
   void SetMessageImplType(TopicInfo::ImplType impl_type);
   TopicInfo::ImplType GetMessageImplType() const;
 
- private:
+ protected:
   bool MaybeResolveMessgaeType(const TopicInfo& topic_info) override;
 
   std::string message_type_name_;

@@ -1,5 +1,3 @@
-import sys
-
 from felicia.core.protobuf.channel_pb2 import ChannelDef
 from felicia.examples.learn.common.python.node_create_flag import NodeCreateFlag
 import felicia_py.command_line_interface as cli
@@ -26,8 +24,4 @@ class TopicCreateFlag(NodeCreateFlag):
         return self.parse_optional_flags(flag_parser)
 
     def validate(self):
-        is_set = self.topic_flag.is_set()
-        if not is_set:
-            print("{} topic is not set.".format(
-                cli.RED_ERROR), file=sys.stderr)
-        return is_set
+        return self.check_if_flag_was_set(self.topic_flag)

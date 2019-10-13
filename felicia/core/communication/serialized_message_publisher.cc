@@ -4,6 +4,10 @@ namespace felicia {
 
 SerializedMessagePublisher::SerializedMessagePublisher() = default;
 
+SerializedMessagePublisher::SerializedMessagePublisher(
+    const std::string& message_type_name, TopicInfo::ImplType impl_type)
+    : message_type_name_(message_type_name), impl_type_(impl_type) {}
+
 SerializedMessagePublisher::~SerializedMessagePublisher() = default;
 
 void SerializedMessagePublisher::SetMessageTypeName(

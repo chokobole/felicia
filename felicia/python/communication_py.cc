@@ -20,10 +20,10 @@ namespace {
 class PyMessageCallback {
  public:
   PyMessageCallback(py::object message_prototype, TopicInfo::ImplType impl_type,
-                    const py::function& func)
+                    py::function callback)
       : message_prototype_(message_prototype),
         impl_type_(impl_type),
-        func_(func) {}
+        callback_(callback) {}
 
   void Invoke(SerializedMessage&& message) {
     std::string text;
@@ -47,47 +47,159 @@ class PyMessageCallback {
         break;
     }
     object.inc_ref();
-    func_(std::move(object));
+    callback_(std::move(object));
   }
 
  private:
   py::object message_prototype_;
   TopicInfo::ImplType impl_type_;
-  py::function func_;
+  py::function callback_;
 };
-
-}  // namespace
 
 using PySendMessageCallback = PyCallback<void(ChannelDef::Type, const Status&)>;
 
-namespace {
-
-bool SerializeToString(SerializedMessagePublisher& self, py::object message,
-                       std::string* text) {
-  TopicInfo::ImplType impl_type = self.GetMessageImplType();
-  switch (impl_type) {
-    case TopicInfo::PROTOBUF: {
-      *text = pybind11::str(message.attr("SerializeToString")());
-      break;
+class PySerializedMessagePublisher : public SerializedMessagePublisher {
+ public:
+  explicit PySerializedMessagePublisher(
+      py::object message_prototype,
+      TopicInfo::ImplType impl_type = TopicInfo::PROTOBUF) {
+    std::string message_type_name;
+    switch (impl_type) {
+      case TopicInfo::PROTOBUF: {
+        message_type_name =
+            py::str(message_prototype.attr("DESCRIPTOR").attr("full_name"));
+        break;
+      }
+      case TopicInfo::ROS: {
+        message_type_name = py::str(message_prototype.attr("_type"));
+        break;
+      }
+      case TopicInfo_ImplType_TopicInfo_ImplType_INT_MIN_SENTINEL_DO_NOT_USE_:
+      case TopicInfo_ImplType_TopicInfo_ImplType_INT_MAX_SENTINEL_DO_NOT_USE_:
+        break;
     }
-    case TopicInfo::ROS: {
-      py::object buffer = pybind11::module::import("io").attr("BytesIO")();
-      message.attr("serialize")(buffer);
-      *text = pybind11::str(buffer.attr("getvalue")());
-      break;
-    }
-    case TopicInfo_ImplType_TopicInfo_ImplType_INT_MIN_SENTINEL_DO_NOT_USE_:
-    case TopicInfo_ImplType_TopicInfo_ImplType_INT_MAX_SENTINEL_DO_NOT_USE_:
-      break;
+    SetMessageTypeName(message_type_name);
+    SetMessageImplType(impl_type);
   }
 
-  if (PyErr_Occurred()) {
-    LOG(ERROR) << errors::InvalidArgument(
-        MessageIOErrorToString(MessageIOError::ERR_FAILED_TO_SERIALIZE));
-    return false;
+  void RequestPublish(const NodeInfo& node_info, const std::string& topic,
+                      int channel_types,
+                      const communication::Settings& settings,
+                      py::function py_callback = py::none()) {
+    StatusOnceCallback callback;
+    if (!py_callback.is_none()) {
+      callback = base::BindOnce(&PyStatusCallback::Invoke,
+                                base::Owned(new PyStatusCallback(py_callback)));
+    }
+    SerializedMessagePublisher::RequestPublish(node_info, topic, channel_types,
+                                               settings, std::move(callback));
   }
-  return true;
-}
+
+  void RequestUnpublish(const NodeInfo& node_info, const std::string& topic,
+                        py::function py_callback = py::none()) {
+    StatusOnceCallback callback;
+    if (!py_callback.is_none()) {
+      callback = base::BindOnce(&PyStatusCallback::Invoke,
+                                base::Owned(new PyStatusCallback(py_callback)));
+    }
+    SerializedMessagePublisher::RequestUnpublish(node_info, topic,
+                                                 std::move(callback));
+  }
+
+  void PublishFromSerialized(py::object message,
+                             py::function py_callback = py::none()) {
+    std::string text;
+    MessageIOError err = SerializeToString(message, &text);
+    if (err != MessageIOError::OK) return;
+
+    py::gil_scoped_release release;
+    SendMessageCallback callback;
+    if (!py_callback.is_none()) {
+      callback = base::BindRepeating(
+          &PySendMessageCallback::Invoke,
+          base::Owned(new PySendMessageCallback(py_callback)));
+    }
+    SerializedMessagePublisher::PublishFromSerialized(std::move(text));
+  }
+
+  MessageIOError SerializeToString(py::object message, std::string* text) {
+    switch (impl_type_) {
+      case TopicInfo::PROTOBUF: {
+        *text = py::str(message.attr("SerializeToString")());
+        break;
+      }
+      case TopicInfo::ROS: {
+        py::object buffer = py::module::import("io").attr("BytesIO")();
+        message.attr("serialize")(buffer);
+        *text = py::str(buffer.attr("getvalue")());
+        break;
+      }
+      case TopicInfo_ImplType_TopicInfo_ImplType_INT_MIN_SENTINEL_DO_NOT_USE_:
+      case TopicInfo_ImplType_TopicInfo_ImplType_INT_MAX_SENTINEL_DO_NOT_USE_:
+        break;
+    }
+
+    if (PyErr_Occurred()) {
+      return MessageIOError::ERR_FAILED_TO_SERIALIZE;
+    }
+    return MessageIOError::OK;
+  }
+};
+
+class PySerializedMessageSubscriber : public SerializedMessageSubscriber {
+ public:
+  explicit PySerializedMessageSubscriber(
+      py::object message_prototype,
+      TopicInfo::ImplType impl_type = TopicInfo::PROTOBUF)
+      : SerializedMessageSubscriber(impl_type),
+        message_prototype_(message_prototype) {}
+
+  void RequestSubscribe(const NodeInfo& node_info, const std::string& topic,
+                        int channel_types,
+                        const communication::Settings& settings,
+                        py::function py_on_message_callback,
+                        py::function py_on_message_error_callback = py::none(),
+                        py::function py_callback = py::none()) {
+    OnMessageCallback on_message_callback;
+    StatusCallback on_message_error_callback;
+    StatusOnceCallback callback;
+
+    if (!py_on_message_callback.is_none()) {
+      on_message_callback = base::BindRepeating(
+          &PyMessageCallback::Invoke,
+          base::Owned(new PyMessageCallback(message_prototype_, impl_type_,
+                                            py_on_message_callback)));
+    }
+
+    if (!py_on_message_error_callback.is_none()) {
+      on_message_error_callback = base::BindRepeating(
+          &PyStatusCallback::Invoke,
+          base::Owned(new PyStatusCallback(py_on_message_error_callback)));
+    }
+
+    if (!py_callback.is_none()) {
+      callback = base::BindOnce(&PyStatusCallback::Invoke,
+                                base::Owned(new PyStatusCallback(py_callback)));
+    }
+    SerializedMessageSubscriber::RequestSubscribe(
+        node_info, topic, channel_types, settings, on_message_callback,
+        on_message_error_callback, std::move(callback));
+  }
+
+  void RequestUnsubscribe(const NodeInfo& node_info, const std::string& topic,
+                          py::function py_callback = py::none()) {
+    StatusOnceCallback callback;
+    if (!py_callback.is_none()) {
+      callback = base::BindOnce(&PyStatusCallback::Invoke,
+                                base::Owned(new PyStatusCallback(py_callback)));
+    }
+    SerializedMessageSubscriber::RequestUnsubscribe(node_info, topic,
+                                                    std::move(callback));
+  }
+
+ private:
+  py::object message_prototype_;
+};
 
 }  // namespace
 
@@ -104,172 +216,141 @@ void AddCommunication(py::module& m) {
       .def_readwrite("channel_settings",
                      &communication::Settings::channel_settings);
 
-  py::class_<SerializedMessagePublisher>(communication, "Publisher")
-      .def(py::init<>())
-      .def("is_registering", &SerializedMessagePublisher::IsRegistering)
-      .def("is_registered", &SerializedMessagePublisher::IsRegistered)
-      .def("is_unregistering", &SerializedMessagePublisher::IsUnregistering)
-      .def("is_unregistered", &SerializedMessagePublisher::IsUnregistered)
+  py::class_<PySerializedMessagePublisher>(communication, "Publisher")
+      .def(py::init<py::object, TopicInfo::ImplType>(),
+           py::arg("message_prototype"),
+           py::arg("impl_type") = TopicInfo::PROTOBUF)
+      .def("is_registering", &PySerializedMessagePublisher::IsRegistering)
+      .def("is_registered", &PySerializedMessagePublisher::IsRegistered)
+      .def("is_unregistering", &PySerializedMessagePublisher::IsUnregistering)
+      .def("is_unregistered", &PySerializedMessagePublisher::IsUnregistered)
+      .def("set_message_type_name",
+           &PySerializedMessagePublisher::SetMessageTypeName,
+           py::arg("message_type_name"))
+      .def("get_message_type_name",
+           &PySerializedMessagePublisher::GetMessageTypeName)
       .def("set_message_impl_type",
-           &SerializedMessagePublisher::SetMessageImplType)
+           &PySerializedMessagePublisher::SetMessageImplType,
+           py::arg("message_impl_type"))
+      .def("get_message_impl_type",
+           &PySerializedMessagePublisher::GetMessageImplType)
       .def("request_publish",
-           [](SerializedMessagePublisher& self, const NodeInfo& node_info,
+           [](PySerializedMessagePublisher& self, const NodeInfo& node_info,
               const std::string& topic, int channel_types,
-              const std::string message_type,
               const communication::Settings& settings) {
-             self.SetMessageTypeName(message_type);
-
-             self.RequestPublish(node_info, topic, channel_types, settings);
+             self.RequestPublish(node_info, topic, channel_types, settings,
+                                 py::none());
            },
            py::arg("node_info"), py::arg("topic"), py::arg("channel_types"),
-           py::arg("message_type"), py::arg("settings"),
-           py::call_guard<py::gil_scoped_release>())
+           py::arg("settings"), py::call_guard<py::gil_scoped_release>())
       .def("request_publish",
-           [](SerializedMessagePublisher& self, const NodeInfo& node_info,
+           [](PySerializedMessagePublisher& self, const NodeInfo& node_info,
               const std::string& topic, int channel_types,
-              const std::string message_type,
               const communication::Settings& settings, py::function callback) {
-             self.SetMessageTypeName(message_type);
-
-             self.RequestPublish(
-                 node_info, topic, channel_types, settings,
-                 base::BindOnce(&PyStatusCallback::Invoke,
-                                base::Owned(new PyStatusCallback(callback))));
+             self.RequestPublish(node_info, topic, channel_types, settings,
+                                 callback);
            },
            py::arg("node_info"), py::arg("topic"), py::arg("channel_types"),
-           py::arg("message_type"), py::arg("settings"), py::arg("callback"),
+           py::arg("settings"), py::arg("callback").none(true),
            py::call_guard<py::gil_scoped_release>())
       .def("publish",
-           [](SerializedMessagePublisher& self, py::object message) {
-             std::string text;
-             if (!SerializeToString(self, message, &text)) return;
-
-             py::gil_scoped_release release;
-             self.PublishFromSerialized(std::move(text));
+           [](PySerializedMessagePublisher& self, py::object message) {
+             self.PublishFromSerialized(message, py::none());
            },
            py::arg("message"))
       .def("publish",
-           [](SerializedMessagePublisher& self, py::object message,
+           [](PySerializedMessagePublisher& self, py::object message,
               py::function callback) {
-             std::string text;
-             if (!SerializeToString(self, message, &text)) return;
-
-             py::gil_scoped_release release;
-             self.PublishFromSerialized(
-                 std::move(text),
-                 base::BindRepeating(
-                     &PySendMessageCallback::Invoke,
-                     base::Owned(new PySendMessageCallback(callback))));
+             self.PublishFromSerialized(message, callback);
            },
-           py::arg("message"), py::arg("callback"))
+           py::arg("message"), py::arg("callback").none(true))
       .def("request_unpublish",
-           [](SerializedMessagePublisher& self, const NodeInfo& node_info,
+           [](PySerializedMessagePublisher& self, const NodeInfo& node_info,
               const std::string& topic) {
-             self.RequestUnpublish(node_info, topic);
+             self.RequestUnpublish(node_info, topic, py::none());
            },
            py::arg("node_info"), py::arg("topic"),
            py::call_guard<py::gil_scoped_release>())
       .def("request_unpublish",
-           [](SerializedMessagePublisher& self, const NodeInfo& node_info,
+           [](PySerializedMessagePublisher& self, const NodeInfo& node_info,
               const std::string& topic, py::function callback) {
-             self.RequestUnpublish(
-                 node_info, topic,
-                 base::BindOnce(&PyStatusCallback::Invoke,
-                                base::Owned(new PyStatusCallback(callback))));
+             self.RequestUnpublish(node_info, topic, callback);
            },
-           py::arg("node_info"), py::arg("topic"), py::arg("callback"),
+           py::arg("node_info"), py::arg("topic"),
+           py::arg("callback").none(true),
            py::call_guard<py::gil_scoped_release>());
 
-  py::class_<SerializedMessageSubscriber>(communication, "Subscriber")
-      .def(py::init<>())
-      .def("is_registering", &SerializedMessageSubscriber::IsRegistering)
-      .def("is_registered", &SerializedMessageSubscriber::IsRegistered)
-      .def("is_unregistering", &SerializedMessageSubscriber::IsUnregistering)
-      .def("is_unregistered", &SerializedMessageSubscriber::IsUnregistered)
-      .def("is_started", &SerializedMessageSubscriber::IsStarted)
-      .def("is_stopped", &SerializedMessageSubscriber::IsStopped)
+  py::class_<PySerializedMessageSubscriber>(communication, "Subscriber")
+      .def(py::init<py::object, TopicInfo::ImplType>(),
+           py::arg("message_prototype"),
+           py::arg("impl_type") = TopicInfo::PROTOBUF)
+      .def("is_registering", &PySerializedMessageSubscriber::IsRegistering)
+      .def("is_registered", &PySerializedMessageSubscriber::IsRegistered)
+      .def("is_unregistering", &PySerializedMessageSubscriber::IsUnregistering)
+      .def("is_unregistered", &PySerializedMessageSubscriber::IsUnregistered)
+      .def("is_started", &PySerializedMessageSubscriber::IsStarted)
+      .def("is_stopped", &PySerializedMessageSubscriber::IsStopped)
+      .def("get_message_type_name",
+           &PySerializedMessageSubscriber::GetMessageTypeName)
       .def("set_message_impl_type",
-           &SerializedMessageSubscriber::SetMessageImplType)
+           &PySerializedMessageSubscriber::SetMessageImplType,
+           py::arg("message_impl_type"))
+      .def("get_message_impl_type",
+           &PySerializedMessageSubscriber::GetMessageImplType)
       .def("request_subscribe",
-           [](SerializedMessageSubscriber& self, const NodeInfo& node_info,
+           [](PySerializedMessageSubscriber& self, const NodeInfo& node_info,
               const std::string& topic, int channel_types,
-              py::object mesage_prototype,
               const communication::Settings& settings,
               py::function on_message_callback) {
-             self.RequestSubscribe(
-                 node_info, topic, channel_types, settings,
-                 base::BindRepeating(
-                     &PyMessageCallback::Invoke,
-                     base::Owned(new PyMessageCallback(
-                         mesage_prototype, self.GetMessageImplType(),
-                         on_message_callback))));
+             self.RequestSubscribe(node_info, topic, channel_types, settings,
+                                   on_message_callback, py::none(), py::none());
            },
            py::arg("node_info"), py::arg("topic"), py::arg("channel_types"),
-           py::arg("message_prototype"), py::arg("settings"),
-           py::arg("on_message_callback"),
+           py::arg("settings"), py::arg("on_message_callback"),
            py::call_guard<py::gil_scoped_release>())
       .def("request_subscribe",
-           [](SerializedMessageSubscriber& self, const NodeInfo& node_info,
+           [](PySerializedMessageSubscriber& self, const NodeInfo& node_info,
               const std::string& topic, int channel_types,
-              py::object mesage_prototype,
               const communication::Settings& settings,
               py::function on_message_callback,
               py::function on_message_error_callback) {
-             self.RequestSubscribe(
-                 node_info, topic, channel_types, settings,
-                 base::BindRepeating(
-                     &PyMessageCallback::Invoke,
-                     base::Owned(new PyMessageCallback(
-                         mesage_prototype, self.GetMessageImplType(),
-                         on_message_callback))),
-                 base::BindRepeating(&PyStatusCallback::Invoke,
-                                     base::Owned(new PyStatusCallback(
-                                         on_message_error_callback))));
+             self.RequestSubscribe(node_info, topic, channel_types, settings,
+                                   on_message_callback,
+                                   on_message_error_callback, py::none());
            },
            py::arg("node_info"), py::arg("topic"), py::arg("channel_types"),
-           py::arg("message_prototype"), py::arg("settings"),
-           py::arg("on_message_callback"), py::arg("on_message_error_callback"),
+           py::arg("settings"), py::arg("on_message_callback"),
+           py::arg("on_message_error_callback").none(true),
            py::call_guard<py::gil_scoped_release>())
       .def("request_subscribe",
-           [](SerializedMessageSubscriber& self, const NodeInfo& node_info,
+           [](PySerializedMessageSubscriber& self, const NodeInfo& node_info,
               const std::string& topic, int channel_types,
-              py::object mesage_prototype,
               const communication::Settings& settings,
               py::function on_message_callback,
               py::function on_message_error_callback, py::function callback) {
-             self.RequestSubscribe(
-                 node_info, topic, channel_types, settings,
-                 base::BindRepeating(
-                     &PyMessageCallback::Invoke,
-                     base::Owned(new PyMessageCallback(
-                         mesage_prototype, self.GetMessageImplType(),
-                         on_message_callback))),
-                 base::BindRepeating(&PyStatusCallback::Invoke,
-                                     base::Owned(new PyStatusCallback(
-                                         on_message_error_callback))),
-                 base::BindOnce(&PyStatusCallback::Invoke,
-                                base::Owned(new PyStatusCallback(callback))));
+             self.RequestSubscribe(node_info, topic, channel_types, settings,
+                                   on_message_callback,
+                                   on_message_error_callback, callback);
            },
            py::arg("node_info"), py::arg("topic"), py::arg("channel_types"),
-           py::arg("message_prototype"), py::arg("settings"),
-           py::arg("on_message_callback"), py::arg("on_message_error_callback"),
-           py::arg("callback"), py::call_guard<py::gil_scoped_release>())
+           py::arg("settings"), py::arg("on_message_callback"),
+           py::arg("on_message_error_callback").none(true),
+           py::arg("callback").none(true),
+           py::call_guard<py::gil_scoped_release>())
       .def("request_unsubscribe",
-           [](SerializedMessageSubscriber& self, const NodeInfo& node_info,
+           [](PySerializedMessageSubscriber& self, const NodeInfo& node_info,
               const std::string& topic) {
-             self.RequestUnsubscribe(node_info, topic);
+             self.RequestUnsubscribe(node_info, topic, py::none());
            },
            py::arg("node_info"), py::arg("topic"),
            py::call_guard<py::gil_scoped_release>())
       .def("request_unsubscribe",
-           [](SerializedMessageSubscriber& self, const NodeInfo& node_info,
+           [](PySerializedMessageSubscriber& self, const NodeInfo& node_info,
               const std::string& topic, py::function callback) {
-             self.RequestUnsubscribe(
-                 node_info, topic,
-                 base::BindOnce(&PyStatusCallback::Invoke,
-                                base::Owned(new PyStatusCallback(callback))));
+             self.RequestUnsubscribe(node_info, topic, callback);
            },
-           py::arg("node_info"), py::arg("topic"), py::arg("callback"),
+           py::arg("node_info"), py::arg("topic"),
+           py::arg("callback").none(true),
            py::call_guard<py::gil_scoped_release>());
 }
 

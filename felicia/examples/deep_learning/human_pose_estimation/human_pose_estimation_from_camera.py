@@ -212,8 +212,12 @@ class HumanPoseEstimationNode(fel.NodeLifecycle):
         self.topic = topic
         self.camera_descriptor = camera_descriptor
         self.params = params
-        self.publisher = fel.communication.Publisher()
         self.draw_on_image = False
+        if self.draw_on_image:
+            self.publisher = fel.communication.Publisher(CameraFrameMessage)
+        else:
+            self.publisher = fel.communication.Publisher(
+                ImageWithHumansMessage)
 
     def on_init(self):
         self.camera = fel.drivers.CameraFactory.new_camera(
@@ -239,14 +243,9 @@ class HumanPoseEstimationNode(fel.NodeLifecycle):
         settings.queue_size = 1
         settings.is_dynamic_buffer = True
 
-        if self.draw_on_image:
-            type_name = CameraFrameMessage.DESCRIPTOR.full_name
-        else:
-            type_name = ImageWithHumansMessage.DESCRIPTOR.full_name
-
         self.publisher.request_publish(self.node_info, self.topic,
                                        ChannelDef.CHANNEL_TYPE_TCP | ChannelDef.CHANNEL_TYPE_WS,
-                                       type_name, settings, self.on_request_publish)
+                                       settings, self.on_request_publish)
 
     def start_camera(self):
         # You should set the camera format if you have any you want to run with.
@@ -278,7 +277,8 @@ class HumanPoseEstimationNode(fel.NodeLifecycle):
             estimated_camera_frame = fel.drivers.CameraFrame(
                 datum.cvOutputData, camera_frame.camera_format, camera_frame.timestamp)
 
-            self.publisher.publish(estimated_camera_frame.to_camera_frame_message(False))
+            self.publisher.publish(
+                estimated_camera_frame.to_camera_frame_message(False))
         else:
             image_with_humans = ImageWithHumansMessage()
             shape = np.shape(image_np)

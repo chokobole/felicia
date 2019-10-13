@@ -10,6 +10,9 @@ namespace felicia {
 class SerializedMessagePublisher : public Publisher<SerializedMessage> {
  public:
   SerializedMessagePublisher();
+  explicit SerializedMessagePublisher(
+      const std::string& message_type_name,
+      TopicInfo::ImplType impl_type = TopicInfo::PROTOBUF);
   ~SerializedMessagePublisher();
 
   void SetMessageTypeName(const std::string& message_type_name);
@@ -25,7 +28,7 @@ class SerializedMessagePublisher : public Publisher<SerializedMessage> {
       std::string&& serialized,
       SendMessageCallback callback = SendMessageCallback());
 
- private:
+ protected:
   MessageIOError SerializeToString(SerializedMessage* message,
                                    std::string* serialized) override;
 

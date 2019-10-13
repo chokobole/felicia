@@ -78,8 +78,9 @@ class ProtobufPublishingNode(fel.NodeLifecycle):
     def __init__(self, topic_create_flag):
         super().__init__()
         self.topic = topic_create_flag.topic_flag.value
-        self.channel_def_type = ChannelDef.Type.Value(topic_create_flag.channel_type_flag.value)
-        self.publisher = fel.communication.Publisher()
+        self.channel_def_type = ChannelDef.Type.Value(
+            topic_create_flag.channel_type_flag.value)
+        self.publisher = fel.communication.Publisher(SimpleMessage)
         ...
 
     def on_init(self):
@@ -108,7 +109,6 @@ def request_publish(self):
     settings.buffer_size = fel.Bytes.from_bytes(512)
 
     self.publisher.request_publish(self.node_info, self.topic, self.channel_def_type,
-                                   SimpleMessage.DESCRIPTOR.full_name,
                                    settings, self.on_request_publish)
 ```
 
@@ -161,7 +161,7 @@ def request_subscribe(self):
                                       ChannelDef.CHANNEL_TYPE_UDP |
                                       ChannelDef.CHANNEL_TYPE_UDS |
                                       ChannelDef.CHANNEL_TYPE_SHM,
-                                      SimpleMessage, settings,
+                                      settings,
                                       self.on_message, self.on_message_error,
                                       self.on_request_subscribe)
 ```

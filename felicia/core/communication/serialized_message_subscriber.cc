@@ -2,14 +2,11 @@
 
 namespace felicia {
 
-SerializedMessageSubscriber::SerializedMessageSubscriber() = default;
+SerializedMessageSubscriber::SerializedMessageSubscriber(
+    TopicInfo::ImplType impl_type)
+    : impl_type_(impl_type) {}
 
 SerializedMessageSubscriber::~SerializedMessageSubscriber() = default;
-
-void SerializedMessageSubscriber::SetMessageTypeName(
-    const std::string& message_type_name) {
-  message_type_name_ = message_type_name;
-}
 
 std::string SerializedMessageSubscriber::GetMessageTypeName() const {
   return message_type_name_;

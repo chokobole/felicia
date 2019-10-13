@@ -64,9 +64,9 @@ def start_camera(self):
         self.camera_flag.pixel_format_flag.value)
     s = self.camera.start(
         fel.drivers.CameraFormat(self.camera_flag.width_flag.value,
-                                    self.camera_flag.height_flag.value,
-                                    pixel_format,
-                                    self.camera_flag.fps_flag.value),
+                                 self.camera_flag.height_flag.value,
+                                 pixel_format,
+                                 self.camera_flag.fps_flag.value),
         self.on_camera_frame, self.on_camera_error)
 ```
 

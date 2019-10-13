@@ -14,7 +14,7 @@ class CameraPublishingNode(fel.NodeLifecycle):
         self.camera_flag = camera_flag
         self.topic = camera_flag.topic_flag.value
         self.camera_descriptor = camera_descriptor
-        self.publisher = fel.communication.Publisher()
+        self.publisher = fel.communication.Publisher(CameraFrameMessage)
 
     def on_init(self):
         self.camera = fel.drivers.CameraFactory.new_camera(
@@ -60,7 +60,6 @@ class CameraPublishingNode(fel.NodeLifecycle):
                                        ChannelDef.CHANNEL_TYPE_TCP |
                                        ChannelDef.CHANNEL_TYPE_SHM |
                                        ChannelDef.CHANNEL_TYPE_WS,
-                                       CameraFrameMessage.DESCRIPTOR.full_name,
                                        settings, self.on_request_publish)
 
     def request_unpublish(self):

@@ -19,8 +19,12 @@ class ObjectDetectionNode(fel.NodeLifecycle):
         super().__init__()
         self.topic = topic
         self.camera_descriptor = camera_descriptor
-        self.publisher = fel.communication.Publisher()
         self.draw_on_image = False
+        if self.draw_on_image:
+            self.publisher = fel.communication.Publisher(CameraFrameMessage)
+        else:
+            self.publisher = fel.communication.Publisher(
+                ImageWithBoundingBoxesMessage)
 
     def on_init(self):
         self.camera = fel.drivers.CameraFactory.new_camera(
@@ -46,14 +50,9 @@ class ObjectDetectionNode(fel.NodeLifecycle):
         settings.queue_size = 1
         settings.is_dynamic_buffer = True
 
-        if self.draw_on_image:
-            type_name = CameraFrameMessage.DESCRIPTOR.full_name
-        else:
-            type_name = ImageWithBoundingBoxesMessage.DESCRIPTOR.full_name
-
         self.publisher.request_publish(self.node_info, self.topic,
                                        ChannelDef.CHANNEL_TYPE_TCP | ChannelDef.CHANNEL_TYPE_WS,
-                                       type_name, settings, self.on_request_publish)
+                                       settings, self.on_request_publish)
 
     def start_camera(self):
         # You should set the camera format if you have any you want to run with.
@@ -70,12 +69,14 @@ class ObjectDetectionNode(fel.NodeLifecycle):
         image_np = np.array(camera_frame, copy=False)
 
         if self.draw_on_image:
-            detected_image = self.object_detection.run(image_np, self.draw_on_image)
+            detected_image = self.object_detection.run(
+                image_np, self.draw_on_image)
 
             detected_camera_frame = fel.drivers.CameraFrame(
                 detected_image, camera_frame.camera_format, camera_frame.timestamp)
 
-            self.publisher.publish(detected_camera_frame.to_camera_frame_message(False))
+            self.publisher.publish(
+                detected_camera_frame.to_camera_frame_message(False))
         else:
             image_with_bounding_boxes = self.object_detection.run(
                 image_np, self.draw_on_image)

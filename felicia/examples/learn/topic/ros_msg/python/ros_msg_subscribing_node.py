@@ -9,8 +9,8 @@ class RosMsgSubscribingNode(fel.NodeLifecycle):
     def __init__(self, topic_create_flag):
         super().__init__()
         self.topic = topic_create_flag.topic_flag.value
-        self.subscriber = fel.communication.Subscriber()
-        self.subscriber.set_message_impl_type(TopicInfo.ROS)
+        self.subscriber = fel.communication.Subscriber(
+            SimpleMessage, TopicInfo.ROS)
 
     def on_did_create(self, node_info):
         self.node_info = node_info
@@ -28,5 +28,5 @@ class RosMsgSubscribingNode(fel.NodeLifecycle):
                                           ChannelDef.CHANNEL_TYPE_UDP |
                                           ChannelDef.CHANNEL_TYPE_UDS |
                                           ChannelDef.CHANNEL_TYPE_SHM,
-                                          SimpleMessage, settings,
+                                          settings,
                                           self.on_message)

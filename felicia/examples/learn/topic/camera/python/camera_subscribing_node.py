@@ -8,7 +8,7 @@ class CameraSubscribingNode(fel.NodeLifecycle):
         super().__init__()
         self.camera_flag = camera_flag
         self.topic = camera_flag.topic_flag.value
-        self.subscriber = fel.communication.Subscriber()
+        self.subscriber = fel.communication.Subscriber(CameraFrameMessage)
 
     def on_did_create(self, node_info):
         self.node_info = node_info
@@ -26,4 +26,4 @@ class CameraSubscribingNode(fel.NodeLifecycle):
         self.subscriber.request_subscribe(self.node_info, self.topic,
                                           ChannelDef.CHANNEL_TYPE_TCP |
                                           ChannelDef.CHANNEL_TYPE_SHM,
-                                          CameraFrameMessage, settings, self.on_message)
+                                          settings, self.on_message)

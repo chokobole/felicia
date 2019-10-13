@@ -38,16 +38,16 @@ You maybe find the difference around declaration of `publisher` and `subscriber`
 class RosMsgPublishingNode(fel.NodeLifecycle):
     def __init__(self, topic_create_flag):
         ...
-        self.publisher = fel.communication.Publisher()
-        self.publisher.set_message_impl_type(TopicInfo.ROS)
+        self.publisher = fel.communication.Publisher(
+            SimpleMessage, TopicInfo.ROS)
         ...
 
 # ros_msg_subscribing_node.py
 class RosMsgSubscribingNode(fel.NodeLifecycle):
     def __init__(self, topic_create_flag):
         ...
-        self.subscriber = fel.communication.Subscriber()
-        self.subscriber.set_message_impl_type(TopicInfo.ROS)
+        self.subscriber = fel.communication.Subscriber(
+            SimpleMessage, TopicInfo.ROS)
 ```
 
 We just want to explain more about bazel rule `fel_ros_msg_library`. At [BUILD](/felicia/examples/learn/topic/ros_msg/BUILD), you can see like below.
