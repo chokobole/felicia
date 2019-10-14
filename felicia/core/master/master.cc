@@ -437,9 +437,20 @@ void Master::DoUnpublishTopic(const NodeInfo& node_info,
     DLOG(INFO) << "[UnpublishTopic]: "
                << base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                      node_info.name().c_str());
-    std::move(callback).Run(Status::OK());
-    topic_info.set_status(TopicInfo::UNREGISTERED);
-    NotifyAllSubscribers(topic_info);
+#if defined(HAS_ROS)
+    base::StringPiece t = topic_info.topic();
+    if (ConsumePrefix(&t, "ros://")) {
+      ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
+      std::move(callback).Run(
+          ros_master_proxy.UnregisterPublisher(t.as_string()));
+    } else {
+#endif  // defined(HAS_ROS)
+      std::move(callback).Run(Status::OK());
+      topic_info.set_status(TopicInfo::UNREGISTERED);
+      NotifyAllSubscribers(topic_info);
+#if defined(HAS_ROS)
+    }
+#endif  // defined(HAS_ROS)
   } else if (reason == Reason::TopicNotPublishingOnNode) {
     std::move(callback).Run(errors::TopicNotPublishingOnNode(node_info, topic));
   } else if (reason == Reason::UnknownFailed) {
@@ -517,7 +528,18 @@ void Master::DoUnsubscribeTopic(const NodeInfo& node_info,
     DLOG(INFO) << "[UnsubscribeTopic]: "
                << base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                      node_info.name().c_str());
-    std::move(callback).Run(Status::OK());
+#if defined(HAS_ROS)
+    base::StringPiece t = topic;
+    if (ConsumePrefix(&t, "ros://")) {
+      ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
+      std::move(callback).Run(
+          ros_master_proxy.UnregisterSubscriber(t.as_string()));
+    } else {
+#endif  // defined(HAS_ROS)
+      std::move(callback).Run(Status::OK());
+#if defined(HAS_ROS)
+    }
+#endif  // defined(HAS_ROS)
   } else if (reason == Reason::TopicNotSubscribingOnNode) {
     std::move(callback).Run(
         errors::TopicNotSubscribingOnNode(node_info, topic));
