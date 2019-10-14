@@ -52,6 +52,8 @@ class Server {
     return Status::OK();
   }
 
+  virtual std::string service_name() const { return Service::service_name(); }
+
  protected:
   // You need to set |port_| to server port here.
   virtual std::string ConfigureServerAddress() {
@@ -108,8 +110,8 @@ void Server<Service>::RunRpcsLoops(int num_threads) {
 
 template <typename Service>
 void Server<Service>::ShutdownServer() {
-  server_->Shutdown();
-  service_->Shutdown();
+  if (server_) server_->Shutdown();
+  if (service_) service_->Shutdown();
 }
 
 }  // namespace rpc

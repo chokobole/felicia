@@ -10,8 +10,6 @@ namespace felicia {
 
 class SimpleClient : public rpc::Client<grpc::SimpleService> {
  public:
-  explicit SimpleClient(std::shared_ptr<::grpc::Channel> channel);
-
   FEL_CLIENT_METHOD_DECLARE(Add);
 };
 

@@ -13,6 +13,7 @@ fel_cc_library(
         "drivers_py.cc",
         "master_proxy_py.cc",
         "node_py.cc",
+        "rpc_py.cc",
     ],
     hdrs = [
         "channel_py.h",
@@ -21,6 +22,7 @@ fel_cc_library(
         "drivers_py.h",
         "master_proxy_py.h",
         "node_py.h",
+        "rpc_py.h",
     ],
     deps = [
         "//felicia/core:felicia_init",
@@ -40,6 +42,7 @@ py_library(
         "//felicia/core/protobuf:protos_all_proto_py",
         "//felicia/drivers/camera:camera_proto_py",
         "//felicia/python/command_line_interface:flag_parser_delegate",
+        "//felicia/python/rpc",
     ],
 )
 

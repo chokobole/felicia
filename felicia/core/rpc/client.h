@@ -10,6 +10,7 @@
 #include "third_party/chromium/base/threading/thread.h"
 
 #include "felicia/core/lib/error/status.h"
+#include "felicia/core/protobuf/channel.pb.h"
 #include "felicia/core/rpc/grpc_async_client_call.h"
 #include "felicia/core/rpc/grpc_client_cq_tag.h"
 
@@ -21,8 +22,11 @@ class Client {
  public:
   static std::string service_name() { return GrpcService::service_full_name(); }
 
+  Client() = default;
   explicit Client(std::shared_ptr<::grpc::Channel> channel);
   virtual ~Client() = default;
+
+  virtual Status ConnectAndRun(const IPEndPoint& ip_endpoint);
 
   // Non-blocking
   virtual Status Run() {
@@ -44,7 +48,7 @@ class Client {
   void ShutdownClient();
 
   std::unique_ptr<Stub> stub_;
-  ::grpc::CompletionQueue cq_;
+  std::unique_ptr<::grpc::CompletionQueue> cq_;
   std::vector<std::unique_ptr<base::Thread>> threads_;
 
   DISALLOW_COPY_AND_ASSIGN(Client<GrpcService>);
@@ -52,13 +56,22 @@ class Client {
 
 template <typename GrpcService>
 Client<GrpcService>::Client(std::shared_ptr<::grpc::Channel> channel)
-    : stub_(GrpcService::NewStub(channel)) {}
+    : stub_(GrpcService::NewStub(channel)),
+      cq_(std::make_unique<::grpc::CompletionQueue>()) {}
+
+template <typename GrpcService>
+Status Client<GrpcService>::ConnectAndRun(const IPEndPoint& ip_endpoint) {
+  auto channel = ConnectToGrpcServer(ip_endpoint.ip(), ip_endpoint.port());
+  stub_ = GrpcService::NewStub(channel);
+  cq_ = std::make_unique<::grpc::CompletionQueue>();
+  return Run();
+}
 
 template <typename GrpcService>
 void Client<GrpcService>::HandleRpcsLoop() {
   void* tag;
   bool ok;
-  while (cq_.Next(&tag, &ok)) {
+  while (cq_->Next(&tag, &ok)) {
     GrpcClientCQTag* callback_tag = static_cast<GrpcClientCQTag*>(tag);
     callback_tag->OnCompleted(ok);
   }
@@ -83,20 +96,21 @@ void Client<GrpcService>::RunRpcsLoops(int num_threads) {
 
 template <typename GrpcService>
 void Client<GrpcService>::ShutdownClient() {
-  cq_.Shutdown();
+  cq_->Shutdown();
+  threads_.clear();
 }
 
 #define FEL_CLIENT_METHOD_DECLARE(method)            \
   void method##Async(const method##Request* request, \
                      method##Response* response, StatusOnceCallback done)
 
-#define FEL_CLIENT_METHOD_DEFINE(clazz, method)                            \
-  void clazz::method##Async(const method##Request* request,                \
-                            method##Response* response,                    \
-                            StatusOnceCallback done) {                     \
-    new GrpcAsyncClientCall<Stub, method##Request, method##Response>(      \
-        stub_.get(), request, response, &Stub::PrepareAsync##method, &cq_, \
-        std::move(done));                                                  \
+#define FEL_CLIENT_METHOD_DEFINE(clazz, method)                       \
+  void clazz::method##Async(const method##Request* request,           \
+                            method##Response* response,               \
+                            StatusOnceCallback done) {                \
+    new GrpcAsyncClientCall<Stub, method##Request, method##Response>( \
+        stub_.get(), request, response, &Stub::PrepareAsync##method,  \
+        cq_.get(), std::move(done));                                  \
   }
 
 }  // namespace rpc

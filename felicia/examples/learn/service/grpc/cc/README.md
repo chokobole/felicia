@@ -28,7 +28,7 @@ bazel-bin/felicia/examples/learn/service/grpc/cc/grpc_node_creator -s message --
 
 Running a node grpc_node_creator in ***client*** mode (without `--server` option):
 ```bash
-bazel-bin/felicia/examples/learn/service/grpc/cc/grpc_node_creator -s message
+bazel-bin/felicia/examples/learn/service/grpc/cc/grpc_node_creator -s message -a 1 -b 2
 ```
 
 For further details, take a look at [grpc_node_creator.cc](grpc_node_creator.cc).

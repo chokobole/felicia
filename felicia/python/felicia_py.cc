@@ -14,6 +14,7 @@
 #include "felicia/python/drivers_py.h"
 #include "felicia/python/master_proxy_py.h"
 #include "felicia/python/node_py.h"
+#include "felicia/python/rpc_py.h"
 
 namespace py = pybind11;
 
@@ -212,6 +213,7 @@ PYBIND11_MODULE(felicia_py, m) {
   AddChannel(m);
   AddCommunication(m);
   AddCommandLineInterface(m);
+  rpc::AddRpc(m);
   drivers::AddDrivers(m);
 }
 

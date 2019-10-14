@@ -6,9 +6,6 @@
 
 namespace felicia {
 
-SimpleClient::SimpleClient(std::shared_ptr<::grpc::Channel> channel)
-    : rpc::Client<grpc::SimpleService>(channel) {}
-
 FEL_CLIENT_METHOD_DEFINE(SimpleClient, Add)
 
 GrpcClientNode::GrpcClientNode(const GrpcServiceFlag& grpc_service_flag)

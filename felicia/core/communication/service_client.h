@@ -36,7 +36,7 @@ class ServiceClient {
     return register_state_.IsUnregistered();
   }
 
-  ClientTy* operator->() const { return client_.get(); }
+  ClientTy* operator->() { return &client_; }
 
   void RequestRegister(const NodeInfo& node_info, const std::string& service,
                        OnConnectCallback on_connect_callback,
@@ -45,7 +45,7 @@ class ServiceClient {
   void RequestUnregister(const NodeInfo& node_info, const std::string& service,
                          StatusOnceCallback callback = StatusOnceCallback());
 
- private:
+ protected:
   void OnRegisterServiceClientAsync(const RegisterServiceClientRequest* request,
                                     RegisterServiceClientResponse* response,
                                     OnConnectCallback on_connect_callback,
@@ -59,7 +59,7 @@ class ServiceClient {
 
   void OnFindServiceServer(const ServiceInfo& service_info);
 
-  std::unique_ptr<ClientTy> client_;
+  ClientTy client_;
   OnConnectCallback on_connect_callback_;
 
   communication::RegisterState register_state_;
@@ -198,19 +198,15 @@ void ServiceClient<ClientTy>::OnFindServiceServer(
   DCHECK(IsRegistered()) << register_state_.ToString();
 
   if (service_info.status() == ServiceInfo::UNREGISTERED) {
-    if (client_) {
-      client_->Shutdown();
-    }
+    client_.Shutdown();
     on_connect_callback_.Run(ServiceInfo::UNREGISTERED);
     return;
   }
 
   const IPEndPoint& ip_endpoint =
       service_info.service_source().channel_defs(0).ip_endpoint();
-  auto channel = ConnectToGrpcServer(ip_endpoint.ip(), ip_endpoint.port());
-  if (channel) {
-    client_ = std::make_unique<ClientTy>(channel);
-    client_->Run();
+  Status s = client_.ConnectAndRun(ip_endpoint);
+  if (s.ok()) {
     on_connect_callback_.Run(ServiceInfo::REGISTERED);
   }
 }

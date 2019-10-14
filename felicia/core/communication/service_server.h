@@ -14,7 +14,17 @@
 namespace felicia {
 
 template <typename ServiceTy>
-class ServiceServer : private rpc::Server<ServiceTy> {
+class SimpleServer : public rpc::Server<ServiceTy> {
+ public:
+  // rpc::Server<ServiceTy> methods
+  Status RegisterService(::grpc::ServerBuilder* builder) override {
+    this->service_ = std::make_unique<ServiceTy>(builder);
+    return Status::OK();
+  }
+};
+
+template <typename ServiceTy, typename ServerTy = SimpleServer<ServiceTy>>
+class ServiceServer {
  public:
   ServiceServer() = default;
 
@@ -37,7 +47,7 @@ class ServiceServer : private rpc::Server<ServiceTy> {
   void RequestUnregister(const NodeInfo& node_info, const std::string& service,
                          StatusOnceCallback callback = StatusOnceCallback());
 
- private:
+ protected:
   void OnRegisterServiceServerAsync(const RegisterServiceServerRequest* request,
                                     RegisterServiceServerResponse* response,
                                     StatusOnceCallback callback,
@@ -48,22 +58,21 @@ class ServiceServer : private rpc::Server<ServiceTy> {
       UnregisterServiceServerResponse* response, StatusOnceCallback callback,
       const Status& s);
 
-  // rpc::Server<ServiceTy> methods
-  Status RegisterService(::grpc::ServerBuilder* builder) override;
-
+  ServerTy server_;
   communication::RegisterState register_state_;
 };
 
-template <typename ServiceTy>
-void ServiceServer<ServiceTy>::RequestRegister(const NodeInfo& node_info,
-                                               const std::string& service,
-                                               StatusOnceCallback callback) {
+template <typename ServiceTy, typename ServerTy>
+void ServiceServer<ServiceTy, ServerTy>::RequestRegister(
+    const NodeInfo& node_info, const std::string& service,
+    StatusOnceCallback callback) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(
-        FROM_HERE, base::BindOnce(&ServiceServer<ServiceTy>::RequestRegister,
-                                  base::Unretained(this), node_info, service,
-                                  std::move(callback)));
+        FROM_HERE,
+        base::BindOnce(&ServiceServer<ServiceTy, ServerTy>::RequestRegister,
+                       base::Unretained(this), node_info, service,
+                       std::move(callback)));
     return;
   }
 
@@ -75,35 +84,37 @@ void ServiceServer<ServiceTy>::RequestRegister(const NodeInfo& node_info,
 
   register_state_.ToRegistering(FROM_HERE);
 
-  this->Start();
-  this->Run();
+  server_.Start();
+  server_.Run();
 
   RegisterServiceServerRequest* request = new RegisterServiceServerRequest();
   *request->mutable_node_info() = node_info;
   ServiceInfo* service_info = request->mutable_service_info();
   service_info->set_service(service);
-  service_info->set_type_name(ServiceTy::service_name());
+  service_info->set_type_name(server_.service_name());
   ChannelSource* channel_source = service_info->mutable_service_source();
-  *channel_source->add_channel_defs() = this->channel_def();
+  *channel_source->add_channel_defs() = server_.channel_def();
   RegisterServiceServerResponse* response = new RegisterServiceServerResponse();
 
   master_proxy.RegisterServiceServerAsync(
       request, response,
-      base::BindOnce(&ServiceServer<ServiceTy>::OnRegisterServiceServerAsync,
-                     base::Unretained(this), base::Owned(request),
-                     base::Owned(response), std::move(callback)));
+      base::BindOnce(
+          &ServiceServer<ServiceTy, ServerTy>::OnRegisterServiceServerAsync,
+          base::Unretained(this), base::Owned(request), base::Owned(response),
+          std::move(callback)));
 }
 
-template <typename ServiceTy>
-void ServiceServer<ServiceTy>::RequestUnregister(const NodeInfo& node_info,
-                                                 const std::string& service,
-                                                 StatusOnceCallback callback) {
+template <typename ServiceTy, typename ServerTy>
+void ServiceServer<ServiceTy, ServerTy>::RequestUnregister(
+    const NodeInfo& node_info, const std::string& service,
+    StatusOnceCallback callback) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(
-        FROM_HERE, base::BindOnce(&ServiceServer<ServiceTy>::RequestUnregister,
-                                  base::Unretained(this), node_info, service,
-                                  std::move(callback)));
+        FROM_HERE,
+        base::BindOnce(&ServiceServer<ServiceTy, ServerTy>::RequestUnregister,
+                       base::Unretained(this), node_info, service,
+                       std::move(callback)));
     return;
   }
 
@@ -124,13 +135,14 @@ void ServiceServer<ServiceTy>::RequestUnregister(const NodeInfo& node_info,
 
   master_proxy.UnregisterServiceServerAsync(
       request, response,
-      base::BindOnce(&ServiceServer<ServiceTy>::OnUnegisterServiceServerAsync,
-                     base::Unretained(this), base::Owned(request),
-                     base::Owned(response), std::move(callback)));
+      base::BindOnce(
+          &ServiceServer<ServiceTy, ServerTy>::OnUnegisterServiceServerAsync,
+          base::Unretained(this), base::Owned(request), base::Owned(response),
+          std::move(callback)));
 }
 
-template <typename ServiceTy>
-void ServiceServer<ServiceTy>::OnRegisterServiceServerAsync(
+template <typename ServiceTy, typename ServerTy>
+void ServiceServer<ServiceTy, ServerTy>::OnRegisterServiceServerAsync(
     const RegisterServiceServerRequest* request,
     RegisterServiceServerResponse* response, StatusOnceCallback callback,
     const Status& s) {
@@ -150,8 +162,8 @@ void ServiceServer<ServiceTy>::OnRegisterServiceServerAsync(
   internal::LogOrCallback(std::move(callback), s);
 }
 
-template <typename ServiceTy>
-void ServiceServer<ServiceTy>::OnUnegisterServiceServerAsync(
+template <typename ServiceTy, typename ServerTy>
+void ServiceServer<ServiceTy, ServerTy>::OnUnegisterServiceServerAsync(
     const UnregisterServiceServerRequest* request,
     UnregisterServiceServerResponse* response, StatusOnceCallback callback,
     const Status& s) {
@@ -168,16 +180,9 @@ void ServiceServer<ServiceTy>::OnUnegisterServiceServerAsync(
   }
 
   register_state_.ToUnregistered(FROM_HERE);
-  this->Shutdown();
+  server_.Shutdown();
 
   internal::LogOrCallback(std::move(callback), s);
-}
-
-template <typename ServiceTy>
-Status ServiceServer<ServiceTy>::RegisterService(
-    ::grpc::ServerBuilder* builder) {
-  this->service_ = std::make_unique<ServiceTy>(builder);
-  return Status::OK();
 }
 
 }  // namespace felicia
