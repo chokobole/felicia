@@ -3,6 +3,8 @@ import {
   ClientInfoProtobuf,
   NodeInfoProtobuf,
   PubSubTopicsProtobuf,
+  ServiceFilterProtobuf,
+  ServiceInfoProtobuf,
   TopicFilterProtobuf,
   TopicInfoProtobuf,
 } from './master-data';
@@ -81,4 +83,40 @@ export interface ListTopicsRequestProtobuf {
 
 export interface ListTopicsResponseProtobuf {
   topicInfos: Array<TopicInfoProtobuf>;
+}
+
+export interface RegisterServiceClientRequestProtobuf {
+  nodeInfo: NodeInfoProtobuf;
+  service: string;
+}
+
+export interface RegisterServiceClientResponseProtobuf {}
+
+export interface UnregisterServiceClientRequestProtobuf {
+  nodeInfo: NodeInfoProtobuf;
+  service: string;
+}
+
+export interface UnregisterServiceClientResponseProtobuf {}
+
+export interface RegisterServiceServerRequestProtobuf {
+  nodeInfo: NodeInfoProtobuf;
+  serviceInfo: TopicInfoProtobuf;
+}
+
+export interface RegisterServiceServerResponseProtobuf {}
+
+export interface UnregisterServiceServerRequestProtobuf {
+  nodeInfo: NodeInfoProtobuf;
+  service: string;
+}
+
+export interface UnregisterServiceServerResponseProtobuf {}
+
+export interface ListServicesRequestProtobuf {
+  serviceFilter: ServiceFilterProtobuf;
+}
+
+export interface ListServicesResponseProtobuf {
+  serviceInfos: Array<ServiceInfoProtobuf>;
 }

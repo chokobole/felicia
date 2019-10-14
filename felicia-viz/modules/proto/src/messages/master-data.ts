@@ -3,9 +3,11 @@ import FeliciaProtoRoot from '../felicia-proto-root';
 import { ChannelDefProtobuf, ChannelSourceProtobuf } from './channel';
 
 export const TOPIC_INFO = 'felicia.TopicInfo';
+export const SERVICE_INFO = 'felicia.ServiceInfo';
 
 export const ChannelDefType = FeliciaProtoRoot.lookupEnum('felicia.ChannelDef.Type');
 export const TopicInfoStatus = FeliciaProtoRoot.lookupEnum('felicia.TopicInfo.Status');
+export const ServiceInfoStatus = FeliciaProtoRoot.lookupEnum('felicia.ServiceInfo.Status');
 
 export interface NodeInfoProtobuf {
   name: string;
@@ -21,7 +23,7 @@ export interface PubSubTopicsProtobuf {
 export interface ClientInfoProtobuf {
   id: number;
   heartBeatSignallerSource: ChannelSourceProtobuf;
-  topicInfoWatcherSource: ChannelSourceProtobuf;
+  masterNotificationWatcherSource: ChannelSourceProtobuf;
   heartBeatDuration: number;
 }
 
@@ -44,6 +46,23 @@ export interface TopicInfoProtobuf {
   rosNodeName: string;
 }
 
+export enum ServiceInfoStatusProtobuf {
+  REGISTERED = 0,
+  UNREGISTERED = 1,
+}
+
+export interface ServiceInfoProtobuf {
+  service: string;
+  typeName: string;
+  serviceSource: ChannelSourceProtobuf;
+  status: ServiceInfoStatusProtobuf;
+}
+
+export interface MasterNotification {
+  topicInfo: TopicInfoProtobuf;
+  serviceInfo: ServiceInfoProtobuf;
+}
+
 export interface ClientFilterProtobuf {
   all: boolean;
   id: number;
@@ -53,6 +72,8 @@ export interface NodeFilterProtobuf {
   all: boolean;
   publishingTopic: string;
   subscribingTopic: string;
+  requestingService: string;
+  servingService: string;
   name: string;
   watcher: boolean;
 }
@@ -60,6 +81,11 @@ export interface NodeFilterProtobuf {
 export interface TopicFilterProtobuf {
   all: boolean;
   topic: string;
+}
+
+export interface ServiceFilterProtobuf {
+  all: boolean;
+  service: string;
 }
 
 export interface HeartBeatProtobuf {

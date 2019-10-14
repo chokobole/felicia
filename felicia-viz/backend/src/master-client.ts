@@ -3,6 +3,8 @@ import {
   ListClientsResponseProtobuf,
   ListNodesRequestProtobuf,
   ListNodesResponseProtobuf,
+  ListServicesRequestProtobuf,
+  ListServicesResponseProtobuf,
   ListTopicsRequestProtobuf,
   ListTopicsResponseProtobuf,
   PublishTopicRequestProtobuf,
@@ -11,12 +13,20 @@ import {
   RegisterClientResponseProtobuf,
   RegisterNodeRequestProtobuf,
   RegisterNodeResponseProtobuf,
+  RegisterServiceClientRequestProtobuf,
+  RegisterServiceClientResponseProtobuf,
+  RegisterServiceServerRequestProtobuf,
+  RegisterServiceServerResponseProtobuf,
   SubscribeTopicRequestProtobuf,
   SubscribeTopicResponseProtobuf,
   UnpublishTopicRequestProtobuf,
   UnpublishTopicResponseProtobuf,
   UnregisterNodeRequestProtobuf,
   UnregisterNodeResponseProtobuf,
+  UnregisterServiceClientRequestProtobuf,
+  UnregisterServiceClientResponseProtobuf,
+  UnregisterServiceServerRequestProtobuf,
+  UnregisterServiceServerResponseProtobuf,
   UnsubscribeTopicRequestProtobuf,
   UnsubscribeTopicResponseProtobuf,
 } from '@felicia-viz/proto/messages/master';
@@ -67,6 +77,26 @@ interface MasterClientInterface extends Client {
   ListTopics: (
     request: ListTopicsRequestProtobuf,
     callback: (err: Error | null, response: ListTopicsResponseProtobuf) => void
+  ) => void;
+  RegisterServiceClient: (
+    request: RegisterServiceClientRequestProtobuf,
+    callback: (err: Error | null, response: RegisterServiceClientResponseProtobuf) => void
+  ) => void;
+  UnregisterServiceClient: (
+    request: UnregisterServiceClientRequestProtobuf,
+    callback: (err: Error | null, response: UnregisterServiceClientResponseProtobuf) => void
+  ) => void;
+  RegisterServiceServer: (
+    request: RegisterServiceServerRequestProtobuf,
+    callback: (err: Error | null, response: RegisterServiceServerResponseProtobuf) => void
+  ) => void;
+  UnregisterServiceServer: (
+    request: UnregisterServiceServerRequestProtobuf,
+    callback: (err: Error | null, response: UnregisterServiceServerResponseProtobuf) => void
+  ) => void;
+  ListServices: (
+    request: ListServicesRequestProtobuf,
+    callback: (err: Error | null, response: ListServicesResponseProtobuf) => void
   ) => void;
 }
 
@@ -212,6 +242,77 @@ export default class MasterClient {
     this.client!.ListTopics(
       request,
       (err: Error | null, response: ListTopicsResponseProtobuf): void => {
+        if (err) {
+          callback(err, null);
+          return;
+        }
+        callback(null, JSON.stringify(response));
+      }
+    );
+  }
+
+  registerServiceClient(request: RegisterServiceClientRequestProtobuf, callback: Callback): void {
+    this.client!.RegisterServiceClient(
+      request,
+      (err: Error | null, response: RegisterServiceClientResponseProtobuf): void => {
+        if (err) {
+          callback(err, null);
+          return;
+        }
+        callback(null, JSON.stringify(response));
+      }
+    );
+  }
+
+  unregisterServiceClient(
+    request: UnregisterServiceClientRequestProtobuf,
+    callback: Callback
+  ): void {
+    this.client!.UnregisterServiceClient(
+      request,
+      (err: Error | null, response: UnregisterServiceClientResponseProtobuf): void => {
+        if (err) {
+          callback(err, null);
+          return;
+        }
+        callback(null, JSON.stringify(response));
+      }
+    );
+  }
+
+  registerServiceServer(request: RegisterServiceServerRequestProtobuf, callback: Callback): void {
+    this.client!.RegisterServiceServer(
+      request,
+      (err: Error | null, response: RegisterServiceServerResponseProtobuf): void => {
+        if (err) {
+          callback(err, null);
+          return;
+        }
+        callback(null, JSON.stringify(response));
+      }
+    );
+  }
+
+  unregisterServiceServer(
+    request: UnregisterServiceServerRequestProtobuf,
+    callback: Callback
+  ): void {
+    this.client!.UnregisterServiceServer(
+      request,
+      (err: Error | null, response: UnregisterServiceServerResponseProtobuf): void => {
+        if (err) {
+          callback(err, null);
+          return;
+        }
+        callback(null, JSON.stringify(response));
+      }
+    );
+  }
+
+  listServices(request: ListServicesRequestProtobuf, callback: Callback): void {
+    this.client!.ListServices(
+      request,
+      (err: Error | null, response: ListServicesResponseProtobuf): void => {
         if (err) {
           callback(err, null);
           return;

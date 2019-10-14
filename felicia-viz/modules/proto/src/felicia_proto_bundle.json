@@ -947,7 +947,7 @@
               "type": "ChannelSource",
               "id": 2
             },
-            "topicInfoWatcherSource": {
+            "masterNotificationWatcherSource": {
               "type": "ChannelSource",
               "id": 3
             },
@@ -999,6 +999,46 @@
             }
           }
         },
+        "ServiceInfo": {
+          "fields": {
+            "service": {
+              "type": "string",
+              "id": 1
+            },
+            "typeName": {
+              "type": "string",
+              "id": 2
+            },
+            "serviceSource": {
+              "type": "ChannelSource",
+              "id": 3
+            },
+            "status": {
+              "type": "Status",
+              "id": 4
+            }
+          },
+          "nested": {
+            "Status": {
+              "values": {
+                "REGISTERED": 0,
+                "UNREGISTERED": 1
+              }
+            }
+          }
+        },
+        "MasterNotification": {
+          "fields": {
+            "topicInfo": {
+              "type": "TopicInfo",
+              "id": 1
+            },
+            "serviceInfo": {
+              "type": "ServiceInfo",
+              "id": 2
+            }
+          }
+        },
         "ClientFilter": {
           "fields": {
             "all": {
@@ -1025,13 +1065,21 @@
               "type": "string",
               "id": 3
             },
-            "name": {
+            "requestingService": {
               "type": "string",
               "id": 4
             },
+            "servingService": {
+              "type": "string",
+              "id": 5
+            },
+            "name": {
+              "type": "string",
+              "id": 6
+            },
             "watcher": {
               "type": "bool",
-              "id": 5
+              "id": 7
             }
           }
         },
@@ -1042,6 +1090,18 @@
               "id": 1
             },
             "topic": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "ServiceFilter": {
+          "fields": {
+            "all": {
+              "type": "bool",
+              "id": 1
+            },
+            "service": {
               "type": "string",
               "id": 2
             }
@@ -1213,6 +1273,83 @@
             "topicInfos": {
               "rule": "repeated",
               "type": "TopicInfo",
+              "id": 1
+            }
+          }
+        },
+        "RegisterServiceClientRequest": {
+          "fields": {
+            "nodeInfo": {
+              "type": "NodeInfo",
+              "id": 1
+            },
+            "service": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "RegisterServiceClientResponse": {
+          "fields": {}
+        },
+        "UnregisterServiceClientRequest": {
+          "fields": {
+            "nodeInfo": {
+              "type": "NodeInfo",
+              "id": 1
+            },
+            "service": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "UnregisterServiceClientResponse": {
+          "fields": {}
+        },
+        "RegisterServiceServerRequest": {
+          "fields": {
+            "nodeInfo": {
+              "type": "NodeInfo",
+              "id": 1
+            },
+            "serviceInfo": {
+              "type": "ServiceInfo",
+              "id": 2
+            }
+          }
+        },
+        "RegisterServiceServerResponse": {
+          "fields": {}
+        },
+        "UnregisterServiceServerRequest": {
+          "fields": {
+            "nodeInfo": {
+              "type": "NodeInfo",
+              "id": 1
+            },
+            "service": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "UnregisterServiceServerResponse": {
+          "fields": {}
+        },
+        "ListServicesRequest": {
+          "fields": {
+            "serviceFilter": {
+              "type": "ServiceFilter",
+              "id": 1
+            }
+          }
+        },
+        "ListServicesResponse": {
+          "fields": {
+            "serviceInfos": {
+              "rule": "repeated",
+              "type": "ServiceInfo",
               "id": 1
             }
           }
