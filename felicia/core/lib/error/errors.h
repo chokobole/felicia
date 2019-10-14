@@ -28,7 +28,7 @@ namespace errors {
 //   switch (status.code()) { case error::INVALID_ARGUMENT: ... }
 
 #define DECLARE_ERROR(FUNC, CONST)                                          \
-  inline ::felicia::Status FUNC(base::StringPiece error_message) {          \
+  inline ::felicia::Status FUNC(const std::string& error_message) {         \
     return ::felicia::Status(::felicia::error::Code::CONST, error_message); \
   }                                                                         \
   inline bool Is##FUNC(const ::felicia::Status& status) {                   \

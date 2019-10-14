@@ -65,6 +65,8 @@ void AddGlobalFunctions(py::module& m) {
 void AddGlobalObject(py::module& m) {
   py::class_<Status>(m, "Status")
       .def(py::init<>(), "Create a success status.")
+      .def(py::init<error::Code, const std::string&>(), py::arg("error_code"),
+           py::arg("error_message"))
       .def_static("OK", &Status::OK, "Convenience static method.")
       .def("error_code", &Status::error_code)
       .def("error_message", &Status::error_message)
@@ -73,13 +75,26 @@ void AddGlobalObject(py::module& m) {
 
   py::class_<base::TimeDelta>(m, "TimeDelta")
       .def(py::init<>())
-      .def_static("from_days", &base::TimeDelta::FromDays)
-      .def_static("from_hours", &base::TimeDelta::FromHours)
-      .def_static("from_minutes", &base::TimeDelta::FromMinutes)
-      .def_static("from_seconds", &base::TimeDelta::FromSecondsD)
-      .def_static("from_milliseconds", &base::TimeDelta::FromMillisecondsD)
-      .def_static("from_microseconds", &base::TimeDelta::FromMicrosecondsD)
-      .def_static("from_nanosecods", &base::TimeDelta::FromNanosecondsD)
+      .def_static("from_days", &base::TimeDelta::FromDays, py::arg("days"))
+      .def_static("from_hours", &base::TimeDelta::FromHours, py::arg("hours"))
+      .def_static("from_minutes", &base::TimeDelta::FromMinutes,
+                  py::arg("minutes"))
+      .def_static("from_seconds", &base::TimeDelta::FromSeconds,
+                  py::arg("secs"))
+      .def_static("from_milliseconds", &base::TimeDelta::FromMilliseconds,
+                  py::arg("ms"))
+      .def_static("from_microseconds", &base::TimeDelta::FromMicroseconds,
+                  py::arg("us"))
+      .def_static("from_nanosecods", &base::TimeDelta::FromNanoseconds,
+                  py::arg("ns"))
+      .def_static("from_seconds_d", &base::TimeDelta::FromSecondsD,
+                  py::arg("secs"))
+      .def_static("from_milliseconds_d", &base::TimeDelta::FromMillisecondsD,
+                  py::arg("ms"))
+      .def_static("from_microseconds_d", &base::TimeDelta::FromMicrosecondsD,
+                  py::arg("us"))
+      .def_static("from_nanosecods_d", &base::TimeDelta::FromNanosecondsD,
+                  py::arg("ns"))
       .def("in_days", &base::TimeDelta::InDays)
       .def("in_days_floored", &base::TimeDelta::InDaysFloored)
       .def("in_hours", &base::TimeDelta::InHours)
@@ -121,35 +136,31 @@ void AddGlobalObject(py::module& m) {
       .def(py::init<>(),
            "Contains the NULL time. Use Time::Now() to get the current time.")
       .def_static(
-          "unix_epoch", &base::Time::UnixEpoch,
-          "Returns the time for epoch in Unix-like system (Jan 1, 1970).")
-      .def_static(
           "now", &base::Time::Now,
           "Returns the current time. Watch out, the system might adjust its "
           "clock in which case time will actually go backwards. We don't "
           "guarantee that times are increasing, or that two calls to Now() "
           "won't be the same.")
-      .def_static(
-          "now_from_system_time", &base::Time::NowFromSystemTime,
-          "Returns the current time. Same as Now() except that this function "
-          "always uses system time so that there are no discrepancies between"
-          "the returned time and system time even on virtual environments "
-          "including our test bot. or timing sensitive unittests, this "
-          "function should be used.")
-      .def_static("from_double_t", &base::Time::FromDoubleT)
-      .def("to_double_t", &base::Time::ToDoubleT)
-      .def("__add__", [](const base::Time& time,
-                         const base::TimeDelta& delta) { return time + delta; })
-      .def("__sub__", [](const base::Time& time,
-                         const base::TimeDelta& delta) { return time - delta; })
+      .def("__add__",
+           [](const base::Time& time, const base::TimeDelta& delta) {
+             return time + delta;
+           },
+           py::arg("delta"))
+      .def("__sub__",
+           [](const base::Time& time, const base::TimeDelta& delta) {
+             return time - delta;
+           },
+           py::arg("delta"))
       .def("__iadd__",
            [](base::Time& time, const base::TimeDelta& delta) {
              return time += delta;
-           })
+           },
+           py::arg("delta"))
       .def("__isub__",
            [](base::Time& time, const base::TimeDelta& delta) {
              return time -= delta;
-           })
+           },
+           py::arg("delta"))
       .def(py::self == py::self)
       .def(py::self != py::self)
       .def(py::self < py::self)
@@ -164,13 +175,19 @@ void AddGlobalObject(py::module& m) {
 
   py::class_<Bytes>(m, "Bytes")
       .def(py::init<>())
-      .def_static("from_bytes", &Bytes::FromBytes)
-      .def_static("from_killo_bytes", &Bytes::FromKilloBytes)
-      .def_static("from_killo_bytes_d", &Bytes::FromKilloBytesD)
-      .def_static("from_mega_bytes", &Bytes::FromMegaBytes)
-      .def_static("from_mega_bytes_d", &Bytes::FromMegaBytesD)
-      .def_static("from_giga_bytes", &Bytes::FromGigaBytes)
-      .def_static("from_giga_bytes_d", &Bytes::FromGigaBytesD)
+      .def_static("from_bytes", &Bytes::FromBytes, py::arg("bytes"))
+      .def_static("from_killo_bytes", &Bytes::FromKilloBytes,
+                  py::arg("killo_bytes"))
+      .def_static("from_killo_bytes_d", &Bytes::FromKilloBytesD,
+                  py::arg("killo_bytes"))
+      .def_static("from_mega_bytes", &Bytes::FromMegaBytes,
+                  py::arg("mega_bytes"))
+      .def_static("from_mega_bytes_d", &Bytes::FromMegaBytesD,
+                  py::arg("mega_bytes"))
+      .def_static("from_giga_bytes", &Bytes::FromGigaBytes,
+                  py::arg("giga_bytes"))
+      .def_static("from_giga_bytes_d", &Bytes::FromGigaBytesD,
+                  py::arg("giga_bytes"))
       .def("bytes", &Bytes::bytes)
       .def(py::self + py::self)
       .def(py::self - py::self)

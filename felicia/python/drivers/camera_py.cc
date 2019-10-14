@@ -34,42 +34,50 @@ void AddCamera(py::module& m) {
   py::class_<CameraSettings>(m, "CameraSettings")
       .def(py::init<>())
       .def("has_white_balance_mode", &CameraSettings::has_white_balance_mode)
-      .def("set_white_balance_mode", &CameraSettings::set_white_balance_mode)
+      .def("set_white_balance_mode", &CameraSettings::set_white_balance_mode,
+           py::arg("white_balance_mode"))
       .def("white_balance_mode", &CameraSettings::white_balance_mode)
       .def("has_exposure_mode", &CameraSettings::has_exposure_mode)
-      .def("set_exposure_mode", &CameraSettings::set_exposure_mode)
+      .def("set_exposure_mode", &CameraSettings::set_exposure_mode,
+           py::arg("exposure_mode"))
       .def("exposure_mode", &CameraSettings::exposure_mode)
       .def("has_exposure_compensation",
            &CameraSettings::has_exposure_compensation)
       .def("set_exposure_compensation",
-           &CameraSettings::set_exposure_compensation)
+           &CameraSettings::set_exposure_compensation,
+           py::arg("exposure_compensation"))
       .def("exposure_compensation", &CameraSettings::exposure_compensation)
       .def("has_exposure_time", &CameraSettings::has_exposure_time)
-      .def("set_exposure_time", &CameraSettings::set_exposure_time)
+      .def("set_exposure_time", &CameraSettings::set_exposure_time,
+           py::arg("exposure_time"))
       .def("exposure_time", &CameraSettings::exposure_time)
       .def("has_color_temperature", &CameraSettings::has_color_temperature)
-      .def("set_color_temperature", &CameraSettings::set_color_temperature)
+      .def("set_color_temperature", &CameraSettings::set_color_temperature,
+           py::arg("color_temperature"))
       .def("color_temperature", &CameraSettings::color_temperature)
       .def("has_brightness", &CameraSettings::has_brightness)
-      .def("set_brightness", &CameraSettings::set_brightness)
+      .def("set_brightness", &CameraSettings::set_brightness,
+           py::arg("brightness"))
       .def("brightness", &CameraSettings::brightness)
       .def("has_contrast", &CameraSettings::has_contrast)
-      .def("set_contrast", &CameraSettings::set_contrast)
+      .def("set_contrast", &CameraSettings::set_contrast, py::arg("contrast"))
       .def("contrast", &CameraSettings::contrast)
       .def("has_saturation", &CameraSettings::has_saturation)
-      .def("set_saturation", &CameraSettings::set_saturation)
+      .def("set_saturation", &CameraSettings::set_saturation,
+           py::arg("saturation"))
       .def("saturation", &CameraSettings::saturation)
       .def("has_sharpness", &CameraSettings::has_sharpness)
-      .def("set_sharpness", &CameraSettings::set_sharpness)
+      .def("set_sharpness", &CameraSettings::set_sharpness,
+           py::arg("sharpness"))
       .def("sharpness", &CameraSettings::sharpness)
       .def("has_hue", &CameraSettings::has_hue)
-      .def("set_hue", &CameraSettings::set_hue)
+      .def("set_hue", &CameraSettings::set_hue, py::arg("hue"))
       .def("hue", &CameraSettings::hue)
       .def("has_gain", &CameraSettings::has_gain)
-      .def("set_gain", &CameraSettings::set_gain)
+      .def("set_gain", &CameraSettings::set_gain, py::arg("gain"))
       .def("gain", &CameraSettings::gain)
       .def("has_gamma", &CameraSettings::has_gamma)
-      .def("set_gamma", &CameraSettings::set_gamma)
+      .def("set_gamma", &CameraSettings::set_gamma, py::arg("gamma"))
       .def("gamma", &CameraSettings::gamma);
 
   py::class_<CameraInterface, PyCameraInterface>(m, "CameraInterface")
@@ -93,7 +101,8 @@ void AddCamera(py::module& m) {
            py::call_guard<py::gil_scoped_release>())
       .def("stop", &CameraInterface::Stop,
            py::call_guard<py::gil_scoped_release>())
-      .def("set_camera_settings", &CameraInterface::SetCameraSettings)
+      .def("set_camera_settings", &CameraInterface::SetCameraSettings,
+           py::arg("camera_settings"))
       .def("get_camera_settings_info",
            [](CameraInterface& self, py::object object) {
              CameraSettingsInfoMessage message;

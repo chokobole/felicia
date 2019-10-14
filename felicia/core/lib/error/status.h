@@ -31,7 +31,7 @@ class EXPORT Status {
  public:
   // Create a success status.
   Status();
-  Status(felicia::error::Code error_code, base::StringPiece error_message);
+  Status(felicia::error::Code error_code, const std::string& error_message);
 
   // Convenience static method.
   static Status OK();

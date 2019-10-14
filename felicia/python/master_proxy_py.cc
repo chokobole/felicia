@@ -83,7 +83,8 @@ void AddMasterProxy(py::module& m) {
                   py::call_guard<py::gil_scoped_release>())
       .def_static("run", &PyMasterProxy::Run,
                   py::call_guard<py::gil_scoped_release>())
-      .def_static("request_register_node", &PyMasterProxy::RequestRegisterNode)
+      .def_static("request_register_node", &PyMasterProxy::RequestRegisterNode,
+                  py::arg("constructor"), py::arg("node_info"))
       .def_static("post_task",
                   [](py::function callback) {
                     MasterProxy& master_proxy = MasterProxy::GetInstance();
