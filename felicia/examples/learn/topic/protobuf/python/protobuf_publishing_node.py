@@ -1,3 +1,5 @@
+from platform import system
+
 import felicia_py as fel
 from felicia.core.protobuf.channel_pb2 import ChannelDef
 
@@ -5,9 +7,10 @@ from felicia.examples.learn.topic.protobuf.simple_message_pb2 import SimpleMessa
 
 
 class ProtobufPublishingNode(fel.NodeLifecycle):
-    def __init__(self, topic_create_flag):
+    def __init__(self, topic_create_flag, ssl_server_context):
         super().__init__()
         self.topic = topic_create_flag.topic_flag.value
+        self.ssl_server_context = ssl_server_context
         self.channel_def_type = ChannelDef.Type.Value(
             topic_create_flag.channel_type_flag.value)
         self.publisher = fel.communication.Publisher(SimpleMessage)
@@ -43,9 +46,32 @@ class ProtobufPublishingNode(fel.NodeLifecycle):
         print("ProtobufPublishingNode.on_request_unpublish()")
         fel.log_if(fel.ERROR, not status.ok(), status.error_message())
 
+    def on_auth(self, credentials):
+        uid = credentials.user_id
+        gid = credentials.group_id
+        if hasattr(credentials, "process_id"):
+            pid = credentials.process_id
+            print("pid: {} uid: {} gid: {}".format(pid, uid, gid))
+        else:
+            print("uid: {} gid: {}".format(uid, gid))
+        return True
+
     def request_publish(self):
         settings = fel.communication.Settings()
-        settings.buffer_size = fel.Bytes.from_bytes(512)
+        size = fel.Bytes.from_bytes(512)
+        if self.channel_def_type == ChannelDef.CHANNEL_TYPE_TCP:
+            if self.ssl_server_context is not None:
+                settings.channel_settings.tcp_settings.use_ssl = True
+                settings.channel_settings.tcp_settings.ssl_server_context = self.ssl_server_context
+            settings.buffer_size = size
+        elif self.channel_def_type == ChannelDef.CHANNEL_TYPE_UDS:
+            if hasattr(settings.channel_settings, "uds_settings"):
+                settings.channel_settings.uds_settings.auth_callback = self.on_auth
+            else:
+                raise TypeError(
+                    "CHANNEL_TYPE_UDS type not support on platform: {}".format(system()))
+        elif self.channel_def_type == ChannelDef.CHANNEL_TYPE_SHM:
+            settings.channel_settings.shm_settings.shm_size = size
 
         self.publisher.request_publish(self.node_info, self.topic, self.channel_def_type,
                                        settings, self.on_request_publish)

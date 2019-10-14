@@ -33,10 +33,7 @@ class SSLServerSocket : public SSLSocket, public SocketBIOAdapter::Delegate {
   void Handshake(StatusOnceCallback callback);
 
   // Socket methods
-  // Even though class name is SSLServerSocket, the socket behaves like server
-  // is another (e.g TCPServerSocket which is listening) and it just deals with
-  // handshake differently from SSLClientSocket.
-  bool IsClient() const override;
+  bool IsServer() const override;
   bool IsConnected() const override;
   int Write(net::IOBuffer* buf, int buf_len,
             net::CompletionOnceCallback callback) override;

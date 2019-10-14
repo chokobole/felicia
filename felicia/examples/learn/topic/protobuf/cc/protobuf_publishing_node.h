@@ -24,6 +24,9 @@ class ProtobufPublishingNode : public NodeLifecycle {
   void OnPublish(ChannelDef::Type type, const Status& s);
   void OnRequestPublish(const Status& s);
   void OnRequestUnpublish(const Status& s);
+#if defined(OS_POSIX)
+  bool OnAuth(const UnixDomainServerSocket::Credentials& credentials);
+#endif
 
   void RequestPublish();
   void RequestUnpublish();

@@ -71,14 +71,15 @@ void TCPServerSocket::AddSocket(std::unique_ptr<net::TCPSocket> socket) {
       std::make_unique<TCPClientSocket>(std::move(socket)));
 }
 
-void TCPServerSocket::AddSocket(std::unique_ptr<StreamSocket> socket) {
+void TCPServerSocket::AddSocket(std::unique_ptr<TCPClientSocket> socket) {
   accepted_sockets_.push_back(std::move(socket));
 }
 
-void TCPServerSocket::AddSocket(std::unique_ptr<TCPSocket> socket) {
-  DCHECK(socket->IsClient());
+#if !defined(FEL_NO_SSL)
+void TCPServerSocket::AddSocket(std::unique_ptr<SSLServerSocket> socket) {
   accepted_sockets_.push_back(std::move(socket));
 }
+#endif  // !defined(FEL_NO_SSL)
 
 bool TCPServerSocket::IsConnected() const {
   for (auto& accepted_socket : accepted_sockets_) {

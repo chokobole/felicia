@@ -4,6 +4,7 @@
 
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/strings/string_number_conversions.h"
+#include "third_party/chromium/base/strings/utf_string_conversions.h"
 
 #include "felicia/core/communication/settings.h"
 #include "felicia/core/felicia_init.h"
@@ -210,6 +211,18 @@ void AddGlobalObject(py::module& m) {
         ss << self;
         return ss.str();
       });
+
+  py::class_<base::FilePath>(m, "FilePath")
+      .def(py::init<>())
+      .def(py::init([](const std::string& path) {
+#if defined(OS_WIN)
+             return base::FilePath(base::UTF8ToUTF16(path));
+#else
+             return base::FilePath(path);
+#endif
+           }),
+           py::arg("path"))
+      .def("__str__", &base::FilePath::AsUTF8Unsafe);
 
   py::class_<Timestamper>(m, "Timestamper")
       .def(py::init<>())

@@ -1,8 +1,9 @@
 #ifndef FELICIA_CORE_CHANNEL_SOCKET_TCP_SERVER_SOCKET_H_
 #define FELICIA_CORE_CHANNEL_SOCKET_TCP_SERVER_SOCKET_H_
 
+#include "felicia/core/channel/socket/ssl_server_socket.h"
 #include "felicia/core/channel/socket/stream_socket_broadcaster.h"
-#include "felicia/core/channel/socket/tcp_socket.h"
+#include "felicia/core/channel/socket/tcp_client_socket.h"
 #include "felicia/core/lib/error/statusor.h"
 #include "felicia/core/protobuf/channel.pb.h"
 
@@ -25,8 +26,10 @@ class EXPORT TCPServerSocket : public TCPSocket {
   void AcceptOnceIntercept(AcceptOnceInterceptCallback callback);
 
   void AddSocket(std::unique_ptr<net::TCPSocket> socket);
-  void AddSocket(std::unique_ptr<StreamSocket> socket);
-  void AddSocket(std::unique_ptr<TCPSocket> socket);
+  void AddSocket(std::unique_ptr<TCPClientSocket> socket);
+#if !defined(FEL_NO_SSL)
+  void AddSocket(std::unique_ptr<SSLServerSocket> socket);
+#endif  // !defined(FEL_NO_SSL)
 
   // Socket methods
   bool IsServer() const override;

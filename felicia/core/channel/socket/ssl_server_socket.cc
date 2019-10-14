@@ -99,7 +99,7 @@ void SSLServerSocket::Handshake(StatusOnceCallback callback) {
   connect_callback_ = std::move(callback);
 }
 
-bool SSLServerSocket::IsClient() const { return true; }
+bool SSLServerSocket::IsServer() const { return true; }
 
 bool SSLServerSocket::IsConnected() const {
   return completed_handshake_ && stream_socket_ &&

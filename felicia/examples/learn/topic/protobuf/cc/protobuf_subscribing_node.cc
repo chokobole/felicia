@@ -53,9 +53,11 @@ void ProtobufSubscribingNode::OnRequestUnsubscribe(const Status& s) {
 
 void ProtobufSubscribingNode::RequestSubscribe() {
   communication::Settings settings;
-  settings.buffer_size = Bytes::FromBytes(512);
+  Bytes size = Bytes::FromBytes(512);
+  settings.buffer_size = size;
   settings.channel_settings.tcp_settings.use_ssl =
       topic_create_flag_.use_ssl_flag()->value();
+  settings.channel_settings.shm_settings.shm_size = size;
 
   subscriber_.RequestSubscribe(
       node_info_, topic_,

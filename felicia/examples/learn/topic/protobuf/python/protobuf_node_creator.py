@@ -27,9 +27,18 @@ def main():
     node_info = NodeInfo()
     node_info.name = delegate.name_flag.value
 
+    ssl_server_context = None
     if delegate.is_publshing_node_flag.value:
+        if delegate.use_ssl_flag.value:
+            cert_file_path = fel.FilePath("./felicia/examples/cert/server.crt")
+            private_key_file_path = fel.FilePath(
+                "./felicia/examples/cert/server.key")
+            ssl_server_context = fel.channel.SSLServerContext.new_ssl_server_context(
+                cert_file_path,
+                private_key_file_path
+            )
         fel.MasterProxy.request_register_node(
-            ProtobufPublishingNode, node_info, delegate)
+            ProtobufPublishingNode, node_info, delegate, ssl_server_context)
     else:
         fel.MasterProxy.request_register_node(
             ProtobufSubscribingNode, node_info, delegate)

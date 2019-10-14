@@ -50,18 +50,43 @@ void ProtobufPublishingNode::OnRequestUnpublish(const Status& s) {
   LOG_IF(ERROR, !s.ok()) << s;
 }
 
-void ProtobufPublishingNode::RequestPublish() {
-  communication::Settings settings;
-  settings.buffer_size = Bytes::FromBytes(512);
-  if (ssl_server_context_) {
-    settings.channel_settings.tcp_settings.use_ssl = true;
-    settings.channel_settings.tcp_settings.ssl_server_context =
-        ssl_server_context_;
-  }
+#if defined(OS_POSIX)
+bool ProtobufPublishingNode::OnAuth(
+    const UnixDomainServerSocket::Credentials& credentials) {
+  LOG(INFO)
+#if defined(OS_LINUX)
+      << "pid: " << credentials.process_id << " "
+#endif
+      << "uid: " << credentials.user_id << " gid: " << credentials.group_id;
+  return true;
+}
+#endif
 
+void ProtobufPublishingNode::RequestPublish() {
   ChannelDef::Type channel_type;
   ChannelDef::Type_Parse(topic_create_flag_.channel_type_flag()->value(),
                          &channel_type);
+
+  communication::Settings settings;
+  Bytes size = Bytes::FromBytes(512);
+  if (channel_type == ChannelDef::CHANNEL_TYPE_TCP) {
+    if (ssl_server_context_) {
+      settings.channel_settings.tcp_settings.use_ssl = true;
+      settings.channel_settings.tcp_settings.ssl_server_context =
+          ssl_server_context_;
+    }
+    settings.buffer_size = size;
+  }
+#if defined(OS_POSIX)
+  else if (channel_type == ChannelDef::CHANNEL_TYPE_UDS) {
+    settings.channel_settings.uds_settings.auth_callback = base::BindRepeating(
+        &ProtobufPublishingNode::OnAuth, base::Unretained(this));
+    settings.buffer_size = size;
+  }
+#endif
+  else if (channel_type == ChannelDef::CHANNEL_TYPE_SHM) {
+    settings.channel_settings.shm_settings.shm_size = size;
+  }
 
   publisher_.RequestPublish(
       node_info_, topic_, channel_type, settings,

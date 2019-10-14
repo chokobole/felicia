@@ -39,14 +39,12 @@ SSLServerContext::SSLServerContext(
   CHECK(SSL_CTX_set_min_proto_version(ssl_ctx_.get(), TLS1_2_VERSION));
   CHECK(SSL_CTX_set_max_proto_version(ssl_ctx_.get(), TLS1_3_VERSION));
 
-  std::string cert_file_path_as_ascii = cert_file_path.MaybeAsASCII();
-  CHECK(SSL_CTX_use_certificate_file(
-      ssl_ctx_.get(), cert_file_path_as_ascii.c_str(), SSL_FILETYPE_PEM));
-  std::string private_key_file_path_as_ascii =
-      private_key_file_path.MaybeAsASCII();
-  CHECK(SSL_CTX_use_PrivateKey_file(ssl_ctx_.get(),
-                                    private_key_file_path_as_ascii.c_str(),
-                                    SSL_FILETYPE_PEM));
+  std::string cert_file_path_str = cert_file_path.AsUTF8Unsafe();
+  CHECK(SSL_CTX_use_certificate_file(ssl_ctx_.get(), cert_file_path_str.c_str(),
+                                     SSL_FILETYPE_PEM));
+  std::string private_key_file_path_str = private_key_file_path.AsUTF8Unsafe();
+  CHECK(SSL_CTX_use_PrivateKey_file(
+      ssl_ctx_.get(), private_key_file_path_str.c_str(), SSL_FILETYPE_PEM));
   // OpenSSL defaults some options to on, others to off. To avoid ambiguity,
   // set everything we care about to an absolute value.
   net::SslSetClearMask options;

@@ -8,6 +8,8 @@ class TopicCreateFlag(NodeCreateFlag):
         super().__init__()
         self.is_publshing_node_flag = cli.BoolFlagBuilder().set_short_name("-p").set_help(
             "create publishing node, if set, default: false(create subscribing node)").build()
+        self.use_ssl_flag = cli.BoolFlagBuilder().set_long_name(
+            "--use_ssl").set_help("use communication via ssl connection, default: false").build()
         self.topic_flag = cli.StringFlagBuilder().set_short_name("-t").set_long_name(
             "--topic").set_help("name for topic, it's required to be set").build()
         self.channel_type_flag = cli.StringChoicesFlagBuilder(

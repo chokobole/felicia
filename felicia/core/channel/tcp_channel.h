@@ -43,17 +43,15 @@ class TCPChannel : public Channel<MessageTy> {
 
   // This is callback called from AcceptLoop
   void OnAccept(StatusOr<std::unique_ptr<net::TCPSocket>> status_or);
-  // This is callback called from AcceptOnceIntercept
-  void OnAccept2(AcceptOnceInterceptCallback callback,
-                 StatusOr<std::unique_ptr<net::TCPSocket>> status_or);
 
 #if !defined(FEL_NO_SSL)
-  void OnHandshake(const Status& s);
+  void OnSSLHandshake(const Status& s);
 #endif
 
   void OnConnect(StatusOnceCallback callback, const Status& s);
 
   channel::TCPSettings settings_;
+  AcceptOnceInterceptCallback accept_once_intercept_callback_;
   TCPServerSocket::AcceptCallback accept_callback_;
 
 #if !defined(FEL_NO_SSL)
@@ -91,6 +89,8 @@ template <typename MessageTy>
 void TCPChannel<MessageTy>::AcceptLoop(
     TCPServerSocket::AcceptCallback callback) {
   DCHECK(this->channel_impl_);
+  DCHECK(accept_once_intercept_callback_.is_null());
+  DCHECK(accept_callback_.is_null());
   DCHECK(!callback.is_null());
   accept_callback_ = callback;
   DoAcceptLoop();
@@ -100,12 +100,14 @@ template <typename MessageTy>
 void TCPChannel<MessageTy>::AcceptOnceIntercept(
     AcceptOnceInterceptCallback callback) {
   DCHECK(this->channel_impl_);
+  DCHECK(accept_once_intercept_callback_.is_null());
+  DCHECK(accept_callback_.is_null());
   DCHECK(!callback.is_null());
+  accept_once_intercept_callback_ = std::move(callback);
   TCPServerSocket* server_socket =
       this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPServerSocket();
   server_socket->AcceptOnceIntercept(
-      base::BindOnce(&TCPChannel<MessageTy>::OnAccept2, base::Unretained(this),
-                     std::move(callback)));
+      base::BindOnce(&TCPChannel<MessageTy>::OnAccept, base::Unretained(this)));
 }
 
 template <typename MessageTy>
@@ -115,9 +117,20 @@ void TCPChannel<MessageTy>::AddClientChannel(
   TCPServerSocket* server_socket =
       this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPServerSocket();
   ChannelImpl* channel_impl = channel->channel_impl_.release();
-  std::unique_ptr<TCPSocket> client_socket;
-  client_socket.reset(channel_impl->ToSocket()->ToTCPSocket());
-  server_socket->AddSocket(std::move(client_socket));
+  Socket* socket = channel_impl->ToSocket();
+  if (socket->IsTCPSocket()) {
+    std::unique_ptr<TCPClientSocket> client_socket;
+    client_socket.reset(socket->ToTCPSocket()->ToTCPClientSocket());
+    server_socket->AddSocket(std::move(client_socket));
+  } else {
+#if !defined(FEL_NO_SSL)
+    std::unique_ptr<SSLServerSocket> client_socket;
+    client_socket.reset(socket->ToSSLSocket()->ToSSLServerSocket());
+    server_socket->AddSocket(std::move(client_socket));
+#else
+    NOTREACHED();
+#endif  // !defined(FEL_NO_SSL)
+  }
 }
 
 template <typename MessageTy>
@@ -131,63 +144,69 @@ void TCPChannel<MessageTy>::DoAcceptLoop() {
 template <typename MessageTy>
 void TCPChannel<MessageTy>::OnAccept(
     StatusOr<std::unique_ptr<net::TCPSocket>> status_or) {
-  DCHECK(!accept_callback_.is_null());
   if (status_or.ok()) {
-    std::unique_ptr<net::TCPSocket> socket = std::move(status_or.ValueOrDie());
+    std::unique_ptr<TCPClientSocket> client_socket =
+        std::make_unique<TCPClientSocket>(std::move(status_or.ValueOrDie()));
 #if !defined(FEL_NO_SSL)
     if (settings_.use_ssl) {
       DCHECK(!ssl_server_socket_);
       DCHECK(settings_.ssl_server_context);
       ssl_server_socket_ = settings_.ssl_server_context->CreateSSLServerSocket(
-          std::make_unique<TCPClientSocket>(std::move(socket)));
+          std::move(client_socket));
       ssl_server_socket_->Handshake(base::BindOnce(
-          &TCPChannel<MessageTy>::OnHandshake, base::Unretained(this)));
-      return;
+          &TCPChannel<MessageTy>::OnSSLHandshake, base::Unretained(this)));
     } else {
 #endif
-      TCPServerSocket* server_socket =
-          this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPServerSocket();
-      server_socket->AddSocket(std::move(socket));
-      accept_callback_.Run(Status::OK());
+      if (!accept_callback_.is_null()) {
+        TCPServerSocket* server_socket =
+            this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPServerSocket();
+        server_socket->AddSocket(std::move(client_socket));
+        accept_callback_.Run(Status::OK());
+      } else {
+        auto channel = std::make_unique<TCPChannel<MessageTy>>();
+        channel->set_use_ros_channel(this->use_ros_channel_);
+        channel->channel_impl_ = std::move(client_socket);
+        std::move(accept_once_intercept_callback_).Run(std::move(channel));
+      }
 #if !defined(FEL_NO_SSL)
     }
 #endif
   } else {
-    accept_callback_.Run(status_or.status());
+    if (!accept_callback_.is_null()) {
+      accept_callback_.Run(status_or.status());
+      DoAcceptLoop();
+    } else {
+      std::move(accept_once_intercept_callback_).Run(status_or.status());
+    }
   }
-  DoAcceptLoop();
 }
 
 #if !defined(FEL_NO_SSL)
 template <typename MessageTy>
-void TCPChannel<MessageTy>::OnHandshake(const Status& s) {
-  DCHECK(!accept_callback_.is_null());
+void TCPChannel<MessageTy>::OnSSLHandshake(const Status& s) {
   if (s.ok()) {
     TCPServerSocket* server_socket =
         this->channel_impl_->ToSocket()->ToTCPSocket()->ToTCPServerSocket();
-    server_socket->AddSocket(std::move(ssl_server_socket_));
+    if (!accept_callback_.is_null()) {
+      server_socket->AddSocket(std::move(ssl_server_socket_));
+    } else {
+      auto channel = std::make_unique<TCPChannel<MessageTy>>();
+      channel->set_use_ros_channel(this->use_ros_channel_);
+      channel->channel_impl_ = std::move(ssl_server_socket_);
+      std::move(accept_once_intercept_callback_).Run(std::move(channel));
+      return;
+    }
   } else {
     ssl_server_socket_.reset();
   }
-  accept_callback_.Run(s);
-  DoAcceptLoop();
-}
-#endif
-
-template <typename MessageTy>
-void TCPChannel<MessageTy>::OnAccept2(
-    AcceptOnceInterceptCallback callback,
-    StatusOr<std::unique_ptr<net::TCPSocket>> status_or) {
-  if (status_or.ok()) {
-    auto channel = std::make_unique<TCPChannel<MessageTy>>();
-    channel->set_use_ros_channel(this->use_ros_channel_);
-    channel->channel_impl_ =
-        std::make_unique<TCPClientSocket>(std::move(status_or.ValueOrDie()));
-    std::move(callback).Run(std::move(channel));
+  if (!accept_callback_.is_null()) {
+    accept_callback_.Run(s);
+    DoAcceptLoop();
   } else {
-    std::move(callback).Run(status_or.status());
+    std::move(accept_once_intercept_callback_).Run(s);
   }
 }
+#endif  // !defined(FEL_NO_SSL)
 
 template <typename MessageTy>
 void TCPChannel<MessageTy>::Connect(const ChannelDef& channel_def,

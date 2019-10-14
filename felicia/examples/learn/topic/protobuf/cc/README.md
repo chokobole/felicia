@@ -101,12 +101,12 @@ Then how is possibly publishing topics? If you want to publish a topic, you have
 
 ```c++
 void ProtobufPublishingNode::RequestPublish() {
-  communication::Settings settings;
-  settings.buffer_size = Bytes::FromBytes(512);
-  ...
   ChannelDef::Type channel_type;
   ChannelDef::Type_Parse(topic_create_flag_.channel_type_flag()->value(),
                          &channel_type);
+
+  communication::Settings settings;
+  ...
 
   publisher_.RequestPublish(
       node_info_, topic_, channel_type, settings,

@@ -8,6 +8,7 @@ class ProtobufSubscribingNode(fel.NodeLifecycle):
     def __init__(self, topic_create_flag):
         super().__init__()
         self.topic = topic_create_flag.topic_flag.value
+        self.topic_create_flag = topic_create_flag
         self.subscriber = fel.communication.Subscriber(SimpleMessage)
 
     def on_init(self):
@@ -40,7 +41,10 @@ class ProtobufSubscribingNode(fel.NodeLifecycle):
 
     def request_subscribe(self):
         settings = fel.communication.Settings()
-        settings.buffer_size = fel.Bytes.from_bytes(512)
+        size = fel.Bytes.from_bytes(512)
+        settings.buffer_size = size
+        settings.channel_settings.tcp_settings.use_ssl = self.topic_create_flag.use_ssl_flag.value
+        settings.channel_settings.shm_settings.shm_size = size
 
         self.subscriber.request_subscribe(self.node_info, self.topic,
                                           ChannelDef.CHANNEL_TYPE_TCP |
