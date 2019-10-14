@@ -38,9 +38,11 @@ inline felicia::Status WatcherNodeAlreadyRegistered() {
   return AlreadyExists("Watcher node already exists.");
 }
 
-inline felicia::Status TopicAlreadyPublishing(const TopicInfo& topic_info) {
-  return AlreadyExists(base::StringPrintf(
-      "Topic '%s' is already being publishied.", topic_info.topic().c_str()));
+inline felicia::Status TopicAlreadyPublishingOnNode(
+    const NodeInfo& node_info, const TopicInfo& topic_info) {
+  return AlreadyExists(
+      base::StringPrintf("Node '%s' is already publish service '%s'.",
+                         node_info.name().c_str(), topic_info.topic().c_str()));
 }
 
 inline felicia::Status FailedToPublishTopic(const TopicInfo& topic_info) {
@@ -108,8 +110,8 @@ inline felicia::Status FailedToUnregisterServiceClient(
                                     service.c_str()));
 }
 
-inline felicia::Status ServiceAlreadyServing(const NodeInfo& node_info,
-                                             const ServiceInfo& service_info) {
+inline felicia::Status ServiceAlreadyServingOnNode(
+    const NodeInfo& node_info, const ServiceInfo& service_info) {
   return AlreadyExists(base::StringPrintf(
       "Node '%s' is already serving service '%s'.", node_info.name().c_str(),
       service_info.service().c_str()));

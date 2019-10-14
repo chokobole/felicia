@@ -134,14 +134,14 @@ void Node::RegisterServingService(const ServiceInfo& service_info) {
 }
 
 void Node::UnregisterRequestingService(const std::string& service) {
-  auto it = service_info_map_.find(service);
-  service_info_map_.erase(it);
-}
-
-void Node::UnregisterServingService(const std::string& service) {
   auto it = std::remove(requesting_services_.begin(),
                         requesting_services_.end(), service);
   requesting_services_.erase(it, requesting_services_.end());
+}
+
+void Node::UnregisterServingService(const std::string& service) {
+  auto it = service_info_map_.find(service);
+  service_info_map_.erase(it);
 }
 
 bool Node::IsRequestingService(const std::string& service) const {

@@ -247,6 +247,12 @@ void Master::RegisterServiceServer(const RegisterServiceServerRequest* arg,
   CHECK_NODE_EXISTS(node_info);
 
   const ServiceInfo& service_info = arg->service_info();
+  if (!IsValidChannelSource(service_info.service_source())) {
+    std::move(callback).Run(errors::ChannelSourceNotValid(
+        "service source", service_info.service_source()));
+    return;
+  }
+
   thread_->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&Master::DoRegisterServiceServer, base::Unretained(this),
@@ -358,7 +364,7 @@ void Master::DoPublishTopic(const NodeInfo& node_info,
   std::vector<base::WeakPtr<Node>> publishing_nodes = FindNodes(node_filter);
   Reason reason;
   if (publishing_nodes.size() > 0) {
-    reason = Reason::TopicAlreadyPublishing;
+    reason = Reason::TopicAlreadyPublishingOnNode;
   } else {
     base::WeakPtr<Node> node = FindNode(node_info);
     base::AutoLock l(lock_);
@@ -404,8 +410,9 @@ void Master::DoPublishTopic(const NodeInfo& node_info,
 #if defined(HAS_ROS)
     }
 #endif  // defined(HAS_ROS)
-  } else if (reason == Reason::TopicAlreadyPublishing) {
-    std::move(callback).Run(errors::TopicAlreadyPublishing(topic_info));
+  } else if (reason == Reason::TopicAlreadyPublishingOnNode) {
+    std::move(callback).Run(
+        errors::TopicAlreadyPublishingOnNode(node_info, topic_info));
   } else if (reason == Reason::UnknownFailed) {
     std::move(callback).Run(errors::FailedToPublishTopic(topic_info));
   }
@@ -624,7 +631,7 @@ void Master::DoRegisterServiceServer(const NodeInfo& node_info,
   std::vector<base::WeakPtr<Node>> server_nodes = FindNodes(node_filter);
   Reason reason;
   if (server_nodes.size() > 0) {
-    reason = Reason::ServiceAlreadyServing;
+    reason = Reason::ServiceAlreadyServingOnNode;
   } else {
     base::WeakPtr<Node> node = FindNode(node_info);
     base::AutoLock l(lock_);
@@ -645,9 +652,9 @@ void Master::DoRegisterServiceServer(const NodeInfo& node_info,
                                      node_info.name().c_str());
     std::move(callback).Run(Status::OK());
     NotifyAllServiceClients(service_info);
-  } else if (reason == Reason::ServiceAlreadyServing) {
+  } else if (reason == Reason::ServiceAlreadyServingOnNode) {
     std::move(callback).Run(
-        errors::ServiceAlreadyServing(node_info, service_info));
+        errors::ServiceAlreadyServingOnNode(node_info, service_info));
   } else if (reason == Reason::UnknownFailed) {
     std::move(callback).Run(
         errors::FailedToRegisterServiceServer(service_info));

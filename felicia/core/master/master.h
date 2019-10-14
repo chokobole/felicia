@@ -76,11 +76,11 @@ class EXPORT Master {
 
   enum Reason {
     None,
-    TopicAlreadyPublishing,
+    TopicAlreadyPublishingOnNode,
     TopicNotPublishingOnNode,
     TopicAlreadySubscribingOnNode,
     TopicNotSubscribingOnNode,
-    ServiceAlreadyServing,
+    ServiceAlreadyServingOnNode,
     ServiceNotServingOnNode,
     ServiceAlreadyRequestingOnNode,
     ServiceNotRequestingOnNode,

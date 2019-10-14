@@ -24,71 +24,62 @@ void FillRandomTCPChannelDef(ChannelDef* channel_def) {
 
 void ExpectOK(std::shared_ptr<base::WaitableEvent> event, const Status& s) {
   EXPECT_TRUE(s.ok());
+  LOG_IF(ERROR, !s.ok()) << s;
   event->Signal();
 }
 
-void ExpectChannelSourceNotValid(std::shared_ptr<base::WaitableEvent> event,
-                                 const std::string& name,
-                                 const ChannelSource& channel_source,
-                                 const Status& s) {
-  Status expected = errors::ChannelSourceNotValid(name, channel_source);
-  EXPECT_TRUE(s == expected);
-  event->Signal();
-}
+#define DEFINE_EXPECTED_ERROR_0(Error)                           \
+  void Expect##Error(std::shared_ptr<base::WaitableEvent> event, \
+                     const Status& s) {                          \
+    Status expected = errors::Error();                           \
+    EXPECT_TRUE(s == expected);                                  \
+    LOG_IF(ERROR, s != expected) << s;                           \
+    event->Signal();                                             \
+  }
 
-void ExpectClientNotRegistered(std::shared_ptr<base::WaitableEvent> event,
-                               const Status& s) {
-  Status expected = errors::ClientNotRegistered();
-  EXPECT_TRUE(s == expected);
-  event->Signal();
-}
+#define DEFINE_EXPECTED_ERROR_1(Error, Type, name)                          \
+  void Expect##Error(std::shared_ptr<base::WaitableEvent> event, Type name, \
+                     const Status& s) {                                     \
+    Status expected = errors::Error(name);                                  \
+    EXPECT_TRUE(s == expected);                                             \
+    LOG_IF(ERROR, s != expected) << s;                                      \
+    event->Signal();                                                        \
+  }
 
-void ExpectNodeNotRegistered(std::shared_ptr<base::WaitableEvent> event,
-                             const NodeInfo& node_info, const Status& s) {
-  Status expected = errors::NodeNotRegistered(node_info);
-  EXPECT_TRUE(s == expected);
-  event->Signal();
-}
+#define DEFINE_EXPECTED_ERROR_2(Error, Type, name, Type2, name2)            \
+  void Expect##Error(std::shared_ptr<base::WaitableEvent> event, Type name, \
+                     Type2 name2, const Status& s) {                        \
+    Status expected = errors::Error(name, name2);                           \
+    EXPECT_TRUE(s == expected);                                             \
+    LOG_IF(ERROR, s != expected) << s;                                      \
+    event->Signal();                                                        \
+  }
 
-void ExpectNodeAlreadyRegistered(std::shared_ptr<base::WaitableEvent> event,
-                                 const NodeInfo& node_info, const Status& s) {
-  Status expected = errors::NodeAlreadyRegistered(node_info);
-  EXPECT_TRUE(s == expected);
-  event->Signal();
-}
+DEFINE_EXPECTED_ERROR_2(ChannelSourceNotValid, const std::string&, name,
+                        const ChannelSource&, channel_source)
+DEFINE_EXPECTED_ERROR_0(ClientNotRegistered)
+DEFINE_EXPECTED_ERROR_1(NodeNotRegistered, const NodeInfo&, node_info)
+DEFINE_EXPECTED_ERROR_1(NodeAlreadyRegistered, const NodeInfo&, node_info)
+DEFINE_EXPECTED_ERROR_2(TopicAlreadyPublishingOnNode, const NodeInfo&,
+                        node_info, const TopicInfo&, topic_info)
+DEFINE_EXPECTED_ERROR_2(TopicNotPublishingOnNode, const NodeInfo&, node_info,
+                        const std::string&, topic)
+DEFINE_EXPECTED_ERROR_2(TopicAlreadySubscribingOnNode, const NodeInfo&,
+                        node_info, const std::string&, topic)
+DEFINE_EXPECTED_ERROR_2(TopicNotSubscribingOnNode, const NodeInfo&, node_info,
+                        const std::string&, topic)
+DEFINE_EXPECTED_ERROR_2(ServiceAlreadyRequestingOnNode, const NodeInfo&,
+                        node_info, const std::string&, service)
+DEFINE_EXPECTED_ERROR_2(ServiceNotRequestingOnNode, const NodeInfo&, node_info,
+                        const std::string&, service)
+DEFINE_EXPECTED_ERROR_2(ServiceAlreadyServingOnNode, const NodeInfo&, node_info,
+                        const ServiceInfo&, service_info)
+DEFINE_EXPECTED_ERROR_2(ServiceNotServingOnNode, const NodeInfo&, node_info,
+                        const std::string&, service)
 
-void ExpectTopicAlreadyPublishing(std::shared_ptr<base::WaitableEvent> event,
-                                  const TopicInfo& topic_info,
-                                  const Status& s) {
-  Status expected = errors::TopicAlreadyPublishing(topic_info);
-  EXPECT_TRUE(s == expected);
-  event->Signal();
-}
-
-void ExpectTopicNotPublishingOnNode(std::shared_ptr<base::WaitableEvent> event,
-                                    const NodeInfo& node_info,
-                                    const std::string& topic, const Status& s) {
-  Status expected = errors::TopicNotPublishingOnNode(node_info, topic);
-  EXPECT_TRUE(s == expected);
-  event->Signal();
-}
-
-void ExpectTopicAlreadySubscribingOnNode(
-    std::shared_ptr<base::WaitableEvent> event, const NodeInfo& node_info,
-    const std::string& topic, const Status& s) {
-  Status expected = errors::TopicAlreadySubscribingOnNode(node_info, topic);
-  EXPECT_TRUE(s == expected);
-  event->Signal();
-}
-
-void ExpectTopicNotSubscribingOnNode(std::shared_ptr<base::WaitableEvent> event,
-                                     const NodeInfo& node_info,
-                                     const std::string& topic,
-                                     const Status& s) {
-  Status expected = errors::TopicNotSubscribingOnNode(node_info, topic);
-  EXPECT_TRUE(s == expected);
-  event->Signal();
-}
+#undef DEFINE_EXPECTED_ERROR_0
+#undef DEFINE_EXPECTED_ERROR_1
+#undef DEFINE_EXPECTED_ERROR_2
 
 }  // namespace
 
@@ -103,6 +94,9 @@ class MasterTest : public testing::Test {
         publishing_node_name_("publisher"),
         subscribing_node_name_("subscriber"),
         topic_("topic"),
+        client_node_name_("client"),
+        server_node_name_("server"),
+        service_("service"),
         event_(std::make_shared<base::WaitableEvent>(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,
             base::WaitableEvent::InitialState::NOT_SIGNALED)) {
@@ -111,36 +105,32 @@ class MasterTest : public testing::Test {
   }
 
   void SetUp() override {
+#define REGISTER_NODE(client_id, node_name, node_info) \
+  do {                                                 \
+    node_info.set_client_id(client_id);                \
+    node_info.set_name(node_name);                     \
+    DECLARE_REQUEST_AND_RESPONSE(RegisterNode);        \
+    *request->mutable_node_info() = node_info;         \
+    RegisterNode(request.get(), response.get(),        \
+                 base::BindOnce(&ExpectOK, event_));   \
+  } while (0)
+
     {
       DECLARE_REQUEST_AND_RESPONSE(RegisterClient);
       RegisterRandomClientForTesting(request.get(), response.get());
       client_id_ = response->id();
     }
 
-    pub_node_info_.set_client_id(client_id_);
-    pub_node_info_.set_name(publishing_node_name_);
-    {
-      DECLARE_REQUEST_AND_RESPONSE(RegisterNode);
-      *request->mutable_node_info() = pub_node_info_;
-      RegisterNode(request.get(), response.get(),
-                   base::BindOnce(&ExpectOK, event_));
-    }
-
+    REGISTER_NODE(client_id_, publishing_node_name_, pub_node_info_);
     {
       DECLARE_REQUEST_AND_RESPONSE(PublishTopic);
-      PublishTopicForTesting(request.get(), response.get(), pub_node_info_,
-                             topic_, &topic_info_);
-    }
-
-    sub_node_info_.set_client_id(client_id_);
-    sub_node_info_.set_name(subscribing_node_name_);
-    {
-      DECLARE_REQUEST_AND_RESPONSE(RegisterNode);
-      *request->mutable_node_info() = sub_node_info_;
-      RegisterNode(request.get(), response.get(),
+      PreparePublishTopic(request.get(), response.get(), pub_node_info_, topic_,
+                          &topic_info_);
+      PublishTopic(request.get(), response.get(),
                    base::BindOnce(&ExpectOK, event_));
     }
 
+    REGISTER_NODE(client_id_, subscribing_node_name_, sub_node_info_);
     {
       DECLARE_REQUEST_AND_RESPONSE(SubscribeTopic);
       *request->mutable_node_info() = sub_node_info_;
@@ -148,43 +138,50 @@ class MasterTest : public testing::Test {
       SubscribeTopic(request.get(), response.get(),
                      base::BindOnce(&ExpectOK, event_));
     }
+
+    REGISTER_NODE(client_id_, client_node_name_, client_node_info_);
+    {
+      DECLARE_REQUEST_AND_RESPONSE(RegisterServiceClient);
+      *request->mutable_node_info() = client_node_info_;
+      *request->mutable_service() = service_;
+      RegisterServiceClient(request.get(), response.get(),
+                            base::BindOnce(&ExpectOK, event_));
+    }
+
+    REGISTER_NODE(client_id_, server_node_name_, server_node_info_);
+    {
+      DECLARE_REQUEST_AND_RESPONSE(RegisterServiceServer);
+      PrepareRegisterServiceServer(request.get(), response.get(),
+                                   server_node_info_, service_, &service_info_);
+      RegisterServiceServer(request.get(), response.get(),
+                            base::BindOnce(&ExpectOK, event_));
+    }
   }
 
   void TearDown() override {
-    {
-      DECLARE_REQUEST_AND_RESPONSE(UnregisterNode);
-      *request->mutable_node_info() = pub_node_info_;
-      UnregisterNode(request.get(), response.get(),
-                     base::BindOnce(&ExpectOK, event_));
-    }
-
-    {
-      DECLARE_REQUEST_AND_RESPONSE(UnregisterNode);
-      *request->mutable_node_info() = sub_node_info_;
-      UnregisterNode(request.get(), response.get(),
-                     base::BindOnce(&ExpectOK, event_));
-    }
+#define UNREGISTER_NODE(node_info)                     \
+  do {                                                 \
+    DECLARE_REQUEST_AND_RESPONSE(UnregisterNode);      \
+    *request->mutable_node_info() = node_info;         \
+    UnregisterNode(request.get(), response.get(),      \
+                   base::BindOnce(&ExpectOK, event_)); \
+  } while (0)
+    UNREGISTER_NODE(pub_node_info_);
+    UNREGISTER_NODE(sub_node_info_);
+    UNREGISTER_NODE(client_node_info_);
+    UNREGISTER_NODE(server_node_info_);
+#undef UNREGISTER_NODE
   }
 
-#define MASTER_METHOD(method)                                       \
-  void method(const method##Request* arg, method##Response* result, \
+#define MASTER_METHOD(Method, method, cancelable)                   \
+  void Method(const Method##Request* arg, Method##Response* result, \
               StatusOnceCallback callback) {                        \
-    master_->method(arg, result, std::move(callback));              \
+    master_->Method(arg, result, std::move(callback));              \
     event_->Wait();                                                 \
   }
-
-  MASTER_METHOD(RegisterClient)
-  MASTER_METHOD(ListClients)
-  MASTER_METHOD(RegisterNode)
-  MASTER_METHOD(UnregisterNode)
-  MASTER_METHOD(ListNodes)
-  MASTER_METHOD(PublishTopic)
-  MASTER_METHOD(UnpublishTopic)
-  MASTER_METHOD(SubscribeTopic)
-  MASTER_METHOD(UnsubscribeTopic)
-  MASTER_METHOD(ListTopics)
-
+#include "felicia/core/master/rpc/master_method_list.h"
 #undef MASTER_METHOD
+
   void SetCheckHeartBeatForTesting(bool check_heart_beat) {
     master_->SetCheckHeartBeatForTesting(check_heart_beat);
   }
@@ -203,10 +200,10 @@ class MasterTest : public testing::Test {
     RegisterClient(request, response, base::BindOnce(&ExpectOK, event_));
   }
 
-  void PublishTopicForTesting(PublishTopicRequest* request,
-                              PublishTopicResponse* response,
-                              const NodeInfo& node_info,
-                              const std::string& topic, TopicInfo* topic_info) {
+  void PreparePublishTopic(PublishTopicRequest* request,
+                           PublishTopicResponse* response,
+                           const NodeInfo& node_info, const std::string& topic,
+                           TopicInfo* topic_info) {
     topic_info->set_topic(topic);
     ChannelDef channel_def;
     channel_def.set_type(ChannelDef::CHANNEL_TYPE_TCP);
@@ -215,7 +212,21 @@ class MasterTest : public testing::Test {
     *topic_source->add_channel_defs() = channel_def;
     *request->mutable_node_info() = node_info;
     *request->mutable_topic_info() = *topic_info;
-    PublishTopic(request, response, base::BindOnce(&ExpectOK, event_));
+  }
+
+  void PrepareRegisterServiceServer(RegisterServiceServerRequest* request,
+                                    RegisterServiceServerResponse* response,
+                                    const NodeInfo& node_info,
+                                    const std::string& service,
+                                    ServiceInfo* service_info) {
+    service_info->set_service(service);
+    ChannelDef channel_def;
+    channel_def.set_type(ChannelDef::CHANNEL_TYPE_TCP);
+    FillRandomTCPChannelDef(&channel_def);
+    ChannelSource* service_source = service_info->mutable_service_source();
+    *service_source->add_channel_defs() = channel_def;
+    *request->mutable_node_info() = node_info;
+    *request->mutable_service_info() = *service_info;
   }
 
  protected:
@@ -224,9 +235,15 @@ class MasterTest : public testing::Test {
   std::string publishing_node_name_;
   std::string subscribing_node_name_;
   std::string topic_;
+  std::string client_node_name_;
+  std::string server_node_name_;
+  std::string service_;
   TopicInfo topic_info_;
+  ServiceInfo service_info_;
   NodeInfo pub_node_info_;
   NodeInfo sub_node_info_;
+  NodeInfo client_node_info_;
+  NodeInfo server_node_info_;
   std::shared_ptr<base::WaitableEvent> event_;
 };  // namespace felicia
 
@@ -319,16 +336,15 @@ TEST_F(MasterTest, RegisterNode) {
 namespace {
 
 void OnListAllNodes(std::shared_ptr<base::WaitableEvent> event,
-                    uint32_t client_id, const std::string& publishing_node_name,
-                    const std::string& subscribing_node_name,
+                    uint32_t client_id, const std::vector<std::string>& names,
                     ListNodesResponse* response, const Status& s) {
   EXPECT_TRUE(s.ok());
   auto& node_infos = response->node_infos();
-  EXPECT_EQ(2, node_infos.size());
-  EXPECT_EQ(publishing_node_name, node_infos[0].name());
-  EXPECT_EQ(client_id, node_infos[0].client_id());
-  EXPECT_EQ(subscribing_node_name, node_infos[1].name());
-  EXPECT_EQ(client_id, node_infos[1].client_id());
+  EXPECT_EQ(4, node_infos.size());
+  for (int i = 0; i < node_infos.size(); ++i) {
+    EXPECT_EQ(names[i], node_infos[i].name());
+    EXPECT_EQ(client_id, node_infos[i].client_id());
+  }
   event->Signal();
 }
 
@@ -375,10 +391,12 @@ TEST_F(MasterTest, ListNodes) {
   NodeFilter* node_filter = request->mutable_node_filter();
   node_filter->set_all(true);
 
-  ListNodes(
-      request.get(), response.get(),
-      base::BindOnce(&OnListAllNodes, event_, client_id_, publishing_node_name_,
-                     subscribing_node_name_, response.get()));
+  ListNodes(request.get(), response.get(),
+            base::BindOnce(&OnListAllNodes, event_, client_id_,
+                           std::vector<std::string>{
+                               publishing_node_name_, subscribing_node_name_,
+                               client_node_name_, server_node_name_},
+                           response.get()));
 
   response->clear_node_infos();
   node_filter->Clear();
@@ -419,15 +437,11 @@ TEST_F(MasterTest, PublishTopic) {
                base::BindOnce(&ExpectChannelSourceNotValid, event_,
                               "topic source", topic_info->topic_source()));
 
-  topic_info->set_topic(topic_);
-  ChannelDef channel_def;
-  channel_def.set_type(ChannelDef::CHANNEL_TYPE_TCP);
-  FillRandomTCPChannelDef(&channel_def);
-  *topic_info->mutable_topic_source()->add_channel_defs() = channel_def;
-
-  PublishTopic(
-      request.get(), response.get(),
-      base::BindOnce(&ExpectTopicAlreadyPublishing, event_, *topic_info));
+  PreparePublishTopic(request.get(), response.get(), *node_info, topic_,
+                      topic_info);
+  PublishTopic(request.get(), response.get(),
+               base::BindOnce(&ExpectTopicAlreadyPublishingOnNode, event_,
+                              *node_info, *topic_info));
 
   topic_info->set_topic("topic2");
 
@@ -534,14 +548,157 @@ TEST_F(MasterTest, ListTopics) {
   TopicInfo topic_info;
   {
     DECLARE_REQUEST_AND_RESPONSE(PublishTopic);
-    PublishTopicForTesting(request.get(), response.get(), pub_node_info_, topic,
-                           &topic_info);
+    PreparePublishTopic(request.get(), response.get(), pub_node_info_, topic,
+                        &topic_info);
+    PublishTopic(request.get(), response.get(),
+                 base::BindOnce(&ExpectOK, event_));
   }
   topic_filter->Clear();
   topic_filter->set_topic(topic);
 
   ListTopics(request.get(), response.get(),
              base::BindOnce(&OnListTopic, event_, response.get(), topic_info));
+}
+
+TEST_F(MasterTest, RegisterServiceClient) {
+  DECLARE_REQUEST_AND_RESPONSE(RegisterServiceClient);
+
+  NodeInfo* node_info = request->mutable_node_info();
+
+  EXPECT_CHECK_NODE_EXISTS(RegisterServiceClient, node_info);
+
+  node_info->set_name(client_node_name_);
+  request->set_service(service_);
+
+  RegisterServiceClient(request.get(), response.get(),
+                        base::BindOnce(&ExpectServiceAlreadyRequestingOnNode,
+                                       event_, *node_info, request->service()));
+
+  request->set_service("service2");
+
+  RegisterServiceClient(request.get(), response.get(),
+                        base::BindOnce(&ExpectOK, event_));
+}
+
+TEST_F(MasterTest, UnregisterServiceClient) {
+  DECLARE_REQUEST_AND_RESPONSE(UnregisterServiceClient);
+
+  NodeInfo* node_info = request->mutable_node_info();
+
+  EXPECT_CHECK_NODE_EXISTS(UnregisterServiceClient, node_info);
+
+  node_info->set_name(client_node_name_);
+  request->set_service("service2");
+
+  UnregisterServiceClient(
+      request.get(), response.get(),
+      base::BindOnce(&ExpectServiceNotRequestingOnNode, event_, *node_info,
+                     request->service()));
+
+  request->set_service(service_);
+
+  UnregisterServiceClient(request.get(), response.get(),
+                          base::BindOnce(&ExpectOK, event_));
+}
+
+TEST_F(MasterTest, RegisterServiceServer) {
+  DECLARE_REQUEST_AND_RESPONSE(RegisterServiceServer);
+
+  NodeInfo* node_info = request->mutable_node_info();
+
+  EXPECT_CHECK_NODE_EXISTS(RegisterServiceServer, node_info);
+
+  node_info->set_name(server_node_name_);
+  ServiceInfo* service_info = request->mutable_service_info();
+
+  RegisterServiceServer(
+      request.get(), response.get(),
+      base::BindOnce(&ExpectChannelSourceNotValid, event_, "service source",
+                     service_info->service_source()));
+
+  PrepareRegisterServiceServer(request.get(), response.get(), *node_info,
+                               service_, service_info);
+  RegisterServiceServer(request.get(), response.get(),
+                        base::BindOnce(&ExpectServiceAlreadyServingOnNode,
+                                       event_, *node_info, *service_info));
+
+  service_info->set_service("service2");
+
+  RegisterServiceServer(request.get(), response.get(),
+                        base::BindOnce(&ExpectOK, event_));
+}
+
+TEST_F(MasterTest, UnregisterServiceServer) {
+  DECLARE_REQUEST_AND_RESPONSE(UnregisterServiceServer);
+
+  NodeInfo* node_info = request->mutable_node_info();
+
+  EXPECT_CHECK_NODE_EXISTS(UnregisterServiceServer, node_info);
+
+  node_info->set_name(server_node_name_);
+  request->set_service("service2");
+
+  UnregisterServiceServer(request.get(), response.get(),
+                          base::BindOnce(&ExpectServiceNotServingOnNode, event_,
+                                         *node_info, request->service()));
+
+  request->set_service(service_);
+
+  UnregisterServiceServer(request.get(), response.get(),
+                          base::BindOnce(&ExpectOK, event_));
+}
+
+void OnListAllServices(std::shared_ptr<base::WaitableEvent> event,
+                       const std::string& service,
+                       const ChannelSource& service_source,
+                       ListServicesResponse* response, const Status& s) {
+  EXPECT_TRUE(s.ok());
+  auto& service_infos = response->service_infos();
+  EXPECT_EQ(1, service_infos.size());
+  EXPECT_EQ(service, service_infos[0].service());
+  EXPECT_TRUE(
+      IsSameChannelSource(service_source, service_infos[0].service_source()));
+  event->Signal();
+}
+
+void OnListService(std::shared_ptr<base::WaitableEvent> event,
+                   ListServicesResponse* response,
+                   const ServiceInfo& service_info, const Status& s) {
+  EXPECT_TRUE(s.ok());
+  auto& service_infos = response->service_infos();
+  EXPECT_EQ(1, service_infos.size());
+  EXPECT_EQ(service_info.service(), service_infos[0].service());
+  EXPECT_TRUE(IsSameChannelSource(service_info.service_source(),
+                                  service_infos[0].service_source()));
+  event->Signal();
+}
+
+TEST_F(MasterTest, ListServices) {
+  DECLARE_REQUEST_AND_RESPONSE(ListServices);
+
+  ServiceFilter* service_filter = request->mutable_service_filter();
+  service_filter->set_all(true);
+
+  ListServices(request.get(), response.get(),
+               base::BindOnce(&OnListAllServices, event_, service_,
+                              service_info_.service_source(), response.get()));
+
+  response->clear_service_infos();
+  std::string service = "test2";
+  ServiceInfo service_info;
+  {
+    DECLARE_REQUEST_AND_RESPONSE(RegisterServiceServer);
+    PrepareRegisterServiceServer(request.get(), response.get(), pub_node_info_,
+                                 service, &service_info);
+    RegisterServiceServer(request.get(), response.get(),
+                          base::BindOnce(&ExpectOK, event_));
+  }
+  service_filter->Clear();
+  service_filter->set_service(service);
+
+  ListServices(
+      request.get(), response.get(),
+      base::BindOnce(&OnListService, event_, response.get(), service_info));
 }
 
 #undef EXPECT_CHECK_NODE_EXISTS
