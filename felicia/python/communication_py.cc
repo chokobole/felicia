@@ -46,7 +46,6 @@ class PyMessageCallback {
       case TopicInfo_ImplType_TopicInfo_ImplType_INT_MAX_SENTINEL_DO_NOT_USE_:
         break;
     }
-    object.inc_ref();
     callback_(std::move(object));
   }
 
