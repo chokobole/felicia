@@ -26,6 +26,8 @@ class RosMsgPublishingNode(fel.NodeLifecycle):
 
     def request_publish(self):
         settings = fel.communication.Settings()
+        if self.topic.startswith("ros://"):
+            settings.channel_settings.use_ros_channel = True
         settings.buffer_size = fel.Bytes.from_bytes(512)
 
         self.publisher.request_publish(self.node_info, self.topic, self.channel_def_type,
