@@ -17,7 +17,7 @@ template <typename R, typename... Args>
 class PyCallback<R(Args...)> {
  public:
   explicit PyCallback(const py::function& func)
-      : func_(py::cast<std::function<void(Args...)>>(func)) {}
+      : func_(py::cast<std::function<R(Args...)>>(func)) {}
 
   R Invoke(Args... args) { return func_(std::forward<Args>(args)...); }
 
