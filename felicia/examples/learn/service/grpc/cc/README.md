@@ -139,6 +139,16 @@ void SimpleService::Add(const AddRequest* request, AddResponse* response,
 }
 ```
 
+Maybe you can notice, here we have a convention to write a proto file. You have to name and every rpc method arument type and return type something like `MethodRequest` and `MethodResponse` in order to use macros used above.
+
+```protobuf
+service Service {
+// You should replace Method!
+rpc Method(MethodRequest) returns (MethodResponse) {}
+...
+}
+```
+
 To use `unregister` method, you have to do like below.
 
 ```c++
@@ -159,7 +169,23 @@ void GrpcServerNode::OnRequestUnregister(const Status& s) {
 }
 ```
 
-[grpc_client_node.cc](grpc_client_node.cc) is very similar to above. But unlike `service server` you have to pass one more callback, for inform you whether the `service client` is connected to the `service server`.
+[grpc_client_node.cc](grpc_client_node.cc) is very similar to above. First let's figure out how to define your client for service. It's simple you just declare and define method for your service!
+
+* Declare methods with FEL_CLIENT_METHOD_DECLARE(method).
+* Define methods with FEL_CLIENT_METHOD_DEFINE(clazz, method).
+
+```c++
+// grpc_client_node.h
+class SimpleClient : public rpc::Client<grpc::SimpleService> {
+ public:
+  FEL_CLIENT_METHOD_DECLARE(Add);
+};
+
+// grpc_client_node.cc
+FEL_CLIENT_METHOD_DEFINE(SimpleClient, Add)
+```
+
+Also unlike `service server` you have to pass one more callback, for inform you whether the `service client` is connected to the `service server`.
 
 ```c++
 void GrpcClientNode::OnConnect(ServiceInfo::Status s) {
