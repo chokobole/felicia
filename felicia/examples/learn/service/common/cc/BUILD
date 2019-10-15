@@ -7,3 +7,11 @@ fel_cc_library(
     visibility = ["//felicia/examples:internal"],
     deps = ["//felicia/examples/learn/common/cc:node_create_flag"],
 )
+
+fel_cc_library(
+    name = "simple_service_flag",
+    srcs = ["simple_service_flag.cc"],
+    hdrs = ["simple_service_flag.h"],
+    visibility = ["//felicia/examples:internal"],
+    deps = [":service_create_flag"],
+)

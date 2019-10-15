@@ -5,7 +5,7 @@ import felicia_py.command_line_interface as cli
 import felicia_py as fel
 
 
-class GrpcServiceFlag(ServiceCreateFlag):
+class SimpleServiceFlag(ServiceCreateFlag):
     def __init__(self):
         super().__init__()
         self.a_flag = cli.IntFlagBuilder().set_short_name("-a").set_help(

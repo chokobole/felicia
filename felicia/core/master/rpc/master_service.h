@@ -15,7 +15,7 @@ class MasterService : public rpc::Service<grpc::MasterService> {
   void EnqueueRequests() override;
 
 #define MASTER_METHOD(Method, method, cancelable) \
-  FEL_SERVICE_METHOD_DECLARE(MasterService, Method);
+  FEL_GRPC_SERVICE_METHOD_DECLARE(MasterService, Method);
 #include "felicia/core/master/rpc/master_method_list.h"
 #undef MASTER_METHOD
 

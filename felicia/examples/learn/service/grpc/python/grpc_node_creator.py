@@ -7,13 +7,13 @@ import felicia_py.command_line_interface as cli
 
 from grpc_client_node import GrpcClientNode
 from grpc_server_node import GrpcServerNode
-from grpc_service_flag import GrpcServiceFlag
+from felicia.examples.learn.service.common.python.simple_service_flag import SimpleServiceFlag
 
 
 def main():
     fel.felicia_init()
 
-    delegate = GrpcServiceFlag()
+    delegate = SimpleServiceFlag()
     parser = cli.FlagParser()
     parser.set_program_name('grpc_node_creator')
     if not parser.parse(len(sys.argv), sys.argv, delegate):

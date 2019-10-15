@@ -12,7 +12,7 @@ Status MasterClient::Start() { return Run(); }
 Status MasterClient::Stop() { return Shutdown(); }
 
 #define MASTER_METHOD(Method, method, cancelable) \
-  FEL_CLIENT_METHOD_DEFINE(MasterClient, Method)
+  FEL_GRPC_CLIENT_METHOD_DEFINE(MasterClient, Method)
 #include "felicia/core/master/rpc/master_method_list.h"
 #undef MASTER_METHOD
 

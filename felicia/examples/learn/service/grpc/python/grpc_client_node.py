@@ -7,7 +7,7 @@ import felicia.examples.learn.service.grpc.simple_service_pb2 as simple_service_
 import felicia.examples.learn.service.grpc.simple_service_pb2_grpc as simple_service_pb2_grpc
 
 
-class SimpleClient(Client):
+class GrpcSimpleClient(Client):
     @classmethod
     def new_stub(cls, channel):
         return simple_service_pb2_grpc.SimpleServiceStub(channel)
@@ -17,12 +17,12 @@ class SimpleClient(Client):
 
 
 class GrpcClientNode(fel.NodeLifecycle):
-    def __init__(self, grpc_service_flag):
+    def __init__(self, simple_service_flag):
         super().__init__()
-        self.grpc_service_flag = grpc_service_flag
-        self.service = grpc_service_flag.service_flag.value
-        self.simple_client = SimpleClient()
-        self.client = fel.communication.ServiceClient(self.simple_client)
+        self.simple_service_flag = simple_service_flag
+        self.service = simple_service_flag.service_flag.value
+        self.grpc_simple_client = GrpcSimpleClient()
+        self.client = fel.communication.ServiceClient(self.grpc_simple_client)
 
     def on_init(self):
         print("GrpcClientNode.on_init()")
@@ -60,9 +60,9 @@ class GrpcClientNode(fel.NodeLifecycle):
             self.node_info, self.service, self.on_request_unregister)
 
     def request_add(self):
-        a = self.grpc_service_flag.a_flag.value
-        b = self.grpc_service_flag.b_flag.value
-        response = self.simple_client.Add(
+        a = self.simple_service_flag.a_flag.value
+        b = self.simple_service_flag.b_flag.value
+        response = self.grpc_simple_client.Add(
             simple_service_pb2.AddRequest(a=a, b=b))
         print('{} + {} = {}'.format(a, b,
                                     cli.TextStyle.green(str(response.sum))))

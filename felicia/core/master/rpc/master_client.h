@@ -18,7 +18,7 @@ class EXPORT MasterClient : public rpc::Client<grpc::MasterService>,
   Status Stop() override;
 
 #define MASTER_METHOD(Method, method, cancelable) \
-  FEL_CLIENT_METHOD_DECLARE(Method) override;
+  FEL_GRPC_CLIENT_METHOD_DECLARE(Method) override;
 #include "felicia/core/master/rpc/master_method_list.h"
 #undef MASTER_METHOD
 };

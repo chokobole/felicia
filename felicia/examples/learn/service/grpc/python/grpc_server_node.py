@@ -5,29 +5,29 @@ import felicia.examples.learn.service.grpc.simple_service_pb2 as simple_service_
 import felicia.examples.learn.service.grpc.simple_service_pb2_grpc as simple_service_pb2_grpc
 
 
-class SimpleService(simple_service_pb2_grpc.SimpleServiceServicer):
+class GrpcSimpleService(simple_service_pb2_grpc.SimpleServiceServicer):
     def Add(self, request, context):
         return simple_service_pb2.AddResponse(
             sum=request.a + request.b
         )
 
 
-class SimplerServer(Server):
+class GrpcSimplerServer(Server):
     def __init__(self, max_workers):
         super().__init__(max_workers)
         simple_service_pb2_grpc.add_SimpleServiceServicer_to_server(
-            SimpleService(), self.server)
+            GrpcSimpleService(), self.server)
 
     def service_name(self):
         return simple_service_pb2.DESCRIPTOR.services_by_name['SimpleService'].full_name
 
 
 class GrpcServerNode(fel.NodeLifecycle):
-    def __init__(self, grpc_service_flag):
+    def __init__(self, simple_service_flag):
         super().__init__()
-        self.service = grpc_service_flag.service_flag.value
-        simple_server = SimplerServer(1)
-        self.server = fel.communication.ServiceServer(simple_server)
+        self.service = simple_service_flag.service_flag.value
+        grpc_simple_server = GrpcSimplerServer(1)
+        self.server = fel.communication.ServiceServer(grpc_simple_server)
 
     def on_init(self):
         print("GrpcServerNode.on_init()")

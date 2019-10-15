@@ -13,7 +13,7 @@ void MasterService::EnqueueRequests() {
 }
 
 #define MASTER_METHOD(Method, method, cancelable) \
-  FEL_SERVICE_METHOD_DEFINE(MasterService, master_, Method, cancelable);
+  FEL_GRPC_SERVICE_METHOD_DEFINE(MasterService, master_, Method, cancelable);
 #include "felicia/core/master/rpc/master_method_list.h"
 #undef MASTER_METHOD
 

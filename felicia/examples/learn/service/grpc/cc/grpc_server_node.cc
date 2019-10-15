@@ -2,17 +2,17 @@
 
 namespace felicia {
 
-SimpleService::SimpleService(::grpc::ServerBuilder* builder)
+GrpcSimpleService::GrpcSimpleService(::grpc::ServerBuilder* builder)
     : Service<grpc::SimpleService>(builder) {}
 
-void SimpleService::EnqueueRequests() {
-  FEL_ENQUEUE_REQUEST(SimpleService, Add, false);
+void GrpcSimpleService::EnqueueRequests() {
+  FEL_ENQUEUE_REQUEST(GrpcSimpleService, Add, false);
 }
 
-FEL_SERVICE_METHOD_DEFINE(SimpleService, this, Add, false)
+FEL_GRPC_SERVICE_METHOD_DEFINE(GrpcSimpleService, this, Add, false)
 
-void SimpleService::Add(const AddRequest* request, AddResponse* response,
-                        StatusOnceCallback callback) {
+void GrpcSimpleService::Add(const AddRequest* request, AddResponse* response,
+                            StatusOnceCallback callback) {
   int a = request->a();
   int b = request->b();
 
@@ -20,8 +20,8 @@ void SimpleService::Add(const AddRequest* request, AddResponse* response,
   std::move(callback).Run(Status::OK());
 }
 
-GrpcServerNode::GrpcServerNode(const GrpcServiceFlag& grpc_service_flag)
-    : service_(grpc_service_flag.service_flag()->value()) {}
+GrpcServerNode::GrpcServerNode(const SimpleServiceFlag& simple_service_flag)
+    : service_(simple_service_flag.service_flag()->value()) {}
 
 void GrpcServerNode::OnInit() {
   std::cout << "GrpcServerNode::OnInit()" << std::endl;

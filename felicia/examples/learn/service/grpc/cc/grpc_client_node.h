@@ -3,19 +3,19 @@
 
 #include "felicia/core/communication/service_client.h"
 #include "felicia/core/node/node_lifecycle.h"
-#include "felicia/examples/learn/service/grpc/cc/grpc_service_flag.h"
+#include "felicia/examples/learn/service/common/cc/simple_service_flag.h"
 #include "felicia/examples/learn/service/grpc/simple_service.grpc.pb.h"
 
 namespace felicia {
 
-class SimpleClient : public rpc::Client<grpc::SimpleService> {
+class GrpcSimpleClient : public rpc::Client<grpc::SimpleService> {
  public:
-  FEL_CLIENT_METHOD_DECLARE(Add);
+  FEL_GRPC_CLIENT_METHOD_DECLARE(Add);
 };
 
 class GrpcClientNode : public NodeLifecycle {
  public:
-  explicit GrpcClientNode(const GrpcServiceFlag& grpc_service_flag);
+  explicit GrpcClientNode(const SimpleServiceFlag& simple_service_flag);
 
   // NodeLifecycle methods
   void OnInit() override;
@@ -34,9 +34,9 @@ class GrpcClientNode : public NodeLifecycle {
   void RequestAdd();
 
   NodeInfo node_info_;
-  const GrpcServiceFlag& grpc_service_flag_;
+  const SimpleServiceFlag& simple_service_flag_;
   const std::string service_;
-  ServiceClient<SimpleClient> client_;
+  ServiceClient<GrpcSimpleClient> client_;
 };
 
 }  // namespace felicia

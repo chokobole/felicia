@@ -76,7 +76,7 @@ namespace felicia {
 
 class GrpcServerNode: public NodeLifecycle {
  public:
-  GrpcServerNode(const GrpcServiceFlag& grpc_service_flag);
+  GrpcServerNode(const SimpleServiceFlag& simple_service_flag);
 
   // NodeLifecycle methods
   void OnInit() override;
@@ -116,21 +116,21 @@ void GrpcServerNode::OnRequestRegister(const Status& s) {
 
 Okay, now we know how to request a service server to the master server, then how can we control our logic for a service? For this, you should put 3 things.
 * Fill in EnqueueRequests() methods with FEL_ENQUEUE_REQUEST(clazz, method, supports_cancel).
-* Define methods with FEL_SERVICE_METHOD_DEFINE(clazz, instance, method, supports_cancel).
+* Define methods with FEL_GRPC_SERVICE_METHOD_DEFINE(clazz, instance, method, supports_cancel).
 * Write custom logic for your service.
 
 ```c++
 // Fill in EnqueueRequests() methods with FEL_ENQUEUE_REQUEST(clazz, method, supports_cancel).
-void SimpleService::EnqueueRequests() {
-  FEL_ENQUEUE_REQUEST(SimpleService, Add, false);
+void GrpcSimpleService::EnqueueRequests() {
+  FEL_ENQUEUE_REQUEST(GrpcSimpleService, Add, false);
 }
 
-// Define methods with FEL_SERVICE_METHOD_DEFINE(clazz, instance, method, supports_cancel).
-FEL_SERVICE_METHOD_DEFINE(SimpleService, this, Add, false)
+// Define methods with FEL_GRPC_SERVICE_METHOD_DEFINE(clazz, instance, method, supports_cancel).
+FEL_GRPC_SERVICE_METHOD_DEFINE(GrpcSimpleService, this, Add, false)
 
 // Write custom login for your service.
-void SimpleService::Add(const AddRequest* request, AddResponse* response,
-                        StatusOnceCallback callback) {
+void GrpcSimpleService::Add(const AddRequest* request, AddResponse* response,
+                            StatusOnceCallback callback) {
   int a = request->a();
   int b = request->b();
 
@@ -171,18 +171,18 @@ void GrpcServerNode::OnRequestUnregister(const Status& s) {
 
 [grpc_client_node.cc](grpc_client_node.cc) is very similar to above. First let's figure out how to define your client for service. It's simple you just declare and define method for your service!
 
-* Declare methods with FEL_CLIENT_METHOD_DECLARE(method).
-* Define methods with FEL_CLIENT_METHOD_DEFINE(clazz, method).
+* Declare methods with FEL_GRPC_CLIENT_METHOD_DECLARE(method).
+* Define methods with FEL_GRPC_CLIENT_METHOD_DEFINE(clazz, method).
 
 ```c++
 // grpc_client_node.h
-class SimpleClient : public rpc::Client<grpc::SimpleService> {
+class GrpcSimpleClient : public rpc::Client<grpc::SimpleService> {
  public:
-  FEL_CLIENT_METHOD_DECLARE(Add);
+  FEL_GRPC_CLIENT_METHOD_DECLARE(Add);
 };
 
 // grpc_client_node.cc
-FEL_CLIENT_METHOD_DEFINE(SimpleClient, Add)
+FEL_GRPC_CLIENT_METHOD_DEFINE(GrpcSimpleClient, Add)
 ```
 
 Also unlike `service server` you have to pass one more callback, for inform you whether the `service client` is connected to the `service server`.
@@ -224,8 +224,8 @@ void GrpcClientNode::OnRequestAdd(const AddRequest* request,
 void GrpcClientNode::RequestAdd() {
   AddRequest* request = new AddRequest();
   AddResponse* response = new AddResponse();
-  request->set_a(grpc_service_flag_.a_flag()->value());
-  request->set_b(grpc_service_flag_.b_flag()->value());
+  request->set_a(simple_service_flag_.a_flag()->value());
+  request->set_b(simple_service_flag_.b_flag()->value());
   client_->AddAsync(
       request, response,
       base::BindOnce(&GrpcClientNode::OnRequestAdd, base::Unretained(this),

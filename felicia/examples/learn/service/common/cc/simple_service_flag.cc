@@ -1,8 +1,8 @@
-#include "felicia/examples/learn/service/grpc/cc/grpc_service_flag.h"
+#include "felicia/examples/learn/service/common/cc/simple_service_flag.h"
 
 namespace felicia {
 
-GrpcServiceFlag::GrpcServiceFlag() {
+SimpleServiceFlag::SimpleServiceFlag() {
   {
     IntFlag::Builder builder(MakeValueStore(&a_));
     auto flag = builder.SetShortName("-a").SetHelp("number for a").Build();
@@ -15,14 +15,14 @@ GrpcServiceFlag::GrpcServiceFlag() {
   }
 }
 
-GrpcServiceFlag::~GrpcServiceFlag() = default;
+SimpleServiceFlag::~SimpleServiceFlag() = default;
 
-bool GrpcServiceFlag::Parse(FlagParser& parser) {
+bool SimpleServiceFlag::Parse(FlagParser& parser) {
   return PARSE_OPTIONAL_FLAG(parser, name_flag_, is_server_flag_, service_flag_,
                              a_flag_, b_flag_);
 }
 
-bool GrpcServiceFlag::Validate() const {
+bool SimpleServiceFlag::Validate() const {
   if (is_server_flag_->value()) {
     if (a_flag_->is_set() || b_flag_->is_set()) {
       std::cerr

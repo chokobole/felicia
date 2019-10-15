@@ -75,11 +75,11 @@ Now look into the [grpc_server_node.py](grpc_server_node.py). Because `felicia` 
 import felicia_py as fel
 
 class GrpcServerNode(fel.NodeLifecycle):
-    def __init__(self, grpc_service_flag):
+    def __init__(self, simple_service_flag):
         super().__init__()
-        self.service = grpc_service_flag.service_flag.value
-        simple_server = SimplerServer(1)
-        self.server = fel.communication.ServiceServer(simple_server)
+        self.service = simple_service_flag.service_flag.value
+        grpc_simple_server = GrpcSimplerServer(1)
+        self.server = fel.communication.ServiceServer(grpc_simple_server)
 
     def on_init(self):
         ...
@@ -123,7 +123,7 @@ from felicia.python.rpc.server import Server
 
 import felicia.examples.learn.service.grpc.simple_service_pb2_grpc as simple_service_pb2_grpc
 
-class SimpleService(simple_service_pb2_grpc.SimpleServiceServicer):
+class GrpcSimpleService(simple_service_pb2_grpc.SimpleServiceServicer):
     def Add(self, request, context):
         return simple_service_pb2.AddResponse(
             sum=request.a + request.b
@@ -134,7 +134,7 @@ class SimplerServer(Server):
     def __init__(self, max_workers):
         super().__init__(max_workers)
         simple_service_pb2_grpc.add_SimpleServiceServicer_to_server(
-            SimpleService(), self.server)
+            GrpcSimpleService(), self.server)
 
     def service_name(self):
         return simple_service_pb2.DESCRIPTOR.services_by_name['SimpleService'].full_name
@@ -160,7 +160,7 @@ def on_request_unregister(self, status):
 [grpc_client_node.py](grpc_client_node.py) is very similar to above. First let's figure out how to define your client for service. It's simple you just define 2 types of methods. The one is for make `stub`, the other is to call `rpc` methods via `self.stub`.
 
 ```python
-class SimpleClient(Client):
+class GrpcSimpleClient(Client):
     @classmethod
     def new_stub(cls, channel):
         return simple_service_pb2_grpc.SimpleServiceStub(channel)
@@ -188,8 +188,8 @@ If it is succesfully connected, then we have to request service! Response will b
 
 ```python
 def request_add(self):
-    a = self.grpc_service_flag.a_flag.value
-    b = self.grpc_service_flag.b_flag.value
+    a = self.simple_service_flag.a_flag.value
+    b = self.simple_service_flag.b_flag.value
     response = self.simple_client.Add(
         simple_service_pb2.AddRequest(a=a, b=b))
     print('{} + {} = {}'.format(a, b,

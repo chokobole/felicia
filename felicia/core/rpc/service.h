@@ -118,19 +118,20 @@ void Service<GrpcService>::HandleRpcsLoop() {
     }                                                                     \
   } while (0)
 
-#define FEL_SERVICE_METHOD_DECLARE(clazz, method) \
+#define FEL_GRPC_SERVICE_METHOD_DECLARE(clazz, method) \
   void Handle##method(GrpcCall<clazz, method##Request, method##Response>* call)
 
-#define FEL_SERVICE_METHOD_DEFINE(clazz, instance, method, supports_cancel) \
-  void clazz::Handle##method(                                               \
-      GrpcCall<clazz, method##Request, method##Response>* call) {           \
-    instance->method(                                                       \
-        &call->request_, &call->response_,                                  \
-        base::BindOnce(                                                     \
-            &clazz::OnHandleRequest<                                        \
-                GrpcCall<clazz, method##Request, method##Response>>,        \
-            call));                                                         \
-    FEL_ENQUEUE_REQUEST(clazz, method, supports_cancel);                    \
+#define FEL_GRPC_SERVICE_METHOD_DEFINE(clazz, instance, method,      \
+                                       supports_cancel)              \
+  void clazz::Handle##method(                                        \
+      GrpcCall<clazz, method##Request, method##Response>* call) {    \
+    instance->method(                                                \
+        &call->request_, &call->response_,                           \
+        base::BindOnce(                                              \
+            &clazz::OnHandleRequest<                                 \
+                GrpcCall<clazz, method##Request, method##Response>>, \
+            call));                                                  \
+    FEL_ENQUEUE_REQUEST(clazz, method, supports_cancel);             \
   }
 
 }  // namespace rpc

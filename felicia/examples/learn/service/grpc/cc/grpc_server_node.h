@@ -4,19 +4,19 @@
 #include "felicia/core/communication/service_server.h"
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/core/rpc/service.h"
-#include "felicia/examples/learn/service/grpc/cc/grpc_service_flag.h"
+#include "felicia/examples/learn/service/common/cc/simple_service_flag.h"
 #include "felicia/examples/learn/service/grpc/simple_service.grpc.pb.h"
 
 namespace felicia {
 
-class SimpleService : public rpc::Service<grpc::SimpleService> {
+class GrpcSimpleService : public rpc::Service<grpc::SimpleService> {
  public:
-  explicit SimpleService(::grpc::ServerBuilder* builder);
+  explicit GrpcSimpleService(::grpc::ServerBuilder* builder);
 
  private:
   void EnqueueRequests() override;
 
-  FEL_SERVICE_METHOD_DECLARE(SimpleService, Add);
+  FEL_GRPC_SERVICE_METHOD_DECLARE(GrpcSimpleService, Add);
 
   void Add(const AddRequest* request, AddResponse* response,
            StatusOnceCallback callback);
@@ -24,7 +24,7 @@ class SimpleService : public rpc::Service<grpc::SimpleService> {
 
 class GrpcServerNode : public NodeLifecycle {
  public:
-  explicit GrpcServerNode(const GrpcServiceFlag& grpc_service_flag);
+  explicit GrpcServerNode(const SimpleServiceFlag& simple_service_flag);
 
   // NodeLifecycle methods
   void OnInit() override;
@@ -40,7 +40,7 @@ class GrpcServerNode : public NodeLifecycle {
 
   NodeInfo node_info_;
   const std::string service_;
-  ServiceServer<SimpleService> server_;
+  ServiceServer<GrpcSimpleService> server_;
 };
 
 }  // namespace felicia

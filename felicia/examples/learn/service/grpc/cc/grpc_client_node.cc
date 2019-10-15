@@ -6,11 +6,11 @@
 
 namespace felicia {
 
-FEL_CLIENT_METHOD_DEFINE(SimpleClient, Add)
+FEL_GRPC_CLIENT_METHOD_DEFINE(GrpcSimpleClient, Add)
 
-GrpcClientNode::GrpcClientNode(const GrpcServiceFlag& grpc_service_flag)
-    : grpc_service_flag_(grpc_service_flag),
-      service_(grpc_service_flag.service_flag()->value()) {}
+GrpcClientNode::GrpcClientNode(const SimpleServiceFlag& simple_service_flag)
+    : simple_service_flag_(simple_service_flag),
+      service_(simple_service_flag.service_flag()->value()) {}
 
 void GrpcClientNode::OnInit() {
   std::cout << "GrpcClientNode::OnInit()" << std::endl;
@@ -75,8 +75,8 @@ void GrpcClientNode::OnRequestAdd(const AddRequest* request,
 void GrpcClientNode::RequestAdd() {
   AddRequest* request = new AddRequest();
   AddResponse* response = new AddResponse();
-  request->set_a(grpc_service_flag_.a_flag()->value());
-  request->set_b(grpc_service_flag_.b_flag()->value());
+  request->set_a(simple_service_flag_.a_flag()->value());
+  request->set_b(simple_service_flag_.b_flag()->value());
   client_->AddAsync(
       request, response,
       base::BindOnce(&GrpcClientNode::OnRequestAdd, base::Unretained(this),

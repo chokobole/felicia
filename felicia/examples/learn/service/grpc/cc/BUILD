@@ -15,14 +15,12 @@ fel_cc_binary(
         "grpc_node_creator.cc",
         "grpc_server_node.cc",
         "grpc_server_node.h",
-        "grpc_service_flag.cc",
-        "grpc_service_flag.h",
     ],
     deps = fel_shared_library() + [
         "//felicia/core:felicia_init",
         "//felicia/core/communication",
         "//felicia/core/master:master_proxy",
-        "//felicia/examples/learn/service/common/cc:service_create_flag",
+        "//felicia/examples/learn/service/common/cc:simple_service_flag",
         "//felicia/examples/learn/service/grpc:simple_service_proto_cc",
     ],
 )

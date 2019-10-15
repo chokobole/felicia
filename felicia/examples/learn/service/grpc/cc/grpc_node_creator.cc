@@ -1,15 +1,15 @@
 #include "felicia/core/felicia_init.h"
 #include "felicia/core/master/master_proxy.h"
+#include "felicia/examples/learn/service/common/cc/simple_service_flag.h"
 #include "felicia/examples/learn/service/grpc/cc/grpc_client_node.h"
 #include "felicia/examples/learn/service/grpc/cc/grpc_server_node.h"
-#include "felicia/examples/learn/service/grpc/cc/grpc_service_flag.h"
 
 namespace felicia {
 
 int RealMain(int argc, char* argv[]) {
   FeliciaInit();
 
-  GrpcServiceFlag delegate;
+  SimpleServiceFlag delegate;
   FlagParser parser;
   parser.set_program_name("grpc_node_creator");
   if (!parser.Parse(argc, argv, &delegate)) {

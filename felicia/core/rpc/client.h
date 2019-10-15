@@ -100,11 +100,11 @@ void Client<GrpcService>::ShutdownClient() {
   threads_.clear();
 }
 
-#define FEL_CLIENT_METHOD_DECLARE(method)            \
+#define FEL_GRPC_CLIENT_METHOD_DECLARE(method)       \
   void method##Async(const method##Request* request, \
                      method##Response* response, StatusOnceCallback done)
 
-#define FEL_CLIENT_METHOD_DEFINE(clazz, method)                       \
+#define FEL_GRPC_CLIENT_METHOD_DEFINE(clazz, method)                  \
   void clazz::method##Async(const method##Request* request,           \
                             method##Response* response,               \
                             StatusOnceCallback done) {                \
