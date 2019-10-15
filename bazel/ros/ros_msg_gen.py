@@ -19,7 +19,6 @@ ROS_SHARE = '{}/share'.format(ROS_ROOT)
 GEN_CPP = '{}/gencpp/gen_cpp.py'.format(ROS_LIB)
 GEN_PY_MSG = '{}/genpy/genmsg_py.py'.format(ROS_LIB)
 GEN_PY_SRV = '{}/genpy/gensrv_py.py'.format(ROS_LIB)
-TEMPLATE_DIR = '{}/gencpp'.format(ROS_SHARE)
 
 def main(argv=None):
     if argv is None:
@@ -34,11 +33,9 @@ def main(argv=None):
                         action='append')
     args, extras = parser.parse_known_args(argv[1:])
 
-    needs_template_dir = False
     cmd = []
     if args.method == 'cpp':
         cmd.append(GEN_CPP)
-        needs_template_dir = True
     elif args.method == 'py_msg':
         cmd.append(GEN_PY_MSG)
     elif args.method == 'py_srv':
@@ -47,8 +44,6 @@ def main(argv=None):
         return 1
 
     cmd.extend(extras)
-    if needs_template_dir:
-        cmd.extend(['-e', TEMPLATE_DIR])
     for native_dep in args.native_deps:
         cmd.extend(['-I', '{}:{}/{}/msg'.format(native_dep, ROS_SHARE, native_dep)])
     result = subprocess.run(cmd, env={"PYTHONPATH": '{}/python2.7/dist-packages'.format(ROS_LIB)})

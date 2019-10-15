@@ -2,7 +2,13 @@ load("//bazel:felicia.bzl", "if_has_ros")
 
 def _ros_cc_outs(srcs, gen_srv = False):
     if gen_srv:
-        return [s[:-len(".srv")] + "Request.h" for s in srcs] + [s[:-len(".srv")] + "Response.h" for s in srcs]
+        outs = []
+        for s in srcs:
+            name = s[:-len(".srv")]
+            outs.append(name + ".h")
+            outs.append(name + "Request.h")
+            outs.append(name + "Response.h")
+        return outs
     else:
         return [s[:-len(".msg")] + ".h" for s in srcs]
 
@@ -35,6 +41,7 @@ def _ros_msg_src_dir(ctx):
 def _ros_msg_gen(ctx):
     tool = ctx.executable._tool
     srcs = ctx.files.srcs
+    templates = ctx.files.templates
     package = ctx.attr.package
 
     src_dir = _ros_msg_src_dir(ctx)
@@ -62,6 +69,8 @@ def _ros_msg_gen(ctx):
         if has_ros:
             if ctx.attr.gen_cc:
                 flags.append("cpp")
+                flags.append("-e")
+                flags.append(ctx.files.templates[0].dirname)
             elif ctx.attr.gen_py:
                 if ctx.attr.gen_srv:
                     flags.append("py_srv")
@@ -77,7 +86,7 @@ def _ros_msg_gen(ctx):
             flags.append(package)
 
             ctx.actions.run(
-                inputs = srcs + deps,
+                inputs = srcs + deps + templates,
                 tools = [tool],
                 outputs = outs,
                 arguments = flags + import_flags,
@@ -109,7 +118,15 @@ ros_msg_gen = rule(
             cfg = "host",
             allow_single_file = True,
             executable = True,
-            default = Label("//bazel:ros_msg_gen.py"),
+            default = Label("//bazel:ros/ros_msg_gen.py"),
+        ),
+        "templates": attr.label_list(
+            cfg = "host",
+            allow_files = [".h.template"],
+            default = [
+                Label("//bazel:ros/msg.h.template"),
+                Label("//bazel:ros/srv.h.template"),
+            ],
         ),
         "srcs": attr.label_list(
             allow_files = [".msg", ".srv"],
