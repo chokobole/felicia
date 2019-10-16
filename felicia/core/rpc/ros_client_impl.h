@@ -54,7 +54,8 @@ class FEL_ROS_CLIENT {
 template <typename T>
 Status FEL_ROS_CLIENT::ConnectAndRun(const IPEndPoint& ip_endpoint) {
   channel_ = ChannelFactory::NewChannel<Request>(ChannelDef::CHANNEL_TYPE_TCP);
-  channel_->EnableDynamicBuffer();
+  channel_->SetDynamicSendBuffer(true);
+  channel_->SetDynamicReceiveBuffer(true);
   TCPChannel<Request>* tcp_channel = channel_->ToTCPChannel();
   ChannelDef channel_def;
   channel_def.set_type(ChannelDef::CHANNEL_TYPE_TCP);

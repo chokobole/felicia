@@ -20,7 +20,7 @@ class ChannelBuffer {
   int RemainingCapacity();
   char* StartOfBuffer();
 
-  void EnableDynamicBuffer();
+  void SetDynamicBuffer(bool is_dynamic);
   void Reset();
   // Return true if capacity() is higher than or equal to |bytes|,
   // but if |is_dynamic_| is true, set capacity to |btyes| and

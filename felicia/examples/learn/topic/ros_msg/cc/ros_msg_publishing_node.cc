@@ -21,9 +21,6 @@ void RosMsgPublishingNode::OnRequestPublish(const Status& s) {
 
 void RosMsgPublishingNode::RequestPublish() {
   communication::Settings settings;
-  if (StartsWith(topic_, "ros://")) {
-    settings.channel_settings.use_ros_channel = true;
-  }
   settings.buffer_size = Bytes::FromBytes(512);
 
   ChannelDef::Type channel_type;

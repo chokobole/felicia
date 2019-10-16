@@ -23,7 +23,8 @@ class ChannelFactory {
   template <typename MessageTy>
   static std::unique_ptr<Channel<MessageTy>> NewChannel(
       ChannelDef::Type channel_type,
-      const channel::Settings& settings = channel::Settings()) {
+      const channel::Settings& settings = channel::Settings(),
+      bool use_ros_channel = false) {
     std::unique_ptr<Channel<MessageTy>> channel;
     if (channel_type == ChannelDef::CHANNEL_TYPE_TCP) {
       channel = std::make_unique<TCPChannel<MessageTy>>(settings.tcp_settings);
@@ -40,7 +41,7 @@ class ChannelFactory {
     else if (channel_type == ChannelDef::CHANNEL_TYPE_SHM) {
       channel = std::make_unique<ShmChannel<MessageTy>>(settings.shm_settings);
     }
-    channel->set_use_ros_channel(settings.use_ros_channel);
+    channel->set_use_ros_channel(use_ros_channel);
 
     return channel;
   }

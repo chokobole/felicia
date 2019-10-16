@@ -40,7 +40,7 @@ char* ChannelBuffer::StartOfBuffer() {
 
 scoped_refptr<net::GrowableIOBuffer> ChannelBuffer::buffer() { return buffer_; }
 
-void ChannelBuffer::EnableDynamicBuffer() { is_dynamic_ = true; }
+void ChannelBuffer::SetDynamicBuffer(bool is_dynamic) { is_dynamic_ = true; }
 
 void ChannelBuffer::Reset() {
   if (!is_dynamic_ && capacity() == 0) {

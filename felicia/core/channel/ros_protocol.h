@@ -25,6 +25,10 @@ inline std::string AttachRosProtocol(const std::string& text) {
   return base::StringPrintf("%s%s", kRosProtocol, text.c_str());
 }
 
+inline bool IsUsingRosProtocol(const std::string& text) {
+  return StartsWith(text, kRosProtocol);
+}
+
 }  // namespace felicia
 
 #endif  // FELICIA_CORE_CHANNEL_ROS_PROTOCOL_H_

@@ -1,7 +1,6 @@
 load(
     "//bazel:felicia.bzl",
     "fel_shared_library",
-    "if_has_ros",
     "if_not_windows",
 )
 load(
@@ -76,26 +75,19 @@ fel_cc_library(
         "client.cc",
         "client.h",
         "master.cc",
-    ] + if_has_ros([
         "ros_master_proxy.cc",
-    ]),
+    ],
     hdrs = [
         "errors.h",
         "master.h",
-    ] + if_has_ros([
         "ros_master_proxy.h",
-    ]),
-    defines = if_has_ros([
-        "HAS_ROS",
-    ]),
+    ],
     deps = [
         ":heart_beat",
         "//felicia/core/master/rpc:master_method_list",
         "//felicia/core/node",
         "//felicia/core/util",
-    ] + if_has_ros([
-        "@ros",
-    ]),
+    ],
 )
 
 fel_cc_test(

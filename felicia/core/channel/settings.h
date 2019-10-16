@@ -55,8 +55,6 @@ struct Settings {
   Settings() = default;
   ~Settings() = default;
 
-  bool use_ros_channel = false;
-
   TCPSettings tcp_settings;
   WSSettings ws_settings;
 #if defined(OS_POSIX)

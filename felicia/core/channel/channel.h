@@ -117,9 +117,11 @@ class Channel {
     receive_buffer_.SetCapacity(bytes);
   }
 
-  void EnableDynamicBuffer() {
-    send_buffer_.EnableDynamicBuffer();
-    receive_buffer_.EnableDynamicBuffer();
+  void SetDynamicSendBuffer(bool is_dynamic) {
+    send_buffer_.SetDynamicBuffer(is_dynamic);
+  }
+  void SetDynamicReceiveBuffer(bool is_dynamic) {
+    receive_buffer_.SetDynamicBuffer(is_dynamic);
   }
 
  protected:

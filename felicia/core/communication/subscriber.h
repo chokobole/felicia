@@ -307,8 +307,9 @@ void Subscriber<MessageTy>::ConnectToPublisher() {
     return;
   }
 
-  channel_ = ChannelFactory::NewChannel<MessageTy>(matched_channel_def.type(),
-                                                   settings_.channel_settings);
+  bool use_ros_channel = IsUsingRosProtocol(topic_info_.topic());
+  channel_ = ChannelFactory::NewChannel<MessageTy>(
+      matched_channel_def.type(), settings_.channel_settings, use_ros_channel);
 
   channel_->Connect(matched_channel_def,
                     base::BindOnce(&Subscriber<MessageTy>::OnConnectToPublisher,
@@ -319,13 +320,13 @@ template <typename MessageTy>
 void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
   if (s.ok()) {
     if (settings_.is_dynamic_buffer) {
-      channel_->EnableDynamicBuffer();
+      channel_->SetDynamicReceiveBuffer(true);
     } else {
       channel_->SetReceiveBufferSize(settings_.buffer_size);
     }
 
 #if defined(HAS_ROS)
-    if (settings_.channel_settings.use_ros_channel) {
+    if (channel_->use_ros_channel()) {
       ROSHeader header;
       ConsumeRosProtocol(topic_info_.topic(), &header.topic);
       header.md5sum = MessageIOImpl<MessageTy>::MD5Sum();
@@ -335,11 +336,13 @@ void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
       std::string write_buffer;
       WriteROSHeaderToBuffer(header, &write_buffer, false);
 
+      channel_->SetDynamicSendBuffer(true);
       channel_->SendRawMessage(
           write_buffer, false,
           base::BindRepeating(&Subscriber<MessageTy>::OnWriteROSHeader,
                               base::Unretained(this)));
 
+      channel_->SetDynamicReceiveBuffer(true);
       std::string* receive_buffer = new std::string();
       channel_->ReceiveRawMessage(
           receive_buffer,
@@ -363,6 +366,7 @@ template <typename MessageTy>
 void Subscriber<MessageTy>::OnWriteROSHeader(ChannelDef::Type,
                                              const Status& s) {
   LOG_IF(ERROR, !s.ok()) << s;
+  channel_->SetDynamicSendBuffer(false);
 }
 
 template <typename MessageTy>
@@ -381,6 +385,7 @@ void Subscriber<MessageTy>::OnReadROSHeader(std::string* buffer,
     channel_.reset();
     internal::LogOrCallback(on_error_callback_, new_status);
   } else {
+    channel_->SetDynamicReceiveBuffer(false);
     StartMessageLoop();
   }
 }

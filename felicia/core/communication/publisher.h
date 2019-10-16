@@ -17,6 +17,7 @@
 #include "third_party/chromium/base/synchronization/lock.h"
 
 #include "felicia/core/channel/channel_factory.h"
+#include "felicia/core/channel/ros_protocol.h"
 #include "felicia/core/communication/register_state.h"
 #include "felicia/core/communication/ros_header.h"
 #include "felicia/core/communication/settings.h"
@@ -143,11 +144,12 @@ void Publisher<MessageTy>::RequestPublish(
 
   base::StackVector<ChannelDef, ChannelDef::Type_ARRAYSIZE> channel_defs;
   int channel_type = 1;
+  bool use_ros_channel = IsUsingRosProtocol(topic);
   while (channel_type <= channel_types) {
     if (channel_type & channel_types) {
       auto channel = ChannelFactory::NewChannel<MessageTy>(
           static_cast<ChannelDef::Type>(channel_type),
-          settings.channel_settings);
+          settings.channel_settings, use_ros_channel);
       StatusOr<ChannelDef> status_or =
           Setup(channel.get(), settings.channel_settings);
       if (!status_or.ok()) {
@@ -301,14 +303,13 @@ void Publisher<MessageTy>::OnPublishTopicAsync(
   }
 
   SendBuffer send_buffer;
-  if (!settings.is_dynamic_buffer) {
+  if (settings.is_dynamic_buffer) {
+    send_buffer.SetDynamicBuffer(true);
+  } else {
     send_buffer.SetCapacity(settings.buffer_size);
   }
   for (auto& channel : channels_) {
     channel->SetSendBuffer(send_buffer);
-    if (settings.is_dynamic_buffer) {
-      channel->EnableDynamicBuffer();
-    }
   }
 
   register_state_.ToRegistered(FROM_HERE);
@@ -395,6 +396,7 @@ void Publisher<MessageTy>::OnAccept(
           std::string* receive_buffer = new std::string();
           std::unique_ptr<TCPChannel<MessageTy>> client_channel =
               std::move(status_or.ValueOrDie());
+          client_channel->SetDynamicReceiveBuffer(true);
           client_channel->ReceiveRawMessage(
               receive_buffer,
               base::BindOnce(&Publisher<MessageTy>::OnReadROSHeader,
@@ -422,6 +424,7 @@ template <typename MessageTy>
 void Publisher<MessageTy>::OnReadROSHeader(
     std::unique_ptr<TCPChannel<MessageTy>> client_channel, std::string* buffer,
     const Status& s) {
+  client_channel->SetDynamicReceiveBuffer(false);
   Status new_status = s;
   ROSHeader header;
   if (new_status.ok()) {
@@ -441,6 +444,7 @@ void Publisher<MessageTy>::OnReadROSHeader(
 
   std::string write_buffer;
   WriteROSHeaderToBuffer(header, &write_buffer, false);
+  client_channel->SetDynamicSendBuffer(true);
   client_channel->SendRawMessage(
       write_buffer, false,
       base::BindRepeating(
@@ -455,6 +459,7 @@ void Publisher<MessageTy>::OnWriteROSHeader(
   if (s.ok()) {
     if (sent_error) return;
 
+    client_channel->SetDynamicSendBuffer(false);
     for (auto& channel : channels_) {
       if (channel->IsTCPChannel()) {
         TCPChannel<MessageTy>* tcp_channel = channel->ToTCPChannel();

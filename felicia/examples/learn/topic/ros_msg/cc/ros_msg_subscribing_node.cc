@@ -21,9 +21,6 @@ void RosMsgSubscribingNode::OnMessage(SimpleMessage&& message) {
 
 void RosMsgSubscribingNode::RequestSubscribe() {
   communication::Settings settings;
-  if (StartsWith(topic_, "ros://")) {
-    settings.channel_settings.use_ros_channel = true;
-  }
   settings.buffer_size = Bytes::FromBytes(512);
 
   subscriber_.RequestSubscribe(

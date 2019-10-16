@@ -23,7 +23,8 @@ class RosServiceHandler {
   RosServiceHandler(scoped_refptr<Service> service,
                     std::unique_ptr<TCPChannel<Response>> channel)
       : service_(service), channel_(std::move(channel)) {
-    channel_->EnableDynamicBuffer();
+    channel_->SetDynamicSendBuffer(true);
+    channel_->SetDynamicReceiveBuffer(true);
     ReceiveRequest();
   }
 

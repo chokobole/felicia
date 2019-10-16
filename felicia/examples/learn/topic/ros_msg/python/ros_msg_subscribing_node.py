@@ -21,8 +21,6 @@ class RosMsgSubscribingNode(fel.NodeLifecycle):
 
     def request_subscribe(self):
         settings = fel.communication.Settings()
-        if self.topic.startswith("ros://"):
-            settings.channel_settings.use_ros_channel = True
         settings.buffer_size = fel.Bytes.from_bytes(512)
 
         self.subscriber.request_subscribe(self.node_info, self.topic,
