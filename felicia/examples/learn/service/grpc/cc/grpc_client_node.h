@@ -3,6 +3,7 @@
 
 #include "felicia/core/communication/service_client.h"
 #include "felicia/core/node/node_lifecycle.h"
+#include "felicia/core/rpc/client.h"
 #include "felicia/examples/learn/service/common/cc/simple_service_flag.h"
 #include "felicia/examples/learn/service/grpc/simple_service.grpc.pb.h"
 
@@ -26,7 +27,7 @@ class GrpcClientNode : public NodeLifecycle {
   void OnRequestRegister(const Status& s);
   void OnRequestUnegister(const Status& s);
   void OnConnect(ServiceInfo::Status s);
-  void OnRequestAdd(const AddRequest* request, AddResponse* response,
+  void OnRequestAdd(const AddRequest* request, const AddResponse* response,
                     const Status& s);
 
   void RequestRegister();

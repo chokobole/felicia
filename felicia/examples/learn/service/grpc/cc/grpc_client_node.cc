@@ -61,7 +61,8 @@ void GrpcClientNode::RequestUnregister() {
 }
 
 void GrpcClientNode::OnRequestAdd(const AddRequest* request,
-                                  AddResponse* response, const Status& s) {
+                                  const AddResponse* response,
+                                  const Status& s) {
   std::cout << "GrpcClientNode::OnRequestAdd()" << std::endl;
   if (s.ok()) {
     std::cout << request->a() << " + " << request->b() << " = "

@@ -2,11 +2,23 @@
 #define FELICIA_CORE_RPC_GRPC_UTIL_H_
 
 #include "grpcpp/grpcpp.h"
+#include "third_party/chromium/base/template_util.h"
 
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"
 
 namespace felicia {
+
+template <typename, typename = void>
+struct IsGrpcService : std::false_type {};
+
+template <typename T>
+struct IsGrpcService<
+    T, base::void_t<decltype(T::service_full_name()),
+                    decltype(std::declval<typename T::Stub>()),
+                    decltype(std::declval<typename T::Service>()),
+                    decltype(std::declval<typename T::AsyncService>())>>
+    : std::true_type {};
 
 inline Status FromGrpcStatus(const ::grpc::Status& s) {
   if (s.ok()) {

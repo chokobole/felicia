@@ -5,7 +5,7 @@
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 #include "felicia/core/rpc/client.h"
-#include "felicia/core/rpc/server.h"
+#include "felicia/core/rpc/server_interface.h"
 
 namespace py = pybind11;
 
@@ -24,7 +24,7 @@ class Client<EmptyService> {
 
   virtual Status Shutdown() = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(Client<EmptyService>);
+  DISALLOW_COPY_AND_ASSIGN(Client);
 };
 
 class PyClient : public Client<EmptyService> {
@@ -49,55 +49,39 @@ class PyClient : public Client<EmptyService> {
   }
 };
 
-template <>
-class Server<EmptyService> {
+class PyServer : public ServerInterface {
  public:
-  Server() = default;
-  virtual ~Server() = default;
-
-  ChannelDef channel_def() const;
-
-  virtual Status Start() = 0;
-
-  Status Run() { return Status::OK(); }
-
-  virtual Status Shutdown() = 0;
-
-  std::string ConfigureServerAddress();
-
-  virtual std::string service_name() const = 0;
-
- private:
-  uint16_t port_;
-
-  DISALLOW_COPY_AND_ASSIGN(Server<EmptyService>);
-};
-
-class PyServer : public Server<EmptyService> {
- public:
-  using Server<EmptyService>::Server;
+  using ServerInterface::ServerInterface;
 
   Status Start() override {
     PYBIND11_OVERLOAD_PURE(
-        Status,               /* Return type */
-        Server<EmptyService>, /* Parent class */
-        Start, /* Name of function in C++ (must match Python name) */
+        Status,          /* Return type */
+        ServerInterface, /* Parent class */
+        Start,           /* Name of function in C++ (must match Python name) */
+    );
+  }
+
+  Status Run() override {
+    PYBIND11_OVERLOAD_PURE(
+        Status,          /* Return type */
+        ServerInterface, /* Parent class */
+        Run,             /* Name of function in C++ (must match Python name) */
     );
   }
 
   Status Shutdown() override {
     PYBIND11_OVERLOAD_PURE(
-        Status,               /* Return type */
-        Server<EmptyService>, /* Parent class */
-        Shutdown, /* Name of function in C++ (must match Python name) */
+        Status,          /* Return type */
+        ServerInterface, /* Parent class */
+        Shutdown,        /* Name of function in C++ (must match Python name) */
     );
   }
 
   std::string service_name() const override {
     PYBIND11_OVERLOAD_PURE(
-        std::string,          /* Return type */
-        Server<EmptyService>, /* Parent class */
-        service_name, /* Name of function in C++ (must match Python name) */
+        std::string,     /* Return type */
+        ServerInterface, /* Parent class */
+        service_name,    /* Name of function in C++ (must match Python name) */
     );
   }
 };

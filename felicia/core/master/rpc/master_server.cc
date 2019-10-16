@@ -4,6 +4,7 @@
 
 #include "third_party/chromium/base/strings/stringprintf.h"
 
+#include "felicia/core/lib/net/net_util.h"
 #include "felicia/core/master/rpc/master_server_info.h"
 
 namespace felicia {

@@ -22,6 +22,9 @@ class Server(felicia_py.rpc._Server):
     def start(self):
         self.server.start()
 
+    def Run(self):
+        return felicia_py.Status.OK()
+
     def Shutdown(self):
         self.stop()
         return felicia_py.Status.OK()

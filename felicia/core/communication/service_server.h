@@ -9,12 +9,16 @@
 
 #include "felicia/core/communication/register_state.h"
 #include "felicia/core/master/master_proxy.h"
+#include "felicia/core/rpc/grpc_util.h"
 #include "felicia/core/rpc/server.h"
+#if defined(HAS_ROS)
+#include "felicia/core/rpc/ros_util.h"
+#endif  // defined(HAS_ROS)
 
 namespace felicia {
 
 template <typename ServiceTy>
-class SimpleServer : public rpc::Server<ServiceTy> {
+class SimpleGrpcServer : public rpc::Server<ServiceTy> {
  public:
   // rpc::Server<ServiceTy> methods
   Status RegisterService(::grpc::ServerBuilder* builder) override {
@@ -23,7 +27,30 @@ class SimpleServer : public rpc::Server<ServiceTy> {
   }
 };
 
-template <typename ServiceTy, typename ServerTy = SimpleServer<ServiceTy>>
+namespace internal {
+
+template <typename T, typename SFINAE = void>
+struct ServiceServerTraits;
+
+template <typename T>
+struct ServiceServerTraits<
+    T, std::enable_if_t<IsGrpcService<typename T::GrpcService>::value>> {
+  typedef SimpleGrpcServer<T> ServerTy;
+};
+
+#if defined(HAS_ROS)
+template <typename T>
+struct ServiceServerTraits<
+    T, std::enable_if_t<IsRosService<typename T::RosService>::value>> {
+  typedef rpc::Server<T> ServerTy;
+};
+#endif  // defined(HAS_ROS)
+
+}  // namespace internal
+
+template <typename ServiceTy,
+          typename ServerTy =
+              typename internal::ServiceServerTraits<ServiceTy>::ServerTy>
 class ServiceServer {
  public:
   ServiceServer() = default;

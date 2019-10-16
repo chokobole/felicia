@@ -6,18 +6,28 @@ fel_cc_library(
     name = "rpc",
     srcs = [
         "grpc_util.cc",
+        "server_interface.cc",
     ],
     hdrs = [
         "client.h",
         "grpc_async_client_call.h",
         "grpc_call.h",
         "grpc_client_cq_tag.h",
+        "grpc_client_impl.h",
+        "grpc_server_impl.h",
+        "grpc_service_impl.h",
         "grpc_util.h",
+        "ros_client_impl.h",
+        "ros_server_impl.h",
+        "ros_service_impl.h",
+        "ros_util.h",
         "server.h",
+        "server_interface.h",
         "service.h",
     ],
     deps = [
         "//felicia:grpc++",
         "//felicia/core/lib",
+        "//felicia/core/channel",
     ],
 )

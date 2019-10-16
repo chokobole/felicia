@@ -11,8 +11,6 @@
 
 #include "felicia/core/communication/register_state.h"
 #include "felicia/core/master/master_proxy.h"
-#include "felicia/core/rpc/client.h"
-#include "felicia/core/rpc/grpc_util.h"
 
 namespace felicia {
 
