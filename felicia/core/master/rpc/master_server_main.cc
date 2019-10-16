@@ -1,8 +1,6 @@
 #include "felicia/core/felicia_init.h"
-#include "felicia/core/master/rpc/master_server.h"
-#if defined(HAS_ROS)
 #include "felicia/core/master/ros_master_proxy.h"
-#endif  // defined(HAS_ROS)
+#include "felicia/core/master/rpc/master_server.h"
 
 namespace felicia {
 

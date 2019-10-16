@@ -4,11 +4,10 @@
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 #include "felicia/core/channel/channel_factory.h"
+#include "felicia/core/channel/ros_protocol.h"
 #include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/master/heart_beat_listener.h"
-#if defined(HAS_ROS)
 #include "felicia/core/master/ros_master_proxy.h"
-#endif  // defined(HAS_ROS)
 
 namespace felicia {
 
@@ -384,8 +383,8 @@ void Master::DoPublishTopic(const NodeInfo& node_info,
                                      topic_info.topic().c_str(),
                                      node_info.name().c_str());
 #if defined(HAS_ROS)
-    base::StringPiece t = topic_info.topic();
-    if (ConsumePrefix(&t, "ros://")) {
+    std::string ros_topic;
+    if (ConsumeRosProtocol(topic_info.topic(), &ros_topic)) {
       bool has_tcp_channel = false;
       for (const ChannelDef& channel_def :
            topic_info.topic_source().channel_defs()) {
@@ -402,7 +401,7 @@ void Master::DoPublishTopic(const NodeInfo& node_info,
 
       ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
       std::move(callback).Run(ros_master_proxy.RegisterPublisher(
-          t.as_string(), topic_info.type_name()));
+          ros_topic, topic_info.type_name()));
     } else {
 #endif  // defined(HAS_ROS)
       std::move(callback).Run(Status::OK());
@@ -445,11 +444,10 @@ void Master::DoUnpublishTopic(const NodeInfo& node_info,
                << base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                      node_info.name().c_str());
 #if defined(HAS_ROS)
-    base::StringPiece t = topic_info.topic();
-    if (ConsumePrefix(&t, "ros://")) {
+    std::string ros_topic;
+    if (ConsumeRosProtocol(topic_info.topic(), &ros_topic)) {
       ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
-      std::move(callback).Run(
-          ros_master_proxy.UnregisterPublisher(t.as_string()));
+      std::move(callback).Run(ros_master_proxy.UnregisterPublisher(ros_topic));
     } else {
 #endif  // defined(HAS_ROS)
       std::move(callback).Run(Status::OK());
@@ -491,11 +489,11 @@ void Master::DoSubscribeTopic(const NodeInfo& node_info,
                << base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                      node_info.name().c_str());
 #if defined(HAS_ROS)
-    base::StringPiece t = topic;
-    if (ConsumePrefix(&t, "ros://")) {
+    std::string ros_topic;
+    if (ConsumeRosProtocol(topic, &ros_topic)) {
       ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
       std::move(callback).Run(
-          ros_master_proxy.RegisterSubscriber(t.as_string(), topic_type));
+          ros_master_proxy.RegisterSubscriber(ros_topic, topic_type));
     } else {
 #endif  // defined(HAS_ROS)
       std::move(callback).Run(Status::OK());
@@ -536,11 +534,10 @@ void Master::DoUnsubscribeTopic(const NodeInfo& node_info,
                << base::StringPrintf("topic(%s) from node(%s)", topic.c_str(),
                                      node_info.name().c_str());
 #if defined(HAS_ROS)
-    base::StringPiece t = topic;
-    if (ConsumePrefix(&t, "ros://")) {
+    std::string ros_topic;
+    if (ConsumeRosProtocol(topic, &ros_topic)) {
       ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
-      std::move(callback).Run(
-          ros_master_proxy.UnregisterSubscriber(t.as_string()));
+      std::move(callback).Run(ros_master_proxy.UnregisterSubscriber(ros_topic));
     } else {
 #endif  // defined(HAS_ROS)
       std::move(callback).Run(Status::OK());
@@ -704,16 +701,16 @@ void Master::UnregisterROSTopics(
     const std::vector<std::string>& subscribing_topics) const {
   ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
   for (auto& topic_info : publishing_topic_infos) {
-    base::StringPiece t = topic_info.topic();
-    if (ConsumePrefix(&t, "ros://")) {
-      ros_master_proxy.UnregisterPublisher(t.as_string());
+    std::string ros_topic;
+    if (ConsumeRosProtocol(topic_info.topic(), &ros_topic)) {
+      ros_master_proxy.UnregisterPublisher(ros_topic);
     }
   }
 
   for (auto& topic : subscribing_topics) {
-    base::StringPiece t = topic;
-    if (ConsumePrefix(&t, "ros://")) {
-      ros_master_proxy.UnregisterSubscriber(t.as_string());
+    std::string ros_topic;
+    if (ConsumeRosProtocol(topic, &ros_topic)) {
+      ros_master_proxy.UnregisterSubscriber(ros_topic);
     }
   }
 }

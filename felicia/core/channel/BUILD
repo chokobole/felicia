@@ -25,6 +25,7 @@ fel_cc_library(
         "channel_buffer.h",
         "tcp_channel.h",
         "udp_channel.h",
+        "ros_protocol.h",
         "shm_channel.h",
         "ws_channel.h",
     ] + if_not_windows([

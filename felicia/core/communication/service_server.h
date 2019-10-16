@@ -10,10 +10,8 @@
 #include "felicia/core/communication/register_state.h"
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/core/rpc/grpc_util.h"
-#include "felicia/core/rpc/server.h"
-#if defined(HAS_ROS)
 #include "felicia/core/rpc/ros_util.h"
-#endif  // defined(HAS_ROS)
+#include "felicia/core/rpc/server.h"
 
 namespace felicia {
 

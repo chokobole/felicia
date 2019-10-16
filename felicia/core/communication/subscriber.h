@@ -12,6 +12,7 @@
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/channel/channel_factory.h"
+#include "felicia/core/channel/ros_protocol.h"
 #include "felicia/core/communication/register_state.h"
 #include "felicia/core/communication/ros_header.h"
 #include "felicia/core/communication/settings.h"
@@ -326,7 +327,7 @@ void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
 #if defined(HAS_ROS)
     if (settings_.channel_settings.use_ros_channel) {
       ROSHeader header;
-      header.topic = topic_info_.topic().substr(strlen("ros://"));
+      ConsumeRosProtocol(topic_info_.topic(), &header.topic);
       header.md5sum = MessageIOImpl<MessageTy>::MD5Sum();
       header.callerid = topic_info_.ros_node_name();
       header.type = MessageIOImpl<MessageTy>::TypeName();
@@ -386,11 +387,12 @@ void Subscriber<MessageTy>::OnReadROSHeader(std::string* buffer,
 
 template <typename MessageTy>
 Status Subscriber<MessageTy>::ValidateROSHeader(const ROSHeader& header) const {
-  const std::string topic = topic_info_.topic().substr(strlen("ros://"));
-  if (header.topic != topic) {
+  std::string ros_topic;
+  ConsumeRosProtocol(topic_info_.topic(), &ros_topic);
+  if (header.topic != ros_topic) {
     return errors::InvalidArgument(
         base::StringPrintf("Topic is not matched : %s vs %s.",
-                           header.topic.c_str(), topic.c_str()));
+                           header.topic.c_str(), ros_topic.c_str()));
   }
 
   const std::string md5sum = MessageIOImpl<MessageTy>::MD5Sum();
