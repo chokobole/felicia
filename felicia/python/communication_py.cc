@@ -63,28 +63,73 @@ class PyMessageCallback {
 using PySendMessageCallback = PyCallback<void(ChannelDef::Type, const Status&)>;
 using PyOnConnectCallback = PyCallback<void(ServiceInfo::Status)>;
 
+std::string GetMessageTypeNameFromPyObject(const py::object& message_type,
+                                           TopicInfo::ImplType impl_type) {
+  std::string message_type_name;
+  switch (impl_type) {
+    case TopicInfo::PROTOBUF: {
+      message_type_name =
+          py::str(message_type.attr("DESCRIPTOR").attr("full_name"));
+      break;
+    }
+    case TopicInfo::ROS: {
+      message_type_name = py::str(message_type.attr("_type"));
+      break;
+    }
+    case TopicInfo_ImplType_TopicInfo_ImplType_INT_MIN_SENTINEL_DO_NOT_USE_:
+    case TopicInfo_ImplType_TopicInfo_ImplType_INT_MAX_SENTINEL_DO_NOT_USE_:
+      break;
+  }
+  return message_type_name;
+}
+
+std::string GetMessageMD5SumFromPyObject(const py::object& message_type,
+                                         TopicInfo::ImplType impl_type) {
+  std::string md5sum;
+  switch (impl_type) {
+    case TopicInfo::PROTOBUF:
+      break;
+    case TopicInfo::ROS: {
+      md5sum = py::str(message_type.attr("_md5sum"));
+      break;
+    }
+    case TopicInfo_ImplType_TopicInfo_ImplType_INT_MIN_SENTINEL_DO_NOT_USE_:
+    case TopicInfo_ImplType_TopicInfo_ImplType_INT_MAX_SENTINEL_DO_NOT_USE_:
+      break;
+  }
+  return md5sum;
+}
+
+std::string GetMessageDefinitionFromPyObject(const py::object& message_type,
+                                             TopicInfo::ImplType impl_type) {
+  std::string definition;
+  switch (impl_type) {
+    case TopicInfo::PROTOBUF:
+      break;
+    case TopicInfo::ROS: {
+      definition = py::str(message_type.attr("_full_text"));
+      break;
+    }
+    case TopicInfo_ImplType_TopicInfo_ImplType_INT_MIN_SENTINEL_DO_NOT_USE_:
+    case TopicInfo_ImplType_TopicInfo_ImplType_INT_MAX_SENTINEL_DO_NOT_USE_:
+      break;
+  }
+  return definition;
+}
+
 class PySerializedMessagePublisher : public SerializedMessagePublisher {
  public:
   explicit PySerializedMessagePublisher(
       py::object message_type,
       TopicInfo::ImplType impl_type = TopicInfo::PROTOBUF) {
-    std::string message_type_name;
-    switch (impl_type) {
-      case TopicInfo::PROTOBUF: {
-        message_type_name =
-            py::str(message_type.attr("DESCRIPTOR").attr("full_name"));
-        break;
-      }
-      case TopicInfo::ROS: {
-        message_type_name = py::str(message_type.attr("_type"));
-        break;
-      }
-      case TopicInfo_ImplType_TopicInfo_ImplType_INT_MIN_SENTINEL_DO_NOT_USE_:
-      case TopicInfo_ImplType_TopicInfo_ImplType_INT_MAX_SENTINEL_DO_NOT_USE_:
-        break;
-    }
-    SetMessageTypeName(message_type_name);
-    SetMessageImplType(impl_type);
+#if defined(HAS_ROS)
+    message_md5_sum_ = GetMessageMD5SumFromPyObject(message_type, impl_type);
+    message_definition_ =
+        GetMessageDefinitionFromPyObject(message_type, impl_type);
+#endif  // defined(HAS_ROS)
+    message_type_name_ =
+        GetMessageTypeNameFromPyObject(message_type, impl_type);
+    impl_type_ = impl_type;
   }
 
   void RequestPublish(const NodeInfo& node_info, const std::string& topic,
@@ -156,7 +201,14 @@ class PySerializedMessageSubscriber : public SerializedMessageSubscriber {
   explicit PySerializedMessageSubscriber(
       py::object message_type,
       TopicInfo::ImplType impl_type = TopicInfo::PROTOBUF)
-      : SerializedMessageSubscriber(impl_type), message_type_(message_type) {}
+      : message_type_(message_type) {
+#if defined(HAS_ROS)
+    message_md5_sum_ = GetMessageMD5SumFromPyObject(message_type, impl_type);
+#endif  // defined(HAS_ROS)
+    message_type_name_ =
+        GetMessageTypeNameFromPyObject(message_type, impl_type);
+    impl_type_ = impl_type;
+  }
 
   void RequestSubscribe(const NodeInfo& node_info, const std::string& topic,
                         int channel_types,
@@ -347,16 +399,6 @@ void AddCommunication(py::module& m) {
       .def("is_registered", &PySerializedMessagePublisher::IsRegistered)
       .def("is_unregistering", &PySerializedMessagePublisher::IsUnregistering)
       .def("is_unregistered", &PySerializedMessagePublisher::IsUnregistered)
-      .def("set_message_type_name",
-           &PySerializedMessagePublisher::SetMessageTypeName,
-           py::arg("message_type_name"))
-      .def("get_message_type_name",
-           &PySerializedMessagePublisher::GetMessageTypeName)
-      .def("set_message_impl_type",
-           &PySerializedMessagePublisher::SetMessageImplType,
-           py::arg("message_impl_type"))
-      .def("get_message_impl_type",
-           &PySerializedMessagePublisher::GetMessageImplType)
       .def("request_publish",
            [](PySerializedMessagePublisher& self, const NodeInfo& node_info,
               const std::string& topic, int channel_types,
@@ -412,13 +454,6 @@ void AddCommunication(py::module& m) {
       .def("is_unregistered", &PySerializedMessageSubscriber::IsUnregistered)
       .def("is_started", &PySerializedMessageSubscriber::IsStarted)
       .def("is_stopped", &PySerializedMessageSubscriber::IsStopped)
-      .def("get_message_type_name",
-           &PySerializedMessageSubscriber::GetMessageTypeName)
-      .def("set_message_impl_type",
-           &PySerializedMessageSubscriber::SetMessageImplType,
-           py::arg("message_impl_type"))
-      .def("get_message_impl_type",
-           &PySerializedMessageSubscriber::GetMessageImplType)
       .def("request_subscribe",
            [](PySerializedMessageSubscriber& self, const NodeInfo& node_info,
               const std::string& topic, int channel_types,

@@ -15,11 +15,6 @@ class SerializedMessagePublisher : public Publisher<SerializedMessage> {
       TopicInfo::ImplType impl_type = TopicInfo::PROTOBUF);
   ~SerializedMessagePublisher();
 
-  void SetMessageTypeName(const std::string& message_type_name);
-  std::string GetMessageTypeName() const override;
-  void SetMessageImplType(TopicInfo::ImplType impl_type);
-  TopicInfo::ImplType GetMessageImplType() const override;
-
   void PublishFromSerialized(
       const std::string& serialized,
       SendMessageCallback callback = SendMessageCallback());
@@ -29,10 +24,21 @@ class SerializedMessagePublisher : public Publisher<SerializedMessage> {
       SendMessageCallback callback = SendMessageCallback());
 
  protected:
+#if defined(HAS_ROS)
+  std::string GetMessageMD5Sum() const override;
+  std::string GetMessageDefinition() const override;
+#endif  // defined(HAS_ROS)
+  std::string GetMessageTypeName() const override;
+  TopicInfo::ImplType GetMessageImplType() const override;
+
   MessageIOError SerializeToString(SerializedMessage* message,
                                    std::string* serialized) override;
 
   SerializedMessage message_;
+#if defined(HAS_ROS)
+  std::string message_md5_sum_;
+  std::string message_definition_;
+#endif  // defined(HAS_ROS)
   std::string message_type_name_;
   TopicInfo::ImplType impl_type_ = TopicInfo::PROTOBUF;
 

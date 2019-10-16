@@ -90,6 +90,23 @@ class Subscriber {
 
   void Stop();
 
+  // SerializedMessageSubscirber must override GetMessageMD5Sum and
+  // GetMesasgeTypeName methods.
+#if defined(HAS_ROS)
+  virtual std::string GetMessageMD5Sum() const {
+    return MessageIOImpl<MessageTy>::MD5Sum();
+  }
+#endif  // defined(HAS_ROS)
+
+  // Because type of DynamicProtobufMessage or SerializedMessage can't be
+  // determined at compile time. We should workaround by doing runtime
+  // asking its Publisher.
+  virtual std::string GetMessageTypeName() const {
+    return MessageIOImpl<MessageTy>::TypeName();
+  }
+
+  // Needed by DynamicSubscriber, because it cann't resolve its message type
+  // until master notification is reached.
   virtual bool MaybeResolveMessgaeType(const TopicInfo& topic_info) {
     return true;
   }
@@ -142,7 +159,7 @@ void Subscriber<MessageTy>::RequestSubscribe(
   SubscribeTopicRequest* request = new SubscribeTopicRequest();
   *request->mutable_node_info() = node_info;
   request->set_topic(topic);
-  request->set_topic_type(MessageIOImpl<MessageTy>::TypeName());
+  request->set_topic_type(GetMessageTypeName());
   SubscribeTopicResponse* response = new SubscribeTopicResponse();
 
   master_proxy.SubscribeTopicAsync(
@@ -329,9 +346,9 @@ void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
     if (channel_->use_ros_channel()) {
       ROSHeader header;
       ConsumeRosProtocol(topic_info_.topic(), &header.topic);
-      header.md5sum = MessageIOImpl<MessageTy>::MD5Sum();
+      header.md5sum = GetMessageMD5Sum();
       header.callerid = topic_info_.ros_node_name();
-      header.type = MessageIOImpl<MessageTy>::TypeName();
+      header.type = GetMessageTypeName();
       header.tcp_nodelay = "1";
       std::string write_buffer;
       WriteROSHeaderToBuffer(header, &write_buffer, false);
@@ -400,14 +417,14 @@ Status Subscriber<MessageTy>::ValidateROSHeader(const ROSHeader& header) const {
                            header.topic.c_str(), ros_topic.c_str()));
   }
 
-  const std::string md5sum = MessageIOImpl<MessageTy>::MD5Sum();
+  const std::string md5sum = GetMessageMD5Sum();
   if (header.md5sum != md5sum) {
     return errors::InvalidArgument(
         base::StringPrintf("MD5Sum is not matched :%s vs %s.",
                            header.md5sum.c_str(), md5sum.c_str()));
   }
 
-  const std::string type = MessageIOImpl<MessageTy>::TypeName();
+  const std::string type = GetMessageTypeName();
   if (header.type != type) {
     return errors::InvalidArgument(base::StringPrintf(
         "Type is not matched :%s vs %s.", header.type.c_str(), type.c_str()));

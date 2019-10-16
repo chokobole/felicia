@@ -87,6 +87,18 @@ class Publisher {
 
   void Release();
 
+  // SerializedMessagePublisher must override GetMessageMD5Sum,
+  // GetMessageDefinition and GetMesasgeTypeName methods.
+#if defined(HAS_ROS)
+  virtual std::string GetMessageMD5Sum() const {
+    return MessageIOImpl<MessageTy>::MD5Sum();
+  }
+
+  virtual std::string GetMessageDefinition() const {
+    return MessageIOImpl<MessageTy>::Definition();
+  }
+#endif  // defined(HAS_ROS)
+
   // Because type of DynamicProtobufMessage or SerializedMessage can't be
   // determined at compile time. We should workaround by doing runtime
   // asking its Publisher.
@@ -435,7 +447,7 @@ void Publisher<MessageTy>::OnReadROSHeader(
   }
 
   if (new_status.ok()) {
-    header.message_definition = MessageIOImpl<MessageTy>::Definition();
+    header.message_definition = GetMessageDefinition();
     header.latching = "0";
   } else {
     LOG(ERROR) << new_status;
@@ -474,14 +486,14 @@ void Publisher<MessageTy>::OnWriteROSHeader(
 
 template <typename MessageTy>
 Status Publisher<MessageTy>::ValidateROSHeader(const ROSHeader& header) const {
-  const std::string md5sum = MessageIOImpl<MessageTy>::MD5Sum();
+  const std::string md5sum = GetMessageMD5Sum();
   if (header.md5sum != md5sum) {
     return errors::InvalidArgument(
         base::StringPrintf("MD5Sum is not matched :%s vs %s.",
                            header.md5sum.c_str(), md5sum.c_str()));
   }
 
-  const std::string type = MessageIOImpl<MessageTy>::TypeName();
+  const std::string type = GetMessageTypeName();
   if (header.type != type) {
     return errors::InvalidArgument(base::StringPrintf(
         "Type is not matched :%s vs %s.", header.type.c_str(), type.c_str()));
