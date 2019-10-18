@@ -29,8 +29,7 @@ class WSChannel : public Channel<MessageTy> {
   void AcceptLoop(TCPServerSocket::AcceptCallback accept_callback);
 
  private:
-  void WriteImpl(const std::string& text,
-                 SendMessageCallback callback) override;
+  void WriteImpl(const std::string& text, StatusOnceCallback callback) override;
   void ReadImpl(MessageTy* message, StatusOnceCallback callback) override;
 
   channel::WSSettings settings_;
@@ -74,15 +73,14 @@ void WSChannel<MessageTy>::AcceptLoop(
 
 template <typename MessageTy>
 void WSChannel<MessageTy>::WriteImpl(const std::string& text,
-                                     SendMessageCallback callback) {
+                                     StatusOnceCallback callback) {
   int to_send = text.length();
   this->send_buffer_.SetEnoughCapacityIfDynamic(to_send);
 
   memcpy(this->send_buffer_.StartOfBuffer(), text.c_str(), to_send);
   this->send_buffer_.AttachWebSocket(to_send);
 
-  this->is_sending_ = true;
-  this->send_callback_ = callback;
+  this->send_callback_ = std::move(callback);
   this->channel_impl_->WriteAsync(
       this->send_buffer_.buffer(), to_send,
       base::BindOnce(&WSChannel<MessageTy>::OnSendMessage,

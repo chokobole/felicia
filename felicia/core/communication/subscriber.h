@@ -75,7 +75,7 @@ class Subscriber {
   void ConnectToPublisher();
   void OnConnectToPublisher(const Status& s);
 #if defined(HAS_ROS)
-  void OnWriteRosHeader(ChannelDef::Type, const Status& s);
+  void OnWriteRosHeader(const Status& s);
   void OnReadRosHeader(std::string* buffer, const Status& s);
 #endif  // defined(HAS_ROS)
 
@@ -355,8 +355,8 @@ void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
       channel_->SetDynamicSendBuffer(true);
       channel_->SendRawMessage(
           send_buffer, false,
-          base::BindRepeating(&Subscriber<MessageTy>::OnWriteRosHeader,
-                              base::Unretained(this)));
+          base::BindOnce(&Subscriber<MessageTy>::OnWriteRosHeader,
+                         base::Unretained(this)));
 
       channel_->SetDynamicReceiveBuffer(true);
       std::string* receive_buffer = new std::string();
@@ -379,8 +379,7 @@ void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
 
 #if defined(HAS_ROS)
 template <typename MessageTy>
-void Subscriber<MessageTy>::OnWriteRosHeader(ChannelDef::Type,
-                                             const Status& s) {
+void Subscriber<MessageTy>::OnWriteRosHeader(const Status& s) {
   LOG_IF(ERROR, !s.ok()) << s;
   channel_->SetDynamicSendBuffer(false);
 }

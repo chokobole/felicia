@@ -27,6 +27,9 @@
 
 namespace felicia {
 
+using SendMessageCallback =
+    base::RepeatingCallback<void(ChannelDef::Type, const Status&)>;
+
 template <typename MessageTy>
 class Publisher {
  public:
@@ -75,11 +78,13 @@ class Publisher {
                              const channel::Settings& settings);
 
   void SendMessage(SendMessageCallback callback);
+  void OnSendMessage(SendMessageCallback callback, ChannelDef::Type type,
+                     const Status& s);
   void OnAccept(StatusOr<std::unique_ptr<TCPChannel<MessageTy>>> status_or);
 
 #if defined(HAS_ROS)
   void OnWriteRosHeader(std::unique_ptr<TCPChannel<MessageTy>> client_channel,
-                        bool sent_error, ChannelDef::Type, const Status& s);
+                        bool sent_error, const Status& s);
   void OnReadRosHeader(std::unique_ptr<TCPChannel<MessageTy>> client_channel,
                        std::string* buffer, const Status& s);
 #endif  // defined(HAS_ROS)
@@ -382,7 +387,10 @@ void Publisher<MessageTy>::SendMessage(SendMessageCallback callback) {
     bool reuse = false;
     for (auto& channel : channels_) {
       if (!channel->IsSendingMessage() && channel->HasReceivers()) {
-        channel->SendRawMessage(serialized, reuse, callback);
+        channel->SendRawMessage(
+            serialized, reuse,
+            base::BindOnce(&Publisher<MessageTy>::OnSendMessage,
+                           base::Unretained(this), callback, channel->type()));
         reuse |= true;
       }
     }
@@ -393,6 +401,13 @@ void Publisher<MessageTy>::SendMessage(SendMessageCallback callback) {
       base::BindOnce(&Publisher<MessageTy>::SendMessage, base::Unretained(this),
                      callback),
       period_);
+}
+
+template <typename MessageTy>
+void Publisher<MessageTy>::OnSendMessage(SendMessageCallback callback,
+                                         ChannelDef::Type type,
+                                         const Status& s) {
+  callback.Run(type, s);
 }
 
 template <typename MessageTy>
@@ -466,16 +481,16 @@ void Publisher<MessageTy>::OnReadRosHeader(
   client_channel->SetDynamicSendBuffer(true);
   client_channel->SendRawMessage(
       send_buffer, false,
-      base::BindRepeating(&Publisher<MessageTy>::OnWriteRosHeader,
-                          base::Unretained(this),
-                          base::Passed(std::move(client_channel)),
-                          !response_header.error.empty()));
+      base::BindOnce(&Publisher<MessageTy>::OnWriteRosHeader,
+                     base::Unretained(this),
+                     base::Passed(std::move(client_channel)),
+                     !response_header.error.empty()));
 }
 
 template <typename MessageTy>
 void Publisher<MessageTy>::OnWriteRosHeader(
     std::unique_ptr<TCPChannel<MessageTy>> client_channel, bool sent_error,
-    ChannelDef::Type, const Status& s) {
+    const Status& s) {
   if (s.ok()) {
     if (sent_error) return;
 

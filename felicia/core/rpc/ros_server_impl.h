@@ -36,12 +36,12 @@ class RosServiceHandler {
  private:
   void ReceiveRosHeader();
   void OnReadRosHeader(std::string* buffer, const Status& s);
-  void OnWriteRosHeader(bool sent_error, ChannelDef::Type, const Status& s);
+  void OnWriteRosHeader(bool sent_error, const Status& s);
 
   void ReceiveRequest();
   void OnReceiveRequest(const std::string* receive_buffer, const Status& s);
   void OnHandleRequest(const Status& s);
-  void OnSendResponse(ChannelDef::Type, const Status& s);
+  void OnSendResponse(const Status& s);
 
   Request request_;
   Response response_;
@@ -88,14 +88,14 @@ void RosServiceHandler<Service, Request, Response>::OnReadRosHeader(
   response_header.WriteToBuffer(&send_buffer);
   channel_->SendRawMessage(
       send_buffer, false,
-      base::BindRepeating(
+      base::BindOnce(
           &RosServiceHandler<Service, Request, Response>::OnWriteRosHeader,
           base::Unretained(this), !response_header.error.empty()));
 }
 
 template <typename Service, typename Request, typename Response>
 void RosServiceHandler<Service, Request, Response>::OnWriteRosHeader(
-    bool sent_error, ChannelDef::Type, const Status& s) {
+    bool sent_error, const Status& s) {
   if (s.ok()) {
     if (sent_error) {
       channel_.reset();
@@ -142,7 +142,7 @@ void RosServiceHandler<Service, Request, Response>::OnHandleRequest(
   if (s.ok()) {
     channel_->SendMessage(
         response_,
-        base::BindRepeating(
+        base::BindOnce(
             &RosServiceHandler<Service, Request, Response>::OnSendResponse,
             base::Unretained(this)));
   } else {
@@ -153,7 +153,7 @@ void RosServiceHandler<Service, Request, Response>::OnHandleRequest(
 
 template <typename Service, typename Request, typename Response>
 void RosServiceHandler<Service, Request, Response>::OnSendResponse(
-    ChannelDef::Type, const Status& s) {
+    const Status& s) {
   if (s.ok()) {
     ReceiveRequest();
   } else {

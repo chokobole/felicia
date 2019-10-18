@@ -24,7 +24,7 @@ class HeartBeatSignaller {
   void AcceptLoop();
   void OnAccept(const Status& s);
   void Signal();
-  void OnSignal(ChannelDef::Type type, const Status& s);
+  void OnSignal(const Status& s);
 
   base::Thread thread_;
   base::TimeDelta heart_beat_duration_;

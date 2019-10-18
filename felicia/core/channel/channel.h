@@ -29,9 +29,6 @@ class UDSChannel;
 template <typename MessageTy>
 class ShmChannel;
 
-using SendMessageCallback =
-    base::RepeatingCallback<void(ChannelDef::Type, const Status&)>;
-
 template <typename MessageTy>
 class Channel {
  public:
@@ -57,7 +54,7 @@ class Channel {
   }
   bool use_ros_channel() const { return use_ros_channel_; }
 
-  bool IsSendingMessage() const { return is_sending_; }
+  bool IsSendingMessage() const { return !send_callback_.is_null(); }
   bool IsReceivingMessage() const { return !receive_callback_.is_null(); }
 
   TCPChannel<MessageTy>* ToTCPChannel() {
@@ -100,9 +97,9 @@ class Channel {
     return true;
   }
 
-  void SendMessage(const MessageTy& message, SendMessageCallback callback);
+  void SendMessage(const MessageTy& message, StatusOnceCallback callback);
   void SendRawMessage(const std::string& raw_message, bool reuse,
-                      SendMessageCallback callback);
+                      StatusOnceCallback callback);
   void ReceiveMessage(MessageTy* message, StatusOnceCallback callback);
   void ReceiveRawMessage(std::string* raw_message, StatusOnceCallback callback);
 
@@ -127,7 +124,7 @@ class Channel {
  protected:
   friend class ChannelFactory;
 
-  virtual void WriteImpl(const std::string& text, SendMessageCallback callback);
+  virtual void WriteImpl(const std::string& text, StatusOnceCallback callback);
   virtual void ReadImpl(MessageTy* message, StatusOnceCallback callback);
   virtual void ReadRawImpl(std::string* raw_message,
                            StatusOnceCallback callback);
@@ -144,11 +141,10 @@ class Channel {
 
   std::unique_ptr<ChannelImpl> channel_impl_;
   SendBuffer send_buffer_;
-  SendMessageCallback send_callback_;
+  StatusOnceCallback send_callback_;
   ChannelBuffer receive_buffer_;
   StatusOnceCallback receive_callback_;
 
-  bool is_sending_ = false;
   bool use_ros_channel_ = false;
   size_t header_size_ = sizeof(Header);
 
@@ -157,40 +153,41 @@ class Channel {
 
 template <typename MessageTy>
 void Channel<MessageTy>::SendMessage(const MessageTy& message,
-                                     SendMessageCallback callback) {
+                                     StatusOnceCallback callback) {
   DCHECK(channel_impl_);
-  DCHECK(!is_sending_);
+  DCHECK(send_callback_.is_null());
+  DCHECK(!callback.is_null());
 
   send_buffer_.Reset();
   std::string text;
   MessageIOError err = MessageIO::SerializeToString(&message, &text);
   if (err == MessageIOError::OK) {
     send_buffer_.InvalidateAttachment();
-    WriteImpl(text, callback);
+    WriteImpl(text, std::move(callback));
   } else {
     if (!callback.is_null())
-      callback.Run(type(), errors::Unavailable(MessageIOErrorToString(err)));
+      std::move(callback).Run(errors::Unavailable(MessageIOErrorToString(err)));
   }
 }
 
 template <typename MessageTy>
 void Channel<MessageTy>::SendRawMessage(const std::string& raw_message,
                                         bool reuse,
-                                        SendMessageCallback callback) {
+                                        StatusOnceCallback callback) {
   DCHECK(channel_impl_);
-  DCHECK(!is_sending_);
+  DCHECK(send_callback_.is_null());
+  DCHECK(!callback.is_null());
 
   send_buffer_.Reset();
   if (!reuse) {
     send_buffer_.InvalidateAttachment();
   }
-  WriteImpl(raw_message, callback);
+  WriteImpl(raw_message, std::move(callback));
 }
 
 template <typename MessageTy>
 void Channel<MessageTy>::OnSendMessage(const Status& s) {
-  is_sending_ = false;
-  if (!send_callback_.is_null()) send_callback_.Run(type(), s);
+  std::move(send_callback_).Run(s);
 }
 
 template <typename MessageTy>
@@ -217,7 +214,7 @@ void Channel<MessageTy>::ReceiveRawMessage(std::string* raw_message,
 
 template <typename MessageTy>
 void Channel<MessageTy>::WriteImpl(const std::string& text,
-                                   SendMessageCallback callback) {
+                                   StatusOnceCallback callback) {
   MessageIOError err = MessageIOError::OK;
   if (!send_buffer_.CanReuse(SendBuffer::ATTACH_KIND_GENERAL)) {
     int to_send;
@@ -233,14 +230,13 @@ void Channel<MessageTy>::WriteImpl(const std::string& text,
   }
 
   if (err == MessageIOError::OK) {
-    is_sending_ = true;
-    send_callback_ = callback;
+    send_callback_ = std::move(callback);
     channel_impl_->WriteAsync(send_buffer_.buffer(), send_buffer_.size(),
                               base::BindOnce(&Channel<MessageTy>::OnSendMessage,
                                              base::Unretained(this)));
   } else {
     if (!callback.is_null())
-      callback.Run(type(), errors::Unavailable(MessageIOErrorToString(err)));
+      std::move(callback).Run(errors::Unavailable(MessageIOErrorToString(err)));
   }
 }
 

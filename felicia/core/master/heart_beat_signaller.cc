@@ -56,7 +56,7 @@ void HeartBeatSignaller::Signal() {
                                             base::Unretained(this)));
 }
 
-void HeartBeatSignaller::OnSignal(ChannelDef::Type type, const Status& s) {
+void HeartBeatSignaller::OnSignal(const Status& s) {
   if (s.ok() || trial_ <= kMaximumTrial) {
     thread_.task_runner()->PostDelayedTask(
         FROM_HERE,

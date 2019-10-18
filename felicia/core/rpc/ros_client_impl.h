@@ -46,12 +46,12 @@ class FEL_ROS_CLIENT : public ClientInterface {
 
  protected:
   void OnConnect(const Status& s);
-  void OnWriteRosHeader(ChannelDef::Type, const Status& s);
+  void OnWriteRosHeader(const Status& s);
   void OnReadRosHeader(std::string* buffer, const Status& s);
   // SendRequest if it is connected.
   void MaybeSendRequest();
   void SendRequest();
-  void OnSendRequest(ChannelDef::Type, const Status& s);
+  void OnSendRequest(const Status& s);
   void ReceiveResponse();
   void OnReceiveResponse(const std::string* receive_buffer, const Status& s);
 
@@ -119,10 +119,9 @@ void FEL_ROS_CLIENT::OnConnect(const Status& s) {
     header.WriteToBuffer(&send_buffer);
 
     channel_->SetDynamicSendBuffer(true);
-    channel_->SendRawMessage(
-        send_buffer, false,
-        base::BindRepeating(&FEL_ROS_CLIENT::OnWriteRosHeader,
-                            base::Unretained(this)));
+    channel_->SendRawMessage(send_buffer, false,
+                             base::BindOnce(&FEL_ROS_CLIENT::OnWriteRosHeader,
+                                            base::Unretained(this)));
 
     channel_->SetDynamicReceiveBuffer(true);
     std::string* receive_buffer = new std::string();
@@ -136,7 +135,7 @@ void FEL_ROS_CLIENT::OnConnect(const Status& s) {
 }
 
 template <typename T>
-void FEL_ROS_CLIENT::OnWriteRosHeader(ChannelDef::Type, const Status& s) {
+void FEL_ROS_CLIENT::OnWriteRosHeader(const Status& s) {
   LOG_IF(ERROR, !s.ok()) << s;
   channel_->SetDynamicSendBuffer(false);
 }
@@ -178,13 +177,13 @@ void FEL_ROS_CLIENT::MaybeSendRequest() {
 
 template <typename T>
 void FEL_ROS_CLIENT::SendRequest() {
-  channel_->SendMessage(*request_,
-                        base::BindRepeating(&FEL_ROS_CLIENT::OnSendRequest,
-                                            base::Unretained(this)));
+  channel_->SendMessage(
+      *request_,
+      base::BindOnce(&FEL_ROS_CLIENT::OnSendRequest, base::Unretained(this)));
 }
 
 template <typename T>
-void FEL_ROS_CLIENT::OnSendRequest(ChannelDef::Type, const Status& s) {
+void FEL_ROS_CLIENT::OnSendRequest(const Status& s) {
   DCHECK(!call_callback_.is_null());
   if (s.ok()) {
     ReceiveResponse();

@@ -1125,8 +1125,7 @@ void Master::OnConnetToMasterNotificationWatcher(
     const MasterNotification& master_notification, const Status& s) {
   if (s.ok()) {
     channel->SendMessage(
-        master_notification,
-        base::BindRepeating([](ChannelDef::Type type, const Status& s) {
+        master_notification, base::BindRepeating([](const Status& s) {
           LOG_IF(ERROR, !s.ok()) << "Failed to send message: " << s;
         }));
   } else {
