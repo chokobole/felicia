@@ -399,7 +399,7 @@ void Master::DoPublishTopic(const NodeInfo& node_info,
         return;
       }
 
-      ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
+      RosMasterProxy& ros_master_proxy = RosMasterProxy::GetInstance();
       std::move(callback).Run(ros_master_proxy.RegisterPublisher(
           ros_topic, topic_info.type_name()));
     } else {
@@ -446,7 +446,7 @@ void Master::DoUnpublishTopic(const NodeInfo& node_info,
 #if defined(HAS_ROS)
     std::string ros_topic;
     if (ConsumeRosProtocol(topic_info.topic(), &ros_topic)) {
-      ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
+      RosMasterProxy& ros_master_proxy = RosMasterProxy::GetInstance();
       std::move(callback).Run(ros_master_proxy.UnregisterPublisher(ros_topic));
     } else {
 #endif  // defined(HAS_ROS)
@@ -491,7 +491,7 @@ void Master::DoSubscribeTopic(const NodeInfo& node_info,
 #if defined(HAS_ROS)
     std::string ros_topic;
     if (ConsumeRosProtocol(topic, &ros_topic)) {
-      ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
+      RosMasterProxy& ros_master_proxy = RosMasterProxy::GetInstance();
       std::move(callback).Run(
           ros_master_proxy.RegisterSubscriber(ros_topic, topic_type));
     } else {
@@ -536,7 +536,7 @@ void Master::DoUnsubscribeTopic(const NodeInfo& node_info,
 #if defined(HAS_ROS)
     std::string ros_topic;
     if (ConsumeRosProtocol(topic, &ros_topic)) {
-      ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
+      RosMasterProxy& ros_master_proxy = RosMasterProxy::GetInstance();
       std::move(callback).Run(ros_master_proxy.UnregisterSubscriber(ros_topic));
     } else {
 #endif  // defined(HAS_ROS)
@@ -576,8 +576,30 @@ void Master::DoRegisterServiceClient(const NodeInfo& node_info,
     DLOG(INFO) << "[RegisterServiceClient]: "
                << base::StringPrintf("service(%s) from node(%s)",
                                      service.c_str(), node_info.name().c_str());
-    std::move(callback).Run(Status::OK());
-    NotifyServiceClient(service, node_info);
+#if defined(HAS_ROS)
+    std::string ros_service;
+    if (ConsumeRosProtocol(service, &ros_service)) {
+      RosMasterProxy& ros_master_proxy = RosMasterProxy::GetInstance();
+      IPEndPoint ip_endpoint;
+      Status s = ros_master_proxy.LookupService(ros_service, &ip_endpoint);
+      std::move(callback).Run(s);
+      if (s.ok()) {
+        MasterNotification master_notification;
+        ServiceInfo* service_info = master_notification.mutable_service_info();
+        service_info->set_service(service);
+        ChannelDef* channel_def =
+            service_info->mutable_service_source()->add_channel_defs();
+        channel_def->set_type(ChannelDef::CHANNEL_TYPE_TCP);
+        *channel_def->mutable_ip_endpoint() = ip_endpoint;
+        DoNotifyClient(node_info, master_notification);
+      }
+    } else {
+#endif  // defined(HAS_ROS)
+      std::move(callback).Run(Status::OK());
+      NotifyServiceClient(service, node_info);
+#if defined(HAS_ROS)
+    }
+#endif  // defined(HAS_ROS)
   } else if (reason == Reason::ServiceAlreadyRequestingOnNode) {
     std::move(callback).Run(
         errors::ServiceAlreadyRequestingOnNode(node_info, service));
@@ -647,8 +669,20 @@ void Master::DoRegisterServiceServer(const NodeInfo& node_info,
                << base::StringPrintf("service(%s) from node(%s)",
                                      service_info.service().c_str(),
                                      node_info.name().c_str());
-    std::move(callback).Run(Status::OK());
-    NotifyAllServiceClients(service_info);
+#if defined(HAS_ROS)
+    std::string ros_service;
+    if (ConsumeRosProtocol(service_info.service(), &ros_service)) {
+      RosMasterProxy& ros_master_proxy = RosMasterProxy::GetInstance();
+      std::move(callback).Run(ros_master_proxy.RegisterService(
+          ros_service,
+          service_info.service_source().channel_defs(0).ip_endpoint()));
+    } else {
+#endif  // defined(HAS_ROS)
+      std::move(callback).Run(Status::OK());
+      NotifyAllServiceClients(service_info);
+#if defined(HAS_ROS)
+    }
+#endif  // defined(HAS_ROS)
   } else if (reason == Reason::ServiceAlreadyServingOnNode) {
     std::move(callback).Run(
         errors::ServiceAlreadyServingOnNode(node_info, service_info));
@@ -684,9 +718,21 @@ void Master::DoUnregisterServiceServer(const NodeInfo& node_info,
     DLOG(INFO) << "[UnregisterServiceServer]: "
                << base::StringPrintf("service(%s) from node(%s)",
                                      service.c_str(), node_info.name().c_str());
-    std::move(callback).Run(Status::OK());
-    service_info.set_status(ServiceInfo::UNREGISTERED);
-    NotifyAllServiceClients(service_info);
+#if defined(HAS_ROS)
+    std::string ros_service;
+    if (ConsumeRosProtocol(service_info.service(), &ros_service)) {
+      RosMasterProxy& ros_master_proxy = RosMasterProxy::GetInstance();
+      std::move(callback).Run(ros_master_proxy.UnregisterService(
+          ros_service,
+          service_info.service_source().channel_defs(0).ip_endpoint()));
+    } else {
+#endif  // defined(HAS_ROS)
+      std::move(callback).Run(Status::OK());
+      service_info.set_status(ServiceInfo::UNREGISTERED);
+      NotifyAllServiceClients(service_info);
+#if defined(HAS_ROS)
+    }
+#endif  // defined(HAS_ROS)
   } else if (reason == Reason::ServiceNotServingOnNode) {
     std::move(callback).Run(
         errors::ServiceNotServingOnNode(node_info, service));
@@ -696,10 +742,11 @@ void Master::DoUnregisterServiceServer(const NodeInfo& node_info,
 }
 
 #if defined(HAS_ROS)
-void Master::UnregisterROSTopics(
+void Master::UnregisterRosTopicsAndServices(
     const std::vector<TopicInfo>& publishing_topic_infos,
-    const std::vector<std::string>& subscribing_topics) const {
-  ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
+    const std::vector<std::string>& subscribing_topics,
+    const std::vector<ServiceInfo>& serving_service_infos) const {
+  RosMasterProxy& ros_master_proxy = RosMasterProxy::GetInstance();
   for (auto& topic_info : publishing_topic_infos) {
     std::string ros_topic;
     if (ConsumeRosProtocol(topic_info.topic(), &ros_topic)) {
@@ -711,6 +758,15 @@ void Master::UnregisterROSTopics(
     std::string ros_topic;
     if (ConsumeRosProtocol(topic, &ros_topic)) {
       ros_master_proxy.UnregisterSubscriber(ros_topic);
+    }
+  }
+
+  for (auto& service_info : serving_service_infos) {
+    std::string ros_service;
+    if (ConsumeRosProtocol(service_info.service(), &ros_service)) {
+      ros_master_proxy.UnregisterService(
+          ros_service,
+          service_info.service_source().channel_defs(0).ip_endpoint());
     }
   }
 }
@@ -844,7 +900,8 @@ void Master::RemoveClient(const ClientInfo& client_info) {
   NotifyAllServiceClients(serving_service_infos);
 
 #if defined(HAS_ROS)
-  UnregisterROSTopics(publishing_topic_infos, subscribing_topics);
+  UnregisterRosTopicsAndServices(publishing_topic_infos, subscribing_topics,
+                                 serving_service_infos);
 #endif  // defined(HAS_ROS)
 }
 
@@ -896,7 +953,8 @@ void Master::RemoveNode(const NodeInfo& node_info) {
   NotifyAllServiceClients(serving_service_infos);
 
 #if defined(HAS_ROS)
-  UnregisterROSTopics(publishing_topic_infos, subscribing_topics);
+  UnregisterRosTopicsAndServices(publishing_topic_infos, subscribing_topics,
+                                 serving_service_infos);
 #endif  // defined(HAS_ROS)
 }
 

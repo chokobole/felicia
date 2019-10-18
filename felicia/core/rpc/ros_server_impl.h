@@ -7,6 +7,7 @@
 
 #include "felicia/core/channel/channel.h"
 #include "felicia/core/channel/channel_factory.h"
+#include "felicia/core/channel/ros_header.h"
 #include "felicia/core/message/message_io.h"
 #include "felicia/core/rpc/ros_util.h"
 #include "felicia/core/rpc/server_interface.h"
@@ -25,10 +26,18 @@ class RosServiceHandler {
       : service_(service), channel_(std::move(channel)) {
     channel_->SetDynamicSendBuffer(true);
     channel_->SetDynamicReceiveBuffer(true);
-    ReceiveRequest();
+    if (channel_->use_ros_channel()) {
+      ReceiveRosHeader();
+    } else {
+      ReceiveRequest();
+    }
   }
 
  private:
+  void ReceiveRosHeader();
+  void OnReadRosHeader(std::string* buffer, const Status& s);
+  void OnWriteRosHeader(bool sent_error, ChannelDef::Type, const Status& s);
+
   void ReceiveRequest();
   void OnReceiveRequest(const std::string* receive_buffer, const Status& s);
   void OnHandleRequest(const Status& s);
@@ -39,6 +48,65 @@ class RosServiceHandler {
   scoped_refptr<Service> service_;
   std::unique_ptr<TCPChannel<Response>> channel_;
 };
+
+template <typename Service, typename Request, typename Response>
+void RosServiceHandler<Service, Request, Response>::ReceiveRosHeader() {
+  std::string* receive_buffer = new std::string();
+  channel_->ReceiveRawMessage(
+      receive_buffer,
+      base::BindOnce(
+          &RosServiceHandler<Service, Request, Response>::OnReadRosHeader,
+          base::Unretained(this), base::Owned(receive_buffer)));
+}
+
+template <typename Service, typename Request, typename Response>
+void RosServiceHandler<Service, Request, Response>::OnReadRosHeader(
+    std::string* buffer, const Status& s) {
+  Status new_status = s;
+  RosServiceRequestHeader request_header;
+  RosServiceResponseHeader response_header;
+  if (new_status.ok()) {
+    new_status = request_header.ReadFromBuffer(*buffer);
+    if (new_status.ok()) {
+      RosServiceRequestHeader expected;
+      expected.md5sum = Service::MD5Sum();
+      new_status = request_header.Validate(expected);
+    }
+  }
+
+  if (new_status.ok()) {
+    response_header.SetValuesFrom(request_header);
+    response_header.request_type = Service::RequestDataType();
+    response_header.response_type = Service::ResponseDataType();
+    response_header.type = Service::DataType();
+  } else {
+    LOG(ERROR) << new_status;
+    response_header.error = new_status.error_message();
+  }
+
+  std::string send_buffer;
+  response_header.WriteToBuffer(&send_buffer);
+  channel_->SendRawMessage(
+      send_buffer, false,
+      base::BindRepeating(
+          &RosServiceHandler<Service, Request, Response>::OnWriteRosHeader,
+          base::Unretained(this), !response_header.error.empty()));
+}
+
+template <typename Service, typename Request, typename Response>
+void RosServiceHandler<Service, Request, Response>::OnWriteRosHeader(
+    bool sent_error, ChannelDef::Type, const Status& s) {
+  if (s.ok()) {
+    if (sent_error) {
+      channel_.reset();
+      return;
+    }
+
+    ReceiveRequest();
+  } else {
+    LOG(ERROR) << s;
+  }
+}
 
 template <typename Service, typename Request, typename Response>
 void RosServiceHandler<Service, Request, Response>::ReceiveRequest() {
@@ -110,7 +178,13 @@ class FEL_ROS_SERVER : public ServerInterface {
 
   Status Start() override {
     service_ = base::MakeRefCounted<Service>();
+    channel_ =
+        ChannelFactory::NewChannel<Response>(ChannelDef::CHANNEL_TYPE_TCP);
     return Status::OK();
+  }
+
+  void set_use_ros_channel(bool use_ros_channel) override {
+    channel_->set_use_ros_channel(use_ros_channel);
   }
 
   // Non-blocking
@@ -132,9 +206,7 @@ class FEL_ROS_SERVER : public ServerInterface {
 };
 
 template <typename T>
-Status Server<
-    T, std::enable_if_t<IsRosService<typename T::RosService>::value>>::Run() {
-  channel_ = ChannelFactory::NewChannel<Response>(ChannelDef::CHANNEL_TYPE_TCP);
+Status FEL_ROS_SERVER::Run() {
   TCPChannel<Response>* tcp_channel = channel_->ToTCPChannel();
   auto status_or = tcp_channel->Listen();
   if (status_or.ok()) {

@@ -3,6 +3,7 @@
 #ifndef FELICIA_CORE_RPC_ROS_SERVICE_IMPL_H_
 #define FELICIA_CORE_RPC_ROS_SERVICE_IMPL_H_
 
+#include <ros/message_traits.h>
 #include <ros/service_traits.h>
 
 #include "third_party/chromium/base/memory/ref_counted.h"
@@ -27,6 +28,12 @@ class FEL_ROS_SERVICE : public base::RefCountedThreadSafe<FEL_ROS_SERVICE> {
   }
   static std::string MD5Sum() {
     return ros::service_traits::MD5Sum<RosService>::value();
+  }
+  static std::string RequestDataType() {
+    return ros::message_traits::DataType<Request>::value();
+  }
+  static std::string ResponseDataType() {
+    return ros::message_traits::DataType<Response>::value();
   }
 
   Service() = default;

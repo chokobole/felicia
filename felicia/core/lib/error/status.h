@@ -67,6 +67,21 @@ namespace internal {
 EXPORT void LogOrCallback(StatusOnceCallback callback, const Status& s);
 EXPORT void LogOrCallback(StatusCallback callback, const Status& s);
 
+// TODO(chokobole): Remove this once c++ support lambda move capture.
+class StatusOnceCallbackHolder {
+ public:
+  StatusOnceCallbackHolder(StatusOnceCallback callback)
+      : callback_(std::move(callback)) {}
+
+  void Invoke(const Status& s) {
+    std::move(callback_).Run(s);
+    delete this;
+  }
+
+ private:
+  StatusOnceCallback callback_;
+};
+
 }  // namespace internal
 
 }  // namespace felicia

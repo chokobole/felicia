@@ -17,9 +17,9 @@
 #include "third_party/chromium/base/synchronization/lock.h"
 
 #include "felicia/core/channel/channel_factory.h"
+#include "felicia/core/channel/ros_header.h"
 #include "felicia/core/channel/ros_protocol.h"
 #include "felicia/core/communication/register_state.h"
-#include "felicia/core/communication/ros_header.h"
 #include "felicia/core/communication/settings.h"
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/error/status.h"
@@ -78,11 +78,10 @@ class Publisher {
   void OnAccept(StatusOr<std::unique_ptr<TCPChannel<MessageTy>>> status_or);
 
 #if defined(HAS_ROS)
-  void OnWriteROSHeader(std::unique_ptr<TCPChannel<MessageTy>> client_channel,
+  void OnWriteRosHeader(std::unique_ptr<TCPChannel<MessageTy>> client_channel,
                         bool sent_error, ChannelDef::Type, const Status& s);
-  void OnReadROSHeader(std::unique_ptr<TCPChannel<MessageTy>> client_channel,
+  void OnReadRosHeader(std::unique_ptr<TCPChannel<MessageTy>> client_channel,
                        std::string* buffer, const Status& s);
-  Status ValidateROSHeader(const ROSHeader& header) const;
 #endif  // defined(HAS_ROS)
 
   void Release();
@@ -411,7 +410,7 @@ void Publisher<MessageTy>::OnAccept(
           client_channel->SetDynamicReceiveBuffer(true);
           client_channel->ReceiveRawMessage(
               receive_buffer,
-              base::BindOnce(&Publisher<MessageTy>::OnReadROSHeader,
+              base::BindOnce(&Publisher<MessageTy>::OnReadRosHeader,
                              base::Unretained(this),
                              base::Passed(std::move(client_channel)),
                              base::Owned(receive_buffer)));
@@ -433,39 +432,48 @@ void Publisher<MessageTy>::OnAccept(
 
 #if defined(HAS_ROS)
 template <typename MessageTy>
-void Publisher<MessageTy>::OnReadROSHeader(
+void Publisher<MessageTy>::OnReadRosHeader(
     std::unique_ptr<TCPChannel<MessageTy>> client_channel, std::string* buffer,
     const Status& s) {
   client_channel->SetDynamicReceiveBuffer(false);
   Status new_status = s;
-  ROSHeader header;
+  RosTopicRequestHeader request_header;
+  RosTopicResponseHeader response_header;
   if (new_status.ok()) {
-    Status new_status = ReadROSHeaderFromBuffer(*buffer, &header, false);
+    new_status = request_header.ReadFromBuffer(*buffer);
     if (new_status.ok()) {
-      new_status = ValidateROSHeader(header);
+      RosTopicRequestHeader expected;
+      // TODO: Currently Publisher<MessageTy> doesn't hold topic info.
+      // Assume that subscirber request the right topic to the publisher.
+      expected.topic = request_header.topic;
+      expected.md5sum = GetMessageMD5Sum();
+      expected.type = GetMessageTypeName();
+      new_status = request_header.Validate(expected);
     }
   }
 
   if (new_status.ok()) {
-    header.message_definition = GetMessageDefinition();
-    header.latching = "0";
+    response_header.SetValuesFrom(request_header);
+    response_header.message_definition = GetMessageDefinition();
+    response_header.latching = "0";
   } else {
     LOG(ERROR) << new_status;
-    header.error = new_status.error_message();
+    response_header.error = new_status.error_message();
   }
 
-  std::string write_buffer;
-  WriteROSHeaderToBuffer(header, &write_buffer, false);
+  std::string send_buffer;
+  response_header.WriteToBuffer(&send_buffer);
   client_channel->SetDynamicSendBuffer(true);
   client_channel->SendRawMessage(
-      write_buffer, false,
-      base::BindRepeating(
-          &Publisher<MessageTy>::OnWriteROSHeader, base::Unretained(this),
-          base::Passed(std::move(client_channel)), !header.error.empty()));
+      send_buffer, false,
+      base::BindRepeating(&Publisher<MessageTy>::OnWriteRosHeader,
+                          base::Unretained(this),
+                          base::Passed(std::move(client_channel)),
+                          !response_header.error.empty()));
 }
 
 template <typename MessageTy>
-void Publisher<MessageTy>::OnWriteROSHeader(
+void Publisher<MessageTy>::OnWriteRosHeader(
     std::unique_ptr<TCPChannel<MessageTy>> client_channel, bool sent_error,
     ChannelDef::Type, const Status& s) {
   if (s.ok()) {
@@ -482,24 +490,6 @@ void Publisher<MessageTy>::OnWriteROSHeader(
   } else {
     LOG(ERROR) << s;
   }
-}
-
-template <typename MessageTy>
-Status Publisher<MessageTy>::ValidateROSHeader(const ROSHeader& header) const {
-  const std::string md5sum = GetMessageMD5Sum();
-  if (header.md5sum != md5sum) {
-    return errors::InvalidArgument(
-        base::StringPrintf("MD5Sum is not matched :%s vs %s.",
-                           header.md5sum.c_str(), md5sum.c_str()));
-  }
-
-  const std::string type = GetMessageTypeName();
-  if (header.type != type) {
-    return errors::InvalidArgument(base::StringPrintf(
-        "Type is not matched :%s vs %s.", header.type.c_str(), type.c_str()));
-  }
-
-  return Status::OK();
 }
 #endif  // defined(HAS_ROS)
 

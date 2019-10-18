@@ -21,20 +21,6 @@ inline felicia::Status NotUnderJsExecutionEnvironment() {
 
 }  // namespace errors
 
-class StatusOnceCallbackHolder {
- public:
-  StatusOnceCallbackHolder(StatusOnceCallback callback)
-      : callback_(std::move(callback)) {}
-
-  void Invoke(const Status& s) {
-    std::move(callback_).Run(s);
-    delete this;
-  }
-
- private:
-  StatusOnceCallback callback_;
-};
-
 MasterClient::MasterClient() {}
 
 MasterClient::~MasterClient() = default;
@@ -77,9 +63,8 @@ Status MasterClient::Stop() { return Status::OK(); }
     Napi::HandleScope handle_scope(env);                                       \
     Napi::Function func = master_client_.Get(#method).As<Napi::Function>();    \
                                                                                \
-    /* TODO(chokobole): Remove this once c++ support lambda move capture. */   \
-    StatusOnceCallbackHolder* callback_holder =                                \
-        new StatusOnceCallbackHolder(std::move(done));                         \
+    internal::StatusOnceCallbackHolder* callback_holder =                      \
+        new internal::StatusOnceCallbackHolder(std::move(done));               \
                                                                                \
     Napi::Value value =                                                        \
         js::TypeConvertor<google::protobuf::Message>::ToJSValue(env,           \

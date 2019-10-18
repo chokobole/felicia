@@ -7,7 +7,6 @@ fel_cc_library(
     srcs = [
         "dynamic_publisher.cc",
         "dynamic_subscriber.cc",
-        "ros_header.cc",
         "serialized_message_publisher.cc",
         "serialized_message_subscriber.cc",
     ],
@@ -16,7 +15,6 @@ fel_cc_library(
         "dynamic_subscriber.h",
         "publisher.h",
         "register_state.h",
-        "ros_header.h",
         "serialized_message_publisher.h",
         "serialized_message_subscriber.h",
         "service_client.h",

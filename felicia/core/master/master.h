@@ -39,7 +39,7 @@ class EXPORT Master {
  private:
   friend class MasterServer;
   friend class MasterTest;
-  friend class ROSMasterProxy;
+  friend class RosMasterProxy;
 
   void DoRegisterClient(std::unique_ptr<Client> client,
                         StatusOnceCallback callback);
@@ -69,9 +69,10 @@ class EXPORT Master {
                                  const std::string& service,
                                  StatusOnceCallback callback);
 #if defined(HAS_ROS)
-  void UnregisterROSTopics(
+  void UnregisterRosTopicsAndServices(
       const std::vector<TopicInfo>& publishing_topic_infos,
-      const std::vector<std::string>& subscribing_topics) const;
+      const std::vector<std::string>& subscribing_topics,
+      const std::vector<ServiceInfo>& serving_service_infos) const;
 #endif  // defined(HAS_ROS)
 
   enum Reason {

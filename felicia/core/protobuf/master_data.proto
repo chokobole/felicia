@@ -51,6 +51,7 @@ message ServiceInfo {
   string type_name = 2;
   ChannelSource service_source = 3;
   Status status = 4;
+  string ros_node_name = 5;
 }
 
 message MasterNotification {

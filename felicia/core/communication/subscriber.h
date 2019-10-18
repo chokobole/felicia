@@ -12,9 +12,9 @@
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/channel/channel_factory.h"
+#include "felicia/core/channel/ros_header.h"
 #include "felicia/core/channel/ros_protocol.h"
 #include "felicia/core/communication/register_state.h"
-#include "felicia/core/communication/ros_header.h"
 #include "felicia/core/communication/settings.h"
 #include "felicia/core/communication/subscriber_state.h"
 #include "felicia/core/lib/containers/pool.h"
@@ -75,9 +75,8 @@ class Subscriber {
   void ConnectToPublisher();
   void OnConnectToPublisher(const Status& s);
 #if defined(HAS_ROS)
-  void OnWriteROSHeader(ChannelDef::Type, const Status& s);
-  void OnReadROSHeader(std::string* buffer, const Status& s);
-  Status ValidateROSHeader(const ROSHeader& header) const;
+  void OnWriteRosHeader(ChannelDef::Type, const Status& s);
+  void OnReadRosHeader(std::string* buffer, const Status& s);
 #endif  // defined(HAS_ROS)
 
   void StartMessageLoop();
@@ -344,26 +343,26 @@ void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
 
 #if defined(HAS_ROS)
     if (channel_->use_ros_channel()) {
-      ROSHeader header;
+      RosTopicRequestHeader header;
       ConsumeRosProtocol(topic_info_.topic(), &header.topic);
       header.md5sum = GetMessageMD5Sum();
       header.callerid = topic_info_.ros_node_name();
       header.type = GetMessageTypeName();
       header.tcp_nodelay = "1";
-      std::string write_buffer;
-      WriteROSHeaderToBuffer(header, &write_buffer, false);
+      std::string send_buffer;
+      header.WriteToBuffer(&send_buffer);
 
       channel_->SetDynamicSendBuffer(true);
       channel_->SendRawMessage(
-          write_buffer, false,
-          base::BindRepeating(&Subscriber<MessageTy>::OnWriteROSHeader,
+          send_buffer, false,
+          base::BindRepeating(&Subscriber<MessageTy>::OnWriteRosHeader,
                               base::Unretained(this)));
 
       channel_->SetDynamicReceiveBuffer(true);
       std::string* receive_buffer = new std::string();
       channel_->ReceiveRawMessage(
           receive_buffer,
-          base::BindOnce(&Subscriber<MessageTy>::OnReadROSHeader,
+          base::BindOnce(&Subscriber<MessageTy>::OnReadRosHeader,
                          base::Unretained(this), base::Owned(receive_buffer)));
     } else {
 #endif  // defined(HAS_ROS)
@@ -380,21 +379,25 @@ void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
 
 #if defined(HAS_ROS)
 template <typename MessageTy>
-void Subscriber<MessageTy>::OnWriteROSHeader(ChannelDef::Type,
+void Subscriber<MessageTy>::OnWriteRosHeader(ChannelDef::Type,
                                              const Status& s) {
   LOG_IF(ERROR, !s.ok()) << s;
   channel_->SetDynamicSendBuffer(false);
 }
 
 template <typename MessageTy>
-void Subscriber<MessageTy>::OnReadROSHeader(std::string* buffer,
+void Subscriber<MessageTy>::OnReadRosHeader(std::string* buffer,
                                             const Status& s) {
-  ROSHeader header;
+  RosTopicResponseHeader header;
   Status new_status = s;
   if (new_status.ok()) {
-    new_status = ReadROSHeaderFromBuffer(*buffer, &header, true);
+    new_status = header.ReadFromBuffer(*buffer);
     if (new_status.ok()) {
-      new_status = ValidateROSHeader(header);
+      RosTopicResponseHeader expected;
+      expected.md5sum = GetMessageMD5Sum();
+      ConsumeRosProtocol(topic_info_.topic(), &expected.topic);
+      expected.type = GetMessageTypeName();
+      new_status = header.Validate(expected);
     }
   }
 
@@ -405,32 +408,6 @@ void Subscriber<MessageTy>::OnReadROSHeader(std::string* buffer,
     channel_->SetDynamicReceiveBuffer(false);
     StartMessageLoop();
   }
-}
-
-template <typename MessageTy>
-Status Subscriber<MessageTy>::ValidateROSHeader(const ROSHeader& header) const {
-  std::string ros_topic;
-  ConsumeRosProtocol(topic_info_.topic(), &ros_topic);
-  if (header.topic != ros_topic) {
-    return errors::InvalidArgument(
-        base::StringPrintf("Topic is not matched : %s vs %s.",
-                           header.topic.c_str(), ros_topic.c_str()));
-  }
-
-  const std::string md5sum = GetMessageMD5Sum();
-  if (header.md5sum != md5sum) {
-    return errors::InvalidArgument(
-        base::StringPrintf("MD5Sum is not matched :%s vs %s.",
-                           header.md5sum.c_str(), md5sum.c_str()));
-  }
-
-  const std::string type = GetMessageTypeName();
-  if (header.type != type) {
-    return errors::InvalidArgument(base::StringPrintf(
-        "Type is not matched :%s vs %s.", header.type.c_str(), type.c_str()));
-  }
-
-  return Status::OK();
 }
 #endif  // defined(HAS_ROS)
 

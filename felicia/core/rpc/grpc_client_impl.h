@@ -26,6 +26,7 @@ limitations under the License.
 
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/protobuf/channel.pb.h"
+#include "felicia/core/rpc/client_interface.h"
 #include "felicia/core/rpc/grpc_async_client_call.h"
 #include "felicia/core/rpc/grpc_client_cq_tag.h"
 #include "felicia/core/rpc/grpc_util.h"
@@ -36,7 +37,7 @@ namespace rpc {
 #define FEL_GRPC_CLIENT Client<T, std::enable_if_t<IsGrpcService<T>::value>>
 
 template <typename T>
-class FEL_GRPC_CLIENT {
+class FEL_GRPC_CLIENT : public ClientInterface {
  public:
   typedef T GrpcService;
 
@@ -44,17 +45,18 @@ class FEL_GRPC_CLIENT {
 
   Client() = default;
   explicit Client(std::shared_ptr<::grpc::Channel> channel);
-  virtual ~Client() = default;
+  ~Client() override = default;
 
-  virtual Status ConnectAndRun(const IPEndPoint& ip_endpoint);
+  void Connect(const IPEndPoint& ip_endpoint,
+               StatusOnceCallback callback) override;
 
   // Non-blocking
-  virtual Status Run() {
+  Status Run() override {
     RunRpcsLoops(1);
     return Status::OK();
   }
 
-  virtual Status Shutdown() {
+  Status Shutdown() override {
     ShutdownClient();
     return Status::OK();
   }
@@ -80,11 +82,12 @@ FEL_GRPC_CLIENT::Client(std::shared_ptr<::grpc::Channel> channel)
       cq_(std::make_unique<::grpc::CompletionQueue>()) {}
 
 template <typename T>
-Status FEL_GRPC_CLIENT::ConnectAndRun(const IPEndPoint& ip_endpoint) {
+void FEL_GRPC_CLIENT::Connect(const IPEndPoint& ip_endpoint,
+                              StatusOnceCallback callback) {
   auto channel = ConnectToGrpcServer(ip_endpoint.ip(), ip_endpoint.port());
   stub_ = GrpcService::NewStub(channel);
   cq_ = std::make_unique<::grpc::CompletionQueue>();
-  return Run();
+  std::move(callback).Run(Status::OK());
 }
 
 template <typename T>

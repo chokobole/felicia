@@ -7,8 +7,8 @@ namespace felicia {
 namespace {
 
 #if defined(HAS_ROS)
-void ShutdownROSMasterProxy() {
-  ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
+void ShutdownRosMasterProxy() {
+  RosMasterProxy& ros_master_proxy = RosMasterProxy::GetInstance();
   ros_master_proxy.Shutdown();
 }
 #endif  // defined(HAS_ROS)
@@ -22,12 +22,12 @@ int RealMain(int argc, char* argv[]) {
   Status s = server.Start();
   CHECK(s.ok()) << s;
 #if defined(HAS_ROS)
-  ROSMasterProxy& ros_master_proxy = ROSMasterProxy::GetInstance();
+  RosMasterProxy& ros_master_proxy = RosMasterProxy::GetInstance();
   s = ros_master_proxy.Init(server.master());
   CHECK(s.ok()) << s;
   s = ros_master_proxy.Start();
   CHECK(s.ok()) << s;
-  server.set_on_shutdown_callback(base::BindOnce(&ShutdownROSMasterProxy));
+  server.set_on_shutdown_callback(base::BindOnce(&ShutdownRosMasterProxy));
 #endif  // defined(HAS_ROS)
   server.RunUntilShutdown();
   return 0;

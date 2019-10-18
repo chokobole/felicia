@@ -28,6 +28,10 @@ class FEL_GRPC_SERVER : public ServerInterface {
   ~Server() override = default;
 
   // ServerInterface methods
+  void set_use_ros_channel(bool use_ros_channel) override {
+    LOG_IF(ERROR, use_ros_channel) << "GrpcServer can't use ros channel.";
+  }
+
   Status Start() override;
 
   // Non-blocking

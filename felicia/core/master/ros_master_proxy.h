@@ -9,10 +9,11 @@
 
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/master.h"
+#include "felicia/core/protobuf/channel.pb.h"
 
 namespace felicia {
 
-class ROSMasterProxy {
+class RosMasterProxy {
  public:
   struct TopicType {
     TopicType();
@@ -22,7 +23,7 @@ class ROSMasterProxy {
     std::string topic_type;
   };
 
-  static ROSMasterProxy& GetInstance();
+  static RosMasterProxy& GetInstance();
 
   Status Init(Master* master);
 
@@ -47,19 +48,28 @@ class ROSMasterProxy {
 
   Status UnregisterSubscriber(const std::string& topic) const;
 
-  Status RequestTopic(const std::string& pub_uri,
-                      const std::string& topic) const;
+  Status RegisterService(const std::string& service,
+                         const IPEndPoint& ip_endpoint) const;
+
+  Status UnregisterService(const std::string& service,
+                           const IPEndPoint& ip_endpoint) const;
+
+  Status LookupService(const std::string& service,
+                       IPEndPoint* ip_endpoint) const;
 
  private:
-  friend class base::NoDestructor<ROSMasterProxy>;
+  friend class base::NoDestructor<RosMasterProxy>;
 
-  ROSMasterProxy();
-  ~ROSMasterProxy();
+  RosMasterProxy();
+  ~RosMasterProxy();
 
   void PubUpdateCallback(XmlRpc::XmlRpcValue& request,
                          XmlRpc::XmlRpcValue& response) const;
   void RequestTopicCallback(XmlRpc::XmlRpcValue& request,
                             XmlRpc::XmlRpcValue& response) const;
+
+  Status RequestTopic(const std::string& pub_uri,
+                      const std::string& topic) const;
 
   Status PubUpdate(const std::string& topic,
                    const std::vector<std::string>& pub_uris) const;

@@ -4,6 +4,8 @@
 
 SUPPORT_PROTOBUF_TYPE_CAST(felicia::IPEndPoint, IPEndPoint,
                            felicia.core.protobuf.channel_pb2)
+SUPPORT_PROTOBUF_TYPE_CAST(felicia::ServiceInfo, ServiceInfo,
+                           felicia.core.protobuf.master_data)
 
 namespace felicia {
 namespace rpc {
@@ -11,7 +13,9 @@ namespace rpc {
 void AddRpc(py::module& m) {
   py::module rpc = m.def_submodule("rpc");
 
-  py::class_<Client<EmptyService>, PyClient>(rpc, "_Client").def(py::init<>());
+  py::class_<PyClientInterface, PyClient>(rpc, "_Client")
+      .def(py::init<>())
+      .def("service_info", &PyClientInterface::service_info);
 
   py::class_<ServerInterface, PyServer>(rpc, "_Server")
       .def(py::init<>())

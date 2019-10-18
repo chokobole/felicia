@@ -8,14 +8,17 @@ class Client(felicia_py.rpc._Client):
     def new_stub(cls, channel):
         raise NotImplementedError("new_stub not implemented")
 
-    def ConnectAndRun(self, ip_endpoint):
-        self.connect_and_run(
+    def Connect(self, ip_endpoint, callback):
+        self.connect(
             "{}:{}".format(ip_endpoint.ip, ip_endpoint.port))
         self.stub = self.new_stub(self.channel)
-        return felicia_py.Status.OK()
+        callback(felicia_py.Status.OK())
 
-    def connect_and_run(self, address):
+    def connect(self, address):
         self.channel = grpc.insecure_channel(address)
+
+    def Run(self):
+        return felicia_py.Status.OK()
 
     def Shutdown(self):
         self.stop()

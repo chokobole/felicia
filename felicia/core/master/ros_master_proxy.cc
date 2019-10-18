@@ -44,54 +44,54 @@ Status Execute(XmlRpc::XmlRpcClient* client, const std::string& method,
 
 }  // namespace
 
-ROSMasterProxy::TopicType::TopicType() = default;
+RosMasterProxy::TopicType::TopicType() = default;
 
-ROSMasterProxy::TopicType::TopicType(const std::string& topic,
+RosMasterProxy::TopicType::TopicType(const std::string& topic,
                                      const std::string& topic_type)
     : topic(topic), topic_type(topic_type) {}
 
-ROSMasterProxy::ROSMasterProxy() = default;
+RosMasterProxy::RosMasterProxy() = default;
 
-ROSMasterProxy::~ROSMasterProxy() = default;
+RosMasterProxy::~RosMasterProxy() = default;
 
 // static
-ROSMasterProxy& ROSMasterProxy::GetInstance() {
-  static base::NoDestructor<ROSMasterProxy> ros_master_proxy;
+RosMasterProxy& RosMasterProxy::GetInstance() {
+  static base::NoDestructor<RosMasterProxy> ros_master_proxy;
   return *ros_master_proxy;
 }
 
-Status ROSMasterProxy::Init(Master* master) {
+Status RosMasterProxy::Init(Master* master) {
   master_ = master;
   ros::M_string remappings;
   ros::init(remappings, "ros_master_proxy", ros::init_options::NoSigintHandler);
   xmlrpc_manager_ = ros::XMLRPCManager::instance();
   xmlrpc_manager_->bind(
       "publisherUpdate",
-      boost::bind(&ROSMasterProxy::PubUpdateCallback, this, _1, _2));
+      boost::bind(&RosMasterProxy::PubUpdateCallback, this, _1, _2));
   xmlrpc_manager_->bind(
       "requestTopic",
-      boost::bind(&ROSMasterProxy::RequestTopicCallback, this, _1, _2));
+      boost::bind(&RosMasterProxy::RequestTopicCallback, this, _1, _2));
 
   return Status::OK();
 }
 
-Status ROSMasterProxy::Start() {
+Status RosMasterProxy::Start() {
   xmlrpc_manager_->start();
   return Status::OK();
 }
 
-Status ROSMasterProxy::Shutdown() {
+Status RosMasterProxy::Shutdown() {
   xmlrpc_manager_->shutdown();
   return Status::OK();
 }
 
-Status ROSMasterProxy::GetPid() const {
+Status RosMasterProxy::GetPid() const {
   XmlRpc::XmlRpcValue request, response, payload;
   request[0] = ros::this_node::getName();
   return Execute("getPid", request, response, payload, false);
 }
 
-Status ROSMasterProxy::GetPublishedTopicTypes(
+Status RosMasterProxy::GetPublishedTopicTypes(
     std::vector<TopicType>* topic_types) const {
   XmlRpc::XmlRpcValue request, response, payload;
   request[0] = ros::this_node::getName();
@@ -106,7 +106,7 @@ Status ROSMasterProxy::GetPublishedTopicTypes(
   return Status::OK();
 }
 
-Status ROSMasterProxy::GetPublishedTopicType(const std::string& topic,
+Status RosMasterProxy::GetPublishedTopicType(const std::string& topic,
                                              std::string* topic_type) const {
   std::vector<TopicType> topic_types;
   Status s = GetPublishedTopicTypes(&topic_types);
@@ -123,7 +123,7 @@ Status ROSMasterProxy::GetPublishedTopicType(const std::string& topic,
       "Failed to find type for published topic: %s.", topic.c_str()));
 }
 
-Status ROSMasterProxy::RegisterPublisher(const std::string& topic,
+Status RosMasterProxy::RegisterPublisher(const std::string& topic,
                                          const std::string& topic_type) const {
   XmlRpc::XmlRpcValue request, response, payload;
   request[0] = ros::this_node::getName();
@@ -133,7 +133,7 @@ Status ROSMasterProxy::RegisterPublisher(const std::string& topic,
   return Execute("registerPublisher", request, response, payload, true);
 }
 
-Status ROSMasterProxy::RegisterSubscriber(const std::string& topic,
+Status RosMasterProxy::RegisterSubscriber(const std::string& topic,
                                           const std::string& topic_type) const {
   XmlRpc::XmlRpcValue request, response, payload;
   const std::string& this_server_uri = xmlrpc_manager_->getServerURI();
@@ -154,7 +154,7 @@ Status ROSMasterProxy::RegisterSubscriber(const std::string& topic,
   return PubUpdate(topic, pub_uris);
 }
 
-Status ROSMasterProxy::UnregisterPublisher(const std::string& topic) const {
+Status RosMasterProxy::UnregisterPublisher(const std::string& topic) const {
   XmlRpc::XmlRpcValue request, response, payload;
   request[0] = ros::this_node::getName();
   request[1] = topic;
@@ -162,7 +162,7 @@ Status ROSMasterProxy::UnregisterPublisher(const std::string& topic) const {
   return Execute("unregisterPublisher", request, response, payload, false);
 }
 
-Status ROSMasterProxy::UnregisterSubscriber(const std::string& topic) const {
+Status RosMasterProxy::UnregisterSubscriber(const std::string& topic) const {
   XmlRpc::XmlRpcValue request, response, payload;
   request[0] = ros::this_node::getName();
   request[1] = topic;
@@ -170,7 +170,104 @@ Status ROSMasterProxy::UnregisterSubscriber(const std::string& topic) const {
   return Execute("unregisterSubscriber", request, response, payload, false);
 }
 
-Status ROSMasterProxy::RequestTopic(const std::string& pub_uri,
+Status RosMasterProxy::RegisterService(const std::string& service,
+                                       const IPEndPoint& ip_endpoint) const {
+  XmlRpc::XmlRpcValue request, response, payload;
+  request[0] = ros::this_node::getName();
+  request[1] = service;
+  request[2] = base::StringPrintf("rosrpc://%s:%u", ip_endpoint.ip().c_str(),
+                                  ip_endpoint.port());
+  request[3] = xmlrpc_manager_->getServerURI();
+  return Execute("registerService", request, response, payload, false);
+}
+
+Status RosMasterProxy::UnregisterService(const std::string& service,
+                                         const IPEndPoint& ip_endpoint) const {
+  XmlRpc::XmlRpcValue request, response, payload;
+  request[0] = ros::this_node::getName();
+  request[1] = service;
+  request[2] = base::StringPrintf("rosrpc://%s:%u", ip_endpoint.ip().c_str(),
+                                  ip_endpoint.port());
+  return Execute("unregisterService", request, response, payload, false);
+}
+
+Status RosMasterProxy::LookupService(const std::string& service,
+                                     IPEndPoint* ip_endpoint) const {
+  XmlRpc::XmlRpcValue request, response, payload;
+  request[0] = ros::this_node::getName();
+  request[1] = service;
+  Status s = Execute("lookupService", request, response, payload, false);
+  if (!s.ok()) return s;
+  std::string srv_uri = payload;
+  std::string host;
+  uint32_t port;
+  if (!ros::network::splitURI(srv_uri, host, port))
+    return errors::InvalidArgument(
+        base::StringPrintf("Invalid ros rpc URI: %s.", srv_uri.c_str()));
+  ip_endpoint->set_ip(srv_uri);
+  ip_endpoint->set_port(static_cast<uint16_t>(port));
+  return Status::OK();
+}
+
+void RosMasterProxy::PubUpdateCallback(XmlRpc::XmlRpcValue& request,
+                                       XmlRpc::XmlRpcValue& response) const {
+  std::vector<std::string> pub_uris;
+  for (int idx = 0; idx < request[2].size(); idx++) {
+    pub_uris.push_back(request[2][idx]);
+  }
+
+  Status s = PubUpdate(std::string(request[1]), pub_uris);
+  if (s.ok()) {
+    response = ros::xmlrpc::responseInt(1, "", 0);
+  } else {
+    response = ros::xmlrpc::responseInt(0, s.error_message(), 0);
+  }
+}
+
+void RosMasterProxy::RequestTopicCallback(XmlRpc::XmlRpcValue& request,
+                                          XmlRpc::XmlRpcValue& response) const {
+  const std::string& topic = request[1];
+  XmlRpc::XmlRpcValue& protocols = request[2];
+  for (int i = 0; i < protocols.size(); ++i) {
+    const std::string& protocol = protocols[i][0];
+    if (protocol == "TCPROS") {
+      TopicFilter topic_filter;
+      topic_filter.set_topic(base::StringPrintf("ros://%s", topic.c_str()));
+      std::vector<TopicInfo> topic_infos =
+          master_->FindTopicInfos(topic_filter);
+      if (topic_infos.size() > 0) {
+        const TopicInfo& topic_info = topic_infos[0];
+        const ChannelDef* tcp_channel_def = nullptr;
+        for (const ChannelDef& channel_def :
+             topic_info.topic_source().channel_defs()) {
+          if (channel_def.type() == ChannelDef::CHANNEL_TYPE_TCP) {
+            tcp_channel_def = &channel_def;
+            break;
+          }
+        }
+
+        if (!tcp_channel_def) break;
+
+        XmlRpc::XmlRpcValue tcpros_params;
+        tcpros_params[0] = "TCPROS";
+        tcpros_params[1] = tcp_channel_def->ip_endpoint().ip();
+        tcpros_params[2] =
+            static_cast<int>(tcp_channel_def->ip_endpoint().port());
+        response[0] = 1;
+        response[1] = base::EmptyString();
+        response[2] = tcpros_params;
+        return;
+      }
+    }
+  }
+
+  response[0] = 0;
+  response[1] =
+      base::StringPrintf("No available protocol for topic: %s.", topic.c_str());
+  response[2] = 0;
+}
+
+Status RosMasterProxy::RequestTopic(const std::string& pub_uri,
                                     const std::string& topic) const {
   XmlRpc::XmlRpcValue request, response, payload;
   request[0] = ros::this_node::getName();
@@ -214,65 +311,7 @@ Status ROSMasterProxy::RequestTopic(const std::string& pub_uri,
       "Unknown protocol %s for topic: %s.", protocol.c_str(), topic.c_str()));
 }
 
-void ROSMasterProxy::PubUpdateCallback(XmlRpc::XmlRpcValue& request,
-                                       XmlRpc::XmlRpcValue& response) const {
-  std::vector<std::string> pub_uris;
-  for (int idx = 0; idx < request[2].size(); idx++) {
-    pub_uris.push_back(request[2][idx]);
-  }
-
-  Status s = PubUpdate(std::string(request[1]), pub_uris);
-  if (s.ok()) {
-    response = ros::xmlrpc::responseInt(1, "", 0);
-  } else {
-    response = ros::xmlrpc::responseInt(0, s.error_message(), 0);
-  }
-}
-
-void ROSMasterProxy::RequestTopicCallback(XmlRpc::XmlRpcValue& request,
-                                          XmlRpc::XmlRpcValue& response) const {
-  const std::string& topic = request[1];
-  XmlRpc::XmlRpcValue& protocols = request[2];
-  for (int i = 0; i < protocols.size(); ++i) {
-    const std::string& protocol = protocols[i][0];
-    if (protocol == "TCPROS") {
-      TopicFilter topic_filter;
-      topic_filter.set_topic(base::StringPrintf("ros://%s", topic.c_str()));
-      std::vector<TopicInfo> topic_infos =
-          master_->FindTopicInfos(topic_filter);
-      if (topic_infos.size() > 0) {
-        const TopicInfo& topic_info = topic_infos[0];
-        const ChannelDef* tcp_channel_def = nullptr;
-        for (const ChannelDef& channel_def :
-             topic_info.topic_source().channel_defs()) {
-          if (channel_def.type() == ChannelDef::CHANNEL_TYPE_TCP) {
-            tcp_channel_def = &channel_def;
-            break;
-          }
-        }
-
-        if (!tcp_channel_def) break;
-
-        XmlRpc::XmlRpcValue tcpros_params;
-        tcpros_params[0] = "TCPROS";
-        tcpros_params[1] = tcp_channel_def->ip_endpoint().ip();
-        tcpros_params[2] =
-            static_cast<int>(tcp_channel_def->ip_endpoint().port());
-        response[0] = 1;
-        response[1] = base::EmptyString();
-        response[2] = tcpros_params;
-        return;
-      }
-    }
-  }
-
-  response[0] = 0;
-  response[1] =
-      base::StringPrintf("No available protocol for topic: %s.", topic.c_str());
-  response[2] = 0;
-}
-
-Status ROSMasterProxy::PubUpdate(
+Status RosMasterProxy::PubUpdate(
     const std::string& topic, const std::vector<std::string>& pub_uris) const {
   if (pub_uris.size() == 0) {
     TopicInfo topic_info;

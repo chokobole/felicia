@@ -18,6 +18,7 @@ fel_cc_library(
     srcs = [
         "channel.cc",
         "channel_buffer.cc",
+        "ros_header.cc",
     ],
     hdrs = [
         "channel.h",
@@ -25,6 +26,7 @@ fel_cc_library(
         "channel_buffer.h",
         "tcp_channel.h",
         "udp_channel.h",
+        "ros_header.h",
         "ros_protocol.h",
         "shm_channel.h",
         "ws_channel.h",

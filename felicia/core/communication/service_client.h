@@ -57,6 +57,8 @@ class ServiceClient {
 
   void OnFindServiceServer(const ServiceInfo& service_info);
 
+  void OnConnect(const Status& s);
+
   ClientTy client_;
   OnConnectCallback on_connect_callback_;
 
@@ -203,9 +205,16 @@ void ServiceClient<ClientTy>::OnFindServiceServer(
 
   const IPEndPoint& ip_endpoint =
       service_info.service_source().channel_defs(0).ip_endpoint();
-  Status s = client_.ConnectAndRun(ip_endpoint);
+  client_.set_service_info(service_info);
+  client_.Connect(ip_endpoint,
+                  base::BindOnce(&ServiceClient<ClientTy>::OnConnect,
+                                 base::Unretained(this)));
+}
+
+template <typename ClientTy>
+void ServiceClient<ClientTy>::OnConnect(const Status& s) {
   if (s.ok()) {
-    on_connect_callback_.Run(ServiceInfo::REGISTERED);
+    if (client_.Run().ok()) on_connect_callback_.Run(ServiceInfo::REGISTERED);
   }
 }
 

@@ -262,9 +262,24 @@ class PyClientBridge {
   PyClientBridge() = default;
   explicit PyClientBridge(py::object client) : client_(client) {}
 
-  Status ConnectAndRun(const IPEndPoint& ip_endpoint) {
+  void set_service_info(const ServiceInfo& service_info) {
     rpc::PyClient* py_client = client_.cast<rpc::PyClient*>();
-    return py_client->ConnectAndRun(ip_endpoint);
+    py_client->set_service_info(service_info);
+  }
+
+  void Connect(const IPEndPoint& ip_endpoint, StatusOnceCallback callback) {
+    rpc::PyClient* py_client = client_.cast<rpc::PyClient*>();
+    internal::StatusOnceCallbackHolder* callback_holder =
+        new internal::StatusOnceCallbackHolder(std::move(callback));
+    auto py_callback = [callback_holder](const Status& s) {
+      callback_holder->Invoke(s);
+    };
+    return py_client->Connect(ip_endpoint, py_callback);
+  }
+
+  Status Run() {
+    rpc::PyClient* py_client = client_.cast<rpc::PyClient*>();
+    return py_client->Run();
   }
 
   Status Shutdown() {
@@ -323,6 +338,11 @@ class PyServerBridge {
     return py_server->channel_def();
   }
 
+  void set_use_ros_channel(bool use_ros_channel) {
+    rpc::PyServer* py_server = server_.cast<rpc::PyServer*>();
+    return py_server->set_use_ros_channel(use_ros_channel);
+  }
+
   Status Start() {
     rpc::PyServer* py_server = server_.cast<rpc::PyServer*>();
     return py_server->Start();
@@ -347,8 +367,9 @@ class PyServerBridge {
   py::object server_;
 };
 
-class PyServiceServer
-    : public ServiceServer<rpc::EmptyService, PyServerBridge> {
+struct EmptyService {};
+
+class PyServiceServer : public ServiceServer<EmptyService, PyServerBridge> {
  public:
   explicit PyServiceServer(py::object server) {
     server_ = PyServerBridge(server);
@@ -361,7 +382,7 @@ class PyServiceServer
       callback = base::BindOnce(&PyStatusCallback::Invoke,
                                 base::Owned(new PyStatusCallback(py_callback)));
     }
-    ServiceServer<rpc::EmptyService, PyServerBridge>::RequestRegister(
+    ServiceServer<EmptyService, PyServerBridge>::RequestRegister(
         node_info, service, std::move(callback));
   }
 
@@ -372,7 +393,7 @@ class PyServiceServer
       callback = base::BindOnce(&PyStatusCallback::Invoke,
                                 base::Owned(new PyStatusCallback(py_callback)));
     }
-    ServiceServer<rpc::EmptyService, PyServerBridge>::RequestUnregister(
+    ServiceServer<EmptyService, PyServerBridge>::RequestUnregister(
         node_info, service, std::move(callback));
   }
 };

@@ -2,6 +2,7 @@
 
 #include "third_party/chromium/base/strings/stringprintf.h"
 
+#include "felicia/core/channel/channel.h"
 #include "felicia/core/lib/net/net_util.h"
 
 namespace felicia {

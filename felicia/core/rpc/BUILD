@@ -5,11 +5,13 @@ package(default_visibility = ["//felicia:internal"])
 fel_cc_library(
     name = "rpc",
     srcs = [
+        "client_interface.cc",
         "grpc_util.cc",
         "server_interface.cc",
     ],
     hdrs = [
         "client.h",
+        "client_interface.h",
         "grpc_async_client_call.h",
         "grpc_call.h",
         "grpc_client_cq_tag.h",

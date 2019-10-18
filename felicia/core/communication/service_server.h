@@ -7,6 +7,7 @@
 #include "third_party/chromium/base/macros.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
+#include "felicia/core/channel/ros_protocol.h"
 #include "felicia/core/communication/register_state.h"
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/core/rpc/grpc_util.h"
@@ -110,6 +111,7 @@ void ServiceServer<ServiceTy, ServerTy>::RequestRegister(
   register_state_.ToRegistering(FROM_HERE);
 
   server_.Start();
+  server_.set_use_ros_channel(IsUsingRosProtocol(service));
   server_.Run();
 
   RegisterServiceServerRequest* request = new RegisterServiceServerRequest();
