@@ -169,7 +169,8 @@ class PySerializedMessagePublisher : public SerializedMessagePublisher {
           &PySendMessageCallback::Invoke,
           base::Owned(new PySendMessageCallback(py_callback)));
     }
-    SerializedMessagePublisher::PublishFromSerialized(std::move(text));
+    SerializedMessagePublisher::PublishFromSerialized(std::move(text),
+                                                      callback);
   }
 
   MessageIOError SerializeToString(py::object message, std::string* text) {
