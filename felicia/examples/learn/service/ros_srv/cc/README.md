@@ -31,6 +31,8 @@ bazel-bin/felicia/examples/learn/service/ros_srv/cc/ros_srv_node_creator -s mess
 
 We don't explain the same we had in [README.md](/felicia/examples/learn/service/grpc/cc/README.md).
 
+If you want to serve or request service through ROS, then add prefix `ros://` to service. But in this case, service should be resolved with namespace.
+
 For service server, you have to define logic for your custom service like [ros_srv_server_node.cc](ros_srv_server_node.cc). Please note that in ROS service, unlike grpc there's always one method for one service, so you just need to define `Handle` method and it's okay.
 
 ```c++

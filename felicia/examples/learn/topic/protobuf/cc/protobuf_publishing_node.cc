@@ -69,19 +69,18 @@ void ProtobufPublishingNode::RequestPublish() {
 
   communication::Settings settings;
   Bytes size = Bytes::FromBytes(512);
+  settings.buffer_size = size;
   if (channel_type == ChannelDef::CHANNEL_TYPE_TCP) {
     if (ssl_server_context_) {
       settings.channel_settings.tcp_settings.use_ssl = true;
       settings.channel_settings.tcp_settings.ssl_server_context =
           ssl_server_context_;
     }
-    settings.buffer_size = size;
   }
 #if defined(OS_POSIX)
   else if (channel_type == ChannelDef::CHANNEL_TYPE_UDS) {
     settings.channel_settings.uds_settings.auth_callback = base::BindRepeating(
         &ProtobufPublishingNode::OnAuth, base::Unretained(this));
-    settings.buffer_size = size;
   }
 #endif
   else if (channel_type == ChannelDef::CHANNEL_TYPE_SHM) {

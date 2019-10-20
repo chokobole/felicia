@@ -13,13 +13,13 @@ class EXPORT ServerInterface {
   ServerInterface();
   virtual ~ServerInterface();
 
-  virtual void set_use_ros_channel(bool use_ros_channel) = 0;
+  void set_service_info(const ServiceInfo& service_info);
 
   virtual Status Start() = 0;
   virtual Status Run() = 0;
   virtual Status Shutdown() = 0;
 
-  virtual std::string service_name() const = 0;
+  virtual std::string service_type() const = 0;
 
   ChannelDef channel_def() const;
 
@@ -27,6 +27,7 @@ class EXPORT ServerInterface {
   virtual std::string ConfigureServerAddress();
 
  protected:
+  ServiceInfo service_info_;
   uint16_t port_;
 };
 

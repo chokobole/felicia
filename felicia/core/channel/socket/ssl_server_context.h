@@ -13,7 +13,6 @@
 namespace felicia {
 
 class SSLServerSocket;
-template <typename T>
 class TCPChannel;
 
 class EXPORT SSLServerContext {
@@ -26,7 +25,6 @@ class EXPORT SSLServerContext {
 
  private:
   friend class SSLServerSocket;
-  template <typename T>
   friend class TCPChannel;
   SSLServerContext(const base::FilePath& cert_file_path,
                    const base::FilePath& private_key_file_path);

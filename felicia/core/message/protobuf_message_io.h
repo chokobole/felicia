@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_MESSAGE_PROTOBUF_MESSAGE_IO_IMPL_H_
-#define FELICIA_CORE_MESSAGE_PROTOBUF_MESSAGE_IO_IMPL_H_
+#ifndef FELICIA_CORE_MESSAGE_PROTOBUF_MESSAGE_IO_H_
+#define FELICIA_CORE_MESSAGE_PROTOBUF_MESSAGE_IO_H_
 
 #include "google/protobuf/message.h"
 
@@ -10,7 +10,7 @@
 namespace felicia {
 
 template <typename T>
-class MessageIOImpl<
+class MessageIO<
     T, std::enable_if_t<std::is_base_of<google::protobuf::Message, T>::value>> {
  public:
   static MessageIOError Serialize(const T* protobuf_msg, std::string* text) {
@@ -36,7 +36,7 @@ class MessageIOImpl<
 };
 
 template <typename T>
-class MessageIOImpl<
+class MessageIO<
     T, std::enable_if_t<std::is_same<DynamicProtobufMessage, T>::value>> {
  public:
   static MessageIOError Serialize(const T* protobuf_msg, std::string* text) {
@@ -63,4 +63,4 @@ class MessageIOImpl<
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MESSAGE_PROTOBUF_MESSAGE_IO_IMPL_H_
+#endif  // FELICIA_CORE_MESSAGE_PROTOBUF_MESSAGE_IO_H_

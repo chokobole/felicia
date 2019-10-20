@@ -2,134 +2,36 @@
 #define FELICIA_CORE_CHANNEL_UDP_CHANNEL_H_
 
 #include "felicia/core/channel/channel.h"
-#include "felicia/core/channel/socket/udp_client_socket.h"
-#include "felicia/core/channel/socket/udp_server_socket.h"
 
 namespace felicia {
 
-namespace {
-Bytes kMaximumBufferSize = Bytes::FromKilloBytes(64);
-}  // namespace
-
-template <typename MessageTy>
-class UDPChannel : public Channel<MessageTy> {
+class EXPORT UDPChannel : public Channel {
  public:
-  UDPChannel();
-  ~UDPChannel();
+  ~UDPChannel() override;
 
-  bool IsUDPChannel() const override { return true; }
+  bool IsUDPChannel() const override;
 
-  ChannelDef::Type type() const override {
-    return ChannelDef::CHANNEL_TYPE_UDP;
-  }
+  ChannelDef::Type type() const override;
+
+  bool ShouldReceiveMessageWithHeader() const override;
 
   StatusOr<ChannelDef> Bind();
 
   void Connect(const ChannelDef& channel_def,
                StatusOnceCallback callback) override;
 
-  void SetSendBufferSize(Bytes bytes) override {
-    if (bytes > kMaximumBufferSize) {
-      LOG(ERROR) << "UDP buffer can't exceed " << bytes;
-      bytes = kMaximumBufferSize;
-    }
-    Channel<MessageTy>::SetSendBufferSize(bytes);
-  }
-  void SetReceiveBufferSize(Bytes bytes) override {
-    if (bytes > kMaximumBufferSize) {
-      LOG(ERROR) << "UDP buffer can't exceed " << bytes;
-      bytes = kMaximumBufferSize;
-    }
-    Channel<MessageTy>::SetReceiveBufferSize(bytes);
-  }
+  void SetSendBufferSize(Bytes bytes) override;
+  void SetReceiveBufferSize(Bytes bytes) override;
 
  private:
-  void ReadImpl(MessageTy* message, StatusOnceCallback callback) override;
-  void OnReceiveMessageWithHeader(const Status& s);
+  friend class ChannelFactory;
+
+  UDPChannel();
+
+  bool TrySetEnoughReceiveBufferSize(int capacity) override;
 
   DISALLOW_COPY_AND_ASSIGN(UDPChannel);
 };
-
-template <typename MessageTy>
-UDPChannel<MessageTy>::UDPChannel() {}
-
-template <typename MessageTy>
-UDPChannel<MessageTy>::~UDPChannel() {}
-
-template <typename MessageTy>
-StatusOr<ChannelDef> UDPChannel<MessageTy>::Bind() {
-  DCHECK(!this->channel_impl_);
-  this->channel_impl_ = std::make_unique<UDPServerSocket>();
-  UDPServerSocket* server_socket =
-      this->channel_impl_->ToSocket()->ToUDPSocket()->ToUDPServerSocket();
-  return server_socket->Bind();
-}
-
-template <typename MessageTy>
-void UDPChannel<MessageTy>::Connect(const ChannelDef& channel_def,
-                                    StatusOnceCallback callback) {
-  DCHECK(!this->channel_impl_);
-  DCHECK(!callback.is_null());
-  net::IPEndPoint ip_endpoint;
-  Status s = ToNetIPEndPoint(channel_def, &ip_endpoint);
-  if (!s.ok()) {
-    std::move(callback).Run(s);
-    return;
-  }
-  this->channel_impl_ = std::make_unique<UDPClientSocket>();
-  UDPClientSocket* client_socket =
-      this->channel_impl_->ToSocket()->ToUDPSocket()->ToUDPClientSocket();
-  client_socket->Connect(ip_endpoint, std::move(callback));
-}
-
-template <typename MessageTy>
-void UDPChannel<MessageTy>::ReadImpl(MessageTy* message,
-                                     StatusOnceCallback callback) {
-  this->receive_buffer_.SetEnoughCapacityIfDynamic(kMaximumBufferSize);
-
-  this->message_ = message;
-  this->receive_callback_ = std::move(callback);
-  this->channel_impl_->ReadAsync(
-      this->receive_buffer_.buffer(), this->receive_buffer_.capacity(),
-      base::BindOnce(&UDPChannel<MessageTy>::OnReceiveMessageWithHeader,
-                     base::Unretained(this)));
-}
-
-template <typename MessageTy>
-void UDPChannel<MessageTy>::OnReceiveMessageWithHeader(const Status& s) {
-  if (!s.ok()) {
-    std::move(this->receive_callback_).Run(s);
-    return;
-  }
-
-  MessageIOError err =
-      MessageIO::ParseHeaderFromBuffer(this->receive_buffer_.StartOfBuffer(),
-                                       &this->header_, this->use_ros_channel_);
-  if (err != MessageIOError::OK) {
-    std::move(this->receive_callback_)
-        .Run(errors::DataLoss(MessageIOErrorToString(err)));
-    return;
-  }
-
-  if (this->receive_buffer_.capacity() - this->header_size_ <
-      this->header_.size()) {
-    std::move(this->receive_callback_)
-        .Run(errors::Aborted(
-            MessageIOErrorToString(MessageIOError::ERR_NOT_ENOUGH_BUFFER)));
-    return;
-  }
-
-  err = MessageIO::ParseMessageFromBuffer(this->receive_buffer_.StartOfBuffer(),
-                                          this->header_, this->header_size_,
-                                          this->message_);
-  if (err != MessageIOError::OK) {
-    std::move(this->receive_callback_)
-        .Run(errors::DataLoss("Failed to parse message from buffer."));
-    return;
-  }
-
-  std::move(this->receive_callback_).Run(s);
-}
 
 }  // namespace felicia
 

@@ -29,7 +29,7 @@ bazel-bin/felicia/examples/learn/topic/ros_msg/cc/ros_msg_node_creator -t messag
 
 We don't explain the same we had in [README.md](/felicia/examples/learn/topic/protobuf/cc/README.md).
 
-If you want to subscribe message from ROS, then add prefix `ros://` to topic. But in this case, topic should be resolved with namespace.
+If you want to subscribe or publish through ROS, then add prefix `ros://` to topic. But in this case, topic should be resolved with namespace.
 
 The way of using API will be same from the c++ side, but if you are python user, there will be a slight difference, check out [README.md](/felicia/examples/learn/topic/ros_msg/python/README.md).
 

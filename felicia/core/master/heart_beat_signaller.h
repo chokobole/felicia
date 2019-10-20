@@ -28,7 +28,7 @@ class HeartBeatSignaller {
 
   base::Thread thread_;
   base::TimeDelta heart_beat_duration_;
-  std::unique_ptr<Channel<HeartBeat>> channel_;
+  std::unique_ptr<Channel> channel_;
 
   uint8_t trial_ = 0;
   static constexpr uint8_t kMaximumTrial = 5;

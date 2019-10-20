@@ -1,6 +1,6 @@
 #if defined(HAS_ROS)
 
-#include "felicia/core/channel/ros_header.h"
+#include "felicia/core/message/ros_header.h"
 
 #include "third_party/chromium/base/strings/stringprintf.h"
 
@@ -34,19 +34,13 @@ void RosHeader::WriteToBuffer(std::string* buffer) const {
   memcpy(const_cast<char*>(buffer->c_str()), tmp_buffer.get(), buffer_len);
 }
 
-Status RosHeader::ReadFromBuffer(const std::string& buffer) {
+Status RosHeader::ReadFromBuffer(const char* buf, size_t buf_len) {
   ros::Header ros_header;
   std::string error_message;
-  if (!ros_header.parse(
-          reinterpret_cast<uint8_t*>(const_cast<char*>(buffer.c_str())),
-          buffer.length(), error_message)) {
-    return errors::Unavailable(base::StringPrintf(
-        "Failed to parse ROS Header: %s.", error_message.c_str()));
-  } else {
-    if (ros_header.getValue("error", error_message)) {
-      return errors::Unavailable(base::StringPrintf(
-          "ROS Header contains error: %s.", error_message.c_str()));
-    }
+  if (!ros_header.parse(reinterpret_cast<uint8_t*>(const_cast<char*>(buf)),
+                        buf_len, error_message)) {
+    return errors::Aborted(base::StringPrintf("Failed to parse ROS Header: %s.",
+                                              error_message.c_str()));
   }
 
   ReadFromRosHeader(ros_header);
@@ -114,12 +108,6 @@ Status RosTopicRequestHeader::Validate(const RosTopicHeader& expected) const {
   return RosTopicHeader::Validate(expected);
 }
 
-void RosTopicResponseHeader::SetValuesFrom(
-    const RosTopicRequestHeader& request_header) {
-  RosTopicHeader* thiz = static_cast<RosTopicHeader*>(this);
-  *thiz = static_cast<const RosTopicHeader&>(request_header);
-}
-
 void RosTopicResponseHeader::WriteToHeaderMap(ros::M_string* header_map) const {
   RosTopicHeader::WriteToHeaderMap(header_map);
   if (error.empty()) {
@@ -140,6 +128,7 @@ Status RosTopicResponseHeader::Validate(const RosTopicHeader& expected) const {
 
 void RosTopicResponseHeader::ReadFromRosHeader(const ros::Header& ros_header) {
   RosTopicHeader::ReadFromRosHeader(ros_header);
+  ros_header.getValue("error", error);
   ros_header.getValue("message_definition", message_definition);
   ros_header.getValue("latching", latching);
 }
@@ -166,12 +155,6 @@ Status RosServiceRequestHeader::Validate(
   return RosHeader::Validate(expected);
 }
 
-void RosServiceResponseHeader::SetValuesFrom(
-    const RosServiceRequestHeader& request_header) {
-  RosHeader* thiz = static_cast<RosHeader*>(this);
-  *thiz = static_cast<const RosHeader&>(request_header);
-}
-
 void RosServiceResponseHeader::WriteToHeaderMap(
     ros::M_string* header_map) const {
   RosHeader::WriteToHeaderMap(header_map);
@@ -187,6 +170,7 @@ void RosServiceResponseHeader::WriteToHeaderMap(
 void RosServiceResponseHeader::ReadFromRosHeader(
     const ros::Header& ros_header) {
   RosHeader::ReadFromRosHeader(ros_header);
+  ros_header.getValue("error", error);
   ros_header.getValue("request_type", request_type);
   ros_header.getValue("response_type", response_type);
   ros_header.getValue("type", type);

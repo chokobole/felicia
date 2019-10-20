@@ -29,7 +29,7 @@ fel_cc_library(
     ],
     deps = [
         "//felicia:grpc++",
-        "//felicia/core/lib",
         "//felicia/core/channel",
+        "//felicia/core/lib",
     ],
 )

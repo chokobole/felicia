@@ -68,7 +68,7 @@ bool DynamicSubscriber::MaybeResolveMessgaeType(const TopicInfo& topic_info) {
   const google::protobuf::Message* message =
       master_proxy.protobuf_loader()->NewMessage(topic_info.type_name());
   if (!message) return false;
-  message_.Reset(message->New());
+  message_receiver_.message().Reset(message->New());
   return true;
 }
 

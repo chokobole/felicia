@@ -11,6 +11,10 @@ namespace rpc {
 ServerInterface::ServerInterface() = default;
 ServerInterface::~ServerInterface() = default;
 
+void ServerInterface::set_service_info(const ServiceInfo& service_info) {
+  service_info_ = service_info;
+}
+
 ChannelDef ServerInterface::channel_def() const {
   return ToChannelDef(
       net::IPEndPoint(HostIPAddress(HOST_IP_ONLY_ALLOW_IPV4), port_),

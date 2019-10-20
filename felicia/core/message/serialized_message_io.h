@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_MESSAGE_SERIALIZED_MESSAGE_IO_IMPL_H_
-#define FELICIA_CORE_MESSAGE_SERIALIZED_MESSAGE_IO_IMPL_H_
+#ifndef FELICIA_CORE_MESSAGE_SERIALIZED_MESSAGE_IO_H_
+#define FELICIA_CORE_MESSAGE_SERIALIZED_MESSAGE_IO_H_
 
 #include "felicia/core/message/serialized_message.h"
 
@@ -8,8 +8,8 @@
 namespace felicia {
 
 template <typename T>
-class MessageIOImpl<
-    T, std::enable_if_t<std::is_same<T, SerializedMessage>::value>> {
+class MessageIO<T,
+                std::enable_if_t<std::is_same<T, SerializedMessage>::value>> {
  public:
   static MessageIOError Serialize(const T* serialized_msg, std::string* text) {
     *text = serialized_msg->serialized();
@@ -31,4 +31,4 @@ class MessageIOImpl<
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MESSAGE_SERIALIZED_MESSAGE_IO_IMPL_H_
+#endif  // FELICIA_CORE_MESSAGE_SERIALIZED_MESSAGE_IO_H_

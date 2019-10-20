@@ -1,0 +1,58 @@
+#if defined(HAS_ROS)
+
+#ifndef FELICIA_CORE_CHANNEL_ROS_SERVICE_RESPONSE_H_
+#define FELICIA_CORE_CHANNEL_ROS_SERVICE_RESPONSE_H_
+
+#include "felicia/core/channel/message_receiver.h"
+#include "felicia/core/channel/message_sender.h"
+#include "felicia/core/lib/base/export.h"
+#include "felicia/core/message/ros_header.h"
+
+namespace felicia {
+
+namespace rpc {
+
+template <typename T, typename SFINAE>
+class Server;
+
+}  // namespace rpc
+
+class EXPORT RosServiceResponse {
+ public:
+  using HandshakeCallback = base::OnceCallback<void(std::unique_ptr<Channel>)>;
+
+  explicit RosServiceResponse(std::unique_ptr<Channel> channel);
+  ~RosServiceResponse();
+
+  template <typename T, typename SFINAE>
+  void ReceiveRequest(rpc::Server<T, SFINAE>* server,
+                      HandshakeCallback callback) {
+    RosServiceResponseHeader header;
+    header.md5sum = rpc::Server<T, SFINAE>::Service::MD5Sum();
+    header.request_type = rpc::Server<T, SFINAE>::Service::RequestDataType();
+    header.response_type = rpc::Server<T, SFINAE>::Service::ResponseDataType();
+    header.type = rpc::Server<T, SFINAE>::Service::DataType();
+
+    callback_ = std::move(callback);
+    channel_->SetDynamicReceiveBuffer(true);
+    receiver_.set_channel(channel_.get());
+    receiver_.ReceiveMessage(base::BindOnce(
+        &RosServiceResponse::OnReceiveRequest, base::Unretained(this), header));
+  }
+
+  void OnReceiveRequest(const RosServiceResponseHeader& header,
+                        const Status& s);
+
+  void OnResponse(bool sent_error, const Status& s);
+
+ private:
+  std::unique_ptr<Channel> channel_;
+  MessageReceiver<RosServiceRequestHeader> receiver_;
+  HandshakeCallback callback_;
+};
+
+}  // namespace felicia
+
+#endif  // FELICIA_CORE_CHANNEL_ROS_SERVICE_RESPONSE_H_
+
+#endif  // defined(HAS_ROS)

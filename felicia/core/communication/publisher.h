@@ -1,12 +1,12 @@
-#ifndef FELICIA_CC_COMMUNICATION_PUBLISHER_H_
-#define FELICIA_CC_COMMUNICATION_PUBLISHER_H_
+#ifndef FELICIA_CORE_COMMUNICATION_PUBLISHER_H_
+#define FELICIA_CORE_COMMUNICATION_PUBLISHER_H_
 
 #include <memory>
 #include <string>
 
 #if defined(HAS_ROS)
 #include <ros/message_traits.h>
-#endif
+#endif  // defined(HAS_ROS)
 
 #include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/callback.h"
@@ -17,13 +17,13 @@
 #include "third_party/chromium/base/synchronization/lock.h"
 
 #include "felicia/core/channel/channel_factory.h"
-#include "felicia/core/channel/ros_header.h"
-#include "felicia/core/channel/ros_protocol.h"
+#include "felicia/core/channel/ros_topic_response.h"
 #include "felicia/core/communication/register_state.h"
 #include "felicia/core/communication/settings.h"
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/master_proxy.h"
+#include "felicia/core/message/ros_protocol.h"
 
 namespace felicia {
 
@@ -65,6 +65,8 @@ class Publisher {
                         StatusOnceCallback callback = StatusOnceCallback());
 
  protected:
+  friend class RosTopicResponse;
+
   void OnPublishTopicAsync(const PublishTopicRequest* request,
                            PublishTopicResponse* response,
                            const communication::Settings& settings,
@@ -74,19 +76,16 @@ class Publisher {
                              UnpublishTopicResponse* response,
                              StatusOnceCallback callback, const Status& s);
 
-  StatusOr<ChannelDef> Setup(Channel<MessageTy>* channel_def,
+  StatusOr<ChannelDef> Setup(Channel* chanel,
                              const channel::Settings& settings);
 
   void SendMessage(SendMessageCallback callback);
   void OnSendMessage(SendMessageCallback callback, ChannelDef::Type type,
                      const Status& s);
-  void OnAccept(StatusOr<std::unique_ptr<TCPChannel<MessageTy>>> status_or);
+  void OnAccept(StatusOr<std::unique_ptr<TCPChannel>> status_or);
 
 #if defined(HAS_ROS)
-  void OnWriteRosHeader(std::unique_ptr<TCPChannel<MessageTy>> client_channel,
-                        bool sent_error, const Status& s);
-  void OnReadRosHeader(std::unique_ptr<TCPChannel<MessageTy>> client_channel,
-                       std::string* buffer, const Status& s);
+  void OnRosTopicHandshake(std::unique_ptr<Channel> client_channel);
 #endif  // defined(HAS_ROS)
 
   void Release();
@@ -95,11 +94,11 @@ class Publisher {
   // GetMessageDefinition and GetMesasgeTypeName methods.
 #if defined(HAS_ROS)
   virtual std::string GetMessageMD5Sum() const {
-    return MessageIOImpl<MessageTy>::MD5Sum();
+    return MessageIO<MessageTy>::MD5Sum();
   }
 
   virtual std::string GetMessageDefinition() const {
-    return MessageIOImpl<MessageTy>::Definition();
+    return MessageIO<MessageTy>::Definition();
   }
 #endif  // defined(HAS_ROS)
 
@@ -107,7 +106,7 @@ class Publisher {
   // determined at compile time. We should workaround by doing runtime
   // asking its Publisher.
   virtual std::string GetMessageTypeName() const {
-    return MessageIOImpl<MessageTy>::TypeName();
+    return MessageIO<MessageTy>::TypeName();
   }
 
   virtual TopicInfo::ImplType GetMessageImplType() const {
@@ -115,7 +114,7 @@ class Publisher {
     if (ros::message_traits::IsMessage<MessageTy>::value) {
       return TopicInfo::ROS;
     }
-#endif
+#endif  // defined(HAS_ROS)
     return TopicInfo::PROTOBUF;
   }
 
@@ -123,13 +122,15 @@ class Publisher {
   // to move its content to |serialized| not by copying.
   virtual MessageIOError SerializeToString(MessageTy* message,
                                            std::string* serialized) {
-    return MessageIO::SerializeToString(message, serialized);
+    return MessageIO<MessageTy>::Serialize(message, serialized);
   }
 
   base::Lock lock_;
   std::unique_ptr<Pool<MessageTy, uint8_t>> message_queue_ GUARDED_BY(lock_);
+  TopicInfo topic_info_;
   base::TimeDelta period_;
-  std::vector<std::unique_ptr<Channel<MessageTy>>> channels_;
+  std::vector<std::unique_ptr<Channel>> channels_;
+  ChannelBuffer send_buffer_;
 
   communication::RegisterState register_state_;
 
@@ -160,12 +161,11 @@ void Publisher<MessageTy>::RequestPublish(
 
   base::StackVector<ChannelDef, ChannelDef::Type_ARRAYSIZE> channel_defs;
   int channel_type = 1;
-  bool use_ros_channel = IsUsingRosProtocol(topic);
   while (channel_type <= channel_types) {
     if (channel_type & channel_types) {
-      auto channel = ChannelFactory::NewChannel<MessageTy>(
+      auto channel = ChannelFactory::NewChannel(
           static_cast<ChannelDef::Type>(channel_type),
-          settings.channel_settings, use_ros_channel);
+          settings.channel_settings);
       StatusOr<ChannelDef> status_or =
           Setup(channel.get(), settings.channel_settings);
       if (!status_or.ok()) {
@@ -182,14 +182,14 @@ void Publisher<MessageTy>::RequestPublish(
 
   PublishTopicRequest* request = new PublishTopicRequest();
   *request->mutable_node_info() = node_info;
-  TopicInfo* topic_info = request->mutable_topic_info();
-  topic_info->set_topic(topic);
-  topic_info->set_type_name(GetMessageTypeName());
-  topic_info->set_impl_type(GetMessageImplType());
-  ChannelSource* channel_source = topic_info->mutable_topic_source();
+  topic_info_.set_topic(topic);
+  topic_info_.set_type_name(GetMessageTypeName());
+  topic_info_.set_impl_type(GetMessageImplType());
+  ChannelSource* channel_source = topic_info_.mutable_topic_source();
   for (auto& channel_def : channel_defs) {
     *channel_source->add_channel_defs() = channel_def;
   }
+  *request->mutable_topic_info() = topic_info_;
   PublishTopicResponse* response = new PublishTopicResponse();
 
   master_proxy.PublishTopicAsync(
@@ -256,38 +256,36 @@ void Publisher<MessageTy>::RequestUnpublish(const NodeInfo& node_info,
 
 template <typename MessageTy>
 StatusOr<ChannelDef> Publisher<MessageTy>::Setup(
-    Channel<MessageTy>* channel, const channel::Settings& settings) {
+    Channel* channel, const channel::Settings& settings) {
   if (!channel) {
     return errors::Aborted("Failed to setup: channel is null.");
   }
 
   StatusOr<ChannelDef> status_or;
   if (channel->IsTCPChannel()) {
-    TCPChannel<MessageTy>* tcp_channel = channel->ToTCPChannel();
+    TCPChannel* tcp_channel = channel->ToTCPChannel();
     status_or = tcp_channel->Listen();
     tcp_channel->AcceptOnceIntercept(base::BindRepeating(
         &Publisher<MessageTy>::OnAccept, base::Unretained(this)));
   } else if (channel->IsUDPChannel()) {
-    UDPChannel<MessageTy>* udp_channel = channel->ToUDPChannel();
+    UDPChannel* udp_channel = channel->ToUDPChannel();
     status_or = udp_channel->Bind();
   } else if (channel->IsWSChannel()) {
-    WSChannel<MessageTy>* ws_channel = channel->ToWSChannel();
+    WSChannel* ws_channel = channel->ToWSChannel();
     status_or = ws_channel->Listen();
     ws_channel->AcceptLoop(base::BindRepeating(
         [](const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }));
   }
 #if defined(OS_POSIX)
   else if (channel->IsUDSChannel()) {
-    UDSChannel<MessageTy>* uds_channel = channel->ToUDSChannel();
+    UDSChannel* uds_channel = channel->ToUDSChannel();
     status_or = uds_channel->BindAndListen();
-    uds_channel->AcceptLoop(base::BindRepeating([](const Status& s) {
-                              LOG_IF(ERROR, !s.ok()) << s;
-                            }),
-                            settings.uds_settings.auth_callback);
+    uds_channel->AcceptLoop(base::BindRepeating(
+        [](const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }));
   }
-#endif
+#endif  // defined(OS_POSIX)
   else if (channel->IsShmChannel()) {
-    ShmChannel<MessageTy>* shm_channel = channel->ToShmChannel();
+    ShmChannel* shm_channel = channel->ToShmChannel();
     status_or = shm_channel->MakeSharedMemory();
   }
 
@@ -318,14 +316,21 @@ void Publisher<MessageTy>::OnPublishTopicAsync(
         std::make_unique<Pool<MessageTy, uint8_t>>(settings.queue_size);
   }
 
-  SendBuffer send_buffer;
   if (settings.is_dynamic_buffer) {
-    send_buffer.SetDynamicBuffer(true);
+    send_buffer_.SetDynamicBuffer(true);
   } else {
-    send_buffer.SetCapacity(settings.buffer_size);
+    send_buffer_.SetCapacity(settings.buffer_size);
   }
   for (auto& channel : channels_) {
-    channel->SetSendBuffer(send_buffer);
+    if (!channel->HasNativeHeader()) {
+      channel->SetSendBuffer(send_buffer_);
+    } else {
+      if (settings.is_dynamic_buffer) {
+        channel->SetDynamicSendBuffer(true);
+      } else {
+        channel->SetSendBufferSize(settings.buffer_size);
+      }
+    }
   }
 
   register_state_.ToRegistered(FROM_HERE);
@@ -366,7 +371,7 @@ void Publisher<MessageTy>::SendMessage(SendMessageCallback callback) {
 
   bool can_send = false;
   for (auto& channel : channels_) {
-    if (!channel->IsSendingMessage() && channel->HasReceivers()) {
+    if (!channel->IsSending() && channel->HasReceivers()) {
       can_send = true;
       break;
     }
@@ -381,17 +386,36 @@ void Publisher<MessageTy>::SendMessage(SendMessageCallback callback) {
     if (message_queue_ && !message_queue_->empty()) {
       err = SerializeToString(&message_queue_->front(), &serialized);
       message_queue_->pop();
+    } else {
+      return;
     }
   }
+
+  Header header;
+  int to_send = header.header_size() + serialized.length();
   if (err == MessageIOError::OK) {
-    bool reuse = false;
+    if (send_buffer_.SetEnoughCapacityIfDynamic(to_send)) {
+      err =
+          header.AttachHeaderInternally(serialized, send_buffer_.StartOfBuffer());
+    } else {
+      err = MessageIOError::ERR_NOT_ENOUGH_BUFFER;
+    }
+  }
+
+  if (err == MessageIOError::OK) {
     for (auto& channel : channels_) {
-      if (!channel->IsSendingMessage() && channel->HasReceivers()) {
-        channel->SendRawMessage(
-            serialized, reuse,
-            base::BindOnce(&Publisher<MessageTy>::OnSendMessage,
-                           base::Unretained(this), callback, channel->type()));
-        reuse |= true;
+      if (!channel->IsSending() && channel->HasReceivers()) {
+        if (channel->HasNativeHeader()) {
+          channel->Send(serialized,
+                        base::BindOnce(&Publisher<MessageTy>::OnSendMessage,
+                                       base::Unretained(this), callback,
+                                       channel->type()));
+        } else {
+          channel->SendInternalBuffer(
+              to_send, base::BindOnce(&Publisher<MessageTy>::OnSendMessage,
+                                      base::Unretained(this), callback,
+                                      channel->type()));
+        }
       }
     }
   }
@@ -407,28 +431,28 @@ template <typename MessageTy>
 void Publisher<MessageTy>::OnSendMessage(SendMessageCallback callback,
                                          ChannelDef::Type type,
                                          const Status& s) {
-  callback.Run(type, s);
+  if (callback.is_null()) {
+    LOG_IF(ERROR, !s.ok()) << s;
+  } else {
+    std::move(callback).Run(type, s);
+  }
 }
 
 template <typename MessageTy>
 void Publisher<MessageTy>::OnAccept(
-    StatusOr<std::unique_ptr<TCPChannel<MessageTy>>> status_or) {
+    StatusOr<std::unique_ptr<TCPChannel>> status_or) {
   for (auto& channel : channels_) {
     if (channel->IsTCPChannel()) {
-      TCPChannel<MessageTy>* tcp_channel = channel->ToTCPChannel();
+      TCPChannel* tcp_channel = channel->ToTCPChannel();
       if (status_or.ok()) {
 #if defined(HAS_ROS)
-        if (tcp_channel->use_ros_channel()) {
-          std::string* receive_buffer = new std::string();
-          std::unique_ptr<TCPChannel<MessageTy>> client_channel =
-              std::move(status_or.ValueOrDie());
-          client_channel->SetDynamicReceiveBuffer(true);
-          client_channel->ReceiveRawMessage(
-              receive_buffer,
-              base::BindOnce(&Publisher<MessageTy>::OnReadRosHeader,
-                             base::Unretained(this),
-                             base::Passed(std::move(client_channel)),
-                             base::Owned(receive_buffer)));
+        if (IsUsingRosProtocol(topic_info_.topic())) {
+          // It deletes itself when handshake is completed.
+          RosTopicResponse* topic_response =
+              new RosTopicResponse(std::move(status_or.ValueOrDie()));
+          topic_response->ReceiveRequest(
+              this, base::BindOnce(&Publisher<MessageTy>::OnRosTopicHandshake,
+                                   base::Unretained(this)));
         } else {
 #endif  // defined(HAS_ROS)
           tcp_channel->AddClientChannel(std::move(status_or.ValueOrDie()));
@@ -447,63 +471,17 @@ void Publisher<MessageTy>::OnAccept(
 
 #if defined(HAS_ROS)
 template <typename MessageTy>
-void Publisher<MessageTy>::OnReadRosHeader(
-    std::unique_ptr<TCPChannel<MessageTy>> client_channel, std::string* buffer,
-    const Status& s) {
-  client_channel->SetDynamicReceiveBuffer(false);
-  Status new_status = s;
-  RosTopicRequestHeader request_header;
-  RosTopicResponseHeader response_header;
-  if (new_status.ok()) {
-    new_status = request_header.ReadFromBuffer(*buffer);
-    if (new_status.ok()) {
-      RosTopicRequestHeader expected;
-      // TODO: Currently Publisher<MessageTy> doesn't hold topic info.
-      // Assume that subscirber request the right topic to the publisher.
-      expected.topic = request_header.topic;
-      expected.md5sum = GetMessageMD5Sum();
-      expected.type = GetMessageTypeName();
-      new_status = request_header.Validate(expected);
+void Publisher<MessageTy>::OnRosTopicHandshake(
+    std::unique_ptr<Channel> client_channel) {
+  for (auto& channel : channels_) {
+    if (channel->IsTCPChannel()) {
+      TCPChannel* tcp_channel = channel->ToTCPChannel();
+      std::unique_ptr<TCPChannel> client_tcp_channel;
+      client_tcp_channel.reset(
+          reinterpret_cast<TCPChannel*>(client_channel.release()));
+      tcp_channel->AddClientChannel(std::move(client_tcp_channel));
+      return;
     }
-  }
-
-  if (new_status.ok()) {
-    response_header.SetValuesFrom(request_header);
-    response_header.message_definition = GetMessageDefinition();
-    response_header.latching = "0";
-  } else {
-    LOG(ERROR) << new_status;
-    response_header.error = new_status.error_message();
-  }
-
-  std::string send_buffer;
-  response_header.WriteToBuffer(&send_buffer);
-  client_channel->SetDynamicSendBuffer(true);
-  client_channel->SendRawMessage(
-      send_buffer, false,
-      base::BindOnce(&Publisher<MessageTy>::OnWriteRosHeader,
-                     base::Unretained(this),
-                     base::Passed(std::move(client_channel)),
-                     !response_header.error.empty()));
-}
-
-template <typename MessageTy>
-void Publisher<MessageTy>::OnWriteRosHeader(
-    std::unique_ptr<TCPChannel<MessageTy>> client_channel, bool sent_error,
-    const Status& s) {
-  if (s.ok()) {
-    if (sent_error) return;
-
-    client_channel->SetDynamicSendBuffer(false);
-    for (auto& channel : channels_) {
-      if (channel->IsTCPChannel()) {
-        TCPChannel<MessageTy>* tcp_channel = channel->ToTCPChannel();
-        tcp_channel->AddClientChannel(std::move(client_channel));
-        return;
-      }
-    }
-  } else {
-    LOG(ERROR) << s;
   }
 }
 #endif  // defined(HAS_ROS)
@@ -520,6 +498,7 @@ void Publisher<MessageTy>::Release() {
   }
 
   channels_.clear();
+  topic_info_.Clear();
   {
     base::AutoLock l(lock_);
     message_queue_.reset();
@@ -528,4 +507,4 @@ void Publisher<MessageTy>::Release() {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CC_COMMUNICATION_PUBLISHER_H_
+#endif  // FELICIA_CORE_COMMUNICATION_PUBLISHER_H_

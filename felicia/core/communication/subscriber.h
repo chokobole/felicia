@@ -12,14 +12,15 @@
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/channel/channel_factory.h"
-#include "felicia/core/channel/ros_header.h"
-#include "felicia/core/channel/ros_protocol.h"
+#include "felicia/core/channel/message_receiver.h"
+#include "felicia/core/channel/ros_topic_request.h"
 #include "felicia/core/communication/register_state.h"
 #include "felicia/core/communication/settings.h"
 #include "felicia/core/communication/subscriber_state.h"
 #include "felicia/core/lib/containers/pool.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/master_proxy.h"
+#include "felicia/core/message/ros_protocol.h"
 
 namespace felicia {
 
@@ -60,6 +61,8 @@ class Subscriber {
                           StatusOnceCallback callback = StatusOnceCallback());
 
  protected:
+  friend class RosTopicRequest;
+
   void OnSubscribeTopicAsync(const SubscribeTopicRequest* request,
                              SubscribeTopicResponse* response,
                              int channel_types,
@@ -75,8 +78,7 @@ class Subscriber {
   void ConnectToPublisher();
   void OnConnectToPublisher(const Status& s);
 #if defined(HAS_ROS)
-  void OnWriteRosHeader(const Status& s);
-  void OnReadRosHeader(std::string* buffer, const Status& s);
+  void OnRosTopicHandshake(const Status& s);
 #endif  // defined(HAS_ROS)
 
   void StartMessageLoop();
@@ -93,7 +95,7 @@ class Subscriber {
   // GetMesasgeTypeName methods.
 #if defined(HAS_ROS)
   virtual std::string GetMessageMD5Sum() const {
-    return MessageIOImpl<MessageTy>::MD5Sum();
+    return MessageIO<MessageTy>::MD5Sum();
   }
 #endif  // defined(HAS_ROS)
 
@@ -101,7 +103,7 @@ class Subscriber {
   // determined at compile time. We should workaround by doing runtime
   // asking its Publisher.
   virtual std::string GetMessageTypeName() const {
-    return MessageIOImpl<MessageTy>::TypeName();
+    return MessageIO<MessageTy>::TypeName();
   }
 
   // Needed by DynamicSubscriber, because it cann't resolve its message type
@@ -110,12 +112,16 @@ class Subscriber {
     return true;
   }
 
-  MessageTy message_;
   Pool<MessageTy, uint8_t> message_queue_;
   TopicInfo topic_info_;
   base::Optional<TopicInfo> topic_info_to_update_;
   int channel_types_;
-  std::unique_ptr<Channel<MessageTy>> channel_;
+  std::unique_ptr<Channel> channel_;
+#if defined(HAS_ROS)
+  RosTopicRequest topic_request_;
+#endif  // defined(HAS_ROS)
+  MessageReceiver<MessageTy> message_receiver_;
+
   int channel_type_ = 0;
   OnMessageCallback on_message_callback_;
   StatusCallback on_error_callback_;
@@ -285,7 +291,7 @@ void Subscriber<MessageTy>::OnFindPublisher(const TopicInfo& topic_info) {
 
   DCHECK(IsStopped()) << subscriber_state_.ToString();
 
-  // If MesageTy is DynamicProtobufMessage, in other words, this class is
+  // If MessageTy is DynamicProtobufMessage, in other words, this class is
   // a instance of DynamicSubscriber, then subscriber resolves its type
   // using |type_name| inside |topic_info|.
   if (!MaybeResolveMessgaeType(topic_info)) return;
@@ -323,9 +329,8 @@ void Subscriber<MessageTy>::ConnectToPublisher() {
     return;
   }
 
-  bool use_ros_channel = IsUsingRosProtocol(topic_info_.topic());
-  channel_ = ChannelFactory::NewChannel<MessageTy>(
-      matched_channel_def.type(), settings_.channel_settings, use_ros_channel);
+  channel_ = ChannelFactory::NewChannel(matched_channel_def.type(),
+                                        settings_.channel_settings);
 
   channel_->Connect(matched_channel_def,
                     base::BindOnce(&Subscriber<MessageTy>::OnConnectToPublisher,
@@ -340,30 +345,13 @@ void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
     } else {
       channel_->SetReceiveBufferSize(settings_.buffer_size);
     }
+    message_receiver_.set_channel(channel_.get());
 
 #if defined(HAS_ROS)
-    if (channel_->use_ros_channel()) {
-      RosTopicRequestHeader header;
-      ConsumeRosProtocol(topic_info_.topic(), &header.topic);
-      header.md5sum = GetMessageMD5Sum();
-      header.callerid = topic_info_.ros_node_name();
-      header.type = GetMessageTypeName();
-      header.tcp_nodelay = "1";
-      std::string send_buffer;
-      header.WriteToBuffer(&send_buffer);
-
-      channel_->SetDynamicSendBuffer(true);
-      channel_->SendRawMessage(
-          send_buffer, false,
-          base::BindOnce(&Subscriber<MessageTy>::OnWriteRosHeader,
-                         base::Unretained(this)));
-
-      channel_->SetDynamicReceiveBuffer(true);
-      std::string* receive_buffer = new std::string();
-      channel_->ReceiveRawMessage(
-          receive_buffer,
-          base::BindOnce(&Subscriber<MessageTy>::OnReadRosHeader,
-                         base::Unretained(this), base::Owned(receive_buffer)));
+    if (IsUsingRosProtocol(topic_info_.topic())) {
+      topic_request_.Request(
+          this, base::BindOnce(&Subscriber<MessageTy>::OnRosTopicHandshake,
+                               base::Unretained(this)));
     } else {
 #endif  // defined(HAS_ROS)
       StartMessageLoop();
@@ -379,33 +367,14 @@ void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
 
 #if defined(HAS_ROS)
 template <typename MessageTy>
-void Subscriber<MessageTy>::OnWriteRosHeader(const Status& s) {
-  LOG_IF(ERROR, !s.ok()) << s;
-  channel_->SetDynamicSendBuffer(false);
-}
-
-template <typename MessageTy>
-void Subscriber<MessageTy>::OnReadRosHeader(std::string* buffer,
-                                            const Status& s) {
-  RosTopicResponseHeader header;
-  Status new_status = s;
-  if (new_status.ok()) {
-    new_status = header.ReadFromBuffer(*buffer);
-    if (new_status.ok()) {
-      RosTopicResponseHeader expected;
-      expected.md5sum = GetMessageMD5Sum();
-      ConsumeRosProtocol(topic_info_.topic(), &expected.topic);
-      expected.type = GetMessageTypeName();
-      new_status = header.Validate(expected);
-    }
-  }
-
-  if (!new_status.ok()) {
-    channel_.reset();
-    internal::LogOrCallback(on_error_callback_, new_status);
-  } else {
+void Subscriber<MessageTy>::OnRosTopicHandshake(const Status& s) {
+  if (s.ok()) {
     channel_->SetDynamicReceiveBuffer(false);
     StartMessageLoop();
+  } else {
+    LOG(ERROR) << "Failed to connect to publisher: " << s;
+    channel_type_ <<= 1;
+    ConnectToPublisher();
   }
 }
 #endif  // defined(HAS_ROS)
@@ -464,9 +433,8 @@ template <typename MessageTy>
 void Subscriber<MessageTy>::ReceiveMessageLoop() {
   if (IsStopping() || IsStopped()) return;
 
-  channel_->ReceiveMessage(
-      &message_, base::BindOnce(&Subscriber<MessageTy>::OnReceiveMessage,
-                                base::Unretained(this)));
+  message_receiver_.ReceiveMessage(base::BindOnce(
+      &Subscriber<MessageTy>::OnReceiveMessage, base::Unretained(this)));
 }
 
 template <typename MessageTy>
@@ -475,7 +443,7 @@ void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
 
   if (s.ok()) {
     receive_message_failed_cnt_ = 0;
-    message_queue_.push(message_);
+    message_queue_.push(std::move(message_receiver_).message());
   } else {
     Status new_status(s.error_code(),
                       base::StringPrintf("Failed to receive a message: %s",
@@ -543,8 +511,16 @@ void Subscriber<MessageTy>::Stop() {
 #endif
 
   if (IsUnregistered()) {
+    topic_info_.Clear();
+    if (topic_info_to_update_.has_value()) {
+      topic_info_to_update_.value().Clear();
+    }
+    message_receiver_.Reset();
     channel_.reset();
     message_queue_.clear();
+#if defined(HAS_ROS)
+    topic_request_.Reset();
+#endif
 
     on_message_callback_.Reset();
     on_error_callback_.Reset();

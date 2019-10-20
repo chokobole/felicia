@@ -40,25 +40,25 @@ void MasterNotificationWatcher::UnregisterAllTopicInfoCallback() {
 
 void MasterNotificationWatcher::Start() {
   DCHECK(!server_channel_);
-  server_channel_ = ChannelFactory::NewChannel<MasterNotification>(
-      ChannelDef::CHANNEL_TYPE_TCP);
+  server_channel_ = ChannelFactory::NewChannel(ChannelDef::CHANNEL_TYPE_TCP);
 
-  TCPChannel<MasterNotification>* tcp_channel = server_channel_->ToTCPChannel();
+  TCPChannel* tcp_channel = server_channel_->ToTCPChannel();
   auto status_or = tcp_channel->Listen();
   *channel_source_.add_channel_defs() = status_or.ValueOrDie();
   DoAccept();
 }
 
 void MasterNotificationWatcher::DoAccept() {
-  TCPChannel<MasterNotification>* tcp_channel = server_channel_->ToTCPChannel();
+  TCPChannel* tcp_channel = server_channel_->ToTCPChannel();
   tcp_channel->AcceptOnceIntercept(base::BindOnce(
       &MasterNotificationWatcher::OnAccept, base::Unretained(this)));
 }
 
 void MasterNotificationWatcher::OnAccept(
-    StatusOr<std::unique_ptr<TCPChannel<MasterNotification>>> status_or) {
+    StatusOr<std::unique_ptr<TCPChannel>> status_or) {
   if (status_or.ok()) {
     channel_ = std::move(status_or.ValueOrDie());
+    receiver_.set_channel(channel_.get());
     WatchNewMasterNotification();
   } else {
     LOG(ERROR) << "Failed to accept: " << status_or.status();
@@ -69,16 +69,16 @@ void MasterNotificationWatcher::WatchNewMasterNotification() {
   DCHECK(channel_);
   channel_->SetReceiveBufferSize(kMasterNotificationBytes);
 
-  channel_->ReceiveMessage(
-      &master_notificaiton_,
+  receiver_.ReceiveMessage(
       base::BindOnce(&MasterNotificationWatcher::OnNewMasterNotification,
                      base::Unretained(this)));
 }
 
 void MasterNotificationWatcher::OnNewMasterNotification(const Status& s) {
   if (s.ok()) {
-    if (master_notificaiton_.has_topic_info()) {
-      const TopicInfo& topic_info = master_notificaiton_.topic_info();
+    const MasterNotification& master_notification = receiver_.message();
+    if (master_notification.has_topic_info()) {
+      const TopicInfo& topic_info = master_notification.topic_info();
       auto it = topic_info_callback_map_.find(topic_info.topic());
       if (it != topic_info_callback_map_.end()) {
         it->second.Run(topic_info);
@@ -87,8 +87,8 @@ void MasterNotificationWatcher::OnNewMasterNotification(const Status& s) {
         all_topic_info_callback_.Run(topic_info);
     }
 
-    if (master_notificaiton_.has_service_info()) {
-      const ServiceInfo& service_info = master_notificaiton_.service_info();
+    if (master_notification.has_service_info()) {
+      const ServiceInfo& service_info = master_notification.service_info();
       auto it = service_info_callback_map_.find(service_info.service());
       if (it != service_info_callback_map_.end()) {
         it->second.Run(service_info);

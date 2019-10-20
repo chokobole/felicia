@@ -60,8 +60,6 @@ class PyServer : public ServerInterface {
  public:
   using ServerInterface::ServerInterface;
 
-  void set_use_ros_channel(bool use_ros_channel) override {}
-
   Status Start() override {
     PYBIND11_OVERLOAD_PURE(
         Status,          /* Return type */
@@ -86,11 +84,11 @@ class PyServer : public ServerInterface {
     );
   }
 
-  std::string service_name() const override {
+  std::string service_type() const override {
     PYBIND11_OVERLOAD_PURE(
         std::string,     /* Return type */
         ServerInterface, /* Parent class */
-        service_name,    /* Name of function in C++ (must match Python name) */
+        service_type,    /* Name of function in C++ (must match Python name) */
     );
   }
 };

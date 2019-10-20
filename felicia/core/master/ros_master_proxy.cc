@@ -8,9 +8,9 @@
 #include "third_party/chromium/base/strings/string_util.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
-#include "felicia/core/channel/ros_protocol.h"
 #include "felicia/core/lib/error/errors.h"
 #include "felicia/core/master/ros_master_proxy.h"
+#include "felicia/core/message/ros_protocol.h"
 
 namespace felicia {
 

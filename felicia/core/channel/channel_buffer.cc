@@ -2,41 +2,26 @@
 
 namespace felicia {
 
-void ChannelBuffer::EnsureBuffer() {
-  if (!buffer_) buffer_ = base::MakeRefCounted<net::GrowableIOBuffer>();
-}
+ChannelBuffer::ChannelBuffer()
+    : buffer_(base::MakeRefCounted<net::GrowableIOBuffer>()) {}
+
+ChannelBuffer::~ChannelBuffer() = default;
 
 void ChannelBuffer::SetCapacity(Bytes bytes) { SetCapacity(bytes.bytes()); }
 
 void ChannelBuffer::SetCapacity(int capacity) {
-  EnsureBuffer();
   buffer_->SetCapacity(capacity);
 }
 
-int ChannelBuffer::capacity() {
-  EnsureBuffer();
-  return buffer_->capacity();
-}
+int ChannelBuffer::capacity() { return buffer_->capacity(); }
 
-void ChannelBuffer::set_offset(int offset) {
-  EnsureBuffer();
-  buffer_->set_offset(offset);
-}
+void ChannelBuffer::set_offset(int offset) { buffer_->set_offset(offset); }
 
-int ChannelBuffer::offset() {
-  EnsureBuffer();
-  return buffer_->offset();
-}
+int ChannelBuffer::offset() { return buffer_->offset(); }
 
-int ChannelBuffer::RemainingCapacity() {
-  EnsureBuffer();
-  return buffer_->RemainingCapacity();
-}
+int ChannelBuffer::RemainingCapacity() { return buffer_->RemainingCapacity(); }
 
-char* ChannelBuffer::StartOfBuffer() {
-  EnsureBuffer();
-  return buffer_->StartOfBuffer();
-}
+char* ChannelBuffer::StartOfBuffer() { return buffer_->StartOfBuffer(); }
 
 scoped_refptr<net::GrowableIOBuffer> ChannelBuffer::buffer() { return buffer_; }
 
@@ -62,23 +47,5 @@ bool ChannelBuffer::SetEnoughCapacityIfDynamic(int capacity) {
   SetCapacity(capacity);
   return true;
 }
-
-void SendBuffer::InvalidateAttachment() { attach_kind_ = ATTACH_KIND_NONE; }
-
-void SendBuffer::AttachGeneral(int size) {
-  attach_kind_ = ATTACH_KIND_GENERAL;
-  size_ = size;
-}
-
-void SendBuffer::AttachWebSocket(int size) {
-  attach_kind_ = ATTACH_KIND_WEB_SOCKET;
-  size_ = size;
-}
-
-bool SendBuffer::CanReuse(AttachKind attach_kind) const {
-  return attach_kind_ == attach_kind;
-}
-
-int SendBuffer::size() const { return size_; }
 
 }  // namespace felicia

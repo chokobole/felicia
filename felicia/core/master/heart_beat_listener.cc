@@ -54,7 +54,7 @@ void HeartBeatListener::StartCheckHeartBeat() {
   DCHECK_EQ(client_info_.heart_beat_signaller_source().channel_defs(0).type(),
             ChannelDef::CHANNEL_TYPE_TCP);
 
-  channel_ = ChannelFactory::NewChannel<HeartBeat>(
+  channel_ = ChannelFactory::NewChannel(
       client_info_.heart_beat_signaller_source().channel_defs(0).type());
 
   channel_->SetReceiveBufferSize(kHeartBeatBytes);
@@ -72,18 +72,21 @@ void HeartBeatListener::DoCheckHeartBeat(const Status& s) {
     return;
   }
 
+  receiver_.set_channel(channel_.get());
   TryReceiveHeartBeat();
 }
 
 void HeartBeatListener::TryReceiveHeartBeat() {
+  if (stopped_) {
+    return;
+  }
   if (timeout_.IsCancelled()) {
-    timeout_.Reset(
-        base::BindOnce(&HeartBeatListener::KillSelf, base::Unretained(this)));
+    timeout_.Reset(base::BindOnce(&HeartBeatListener::StopCheckHeartBeat,
+                                  base::Unretained(this)));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, timeout_.callback(), kMultiplier * heart_beat_duration_);
   }
-  channel_->ReceiveMessage(
-      &heart_beat_,
+  receiver_.ReceiveMessage(
       base::BindOnce(&HeartBeatListener::OnAlive, base::Unretained(this)));
 }
 
@@ -100,6 +103,14 @@ void HeartBeatListener::OnAlive(const Status& s) {
       FROM_HERE,
       base::BindOnce(&HeartBeatListener::TryReceiveHeartBeat,
                      base::Unretained(this)),
+      heart_beat_duration_);
+}
+
+void HeartBeatListener::StopCheckHeartBeat() {
+  stopped_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&HeartBeatListener::KillSelf, base::Unretained(this)),
       heart_beat_duration_);
 }
 

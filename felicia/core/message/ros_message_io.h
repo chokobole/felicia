@@ -1,15 +1,14 @@
 #if defined(HAS_ROS)
 
-#ifndef FELICIA_CORE_MESSAGE_ROS_MESSAGE_IO_IMPL_H_
-#define FELICIA_CORE_MESSAGE_ROS_MESSAGE_IO_IMPL_H_
+#ifndef FELICIA_CORE_MESSAGE_ROS_MESSAGE_IO_H_
+#define FELICIA_CORE_MESSAGE_ROS_MESSAGE_IO_H_
 
 #include <ros/serialization.h>
 
 namespace felicia {
 
 template <typename T>
-class MessageIOImpl<
-    T, std::enable_if_t<ros::message_traits::IsMessage<T>::value>> {
+class MessageIO<T, std::enable_if_t<ros::message_traits::IsMessage<T>::value>> {
  public:
   static MessageIOError Serialize(const T* ros_msg, std::string* text) {
     text->resize(ros::serialization::Serializer<T>::serializedLength(*ros_msg));
@@ -47,6 +46,6 @@ class MessageIOImpl<
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_MESSAGE_ROS_MESSAGE_IO_IMPL_H_
+#endif  // FELICIA_CORE_MESSAGE_ROS_MESSAGE_IO_H_
 
 #endif  // HAS_ROS

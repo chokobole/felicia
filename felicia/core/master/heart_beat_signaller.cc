@@ -4,6 +4,7 @@
 #include "third_party/chromium/base/logging.h"
 
 #include "felicia/core/channel/channel_factory.h"
+#include "felicia/core/channel/message_sender.h"
 #include "felicia/core/master/heart_beat_listener.h"
 
 namespace felicia {
@@ -25,12 +26,11 @@ void HeartBeatSignaller::Start(const ClientInfo& client_info,
 void HeartBeatSignaller::DoStart(OnStartCallback callback) {
   DCHECK(!channel_);
 
-  channel_ =
-      ChannelFactory::NewChannel<HeartBeat>(ChannelDef::CHANNEL_TYPE_TCP);
+  channel_ = ChannelFactory::NewChannel(ChannelDef::CHANNEL_TYPE_TCP);
 
   channel_->SetSendBufferSize(kHeartBeatBytes);
 
-  TCPChannel<HeartBeat>* tcp_channel = channel_->ToTCPChannel();
+  TCPChannel* tcp_channel = channel_->ToTCPChannel();
   auto status_or = tcp_channel->Listen();
   tcp_channel->AcceptLoop(base::BindRepeating(&HeartBeatSignaller::OnAccept,
                                               base::Unretained(this)));
@@ -51,9 +51,9 @@ void HeartBeatSignaller::Signal() {
   trial_++;
   HeartBeat heart_beat;
   heart_beat.set_ok(true);
-  channel_->SendMessage(heart_beat,
-                        base::BindRepeating(&HeartBeatSignaller::OnSignal,
-                                            base::Unretained(this)));
+  MessageSender<HeartBeat> sender(channel_.get());
+  sender.SendMessage(heart_beat, base::BindOnce(&HeartBeatSignaller::OnSignal,
+                                                base::Unretained(this)));
 }
 
 void HeartBeatSignaller::OnSignal(const Status& s) {

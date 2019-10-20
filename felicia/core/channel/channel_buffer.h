@@ -3,12 +3,16 @@
 
 #include "third_party/chromium/net/base/io_buffer.h"
 
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/unit/bytes.h"
 
 namespace felicia {
 
-class ChannelBuffer {
+class EXPORT ChannelBuffer {
  public:
+  ChannelBuffer();
+  ~ChannelBuffer();
+
   // GrowableIOBuffer methods
   void SetCapacity(Bytes bytes);
   void SetCapacity(int capacity);
@@ -32,32 +36,8 @@ class ChannelBuffer {
   scoped_refptr<net::GrowableIOBuffer> buffer();
 
  private:
-  void EnsureBuffer();
-
   scoped_refptr<net::GrowableIOBuffer> buffer_;
   bool is_dynamic_ = false;
-};
-
-class SendBuffer : public ChannelBuffer {
- public:
-  enum AttachKind {
-    ATTACH_KIND_NONE = 0,
-    ATTACH_KIND_GENERAL = 1,
-    ATTACH_KIND_WEB_SOCKET = 2,
-  };
-
-  void InvalidateAttachment();
-
-  void AttachGeneral(int size);
-  void AttachWebSocket(int size);
-
-  bool CanReuse(AttachKind attach_kind) const;
-
-  int size() const;
-
- private:
-  int attach_kind_ = ATTACH_KIND_NONE;
-  int size_ = 0;
 };
 
 }  // namespace felicia

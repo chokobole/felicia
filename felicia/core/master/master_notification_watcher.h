@@ -8,6 +8,7 @@
 #include "third_party/chromium/base/macros.h"
 
 #include "felicia/core/channel/channel.h"
+#include "felicia/core/channel/message_receiver.h"
 #include "felicia/core/protobuf/master_data.pb.h"
 
 namespace felicia {
@@ -42,16 +43,15 @@ class MasterNotificationWatcher {
 
  private:
   void DoAccept();
-  void OnAccept(
-      StatusOr<std::unique_ptr<TCPChannel<MasterNotification>>> status_or);
+  void OnAccept(StatusOr<std::unique_ptr<TCPChannel>> status_or);
 
   void WatchNewMasterNotification();
   void OnNewMasterNotification(const Status& s);
 
   ChannelSource channel_source_;
-  MasterNotification master_notificaiton_;
-  std::unique_ptr<Channel<MasterNotification>> server_channel_;
-  std::unique_ptr<TCPChannel<MasterNotification>> channel_;
+  MessageReceiver<MasterNotification> receiver_;
+  std::unique_ptr<Channel> server_channel_;
+  std::unique_ptr<TCPChannel> channel_;
   base::flat_map<std::string, NewTopicInfoCallback> topic_info_callback_map_;
   base::flat_map<std::string, NewServiceInfoCallback>
       service_info_callback_map_;

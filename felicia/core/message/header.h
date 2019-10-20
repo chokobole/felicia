@@ -2,31 +2,34 @@
 #define FELICIA_CORE_MESSAGE_HEADER_H_
 
 #include <stdint.h>
-
-#include <type_traits>
+#include <string>
 
 #include "felicia/core/lib/base/export.h"
+#include "felicia/core/message/message_io.h"
 
 namespace felicia {
 
 class EXPORT Header {
  public:
   Header();
+  ~Header();
 
-  static bool FromBytes(const char* bytes, Header* header,
-                        bool use_ros_channel);
+  // Needed by MessageSender<T>
+  MessageIOError AttachHeader(const std::string& content, std::string* text);
+  // Needed by MessageReceiver<T>
+  int header_size() const;
+  MessageIOError ParseHeader(const char* buffer, int* mesasge_offset,
+                             int* message_size);
 
-  uint32_t size() const;
-  void set_size(uint32_t size);
+  MessageIOError AttachHeaderInternally(const std::string& content,
+                                        char* buffer);
 
- private:
-  uint32_t size_ = 0;
-  uint32_t magic_value_ = 0;
+  int size() const;
+  void set_size(int size);
 
-  static constexpr uint32_t kMessageMagicValue = 0x12452903u;
+ protected:
+  int size_ = 0;
 };
-
-static_assert(std::is_trivially_copyable<Header>::value, "");
 
 }  // namespace felicia
 

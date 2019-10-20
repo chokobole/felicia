@@ -8,6 +8,7 @@
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/channel/channel.h"
+#include "felicia/core/channel/message_receiver.h"
 #include "felicia/core/protobuf/master_data.pb.h"
 
 namespace felicia {
@@ -37,15 +38,18 @@ class HeartBeatListener {
   // beat message can't be reached, then listener regard it as a dead one.
   void OnAlive(const Status& s);
 
+  void StopCheckHeartBeat();
+
   void KillSelf();
 
   ClientInfo client_info_;
   base::TimeDelta heart_beat_duration_;
   OnDisconnectCallback callback_;
-  HeartBeat heart_beat_;
-  std::unique_ptr<Channel<HeartBeat>> channel_;
+  std::unique_ptr<Channel> channel_;
+  MessageReceiver<HeartBeat> receiver_;
 
   base::CancelableOnceClosure timeout_;
+  bool stopped_ = false;
   static constexpr uint8_t kMultiplier = 5;
 
   DISALLOW_COPY_AND_ASSIGN(HeartBeatListener);

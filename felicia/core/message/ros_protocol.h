@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_CHANNEL_ROS_PROTOCOL_H_
-#define FELICIA_CORE_CHANNEL_ROS_PROTOCOL_H_
+#ifndef FELICIA_CORE_MESSAGE_ROS_PROTOCOL_H_
+#define FELICIA_CORE_MESSAGE_ROS_PROTOCOL_H_
 
 #include "third_party/chromium/base/strings/stringprintf.h"
 
@@ -31,4 +31,4 @@ inline bool IsUsingRosProtocol(const std::string& text) {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_CHANNEL_ROS_PROTOCOL_H_
+#endif  // FELICIA_CORE_MESSAGE_ROS_PROTOCOL_H_

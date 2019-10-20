@@ -27,11 +27,6 @@ class FEL_GRPC_SERVER : public ServerInterface {
   Server() = default;
   ~Server() override = default;
 
-  // ServerInterface methods
-  void set_use_ros_channel(bool use_ros_channel) override {
-    LOG_IF(ERROR, use_ros_channel) << "GrpcServer can't use ros channel.";
-  }
-
   Status Start() override;
 
   // Non-blocking
@@ -45,7 +40,7 @@ class FEL_GRPC_SERVER : public ServerInterface {
     return Status::OK();
   }
 
-  std::string service_name() const override { return Service::service_name(); }
+  std::string service_type() const override { return Service::service_name(); }
 
   Status RunUntilShutdown() {
     Status s = Run();

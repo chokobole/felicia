@@ -4,10 +4,11 @@
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 #include "felicia/core/channel/channel_factory.h"
-#include "felicia/core/channel/ros_protocol.h"
+#include "felicia/core/channel/message_sender.h"
 #include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/master/heart_beat_listener.h"
 #include "felicia/core/master/ros_master_proxy.h"
+#include "felicia/core/message/ros_protocol.h"
 
 namespace felicia {
 
@@ -973,8 +974,7 @@ bool Master::CheckIfNodeExists(const NodeInfo& node_info) {
 void Master::DoNotifyClient(const NodeInfo& node_info,
                             const MasterNotification& master_notification) {
   // TODO(chokobole): Try not make one channel for each |master_notification|.
-  auto channel = ChannelFactory::NewChannel<MasterNotification>(
-      ChannelDef::CHANNEL_TYPE_TCP);
+  auto channel = ChannelFactory::NewChannel(ChannelDef::CHANNEL_TYPE_TCP);
 
   channel->SetSendBufferSize(kMasterNotificationBytes);
 
@@ -1121,13 +1121,14 @@ void Master::NotifyWatcher() {
 }
 
 void Master::OnConnetToMasterNotificationWatcher(
-    std::unique_ptr<Channel<MasterNotification>> channel,
+    std::unique_ptr<Channel> channel,
     const MasterNotification& master_notification, const Status& s) {
   if (s.ok()) {
-    channel->SendMessage(
-        master_notification, base::BindRepeating([](const Status& s) {
-          LOG_IF(ERROR, !s.ok()) << "Failed to send message: " << s;
-        }));
+    MessageSender<MasterNotification> sender(channel.get());
+    sender.SendMessage(master_notification, base::BindOnce([](const Status& s) {
+                         LOG_IF(ERROR, !s.ok())
+                             << "Failed to send message: " << s;
+                       }));
   } else {
     LOG(ERROR) << "Failed to connect master notification channel: " << s;
   }

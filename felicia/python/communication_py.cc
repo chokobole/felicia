@@ -339,9 +339,9 @@ class PyServerBridge {
     return py_server->channel_def();
   }
 
-  void set_use_ros_channel(bool use_ros_channel) {
+  void set_service_info(const ServiceInfo& service_info) {
     rpc::PyServer* py_server = server_.cast<rpc::PyServer*>();
-    return py_server->set_use_ros_channel(use_ros_channel);
+    return py_server->set_service_info(service_info);
   }
 
   Status Start() {
@@ -359,9 +359,9 @@ class PyServerBridge {
     return py_server->Shutdown();
   }
 
-  std::string service_name() const {
+  std::string service_type() const {
     rpc::PyServer* py_server = server_.cast<rpc::PyServer*>();
-    return py_server->service_name();
+    return py_server->service_type();
   }
 
  private:

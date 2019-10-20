@@ -59,11 +59,11 @@ class ProtobufPublishingNode(fel.NodeLifecycle):
     def request_publish(self):
         settings = fel.communication.Settings()
         size = fel.Bytes.from_bytes(512)
+        settings.buffer_size = size
         if self.channel_def_type == ChannelDef.CHANNEL_TYPE_TCP:
             if self.ssl_server_context is not None:
                 settings.channel_settings.tcp_settings.use_ssl = True
                 settings.channel_settings.tcp_settings.ssl_server_context = self.ssl_server_context
-            settings.buffer_size = size
         elif self.channel_def_type == ChannelDef.CHANNEL_TYPE_UDS:
             if hasattr(settings.channel_settings, "uds_settings"):
                 settings.channel_settings.uds_settings.auth_callback = self.on_auth
