@@ -19,7 +19,7 @@ class CameraSubscribingNode(fel.NodeLifecycle):
 
     def request_subscribe(self):
         settings = fel.communication.Settings()
-        settings.period = fel.TimeDelta.from_seconds(
+        settings.period = fel.TimeDelta.from_seconds_d(
             1 / self.camera_flag.fps_flag.value)
         settings.is_dynamic_buffer = True
 
