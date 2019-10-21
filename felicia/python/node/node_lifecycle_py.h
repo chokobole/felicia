@@ -1,5 +1,5 @@
-#ifndef FELICIA_PYTHON_NODE_PY_H_
-#define FELICIA_PYTHON_NODE_PY_H_
+#ifndef FELICIA_PYTHON_NODE_NODE_LIFECYCLE_PY_H_
+#define FELICIA_PYTHON_NODE_NODE_LIFECYCLE_PY_H_
 
 #include "pybind11/pybind11.h"
 
@@ -34,4 +34,4 @@ void AddNodeLifecycle(py::module& m);
 
 }  // namespace felicia
 
-#endif  // FELICIA_PYTHON_NODE_PY_H_
+#endif  // FELICIA_PYTHON_NODE_NODE_LIFECYCLE_PY_H_

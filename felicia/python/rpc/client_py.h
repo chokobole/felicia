@@ -1,12 +1,11 @@
-#ifndef FELICIA_PYTHON_RPC_PY_H_
-#define FELICIA_PYTHON_RPC_PY_H_
+#ifndef FELICIA_PYTHON_RPC_CLIENT_PY_H_
+#define FELICIA_PYTHON_RPC_CLIENT_PY_H_
 
 #include "pybind11/functional.h"
 #include "pybind11/pybind11.h"
-#include "third_party/chromium/base/strings/stringprintf.h"
 
-#include "felicia/core/rpc/client.h"
-#include "felicia/core/rpc/server_interface.h"
+#include "felicia/core/rpc/client_interface.h"
+#include "felicia/python/type_conversion/protobuf.h"
 
 namespace py = pybind11;
 
@@ -56,46 +55,9 @@ class PyClient : public PyClientInterface {
   }
 };
 
-class PyServer : public ServerInterface {
- public:
-  using ServerInterface::ServerInterface;
-
-  Status Start() override {
-    PYBIND11_OVERLOAD_PURE(
-        Status,          /* Return type */
-        ServerInterface, /* Parent class */
-        Start,           /* Name of function in C++ (must match Python name) */
-    );
-  }
-
-  Status Run() override {
-    PYBIND11_OVERLOAD_PURE(
-        Status,          /* Return type */
-        ServerInterface, /* Parent class */
-        Run,             /* Name of function in C++ (must match Python name) */
-    );
-  }
-
-  Status Shutdown() override {
-    PYBIND11_OVERLOAD_PURE(
-        Status,          /* Return type */
-        ServerInterface, /* Parent class */
-        Shutdown,        /* Name of function in C++ (must match Python name) */
-    );
-  }
-
-  std::string service_type() const override {
-    PYBIND11_OVERLOAD_PURE(
-        std::string,     /* Return type */
-        ServerInterface, /* Parent class */
-        service_type,    /* Name of function in C++ (must match Python name) */
-    );
-  }
-};
-
-void AddRpc(py::module& m);
+void AddClient(py::module& m);
 
 }  // namespace rpc
 }  // namespace felicia
 
-#endif  // FELICIA_PYTHON_RPC_PY_H_
+#endif  // FELICIA_PYTHON_RPC_CLIENT_PY_H_

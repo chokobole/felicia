@@ -395,8 +395,8 @@ void Publisher<MessageTy>::SendMessage(SendMessageCallback callback) {
   int to_send = header.header_size() + serialized.length();
   if (err == MessageIOError::OK) {
     if (send_buffer_.SetEnoughCapacityIfDynamic(to_send)) {
-      err =
-          header.AttachHeaderInternally(serialized, send_buffer_.StartOfBuffer());
+      err = header.AttachHeaderInternally(serialized,
+                                          send_buffer_.StartOfBuffer());
     } else {
       err = MessageIOError::ERR_NOT_ENOUGH_BUFFER;
     }

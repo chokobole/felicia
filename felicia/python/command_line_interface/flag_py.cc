@@ -1,4 +1,4 @@
-#include "felicia/python/command_line_interface_py.h"
+#include "felicia/python/command_line_interface/flag_py.h"
 
 namespace felicia {
 
@@ -104,12 +104,10 @@ void AddFlag(py::module& m, const char* name) {
       .def("parse", &FlagTy::Parse, py::arg("parser"));
 }
 
-void AddCommandLineInterface(py::module& m) {
-  py::module command_line_interface = m.def_submodule("command_line_interface");
-
-#define ADD_FLAG(Flag)                                           \
-  AddFlagBuilder<Flag>(command_line_interface, #Flag "Builder"); \
-  AddFlag<Flag>(command_line_interface, #Flag)
+void AddFlag(py::module& m) {
+#define ADD_FLAG(Flag)                      \
+  AddFlagBuilder<Flag>(m, #Flag "Builder"); \
+  AddFlag<Flag>(m, #Flag)
 
   ADD_FLAG(BoolFlag);
   ADD_FLAG(IntFlag);
@@ -128,35 +126,11 @@ void AddCommandLineInterface(py::module& m) {
 
 #undef ADD_FLAG
 
-  py::class_<FlagParser::Delegate, PyFlagParserDelegate>(command_line_interface,
+  py::class_<FlagParser::Delegate, PyFlagParserDelegate>(m,
                                                          "_FlagParserDelegate")
-      .def(py::init<>())
-      .def("Parse", &FlagParser::Delegate::Parse)
-      .def("Validate", &FlagParser::Delegate::Validate)
-      .def("CollectUsages", &FlagParser::Delegate::CollectUsages)
-      .def("Description", &FlagParser::Delegate::Description)
-      .def("CollectNamedHelps", &FlagParser::Delegate::CollectNamedHelps);
+      .def(py::init<>());
 
-  py::class_<TextStyle>(command_line_interface, "TextStyle")
-      .def_static("red",
-                  [](const std::string& text) { return TextStyle::Red(text); },
-                  py::arg("text"))
-      .def_static(
-          "green",
-          [](const std::string& text) { return TextStyle::Green(text); },
-          py::arg("text"))
-      .def_static("blue",
-                  [](const std::string& text) { return TextStyle::Blue(text); },
-                  py::arg("text"))
-      .def_static(
-          "yellow",
-          [](const std::string& text) { return TextStyle::Yellow(text); },
-          py::arg("text"))
-      .def_static("bold",
-                  [](const std::string& text) { return TextStyle::Bold(text); },
-                  py::arg("text"));
-
-  py::class_<FlagParser>(command_line_interface, "FlagParser")
+  py::class_<FlagParser>(m, "FlagParser")
       .def(py::init<>())
       .def("set_program_name", &FlagParser::set_program_name,
            "Set program name to display.\n"
@@ -175,10 +149,6 @@ void AddCommandLineInterface(py::module& m) {
            py::arg("argc"), py::arg("argv"), py::arg("delegate"),
            py::call_guard<py::gil_scoped_release>(),
            "Parse by passing every each |argv| to |flag|.");
-
-  command_line_interface.attr("RED_ERROR") = kRedError;
-  command_line_interface.attr("YELLOW_OPTIONS") = kYellowOptions;
-  command_line_interface.attr("YELLOW_COMMANDS") = kYellowCommands;
 }
 
 }  // namespace felicia

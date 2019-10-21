@@ -4,18 +4,20 @@
 
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/strings/string_number_conversions.h"
+#include "third_party/chromium/base/strings/string_util.h"
 #include "third_party/chromium/base/strings/utf_string_conversions.h"
 
 #include "felicia/core/communication/settings.h"
 #include "felicia/core/felicia_init.h"
 #include "felicia/core/util/timestamp/timestamper.h"
-#include "felicia/python/channel_py.h"
-#include "felicia/python/command_line_interface_py.h"
-#include "felicia/python/communication_py.h"
-#include "felicia/python/drivers_py.h"
-#include "felicia/python/master_proxy_py.h"
-#include "felicia/python/node_py.h"
-#include "felicia/python/rpc_py.h"
+#include "felicia/python/channel/channel_py.h"
+#include "felicia/python/command_line_interface/command_line_interface_py.h"
+#include "felicia/python/communication/communication_py.h"
+#include "felicia/python/drivers/drivers_py.h"
+#include "felicia/python/master/master_proxy_py.h"
+#include "felicia/python/node/node_lifecycle_py.h"
+#include "felicia/python/rpc/rpc_py.h"
+#include "felicia/python/type_conversion/protobuf.h"
 
 namespace py = pybind11;
 
@@ -238,13 +240,14 @@ PYBIND11_MODULE(felicia_py, m) {
 
   AddGlobalFunctions(m);
   AddGlobalObject(m);
-  AddMasterProxy(m);
-  AddNodeLifecycle(m);
+
   AddChannel(m);
   AddCommunication(m);
   AddCommandLineInterface(m);
-  rpc::AddRpc(m);
-  drivers::AddDrivers(m);
+  AddDrivers(m);
+  AddRpc(m);
+  AddMasterProxy(m);
+  AddNodeLifecycle(m);
 }
 
 }  // namespace felicia

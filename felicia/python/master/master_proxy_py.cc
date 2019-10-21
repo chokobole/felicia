@@ -1,4 +1,4 @@
-#include "felicia/python/master_proxy_py.h"
+#include "felicia/python/master/master_proxy_py.h"
 
 #include "third_party/chromium/base/memory/ptr_util.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
@@ -7,9 +7,6 @@
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/python/type_conversion/callback.h"
 #include "felicia/python/type_conversion/protobuf.h"
-
-SUPPORT_PROTOBUF_TYPE_CAST(felicia::NodeInfo, NodeInfo,
-                           felicia.core.protobuf.master_data_pb2)
 
 namespace felicia {
 

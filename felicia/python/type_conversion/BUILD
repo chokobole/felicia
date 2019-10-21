@@ -9,5 +9,8 @@ fel_cc_library(
         "callback_forward.h",
         "protobuf.h",
     ],
-    deps = ["@pybind11"],
+    deps = [
+        "//felicia/core/lib",
+        "@pybind11",
+    ],
 )

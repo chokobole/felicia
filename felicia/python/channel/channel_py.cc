@@ -1,4 +1,4 @@
-#include "felicia/python/channel_py.h"
+#include "felicia/python/channel/channel_py.h"
 
 #include "felicia/core/channel/settings.h"
 #include "felicia/core/channel/socket/ssl_server_context.h"

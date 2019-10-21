@@ -3,6 +3,9 @@
 
 #include "pybind11/pybind11.h"
 
+#include "felicia/core/protobuf/master_data.pb.h"
+#include "felicia/core/protobuf/ui.pb.h"
+
 #define SUPPORT_PROTOBUF_ENUM_TYPE_CAST(CcType, PyType)              \
   namespace pybind11 {                                               \
   namespace detail {                                                 \
@@ -62,5 +65,27 @@
   };                                                                       \
   }                                                                        \
   }
+
+SUPPORT_PROTOBUF_TYPE_CAST(felicia::ChannelDef, ChannelDef,
+                           felicia.core.protobuf.channel_pb2)
+
+SUPPORT_PROTOBUF_TYPE_CAST(felicia::IPEndPoint, IPEndPoint,
+                           felicia.core.protobuf.channel_pb2)
+
+SUPPORT_PROTOBUF_TYPE_CAST(felicia::NodeInfo, NodeInfo,
+                           felicia.core.protobuf.master_data_pb2)
+
+SUPPORT_PROTOBUF_TYPE_CAST(felicia::ServiceInfo, ServiceInfo,
+                           felicia.core.protobuf.master_data_pb2)
+
+SUPPORT_PROTOBUF_ENUM_TYPE_CAST(felicia::ChannelDef::Type, ChannelDef.Type)
+
+SUPPORT_PROTOBUF_ENUM_TYPE_CAST(felicia::PixelFormat, PixelFormat)
+
+SUPPORT_PROTOBUF_ENUM_TYPE_CAST(felicia::ServiceInfo::Status,
+                                ServiceInfo.Status)
+
+SUPPORT_PROTOBUF_ENUM_TYPE_CAST(felicia::TopicInfo::ImplType,
+                                TopicInfo.ImplType)
 
 #endif  // FELICIA_PYTHON_TYPE_CONVERSION_PROTOBUF_H_
