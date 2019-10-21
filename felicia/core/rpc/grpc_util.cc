@@ -16,7 +16,6 @@ std::shared_ptr<::grpc::Channel> ConnectToGrpcServer(const std::string& ip,
     LOG(ERROR) << "Failed to connect to grpc server on port " << port;
     return nullptr;
   }
-  LOG(INFO) << "Success to connect to grpc server on port " << port;
 
   return channel;
 }
