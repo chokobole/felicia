@@ -28,7 +28,11 @@ class ScopedMasterProxyStopper {
   ScopedMasterProxyStopper() {}
   ~ScopedMasterProxyStopper() {
     MasterProxy& master_proxy = MasterProxy::GetInstance();
-    master_proxy.Stop();
+    master_proxy.PostTask(FROM_HERE, base::BindOnce([]() {
+                            MasterProxy& master_proxy =
+                                MasterProxy::GetInstance();
+                            master_proxy.Stop();
+                          }));
   }
 };
 
