@@ -65,6 +65,8 @@ ProtobufLoader* MasterProxy::protobuf_loader() {
   return protobuf_loader_.get();
 }
 
+const ClientInfo& MasterProxy::client_info() const { return client_info_; }
+
 void MasterProxy::set_heart_beat_duration(base::TimeDelta heart_beat_duration) {
   client_info_.set_heart_beat_duration(heart_beat_duration.InMilliseconds());
 }

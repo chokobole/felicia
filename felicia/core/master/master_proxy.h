@@ -36,6 +36,8 @@ class EXPORT MasterProxy final : public MasterClientInterface {
 
   ProtobufLoader* protobuf_loader();
 
+  const ClientInfo& client_info() const;
+
   void set_heart_beat_duration(base::TimeDelta heart_beat_duration);
 
   void set_on_stop_callback(base::OnceClosure callback);

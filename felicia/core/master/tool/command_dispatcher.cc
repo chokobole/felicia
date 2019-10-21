@@ -110,7 +110,10 @@ void CommandDispatcher::OnListClientsAsync(const ListClientsRequest* request,
                                                    kChannelSourceLength})
                     .Build();
   size_t row = 0;
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  uint32_t self_id = master_proxy.client_info().id();
   for (auto& client_info : client_infos) {
+    if (client_info.id() == self_id) continue;
     writer.SetElement(row, 0, base::NumberToString(client_info.id()));
     const ChannelSource& hbs_channel_source =
         client_info.heart_beat_signaller_source();
