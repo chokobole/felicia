@@ -28,10 +28,10 @@ class EXPORT RosServiceResponse {
   void ReceiveRequest(rpc::Server<T, SFINAE>* server,
                       HandshakeCallback callback) {
     RosServiceResponseHeader header;
-    header.md5sum = rpc::Server<T, SFINAE>::Service::MD5Sum();
-    header.request_type = rpc::Server<T, SFINAE>::Service::RequestDataType();
-    header.response_type = rpc::Server<T, SFINAE>::Service::ResponseDataType();
-    header.type = rpc::Server<T, SFINAE>::Service::DataType();
+    header.md5sum = server->GetServiceMD5Sum();
+    header.request_type = server->GetRequestTypeName();
+    header.response_type = server->GetResponseTypeName();
+    header.type = server->GetServiceTypeName();
 
     callback_ = std::move(callback);
     channel_->SetDynamicReceiveBuffer(true);

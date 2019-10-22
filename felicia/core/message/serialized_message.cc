@@ -46,4 +46,9 @@ bool SerializedMessage::SerializeToString(std::string* text) && {
   return true;
 }
 
+std::ostream& operator<<(std::ostream& os, const SerializedMessage& m) {
+  os << m.serialized();
+  return os;
+}
+
 }  // namespace felicia

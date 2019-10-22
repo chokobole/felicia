@@ -6,7 +6,8 @@ fel_cc_library(
     name = "communication_py_cc",
     srcs = [
         "communication_py.cc",
-        "message_util.cc",
+        "ros_serialized_service_client_py.cc",
+        "ros_serialized_service_server_py.cc",
         "serialized_message_publisher_py.cc",
         "serialized_message_subscriber_py.cc",
         "service_client_py.cc",
@@ -14,7 +15,8 @@ fel_cc_library(
     ],
     hdrs = [
         "communication_py.h",
-        "message_util.h",
+        "ros_serialized_service_client_py.h",
+        "ros_serialized_service_server_py.h",
         "serialized_message_publisher_py.h",
         "serialized_message_subscriber_py.h",
         "service_client_py.h",
@@ -23,6 +25,7 @@ fel_cc_library(
     copts = ["-fvisibility=hidden"],
     deps = [
         "//felicia/core/communication",
+        "//felicia/python/message",
         "//felicia/python/rpc:rpc_py_cc",
         "//felicia/python/type_conversion",
         "@pybind11",

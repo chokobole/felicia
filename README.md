@@ -8,6 +8,7 @@ Felicia is the chromium based robot framework like [ROS](https://www.ros.org/), 
 
 * Cross Platform.
 * Support Protobuf / ROS Message.
+* Use grpc.
 * Provide C++ / Python APIs.
 * Provide different communication channels (TCP / UDP / Shared Memory / WebSocket / Unix Domain Socket).
 * Provide some of sensor APIs.
@@ -17,7 +18,7 @@ Felicia is the chromium based robot framework like [ROS](https://www.ros.org/), 
   * UVC compatible camera
 * Provide command-line-interface.
 * Provide visualization tool with browser.
-* Compatible with ROS1 topic protocol.
+* Compatible with ROS1 topic / service protocol.
 
 **TODO** feautures:
 
@@ -27,7 +28,6 @@ Felicia is the chromium based robot framework like [ROS](https://www.ros.org/), 
 * Provide more channels such as Bluetooth, QUIC.
 * Provide more sensor APIs such as michrophone.
 * Provide simulator.
-* Compatible with ROS1 service protocol.
 * Compatible with ROS2 topic / service protocol.
 * Support Raspberry Pi 4.
 * Robot specific features such as SLAM.

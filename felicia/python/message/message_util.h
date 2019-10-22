@@ -3,11 +3,20 @@
 
 #include "pybind11/pybind11.h"
 
+#include "third_party/chromium/base/compiler_specific.h"
+
+#include "felicia/core/lib/error/status.h"
 #include "felicia/core/protobuf/master_data.pb.h"
 
 namespace py = pybind11;
 
 namespace felicia {
+
+Status Serialize(const py::object& message, TopicInfo::ImplType impl_type,
+                 std::string* text) WARN_UNUSED_RESULT;
+
+Status Deserialize(const std::string& text, TopicInfo::ImplType impl_type,
+                   py::object* message) WARN_UNUSED_RESULT;
 
 std::string GetMessageTypeNameFromPyObject(const py::object& message_type,
                                            TopicInfo::ImplType impl_type);

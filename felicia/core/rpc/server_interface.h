@@ -19,7 +19,7 @@ class EXPORT ServerInterface {
   virtual Status Run() = 0;
   virtual Status Shutdown() = 0;
 
-  virtual std::string service_type() const = 0;
+  virtual std::string GetServiceTypeName() const = 0;
 
   ChannelDef channel_def() const;
 

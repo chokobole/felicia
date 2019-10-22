@@ -23,6 +23,8 @@ class MessageReceiver {
   explicit MessageReceiver(Channel* channel = nullptr) : channel_(channel) {}
   ~MessageReceiver() = default;
 
+  MessageReceiver& operator=(MessageReceiver&& other) = default;
+
   void Reset() {
     channel_ = nullptr;
     receive_callback_.Reset();

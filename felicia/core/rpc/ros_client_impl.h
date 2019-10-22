@@ -17,12 +17,15 @@
 #include "felicia/core/message/ros_protocol.h"
 #include "felicia/core/message/ros_rpc_header.h"
 #include "felicia/core/rpc/client_interface.h"
+#include "felicia/core/rpc/ros_serialized_service.h"
 #include "felicia/core/rpc/ros_util.h"
 
 namespace felicia {
 namespace rpc {
 
-#define FEL_ROS_CLIENT Client<T, std::enable_if_t<IsRosService<T>::value>>
+#define FEL_ROS_CLIENT                                 \
+  Client<T, std::enable_if_t<IsRosService<T>::value || \
+                             std::is_same<T, RosSerializedService>::value>>
 
 template <typename T>
 class FEL_ROS_CLIENT : public ClientInterface {
@@ -33,6 +36,8 @@ class FEL_ROS_CLIENT : public ClientInterface {
 
   Client() = default;
   ~Client() override = default;
+
+  Client& operator=(Client&& other) = default;
 
   void Connect(const IPEndPoint& ip_endpoint,
                StatusOnceCallback callback) override;
@@ -62,7 +67,7 @@ class FEL_ROS_CLIENT : public ClientInterface {
   void ReceiveResponse();
   void OnReceiveResponse(const Status& s);
 
-  virtual std::string GetServiceDataType() const {
+  virtual std::string GetServiceTypeName() const {
     return ros::service_traits::DataType<RosService>::value();
   }
 
@@ -123,6 +128,7 @@ void FEL_ROS_CLIENT::OnConnect(const Status& s) {
         this, base::BindOnce(&FEL_ROS_CLIENT::OnRosServiceHandshake,
                              base::Unretained(this)));
   } else {
+    header_.set_ok(true);
     channel_->SetDynamicSendBuffer(true);
     channel_->SetDynamicReceiveBuffer(true);
     receiver_.set_channel(channel_.get());

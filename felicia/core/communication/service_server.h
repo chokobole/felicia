@@ -16,6 +16,8 @@
 
 namespace felicia {
 
+struct EmptyService {};
+
 template <typename ServiceTy>
 class SimpleGrpcServer : public rpc::Server<ServiceTy> {
  public:
@@ -32,15 +34,17 @@ template <typename T, typename SFINAE = void>
 struct ServiceServerTraits;
 
 template <typename T>
-struct ServiceServerTraits<
-    T, std::enable_if_t<IsGrpcService<typename T::GrpcService>::value>> {
+struct ServiceServerTraits<T,
+                           std::enable_if_t<IsGrpcServiceWrapper<T>::value>> {
   typedef SimpleGrpcServer<T> ServerTy;
 };
 
 #if defined(HAS_ROS)
 template <typename T>
 struct ServiceServerTraits<
-    T, std::enable_if_t<IsRosService<typename T::RosService>::value>> {
+    T, std::enable_if_t<
+           IsRosServiceWrapper<T>::value ||
+           std::is_base_of<rpc::RosSerializedServiceInterface, T>::value>> {
   typedef rpc::Server<T> ServerTy;
 };
 #endif  // defined(HAS_ROS)
@@ -117,7 +121,7 @@ void ServiceServer<ServiceTy, ServerTy>::RequestRegister(
   *request->mutable_node_info() = node_info;
   ServiceInfo* service_info = request->mutable_service_info();
   service_info->set_service(service);
-  service_info->set_type_name(server_.service_type());
+  service_info->set_type_name(server_.GetServiceTypeName());
   ChannelSource* channel_source = service_info->mutable_service_source();
   *channel_source->add_channel_defs() = server_.channel_def();
   server_.set_service_info(*service_info);

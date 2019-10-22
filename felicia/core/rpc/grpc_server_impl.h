@@ -7,6 +7,7 @@
 #include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/macros.h"
+#include "third_party/chromium/base/strings/stringprintf.h"
 #include "third_party/chromium/base/threading/thread.h"
 
 #include "felicia/core/lib/error/errors.h"
@@ -17,7 +18,7 @@ namespace felicia {
 namespace rpc {
 
 #define FEL_GRPC_SERVER \
-  Server<T, std::enable_if_t<IsGrpcService<typename T::GrpcService>::value>>
+  Server<T, std::enable_if_t<IsGrpcServiceWrapper<T>::value>>
 
 template <typename T>
 class FEL_GRPC_SERVER : public ServerInterface {
@@ -40,7 +41,9 @@ class FEL_GRPC_SERVER : public ServerInterface {
     return Status::OK();
   }
 
-  std::string service_type() const override { return Service::service_name(); }
+  std::string GetServiceTypeName() const override {
+    return Service::service_name();
+  }
 
   Status RunUntilShutdown() {
     Status s = Run();

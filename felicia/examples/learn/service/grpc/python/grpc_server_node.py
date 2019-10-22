@@ -18,7 +18,7 @@ class GrpcSimplerServer(Server):
         simple_service_pb2_grpc.add_SimpleServiceServicer_to_server(
             GrpcSimpleService(), self.server)
 
-    def service_type(self):
+    def get_service_type_name(self):
         return simple_service_pb2.DESCRIPTOR.services_by_name['SimpleService'].full_name
 
 

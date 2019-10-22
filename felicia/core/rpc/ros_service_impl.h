@@ -23,16 +23,16 @@ class FEL_ROS_SERVICE : public base::RefCountedThreadSafe<FEL_ROS_SERVICE> {
   typedef typename RosService::Request Request;
   typedef typename RosService::Response Response;
 
-  static std::string DataType() {
+  std::string GetServiceTypeName() const {
     return ros::service_traits::DataType<RosService>::value();
   }
-  static std::string MD5Sum() {
+  std::string GetServiceMD5Sum() const {
     return ros::service_traits::MD5Sum<RosService>::value();
   }
-  static std::string RequestDataType() {
+  std::string GetRequestTypeName() const {
     return ros::message_traits::DataType<Request>::value();
   }
-  static std::string ResponseDataType() {
+  std::string GetResponseTypeName() const {
     return ros::message_traits::DataType<Response>::value();
   }
 

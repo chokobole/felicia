@@ -7,38 +7,8 @@ namespace felicia {
 
 using PyOnConnectCallback = PyCallback<void(ServiceInfo::Status)>;
 
-PyClientBridge::PyClientBridge() = default;
-
-PyClientBridge::PyClientBridge(py::object client) : client_(client) {}
-
-void PyClientBridge::set_service_info(const ServiceInfo& service_info) {
-  rpc::PyClient* py_client = client_.cast<rpc::PyClient*>();
-  py_client->set_service_info(service_info);
-}
-
-void PyClientBridge::Connect(const IPEndPoint& ip_endpoint,
-                             StatusOnceCallback callback) {
-  rpc::PyClient* py_client = client_.cast<rpc::PyClient*>();
-  internal::StatusOnceCallbackHolder* callback_holder =
-      new internal::StatusOnceCallbackHolder(std::move(callback));
-  auto py_callback = [callback_holder](const Status& s) {
-    callback_holder->Invoke(s);
-  };
-  return py_client->Connect(ip_endpoint, py_callback);
-}
-
-Status PyClientBridge::Run() {
-  rpc::PyClient* py_client = client_.cast<rpc::PyClient*>();
-  return py_client->Run();
-}
-
-Status PyClientBridge::Shutdown() {
-  rpc::PyClient* py_client = client_.cast<rpc::PyClient*>();
-  return py_client->Shutdown();
-}
-
 PyServiceClient::PyServiceClient(py::object client) {
-  client_ = PyClientBridge(client);
+  client_ = rpc::PyClientBridge(client);
 }
 
 void PyServiceClient::RequestRegister(const NodeInfo& node_info,
@@ -57,7 +27,7 @@ void PyServiceClient::RequestRegister(const NodeInfo& node_info,
     callback = base::BindOnce(&PyStatusCallback::Invoke,
                               base::Owned(new PyStatusCallback(py_callback)));
   }
-  ServiceClient<PyClientBridge>::RequestRegister(
+  ServiceClient<rpc::PyClientBridge>::RequestRegister(
       node_info, service, on_connect_callback, std::move(callback));
 }
 
@@ -69,8 +39,8 @@ void PyServiceClient::RequestUnregister(const NodeInfo& node_info,
     callback = base::BindOnce(&PyStatusCallback::Invoke,
                               base::Owned(new PyStatusCallback(py_callback)));
   }
-  ServiceClient<PyClientBridge>::RequestUnregister(node_info, service,
-                                                   std::move(callback));
+  ServiceClient<rpc::PyClientBridge>::RequestUnregister(node_info, service,
+                                                        std::move(callback));
 }
 
 void AddServiceClient(py::module& m) {

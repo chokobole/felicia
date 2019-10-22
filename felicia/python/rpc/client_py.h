@@ -21,7 +21,7 @@ class PyClientInterface : public ClientInterface {
   }
 
   virtual void Connect(const IPEndPoint& ip_endpoint,
-                       std::function<void(const Status& s)> callback) = 0;
+                       std::function<void(const Status&)> callback) = 0;
 };
 
 class PyClient : public PyClientInterface {
@@ -29,7 +29,7 @@ class PyClient : public PyClientInterface {
   using PyClientInterface::PyClientInterface;
 
   void Connect(const IPEndPoint& ip_endpoint,
-               std::function<void(const Status& s)> callback) override {
+               std::function<void(const Status&)> callback) override {
     PYBIND11_OVERLOAD_PURE(
         void,              /* Return type */
         PyClientInterface, /* Parent class */
@@ -53,6 +53,23 @@ class PyClient : public PyClientInterface {
         Shutdown, /* Name of function in C++ (must match Python name) */
     );
   }
+};
+
+class PyClientBridge {
+ public:
+  PyClientBridge();
+  explicit PyClientBridge(py::object client);
+
+  void set_service_info(const ServiceInfo& service_info);
+
+  void Connect(const IPEndPoint& ip_endpoint, StatusOnceCallback callback);
+
+  Status Run();
+
+  Status Shutdown();
+
+ private:
+  py::object client_;
 };
 
 void AddClient(py::module& m);

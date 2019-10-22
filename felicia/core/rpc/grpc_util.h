@@ -20,6 +20,14 @@ struct IsGrpcService<
                     decltype(std::declval<typename T::AsyncService>())>>
     : std::true_type {};
 
+template <typename, typename = void>
+struct IsGrpcServiceWrapper : std::false_type {};
+
+template <typename T>
+struct IsGrpcServiceWrapper<
+    T, std::enable_if_t<IsGrpcService<typename T::GrpcService>::value>>
+    : std::true_type {};
+
 inline Status FromGrpcStatus(const ::grpc::Status& s) {
   if (s.ok()) {
     return Status::OK();

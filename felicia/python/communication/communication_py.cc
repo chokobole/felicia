@@ -1,5 +1,7 @@
 #include "felicia/python/communication/communication_py.h"
 
+#include "felicia/python/communication/ros_serialized_service_client_py.h"
+#include "felicia/python/communication/ros_serialized_service_server_py.h"
 #include "felicia/python/communication/serialized_message_publisher_py.h"
 #include "felicia/python/communication/serialized_message_subscriber_py.h"
 #include "felicia/python/communication/service_client_py.h"
@@ -24,6 +26,10 @@ void AddCommunication(py::module& m) {
   AddSerializedMessageSubscriber(communication);
   AddServiceClient(communication);
   AddServiceServer(communication);
+#if defined(HAS_ROS)
+  AddRosSerializedServiceClient(communication);
+  AddRosSerializedServiceServer(communication);
+#endif  // defined(HAS_ROS)
 }
 
 }  // namespace felicia

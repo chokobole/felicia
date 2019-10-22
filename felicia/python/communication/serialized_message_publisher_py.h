@@ -24,8 +24,6 @@ class PySerializedMessagePublisher : public SerializedMessagePublisher {
                         py::function py_callback = py::none());
   void PublishFromSerialized(py::object message,
                              py::function py_callback = py::none());
-
-  MessageIOError SerializeToString(py::object message, std::string* text);
 };
 
 void AddSerializedMessagePublisher(py::module& m);

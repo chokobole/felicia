@@ -10,30 +10,8 @@ namespace py = pybind11;
 
 namespace felicia {
 
-class PyServerBridge {
- public:
-  PyServerBridge();
-  explicit PyServerBridge(py::object server);
-
-  ChannelDef channel_def() const;
-
-  void set_service_info(const ServiceInfo& service_info);
-
-  Status Start();
-
-  Status Run();
-
-  Status Shutdown();
-
-  std::string service_type() const;
-
- private:
-  py::object server_;
-};
-
-struct EmptyService {};
-
-class PyServiceServer : public ServiceServer<EmptyService, PyServerBridge> {
+class PyServiceServer
+    : public ServiceServer<EmptyService, rpc::PyServerBridge> {
  public:
   explicit PyServiceServer(py::object server);
 

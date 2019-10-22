@@ -38,13 +38,34 @@ class PyServer : public ServerInterface {
     );
   }
 
-  std::string service_type() const override {
-    PYBIND11_OVERLOAD_PURE(
-        std::string,     /* Return type */
-        ServerInterface, /* Parent class */
-        service_type,    /* Name of function in C++ (must match Python name) */
+  std::string GetServiceTypeName() const override {
+    PYBIND11_OVERLOAD_PURE(std::string,        /* Return type */
+                           ServerInterface,    /* Parent class */
+                           GetServiceTypeName, /* Name of function in C++ (must
+                                                  match Python name) */
     );
   }
+};
+
+class PyServerBridge {
+ public:
+  PyServerBridge();
+  explicit PyServerBridge(py::object server);
+
+  ChannelDef channel_def() const;
+
+  void set_service_info(const ServiceInfo& service_info);
+
+  Status Start();
+
+  Status Run();
+
+  Status Shutdown();
+
+  std::string GetServiceTypeName() const;
+
+ private:
+  py::object server_;
 };
 
 void AddServer(py::module& m);

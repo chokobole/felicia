@@ -7,6 +7,7 @@ fel_cc_library(
     srcs = [
         "client_interface.cc",
         "grpc_util.cc",
+        "ros_serialized_service_interface.cc",
         "server_interface.cc",
     ],
     hdrs = [
@@ -20,6 +21,8 @@ fel_cc_library(
         "grpc_service_impl.h",
         "grpc_util.h",
         "ros_client_impl.h",
+        "ros_serialized_service.h",
+        "ros_serialized_service_interface.h",
         "ros_server_impl.h",
         "ros_service_impl.h",
         "ros_util.h",

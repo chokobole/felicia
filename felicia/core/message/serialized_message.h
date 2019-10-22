@@ -30,6 +30,8 @@ class EXPORT SerializedMessage {
   std::string serialized_;
 };
 
+EXPORT std::ostream& operator<<(std::ostream& os, const SerializedMessage& m);
+
 }  // namespace felicia
 
 #endif  // FELICIA_CORE_MESSAGE_SERIALIZED_MESSAGE_H_

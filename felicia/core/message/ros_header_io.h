@@ -5,8 +5,6 @@
 
 #include "felicia/core/message/ros_header.h"
 
-#include "third_party/chromium/base/strings/string_util.h"
-
 namespace felicia {
 
 template <typename T>
@@ -25,12 +23,6 @@ class MessageIO<T, std::enable_if_t<std::is_base_of<RosHeader, T>::value>> {
     }
     return MessageIOError::OK;
   }
-
-  static std::string TypeName() { return base::EmptyString(); }
-
-  static std::string Definition() { return base::EmptyString(); }
-
-  static std::string MD5Sum() { return base::EmptyString(); }
 };
 
 }  // namespace felicia

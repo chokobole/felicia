@@ -1,18 +1,18 @@
-#ifndef FELICIA_PYTHON_COMMUNICATION_SERVICE_CLIENT_PY_H_
-#define FELICIA_PYTHON_COMMUNICATION_SERVICE_CLIENT_PY_H_
+#if defined(HAS_ROS)
 
 #include "pybind11/pybind11.h"
 
 #include "felicia/core/communication/service_client.h"
-#include "felicia/python/rpc/client_py.h"
+#include "felicia/python/rpc/ros_serialized_client_py.h"
 
 namespace py = pybind11;
 
 namespace felicia {
 
-class PyServiceClient : public ServiceClient<rpc::PyClientBridge> {
+class PyRosSerializedServiceClient
+    : public ServiceClient<rpc::PyRosSerializedClient> {
  public:
-  explicit PyServiceClient(py::object client);
+  explicit PyRosSerializedServiceClient(py::object ros_service);
 
   void RequestRegister(const NodeInfo& node_info, const std::string& service,
                        py::function py_on_connect_callback = py::none(),
@@ -20,10 +20,13 @@ class PyServiceClient : public ServiceClient<rpc::PyClientBridge> {
 
   void RequestUnregister(const NodeInfo& node_info, const std::string& service,
                          py::function py_callback = py::none());
+
+  void Call(py::object py_request, py::object py_response,
+            py::function py_callback);
 };
 
-void AddServiceClient(py::module& m);
+void AddRosSerializedServiceClient(py::module& m);
 
 }  // namespace felicia
 
-#endif  // FELICIA_PYTHON_COMMUNICATION_SERVICE_CLIENT_PY_H_
+#endif  // defined(HAS_ROS)

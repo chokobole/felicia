@@ -13,6 +13,7 @@
 #include "felicia/core/message/message_io.h"
 #include "felicia/core/message/ros_protocol.h"
 #include "felicia/core/message/ros_rpc_header.h"
+#include "felicia/core/rpc/ros_serialized_service_interface.h"
 #include "felicia/core/rpc/ros_util.h"
 #include "felicia/core/rpc/server_interface.h"
 
@@ -61,7 +62,6 @@ template <typename Service, typename Request, typename Response>
 void RosServiceHandler<Service, Request, Response>::OnReceiveRequest(
     const Status& s) {
   if (s.ok()) {
-    LOG(INFO) << receiver_.message();
     service_->Handle(
         &receiver_.message(), &response_,
         base::BindOnce(
@@ -107,8 +107,10 @@ void RosServiceHandler<Service, Request, Response>::OnHandleRequest(
 
 }  // namespace internal
 
-#define FEL_ROS_SERVER \
-  Server<T, std::enable_if_t<IsRosService<typename T::RosService>::value>>
+#define FEL_ROS_SERVER                           \
+  Server<T, std::enable_if_t<                    \
+                IsRosServiceWrapper<T>::value || \
+                std::is_base_of<RosSerializedServiceInterface, T>::value>>
 
 template <typename T>
 class FEL_ROS_SERVER : public ServerInterface {
@@ -119,11 +121,14 @@ class FEL_ROS_SERVER : public ServerInterface {
   typedef internal::RosServiceHandler<Service, Request, Response>
       ServiceHandler;
 
-  Server() = default;
+  Server() : service_(base::MakeRefCounted<Service>()) {}
+  explicit Server(scoped_refptr<Service> service)
+      : service_(std::move(service)) {}
   ~Server() override = default;
 
+  Server& operator=(Server&& other) = default;
+
   Status Start() override {
-    service_ = base::MakeRefCounted<Service>();
     channel_ = ChannelFactory::NewChannel(ChannelDef::CHANNEL_TYPE_TCP);
     TCPChannel* tcp_channel = channel_->ToTCPChannel();
     auto status_or = tcp_channel->Listen();
@@ -143,9 +148,21 @@ class FEL_ROS_SERVER : public ServerInterface {
     return Status::OK();
   }
 
-  std::string service_type() const override { return Service::DataType(); }
+  std::string GetServiceTypeName() const override {
+    return service_->GetServiceTypeName();
+  }
 
- private:
+  std::string GetServiceMD5Sum() const { return service_->GetServiceMD5Sum(); }
+
+  std::string GetRequestTypeName() const {
+    return service_->GetRequestTypeName();
+  }
+
+  std::string GetResponseTypeName() const {
+    return service_->GetResponseTypeName();
+  }
+
+ protected:
   friend class felicia::RosServiceResponse;
 
   void DoAcceptLoop();
@@ -166,10 +183,8 @@ Status FEL_ROS_SERVER::Run() {
 template <typename T>
 void FEL_ROS_SERVER::DoAcceptLoop() {
   TCPChannel* tcp_channel = channel_->ToTCPChannel();
-  tcp_channel->AcceptOnceIntercept(base::BindRepeating(
-      &Server<T, std::enable_if_t<
-                     IsRosService<typename T::RosService>::value>>::OnAccept,
-      base::Unretained(this)));
+  tcp_channel->AcceptOnceIntercept(
+      base::BindRepeating(&FEL_ROS_SERVER::OnAccept, base::Unretained(this)));
 }
 
 template <typename T>

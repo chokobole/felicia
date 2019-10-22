@@ -37,7 +37,8 @@ void RosSrvClientNode::OnRequestAdd(const SimpleServiceRequest* request,
                                     SimpleServiceResponse* response,
                                     const Status& s) {
   if (s.ok()) {
-    std::cout << request->a << " + " << request->b << " = "
+    std::cout << base::NumberToString(request->a) << " + "
+              << base::NumberToString(request->b) << " = "
               << TextStyle::Green(base::NumberToString(response->sum))
               << std::endl;
   } else {

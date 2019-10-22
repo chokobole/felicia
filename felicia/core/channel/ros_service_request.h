@@ -23,6 +23,8 @@ class EXPORT RosServiceRequest {
   RosServiceRequest();
   ~RosServiceRequest();
 
+  RosServiceRequest& operator=(RosServiceRequest&& other) = default;
+
   void Reset();
 
   template <typename T, typename SFINAE>

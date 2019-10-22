@@ -19,6 +19,14 @@ struct IsRosService<
            ros::message_traits::IsMessage<typename T::Response>::value>>
     : std::true_type {};
 
+template <typename, typename = void>
+struct IsRosServiceWrapper : std::false_type {};
+
+template <typename T>
+struct IsRosServiceWrapper<
+    T, std::enable_if_t<IsRosService<typename T::RosService>::value>>
+    : std::true_type {};
+
 }  // namespace felicia
 
 #endif  // FELICIA_CORE_RPC_ROS_UTIL_H_

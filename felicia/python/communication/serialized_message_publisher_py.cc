@@ -1,6 +1,6 @@
 #include "felicia/python/communication/serialized_message_publisher_py.h"
 
-#include "felicia/python/communication/message_util.h"
+#include "felicia/python/message/message_util.h"
 #include "felicia/python/type_conversion/callback.h"
 #include "felicia/python/type_conversion/protobuf.h"
 
@@ -46,8 +46,11 @@ void PySerializedMessagePublisher::RequestUnpublish(const NodeInfo& node_info,
 void PySerializedMessagePublisher::PublishFromSerialized(
     py::object message, py::function py_callback) {
   std::string text;
-  MessageIOError err = SerializeToString(message, &text);
-  if (err != MessageIOError::OK) return;
+  Status s = Serialize(message, impl_type_, &text);
+  if (!s.ok()) {
+    py_callback(ChannelDef::CHANNEL_TYPE_NONE, s);
+    return;
+  }
 
   py::gil_scoped_release release;
   SendMessageCallback callback;
@@ -57,30 +60,6 @@ void PySerializedMessagePublisher::PublishFromSerialized(
         base::Owned(new PySendMessageCallback(py_callback)));
   }
   SerializedMessagePublisher::PublishFromSerialized(std::move(text), callback);
-}
-
-MessageIOError PySerializedMessagePublisher::SerializeToString(
-    py::object message, std::string* text) {
-  switch (impl_type_) {
-    case TopicInfo::PROTOBUF: {
-      *text = py::str(message.attr("SerializeToString")());
-      break;
-    }
-    case TopicInfo::ROS: {
-      py::object buffer = py::module::import("io").attr("BytesIO")();
-      message.attr("serialize")(buffer);
-      *text = py::str(buffer.attr("getvalue")());
-      break;
-    }
-    case TopicInfo_ImplType_TopicInfo_ImplType_INT_MIN_SENTINEL_DO_NOT_USE_:
-    case TopicInfo_ImplType_TopicInfo_ImplType_INT_MAX_SENTINEL_DO_NOT_USE_:
-      break;
-  }
-
-  if (PyErr_Occurred()) {
-    return MessageIOError::ERR_FAILED_TO_SERIALIZE;
-  }
-  return MessageIOError::OK;
 }
 
 void AddSerializedMessagePublisher(py::module& m) {

@@ -32,5 +32,8 @@ class Server(felicia_py.rpc._Server):
     def stop(self, grace=None):
         self.server.stop(grace)
 
-    def service_type(self):
+    def GetServiceTypeName(self):
+        return self.get_service_type_name()
+
+    def get_service_type_name(self):
         raise NotImplementedError('service_type not implemented.')

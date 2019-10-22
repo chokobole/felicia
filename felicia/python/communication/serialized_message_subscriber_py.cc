@@ -1,6 +1,6 @@
 #include "felicia/python/communication/serialized_message_subscriber_py.h"
 
-#include "felicia/python/communication/message_util.h"
+#include "felicia/python/message/message_util.h"
 #include "felicia/python/type_conversion/callback.h"
 #include "felicia/python/type_conversion/protobuf.h"
 
@@ -17,26 +17,15 @@ class PyMessageCallback {
         callback_(callback) {}
 
   void Invoke(SerializedMessage&& message) {
-    std::string text;
-    if (!std::move(message).SerializeToString(&text)) {
-      return;
-    }
+    std::string text = std::move(std::move(message).serialized());
 
     py::gil_scoped_acquire acquire;
     py::object py_message = message_type_();
-    switch (impl_type_) {
-      case TopicInfo::PROTOBUF: {
-        py_message.attr("ParseFromString")(py::bytes(text));
-        break;
-      }
-      case TopicInfo::ROS: {
-        py_message.attr("deserialize")(py::bytes(text));
-        break;
-      }
-      case TopicInfo_ImplType_TopicInfo_ImplType_INT_MIN_SENTINEL_DO_NOT_USE_:
-      case TopicInfo_ImplType_TopicInfo_ImplType_INT_MAX_SENTINEL_DO_NOT_USE_:
-        break;
+    Status s = Deserialize(text, impl_type_, &py_message);
+    if (!s.ok()) {
+      return;
     }
+
     callback_(std::move(py_message));
   }
 
