@@ -29,7 +29,7 @@ void RPlidarPublishingNode::OnDidCreate(const NodeInfo& node_info) {
   RequestPublish();
 }
 
-void RPlidarPublishingNode::OnRequestPublish(const Status& s) {
+void RPlidarPublishingNode::OnRequestPublish(Status s) {
   if (s.ok()) {
     StartLidar();
   } else {
@@ -37,7 +37,7 @@ void RPlidarPublishingNode::OnRequestPublish(const Status& s) {
   }
 }
 
-void RPlidarPublishingNode::OnRequestUnpublish(const Status& s) {
+void RPlidarPublishingNode::OnRequestUnpublish(Status s) {
   if (s.ok()) {
     StopLidar();
   } else {

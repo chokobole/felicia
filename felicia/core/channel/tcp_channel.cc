@@ -122,7 +122,7 @@ void TCPChannel::OnAccept(StatusOr<std::unique_ptr<net::TCPSocket>> status_or) {
 }
 
 #if !defined(FEL_NO_SSL)
-void TCPChannel::OnSSLHandshake(const Status& s) {
+void TCPChannel::OnSSLHandshake(Status s) {
   if (s.ok()) {
     TCPServerSocket* server_socket =
         channel_impl_->ToSocket()->ToTCPSocket()->ToTCPServerSocket();
@@ -138,10 +138,10 @@ void TCPChannel::OnSSLHandshake(const Status& s) {
     ssl_server_socket_.reset();
   }
   if (!accept_callback_.is_null()) {
-    accept_callback_.Run(s);
+    accept_callback_.Run(std::move(s));
     DoAcceptLoop();
   } else {
-    std::move(accept_once_intercept_callback_).Run(s);
+    std::move(accept_once_intercept_callback_).Run(std::move(s));
   }
 }
 #endif  // !defined(FEL_NO_SSL)
@@ -165,9 +165,13 @@ void TCPChannel::Connect(const ChannelDef& channel_def,
                                   base::Unretained(this), std::move(callback)));
 }
 
-void TCPChannel::OnConnect(StatusOnceCallback callback, const Status& s) {
+void TCPChannel::OnConnect(StatusOnceCallback callback, Status s) {
 #if !defined(FEL_NO_SSL)
   if (settings_.use_ssl) {
+    if (!s.ok()) {
+      std::move(callback).Run(std::move(s));
+      return;
+    }
     TCPClientSocket* tcp_client_socket =
         channel_impl_.release()->ToSocket()->ToTCPSocket()->ToTCPClientSocket();
     std::unique_ptr<StreamSocket> stream_socket(tcp_client_socket);
@@ -177,7 +181,7 @@ void TCPChannel::OnConnect(StatusOnceCallback callback, const Status& s) {
     ssl_client_socket->Connect(std::move(callback));
   } else {
 #endif
-    std::move(callback).Run(s);
+    std::move(callback).Run(std::move(s));
 #if !defined(FEL_NO_SSL)
   }
 #endif

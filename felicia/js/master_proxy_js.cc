@@ -43,7 +43,7 @@ class TopicInfoWatcherDelegate : public TopicInfoWatcherNode::Delegate {
     g_topic_info_watcher_delegate = nullptr;
   }
 
-  void OnError(const Status& s) override {
+  void OnError(Status s) override {
     {
       base::AutoLock l(lock_);
       topic_info_queue_.push(s);

@@ -18,8 +18,8 @@ class RsCameraPublishingNode : public NodeLifecycle {
   void OnDidCreate(const NodeInfo& node_info) override;
 
  private:
-  void OnRequestPublish(const Status& s);
-  void OnRequestUnpublish(const Status& s);
+  void OnRequestPublish(Status s);
+  void OnRequestUnpublish(Status s);
 
   void RequestPublish();
   void RequestUnpublish();
@@ -32,7 +32,7 @@ class RsCameraPublishingNode : public NodeLifecycle {
   void OnPointcloud(map::Pointcloud&& pointcloud);
   void OnImuFrame(const drivers::ImuFrame& imu_frame);
 
-  void OnCameraError(const Status& s);
+  void OnCameraError(Status s);
 
   NodeInfo node_info_;
   const RsCameraFlag& rs_camera_flag_;

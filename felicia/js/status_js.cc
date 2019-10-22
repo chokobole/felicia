@@ -26,12 +26,12 @@ void JsStatus::Init(Napi::Env env, Napi::Object exports) {
 }
 
 // static
-Napi::Object JsStatus::New(Napi::Env env, const Status& s) {
+Napi::Object JsStatus::New(Napi::Env env, Status s) {
   Napi::EscapableHandleScope scope(env);
 
   Napi::Object object = constructor_.New(
       {Napi::Number::New(env, static_cast<double>(s.error_code())),
-       Napi::String::New(env, s.error_message())});
+       Napi::String::New(env, std::move(std::move(s).error_message()))});
 
   return scope.Escape(napi_value(object)).ToObject();
 }
@@ -65,7 +65,9 @@ Napi::Value JsStatus::error_code(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value JsStatus::error_message(const Napi::CallbackInfo& info) {
-  return TypedCall(info, &Status::error_message, &status_);
+  return TypedCall(
+      info, (const std::string& (Status::*)() const&)&Status::error_message,
+      &status_);
 }
 
 Napi::Value JsStatus::ok(const Napi::CallbackInfo& info) {

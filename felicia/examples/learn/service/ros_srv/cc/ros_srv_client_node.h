@@ -19,7 +19,7 @@ class RosSrvClientNode : public NodeLifecycle {
  private:
   void OnConnect(ServiceInfo::Status s);
   void OnRequestAdd(const SimpleServiceRequest* request,
-                    SimpleServiceResponse* response, const Status& s);
+                    SimpleServiceResponse* response, Status s);
 
   void RequestRegister();
   void RequestUnregister();

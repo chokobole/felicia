@@ -17,7 +17,7 @@ class RosMsgPublishingNode : public NodeLifecycle {
   void OnDidCreate(const NodeInfo& node_info) override;
 
  private:
-  void OnRequestPublish(const Status& s);
+  void OnRequestPublish(Status s);
 
   void RequestPublish();
 

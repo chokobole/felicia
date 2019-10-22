@@ -29,9 +29,9 @@ class DynamicPublisherDelegate : public DynamicPublishingNode::Delegate {
     node_->RequestPublish(message_type_, topic_, channel_type_, settings);
   }
 
-  void OnError(const Status& s) override { NOTREACHED() << s; }
+  void OnError(Status s) override { NOTREACHED() << s; }
 
-  void OnRequestPublish(const Status& s) override {
+  void OnRequestPublish(Status s) override {
     CHECK(s.ok()) << s;
     PublishMessageFromJson();
   }

@@ -169,8 +169,8 @@ void UnixDomainServerSocket::OnAccept(int result) {
   if (accept_callback_) DoAcceptLoop();
 }
 
-void UnixDomainServerSocket::OnWrite(const Status& s) {
-  std::move(write_callback_).Run(s);
+void UnixDomainServerSocket::OnWrite(Status s) {
+  std::move(write_callback_).Run(std::move(s));
 }
 
 // This is taken and modified from

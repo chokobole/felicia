@@ -58,14 +58,14 @@ class FEL_ROS_CLIENT : public ClientInterface {
  protected:
   friend class felicia::RosServiceRequest;
 
-  void OnConnect(const Status& s);
-  void OnRosServiceHandshake(const Status& s);
+  void OnConnect(Status s);
+  void OnRosServiceHandshake(Status s);
   // SendRequest if it is connected.
   void MaybeSendRequest();
   void SendRequest();
-  void OnSendRequest(const Status& s);
+  void OnSendRequest(Status s);
   void ReceiveResponse();
-  void OnReceiveResponse(const Status& s);
+  void OnReceiveResponse(Status s);
 
   virtual std::string GetServiceTypeName() const {
     return ros::service_traits::DataType<RosService>::value();
@@ -116,7 +116,7 @@ void FEL_ROS_CLIENT::Call(const Request* request, Response* response,
 }
 
 template <typename T>
-void FEL_ROS_CLIENT::OnConnect(const Status& s) {
+void FEL_ROS_CLIENT::OnConnect(Status s) {
   if (!s.ok()) {
     LOG(ERROR) << s;
     Shutdown();
@@ -132,12 +132,12 @@ void FEL_ROS_CLIENT::OnConnect(const Status& s) {
     channel_->SetDynamicSendBuffer(true);
     channel_->SetDynamicReceiveBuffer(true);
     receiver_.set_channel(channel_.get());
-    std::move(connect_callback_).Run(s);
+    std::move(connect_callback_).Run(Status::OK());
   }
 }
 
 template <typename T>
-void FEL_ROS_CLIENT::OnRosServiceHandshake(const Status& s) {
+void FEL_ROS_CLIENT::OnRosServiceHandshake(Status s) {
   if (!s.ok()) {
     LOG(ERROR) << s;
     Shutdown();
@@ -151,7 +151,7 @@ void FEL_ROS_CLIENT::OnRosServiceHandshake(const Status& s) {
       &RosRpcHeader::header_size, base::Unretained(&header_)));
   receiver_.set_parse_header_callback(base::BindRepeating(
       &RosRpcHeader::ParseHeader, base::Unretained(&header_)));
-  std::move(connect_callback_).Run(s);
+  std::move(connect_callback_).Run(Status::OK());
 }
 
 template <typename T>
@@ -176,12 +176,12 @@ void FEL_ROS_CLIENT::SendRequest() {
 }
 
 template <typename T>
-void FEL_ROS_CLIENT::OnSendRequest(const Status& s) {
+void FEL_ROS_CLIENT::OnSendRequest(Status s) {
   DCHECK(!call_callback_.is_null());
   if (s.ok()) {
     ReceiveResponse();
   } else {
-    std::move(call_callback_).Run(s);
+    std::move(call_callback_).Run(std::move(s));
   }
 }
 
@@ -192,14 +192,14 @@ void FEL_ROS_CLIENT::ReceiveResponse() {
 }
 
 template <typename T>
-void FEL_ROS_CLIENT::OnReceiveResponse(const Status& s) {
+void FEL_ROS_CLIENT::OnReceiveResponse(Status s) {
   DCHECK(!call_callback_.is_null());
   if (s.ok() && header_.ok()) {
     *response_ = std::move(std::move(receiver_).message());
     std::move(call_callback_).Run(Status::OK());
   } else {
     if (!s.ok()) {
-      std::move(call_callback_).Run(s);
+      std::move(call_callback_).Run(std::move(s));
     } else {
       std::move(call_callback_).Run(errors::Unknown("Failed to rpc call."));
     }

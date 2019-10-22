@@ -22,9 +22,9 @@ class HeartBeatSignaller {
  private:
   void DoStart(OnStartCallback callback);
   void AcceptLoop();
-  void OnAccept(const Status& s);
+  void OnAccept(Status s);
   void Signal();
-  void OnSignal(const Status& s);
+  void OnSignal(Status s);
 
   base::Thread thread_;
   base::TimeDelta heart_beat_duration_;

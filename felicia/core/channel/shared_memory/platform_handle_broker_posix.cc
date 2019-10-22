@@ -50,7 +50,12 @@ void PlatformHandleBroker::WaitForBroker(ChannelDef channel_def,
                                         base::Unretained(this)));
 }
 
-void PlatformHandleBroker::OnBrokerConnect(const Status& s) {
+void PlatformHandleBroker::OnBrokerConnect(Status s) {
+  if (!s.ok()) {
+    std::move(receive_data_callback_).Run(std::move(s));
+    return;
+  }
+
   UnixDomainClientSocket* client_socket = broker_->ToUnixDomainClientSocket();
   int socket_fd = client_socket->socket_fd();
   if (!SetBlocking(socket_fd, true)) {

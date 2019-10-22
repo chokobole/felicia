@@ -39,10 +39,10 @@ class RosServiceHandler {
 
  private:
   void ReceiveRequest();
-  void OnReceiveRequest(const Status& s);
+  void OnReceiveRequest(Status s);
   void SendResponse(bool ok);
-  void OnSendResponse(const Status& s);
-  void OnHandleRequest(const Status& s);
+  void OnSendResponse(Status s);
+  void OnHandleRequest(Status s);
 
   Response response_;
   scoped_refptr<Service> service_;
@@ -59,8 +59,7 @@ void RosServiceHandler<Service, Request, Response>::ReceiveRequest() {
 }
 
 template <typename Service, typename Request, typename Response>
-void RosServiceHandler<Service, Request, Response>::OnReceiveRequest(
-    const Status& s) {
+void RosServiceHandler<Service, Request, Response>::OnReceiveRequest(Status s) {
   if (s.ok()) {
     service_->Handle(
         &receiver_.message(), &response_,
@@ -89,8 +88,7 @@ void RosServiceHandler<Service, Request, Response>::SendResponse(bool ok) {
 }
 
 template <typename Service, typename Request, typename Response>
-void RosServiceHandler<Service, Request, Response>::OnSendResponse(
-    const Status& s) {
+void RosServiceHandler<Service, Request, Response>::OnSendResponse(Status s) {
   if (s.ok()) {
     ReceiveRequest();
   } else {
@@ -99,8 +97,7 @@ void RosServiceHandler<Service, Request, Response>::OnSendResponse(
 }
 
 template <typename Service, typename Request, typename Response>
-void RosServiceHandler<Service, Request, Response>::OnHandleRequest(
-    const Status& s) {
+void RosServiceHandler<Service, Request, Response>::OnHandleRequest(Status s) {
   LOG_IF(ERROR, !s.ok()) << s;
   SendResponse(s.ok());
 }

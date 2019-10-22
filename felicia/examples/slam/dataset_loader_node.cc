@@ -56,7 +56,7 @@ void DatasetLoaderNode::OnDidCreate(const NodeInfo& node_info) {
 }
 
 void DatasetLoaderNode::OnRequestPublish(slam::SensorData::DataType data_type,
-                                         const Status& s) {
+                                         Status s) {
   if (s.ok()) {
     LoadData(data_type);
   } else {

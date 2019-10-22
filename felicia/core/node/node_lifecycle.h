@@ -20,7 +20,7 @@ class EXPORT NodeLifecycle {
   // It is called when succeeded to be created.
   virtual void OnDidCreate(const NodeInfo& node_info);
   // It is called when error happens
-  virtual void OnError(const Status& status);
+  virtual void OnError(Status status);
 
   DISALLOW_COPY_AND_ASSIGN(NodeLifecycle);
 };

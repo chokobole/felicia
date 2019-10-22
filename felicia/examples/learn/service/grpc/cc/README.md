@@ -81,7 +81,7 @@ class GrpcServerNode: public NodeLifecycle {
   // NodeLifecycle methods
   void OnInit() override;
   void OnDidCreate(const NodeInfo& node_info) override;
-  void OnError(const Status& status) override;
+  void OnError(Status status) override;
 
   ...
 };
@@ -90,7 +90,7 @@ class GrpcServerNode: public NodeLifecycle {
 ```
 
 Inside `MasterProxy::RequestRegisterNode`, it tries to request grpc to register node.
-Before requiest, `OnInit()` will be called. If the given `node_info` doesn't have a name, then Server register node with a random unique name. If it succeeds to register the node, then `OnDidCreate(const NodeInfo&)` is called. While this process, if it happens an error, `OnError(const Status&)` will be called.
+Before requiest, `OnInit()` will be called. If the given `node_info` doesn't have a name, then Server register node with a random unique name. If it succeeds to register the node, then `OnDidCreate(const NodeInfo&)` is called. While this process, if it happens an error, `OnError(Status)` will be called.
 
 
 Then how is possibly serve services? If you want to serve a service, you have to use `ServiceServer<T>` and it is very simple to use. Very first, you have to request to the master server that we hope to serve a service.
@@ -108,7 +108,7 @@ void GrpcServerNode::RequestRegister() {
 If request is successfully delivered to the master server, then callback `OnRequestRegister` will be called
 
 ```c++
-void GrpcServerNode::OnRequestRegister(const Status& s) {
+void GrpcServerNode::OnRequestRegister(Status s) {
   std::cout << "GrpcServerNode::OnRequestRegister()" << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
 }
@@ -163,7 +163,7 @@ Same with above, if request is successfully delivered to the server, then callba
 will be called, too.
 
 ```c++
-void GrpcServerNode::OnRequestUnregister(const Status& s) {
+void GrpcServerNode::OnRequestUnregister(Status s) {
   std::cout << "GrpcServerNode::OnRequestUnregister()" << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
 }
@@ -210,7 +210,7 @@ If it is succesfully connected, then we have to request service! Response will b
 
 ```c++
 void GrpcClientNode::OnRequestAdd(const AddRequest* request,
-                                  AddResponse* response, const Status& s) {
+                                  AddResponse* response, Status s) {
   std::cout << "GrpcClientNode::OnRequestAdd()" << std::endl;
   if (s.ok()) {
     std::cout << request->a() << " + " << request->b() << " = "
@@ -236,7 +236,7 @@ void GrpcClientNode::RequestAdd() {
 To `Unregister`, it's also very similar.
 
 ```c++
-void GrpcClientNode::OnRequestUnegister(const Status& s) {
+void GrpcClientNode::OnRequestUnegister(Status s) {
   std::cout << "GrpcClientNode::OnRequestUnegister()" << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
 }

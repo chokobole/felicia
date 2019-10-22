@@ -24,8 +24,7 @@ class PyMasterProxy {
                                   py::kwargs kwargs);
   static void OnRegisterNodeAsync(py::object object,
                                   const RegisterNodeRequest* request,
-                                  RegisterNodeResponse* response,
-                                  const Status& s);
+                                  RegisterNodeResponse* response, Status s);
 };
 
 void AddMasterProxy(py::module& m);

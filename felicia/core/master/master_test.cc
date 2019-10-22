@@ -22,24 +22,23 @@ void FillRandomTCPChannelDef(ChannelDef* channel_def) {
       PickRandomPort(channel_def->type() == ChannelDef::CHANNEL_TYPE_TCP));
 }
 
-void ExpectOK(std::shared_ptr<base::WaitableEvent> event, const Status& s) {
+void ExpectOK(std::shared_ptr<base::WaitableEvent> event, Status s) {
   EXPECT_TRUE(s.ok());
   LOG_IF(ERROR, !s.ok()) << s;
   event->Signal();
 }
 
-#define DEFINE_EXPECTED_ERROR_0(Error)                           \
-  void Expect##Error(std::shared_ptr<base::WaitableEvent> event, \
-                     const Status& s) {                          \
-    Status expected = errors::Error();                           \
-    EXPECT_TRUE(s == expected);                                  \
-    LOG_IF(ERROR, s != expected) << s;                           \
-    event->Signal();                                             \
+#define DEFINE_EXPECTED_ERROR_0(Error)                                       \
+  void Expect##Error(std::shared_ptr<base::WaitableEvent> event, Status s) { \
+    Status expected = errors::Error();                                       \
+    EXPECT_TRUE(s == expected);                                              \
+    LOG_IF(ERROR, s != expected) << s;                                       \
+    event->Signal();                                                         \
   }
 
 #define DEFINE_EXPECTED_ERROR_1(Error, Type, name)                          \
   void Expect##Error(std::shared_ptr<base::WaitableEvent> event, Type name, \
-                     const Status& s) {                                     \
+                     Status s) {                                            \
     Status expected = errors::Error(name);                                  \
     EXPECT_TRUE(s == expected);                                             \
     LOG_IF(ERROR, s != expected) << s;                                      \
@@ -48,7 +47,7 @@ void ExpectOK(std::shared_ptr<base::WaitableEvent> event, const Status& s) {
 
 #define DEFINE_EXPECTED_ERROR_2(Error, Type, name, Type2, name2)            \
   void Expect##Error(std::shared_ptr<base::WaitableEvent> event, Type name, \
-                     Type2 name2, const Status& s) {                        \
+                     Type2 name2, Status s) {                               \
     Status expected = errors::Error(name, name2);                           \
     EXPECT_TRUE(s == expected);                                             \
     LOG_IF(ERROR, s != expected) << s;                                      \
@@ -262,7 +261,7 @@ TEST_F(MasterTest, RegisterClient) {
 namespace {
 
 void OnListAllClients(std::shared_ptr<base::WaitableEvent> event, uint32_t id,
-                      ListClientsResponse* response, const Status& s) {
+                      ListClientsResponse* response, Status s) {
   EXPECT_TRUE(s.ok());
   auto& client_infos = response->client_infos();
   EXPECT_EQ(1, client_infos.size());
@@ -271,7 +270,7 @@ void OnListAllClients(std::shared_ptr<base::WaitableEvent> event, uint32_t id,
 }
 
 void OnListClient(std::shared_ptr<base::WaitableEvent> event, uint32_t id,
-                  ListClientsResponse* response, const Status& s) {
+                  ListClientsResponse* response, Status s) {
   EXPECT_TRUE(s.ok());
   auto& client_infos = response->client_infos();
   EXPECT_EQ(1, client_infos.size());
@@ -337,7 +336,7 @@ namespace {
 
 void OnListAllNodes(std::shared_ptr<base::WaitableEvent> event,
                     uint32_t client_id, const std::vector<std::string>& names,
-                    ListNodesResponse* response, const Status& s) {
+                    ListNodesResponse* response, Status s) {
   EXPECT_TRUE(s.ok());
   auto& node_infos = response->node_infos();
   EXPECT_EQ(4, node_infos.size());
@@ -351,7 +350,7 @@ void OnListAllNodes(std::shared_ptr<base::WaitableEvent> event,
 void OnListPublishingNodes(std::shared_ptr<base::WaitableEvent> event,
                            uint32_t client_id,
                            const std::string& publishing_node_name,
-                           ListNodesResponse* response, const Status& s) {
+                           ListNodesResponse* response, Status s) {
   EXPECT_TRUE(s.ok());
   auto& node_infos = response->node_infos();
   EXPECT_EQ(1, node_infos.size());
@@ -363,7 +362,7 @@ void OnListPublishingNodes(std::shared_ptr<base::WaitableEvent> event,
 void OnListSubscribingNodes(std::shared_ptr<base::WaitableEvent> event,
                             uint32_t client_id,
                             const std::string& subscribing_node_name,
-                            ListNodesResponse* response, const Status& s) {
+                            ListNodesResponse* response, Status s) {
   EXPECT_TRUE(s.ok());
   auto& node_infos = response->node_infos();
   EXPECT_EQ(1, node_infos.size());
@@ -374,7 +373,7 @@ void OnListSubscribingNodes(std::shared_ptr<base::WaitableEvent> event,
 
 void OnListPubSubTopics(std::shared_ptr<base::WaitableEvent> event,
                         const std::string& topic, ListNodesResponse* response,
-                        const Status& s) {
+                        Status s) {
   EXPECT_TRUE(s.ok());
   auto& pub_sub_topics = response->pub_sub_topics();
   EXPECT_EQ(1, pub_sub_topics.publishing_topics().size());
@@ -512,7 +511,7 @@ TEST_F(MasterTest, UnsubscribeTopic) {
 void OnListAllTopics(std::shared_ptr<base::WaitableEvent> event,
                      const std::string& topic,
                      const ChannelSource& topic_source,
-                     ListTopicsResponse* response, const Status& s) {
+                     ListTopicsResponse* response, Status s) {
   EXPECT_TRUE(s.ok());
   auto& topic_infos = response->topic_infos();
   EXPECT_EQ(1, topic_infos.size());
@@ -523,7 +522,7 @@ void OnListAllTopics(std::shared_ptr<base::WaitableEvent> event,
 
 void OnListTopic(std::shared_ptr<base::WaitableEvent> event,
                  ListTopicsResponse* response, const TopicInfo& topic_info,
-                 const Status& s) {
+                 Status s) {
   EXPECT_TRUE(s.ok());
   auto& topic_infos = response->topic_infos();
   EXPECT_EQ(1, topic_infos.size());
@@ -651,7 +650,7 @@ TEST_F(MasterTest, UnregisterServiceServer) {
 void OnListAllServices(std::shared_ptr<base::WaitableEvent> event,
                        const std::string& service,
                        const ChannelSource& service_source,
-                       ListServicesResponse* response, const Status& s) {
+                       ListServicesResponse* response, Status s) {
   EXPECT_TRUE(s.ok());
   auto& service_infos = response->service_infos();
   EXPECT_EQ(1, service_infos.size());
@@ -663,7 +662,7 @@ void OnListAllServices(std::shared_ptr<base::WaitableEvent> event,
 
 void OnListService(std::shared_ptr<base::WaitableEvent> event,
                    ListServicesResponse* response,
-                   const ServiceInfo& service_info, const Status& s) {
+                   const ServiceInfo& service_info, Status s) {
   EXPECT_TRUE(s.ok());
   auto& service_infos = response->service_infos();
   EXPECT_EQ(1, service_infos.size());

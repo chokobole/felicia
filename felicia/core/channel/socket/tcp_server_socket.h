@@ -11,7 +11,7 @@ namespace felicia {
 
 class EXPORT TCPServerSocket : public TCPSocket {
  public:
-  using AcceptCallback = base::RepeatingCallback<void(const Status& s)>;
+  using AcceptCallback = base::RepeatingCallback<void(Status)>;
   using AcceptOnceInterceptCallback =
       base::OnceCallback<void(StatusOr<std::unique_ptr<net::TCPSocket>>)>;
 
@@ -51,7 +51,7 @@ class EXPORT TCPServerSocket : public TCPSocket {
   void HandleAccpetResult(int result);
   void OnAccept(int result);
 
-  void OnWrite(const Status& s);
+  void OnWrite(Status s);
 
   AcceptCallback accept_callback_;
   AcceptOnceInterceptCallback accept_once_intercept_callback_;

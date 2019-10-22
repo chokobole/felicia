@@ -242,8 +242,7 @@ void MasterProxy::RegisterClient() {
 
 void MasterProxy::OnRegisterClient(base::WaitableEvent* event,
                                    const RegisterClientRequest* request,
-                                   RegisterClientResponse* response,
-                                   const Status& s) {
+                                   RegisterClientResponse* response, Status s) {
   if (s.ok()) {
     client_info_.set_id(response->id());
 #if defined(FEL_WIN_NO_GRPC)
@@ -260,7 +259,7 @@ void MasterProxy::OnRegisterClient(base::WaitableEvent* event,
 void MasterProxy::OnRegisterNodeAsync(std::unique_ptr<NodeLifecycle> node,
                                       const RegisterNodeRequest* request,
                                       RegisterNodeResponse* response,
-                                      const Status& s) {
+                                      Status s) {
   if (!s.ok()) {
     Status new_status(s.error_code(),
                       base::StringPrintf("Failed to register node : %s",

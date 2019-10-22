@@ -51,7 +51,7 @@ class MfCamera : public CameraInterface {
   void OnIncomingCapturedData(const uint8_t* data, int length,
                               base::TimeTicks reference_time,
                               base::TimeDelta timestamp);
-  void OnFrameDropped(const Status& s);
+  void OnFrameDropped(Status s);
   void OnEvent(IMFMediaEvent* media_event);
 
   void set_max_retry_count_for_testing(int max_retry_count) {

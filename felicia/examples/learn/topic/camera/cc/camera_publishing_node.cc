@@ -36,7 +36,7 @@ void CameraPublishingNode::OnDidCreate(const NodeInfo& node_info) {
   RequestPublish();
 }
 
-void CameraPublishingNode::OnRequestPublish(const Status& s) {
+void CameraPublishingNode::OnRequestPublish(Status s) {
   if (s.ok()) {
     MasterProxy& master_proxy = MasterProxy::GetInstance();
     master_proxy.PostTask(FROM_HERE,
@@ -47,7 +47,7 @@ void CameraPublishingNode::OnRequestPublish(const Status& s) {
   }
 }
 
-void CameraPublishingNode::OnRequestUnpublish(const Status& s) {
+void CameraPublishingNode::OnRequestUnpublish(Status s) {
   if (s.ok()) {
     MasterProxy& master_proxy = MasterProxy::GetInstance();
     master_proxy.PostTask(FROM_HERE,
@@ -116,6 +116,6 @@ void CameraPublishingNode::OnCameraFrame(drivers::CameraFrame&& camera_frame) {
   publisher_.Publish(camera_frame.ToCameraFrameMessage(false));
 }
 
-void CameraPublishingNode::OnCameraError(const Status& s) { LOG(ERROR) << s; }
+void CameraPublishingNode::OnCameraError(Status s) { LOG(ERROR) << s; }
 
 }  // namespace felicia

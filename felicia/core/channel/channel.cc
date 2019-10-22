@@ -149,15 +149,15 @@ void Channel::ReceiveInternalBuffer(int size, StatusOnceCallback callback) {
       base::BindOnce(&Channel::OnReceive, base::Unretained(this)));
 }
 
-void Channel::OnSend(const Status& s) { std::move(send_callback_).Run(s); }
+void Channel::OnSend(Status s) { std::move(send_callback_).Run(std::move(s)); }
 
-void Channel::OnReceive(const Status& s) {
+void Channel::OnReceive(Status s) {
   if (text_) {
     memcpy(const_cast<char*>(text_->c_str()), receive_buffer_.StartOfBuffer(),
            text_->length());
     text_ = nullptr;
   }
-  std::move(receive_callback_).Run(s);
+  std::move(receive_callback_).Run(std::move(s));
 }
 
 bool Channel::TrySetEnoughReceiveBufferSize(int capacity) {

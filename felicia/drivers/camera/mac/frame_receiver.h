@@ -22,7 +22,7 @@ class FrameReceiver {
                             base::TimeDelta timestamp) = 0;
 
   // Forwarder to CameraInterface::status_callback_.
-  virtual void ReceiveError(const Status& status) = 0;
+  virtual void ReceiveError(Status status) = 0;
 };
 
 }  // namespace drivers

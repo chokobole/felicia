@@ -68,7 +68,7 @@ class DshowCamera : public CameraInterface, SinkFilterObserver {
                      const CameraFormat& format,
                      base::TimeDelta timestamp) override;
 
-  void FrameDropped(const Status& s) override;
+  void FrameDropped(Status s) override;
 
  private:
   static HRESULT EnumerateDirectShowDevices(IEnumMoniker** enum_moniker);

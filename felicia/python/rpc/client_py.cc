@@ -20,8 +20,8 @@ void PyClientBridge::Connect(const IPEndPoint& ip_endpoint,
   PyClient* py_client = client_.cast<PyClient*>();
   internal::StatusOnceCallbackHolder* callback_holder =
       new internal::StatusOnceCallbackHolder(std::move(callback));
-  auto py_callback = [callback_holder](const Status& s) {
-    callback_holder->Invoke(s);
+  auto py_callback = [callback_holder](Status s) {
+    callback_holder->Invoke(std::move(s));
   };
   py_client->Connect(ip_endpoint, py_callback);
 }

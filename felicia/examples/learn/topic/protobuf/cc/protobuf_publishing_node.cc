@@ -28,24 +28,24 @@ void ProtobufPublishingNode::OnDidCreate(const NodeInfo& node_info) {
   //     base::TimeDelta::FromSeconds(10));
 }
 
-void ProtobufPublishingNode::OnError(const Status& s) {
+void ProtobufPublishingNode::OnError(Status s) {
   std::cout << "ProtobufPublishingNode::OnError()" << std::endl;
   LOG(ERROR) << s;
 }
 
-void ProtobufPublishingNode::OnPublish(ChannelDef::Type type, const Status& s) {
+void ProtobufPublishingNode::OnPublish(ChannelDef::Type type, Status s) {
   std::cout << "ProtobufPublishingNode::OnPublish() from "
             << ChannelDef::Type_Name(type) << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
 }
 
-void ProtobufPublishingNode::OnRequestPublish(const Status& s) {
+void ProtobufPublishingNode::OnRequestPublish(Status s) {
   std::cout << "ProtobufPublishingNode::OnRequestPublish()" << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
   RepeatingPublish();
 }
 
-void ProtobufPublishingNode::OnRequestUnpublish(const Status& s) {
+void ProtobufPublishingNode::OnRequestUnpublish(Status s) {
   std::cout << "ProtobufPublishingNode::OnRequestUnpublish()" << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
 }

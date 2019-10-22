@@ -12,7 +12,7 @@ void DynamicPublishingNode::OnDidCreate(const NodeInfo& node_info) {
   delegate_->OnDidCreate(this);
 }
 
-void DynamicPublishingNode::OnError(const Status& s) { LOG(ERROR) << s; }
+void DynamicPublishingNode::OnError(Status s) { LOG(ERROR) << s; }
 
 void DynamicPublishingNode::RequestPublish(
     const std::string& message_type, const std::string& topic, int channel_defs,
@@ -41,18 +41,18 @@ void DynamicPublishingNode::PublishMessageFromJson(
                           base::Unretained(delegate_.get())));
 }
 
-void DynamicPublishingNode::OnRequestPublish(const Status& s) {
+void DynamicPublishingNode::OnRequestPublish(Status s) {
   if (!s.ok()) {
     publisher_.reset();
   }
-  delegate_->OnRequestPublish(s);
+  delegate_->OnRequestPublish(std::move(s));
 }
 
-void DynamicPublishingNode::OnRequestUnpublish(const Status& s) {
+void DynamicPublishingNode::OnRequestUnpublish(Status s) {
   if (s.ok()) {
     publisher_.reset();
   }
-  delegate_->OnRequestUnpublish(s);
+  delegate_->OnRequestUnpublish(std::move(s));
 }
 
 }  // namespace felicia

@@ -13,22 +13,21 @@ void RosServiceRequest::Reset() {
   callback_.Reset();
 }
 
-void RosServiceRequest::OnRequest(const Status& s) {
+void RosServiceRequest::OnRequest(Status s) {
   LOG_IF(ERROR, !s.ok()) << s;
   channel_->SetDynamicSendBuffer(false);
 }
 
 void RosServiceRequest::OnReceiveResponse(const RosServiceRequestHeader& header,
-                                          const Status& s) {
+                                          Status s) {
   channel_->SetDynamicReceiveBuffer(false);
-  Status new_status = s;
-  if (new_status.ok() && receiver_.message().error.empty()) {
+  if (s.ok() && receiver_.message().error.empty()) {
     RosServiceResponseHeader expected;
     expected.md5sum = header.md5sum;
-    new_status = receiver_.message().Validate(expected);
+    s = receiver_.message().Validate(expected);
   }
 
-  std::move(callback_).Run(new_status);
+  std::move(callback_).Run(std::move(s));
 }
 
 }  // namespace felicia

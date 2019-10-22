@@ -21,14 +21,14 @@ class GrpcClientNode : public NodeLifecycle {
   // NodeLifecycle methods
   void OnInit() override;
   void OnDidCreate(const NodeInfo& node_info) override;
-  void OnError(const Status& s) override;
+  void OnError(Status s) override;
 
  private:
-  void OnRequestRegister(const Status& s);
-  void OnRequestUnegister(const Status& s);
+  void OnRequestRegister(Status s);
+  void OnRequestUnegister(Status s);
   void OnConnect(ServiceInfo::Status s);
   void OnRequestAdd(const AddRequest* request, const AddResponse* response,
-                    const Status& s);
+                    Status s);
 
   void RequestRegister();
   void RequestUnregister();

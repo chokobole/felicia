@@ -522,7 +522,7 @@ void DshowCamera::FrameReceived(const uint8_t* buffer, int length,
   }
 }
 
-void DshowCamera::FrameDropped(const Status& s) { status_callback_.Run(s); }
+void DshowCamera::FrameDropped(Status s) { status_callback_.Run(std::move(s)); }
 
 // static
 HRESULT DshowCamera::EnumerateDirectShowDevices(IEnumMoniker** enum_moniker) {

@@ -42,9 +42,9 @@ class EXPORT RosTopicRequest {
                                             base::Unretained(this), header));
   }
 
-  void OnRequest(const Status& s);
+  void OnRequest(Status s);
 
-  void OnReceiveResponse(const RosTopicRequestHeader& header, const Status& s);
+  void OnReceiveResponse(const RosTopicRequestHeader& header, Status s);
 
  private:
   Channel* channel_;

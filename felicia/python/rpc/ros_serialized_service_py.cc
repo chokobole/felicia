@@ -43,17 +43,17 @@ void PyRosSerializedServiceBridge::Handle(const SerializedMessage* request,
   }
   internal::StatusOnceCallbackHolder* callback_holder =
       new internal::StatusOnceCallbackHolder(std::move(callback));
-  auto py_callback = [callback_holder, response, py_response](const Status& s) {
+  auto py_callback = [callback_holder, response, py_response](Status s) {
     if (s.ok()) {
       std::string text;
-      Status s = Serialize(py_response, TopicInfo::ROS, &text);
+      s = Serialize(py_response, TopicInfo::ROS, &text);
       if (!s.ok()) {
-        callback_holder->Invoke(s);
+        callback_holder->Invoke(std::move(s));
         return;
       }
       response->set_serialized((std::move(text)));
     }
-    callback_holder->Invoke(s);
+    callback_holder->Invoke(std::move(s));
   };
   py_service->Handle(py_request, py_response, py_callback);
 }

@@ -18,12 +18,12 @@ class ProtobufPublishingNode : public NodeLifecycle {
   // NodeLifecycle methods
   void OnInit() override;
   void OnDidCreate(const NodeInfo& node_info) override;
-  void OnError(const Status& s) override;
+  void OnError(Status s) override;
 
  private:
-  void OnPublish(ChannelDef::Type type, const Status& s);
-  void OnRequestPublish(const Status& s);
-  void OnRequestUnpublish(const Status& s);
+  void OnPublish(ChannelDef::Type type, Status s);
+  void OnRequestPublish(Status s);
+  void OnRequestUnpublish(Status s);
 #if defined(OS_POSIX)
   bool OnAuth(const UnixDomainServerSocket::Credentials& credentials);
 #endif

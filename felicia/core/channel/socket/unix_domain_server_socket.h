@@ -26,7 +26,7 @@ class UnixDomainServerSocket : public UnixDomainSocket {
     gid_t group_id;
   };
 
-  using AcceptCallback = base::RepeatingCallback<void(const Status& s)>;
+  using AcceptCallback = base::RepeatingCallback<void(Status)>;
   using AcceptOnceInterceptCallback =
       base::OnceCallback<void(StatusOr<std::unique_ptr<net::SocketPosix>>)>;
   using AuthCallback = base::RepeatingCallback<bool(const Credentials&)>;
@@ -63,7 +63,7 @@ class UnixDomainServerSocket : public UnixDomainSocket {
   void HandleAccpetResult(int result);
   void OnAccept(int result);
 
-  void OnWrite(const Status& s);
+  void OnWrite(Status s);
 
   static bool GetPeerCredentials(net::SocketDescriptor socket,
                                  Credentials* credentials);

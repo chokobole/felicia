@@ -29,11 +29,11 @@ class GrpcServerNode : public NodeLifecycle {
   // NodeLifecycle methods
   void OnInit() override;
   void OnDidCreate(const NodeInfo& node_info) override;
-  void OnError(const Status& s) override;
+  void OnError(Status s) override;
 
  private:
-  void OnRequestRegister(const Status& s);
-  void OnRequestUnregister(const Status& s);
+  void OnRequestRegister(Status s);
+  void OnRequestUnregister(Status s);
 
   void RequestRegister();
   void RequestUnregister();

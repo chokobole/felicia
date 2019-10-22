@@ -40,10 +40,9 @@ class EXPORT RosServiceResponse {
         &RosServiceResponse::OnReceiveRequest, base::Unretained(this), header));
   }
 
-  void OnReceiveRequest(const RosServiceResponseHeader& header,
-                        const Status& s);
+  void OnReceiveRequest(const RosServiceResponseHeader& header, Status s);
 
-  void OnResponse(bool sent_error, const Status& s);
+  void OnResponse(bool sent_error, Status s);
 
  private:
   std::unique_ptr<Channel> channel_;

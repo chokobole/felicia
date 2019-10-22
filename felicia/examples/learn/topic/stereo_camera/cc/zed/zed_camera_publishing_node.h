@@ -25,15 +25,15 @@ class ZedCameraPublishingNode : public NodeLifecycle {
   void StartCamera();
   void StopCamera();
 
-  void OnRequestPublish(const Status& s);
-  void OnRequestUnpublish(const Status& s);
+  void OnRequestPublish(Status s);
+  void OnRequestUnpublish(Status s);
 
   void OnLeftCameraFrame(drivers::CameraFrame&& camera_frame);
   void OnRightCameraFrame(drivers::CameraFrame&& camera_frame);
   void OnDepthFrame(drivers::DepthCameraFrame&& depth_camera_frame);
   void OnPointcloud(map::Pointcloud&& pointcloud);
 
-  void OnCameraError(const Status& s);
+  void OnCameraError(Status s);
 
   NodeInfo node_info_;
   const StereoCameraFlag& stereo_camera_flag_;

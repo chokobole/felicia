@@ -55,8 +55,8 @@ class FEL_GRPC_SERVICE {
   virtual void EnqueueRequests() = 0;
 
   template <typename GrpcCall>
-  static void OnHandleRequest(GrpcCall* call, const Status& status) {
-    call->SendResponse(ToGrpcStatus(status));
+  static void OnHandleRequest(GrpcCall* call, Status status) {
+    call->SendResponse(ToGrpcStatus(std::move(status)));
   }
 
   std::unique_ptr<::grpc::ServerCompletionQueue> cq_;

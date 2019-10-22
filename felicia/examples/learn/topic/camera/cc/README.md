@@ -66,7 +66,7 @@ void CameraPublishingNode::OnInit() {
 And then you should call `Start()`. But before call `Start()`, you should keep in mind that camera should run on the same thread whre you called `Init()`. We recommend you to run on the thread where `MasterProxy` is running on. Because currently on `window`, `MasterProxy` is responsible for initializing `COM`, and also we keep planning to implement something assuming that you run on that thread.
 
 ```c++
-void CameraPublishingNode::OnRequestPublish(const Status& s) {
+void CameraPublishingNode::OnRequestPublish(Status s) {
   if (s.ok()) {
     MasterProxy& master_proxy = MasterProxy::GetInstance();
     master_proxy.PostTask(FROM_HERE,
@@ -117,7 +117,7 @@ bazel-bin/felicia/examples/learn/topic/camera/cc/node_creator -l -i 0
 In order to stop the camera, you should call `Stop()`. `Stop()` also apply same rule above. You should obey the rule that `Start()` and `Stop()` should be called on the same thread `Init()`.
 
 ```c++
-void CameraPublishingNode::OnRequestUnpublish(const Status& s) {
+void CameraPublishingNode::OnRequestUnpublish(Status s) {
   if (s.ok()) {
     MasterProxy& master_proxy = MasterProxy::GetInstance();
     master_proxy.PostTask(FROM_HERE,

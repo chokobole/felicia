@@ -94,7 +94,7 @@ void CommandDispatcher::Dispatch(const ClientListFlag& delegate) const {
 
 void CommandDispatcher::OnListClientsAsync(const ListClientsRequest* request,
                                            ListClientsResponse* response,
-                                           const Status& s) const {
+                                           Status s) const {
   ScopedMasterProxyStopper stopper;
 
   if (!s.ok()) {
@@ -168,7 +168,7 @@ void CommandDispatcher::Dispatch(const NodeListFlag& delegate) const {
 
 void CommandDispatcher::OnListNodesAsync(const ListNodesRequest* request,
                                          ListNodesResponse* response,
-                                         const Status& s) const {
+                                         Status s) const {
   ScopedMasterProxyStopper stopper;
 
   if (!s.ok()) {
@@ -248,7 +248,7 @@ void CommandDispatcher::Dispatch(const ServiceListFlag& delegate) const {
 
 void CommandDispatcher::OnListServicesAsync(const ListServicesRequest* request,
                                             ListServicesResponse* response,
-                                            const Status& s) const {
+                                            Status s) const {
   ScopedMasterProxyStopper stopper;
 
   if (!s.ok()) {
@@ -327,7 +327,7 @@ void CommandDispatcher::Dispatch(const TopicSubscribeFlag& delegate) const {
 
 void CommandDispatcher::OnListTopicsAsync(const ListTopicsRequest* request,
                                           ListTopicsResponse* response,
-                                          const Status& s) const {
+                                          Status s) const {
   ScopedMasterProxyStopper stopper;
 
   if (!s.ok()) {

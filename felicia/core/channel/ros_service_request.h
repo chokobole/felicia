@@ -47,10 +47,9 @@ class EXPORT RosServiceRequest {
         &RosServiceRequest::OnReceiveResponse, base::Unretained(this), header));
   }
 
-  void OnRequest(const Status& s);
+  void OnRequest(Status s);
 
-  void OnReceiveResponse(const RosServiceRequestHeader& header,
-                         const Status& s);
+  void OnReceiveResponse(const RosServiceRequestHeader& header, Status s);
 
  private:
   Channel* channel_;

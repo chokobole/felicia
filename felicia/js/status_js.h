@@ -11,7 +11,7 @@ namespace felicia {
 class JsStatus : public Napi::ObjectWrap<JsStatus> {
  public:
   static void Init(Napi::Env env, Napi::Object exports);
-  static Napi::Object New(Napi::Env env, const Status& s);
+  static Napi::Object New(Napi::Env env, Status s);
   JsStatus(const Napi::CallbackInfo& info);
 
   static Napi::Value OK(const Napi::CallbackInfo& info);
@@ -38,7 +38,7 @@ class TypeConvertor<Status> {
         ->status();
   }
 
-  static Napi::Value ToJSValue(Napi::Env env, const Status& value) {
+  static Napi::Value ToJSValue(Napi::Env env, Status value) {
     return JsStatus::New(env, value);
   }
 };

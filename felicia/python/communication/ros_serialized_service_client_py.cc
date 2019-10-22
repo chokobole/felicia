@@ -16,14 +16,12 @@ class PyCallCallback {
       : response_(response), callback_(callback) {}
 
   void Invoke(const SerializedMessage* request,
-              const SerializedMessage* response, const Status& s) {
+              const SerializedMessage* response, Status s) {
     py::gil_scoped_acquire acquire;
-    Status new_status = s;
-    if (new_status.ok()) {
-      new_status =
-          Deserialize(response->serialized(), TopicInfo::ROS, &response_);
+    if (s.ok()) {
+      s = Deserialize(response->serialized(), TopicInfo::ROS, &response_);
     }
-    callback_(new_status);
+    callback_(std::move(s));
   }
 
  private:

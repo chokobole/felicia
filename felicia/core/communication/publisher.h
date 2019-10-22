@@ -28,7 +28,7 @@
 namespace felicia {
 
 using SendMessageCallback =
-    base::RepeatingCallback<void(ChannelDef::Type, const Status&)>;
+    base::RepeatingCallback<void(ChannelDef::Type, Status)>;
 
 template <typename MessageTy>
 class Publisher {
@@ -70,18 +70,18 @@ class Publisher {
   void OnPublishTopicAsync(const PublishTopicRequest* request,
                            PublishTopicResponse* response,
                            const communication::Settings& settings,
-                           StatusOnceCallback callback, const Status& s);
+                           StatusOnceCallback callback, Status s);
 
   void OnUnpublishTopicAsync(const UnpublishTopicRequest* request,
                              UnpublishTopicResponse* response,
-                             StatusOnceCallback callback, const Status& s);
+                             StatusOnceCallback callback, Status s);
 
   StatusOr<ChannelDef> Setup(Channel* chanel,
                              const channel::Settings& settings);
 
   void SendMessage(SendMessageCallback callback);
   void OnSendMessage(SendMessageCallback callback, ChannelDef::Type type,
-                     const Status& s);
+                     Status s);
   void OnAccept(StatusOr<std::unique_ptr<TCPChannel>> status_or);
 
 #if defined(HAS_ROS)
@@ -273,15 +273,15 @@ StatusOr<ChannelDef> Publisher<MessageTy>::Setup(
   } else if (channel->IsWSChannel()) {
     WSChannel* ws_channel = channel->ToWSChannel();
     status_or = ws_channel->Listen();
-    ws_channel->AcceptLoop(base::BindRepeating(
-        [](const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }));
+    ws_channel->AcceptLoop(
+        base::BindRepeating([](Status s) { LOG_IF(ERROR, !s.ok()) << s; }));
   }
 #if defined(OS_POSIX)
   else if (channel->IsUDSChannel()) {
     UDSChannel* uds_channel = channel->ToUDSChannel();
     status_or = uds_channel->BindAndListen();
-    uds_channel->AcceptLoop(base::BindRepeating(
-        [](const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }));
+    uds_channel->AcceptLoop(
+        base::BindRepeating([](Status s) { LOG_IF(ERROR, !s.ok()) << s; }));
   }
 #endif  // defined(OS_POSIX)
   else if (channel->IsShmChannel()) {
@@ -296,7 +296,7 @@ template <typename MessageTy>
 void Publisher<MessageTy>::OnPublishTopicAsync(
     const PublishTopicRequest* request, PublishTopicResponse* response,
     const communication::Settings& settings, StatusOnceCallback callback,
-    const Status& s) {
+    Status s) {
   if (!IsRegistering()) {
     internal::LogOrCallback(std::move(callback),
                             register_state_.InvalidStateError());
@@ -305,7 +305,7 @@ void Publisher<MessageTy>::OnPublishTopicAsync(
 
   if (!s.ok()) {
     register_state_.ToUnregistered(FROM_HERE);
-    internal::LogOrCallback(std::move(callback), s);
+    internal::LogOrCallback(std::move(callback), std::move(s));
     return;
   }
 
@@ -334,13 +334,13 @@ void Publisher<MessageTy>::OnPublishTopicAsync(
   }
 
   register_state_.ToRegistered(FROM_HERE);
-  internal::LogOrCallback(std::move(callback), s);
+  internal::LogOrCallback(std::move(callback), std::move(s));
 }
 
 template <typename MessageTy>
 void Publisher<MessageTy>::OnUnpublishTopicAsync(
     const UnpublishTopicRequest* request, UnpublishTopicResponse* response,
-    StatusOnceCallback callback, const Status& s) {
+    StatusOnceCallback callback, Status s) {
   if (!IsUnregistering()) {
     internal::LogOrCallback(std::move(callback),
                             register_state_.InvalidStateError());
@@ -349,14 +349,14 @@ void Publisher<MessageTy>::OnUnpublishTopicAsync(
 
   if (!s.ok()) {
     register_state_.ToRegistered(FROM_HERE);
-    internal::LogOrCallback(std::move(callback), s);
+    internal::LogOrCallback(std::move(callback), std::move(s));
     return;
   }
 
   register_state_.ToUnregistered(FROM_HERE);
   Release();
 
-  internal::LogOrCallback(std::move(callback), s);
+  internal::LogOrCallback(std::move(callback), std::move(s));
 }
 
 template <typename MessageTy>
@@ -429,12 +429,11 @@ void Publisher<MessageTy>::SendMessage(SendMessageCallback callback) {
 
 template <typename MessageTy>
 void Publisher<MessageTy>::OnSendMessage(SendMessageCallback callback,
-                                         ChannelDef::Type type,
-                                         const Status& s) {
+                                         ChannelDef::Type type, Status s) {
   if (callback.is_null()) {
     LOG_IF(ERROR, !s.ok()) << s;
   } else {
-    std::move(callback).Run(type, s);
+    std::move(callback).Run(type, std::move(s));
   }
 }
 

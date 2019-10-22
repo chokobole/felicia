@@ -17,17 +17,13 @@ class DynamicPublishingNode : public NodeLifecycle {
     virtual ~Delegate() = default;
 
     virtual void OnDidCreate(DynamicPublishingNode* node) = 0;
-    virtual void OnError(const Status& s) { LOG(ERROR) << s; }
+    virtual void OnError(Status s) { LOG(ERROR) << s; }
 
-    virtual void OnRequestPublish(const Status& s) {
-      LOG_IF(ERROR, !s.ok()) << s;
-    }
+    virtual void OnRequestPublish(Status s) { LOG_IF(ERROR, !s.ok()) << s; }
 
-    virtual void OnRequestUnpublish(const Status& s) {
-      LOG_IF(ERROR, !s.ok()) << s;
-    }
+    virtual void OnRequestUnpublish(Status s) { LOG_IF(ERROR, !s.ok()) << s; }
 
-    virtual void OnPublish(ChannelDef::Type type, const Status& s) {
+    virtual void OnPublish(ChannelDef::Type type, Status s) {
       LOG_IF(ERROR, !s.ok()) << s << " from " << ChannelDef::Type_Name(type);
     }
   };
@@ -38,7 +34,7 @@ class DynamicPublishingNode : public NodeLifecycle {
 
   void OnDidCreate(const NodeInfo& node_info) override;
 
-  void OnError(const Status& s) override;
+  void OnError(Status s) override;
 
   void RequestPublish(const std::string& topic_type, const std::string& topic,
                       int channel_defs,
@@ -49,9 +45,9 @@ class DynamicPublishingNode : public NodeLifecycle {
   void PublishMessageFromJson(const std::string& json_message);
 
  private:
-  void OnRequestPublish(const Status& s);
+  void OnRequestPublish(Status s);
 
-  void OnRequestUnpublish(const Status& s);
+  void OnRequestUnpublish(Status s);
 
   std::unique_ptr<Delegate> delegate_;
   NodeInfo node_info_;

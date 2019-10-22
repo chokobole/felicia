@@ -96,11 +96,11 @@ class EXPORT MasterProxy final : public MasterClientInterface {
 
   void OnRegisterClient(base::WaitableEvent* event,
                         const RegisterClientRequest* request,
-                        RegisterClientResponse* response, const Status& s);
+                        RegisterClientResponse* response, Status s);
 
   void OnRegisterNodeAsync(std::unique_ptr<NodeLifecycle> node,
                            const RegisterNodeRequest* request,
-                           RegisterNodeResponse* response, const Status& s);
+                           RegisterNodeResponse* response, Status s);
 
   void SubscribeTopicAsync(
       const SubscribeTopicRequest* request, SubscribeTopicResponse* response,

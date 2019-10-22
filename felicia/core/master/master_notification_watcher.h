@@ -46,7 +46,7 @@ class MasterNotificationWatcher {
   void OnAccept(StatusOr<std::unique_ptr<TCPChannel>> status_or);
 
   void WatchNewMasterNotification();
-  void OnNewMasterNotification(const Status& s);
+  void OnNewMasterNotification(Status s);
 
   ChannelSource channel_source_;
   MessageReceiver<MasterNotification> receiver_;

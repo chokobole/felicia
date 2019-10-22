@@ -38,9 +38,9 @@ class EXPORT RosTopicResponse {
                                             base::Unretained(this), header));
   }
 
-  void OnReceiveRequest(const RosTopicResponseHeader& header, const Status& s);
+  void OnReceiveRequest(const RosTopicResponseHeader& header, Status s);
 
-  void OnResponse(bool sent_error, const Status& s);
+  void OnResponse(bool sent_error, Status s);
 
  private:
   std::unique_ptr<Channel> channel_;

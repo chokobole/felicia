@@ -23,11 +23,11 @@ void TopicInfoWatcherNode::OnDidCreate(const NodeInfo& node_info) {
   node_info_ = node_info;
 }
 
-void TopicInfoWatcherNode::OnError(const Status& s) {
+void TopicInfoWatcherNode::OnError(Status s) {
   LOG(ERROR) << s;
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.master_notification_watcher_.UnregisterAllTopicInfoCallback();
-  delegate_->OnError(s);
+  delegate_->OnError(std::move(s));
 }
 
 }  // namespace felicia

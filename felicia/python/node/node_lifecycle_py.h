@@ -24,9 +24,9 @@ class PyNodeLifecycle : public NodeLifecycle {
     return NodeLifecycle::OnDidCreate(node_info);
   }
 
-  void OnError(const Status& status) override {
+  void OnError(Status status) override {
     PYBIND11_OVERLOAD_INT(void, NodeLifecycle, "on_error", status);
-    return NodeLifecycle::OnError(status);
+    return NodeLifecycle::OnError(std::move(status));
   }
 };
 

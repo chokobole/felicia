@@ -145,8 +145,8 @@ void TCPServerSocket::OnAccept(int result) {
   if (accept_callback_) DoAcceptLoop();
 }
 
-void TCPServerSocket::OnWrite(const Status& s) {
-  std::move(write_callback_).Run(s);
+void TCPServerSocket::OnWrite(Status s) {
+  std::move(write_callback_).Run(std::move(s));
 }
 
 }  // namespace felicia

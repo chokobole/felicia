@@ -22,17 +22,13 @@ class DynamicSubscribingNode : public NodeLifecycle {
     virtual ~OneTopicDelegate() = default;
 
     virtual void OnDidCreate(DynamicSubscribingNode* node) = 0;
-    virtual void OnError(const Status& s) { LOG(ERROR) << s; }
+    virtual void OnError(Status s) { LOG(ERROR) << s; }
 
     virtual void OnMessage(DynamicProtobufMessage&& message) = 0;
-    virtual void OnMessageError(const Status& s) { LOG(ERROR) << s; }
+    virtual void OnMessageError(Status s) { LOG(ERROR) << s; }
 
-    virtual void OnRequestSubscribe(const Status& s) {
-      LOG_IF(ERROR, !s.ok()) << s;
-    }
-    virtual void OnRequestUnsubscribe(const Status& s) {
-      LOG_IF(ERROR, !s.ok()) << s;
-    }
+    virtual void OnRequestSubscribe(Status s) { LOG_IF(ERROR, !s.ok()) << s; }
+    virtual void OnRequestUnsubscribe(Status s) { LOG_IF(ERROR, !s.ok()) << s; }
   };
 
   class MultiTopicDelegate {
@@ -40,11 +36,11 @@ class DynamicSubscribingNode : public NodeLifecycle {
     virtual ~MultiTopicDelegate() = default;
 
     virtual void OnDidCreate(DynamicSubscribingNode* node) = 0;
-    virtual void OnError(const Status& s) { LOG(ERROR) << s; }
+    virtual void OnError(Status s) { LOG(ERROR) << s; }
 
     virtual void OnMessage(const std::string& topic,
                            DynamicProtobufMessage&& message) = 0;
-    virtual void OnMessageError(const std::string& topic, const Status& s) {
+    virtual void OnMessageError(const std::string& topic, Status s) {
       LOG(ERROR) << s << "from the topic " << topic;
     }
   };
@@ -56,7 +52,7 @@ class DynamicSubscribingNode : public NodeLifecycle {
 
   void OnDidCreate(const NodeInfo& node_info) override;
 
-  void OnError(const Status& s) override;
+  void OnError(Status s) override;
 
   // For OneTopicDelegate
   void RequestSubscribe(const std::string& topic,
@@ -74,13 +70,13 @@ class DynamicSubscribingNode : public NodeLifecycle {
 
  private:
   // For OneTopicDelegate
-  void OnRequestSubscribe(const std::string& topic, const Status& s);
+  void OnRequestSubscribe(const std::string& topic, Status s);
 
-  void OnRequestUnsubscribe(const std::string& topic, const Status& s);
+  void OnRequestUnsubscribe(const std::string& topic, Status s);
 
   // For MultiTopicDelegate
   void OnUnsubscribe(const std::string& topic, StatusOnceCallback callback,
-                     const Status& s);
+                     Status s);
 
   std::unique_ptr<OneTopicDelegate> one_topic_delegate_;
   std::unique_ptr<MultiTopicDelegate> multi_topic_delegate_;

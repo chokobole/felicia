@@ -29,7 +29,7 @@ void RsCameraPublishingNode::OnDidCreate(const NodeInfo& node_info) {
   RequestPublish();
 }
 
-void RsCameraPublishingNode::OnRequestPublish(const Status& s) {
+void RsCameraPublishingNode::OnRequestPublish(Status s) {
   if (s.ok()) {
     if (!color_topic_.empty() && !color_publisher_.IsRegistered()) return;
     if (!depth_topic_.empty() && !depth_publisher_.IsRegistered()) return;
@@ -46,7 +46,7 @@ void RsCameraPublishingNode::OnRequestPublish(const Status& s) {
   }
 }
 
-void RsCameraPublishingNode::OnRequestUnpublish(const Status& s) {
+void RsCameraPublishingNode::OnRequestUnpublish(Status s) {
   if (s.ok()) {
     if (!color_topic_.empty() && !color_publisher_.IsUnregistered()) return;
     if (!depth_topic_.empty() && !depth_publisher_.IsUnregistered()) return;
@@ -252,6 +252,6 @@ void RsCameraPublishingNode::OnImuFrame(const drivers::ImuFrame& imu_frame) {
   imu_publisher_.Publish(imu_frame.ToImuFrameMessage());
 }
 
-void RsCameraPublishingNode::OnCameraError(const Status& s) { LOG(ERROR) << s; }
+void RsCameraPublishingNode::OnCameraError(Status s) { LOG(ERROR) << s; }
 
 }  // namespace felicia

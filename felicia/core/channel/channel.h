@@ -83,8 +83,8 @@ class EXPORT Channel {
   void SendInternalBuffer(int size, StatusOnceCallback callback);
   void ReceiveInternalBuffer(int size, StatusOnceCallback callback);
 
-  void OnSend(const Status& s);
-  void OnReceive(const Status& s);
+  void OnSend(Status s);
+  void OnReceive(Status s);
 
   virtual bool TrySetEnoughReceiveBufferSize(int capacity);
 

@@ -27,11 +27,11 @@ void DynamicSubscribingNode::OnDidCreate(const NodeInfo& node_info) {
   }
 }
 
-void DynamicSubscribingNode::OnError(const Status& s) {
+void DynamicSubscribingNode::OnError(Status s) {
   if (one_topic_delegate_) {
-    one_topic_delegate_->OnError(s);
+    one_topic_delegate_->OnError(std::move(s));
   } else {
-    multi_topic_delegate_->OnError(s);
+    multi_topic_delegate_->OnError(std::move(s));
   }
 }
 
@@ -59,12 +59,12 @@ void DynamicSubscribingNode::RequestSubscribe(
 }
 
 void DynamicSubscribingNode::OnRequestSubscribe(const std::string& topic,
-                                                const Status& s) {
+                                                Status s) {
   if (!s.ok()) {
     subscribers_.erase(topic);
   }
 
-  one_topic_delegate_->OnRequestSubscribe(s);
+  one_topic_delegate_->OnRequestSubscribe(std::move(s));
 }
 
 void DynamicSubscribingNode::RequestUnubscribe(const std::string& topic) {
@@ -78,12 +78,12 @@ void DynamicSubscribingNode::RequestUnubscribe(const std::string& topic) {
 }
 
 void DynamicSubscribingNode::OnRequestUnsubscribe(const std::string& topic,
-                                                  const Status& s) {
+                                                  Status s) {
   if (s.ok()) {
     subscribers_.erase(topic);
   }
 
-  one_topic_delegate_->OnRequestUnsubscribe(s);
+  one_topic_delegate_->OnRequestUnsubscribe(std::move(s));
 }
 
 void DynamicSubscribingNode::Subscribe(
@@ -164,13 +164,13 @@ void DynamicSubscribingNode::Unsubscribe(const std::string& topic,
 
 void DynamicSubscribingNode::OnUnsubscribe(const std::string& topic,
                                            StatusOnceCallback callback,
-                                           const Status& s) {
+                                           Status s) {
   if (s.ok()) {
     auto it = subscribers_.find(topic);
     subscribers_.erase(it);
   }
 
-  std::move(callback).Run(s);
+  std::move(callback).Run(std::move(s));
 }
 
 }  // namespace felicia

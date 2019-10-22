@@ -47,13 +47,13 @@ void PyMasterProxy::RequestRegisterNode(py::function constructor,
 void PyMasterProxy::OnRegisterNodeAsync(py::object object,
                                         const RegisterNodeRequest* request,
                                         RegisterNodeResponse* response,
-                                        const Status& s) {
+                                        Status s) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   if (!master_proxy.IsBoundToCurrentThread()) {
     master_proxy.PostTask(
-        FROM_HERE,
-        base::BindOnce(&PyMasterProxy::OnRegisterNodeAsync, object,
-                       base::Owned(request), base::Owned(response), s));
+        FROM_HERE, base::BindOnce(&PyMasterProxy::OnRegisterNodeAsync, object,
+                                  base::Owned(request), base::Owned(response),
+                                  std::move(s)));
     return;
   }
 

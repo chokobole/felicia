@@ -163,7 +163,7 @@ void AvfCamera::ReceiveFrame(const uint8_t* video_frame, int video_frame_length,
   }
 }
 
-void AvfCamera::ReceiveError(const Status& status) { status_callback_.Run(status); }
+void AvfCamera::ReceiveError(Status status) { status_callback_.Run(std::move(status)); }
 
 // static
 std::string AvfCamera::GetDeviceModelId(const std::string& device_id) {

@@ -111,6 +111,61 @@ R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...) const,
           info[1]));
 }
 
+template <typename R, typename Class, typename... Args,
+          std::enable_if_t<0 == sizeof...(Args)>* = nullptr>
+R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...) const&,
+         const Class* c) {
+  return ((*c).*f)();
+}
+
+template <typename R, typename Class, typename... Args,
+          std::enable_if_t<1 == sizeof...(Args)>* = nullptr>
+R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...) const&,
+         const Class* c) {
+  using ArgList = base::internal::TypeList<Args...>;
+  return ((*c).*f)(
+      js::TypeConvertor<internal::PickTypeListItem<0, ArgList>>::ToNativeValue(
+          info[0]));
+}
+
+template <typename R, typename Class, typename... Args,
+          std::enable_if_t<2 == sizeof...(Args)>* = nullptr>
+R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...) const&,
+         const Class* c) {
+  using ArgList = base::internal::TypeList<Args...>;
+  return ((*c).*f)(
+      js::TypeConvertor<internal::PickTypeListItem<0, ArgList>>::ToNativeValue(
+          info[0]),
+      js::TypeConvertor<internal::PickTypeListItem<1, ArgList>>::ToNativeValue(
+          info[1]));
+}
+
+template <typename R, typename Class, typename... Args,
+          std::enable_if_t<0 == sizeof...(Args)>* = nullptr>
+R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...) &&, Class* c) {
+  return (std::move(*c).*f)();
+}
+
+template <typename R, typename Class, typename... Args,
+          std::enable_if_t<1 == sizeof...(Args)>* = nullptr>
+R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...) &&, Class* c) {
+  using ArgList = base::internal::TypeList<Args...>;
+  return (std::move(*c).*f)(
+      js::TypeConvertor<internal::PickTypeListItem<0, ArgList>>::ToNativeValue(
+          info[0]));
+}
+
+template <typename R, typename Class, typename... Args,
+          std::enable_if_t<2 == sizeof...(Args)>* = nullptr>
+R Invoke(const Napi::CallbackInfo& info, R (Class::*f)(Args...) &&, Class* c) {
+  using ArgList = base::internal::TypeList<Args...>;
+  return (std::move(*c).*f)(
+      js::TypeConvertor<internal::PickTypeListItem<0, ArgList>>::ToNativeValue(
+          info[0]),
+      js::TypeConvertor<internal::PickTypeListItem<1, ArgList>>::ToNativeValue(
+          info[1]));
+}
+
 }  // namespace internal
 
 #define THROW_JS_WRONG_NUMBER_OF_ARGUMENTS(env)          \
@@ -174,6 +229,48 @@ Napi::Value TypedCall(const Napi::CallbackInfo& info,
 template <typename Class, typename... Args>
 void TypedCall(const Napi::CallbackInfo& info, void (Class::*f)(Args...) const,
                const Class* c) {
+  Napi::Env env = info.Env();
+  constexpr size_t num_args = sizeof...(Args);
+  JS_CHECK_NUM_ARGS(env, num_args);
+
+  internal::Invoke(info, f, c);
+}
+
+template <typename R, typename Class, typename... Args>
+Napi::Value TypedCall(const Napi::CallbackInfo& info,
+                      R (Class::*f)(Args...) const&, const Class* c) {
+  Napi::Env env = info.Env();
+  constexpr size_t num_args = sizeof...(Args);
+  JS_CHECK_NUM_ARGS(env, num_args);
+
+  return js::TypeConvertor<std::decay_t<R>>::ToJSValue(
+      env, internal::Invoke(info, f, c));
+}
+
+template <typename Class, typename... Args>
+void TypedCall(const Napi::CallbackInfo& info, void (Class::*f)(Args...) const&,
+               const Class* c) {
+  Napi::Env env = info.Env();
+  constexpr size_t num_args = sizeof...(Args);
+  JS_CHECK_NUM_ARGS(env, num_args);
+
+  internal::Invoke(info, f, c);
+}
+
+template <typename R, typename Class, typename... Args>
+Napi::Value TypedCall(const Napi::CallbackInfo& info, R (Class::*f)(Args...) &&,
+                      Class* c) {
+  Napi::Env env = info.Env();
+  constexpr size_t num_args = sizeof...(Args);
+  JS_CHECK_NUM_ARGS(env, num_args);
+
+  return js::TypeConvertor<std::decay_t<R>>::ToJSValue(
+      env, internal::Invoke(info, f, c));
+}
+
+template <typename Class, typename... Args>
+void TypedCall(const Napi::CallbackInfo& info, void (Class::*f)(Args...) &&,
+               Class* c) {
   Napi::Env env = info.Env();
   constexpr size_t num_args = sizeof...(Args);
   JS_CHECK_NUM_ARGS(env, num_args);

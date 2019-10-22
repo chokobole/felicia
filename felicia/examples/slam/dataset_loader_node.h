@@ -28,7 +28,7 @@ class DatasetLoaderNode : public NodeLifecycle {
   void OnDidCreate(const NodeInfo& node_info) override;
 
  private:
-  void OnRequestPublish(slam::SensorData::DataType data_type, const Status& s);
+  void OnRequestPublish(slam::SensorData::DataType data_type, Status s);
 
   void RequestPublish();
 

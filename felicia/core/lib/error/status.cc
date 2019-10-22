@@ -26,8 +26,11 @@ Status::Status(felicia::error::Code error_code,
     : error_code_(error_code), error_message_(error_message) {}
 
 Status::Status(const Status& status) = default;
+
 Status& Status::operator=(const Status& status) = default;
+
 Status::Status(Status&& status) = default;
+
 Status& Status::operator=(Status&& status) = default;
 
 Status::~Status() = default;
@@ -36,7 +39,11 @@ Status::~Status() = default;
 Status Status::OK() { return Status(); }
 
 error::Code Status::error_code() const { return error_code_; }
-const std::string& Status::error_message() const { return error_message_; }
+
+const std::string& Status::error_message() const& { return error_message_; }
+
+std::string&& Status::error_message() && { return std::move(error_message_); }
+
 bool Status::ok() const { return error_code_ == 0; }
 
 bool Status::operator==(const Status& status) const {

@@ -10,21 +10,20 @@ RosServiceResponse::RosServiceResponse(std::unique_ptr<Channel> channel)
 RosServiceResponse::~RosServiceResponse() = default;
 
 void RosServiceResponse::OnReceiveRequest(
-    const RosServiceResponseHeader& header, const Status& s) {
+    const RosServiceResponseHeader& header, Status s) {
   channel_->SetDynamicReceiveBuffer(false);
-  Status new_status = s;
-  if (new_status.ok()) {
+  if (s.ok()) {
     RosServiceRequestHeader expected;
     expected.md5sum = header.md5sum;
-    new_status = receiver_.message().Validate(expected);
+    s = receiver_.message().Validate(expected);
   }
 
   MessageSender<RosServiceResponseHeader> sender(channel_.get());
   channel_->SetDynamicSendBuffer(true);
-  if (!new_status.ok()) {
-    LOG(ERROR) << new_status;
+  if (!s.ok()) {
+    LOG(ERROR) << s;
     RosServiceResponseHeader errored_header;
-    errored_header.error = new_status.error_message();
+    errored_header.error = std::move(std::move(s).error_message());
     sender.SendMessage(errored_header,
                        base::BindOnce(&RosServiceResponse::OnResponse,
                                       base::Unretained(this), true));
@@ -34,7 +33,7 @@ void RosServiceResponse::OnReceiveRequest(
   }
 }
 
-void RosServiceResponse::OnResponse(bool sent_error, const Status& s) {
+void RosServiceResponse::OnResponse(bool sent_error, Status s) {
   if (s.ok()) {
     if (sent_error) return;
 

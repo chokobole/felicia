@@ -799,9 +799,9 @@ void MfCamera::OnIncomingCapturedData(const uint8_t* data, int length,
   }
 }
 
-void MfCamera::OnFrameDropped(const Status& s) {
+void MfCamera::OnFrameDropped(Status s) {
   base::AutoLock lock(lock_);
-  status_callback_.Run(s);
+  status_callback_.Run(std::move(s));
 }
 
 void MfCamera::OnEvent(IMFMediaEvent* media_event) {

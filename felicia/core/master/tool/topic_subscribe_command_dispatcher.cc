@@ -19,19 +19,19 @@ class OneTopicSubscriberDelegate
     node->RequestSubscribe(topic_, settings_);
   }
 
-  void OnError(const Status& s) override { NOTREACHED() << s; }
+  void OnError(Status s) override { NOTREACHED() << s; }
 
   void OnMessage(DynamicProtobufMessage&& message) override {
     std::cout << message.ToString() << std::endl;
   }
 
-  void OnMessageError(const Status& s) override {
+  void OnMessageError(Status s) override {
     std::cerr << kRedError << "Message error: " << s << std::endl;
   }
 
-  void OnRequestSubscribe(const Status& s) override { CHECK(s.ok()) << s; }
+  void OnRequestSubscribe(Status s) override { CHECK(s.ok()) << s; }
 
-  void OnRequestUnsubscribe(const Status& s) override { CHECK(s.ok()) << s; }
+  void OnRequestUnsubscribe(Status s) override { CHECK(s.ok()) << s; }
 
  private:
   std::string topic_;
@@ -46,7 +46,7 @@ class MultiTopicSubscriberDelegate
 
   void OnDidCreate(DynamicSubscribingNode* node) override;
 
-  void OnError(const Status& s) override { NOTREACHED() << s; }
+  void OnError(Status s) override { NOTREACHED() << s; }
 
   void OnMessage(const std::string& topic,
                  DynamicProtobufMessage&& message) override {
@@ -56,7 +56,7 @@ class MultiTopicSubscriberDelegate
     std::cout << message.ToString() << std::endl;
   }
 
-  void OnMessageError(const std::string& topic, const Status& s) override {
+  void OnMessageError(const std::string& topic, Status s) override {
     std::cout << TextStyle::Red(base::StringPrintf("[TOPIC] %s", topic.c_str()))
               << std::endl;
     std::cerr << kRedError << "Message error: " << s << std::endl;
@@ -73,7 +73,7 @@ class MultiTopicSubscriberDelegate
     }
   }
 
-  void OnUnsubscribe(const Status& s) { LOG_IF(ERROR, !s.ok()) << s; }
+  void OnUnsubscribe(Status s) { LOG_IF(ERROR, !s.ok()) << s; }
 
  private:
   DynamicSubscribingNode* node_ = nullptr;  // not owned
@@ -85,7 +85,7 @@ class TopicInfoWatcherDelegate : public TopicInfoWatcherNode::Delegate {
   TopicInfoWatcherDelegate(MultiTopicSubscriberDelegate* delegate)
       : delegate_(delegate) {}
 
-  void OnError(const Status& s) override { NOTREACHED() << s; }
+  void OnError(Status s) override { NOTREACHED() << s; }
 
   void OnNewTopicInfo(const TopicInfo& topic_info) override {
     delegate_->HandleTopicInfo(topic_info);

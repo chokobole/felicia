@@ -15,13 +15,13 @@ class ProtobufSubscribingNode : public NodeLifecycle {
   // NodeLifecycle methods
   void OnInit() override;
   void OnDidCreate(const NodeInfo& node_info) override;
-  void OnError(const Status& s) override;
+  void OnError(Status s) override;
 
  private:
   void OnMessage(SimpleMessage&& message);
-  void OnMessageError(const Status& s);
-  void OnRequestSubscribe(const Status& s);
-  void OnRequestUnsubscribe(const Status& s);
+  void OnMessageError(Status s);
+  void OnRequestSubscribe(Status s);
+  void OnRequestUnsubscribe(Status s);
 
   void RequestSubscribe();
   void RequestUnsubscribe();

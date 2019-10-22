@@ -26,7 +26,7 @@ void ProtobufSubscribingNode::OnDidCreate(const NodeInfo& node_info) {
   //     base::TimeDelta::FromSeconds(10));
 }
 
-void ProtobufSubscribingNode::OnError(const Status& s) {
+void ProtobufSubscribingNode::OnError(Status s) {
   std::cout << "ProtobufSubscribingNode::OnError()" << std::endl;
   LOG(ERROR) << s;
 }
@@ -36,17 +36,17 @@ void ProtobufSubscribingNode::OnMessage(SimpleMessage&& message) {
   std::cout << "message : " << message.DebugString() << std::endl;
 }
 
-void ProtobufSubscribingNode::OnMessageError(const Status& s) {
+void ProtobufSubscribingNode::OnMessageError(Status s) {
   std::cout << "ProtobufSubscribingNode::OnMessageError()" << std::endl;
   LOG(ERROR) << s;
 }
 
-void ProtobufSubscribingNode::OnRequestSubscribe(const Status& s) {
+void ProtobufSubscribingNode::OnRequestSubscribe(Status s) {
   std::cout << "ProtobufSubscribingNode::OnRequestSubscribe()" << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
 }
 
-void ProtobufSubscribingNode::OnRequestUnsubscribe(const Status& s) {
+void ProtobufSubscribingNode::OnRequestUnsubscribe(Status s) {
   std::cout << "ProtobufSubscribingNode::OnRequestUnsubscribe()" << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
 }

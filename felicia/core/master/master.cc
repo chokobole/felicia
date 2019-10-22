@@ -1122,10 +1122,10 @@ void Master::NotifyWatcher() {
 
 void Master::OnConnetToMasterNotificationWatcher(
     std::unique_ptr<Channel> channel,
-    const MasterNotification& master_notification, const Status& s) {
+    const MasterNotification& master_notification, Status s) {
   if (s.ok()) {
     MessageSender<MasterNotification> sender(channel.get());
-    sender.SendMessage(master_notification, base::BindOnce([](const Status& s) {
+    sender.SendMessage(master_notification, base::BindOnce([](Status s) {
                          LOG_IF(ERROR, !s.ok())
                              << "Failed to send message: " << s;
                        }));

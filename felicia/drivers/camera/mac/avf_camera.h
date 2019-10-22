@@ -40,7 +40,7 @@ class AvfCamera : public CameraInterface, public FrameReceiver {
                     const CameraFormat& camera_format, int aspect_numerator,
                     int aspect_denominator, base::TimeDelta timestamp) override;
 
-  void ReceiveError(const Status& status) override;
+  void ReceiveError(Status status) override;
 
  private:
   friend class CameraFactory;

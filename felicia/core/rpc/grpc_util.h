@@ -37,7 +37,7 @@ inline Status FromGrpcStatus(const ::grpc::Status& s) {
   }
 }
 
-inline ::grpc::Status ToGrpcStatus(const Status& s) {
+inline ::grpc::Status ToGrpcStatus(Status s) {
   if (s.ok()) {
     return ::grpc::Status::OK;
   } else {
@@ -45,10 +45,11 @@ inline ::grpc::Status ToGrpcStatus(const Status& s) {
         static_cast<int>(
             error::Code::
                 DO_NOT_USE_RESERVED_FOR_FUTURE_EXPANSION_USE_DEFAULT_IN_SWITCH_INSTEAD_)) {
-      return ::grpc::Status(::grpc::StatusCode::UNKNOWN, s.error_message());
+      return ::grpc::Status(::grpc::StatusCode::UNKNOWN,
+                            std::move(std::move(s).error_message()));
     } else {
       return ::grpc::Status(static_cast<::grpc::StatusCode>(s.error_code()),
-                            s.error_message());
+                            std::move(std::move(s).error_message()));
     }
   }
 }

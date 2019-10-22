@@ -47,17 +47,16 @@ class ServiceClient {
   void OnRegisterServiceClientAsync(const RegisterServiceClientRequest* request,
                                     RegisterServiceClientResponse* response,
                                     OnConnectCallback on_connect_callback,
-                                    StatusOnceCallback callback,
-                                    const Status& s);
+                                    StatusOnceCallback callback, Status s);
 
   void OnUnregisterServiceClientAsync(
       const UnregisterServiceClientRequest* request,
       UnregisterServiceClientResponse* response, StatusOnceCallback callback,
-      const Status& s);
+      Status s);
 
   void OnFindServiceServer(const ServiceInfo& service_info);
 
-  void OnConnect(const Status& s);
+  void OnConnect(Status s);
 
   ClientTy client_;
   OnConnectCallback on_connect_callback_;
@@ -141,7 +140,7 @@ void ServiceClient<ClientTy>::OnRegisterServiceClientAsync(
     const RegisterServiceClientRequest* request,
     RegisterServiceClientResponse* response,
     OnConnectCallback on_connect_callback, StatusOnceCallback callback,
-    const Status& s) {
+    Status s) {
   if (!IsRegistering()) {
     internal::LogOrCallback(std::move(callback),
                             register_state_.InvalidStateError());
@@ -150,21 +149,21 @@ void ServiceClient<ClientTy>::OnRegisterServiceClientAsync(
 
   if (!s.ok()) {
     register_state_.ToUnregistered(FROM_HERE);
-    internal::LogOrCallback(std::move(callback), s);
+    internal::LogOrCallback(std::move(callback), std::move(s));
     return;
   }
 
   on_connect_callback_ = on_connect_callback;
 
   register_state_.ToRegistered(FROM_HERE);
-  internal::LogOrCallback(std::move(callback), s);
+  internal::LogOrCallback(std::move(callback), std::move(s));
 }
 
 template <typename ClientTy>
 void ServiceClient<ClientTy>::OnUnregisterServiceClientAsync(
     const UnregisterServiceClientRequest* request,
     UnregisterServiceClientResponse* response, StatusOnceCallback callback,
-    const Status& s) {
+    Status s) {
   if (!IsUnregistering()) {
     internal::LogOrCallback(std::move(callback),
                             register_state_.InvalidStateError());
@@ -173,12 +172,12 @@ void ServiceClient<ClientTy>::OnUnregisterServiceClientAsync(
 
   if (!s.ok()) {
     register_state_.ToRegistered(FROM_HERE);
-    internal::LogOrCallback(std::move(callback), s);
+    internal::LogOrCallback(std::move(callback), std::move(s));
     return;
   }
 
   register_state_.ToUnregistered(FROM_HERE);
-  internal::LogOrCallback(std::move(callback), s);
+  internal::LogOrCallback(std::move(callback), std::move(s));
 }
 
 template <typename ClientTy>
@@ -212,7 +211,7 @@ void ServiceClient<ClientTy>::OnFindServiceServer(
 }
 
 template <typename ClientTy>
-void ServiceClient<ClientTy>::OnConnect(const Status& s) {
+void ServiceClient<ClientTy>::OnConnect(Status s) {
   if (s.ok()) {
     if (client_.Run().ok()) on_connect_callback_.Run(ServiceInfo::REGISTERED);
   }

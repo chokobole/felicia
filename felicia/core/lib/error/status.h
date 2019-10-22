@@ -44,7 +44,8 @@ class EXPORT Status {
 
   // Accessor
   error::Code error_code() const;
-  const std::string& error_message() const;
+  const std::string& error_message() const&;
+  std::string&& error_message() &&;
   bool ok() const;
 
   bool operator==(const Status& status) const;
@@ -59,8 +60,8 @@ class EXPORT Status {
 EXPORT std::ostream& operator<<(std::ostream& os, const Status& x);
 
 // Convenient typedef for a closure passing a Status.
-typedef base::RepeatingCallback<void(const Status&)> StatusCallback;
-typedef base::OnceCallback<void(const Status&)> StatusOnceCallback;
+typedef base::RepeatingCallback<void(Status)> StatusCallback;
+typedef base::OnceCallback<void(Status)> StatusOnceCallback;
 
 namespace internal {
 

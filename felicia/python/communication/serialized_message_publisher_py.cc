@@ -6,7 +6,7 @@
 
 namespace felicia {
 
-using PySendMessageCallback = PyCallback<void(ChannelDef::Type, const Status&)>;
+using PySendMessageCallback = PyCallback<void(ChannelDef::Type, Status)>;
 
 PySerializedMessagePublisher::PySerializedMessagePublisher(
     py::object message_type, TopicInfo::ImplType impl_type) {

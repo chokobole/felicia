@@ -39,7 +39,7 @@ void HeartBeatSignaller::DoStart(OnStartCallback callback) {
   std::move(callback).Run(channel_source);
 }
 
-void HeartBeatSignaller::OnAccept(const Status& s) {
+void HeartBeatSignaller::OnAccept(Status s) {
   if (s.ok()) {
     Signal();
   } else {
@@ -56,14 +56,14 @@ void HeartBeatSignaller::Signal() {
                                                 base::Unretained(this)));
 }
 
-void HeartBeatSignaller::OnSignal(const Status& s) {
+void HeartBeatSignaller::OnSignal(Status s) {
   if (s.ok() || trial_ <= kMaximumTrial) {
     thread_.task_runner()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&HeartBeatSignaller::Signal, base::Unretained(this)),
         heart_beat_duration_);
   } else {
-    LOG(ERROR) << "Failed to send heart...";
+    LOG(ERROR) << "Failed to send heart: " << s;
   }
 }
 

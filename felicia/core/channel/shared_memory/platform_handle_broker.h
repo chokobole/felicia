@@ -51,7 +51,7 @@ class PlatformHandleBroker {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #elif defined(OS_WIN)
 #else
-  void OnBrokerConnect(const Status& s);
+  void OnBrokerConnect(Status s);
   void AcceptLoop();
   void HandleAccept(StatusOr<std::unique_ptr<net::SocketPosix>> status_or);
   void OnBrokerAccept(StatusOr<std::unique_ptr<net::SocketPosix>> status_or);

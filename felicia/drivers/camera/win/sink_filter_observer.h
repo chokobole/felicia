@@ -29,7 +29,7 @@ class SinkFilterObserver {
                              const CameraFormat& format,
                              base::TimeDelta timestamp) = 0;
 
-  virtual void FrameDropped(const Status& s) = 0;
+  virtual void FrameDropped(Status s) = 0;
 
  protected:
   virtual ~SinkFilterObserver();

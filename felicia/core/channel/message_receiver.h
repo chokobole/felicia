@@ -68,9 +68,9 @@ class MessageReceiver {
     }
   }
 
-  void OnReceiveMessageWithHeader(const Status& s) {
+  void OnReceiveMessageWithHeader(Status s) {
     if (!s.ok()) {
-      std::move(receive_callback_).Run(s);
+      std::move(receive_callback_).Run(std::move(s));
       return;
     }
 
@@ -91,9 +91,9 @@ class MessageReceiver {
     }
   }
 
-  void OnReceiveHeader(const Status& s) {
+  void OnReceiveHeader(Status s) {
     if (!s.ok()) {
-      std::move(receive_callback_).Run(s);
+      std::move(receive_callback_).Run(std::move(s));
       return;
     }
 
@@ -118,7 +118,11 @@ class MessageReceiver {
                                      base::Unretained(this), message_size));
   }
 
-  void OnReceiveMessage(int message_size, const Status& s) {
+  void OnReceiveMessage(int message_size, Status s) {
+    if (!s.ok()) {
+      std::move(receive_callback_).Run(std::move(s));
+      return;
+    }
     const char* buffer = channel_->receive_buffer_.StartOfBuffer();
     MessageIOError err =
         MessageIO<T>::Deserialize(buffer, message_size, &message_);

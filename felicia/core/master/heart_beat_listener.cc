@@ -64,7 +64,7 @@ void HeartBeatListener::StartCheckHeartBeat() {
                                    base::Unretained(this)));
 }
 
-void HeartBeatListener::DoCheckHeartBeat(const Status& s) {
+void HeartBeatListener::DoCheckHeartBeat(Status s) {
   if (!s.ok()) {
     LOG(ERROR) << "Failed to Connect "
                << client_info_.heart_beat_signaller_source().DebugString();
@@ -90,7 +90,7 @@ void HeartBeatListener::TryReceiveHeartBeat() {
       base::BindOnce(&HeartBeatListener::OnAlive, base::Unretained(this)));
 }
 
-void HeartBeatListener::OnAlive(const Status& s) {
+void HeartBeatListener::OnAlive(Status s) {
   if (s.ok()) {
     timeout_.Cancel();
   } else if (channel_->IsTCPChannel() &&

@@ -27,7 +27,7 @@ void ZedCameraPublishingNode::OnDidCreate(const NodeInfo& node_info) {
   RequestPublish();
 }
 
-void ZedCameraPublishingNode::OnRequestPublish(const Status& s) {
+void ZedCameraPublishingNode::OnRequestPublish(Status s) {
   if (s.ok()) {
     if (!left_camera_topic_.empty() && !left_camera_publisher_.IsRegistered())
       return;
@@ -46,7 +46,7 @@ void ZedCameraPublishingNode::OnRequestPublish(const Status& s) {
   }
 }
 
-void ZedCameraPublishingNode::OnRequestUnpublish(const Status& s) {
+void ZedCameraPublishingNode::OnRequestUnpublish(Status s) {
   if (s.ok()) {
     if (!left_camera_topic_.empty() && !left_camera_publisher_.IsUnregistered())
       return;
@@ -219,8 +219,6 @@ void ZedCameraPublishingNode::OnPointcloud(map::Pointcloud&& pointcloud) {
   pointcloud_publisher_.Publish(pointcloud.ToPointcloudMessage(false));
 }
 
-void ZedCameraPublishingNode::OnCameraError(const Status& s) {
-  LOG(ERROR) << s;
-}
+void ZedCameraPublishingNode::OnCameraError(Status s) { LOG(ERROR) << s; }
 
 }  // namespace felicia

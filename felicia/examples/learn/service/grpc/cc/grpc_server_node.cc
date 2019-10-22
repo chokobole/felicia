@@ -33,17 +33,17 @@ void GrpcServerNode::OnDidCreate(const NodeInfo& node_info) {
   RequestRegister();
 }
 
-void GrpcServerNode::OnError(const Status& s) {
+void GrpcServerNode::OnError(Status s) {
   std::cout << "GrpcServerNode::OnError()" << std::endl;
   LOG(ERROR) << s;
 }
 
-void GrpcServerNode::OnRequestRegister(const Status& s) {
+void GrpcServerNode::OnRequestRegister(Status s) {
   std::cout << "GrpcServerNode::OnRequestRegister()" << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
 }
 
-void GrpcServerNode::OnRequestUnregister(const Status& s) {
+void GrpcServerNode::OnRequestUnregister(Status s) {
   std::cout << "GrpcServerNode::OnRequestUnregister()" << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
 }

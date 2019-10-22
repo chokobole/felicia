@@ -13,7 +13,7 @@ class TopicInfoWatcherNode : public NodeLifecycle {
     virtual ~Delegate() = default;
 
     virtual void OnNewTopicInfo(const TopicInfo& topic_info) = 0;
-    virtual void OnError(const Status& s) = 0;
+    virtual void OnError(Status s) = 0;
   };
 
   TopicInfoWatcherNode(std::unique_ptr<Delegate> delegate);
@@ -24,7 +24,7 @@ class TopicInfoWatcherNode : public NodeLifecycle {
 
   void OnDidCreate(const NodeInfo& node_info) override;
 
-  void OnError(const Status& s) override;
+  void OnError(Status s) override;
 
  private:
   std::unique_ptr<Delegate> delegate_;

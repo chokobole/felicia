@@ -14,7 +14,7 @@ void RosMsgPublishingNode::OnDidCreate(const NodeInfo& node_info) {
   RequestPublish();
 }
 
-void RosMsgPublishingNode::OnRequestPublish(const Status& s) {
+void RosMsgPublishingNode::OnRequestPublish(Status s) {
   LOG_IF(ERROR, !s.ok()) << s;
   RepeatingPublish();
 }

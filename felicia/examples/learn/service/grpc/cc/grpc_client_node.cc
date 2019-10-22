@@ -22,17 +22,17 @@ void GrpcClientNode::OnDidCreate(const NodeInfo& node_info) {
   RequestRegister();
 }
 
-void GrpcClientNode::OnError(const Status& s) {
+void GrpcClientNode::OnError(Status s) {
   std::cout << "GrpcClientNode::OnError()" << std::endl;
   LOG(ERROR) << s;
 }
 
-void GrpcClientNode::OnRequestRegister(const Status& s) {
+void GrpcClientNode::OnRequestRegister(Status s) {
   std::cout << "GrpcClientNode::OnRequestRegister()" << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
 }
 
-void GrpcClientNode::OnRequestUnegister(const Status& s) {
+void GrpcClientNode::OnRequestUnegister(Status s) {
   std::cout << "GrpcClientNode::OnRequestUnegister()" << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
 }
@@ -61,8 +61,7 @@ void GrpcClientNode::RequestUnregister() {
 }
 
 void GrpcClientNode::OnRequestAdd(const AddRequest* request,
-                                  const AddResponse* response,
-                                  const Status& s) {
+                                  const AddResponse* response, Status s) {
   std::cout << "GrpcClientNode::OnRequestAdd()" << std::endl;
   if (s.ok()) {
     std::cout << request->a() << " + " << request->b() << " = "

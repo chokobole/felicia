@@ -44,10 +44,10 @@ class EXPORT TCPChannel : public Channel {
   void OnAccept(StatusOr<std::unique_ptr<net::TCPSocket>> status_or);
 
 #if !defined(FEL_NO_SSL)
-  void OnSSLHandshake(const Status& s);
+  void OnSSLHandshake(Status s);
 #endif
 
-  void OnConnect(StatusOnceCallback callback, const Status& s);
+  void OnConnect(StatusOnceCallback callback, Status s);
 
   channel::TCPSettings settings_;
   AcceptOnceInterceptCallback accept_once_intercept_callback_;

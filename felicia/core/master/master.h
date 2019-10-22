@@ -140,7 +140,7 @@ class EXPORT Master {
 
   void OnConnetToMasterNotificationWatcher(
       std::unique_ptr<Channel> channel,
-      const MasterNotification& master_notification, const Status& s);
+      const MasterNotification& master_notification, Status s);
 
   void SetCheckHeartBeatForTesting(bool check_heart_beat);
 

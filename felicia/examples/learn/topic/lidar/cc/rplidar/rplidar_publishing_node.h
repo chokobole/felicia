@@ -18,8 +18,8 @@ class RPlidarPublishingNode : public NodeLifecycle {
   void OnDidCreate(const NodeInfo& node_info) override;
 
  private:
-  void OnRequestPublish(const Status& s);
-  void OnRequestUnpublish(const Status& s);
+  void OnRequestPublish(Status s);
+  void OnRequestUnpublish(Status s);
 
   void StartLidar();
 #if defined(OS_POSIX)

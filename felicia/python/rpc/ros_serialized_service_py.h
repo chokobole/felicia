@@ -16,7 +16,7 @@ namespace rpc {
 class PyRosSerializedServiceInterface {
  public:
   virtual void Handle(const py::object request, py::object response,
-                      std::function<void(const Status&)> callback) = 0;
+                      std::function<void(Status)> callback) = 0;
 };
 
 class PyRosSerializedService : public PyRosSerializedServiceInterface {
@@ -27,7 +27,7 @@ class PyRosSerializedService : public PyRosSerializedServiceInterface {
   py::object ros_service() const { return ros_service_; }
 
   void Handle(const py::object request, py::object response,
-              std::function<void(const Status&)> callback) override {
+              std::function<void(Status)> callback) override {
     PYBIND11_OVERLOAD_PURE(
         void,                            /* Return type */
         PyRosSerializedServiceInterface, /* Parent class */

@@ -72,9 +72,9 @@ void AddGlobalObject(py::module& m) {
            py::arg("error_message"))
       .def_static("OK", &Status::OK, "Convenience static method.")
       .def("error_code", &Status::error_code)
-      .def("error_message", &Status::error_message)
+      .def("error_message", [](Status& self) { return self.error_message(); })
       .def("ok", &Status::ok)
-      .def("__repr__", &Status::error_message);
+      .def("__repr__", [](Status& self) { return self.error_message(); });
 
   py::class_<base::TimeDelta>(m, "TimeDelta")
       .def(py::init<>())

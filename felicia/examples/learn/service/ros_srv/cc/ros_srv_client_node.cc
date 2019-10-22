@@ -34,8 +34,7 @@ void RosSrvClientNode::RequestUnregister() {
 }
 
 void RosSrvClientNode::OnRequestAdd(const SimpleServiceRequest* request,
-                                    SimpleServiceResponse* response,
-                                    const Status& s) {
+                                    SimpleServiceResponse* response, Status s) {
   if (s.ok()) {
     std::cout << base::NumberToString(request->a) << " + "
               << base::NumberToString(request->b) << " = "

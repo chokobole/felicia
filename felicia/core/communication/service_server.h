@@ -80,13 +80,12 @@ class ServiceServer {
  protected:
   void OnRegisterServiceServerAsync(const RegisterServiceServerRequest* request,
                                     RegisterServiceServerResponse* response,
-                                    StatusOnceCallback callback,
-                                    const Status& s);
+                                    StatusOnceCallback callback, Status s);
 
   void OnUnegisterServiceServerAsync(
       const UnregisterServiceServerRequest* request,
       UnregisterServiceServerResponse* response, StatusOnceCallback callback,
-      const Status& s);
+      Status s);
 
   ServerTy server_;
   communication::RegisterState register_state_;
@@ -176,7 +175,7 @@ template <typename ServiceTy, typename ServerTy>
 void ServiceServer<ServiceTy, ServerTy>::OnRegisterServiceServerAsync(
     const RegisterServiceServerRequest* request,
     RegisterServiceServerResponse* response, StatusOnceCallback callback,
-    const Status& s) {
+    Status s) {
   if (!IsRegistering()) {
     internal::LogOrCallback(std::move(callback),
                             register_state_.InvalidStateError());
@@ -185,19 +184,19 @@ void ServiceServer<ServiceTy, ServerTy>::OnRegisterServiceServerAsync(
 
   if (!s.ok()) {
     register_state_.ToUnregistered(FROM_HERE);
-    internal::LogOrCallback(std::move(callback), s);
+    internal::LogOrCallback(std::move(callback), std::move(s));
     return;
   }
 
   register_state_.ToRegistered(FROM_HERE);
-  internal::LogOrCallback(std::move(callback), s);
+  internal::LogOrCallback(std::move(callback), std::move(s));
 }
 
 template <typename ServiceTy, typename ServerTy>
 void ServiceServer<ServiceTy, ServerTy>::OnUnegisterServiceServerAsync(
     const UnregisterServiceServerRequest* request,
     UnregisterServiceServerResponse* response, StatusOnceCallback callback,
-    const Status& s) {
+    Status s) {
   if (!IsUnregistering()) {
     internal::LogOrCallback(std::move(callback),
                             register_state_.InvalidStateError());
@@ -206,14 +205,14 @@ void ServiceServer<ServiceTy, ServerTy>::OnUnegisterServiceServerAsync(
 
   if (!s.ok()) {
     register_state_.ToRegistered(FROM_HERE);
-    internal::LogOrCallback(std::move(callback), s);
+    internal::LogOrCallback(std::move(callback), std::move(s));
     return;
   }
 
   register_state_.ToUnregistered(FROM_HERE);
   server_.Shutdown();
 
-  internal::LogOrCallback(std::move(callback), s);
+  internal::LogOrCallback(std::move(callback), std::move(s));
 }
 
 }  // namespace felicia

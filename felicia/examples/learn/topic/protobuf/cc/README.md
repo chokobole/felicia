@@ -85,7 +85,7 @@ class ProtobufPublishingNode: public NodeLifecycle {
   // NodeLifecycle methods
   void OnInit() override;
   void OnDidCreate(const NodeInfo& node_info) override;
-  void OnError(const Status& status) override;
+  void OnError(Status status) override;
 
   ...
 };
@@ -94,7 +94,7 @@ class ProtobufPublishingNode: public NodeLifecycle {
 ```
 
 Inside `MasterProxy::RequestRegisterNode`, it tries to request grpc to register node.
-Before requiest, `OnInit()` will be called. If the given `node_info` doesn't have a name, then Server register node with a random unique name. If it succeeds to register the node, then `OnDidCreate(const NodeInfo&)` is called. While this process, if it happens an error, `OnError(const Status&)` will be called.
+Before requiest, `OnInit()` will be called. If the given `node_info` doesn't have a name, then Server register node with a random unique name. If it succeeds to register the node, then `OnDidCreate(const NodeInfo&)` is called. While this process, if it happens an error, `OnError(Status)` will be called.
 
 
 Then how is possibly publishing topics? If you want to publish a topic, you have to use `Publisher<T>` and it is very simple to use. Very first, you have to request to the master server that we hope to publish a topic.
@@ -120,13 +120,13 @@ void ProtobufPublishingNode::RequestPublish() {
 If request is successfully delivered to the server, then callback `OnRequestPublish` will be called. Here simply we call `Publish` api every 1 second. But you can publish a topic whenever you want to.
 
 ```c++
-void ProtobufPublishingNode::OnPublish(ChannelDef::Type type, const Status& s) {
+void ProtobufPublishingNode::OnPublish(ChannelDef::Type type, Status s) {
   std::cout << "ProtobufPublishingNode::OnPublish() from "
             << ChannelDef::Type_Name(type) << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
 }
 
-void ProtobufPublishingNode::OnRequestPublish(const Status& s) {
+void ProtobufPublishingNode::OnRequestPublish(Status s) {
   std::cout << "ProtobufPublishingNode::OnRequestPublish()" << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
   RepeatingPublish();
@@ -163,7 +163,7 @@ Same with above, if request is successfully delivered to the server, then callba
 will be called, too.
 
 ```c++
-void ProtobufPublishingNode::OnRequestUnpublish(const Status& s) {
+void ProtobufPublishingNode::OnRequestUnpublish(Status s) {
   std::cout << "ProtobufPublishingNode::OnRequestUnpublish()" << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
 }
@@ -220,7 +220,7 @@ struct Settings {
 To `Unsubscribe`, it's also very similar.
 
 ```c++
-void ProtobufSubscribingNode::OnRequestUnsubscribe(const Status& s) {
+void ProtobufSubscribingNode::OnRequestUnsubscribe(Status s) {
   std::cout << "ProtobufSubscribingNode::OnRequestUnsubscribe()" << std::endl;
   LOG_IF(ERROR, !s.ok()) << s;
 }

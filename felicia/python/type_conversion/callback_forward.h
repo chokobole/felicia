@@ -8,7 +8,7 @@ namespace felicia {
 template <typename Signature>
 class PyCallback;
 
-using PyStatusCallback = PyCallback<void(const Status&)>;
+using PyStatusCallback = PyCallback<void(Status)>;
 using PyClosure = PyCallback<void()>;
 
 }  // namespace felicia

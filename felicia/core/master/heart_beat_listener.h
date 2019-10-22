@@ -29,14 +29,14 @@ class HeartBeatListener {
  private:
   ~HeartBeatListener();
 
-  void DoCheckHeartBeat(const Status& s);
+  void DoCheckHeartBeat(Status s);
 
   void TryReceiveHeartBeat();
 
   // If |HeartBeat| is arrived right at the time, then it repeats to call
   // |DoCheckHeart| method. During a certain amount of duration, if heart
   // beat message can't be reached, then listener regard it as a dead one.
-  void OnAlive(const Status& s);
+  void OnAlive(Status s);
 
   void StopCheckHeartBeat();
 

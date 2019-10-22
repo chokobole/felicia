@@ -69,23 +69,23 @@ class Subscriber {
                              const communication::Settings& settings,
                              OnMessageCallback on_message_callback,
                              StatusCallback on_error_callback,
-                             StatusOnceCallback callback, const Status& s);
+                             StatusOnceCallback callback, Status s);
   void OnUnubscribeTopicAsync(const UnsubscribeTopicRequest* request,
                               UnsubscribeTopicResponse* response,
-                              StatusOnceCallback callback, const Status& s);
+                              StatusOnceCallback callback, Status s);
 
   void OnFindPublisher(const TopicInfo& topic_info);
   void ConnectToPublisher();
-  void OnConnectToPublisher(const Status& s);
+  void OnConnectToPublisher(Status s);
 #if defined(HAS_ROS)
-  void OnRosTopicHandshake(const Status& s);
+  void OnRosTopicHandshake(Status s);
 #endif  // defined(HAS_ROS)
 
   void StartMessageLoop();
   void StopMessageLoop(StatusOnceCallback callback = StatusOnceCallback());
 
   void ReceiveMessageLoop();
-  void OnReceiveMessage(const Status& s);
+  void OnReceiveMessage(Status s);
 
   void NotifyMessageLoop();
 
@@ -215,7 +215,7 @@ void Subscriber<MessageTy>::OnSubscribeTopicAsync(
     const SubscribeTopicRequest* request, SubscribeTopicResponse* response,
     int channel_types, const communication::Settings& settings,
     OnMessageCallback on_message_callback, StatusCallback on_error_callback,
-    StatusOnceCallback callback, const Status& s) {
+    StatusOnceCallback callback, Status s) {
   if (!IsRegistering()) {
     internal::LogOrCallback(std::move(callback),
                             register_state_.InvalidStateError());
@@ -224,7 +224,7 @@ void Subscriber<MessageTy>::OnSubscribeTopicAsync(
 
   if (!s.ok()) {
     register_state_.ToUnregistered(FROM_HERE);
-    internal::LogOrCallback(std::move(callback), s);
+    internal::LogOrCallback(std::move(callback), std::move(s));
     return;
   }
 
@@ -234,13 +234,13 @@ void Subscriber<MessageTy>::OnSubscribeTopicAsync(
   settings_ = settings;
 
   register_state_.ToRegistered(FROM_HERE);
-  internal::LogOrCallback(std::move(callback), s);
+  internal::LogOrCallback(std::move(callback), std::move(s));
 }
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnUnubscribeTopicAsync(
     const UnsubscribeTopicRequest* request, UnsubscribeTopicResponse* response,
-    StatusOnceCallback callback, const Status& s) {
+    StatusOnceCallback callback, Status s) {
   if (!IsUnregistering()) {
     internal::LogOrCallback(std::move(callback),
                             register_state_.InvalidStateError());
@@ -249,13 +249,13 @@ void Subscriber<MessageTy>::OnUnubscribeTopicAsync(
 
   if (!s.ok()) {
     register_state_.ToRegistered(FROM_HERE);
-    internal::LogOrCallback(std::move(callback), s);
+    internal::LogOrCallback(std::move(callback), std::move(s));
     return;
   }
 
   register_state_.ToUnregistered(FROM_HERE);
   StopMessageLoop();
-  internal::LogOrCallback(std::move(callback), s);
+  internal::LogOrCallback(std::move(callback), std::move(s));
 }
 
 template <typename MessageTy>
@@ -338,7 +338,7 @@ void Subscriber<MessageTy>::ConnectToPublisher() {
 }
 
 template <typename MessageTy>
-void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
+void Subscriber<MessageTy>::OnConnectToPublisher(Status s) {
   if (s.ok()) {
     if (settings_.is_dynamic_buffer) {
       channel_->SetDynamicReceiveBuffer(true);
@@ -367,7 +367,7 @@ void Subscriber<MessageTy>::OnConnectToPublisher(const Status& s) {
 
 #if defined(HAS_ROS)
 template <typename MessageTy>
-void Subscriber<MessageTy>::OnRosTopicHandshake(const Status& s) {
+void Subscriber<MessageTy>::OnRosTopicHandshake(Status s) {
   if (s.ok()) {
     channel_->SetDynamicReceiveBuffer(false);
     StartMessageLoop();
@@ -438,7 +438,7 @@ void Subscriber<MessageTy>::ReceiveMessageLoop() {
 }
 
 template <typename MessageTy>
-void Subscriber<MessageTy>::OnReceiveMessage(const Status& s) {
+void Subscriber<MessageTy>::OnReceiveMessage(Status s) {
   if (IsStopping() || IsStopped()) return;
 
   if (s.ok()) {

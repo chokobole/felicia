@@ -10,23 +10,22 @@ RosTopicResponse::RosTopicResponse(std::unique_ptr<Channel> channel)
 RosTopicResponse::~RosTopicResponse() = default;
 
 void RosTopicResponse::OnReceiveRequest(const RosTopicResponseHeader& header,
-                                        const Status& s) {
+                                        Status s) {
   channel_->SetDynamicReceiveBuffer(false);
-  Status new_status = s;
-  if (new_status.ok()) {
+  if (s.ok()) {
     RosTopicRequestHeader expected;
     expected.topic = header.topic;
     expected.md5sum = header.md5sum;
     expected.type = header.type;
-    new_status = receiver_.message().Validate(expected);
+    s = receiver_.message().Validate(expected);
   }
 
   MessageSender<RosTopicResponseHeader> sender(channel_.get());
   channel_->SetDynamicSendBuffer(true);
-  if (!new_status.ok()) {
-    LOG(ERROR) << new_status;
+  if (!s.ok()) {
+    LOG(ERROR) << s;
     RosTopicResponseHeader errored_header;
-    errored_header.error = new_status.error_message();
+    errored_header.error = std::move(std::move(s).error_message());
     sender.SendMessage(errored_header,
                        base::BindOnce(&RosTopicResponse::OnResponse,
                                       base::Unretained(this), true));
@@ -36,7 +35,7 @@ void RosTopicResponse::OnReceiveRequest(const RosTopicResponseHeader& header,
   }
 }
 
-void RosTopicResponse::OnResponse(bool sent_error, const Status& s) {
+void RosTopicResponse::OnResponse(bool sent_error, Status s) {
   if (s.ok()) {
     if (sent_error) return;
 

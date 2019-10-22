@@ -74,7 +74,7 @@ void MasterNotificationWatcher::WatchNewMasterNotification() {
                      base::Unretained(this)));
 }
 
-void MasterNotificationWatcher::OnNewMasterNotification(const Status& s) {
+void MasterNotificationWatcher::OnNewMasterNotification(Status s) {
   if (s.ok()) {
     const MasterNotification& master_notification = receiver_.message();
     if (master_notification.has_topic_info()) {
