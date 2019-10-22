@@ -13,7 +13,7 @@ class RosMsgSubscribingNode : public NodeLifecycle {
   explicit RosMsgSubscribingNode(const TopicCreateFlag& topic_create_flag);
 
   // NodeLifecycle methods
-  void OnDidCreate(const NodeInfo& node_info) override;
+  void OnDidCreate(NodeInfo node_info) override;
 
  private:
   void OnMessage(SimpleMessage&& message);

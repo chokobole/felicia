@@ -6,8 +6,8 @@ LidarSubscribingNode::LidarSubscribingNode(const LidarFlag& lidar_flag)
     : lidar_flag_(lidar_flag), topic_(lidar_flag_.topic_flag()->value()) {}
 
 // NodeLifecycle methods
-void LidarSubscribingNode::OnDidCreate(const NodeInfo& node_info) {
-  node_info_ = node_info;
+void LidarSubscribingNode::OnDidCreate(NodeInfo node_info) {
+  node_info_ = std::move(node_info);
   RequestSubscribe();
 }
 

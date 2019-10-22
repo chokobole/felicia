@@ -31,8 +31,8 @@ void CameraPublishingNode::OnInit() {
   }
 }
 
-void CameraPublishingNode::OnDidCreate(const NodeInfo& node_info) {
-  node_info_ = node_info;
+void CameraPublishingNode::OnDidCreate(NodeInfo node_info) {
+  node_info_ = std::move(node_info);
   RequestPublish();
 }
 

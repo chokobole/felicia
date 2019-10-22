@@ -15,8 +15,8 @@ void RosSrvSimpleService::Handle(const SimpleServiceRequest* request,
 RosSrvServerNode::RosSrvServerNode(const SimpleServiceFlag& simple_service_flag)
     : service_(simple_service_flag.service_flag()->value()) {}
 
-void RosSrvServerNode::OnDidCreate(const NodeInfo& node_info) {
-  node_info_ = node_info;
+void RosSrvServerNode::OnDidCreate(NodeInfo node_info) {
+  node_info_ = std::move(node_info);
   RequestRegister();
 }
 

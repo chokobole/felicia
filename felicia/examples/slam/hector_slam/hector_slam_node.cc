@@ -35,8 +35,8 @@ void HectorSlamNode::OnInit() {
       laser_min_dist, laser_max_dist);
 }
 
-void HectorSlamNode::OnDidCreate(const NodeInfo& node_info) {
-  node_info_ = node_info;
+void HectorSlamNode::OnDidCreate(NodeInfo node_info) {
+  node_info_ = std::move(node_info);
   RequestSubscribe();
   RequestPublish();
 }

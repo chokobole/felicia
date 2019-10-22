@@ -18,9 +18,9 @@ void TopicInfoWatcherNode::OnInit() {
                           base::Unretained(delegate_.get())));
 }
 
-void TopicInfoWatcherNode::OnDidCreate(const NodeInfo& node_info) {
+void TopicInfoWatcherNode::OnDidCreate(NodeInfo node_info) {
   DCHECK(node_info.watcher());
-  node_info_ = node_info;
+  node_info_ = std::move(node_info);
 }
 
 void TopicInfoWatcherNode::OnError(Status s) {

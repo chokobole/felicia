@@ -19,13 +19,14 @@ class PyNodeLifecycle : public NodeLifecycle {
     return NodeLifecycle::OnInit();
   }
 
-  void OnDidCreate(const NodeInfo& node_info) override {
-    PYBIND11_OVERLOAD_INT(void, NodeLifecycle, "on_did_create", node_info);
-    return NodeLifecycle::OnDidCreate(node_info);
+  void OnDidCreate(NodeInfo node_info) override {
+    PYBIND11_OVERLOAD_INT(void, NodeLifecycle, "on_did_create",
+                          std::move(node_info));
+    return NodeLifecycle::OnDidCreate(std::move(node_info));
   }
 
   void OnError(Status status) override {
-    PYBIND11_OVERLOAD_INT(void, NodeLifecycle, "on_error", status);
+    PYBIND11_OVERLOAD_INT(void, NodeLifecycle, "on_error", std::move(status));
     return NodeLifecycle::OnError(std::move(status));
   }
 };

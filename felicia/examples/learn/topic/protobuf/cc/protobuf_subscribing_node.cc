@@ -13,9 +13,9 @@ void ProtobufSubscribingNode::OnInit() {
   std::cout << "ProtobufSubscribingNode::OnInit()" << std::endl;
 }
 
-void ProtobufSubscribingNode::OnDidCreate(const NodeInfo& node_info) {
+void ProtobufSubscribingNode::OnDidCreate(NodeInfo node_info) {
   std::cout << "ProtobufSubscribingNode::OnDidCreate()" << std::endl;
-  node_info_ = node_info;
+  node_info_ = std::move(node_info);
   RequestSubscribe();
 
   // MasterProxy& master_proxy = MasterProxy::GetInstance();

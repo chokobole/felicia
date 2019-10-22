@@ -8,7 +8,7 @@ NodeLifecycle::~NodeLifecycle() = default;
 
 void NodeLifecycle::OnInit() {}
 
-void NodeLifecycle::OnDidCreate(const NodeInfo& node_info) {}
+void NodeLifecycle::OnDidCreate(NodeInfo node_info) {}
 
 void NodeLifecycle::OnError(Status status) { LOG(ERROR) << status; }
 

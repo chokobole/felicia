@@ -13,7 +13,7 @@ class CameraSubscribingNode : public NodeLifecycle {
   explicit CameraSubscribingNode(const CameraFlag& camera_flag);
 
   // NodeLifecycle methods
-  void OnDidCreate(const NodeInfo& node_info) override;
+  void OnDidCreate(NodeInfo node_info) override;
 
  private:
   void OnMessage(drivers::CameraFrameMessage&& message);

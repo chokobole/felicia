@@ -15,9 +15,9 @@ void ProtobufPublishingNode::OnInit() {
   std::cout << "ProtobufPublishingNode::OnInit()" << std::endl;
 }
 
-void ProtobufPublishingNode::OnDidCreate(const NodeInfo& node_info) {
+void ProtobufPublishingNode::OnDidCreate(NodeInfo node_info) {
   std::cout << "ProtobufPublishingNode::OnDidCreate()" << std::endl;
-  node_info_ = node_info;
+  node_info_ = std::move(node_info);
   RequestPublish();
 
   // MasterProxy& master_proxy = MasterProxy::GetInstance();

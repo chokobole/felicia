@@ -5,8 +5,8 @@ namespace felicia {
 CameraSubscribingNode::CameraSubscribingNode(const CameraFlag& camera_flag)
     : camera_flag_(camera_flag), topic_(camera_flag_.topic_flag()->value()) {}
 
-void CameraSubscribingNode::OnDidCreate(const NodeInfo& node_info) {
-  node_info_ = node_info;
+void CameraSubscribingNode::OnDidCreate(NodeInfo node_info) {
+  node_info_ = std::move(node_info);
   RequestSubscribe();
 }
 

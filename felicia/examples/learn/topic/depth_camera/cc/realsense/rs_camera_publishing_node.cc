@@ -24,8 +24,8 @@ void RsCameraPublishingNode::OnInit() {
   CHECK(s.ok()) << s;
 }
 
-void RsCameraPublishingNode::OnDidCreate(const NodeInfo& node_info) {
-  node_info_ = node_info;
+void RsCameraPublishingNode::OnDidCreate(NodeInfo node_info) {
+  node_info_ = std::move(node_info);
   RequestPublish();
 }
 

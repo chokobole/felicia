@@ -50,8 +50,8 @@ void DatasetLoaderNode::OnInit() {
   dataset_loader_.set_delegate(delegate_.get());
 }
 
-void DatasetLoaderNode::OnDidCreate(const NodeInfo& node_info) {
-  node_info_ = node_info;
+void DatasetLoaderNode::OnDidCreate(NodeInfo node_info) {
+  node_info_ = std::move(node_info);
   RequestPublish();
 }
 

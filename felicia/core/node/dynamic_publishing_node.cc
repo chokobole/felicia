@@ -7,8 +7,8 @@ DynamicPublishingNode::DynamicPublishingNode(std::unique_ptr<Delegate> delegate)
 
 DynamicPublishingNode::~DynamicPublishingNode() = default;
 
-void DynamicPublishingNode::OnDidCreate(const NodeInfo& node_info) {
-  node_info_ = node_info;
+void DynamicPublishingNode::OnDidCreate(NodeInfo node_info) {
+  node_info_ = std::move(node_info);
   delegate_->OnDidCreate(this);
 }
 

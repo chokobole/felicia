@@ -27,9 +27,9 @@ void GrpcServerNode::OnInit() {
   std::cout << "GrpcServerNode::OnInit()" << std::endl;
 }
 
-void GrpcServerNode::OnDidCreate(const NodeInfo& node_info) {
+void GrpcServerNode::OnDidCreate(NodeInfo node_info) {
   std::cout << "GrpcServerNode::OnDidCreate()" << std::endl;
-  node_info_ = node_info;
+  node_info_ = std::move(node_info);
   RequestRegister();
 }
 

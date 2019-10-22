@@ -10,8 +10,8 @@ RosMsgSubscribingNode::RosMsgSubscribingNode(
     : topic_create_flag_(topic_create_flag),
       topic_(topic_create_flag_.topic_flag()->value()) {}
 
-void RosMsgSubscribingNode::OnDidCreate(const NodeInfo& node_info) {
-  node_info_ = node_info;
+void RosMsgSubscribingNode::OnDidCreate(NodeInfo node_info) {
+  node_info_ = std::move(node_info);
   RequestSubscribe();
 }
 

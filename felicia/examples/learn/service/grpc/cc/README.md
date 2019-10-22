@@ -80,7 +80,7 @@ class GrpcServerNode: public NodeLifecycle {
 
   // NodeLifecycle methods
   void OnInit() override;
-  void OnDidCreate(const NodeInfo& node_info) override;
+  void OnDidCreate(NodeInfo node_info) override;
   void OnError(Status status) override;
 
   ...
@@ -90,7 +90,7 @@ class GrpcServerNode: public NodeLifecycle {
 ```
 
 Inside `MasterProxy::RequestRegisterNode`, it tries to request grpc to register node.
-Before requiest, `OnInit()` will be called. If the given `node_info` doesn't have a name, then Server register node with a random unique name. If it succeeds to register the node, then `OnDidCreate(const NodeInfo&)` is called. While this process, if it happens an error, `OnError(Status)` will be called.
+Before requiest, `OnInit()` will be called. If the given `node_info` doesn't have a name, then Server register node with a random unique name. If it succeeds to register the node, then `OnDidCreate(NodeInfo)` is called. While this process, if it happens an error, `OnError(Status)` will be called.
 
 
 Then how is possibly serve services? If you want to serve a service, you have to use `ServiceServer<T>` and it is very simple to use. Very first, you have to request to the master server that we hope to serve a service.

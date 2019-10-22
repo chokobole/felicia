@@ -14,7 +14,7 @@ class RosSrvClientNode : public NodeLifecycle {
   explicit RosSrvClientNode(const SimpleServiceFlag& simple_service_flag);
 
   // NodeLifecycle methods
-  void OnDidCreate(const NodeInfo& node_info) override;
+  void OnDidCreate(NodeInfo node_info) override;
 
  private:
   void OnConnect(ServiceInfo::Status s);

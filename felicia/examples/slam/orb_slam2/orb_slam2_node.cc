@@ -54,8 +54,8 @@ void OrbSlam2Node::OnInit() {
                                                    sensor_type, false);
 }
 
-void OrbSlam2Node::OnDidCreate(const NodeInfo& node_info) {
-  node_info_ = node_info;
+void OrbSlam2Node::OnDidCreate(NodeInfo node_info) {
+  node_info_ = std::move(node_info);
   RequestSubscribe();
   RequestPublish();
 }

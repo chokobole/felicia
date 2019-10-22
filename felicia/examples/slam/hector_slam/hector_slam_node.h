@@ -45,7 +45,7 @@ class HectorSlamNode : public NodeLifecycle, public HectorSlam::Client {
 
   // NodeLifecycle methods
   void OnInit() override;
-  void OnDidCreate(const NodeInfo& node_info) override;
+  void OnDidCreate(NodeInfo node_info) override;
 
   // HectorSlam::Client methods
   void OnPoseUpdated(const Posef& pose, base::TimeDelta timestamp) override;

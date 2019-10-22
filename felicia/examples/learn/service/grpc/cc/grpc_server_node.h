@@ -28,7 +28,7 @@ class GrpcServerNode : public NodeLifecycle {
 
   // NodeLifecycle methods
   void OnInit() override;
-  void OnDidCreate(const NodeInfo& node_info) override;
+  void OnDidCreate(NodeInfo node_info) override;
   void OnError(Status s) override;
 
  private:

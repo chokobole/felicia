@@ -18,8 +18,8 @@ DynamicSubscribingNode::DynamicSubscribingNode(
 
 DynamicSubscribingNode::~DynamicSubscribingNode() = default;
 
-void DynamicSubscribingNode::OnDidCreate(const NodeInfo& node_info) {
-  node_info_ = node_info;
+void DynamicSubscribingNode::OnDidCreate(NodeInfo node_info) {
+  node_info_ = std::move(node_info);
   if (one_topic_delegate_) {
     one_topic_delegate_->OnDidCreate(this);
   } else {

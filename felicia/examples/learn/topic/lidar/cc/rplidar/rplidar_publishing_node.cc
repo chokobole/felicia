@@ -24,8 +24,8 @@ void RPlidarPublishingNode::OnInit() {
   CHECK(s.ok()) << s;
 }
 
-void RPlidarPublishingNode::OnDidCreate(const NodeInfo& node_info) {
-  node_info_ = node_info;
+void RPlidarPublishingNode::OnDidCreate(NodeInfo node_info) {
+  node_info_ = std::move(node_info);
   RequestPublish();
 }
 

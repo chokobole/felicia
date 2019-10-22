@@ -66,10 +66,9 @@ void PyMasterProxy::OnRegisterNodeAsync(py::object object,
     return;
   }
 
-  const NodeInfo& node_info = response->node_info();
-
+  std::unique_ptr<NodeInfo> node_info(response->release_node_info());
   NodeLifecycle* node = object.cast<NodeLifecycle*>();
-  node->OnDidCreate(node_info);
+  node->OnDidCreate(std::move(*node_info));
 }
 
 void AddMasterProxy(py::module& m) {
