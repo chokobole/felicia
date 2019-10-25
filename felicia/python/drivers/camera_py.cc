@@ -78,40 +78,42 @@ void AddCamera(py::module& m) {
       .def("set_gamma", &CameraSettings::set_gamma, py::arg("gamma"))
       .def("gamma", &CameraSettings::gamma);
 
-  py::class_<CameraInterface, PyCameraInterface>(m, "CameraInterface")
+  py::class_<CameraInterface>(m, "CameraInterface")
       .def("init", &CameraInterface::Init,
            py::call_guard<py::gil_scoped_release>())
-      .def("start",
-           [](CameraInterface& self, const CameraFormat& camera_format,
-              py::function on_camera_frame_callback,
-              py::function on_error_callback) {
-             return self.Start(
-                 camera_format,
-                 base::BindRepeating(&PyCameraFrameCallback::Invoke,
-                                     base::Owned(new PyCameraFrameCallback(
-                                         on_camera_frame_callback))),
-                 base::BindRepeating(
-                     &PyStatusCallback::Invoke,
-                     base::Owned(new PyStatusCallback(on_error_callback))));
-           },
-           py::arg("camera_format"), py::arg("on_camera_frame_callback"),
-           py::arg("on_error_callback"),
-           py::call_guard<py::gil_scoped_release>())
+      .def(
+          "start",
+          [](CameraInterface& self, const CameraFormat& camera_format,
+             py::function on_camera_frame_callback,
+             py::function on_error_callback) {
+            return self.Start(
+                camera_format,
+                base::BindRepeating(&PyCameraFrameCallback::Invoke,
+                                    base::Owned(new PyCameraFrameCallback(
+                                        on_camera_frame_callback))),
+                base::BindRepeating(
+                    &PyStatusCallback::Invoke,
+                    base::Owned(new PyStatusCallback(on_error_callback))));
+          },
+          py::arg("camera_format"), py::arg("on_camera_frame_callback"),
+          py::arg("on_error_callback"),
+          py::call_guard<py::gil_scoped_release>())
       .def("stop", &CameraInterface::Stop,
            py::call_guard<py::gil_scoped_release>())
       .def("set_camera_settings", &CameraInterface::SetCameraSettings,
            py::arg("camera_settings"))
-      .def("get_camera_settings_info",
-           [](CameraInterface& self, py::object object) {
-             CameraSettingsInfoMessage message;
-             Status s = self.GetCameraSettingsInfo(&message);
+      .def(
+          "get_camera_settings_info",
+          [](CameraInterface& self, py::object object) {
+            CameraSettingsInfoMessage message;
+            Status s = self.GetCameraSettingsInfo(&message);
 
-             std::string text;
-             message.SerializeToString(&text);
-             object.attr("ParseFromString")(py::bytes(text));
-             return s;
-           },
-           py::arg("object"))
+            std::string text;
+            message.SerializeToString(&text);
+            object.attr("ParseFromString")(py::bytes(text));
+            return s;
+          },
+          py::arg("object"))
       .def("is_initialized", &CameraInterface::IsInitialized)
       .def("is_started", &CameraInterface::IsStarted)
       .def("is_stopped", &CameraInterface::IsStopped)

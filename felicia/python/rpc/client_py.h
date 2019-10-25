@@ -6,6 +6,7 @@
 
 #include "felicia/core/rpc/client_interface.h"
 #include "felicia/python/type_conversion/protobuf.h"
+#include "felicia/python/type_conversion/util.h"
 
 namespace py = pybind11;
 
@@ -30,28 +31,16 @@ class PyClient : public PyClientInterface {
 
   void Connect(const IPEndPoint& ip_endpoint,
                std::function<void(Status)> callback) override {
-    PYBIND11_OVERLOAD_PURE(
-        void,              /* Return type */
-        PyClientInterface, /* Parent class */
-        Connect,     /* Name of function in C++ (must match Python name) */
-        ip_endpoint, /* Argument(s) */
-        callback);
+    PYBIND11_OVERLOAD_INT(void, PyClientInterface, "connect", ip_endpoint,
+                          callback);
+    FEL_CALL_PURE_FUNCTION(PyClientInterface, "Connect");
   }
 
-  Status Run() override {
-    PYBIND11_OVERLOAD_PURE(
-        Status,            /* Return type */
-        PyClientInterface, /* Parent class */
-        Run, /* Name of function in C++ (must match Python name) */
-    );
-  }
+  Status Run() override { return Status::OK(); }
 
   Status Shutdown() override {
-    PYBIND11_OVERLOAD_PURE(
-        Status,            /* Return type */
-        PyClientInterface, /* Parent class */
-        Shutdown, /* Name of function in C++ (must match Python name) */
-    );
+    PYBIND11_OVERLOAD_INT(Status, PyClientInterface, "shutdown");
+    FEL_CALL_PURE_FUNCTION(PyClientInterface, "Shutdown");
   }
 };
 

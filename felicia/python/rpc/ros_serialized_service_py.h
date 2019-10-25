@@ -7,6 +7,7 @@
 #include "pybind11/pybind11.h"
 
 #include "felicia/core/rpc/ros_serialized_service_interface.h"
+#include "felicia/python/type_conversion/util.h"
 
 namespace py = pybind11;
 
@@ -30,12 +31,9 @@ class PyRosSerializedService : public PyRosSerializedServiceInterface {
 
   void Handle(const py::object request, py::object response,
               std::function<void(Status)> callback) override {
-    PYBIND11_OVERLOAD_PURE(
-        void,                            /* Return type */
-        PyRosSerializedServiceInterface, /* Parent class */
-        Handle,  /* Name of function in C++ (must match Python name) */
-        request, /* Argument(s) */
-        response, callback);
+    PYBIND11_OVERLOAD_INT(void, PyRosSerializedServiceInterface, "handle",
+                          request, response, callback);
+    FEL_CALL_PURE_FUNCTION(PyRosSerializedServiceInterface, "Handle");
   }
 
  private:

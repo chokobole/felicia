@@ -5,7 +5,7 @@ from felicia.examples.learn.service.ros_srv._SimpleService import SimpleService
 
 
 class RosSrvSimpleService(fel.rpc.RosService):
-    def Handle(self, request, response, callback):
+    def handle(self, request, response, callback):
         a = request.a
         b = request.b
 

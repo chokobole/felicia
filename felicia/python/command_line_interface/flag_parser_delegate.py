@@ -27,9 +27,6 @@ class FlagParserDelegate(cli._FlagParserDelegate):
             if self._is_flag_type(v):
                 self._flags.append(v)
 
-    def Parse(self, flag_parser):
-        return self.parse(flag_parser)
-
     def parse_optional_flags(self, flag_parser):
         self._collect_flags()
         for flag in self._flags:
@@ -37,25 +34,9 @@ class FlagParserDelegate(cli._FlagParserDelegate):
                 return True
         return False
 
-    def Validate(self):
-        self._collect_flags()
-        return self.validate()
-
-    def CollectUsages(self):
-        return self.collect_usages()
-
     def collect_usages(self):
         self._collect_flags()
         return ['[--help]'] + list(map(lambda x: x.usage, self._flags))
-
-    def Description(self):
-        return self.description()
-
-    def description(self):
-        return ""
-
-    def CollectNamedHelps(self):
-        return self.collect_named_helps()
 
     def collect_named_helps(self):
         self._collect_flags()

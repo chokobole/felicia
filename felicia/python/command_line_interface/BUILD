@@ -14,6 +14,7 @@ fel_cc_library(
     ],
     deps = [
         "//felicia/core/util:command_line_interface",
+        "//felicia/python/type_conversion",
         "@pybind11",
     ],
 )

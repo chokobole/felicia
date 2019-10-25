@@ -4,6 +4,7 @@
 #include "pybind11/pybind11.h"
 
 #include "felicia/core/rpc/server_interface.h"
+#include "felicia/python/type_conversion/util.h"
 
 namespace py = pybind11;
 
@@ -15,35 +16,21 @@ class PyServer : public ServerInterface {
   using ServerInterface::ServerInterface;
 
   Status Start() override {
-    PYBIND11_OVERLOAD_PURE(
-        Status,          /* Return type */
-        ServerInterface, /* Parent class */
-        Start,           /* Name of function in C++ (must match Python name) */
-    );
+    PYBIND11_OVERLOAD_INT(Status, ServerInterface, "start");
+    FEL_CALL_PURE_FUNCTION(ServerInterface, "Start");
   }
 
-  Status Run() override {
-    PYBIND11_OVERLOAD_PURE(
-        Status,          /* Return type */
-        ServerInterface, /* Parent class */
-        Run,             /* Name of function in C++ (must match Python name) */
-    );
-  }
+  Status Run() override { return Status::OK(); }
 
   Status Shutdown() override {
-    PYBIND11_OVERLOAD_PURE(
-        Status,          /* Return type */
-        ServerInterface, /* Parent class */
-        Shutdown,        /* Name of function in C++ (must match Python name) */
-    );
+    PYBIND11_OVERLOAD_INT(Status, ServerInterface, "shutdown");
+    FEL_CALL_PURE_FUNCTION(ServerInterface, "Shutdown");
   }
 
   std::string GetServiceTypeName() const override {
-    PYBIND11_OVERLOAD_PURE(std::string,        /* Return type */
-                           ServerInterface,    /* Parent class */
-                           GetServiceTypeName, /* Name of function in C++ (must
-                                                  match Python name) */
-    );
+    PYBIND11_OVERLOAD_INT(std::string, ServerInterface,
+                          "get_service_type_name");
+    FEL_CALL_PURE_FUNCTION(ServerInterface, "GetServiceTypeName");
   }
 };
 

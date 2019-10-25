@@ -6,6 +6,7 @@
 
 #include "felicia/core/util/command_line_interface/flag.h"
 #include "felicia/core/util/command_line_interface/flag_parser.h"
+#include "felicia/python/type_conversion/util.h"
 
 namespace py = pybind11;
 
@@ -16,44 +17,30 @@ class PyFlagParserDelegate : public FlagParser::Delegate {
   using FlagParser::Delegate::Delegate;
 
   bool Parse(FlagParser& parser) override {
-    PYBIND11_OVERLOAD_PURE(
-        bool,                 /* Return type */
-        FlagParser::Delegate, /* Parent class */
-        Parse, /* Name of function in C++ (must match Python name) */
-        parser /* Argument(s) */
-    );
+    PYBIND11_OVERLOAD_INT(bool, FlagParser::Delegate, "parse", parser);
+    FEL_CALL_PURE_FUNCTION(FlagParser::Delegate, "Parse");
   }
 
   bool Validate() const override {
-    PYBIND11_OVERLOAD(
-        bool,                 /* Return type */
-        FlagParser::Delegate, /* Parent class */
-        Validate, /* Name of function in C++ (must match Python name) */
-    );
+    PYBIND11_OVERLOAD_INT(bool, FlagParser::Delegate, "validate");
+    return FlagParser::Delegate::Validate();
   }
 
   std::vector<std::string> CollectUsages() const override {
-    PYBIND11_OVERLOAD(
-        std::vector<std::string>, /* Return type */
-        FlagParser::Delegate,     /* Parent class */
-        CollectUsages, /* Name of function in C++ (must match Python name) */
-    );
+    PYBIND11_OVERLOAD_INT(std::vector<std::string>, FlagParser::Delegate,
+                          "collect_usages");
+    return FlagParser::Delegate::CollectUsages();
   }
 
   std::string Description() const override {
-    PYBIND11_OVERLOAD(
-        std::string,          /* Return type */
-        FlagParser::Delegate, /* Parent class */
-        Description, /* Name of function in C++ (must match Python name) */
-    );
+    PYBIND11_OVERLOAD_INT(std::string, FlagParser::Delegate, "description");
+    return FlagParser::Delegate::Description();
   }
 
   std::vector<NamedHelpType> CollectNamedHelps() const override {
-    PYBIND11_OVERLOAD(std::vector<NamedHelpType>, /* Return type */
-                      FlagParser::Delegate,       /* Parent class */
-                      CollectNamedHelps, /* Name of function in C++ (must
-                                            match Python name) */
-    );
+    PYBIND11_OVERLOAD_INT(std::vector<NamedHelpType>, FlagParser::Delegate,
+                          "collect_named_helps");
+    return FlagParser::Delegate::CollectNamedHelps();
   }
 };
 

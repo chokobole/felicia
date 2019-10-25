@@ -1,3 +1,4 @@
+load("//bazel:felicia.bzl", "if_not_windows")
 load("//bazel:felicia_cc.bzl", "fel_cc_library")
 
 package(default_visibility = ["//felicia:internal"])
@@ -22,7 +23,7 @@ fel_cc_library(
         "service_client_py.h",
         "service_server_py.h",
     ],
-    copts = ["-fvisibility=hidden"],
+    copts = if_not_windows(["-fvisibility=hidden"]),
     deps = [
         "//felicia/core/communication",
         "//felicia/python/message",

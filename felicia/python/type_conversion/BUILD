@@ -8,6 +8,7 @@ fel_cc_library(
         "callback.h",
         "callback_forward.h",
         "protobuf.h",
+        "util.h",
     ],
     deps = [
         "//felicia/core/lib",

@@ -15,25 +15,13 @@ class Server(felicia_py.rpc._Server):
     def init(self, address):
         self.server.add_insecure_port(address)
 
-    def Start(self):
-        self.start()
-        return felicia_py.Status.OK()
-
     def start(self):
         self.server.start()
-
-    def Run(self):
         return felicia_py.Status.OK()
 
-    def Shutdown(self):
-        self.stop()
-        return felicia_py.Status.OK()
-
-    def stop(self, grace=None):
+    def shutdown(self):
         self.server.stop(grace)
-
-    def GetServiceTypeName(self):
-        return self.get_service_type_name()
+        return felicia_py.Status.OK()
 
     def get_service_type_name(self):
         raise NotImplementedError('service_type not implemented.')

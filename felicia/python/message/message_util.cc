@@ -7,7 +7,6 @@ namespace felicia {
 Status Serialize(const py::object& message, TopicInfo::ImplType impl_type,
                  std::string* text) {
   try {
-    py::handle hanle;
     py::object object;
     switch (impl_type) {
       case TopicInfo::PROTOBUF: {
