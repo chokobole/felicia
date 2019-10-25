@@ -1,3 +1,5 @@
+load("@local_config_python//:py.bzl", "PYTHON_BIN")
+load("@env//:env.bzl", "ROS_DISTRO")
 load("//bazel:felicia.bzl", "if_has_ros")
 
 def _ros_cc_outs(srcs, gen_srv = False):
@@ -43,6 +45,7 @@ def _ros_msg_gen(ctx):
     srcs = ctx.files.srcs
     templates = ctx.files.templates
     package = ctx.attr.package
+    tool_path = ctx.expand_location("$(location //scripts:ros_msg_gen.py)", [ctx.attr._tool])
 
     src_dir = _ros_msg_src_dir(ctx)
     if len(src_dir) > 0:
@@ -89,10 +92,12 @@ def _ros_msg_gen(ctx):
                 inputs = srcs + deps + templates,
                 tools = [tool],
                 outputs = outs,
-                arguments = flags + import_flags,
-                executable = tool,
+                arguments = [tool_path] + flags + import_flags,
+                executable = PYTHON_BIN,
+                env = {
+                    "ROS_DISTRO": ROS_DISTRO,
+                },
                 mnemonic = "RosMsgGen",
-                use_default_shell_env = True,
             )
         else:
             ctx.actions.run_shell(
@@ -118,14 +123,14 @@ ros_msg_gen = rule(
             cfg = "host",
             allow_single_file = True,
             executable = True,
-            default = Label("//bazel:ros/ros_msg_gen.py"),
+            default = Label("//scripts:ros_msg_gen.py"),
         ),
         "templates": attr.label_list(
             cfg = "host",
             allow_files = [".h.template"],
             default = [
-                Label("//bazel:ros/msg.h.template"),
-                Label("//bazel:ros/srv.h.template"),
+                Label("//scripts:ros/msg.h.template"),
+                Label("//scripts:ros/srv.h.template"),
             ],
         ),
         "srcs": attr.label_list(

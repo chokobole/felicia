@@ -2,8 +2,10 @@ load(
     "//bazel:felicia_repository.bzl",
     "failed_to_get_cflags_and_libs",
     "is_linux",
+    "is_windows",
+    "is_x64",
     "pkg_config_cflags_and_libs",
-    "symlink_genrule_for_dir",
+    "symlink_dir",
 )
 load("//bazel:felicia_util.bzl", "red")
 
@@ -13,11 +15,11 @@ def _fail(msg):
     """Output failure message when auto configuration fails."""
     fail("%s %s\n" % (red("ROS Confiugation Error:"), msg))
 
-def get_ros_root(repository_ctx):
+def get_ros_distro(repository_ctx):
     ros_distro = repository_ctx.os.environ.get(_ROS_DISTRO)
     if ros_distro == None:
-        _fail("Failed to get ROS root.")
-    return "/opt/ros/%s" % ros_distro
+        _fail("Failed to get ROS_DISTRO.")
+    return ros_distro
 
 def _pkg_config_cflags_and_libs_or_die(repository_ctx, pkgs):
     result = pkg_config_cflags_and_libs(repository_ctx, pkgs)
@@ -25,9 +27,7 @@ def _pkg_config_cflags_and_libs_or_die(repository_ctx, pkgs):
         _fail(failed_to_get_cflags_and_libs(pkgs))
     return result
 
-def _ros_configure_impl(repository_ctx):
-    if not is_linux(repository_ctx):
-        _fail("Only implemented on linux.")
+def _ros_configure_impl_linux(repository_ctx):
     ros = _pkg_config_cflags_and_libs_or_die(repository_ctx, ["roscpp"])
     actionlib_msgs = _pkg_config_cflags_and_libs_or_die(repository_ctx, ["actionlib_msgs"])
     controller_manager_msgs = _pkg_config_cflags_and_libs_or_die(repository_ctx, ["controller_manager_msgs"])
@@ -49,11 +49,11 @@ def _ros_configure_impl(repository_ctx):
     trajectory_msgs = _pkg_config_cflags_and_libs_or_die(repository_ctx, ["trajectory_msgs"])
     visualization_msgs = _pkg_config_cflags_and_libs_or_die(repository_ctx, ["visualization_msgs"])
 
-    ros_include = get_ros_root(repository_ctx) + "/include"
-    ros_include_rule = symlink_genrule_for_dir(
+    ros_root = "/opt/ros/%s" % get_ros_distro(repository_ctx)
+    ros_include = ros_root + "/include"
+    ros_include_rule = symlink_dir(
         repository_ctx,
         ros_include,
-        "ros_include",
         "ros_include",
     )
 
@@ -61,7 +61,6 @@ def _ros_configure_impl(repository_ctx):
         "BUILD",
         Label("//third_party/ros:BUILD.tpl"),
         {
-            "%{ROS_INCLUDE_GENRULE}": ros_include_rule,
             "%{ROS_LIBS}": ",\n".join(ros.libs),
             "%{ACTIONLIB_MSGS_LIBS}": ",\n".join(actionlib_msgs.libs),
             "%{CONTROLLER_MANAGER_MSGS_LIBS}": ",\n".join(controller_manager_msgs.libs),
@@ -84,6 +83,34 @@ def _ros_configure_impl(repository_ctx):
             "%{VISUALIZATION_MSGS_LIBS}": ",\n".join(visualization_msgs.libs),
         },
     )
+
+def _ros_configure_impl_windows(repository_ctx):
+    ros_root = "C:\\opt\\ros\\%s" % get_ros_distro(repository_ctx)
+    rosdeps_root = "C:\\opt\\rosdeps"
+    if is_x64(repository_ctx):
+        ros_root += "\\x64"
+        rosdeps_root += "\\x64"
+    else:
+        ros_root += "\\x86"
+        rosdeps_root += "\\x86"
+    ros_include = ros_root + "/include"
+    symlink_dir(repository_ctx, ros_root + "\\include", "ros_include")
+    symlink_dir(repository_ctx, ros_root + "\\lib", "ros_lib")
+    symlink_dir(repository_ctx, ros_root + "\\bin", "ros_bin")
+
+    symlink_dir(repository_ctx, rosdeps_root + "\\include", "rosdeps_include")
+    symlink_dir(repository_ctx, rosdeps_root + "\\lib", "rosdeps_lib")
+    symlink_dir(repository_ctx, rosdeps_root + "\\bin", "rosdeps_bin")
+
+    repository_ctx.symlink(Label("//third_party/ros:BUILD_windows.bzl"), "BUILD")
+
+def _ros_configure_impl(repository_ctx):
+    if is_linux(repository_ctx):
+        _ros_configure_impl_linux(repository_ctx)
+    elif is_windows(repository_ctx):
+        _ros_configure_impl_windows(repository_ctx)
+    else:
+        _fail("Not supported platform.")
 
 ros_configure = repository_rule(
     implementation = _ros_configure_impl,

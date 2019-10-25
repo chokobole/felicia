@@ -2,7 +2,9 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "ros",
-    hdrs = [":ros_include"],
+    hdrs = glob([
+        "ros_include/**"
+    ]),
     includes = ["ros_include"],
     linkopts = [
         %{ROS_LIBS}
@@ -141,5 +143,3 @@ cc_library(
         %{VISUALIZATION_MSGS_LIBS}
     ]
 )
-
-%{ROS_INCLUDE_GENRULE}

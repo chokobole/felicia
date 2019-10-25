@@ -15,6 +15,8 @@ namespace rpc {
 
 class PyRosSerializedServiceInterface {
  public:
+  virtual ~PyRosSerializedServiceInterface() = default;
+
   virtual void Handle(const py::object request, py::object response,
                       std::function<void(Status)> callback) = 0;
 };
@@ -44,13 +46,12 @@ class PyRosSerializedServiceBridge : public RosSerializedServiceInterface {
  public:
   PyRosSerializedServiceBridge();
   explicit PyRosSerializedServiceBridge(py::object service);
+  ~PyRosSerializedServiceBridge() override;
 
   void Handle(const SerializedMessage* request, SerializedMessage* response,
               StatusOnceCallback callback) override;
 
- protected:
-  ~PyRosSerializedServiceBridge() override;
-
+ private:
   py::object service_;
   py::object request_type_;
   py::object response_type_;

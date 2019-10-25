@@ -94,6 +94,10 @@ def is_unix(repository_ctx):
     """Returns true if the host operating system is unix."""
     return not is_windows(repository_ctx)
 
+def is_x64(repository_ctx):
+    result = repository_ctx.execute(["uname", "-m"])
+    return result.stdout.strip() == "x86_64"
+
 def execute(
         repository_ctx,
         cmdline,
@@ -205,6 +209,11 @@ def symlink_genrule_for_dir(
         "\n".join(outs),
     )
     return genrule
+
+def symlink_dir(repository_ctx, src_dir, dest_dir):
+    files = repository_ctx.path(src_dir).readdir()
+    for src_file in files:
+        repository_ctx.symlink(src_file, dest_dir + "/" + src_file.basename)
 
 _http_archive_attrs = {
     "url_fmt": attr.string(mandatory = True),

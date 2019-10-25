@@ -1,5 +1,6 @@
 from collections import namedtuple
 from platform import system
+import sys
 
 
 def nametuple_with_defaults_none(name, fields):
@@ -19,3 +20,7 @@ def is_linux():
 
 def is_windows():
     return system() == 'Windows'
+
+
+def is_64bit():
+    return sys.maxsize > 2**32

@@ -1,6 +1,7 @@
 load(
     "//bazel:felicia_repository.bzl",
     "is_windows",
+    "is_x64",
     "symlink_genrule_for_dir",
 )
 load(
@@ -44,10 +45,9 @@ def _realsense_configure_impl(repository_ctx):
             "realsense_include",
             "realsense_include",
         )
-        result = repository_ctx.execute(["uname", "-m"])
         realsense_import_lib_name = "realsense2.lib"
         realsense_import_dll_name = "realsense2.dll"
-        if result.stdout.strip() == "x86_64":
+        if is_x64(repository_ctx):
             realsense_import_lib_src = path + "/lib/x64/" + realsense_import_lib_name
             realsense_import_dll_src = path + "/bin/x64/" + realsense_import_dll_name
         else:
