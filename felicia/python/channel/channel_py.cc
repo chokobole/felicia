@@ -46,8 +46,7 @@ void AddChannel(py::module& m) {
                       self.auth_callback = base::BindRepeating(
                           &PyAuthCallback::Invoke,
                           base::Owned(new PyAuthCallback(auth_callback)));
-                    },
-                    py::arg("auth_callback"));
+                    });
 #endif
 
   py::class_<channel::WSSettings>(channel, "WSSettings")
