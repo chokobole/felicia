@@ -19,6 +19,8 @@ class PyMasterProxy {
 
   static void Run();
 
+  static bool IsBoundToCurrentThread();
+
   static void RequestRegisterNode(py::function constructor,
                                   const NodeInfo& node_info, py::args args,
                                   py::kwargs kwargs);

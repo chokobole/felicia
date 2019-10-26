@@ -2,10 +2,10 @@ from concurrent import futures
 
 import grpc
 
-import felicia_py
+import felicia_py as fel
 
 
-class Server(felicia_py.rpc._Server):
+class Server(fel.rpc._Server):
     def __init__(self, max_workers):
         super().__init__()
         self.server = grpc.server(
@@ -17,11 +17,11 @@ class Server(felicia_py.rpc._Server):
 
     def start(self):
         self.server.start()
-        return felicia_py.Status.OK()
+        return fel.Status.OK()
 
     def shutdown(self):
-        self.server.stop(grace)
-        return felicia_py.Status.OK()
+        self.server.stop(True)
+        return fel.Status.OK()
 
     def get_service_type_name(self):
-        raise NotImplementedError('service_type not implemented.')
+        raise NotImplementedError('get_service_type_name not implemented.')

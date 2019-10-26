@@ -17,29 +17,30 @@ class PyFlagParserDelegate : public FlagParser::Delegate {
   using FlagParser::Delegate::Delegate;
 
   bool Parse(FlagParser& parser) override {
-    PYBIND11_OVERLOAD_INT(bool, FlagParser::Delegate, "parse", parser);
+    FEL_OVERLOAD_INT_WITHOUT_GIL(bool, FlagParser::Delegate, "parse", parser);
     FEL_CALL_PURE_FUNCTION(FlagParser::Delegate, "Parse");
   }
 
   bool Validate() const override {
-    PYBIND11_OVERLOAD_INT(bool, FlagParser::Delegate, "validate");
+    FEL_OVERLOAD_INT_WITHOUT_GIL(bool, FlagParser::Delegate, "validate");
     return FlagParser::Delegate::Validate();
   }
 
   std::vector<std::string> CollectUsages() const override {
-    PYBIND11_OVERLOAD_INT(std::vector<std::string>, FlagParser::Delegate,
-                          "collect_usages");
+    FEL_OVERLOAD_INT_WITHOUT_GIL(std::vector<std::string>, FlagParser::Delegate,
+                                 "collect_usages");
     return FlagParser::Delegate::CollectUsages();
   }
 
   std::string Description() const override {
-    PYBIND11_OVERLOAD_INT(std::string, FlagParser::Delegate, "description");
+    FEL_OVERLOAD_INT_WITHOUT_GIL(std::string, FlagParser::Delegate,
+                                 "description");
     return FlagParser::Delegate::Description();
   }
 
   std::vector<NamedHelpType> CollectNamedHelps() const override {
-    PYBIND11_OVERLOAD_INT(std::vector<NamedHelpType>, FlagParser::Delegate,
-                          "collect_named_helps");
+    FEL_OVERLOAD_INT_WITHOUT_GIL(std::vector<NamedHelpType>,
+                                 FlagParser::Delegate, "collect_named_helps");
     return FlagParser::Delegate::CollectNamedHelps();
   }
 };

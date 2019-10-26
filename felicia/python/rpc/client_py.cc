@@ -2,6 +2,7 @@
 
 #include "felicia/python/type_conversion/callback.h"
 #include "felicia/python/type_conversion/protobuf.h"
+#include "felicia/python/type_conversion/util.h"
 
 namespace felicia {
 namespace rpc {
@@ -21,6 +22,7 @@ void PyClientBridge::Connect(const IPEndPoint& ip_endpoint,
   internal::StatusOnceCallbackHolder* callback_holder =
       new internal::StatusOnceCallbackHolder(std::move(callback));
   auto py_callback = [callback_holder](Status s) {
+    py::gil_scoped_release release;
     callback_holder->Invoke(std::move(s));
   };
   py_client->Connect(ip_endpoint, py_callback);

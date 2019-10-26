@@ -270,7 +270,8 @@ void MasterProxy::OnRegisterNodeAsync(std::unique_ptr<NodeLifecycle> node,
 
   std::unique_ptr<NodeInfo> node_info(response->release_node_info());
 #if defined(OS_WIN) && NDEBUG
-  // FIXME: I don't know why but on windows std::move(*node_info) causes an error.
+  // FIXME: I don't know why but on windows std::move(*node_info) causes an
+  // error.
   node->OnDidCreate(*node_info);
 #else
   node->OnDidCreate(std::move(*node_info));

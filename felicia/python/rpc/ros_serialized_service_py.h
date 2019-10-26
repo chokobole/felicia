@@ -31,8 +31,8 @@ class PyRosSerializedService : public PyRosSerializedServiceInterface {
 
   void Handle(const py::object request, py::object response,
               std::function<void(Status)> callback) override {
-    PYBIND11_OVERLOAD_INT(void, PyRosSerializedServiceInterface, "handle",
-                          request, response, callback);
+    FEL_OVERLOAD_INT_WITH_GIL(void, PyRosSerializedServiceInterface, "handle",
+                              request, response, callback);
     FEL_CALL_PURE_FUNCTION(PyRosSerializedServiceInterface, "Handle");
   }
 

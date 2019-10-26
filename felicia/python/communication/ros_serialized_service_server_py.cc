@@ -19,6 +19,8 @@ void PyRosSerializedServiceServer::RequestRegister(const NodeInfo& node_info,
     callback = base::BindOnce(&PyStatusCallback::Invoke,
                               base::Owned(new PyStatusCallback(py_callback)));
   }
+
+  py::gil_scoped_release release;
   ServiceServer<EmptyService, rpc::PyRosSerializedServer>::RequestRegister(
       node_info, service, std::move(callback));
 }
@@ -31,6 +33,8 @@ void PyRosSerializedServiceServer::RequestUnregister(const NodeInfo& node_info,
     callback = base::BindOnce(&PyStatusCallback::Invoke,
                               base::Owned(new PyStatusCallback(py_callback)));
   }
+
+  py::gil_scoped_release release;
   ServiceServer<EmptyService, rpc::PyRosSerializedServer>::RequestUnregister(
       node_info, service, std::move(callback));
 }
@@ -47,31 +51,27 @@ void AddRosSerializedServiceServer(py::module& m) {
               const std::string& service) {
              self.RequestRegister(node_info, service, py::none());
            },
-           py::arg("node_info"), py::arg("service"),
-           py::call_guard<py::gil_scoped_release>())
+           py::arg("node_info"), py::arg("service"))
       .def("request_register",
            [](PyRosSerializedServiceServer& self, const NodeInfo& node_info,
               const std::string& service, py::function callback) {
              self.RequestRegister(node_info, service, callback);
            },
            py::arg("node_info"), py::arg("service"),
-           py::arg("callback").none(true),
-           py::call_guard<py::gil_scoped_release>())
+           py::arg("callback").none(true))
       .def("request_unregister",
            [](PyRosSerializedServiceServer& self, const NodeInfo& node_info,
               const std::string& service) {
              self.RequestUnregister(node_info, service, py::none());
            },
-           py::arg("node_info"), py::arg("service"),
-           py::call_guard<py::gil_scoped_release>())
+           py::arg("node_info"), py::arg("service"))
       .def("request_unregister",
            [](PyRosSerializedServiceServer& self, const NodeInfo& node_info,
               const std::string& service, py::function callback) {
              self.RequestUnregister(node_info, service, callback);
            },
            py::arg("node_info"), py::arg("service"),
-           py::arg("callback").none(true),
-           py::call_guard<py::gil_scoped_release>());
+           py::arg("callback").none(true));
 }
 
 }  // namespace felicia

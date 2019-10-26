@@ -18,6 +18,7 @@
 #include "felicia/python/node/node_lifecycle_py.h"
 #include "felicia/python/rpc/rpc_py.h"
 #include "felicia/python/type_conversion/protobuf.h"
+#include "felicia/python/type_conversion/util.h"
 
 namespace py = pybind11;
 
@@ -25,6 +26,7 @@ namespace felicia {
 
 void AddGlobalFunctions(py::module& m) {
   m.def("felicia_init", &FeliciaInit);
+  // m.def("is_gil_held", &IsGilHeld);
 
   m.attr("INFO") = ::logging::LOG_INFO;
   m.attr("WARNING") = ::logging::LOG_WARNING;

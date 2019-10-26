@@ -17,7 +17,7 @@ class PyMessageCallback {
         callback_(callback) {}
 
   void Invoke(SerializedMessage&& message) {
-    std::string text = std::move(std::move(message).serialized());
+    std::string text = std::move(message).serialized();
 
     py::gil_scoped_acquire acquire;
     py::object py_message = message_type_();
@@ -73,6 +73,8 @@ void PySerializedMessageSubscriber::RequestSubscribe(
     callback = base::BindOnce(&PyStatusCallback::Invoke,
                               base::Owned(new PyStatusCallback(py_callback)));
   }
+
+  py::gil_scoped_release release;
   SerializedMessageSubscriber::RequestSubscribe(
       node_info, topic, channel_types, settings, on_message_callback,
       on_message_error_callback, std::move(callback));
@@ -86,6 +88,8 @@ void PySerializedMessageSubscriber::RequestUnsubscribe(
     callback = base::BindOnce(&PyStatusCallback::Invoke,
                               base::Owned(new PyStatusCallback(py_callback)));
   }
+
+  py::gil_scoped_release release;
   SerializedMessageSubscriber::RequestUnsubscribe(node_info, topic,
                                                   std::move(callback));
 }
@@ -109,8 +113,7 @@ void AddSerializedMessageSubscriber(py::module& m) {
                                    on_message_callback, py::none(), py::none());
            },
            py::arg("node_info"), py::arg("topic"), py::arg("channel_types"),
-           py::arg("settings"), py::arg("on_message_callback"),
-           py::call_guard<py::gil_scoped_release>())
+           py::arg("settings"), py::arg("on_message_callback"))
       .def("request_subscribe",
            [](PySerializedMessageSubscriber& self, const NodeInfo& node_info,
               const std::string& topic, int channel_types,
@@ -123,8 +126,7 @@ void AddSerializedMessageSubscriber(py::module& m) {
            },
            py::arg("node_info"), py::arg("topic"), py::arg("channel_types"),
            py::arg("settings"), py::arg("on_message_callback"),
-           py::arg("on_message_error_callback").none(true),
-           py::call_guard<py::gil_scoped_release>())
+           py::arg("on_message_error_callback").none(true))
       .def("request_subscribe",
            [](PySerializedMessageSubscriber& self, const NodeInfo& node_info,
               const std::string& topic, int channel_types,
@@ -138,23 +140,20 @@ void AddSerializedMessageSubscriber(py::module& m) {
            py::arg("node_info"), py::arg("topic"), py::arg("channel_types"),
            py::arg("settings"), py::arg("on_message_callback"),
            py::arg("on_message_error_callback").none(true),
-           py::arg("callback").none(true),
-           py::call_guard<py::gil_scoped_release>())
+           py::arg("callback").none(true))
       .def("request_unsubscribe",
            [](PySerializedMessageSubscriber& self, const NodeInfo& node_info,
               const std::string& topic) {
              self.RequestUnsubscribe(node_info, topic, py::none());
            },
-           py::arg("node_info"), py::arg("topic"),
-           py::call_guard<py::gil_scoped_release>())
+           py::arg("node_info"), py::arg("topic"))
       .def("request_unsubscribe",
            [](PySerializedMessageSubscriber& self, const NodeInfo& node_info,
               const std::string& topic, py::function callback) {
              self.RequestUnsubscribe(node_info, topic, callback);
            },
            py::arg("node_info"), py::arg("topic"),
-           py::arg("callback").none(true),
-           py::call_guard<py::gil_scoped_release>());
+           py::arg("callback").none(true));
 }
 
 }  // namespace felicia

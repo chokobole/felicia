@@ -27,6 +27,8 @@ void PySerializedMessagePublisher::RequestPublish(
     callback = base::BindOnce(&PyStatusCallback::Invoke,
                               base::Owned(new PyStatusCallback(py_callback)));
   }
+
+  py::gil_scoped_release release;
   SerializedMessagePublisher::RequestPublish(node_info, topic, channel_types,
                                              settings, std::move(callback));
 }
@@ -39,6 +41,8 @@ void PySerializedMessagePublisher::RequestUnpublish(const NodeInfo& node_info,
     callback = base::BindOnce(&PyStatusCallback::Invoke,
                               base::Owned(new PyStatusCallback(py_callback)));
   }
+
+  py::gil_scoped_release release;
   SerializedMessagePublisher::RequestUnpublish(node_info, topic,
                                                std::move(callback));
 }
@@ -78,7 +82,7 @@ void AddSerializedMessagePublisher(py::module& m) {
                                  py::none());
            },
            py::arg("node_info"), py::arg("topic"), py::arg("channel_types"),
-           py::arg("settings"), py::call_guard<py::gil_scoped_release>())
+           py::arg("settings"))
       .def("request_publish",
            [](PySerializedMessagePublisher& self, const NodeInfo& node_info,
               const std::string& topic, int channel_types,
@@ -87,8 +91,7 @@ void AddSerializedMessagePublisher(py::module& m) {
                                  callback);
            },
            py::arg("node_info"), py::arg("topic"), py::arg("channel_types"),
-           py::arg("settings"), py::arg("callback").none(true),
-           py::call_guard<py::gil_scoped_release>())
+           py::arg("settings"), py::arg("callback").none(true))
       .def("publish",
            [](PySerializedMessagePublisher& self, py::object message) {
              self.PublishFromSerialized(message, py::none());
@@ -105,16 +108,14 @@ void AddSerializedMessagePublisher(py::module& m) {
               const std::string& topic) {
              self.RequestUnpublish(node_info, topic, py::none());
            },
-           py::arg("node_info"), py::arg("topic"),
-           py::call_guard<py::gil_scoped_release>())
+           py::arg("node_info"), py::arg("topic"))
       .def("request_unpublish",
            [](PySerializedMessagePublisher& self, const NodeInfo& node_info,
               const std::string& topic, py::function callback) {
              self.RequestUnpublish(node_info, topic, callback);
            },
            py::arg("node_info"), py::arg("topic"),
-           py::arg("callback").none(true),
-           py::call_guard<py::gil_scoped_release>());
+           py::arg("callback").none(true));
 }
 
 }  // namespace felicia

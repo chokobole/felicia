@@ -22,6 +22,7 @@ class PySerializedMessagePublisher : public SerializedMessagePublisher {
 
   void RequestUnpublish(const NodeInfo& node_info, const std::string& topic,
                         py::function py_callback = py::none());
+
   void PublishFromSerialized(py::object message,
                              py::function py_callback = py::none());
 };

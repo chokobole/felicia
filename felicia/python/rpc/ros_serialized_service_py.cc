@@ -48,11 +48,13 @@ void PyRosSerializedServiceBridge::Handle(const SerializedMessage* request,
       std::string text;
       s = Serialize(py_response, TopicInfo::ROS, &text);
       if (!s.ok()) {
+        py::gil_scoped_release release;
         callback_holder->Invoke(std::move(s));
         return;
       }
       response->set_serialized((std::move(text)));
     }
+    py::gil_scoped_release release;
     callback_holder->Invoke(std::move(s));
   };
   py_service->Handle(py_request, py_response, py_callback);

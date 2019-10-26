@@ -31,15 +31,15 @@ class PyClient : public PyClientInterface {
 
   void Connect(const IPEndPoint& ip_endpoint,
                std::function<void(Status)> callback) override {
-    PYBIND11_OVERLOAD_INT(void, PyClientInterface, "connect", ip_endpoint,
-                          callback);
+    FEL_OVERLOAD_INT_WITH_GIL(void, PyClientInterface, "connect", ip_endpoint,
+                              callback);
     FEL_CALL_PURE_FUNCTION(PyClientInterface, "Connect");
   }
 
   Status Run() override { return Status::OK(); }
 
   Status Shutdown() override {
-    PYBIND11_OVERLOAD_INT(Status, PyClientInterface, "shutdown");
+    FEL_OVERLOAD_INT_WITH_GIL(Status, PyClientInterface, "shutdown");
     FEL_CALL_PURE_FUNCTION(PyClientInterface, "Shutdown");
   }
 };

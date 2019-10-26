@@ -16,20 +16,20 @@ class PyServer : public ServerInterface {
   using ServerInterface::ServerInterface;
 
   Status Start() override {
-    PYBIND11_OVERLOAD_INT(Status, ServerInterface, "start");
+    FEL_OVERLOAD_INT_WITH_GIL(Status, ServerInterface, "start");
     FEL_CALL_PURE_FUNCTION(ServerInterface, "Start");
   }
 
   Status Run() override { return Status::OK(); }
 
   Status Shutdown() override {
-    PYBIND11_OVERLOAD_INT(Status, ServerInterface, "shutdown");
+    FEL_OVERLOAD_INT_WITH_GIL(Status, ServerInterface, "shutdown");
     FEL_CALL_PURE_FUNCTION(ServerInterface, "Shutdown");
   }
 
   std::string GetServiceTypeName() const override {
-    PYBIND11_OVERLOAD_INT(std::string, ServerInterface,
-                          "get_service_type_name");
+    FEL_OVERLOAD_INT_WITH_GIL(std::string, ServerInterface,
+                              "get_service_type_name");
     FEL_CALL_PURE_FUNCTION(ServerInterface, "GetServiceTypeName");
   }
 };

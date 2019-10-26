@@ -4,6 +4,9 @@ package(default_visibility = ["//felicia:internal"])
 
 fel_cc_library(
     name = "type_conversion",
+    srcs = [
+        "util.cc",
+    ],
     hdrs = [
         "callback.h",
         "callback_forward.h",

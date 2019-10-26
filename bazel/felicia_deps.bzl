@@ -134,7 +134,7 @@ def load_deps():
         name = "pybind11",
         build_file = "//third_party:pybind11.BUILD",
         remote = "https://github.com/pybind/pybind11.git",
-        tag = "v2.2.2",
+        tag = "v2.4.0",
     )
 
     new_git_repository(

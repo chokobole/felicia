@@ -147,7 +147,6 @@ void AddFlag(py::module& m) {
              return self.Parse(argc, tmp_argv, &delegate);
            },
            py::arg("argc"), py::arg("argv"), py::arg("delegate"),
-           py::call_guard<py::gil_scoped_release>(),
            "Parse by passing every each |argv| to |flag|.");
 }
 

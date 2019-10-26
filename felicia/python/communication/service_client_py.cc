@@ -27,6 +27,8 @@ void PyServiceClient::RequestRegister(const NodeInfo& node_info,
     callback = base::BindOnce(&PyStatusCallback::Invoke,
                               base::Owned(new PyStatusCallback(py_callback)));
   }
+
+  py::gil_scoped_release release;
   ServiceClient<rpc::PyClientBridge>::RequestRegister(
       node_info, service, on_connect_callback, std::move(callback));
 }
@@ -39,6 +41,8 @@ void PyServiceClient::RequestUnregister(const NodeInfo& node_info,
     callback = base::BindOnce(&PyStatusCallback::Invoke,
                               base::Owned(new PyStatusCallback(py_callback)));
   }
+
+  py::gil_scoped_release release;
   ServiceClient<rpc::PyClientBridge>::RequestUnregister(node_info, service,
                                                         std::move(callback));
 }
@@ -55,8 +59,7 @@ void AddServiceClient(py::module& m) {
               const std::string& service) {
              self.RequestRegister(node_info, service, py::none(), py::none());
            },
-           py::arg("node_info"), py::arg("service"),
-           py::call_guard<py::gil_scoped_release>())
+           py::arg("node_info"), py::arg("service"))
       .def("request_register",
            [](PyServiceClient& self, const NodeInfo& node_info,
               const std::string& service, py::function on_connect_callback) {
@@ -64,8 +67,7 @@ void AddServiceClient(py::module& m) {
                                   py::none());
            },
            py::arg("node_info"), py::arg("service"),
-           py::arg("on_connect_callback").none(true),
-           py::call_guard<py::gil_scoped_release>())
+           py::arg("on_connect_callback").none(true))
       .def("request_register",
            [](PyServiceClient& self, const NodeInfo& node_info,
               const std::string& service, py::function on_connect_callback,
@@ -75,23 +77,20 @@ void AddServiceClient(py::module& m) {
            },
            py::arg("node_info"), py::arg("service"),
            py::arg("on_connect_callback").none(true),
-           py::arg("callback").none(true),
-           py::call_guard<py::gil_scoped_release>())
+           py::arg("callback").none(true))
       .def("request_unregister",
            [](PyServiceClient& self, const NodeInfo& node_info,
               const std::string& service) {
              self.RequestUnregister(node_info, service, py::none());
            },
-           py::arg("node_info"), py::arg("service"),
-           py::call_guard<py::gil_scoped_release>())
+           py::arg("node_info"), py::arg("service"))
       .def("request_unregister",
            [](PyServiceClient& self, const NodeInfo& node_info,
               const std::string& service, py::function callback) {
              self.RequestUnregister(node_info, service, callback);
            },
            py::arg("node_info"), py::arg("service"),
-           py::arg("callback").none(true),
-           py::call_guard<py::gil_scoped_release>());
+           py::arg("callback").none(true));
 }
 
 }  // namespace felicia

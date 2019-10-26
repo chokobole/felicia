@@ -5,6 +5,7 @@
 
 #include "felicia/core/node/node_lifecycle.h"
 #include "felicia/core/protobuf/master_data.pb.h"
+#include "felicia/python/type_conversion/util.h"
 
 namespace py = pybind11;
 
@@ -15,18 +16,19 @@ class PyNodeLifecycle : public NodeLifecycle {
   using NodeLifecycle::NodeLifecycle;
 
   void OnInit() override {
-    PYBIND11_OVERLOAD_INT(void, NodeLifecycle, "on_init");
+    FEL_OVERLOAD_INT_WITHOUT_GIL(void, NodeLifecycle, "on_init");
     return NodeLifecycle::OnInit();
   }
 
   void OnDidCreate(NodeInfo node_info) override {
-    PYBIND11_OVERLOAD_INT(void, NodeLifecycle, "on_did_create",
-                          std::move(node_info));
+    FEL_OVERLOAD_INT_WITH_GIL(void, NodeLifecycle, "on_did_create",
+                              std::move(node_info));
     return NodeLifecycle::OnDidCreate(std::move(node_info));
   }
 
   void OnError(Status status) override {
-    PYBIND11_OVERLOAD_INT(void, NodeLifecycle, "on_error", std::move(status));
+    FEL_OVERLOAD_INT_WITH_GIL(void, NodeLifecycle, "on_error",
+                              std::move(status));
     return NodeLifecycle::OnError(std::move(status));
   }
 };
