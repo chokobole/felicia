@@ -5,6 +5,7 @@
 #include "felicia/core/lib/error/errors.h"
 #include "felicia/core/message/message_io_error.h"
 #include "felicia/python/message/message_util.h"
+#include "felicia/python/type_conversion/callback_holder.h"
 #include "felicia/python/type_conversion/protobuf.h"
 
 namespace felicia {
@@ -41,20 +42,20 @@ void PyRosSerializedServiceBridge::Handle(const SerializedMessage* request,
     std::move(callback).Run(s);
     return;
   }
-  internal::StatusOnceCallbackHolder* callback_holder =
-      new internal::StatusOnceCallbackHolder(std::move(callback));
+  PyOnceCallbackHolder<void(Status)>* callback_holder =
+      new PyOnceCallbackHolder<void(Status)>(std::move(callback));
   auto py_callback = [callback_holder, response, py_response](Status s) {
+    PyScopedOnceCallbackHolder<void(Status)> scoped_callback_holder(
+        callback_holder);
     if (s.ok()) {
       std::string text;
       s = Serialize(py_response, TopicInfo::ROS, &text);
       if (!s.ok()) {
-        py::gil_scoped_release release;
         callback_holder->Invoke(std::move(s));
         return;
       }
       response->set_serialized((std::move(text)));
     }
-    py::gil_scoped_release release;
     callback_holder->Invoke(std::move(s));
   };
   py_service->Handle(py_request, py_response, py_callback);

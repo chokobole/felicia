@@ -10,6 +10,7 @@ fel_cc_library(
     hdrs = [
         "callback.h",
         "callback_forward.h",
+        "callback_holder.h",
         "protobuf.h",
         "util.h",
     ],

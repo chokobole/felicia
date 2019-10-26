@@ -4,8 +4,6 @@
 #include "pybind11/functional.h"
 #include "pybind11/pybind11.h"
 
-#include "third_party/chromium/base/strings/string_util.h"
-
 #include "felicia/python/type_conversion/callback_forward.h"
 
 namespace py = pybind11;

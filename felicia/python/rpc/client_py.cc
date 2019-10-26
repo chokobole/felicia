@@ -1,6 +1,7 @@
 #include "felicia/python/rpc/client_py.h"
 
 #include "felicia/python/type_conversion/callback.h"
+#include "felicia/python/type_conversion/callback_holder.h"
 #include "felicia/python/type_conversion/protobuf.h"
 #include "felicia/python/type_conversion/util.h"
 
@@ -19,12 +20,7 @@ void PyClientBridge::set_service_info(const ServiceInfo& service_info) {
 void PyClientBridge::Connect(const IPEndPoint& ip_endpoint,
                              StatusOnceCallback callback) {
   PyClient* py_client = client_.cast<PyClient*>();
-  internal::StatusOnceCallbackHolder* callback_holder =
-      new internal::StatusOnceCallbackHolder(std::move(callback));
-  auto py_callback = [callback_holder](Status s) {
-    py::gil_scoped_release release;
-    callback_holder->Invoke(std::move(s));
-  };
+  auto py_callback = MakeLambdaFunc(std::move(callback));
   py_client->Connect(ip_endpoint, py_callback);
 }
 

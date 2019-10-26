@@ -46,6 +46,7 @@ fel_cc_library(
         "unit/ui/color.cc",
     ],
     hdrs = [
+        "base/callback_holder.h",
         "base/choices.h",
         "base/export.h",
         "base/range.h",
