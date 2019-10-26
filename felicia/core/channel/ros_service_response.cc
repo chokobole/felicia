@@ -23,7 +23,7 @@ void RosServiceResponse::OnReceiveRequest(
   if (!s.ok()) {
     LOG(ERROR) << s;
     RosServiceResponseHeader errored_header;
-    errored_header.error = std::move(std::move(s).error_message());
+    errored_header.error = std::move(s).error_message();
     sender.SendMessage(errored_header,
                        base::BindOnce(&RosServiceResponse::OnResponse,
                                       base::Unretained(this), true));

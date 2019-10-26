@@ -57,7 +57,7 @@ void MasterNotificationWatcher::DoAccept() {
 void MasterNotificationWatcher::OnAccept(
     StatusOr<std::unique_ptr<TCPChannel>> status_or) {
   if (status_or.ok()) {
-    channel_ = std::move(status_or.ValueOrDie());
+    channel_ = std::move(status_or).ValueOrDie();
     receiver_.set_channel(channel_.get());
     WatchNewMasterNotification();
   } else {

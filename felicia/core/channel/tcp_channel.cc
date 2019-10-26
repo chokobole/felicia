@@ -87,7 +87,7 @@ void TCPChannel::DoAcceptLoop() {
 void TCPChannel::OnAccept(StatusOr<std::unique_ptr<net::TCPSocket>> status_or) {
   if (status_or.ok()) {
     std::unique_ptr<TCPClientSocket> client_socket =
-        std::make_unique<TCPClientSocket>(std::move(status_or.ValueOrDie()));
+        std::make_unique<TCPClientSocket>(std::move(status_or).ValueOrDie());
 #if !defined(FEL_NO_SSL)
     if (settings_.use_ssl) {
       DCHECK(!ssl_server_socket_);

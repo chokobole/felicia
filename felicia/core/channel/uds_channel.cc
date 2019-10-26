@@ -64,7 +64,7 @@ void UDSChannel::OnAccept(
   if (status_or.ok()) {
     auto channel = base::WrapUnique(new UDSChannel());
     channel->channel_impl_ = std::make_unique<UnixDomainClientSocket>(
-        std::move(status_or.ValueOrDie()));
+        std::move(status_or).ValueOrDie());
     std::move(callback).Run(std::move(channel));
   } else {
     std::move(callback).Run(status_or.status());

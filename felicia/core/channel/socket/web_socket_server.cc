@@ -61,7 +61,7 @@ void WebSocketServer::ReadAsync(scoped_refptr<net::GrowableIOBuffer> buffer,
 void WebSocketServer::OnAccept(
     StatusOr<std::unique_ptr<net::TCPSocket>> status_or) {
   if (status_or.ok()) {
-    handshake_handler_.Handle(std::move(status_or.ValueOrDie()));
+    handshake_handler_.Handle(std::move(status_or).ValueOrDie());
   } else {
     accept_callback_.Run(status_or.status());
     DoAcceptOnce();
@@ -72,7 +72,7 @@ void WebSocketServer::OnHandshaked(
     StatusOr<std::unique_ptr<net::TCPSocket>> status_or) {
   if (status_or.ok()) {
     auto connection =
-        std::make_unique<TCPSocketAdapter>(std::move(status_or.ValueOrDie()));
+        std::make_unique<TCPSocketAdapter>(std::move(status_or).ValueOrDie());
     std::unique_ptr<WebSocketStream> stream =
         std::make_unique<WebSocketBasicStream>(std::move(connection));
     auto& extensions = handshake_handler_.accepted_extensions();

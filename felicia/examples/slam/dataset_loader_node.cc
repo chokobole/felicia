@@ -164,7 +164,7 @@ void DatasetLoaderNode::LoadData(slam::SensorData::DataType data_type) {
     return;
   }
   double delay = 1;
-  slam::SensorData sensor_data = std::move(status_or.ValueOrDie());
+  slam::SensorData sensor_data = std::move(status_or).ValueOrDie();
   if ((data_type == slam::SensorData::DATA_TYPE_LEFT_CAMERA ||
        data_type == slam::SensorData::DATA_TYPE_LEFT_CAMERA_GRAY_SCALE) &&
       !left_color_topic_.empty()) {

@@ -448,13 +448,13 @@ void Publisher<MessageTy>::OnAccept(
         if (IsUsingRosProtocol(topic_info_.topic())) {
           // It deletes itself when handshake is completed.
           RosTopicResponse* topic_response =
-              new RosTopicResponse(std::move(status_or.ValueOrDie()));
+              new RosTopicResponse(std::move(status_or).ValueOrDie());
           topic_response->ReceiveRequest(
               this, base::BindOnce(&Publisher<MessageTy>::OnRosTopicHandshake,
                                    base::Unretained(this)));
         } else {
 #endif  // defined(HAS_ROS)
-          tcp_channel->AddClientChannel(std::move(status_or.ValueOrDie()));
+          tcp_channel->AddClientChannel(std::move(status_or).ValueOrDie());
 #if defined(HAS_ROS)
         }
 #endif  // defined(HAS_ROS)

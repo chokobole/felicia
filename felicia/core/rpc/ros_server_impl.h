@@ -190,13 +190,13 @@ void FEL_ROS_SERVER::OnAccept(StatusOr<std::unique_ptr<TCPChannel>> status_or) {
     if (IsUsingRosProtocol(service_info_.service())) {
       // It deletes itself when handshake is completed.
       RosServiceResponse* service_response =
-          new RosServiceResponse(std::move(status_or.ValueOrDie()));
+          new RosServiceResponse(std::move(status_or).ValueOrDie());
       service_response->ReceiveRequest(
           this, base::BindOnce(&FEL_ROS_SERVER::OnRosServiceHandshake,
                                base::Unretained(this)));
     } else {
       service_handlers_.push_back(std::make_unique<ServiceHandler>(
-          service_, std::move(status_or.ValueOrDie()), false));
+          service_, std::move(status_or).ValueOrDie(), false));
     }
   }
   DoAcceptLoop();

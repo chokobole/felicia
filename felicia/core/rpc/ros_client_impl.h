@@ -195,7 +195,7 @@ template <typename T>
 void FEL_ROS_CLIENT::OnReceiveResponse(Status s) {
   DCHECK(!call_callback_.is_null());
   if (s.ok() && header_.ok()) {
-    *response_ = std::move(std::move(receiver_).message());
+    *response_ = std::move(receiver_).message();
     std::move(call_callback_).Run(Status::OK());
   } else {
     if (!s.ok()) {

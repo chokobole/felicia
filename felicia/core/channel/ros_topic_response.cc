@@ -25,7 +25,7 @@ void RosTopicResponse::OnReceiveRequest(const RosTopicResponseHeader& header,
   if (!s.ok()) {
     LOG(ERROR) << s;
     RosTopicResponseHeader errored_header;
-    errored_header.error = std::move(std::move(s).error_message());
+    errored_header.error = std::move(s).error_message();
     sender.SendMessage(errored_header,
                        base::BindOnce(&RosTopicResponse::OnResponse,
                                       base::Unretained(this), true));

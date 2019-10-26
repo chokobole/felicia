@@ -46,10 +46,10 @@ inline ::grpc::Status ToGrpcStatus(Status s) {
             error::Code::
                 DO_NOT_USE_RESERVED_FOR_FUTURE_EXPANSION_USE_DEFAULT_IN_SWITCH_INSTEAD_)) {
       return ::grpc::Status(::grpc::StatusCode::UNKNOWN,
-                            std::move(std::move(s).error_message()));
+                            std::move(s).error_message());
     } else {
       return ::grpc::Status(static_cast<::grpc::StatusCode>(s.error_code()),
-                            std::move(std::move(s).error_message()));
+                            std::move(s).error_message());
     }
   }
 }
