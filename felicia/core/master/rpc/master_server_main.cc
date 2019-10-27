@@ -29,7 +29,8 @@ int RealMain(int argc, char* argv[]) {
   CHECK(s.ok()) << s;
   server.set_on_shutdown_callback(base::BindOnce(&ShutdownRosMasterProxy));
 #endif  // defined(HAS_ROS)
-  server.RunUntilShutdown();
+  server.Run();
+  server.WaitUntilShutdown();
   return 0;
 }
 

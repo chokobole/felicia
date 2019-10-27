@@ -45,11 +45,8 @@ class FEL_GRPC_SERVER : public ServerInterface {
     return Service::service_name();
   }
 
-  Status RunUntilShutdown() {
-    Status s = Run();
-    if (!s.ok()) return s;
+  void WaitUntilShutdown() {
     threads_.clear();
-    return Status::OK();
   }
 
  protected:
