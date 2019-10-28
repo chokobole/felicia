@@ -9,11 +9,10 @@
 
 #include "felicia/core/channel/channel.h"
 #include "felicia/core/channel/message_receiver.h"
+#include "felicia/core/master/bytes_constants.h"
 #include "felicia/core/protobuf/master_data.pb.h"
 
 namespace felicia {
-
-extern Bytes kHeartBeatBytes;
 
 class HeartBeatListener {
  public:
@@ -54,8 +53,6 @@ class HeartBeatListener {
 
   DISALLOW_COPY_AND_ASSIGN(HeartBeatListener);
 };
-
-base::TimeDelta GetHeartBeatDuration(const ClientInfo& client_info);
 
 }  // namespace felicia
 

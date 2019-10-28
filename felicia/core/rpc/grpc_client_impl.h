@@ -61,9 +61,7 @@ class FEL_GRPC_CLIENT : public ClientInterface {
     return Status::OK();
   }
 
-  void WaitUntilShutdown() {
-    threads_.clear();
-  }
+  void WaitUntilShutdown() { threads_.clear(); }
 
   void HandleRpcsLoop();
 

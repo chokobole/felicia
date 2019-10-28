@@ -4,6 +4,7 @@
 #include "third_party/chromium/base/containers/flat_map.h"
 
 #include "felicia/core/communication/dynamic_subscriber.h"
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/message/dynamic_protobuf_message.h"
 #include "felicia/core/message/protobuf_loader.h"
 #include "felicia/core/node/node_lifecycle.h"
@@ -15,9 +16,9 @@ namespace felicia {
 // MultiTopicDelegate: it needs a ToicInfoWatcherNode, which tells it if any
 // updates on the topic, and it only subscribes. So Master dones't know
 // if the node really subscribe any topics.
-class DynamicSubscribingNode : public NodeLifecycle {
+class EXPORT DynamicSubscribingNode : public NodeLifecycle {
  public:
-  class OneTopicDelegate {
+  class EXPORT OneTopicDelegate {
    public:
     virtual ~OneTopicDelegate() = default;
 
@@ -31,7 +32,7 @@ class DynamicSubscribingNode : public NodeLifecycle {
     virtual void OnRequestUnsubscribe(Status s) { LOG_IF(ERROR, !s.ok()) << s; }
   };
 
-  class MultiTopicDelegate {
+  class EXPORT MultiTopicDelegate {
    public:
     virtual ~MultiTopicDelegate() = default;
 

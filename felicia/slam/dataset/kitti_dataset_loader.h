@@ -3,6 +3,7 @@
 
 #include "third_party/chromium/base/files/file_path.h"
 
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/file/buffered_reader.h"
 #include "felicia/core/lib/file/csv_reader.h"
 #include "felicia/core/util/dataset/dataset_loader.h"
@@ -20,7 +21,7 @@ namespace slam {
 // For example, /path/to/kitti should point to the
 // /path/to/dataset/sequences/00. But exceptionally, for groundtruth pose,
 // path/to/kitti should point to /path/to/dataset/poses/00.txt
-class KittiDatasetLoader
+class EXPORT KittiDatasetLoader
     : public DatasetLoader<SensorMetaData, SensorData>::Delegate {
  public:
   class State {
@@ -48,6 +49,8 @@ class KittiDatasetLoader
     BufferedReader times_reader_;
     bool should_read_times_ = true;
     size_t current_ = 0;
+
+    DISALLOW_COPY_AND_ASSIGN(State);
   };
 
   KittiDatasetLoader(const base::FilePath& path, int data_types);
@@ -59,6 +62,8 @@ class KittiDatasetLoader
 
  private:
   std::vector<std::unique_ptr<State>> states_;
+
+  DISALLOW_COPY_AND_ASSIGN(KittiDatasetLoader);
 };
 
 }  // namespace slam

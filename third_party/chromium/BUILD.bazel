@@ -3,7 +3,11 @@
 licenses(["notice"])  # BSD 3-Clause
 
 load("//bazel:felicia.bzl", "if_windows")
-load("//third_party/chromium:chromium.bzl", "chromium_cc_library")
+load(
+    "//third_party/chromium:chromium.bzl",
+    "chromium_cc_library",
+    "chromium_cc_shared_library",
+)
 load("//third_party/chromium/build:build.bzl", "write_build_date_header")
 
 package(default_visibility = [":internal"])
@@ -45,4 +49,24 @@ write_build_date_header(
 chromium_cc_library(
     name = "build_date",
     hdrs = [":build_date_hdr"],
+)
+
+chromium_cc_shared_library(
+    name = "chromium",
+    srcs = ["//felicia:empty.cc"],
+    deps = [
+        "//third_party/chromium/base",
+        "//third_party/chromium/device",
+        "//third_party/chromium/net",
+    ],
+)
+
+cc_library(
+    name = "chromium",
+    deps = [
+        ":chromium_hdrs",
+        ":chromium_import",
+        "//third_party/chromium:base_buildflags",
+        "@boringssl//:ssl",
+    ],
 )

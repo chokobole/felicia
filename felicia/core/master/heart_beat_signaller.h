@@ -7,11 +7,13 @@
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/channel/channel.h"
+#include "felicia/core/lib/base/export.h"
+#include "felicia/core/master/bytes_constants.h"
 #include "felicia/core/protobuf/master_data.pb.h"
 
 namespace felicia {
 
-class HeartBeatSignaller {
+class EXPORT HeartBeatSignaller {
  public:
   typedef base::OnceCallback<void(const ChannelSource&)> OnStartCallback;
 
@@ -35,6 +37,8 @@ class HeartBeatSignaller {
 
   DISALLOW_COPY_AND_ASSIGN(HeartBeatSignaller);
 };
+
+EXPORT base::TimeDelta GetHeartBeatDuration(const ClientInfo& client_info);
 
 }  // namespace felicia
 

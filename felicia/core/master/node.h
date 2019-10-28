@@ -1,5 +1,5 @@
-#ifndef FELICIA_CORE_NODE_NODE_H_
-#define FELICIA_CORE_NODE_NODE_H_
+#ifndef FELICIA_CORE_MASTER_NODE_H_
+#define FELICIA_CORE_MASTER_NODE_H_
 
 #include <memory>
 #include <string>
@@ -74,4 +74,4 @@ class NodeNameChecker {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_NODE_NODE_H_
+#endif  // FELICIA_CORE_MASTER_NODE_H_

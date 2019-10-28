@@ -1,8 +1,4 @@
-load(
-    "//bazel:felicia.bzl",
-    "fel_shared_library",
-    "if_has_ros",
-)
+load("//bazel:felicia.bzl", "if_has_ros")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
@@ -41,14 +37,11 @@ fel_cc_library(
         "serialized_message.h",
         "serialized_message_io.h",
     ],
-    defines = if_has_ros([
-        "HAS_ROS",
-    ]),
     deps = [
         "//felicia/core/lib",
         "//felicia/core/util:command_line_interface",
     ] + if_has_ros([
-        "@ros//:ros",
+        "@ros",
     ]),
 )
 
@@ -69,7 +62,7 @@ fel_cc_test(
     srcs = [
         "message_filter_test.cc",
     ],
-    deps = fel_shared_library() + [
+    deps = [
         ":message_test_util",
         "@com_google_googletest//:gtest_main",
     ],

@@ -1,8 +1,4 @@
-load(
-    "//bazel:felicia.bzl",
-    "fel_shared_library",
-    "if_not_windows",
-)
+load("//bazel:felicia.bzl", "if_not_windows")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
@@ -84,7 +80,7 @@ fel_cc_test(
         "permessage_deflate_test.cc",
         "web_socket_test.cc",
     ],
-    deps = fel_shared_library() + [
+    deps = [
         ":socket",
         "@com_google_googletest//:gtest_main",
     ],

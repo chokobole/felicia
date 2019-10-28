@@ -43,6 +43,8 @@ def load_deps():
         name = "com_google_protobuf",
         remote = "https://github.com/protocolbuffers/protobuf.git",
         tag = "v3.7.0",
+        patch_args = ["-p1"],
+        patches = ["//third_party:protobuf.patch"],
     )
 
     http_archive(

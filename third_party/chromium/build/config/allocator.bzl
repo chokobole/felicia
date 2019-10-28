@@ -10,7 +10,8 @@ def _default_allocator():
     if is_android() or is_mac() or is_ios() or is_win() or (is_linux() and is_arm64()):
         return "none"
     else:
-        # Disable for a while until figure out why this kill object_detection example.
+        # Disable for a while until figure out protobuf initialization problem.
+        # return "tcmalloc"
         return "none"
 
 def _default_use_allocator_shim():

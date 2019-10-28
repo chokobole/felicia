@@ -8,6 +8,7 @@
 #include "base/atomicops.h"
 #include "base/macros.h"
 #include "base/threading/platform_thread.h"
+#include "device/base/device_base_export.h"
 
 namespace device {
 
@@ -28,7 +29,7 @@ namespace device {
 // garbage, or indices could be out of range. Probably the only suitable thing
 // to do during the read loop is to make a copy of the data, and operate on it
 // only after the read was found to be consistent.
-class OneWriterSeqLock {
+class DEVICE_BASE_EXPORT OneWriterSeqLock {
  public:
   OneWriterSeqLock();
   base::subtle::Atomic32 ReadBegin() const;

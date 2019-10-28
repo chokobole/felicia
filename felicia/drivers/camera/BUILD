@@ -117,6 +117,8 @@ fel_objc_library(
     ]),
     sdk_frameworks = [
         "AVFoundation",
+        "CoreMedia",
+        "CoreVideo",
     ],
     deps = [
         "//felicia/core/lib",

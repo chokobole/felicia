@@ -3,6 +3,7 @@
 
 #include "third_party/chromium/base/files/file_path.h"
 
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/file/csv_reader.h"
 #include "felicia/core/util/dataset/dataset_loader.h"
 #include "felicia/slam/dataset/sensor_data.h"
@@ -17,7 +18,7 @@ namespace slam {
 // StatusOr<SensorData> sensor_data = loader.Next();
 // For example, /path/to/tum should point to the
 // /path/to/rgbd_data_set/freiburg1_rpy.
-class TumDatasetLoader
+class EXPORT TumDatasetLoader
     : public DatasetLoader<SensorMetaData, SensorData>::Delegate {
  public:
   enum TumKind { FR1, FR2, FR3 };
@@ -44,6 +45,8 @@ class TumDatasetLoader
     base::FilePath path_to_data_;
     CsvReader data_reader_;
     size_t current_ = 0;
+
+    DISALLOW_COPY_AND_ASSIGN(State);
   };
 
   // We guess TumKind using |path|.
@@ -60,6 +63,8 @@ class TumDatasetLoader
   void InitStates(const base::FilePath& path, TumKind tum_kind, int data_types);
 
   std::vector<std::unique_ptr<State>> states_;
+
+  DISALLOW_COPY_AND_ASSIGN(TumDatasetLoader);
 };
 
 }  // namespace slam

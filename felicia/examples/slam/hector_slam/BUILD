@@ -19,11 +19,10 @@ fel_cc_library(
         "point_container.h",
         "scan_matcher.h",
     ],
+    is_external = False,
     deps = [
         "//felicia/core/communication",
-        "//felicia/drivers/lidar",
         "//felicia/examples/slam:slam_node_create_flag",
-        "//felicia/map:occupancy_grid_map",
         "//felicia/slam",
     ],
 )

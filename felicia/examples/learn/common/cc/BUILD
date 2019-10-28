@@ -4,6 +4,9 @@ fel_cc_library(
     name = "node_create_flag",
     srcs = ["node_create_flag.cc"],
     hdrs = ["node_create_flag.h"],
+    is_external = False,
     visibility = ["//felicia/examples:internal"],
-    deps = ["//felicia/core/util:command_line_interface"],
+    deps = [
+        "//felicia/core/util:command_line_interface",
+    ],
 )

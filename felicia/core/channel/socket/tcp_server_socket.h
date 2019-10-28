@@ -9,7 +9,7 @@
 
 namespace felicia {
 
-class EXPORT TCPServerSocket : public TCPSocket {
+class TCPServerSocket : public TCPSocket {
  public:
   using AcceptCallback = base::RepeatingCallback<void(Status)>;
   using AcceptOnceInterceptCallback =

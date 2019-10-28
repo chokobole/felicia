@@ -5,9 +5,38 @@
 
 #include "felicia/core/channel/channel_factory.h"
 #include "felicia/core/channel/message_sender.h"
-#include "felicia/core/master/heart_beat_listener.h"
 
 namespace felicia {
+
+namespace {
+
+static constexpr int64_t kDefeaultHeartBeatDuration = 1000;
+
+base::TimeDelta g_heart_beat_duration = base::TimeDelta();
+
+}  // namespace
+
+base::TimeDelta GetHeartBeatDuration(const ClientInfo& client_info) {
+  uint32_t heart_beat_duration = client_info.heart_beat_duration();
+  if (heart_beat_duration != 0)
+    return base::TimeDelta::FromMilliseconds(heart_beat_duration);
+  if (g_heart_beat_duration != base::TimeDelta()) return g_heart_beat_duration;
+
+  int64_t duration = kDefeaultHeartBeatDuration;
+  const char* duration_str = getenv("FEL_HEART_BEAT_DURATION");
+  if (duration_str) {
+    if (base::StringToInt64(duration_str, &duration)) {
+      if (duration < 0) {
+        LOG(WARNING) << "Duration cannot be negative " << duration
+                     << ", set to default value " << kDefeaultHeartBeatDuration;
+        duration = kDefeaultHeartBeatDuration;
+      }
+    }
+  }
+
+  g_heart_beat_duration = base::TimeDelta::FromMilliseconds(duration);
+  return g_heart_beat_duration;
+}
 
 HeartBeatSignaller::HeartBeatSignaller()
     : thread_("HeartBeatSignallerThread") {}

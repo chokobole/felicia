@@ -22,11 +22,11 @@ namespace net {
 
 // Puts a net error, |err|, on the error stack in OpenSSL. The file and line are
 // extracted from |posted_from|. The function code of the error is left as 0.
-void OpenSSLPutNetError(const base::Location& posted_from, int err);
+NET_EXPORT_PRIVATE void OpenSSLPutNetError(const base::Location& posted_from, int err);
 
 // Utility to construct the appropriate set & clear masks for use the OpenSSL
 // options and mode configuration functions. (SSL_set_options etc)
-struct SslSetClearMask {
+struct NET_EXPORT_PRIVATE SslSetClearMask {
   SslSetClearMask();
   void ConfigureFlag(long flag, bool state);
 
@@ -62,7 +62,7 @@ struct OpenSSLErrorInfo {
 // Note that |tracer| is not currently used in the implementation, but is passed
 // in anyway as this ensures the caller will clear any residual codes left on
 // the error stack.
-int MapOpenSSLErrorWithDetails(int err,
+NET_EXPORT_PRIVATE int MapOpenSSLErrorWithDetails(int err,
                                const crypto::OpenSSLErrStackTracer& tracer,
                                OpenSSLErrorInfo* out_error_info);
 

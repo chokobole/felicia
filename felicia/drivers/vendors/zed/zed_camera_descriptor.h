@@ -1,13 +1,12 @@
 #ifndef FELICIA_DRIVERS_VENDORS_ZED_ZED_CAMERA_DESCRIPTOR_H_
 #define FELICIA_DRIVERS_VENDORS_ZED_ZED_CAMERA_DESCRIPTOR_H_
 
-#include "felicia/core/lib/base/export.h"
 #include "felicia/drivers/camera/camera_descriptor.h"
 
 namespace felicia {
 namespace drivers {
 
-class EXPORT ZedCameraDescriptor : public CameraDescriptor {
+class ZedCameraDescriptor : public CameraDescriptor {
  public:
   static int kInvalidId;
 
@@ -30,11 +29,11 @@ class EXPORT ZedCameraDescriptor : public CameraDescriptor {
 
 using ZedCameraDescriptors = std::vector<ZedCameraDescriptor>;
 
-EXPORT std::ostream& operator<<(std::ostream& os,
-                                const ZedCameraDescriptor& camera_descriptor);
+std::ostream& operator<<(std::ostream& os,
+                         const ZedCameraDescriptor& camera_descriptor);
 
-EXPORT std::ostream& operator<<(std::ostream& os,
-                                const ZedCameraDescriptors& camera_descriptors);
+std::ostream& operator<<(std::ostream& os,
+                         const ZedCameraDescriptors& camera_descriptors);
 
 }  // namespace drivers
 }  // namespace felicia

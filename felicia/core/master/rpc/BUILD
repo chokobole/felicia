@@ -1,4 +1,3 @@
-load("//bazel:felicia.bzl", "fel_shared_library")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_binary",
@@ -19,7 +18,6 @@ fel_cc_library(
     hdrs = ["master_client.h"],
     deps = [
         ":master_service_proto_cc",
-        "//felicia:grpc++",
         "//felicia/core/lib",
         "//felicia/core/master:master_client_interface",
         "//felicia/core/rpc",
@@ -44,12 +42,11 @@ fel_cc_binary(
         "master_service.cc",
         "master_service.h",
     ],
-    deps = fel_shared_library() + [
+    deps = [
         ":master_server_info",
         ":master_service_proto_cc",
         "//felicia/core:felicia_init",
         "//felicia/core/master",
-        "//felicia/core/rpc",
     ],
 )
 

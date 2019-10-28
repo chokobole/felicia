@@ -1,8 +1,4 @@
-load("//bazel:felicia.bzl", "fel_shared_library")
-load(
-    "//bazel:felicia_cc.bzl",
-    "fel_cc_binary",
-)
+load("//bazel:felicia_cc.bzl", "fel_cc_binary")
 
 package(default_visibility = ["//visibility:private"])
 
@@ -19,9 +15,11 @@ fel_cc_binary(
         ],
         "//conditions:default": ["//felicia:only_main.cc"],
     }),
-    deps = fel_shared_library() + [
-        "//felicia/examples/learn/topic/common/cc:camera_flag",
+    deps = [
         "//felicia/core:felicia_init",
+        "//felicia/core/communication",
+        "//felicia/drivers/camera",
+        "//felicia/examples/learn/topic/common/cc:camera_flag",
     ] + select({
         "//felicia:has_zed": ["//felicia/drivers/vendors/zed"],
         "//conditions:default": [],

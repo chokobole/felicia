@@ -22,12 +22,7 @@ class RPlidarPublishingNode : public NodeLifecycle {
   void OnRequestUnpublish(Status s);
 
   void StartLidar();
-#if defined(OS_POSIX)
- public:
   void StopLidar();
-
- private:
-#endif
 
   void RequestPublish();
   void RequestUnpublish();

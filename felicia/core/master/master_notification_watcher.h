@@ -13,8 +13,6 @@
 
 namespace felicia {
 
-extern Bytes kMasterNotificationBytes;
-
 class MasterNotificationWatcher {
  public:
   using NewTopicInfoCallback = base::RepeatingCallback<void(const TopicInfo&)>;

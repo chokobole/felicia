@@ -35,18 +35,25 @@ fel_cc_library(
     }),
     hdrs = SHARED_MEMORY_HDRS + if_windows([
         "named_pipe_server.h",
-    ]),
+    ]) + if_mac([":shared_memory_mac_hdrs"]),
     deps = [
         "//felicia/core/channel:channel_impl",
         "//felicia/core/channel/socket",
     ] + if_mac([":shared_memory_mac"]),
 )
 
-fel_objc_library(
-    name = "shared_memory_mac",
-    hdrs = SHARED_MEMORY_HDRS + [
+filegroup(
+    name = "shared_memory_mac_hdrs",
+    srcs = SHARED_MEMORY_HDRS + [
         "mach_port_broker.h",
     ],
+)
+
+fel_objc_library(
+    name = "shared_memory_mac",
+    hdrs = if_mac([
+        ":shared_memory_mac_hdrs",
+    ]),
     non_arc_srcs = if_mac([
         "mach_port_broker.mm",
     ]),

@@ -19,11 +19,12 @@ fel_cc_library(
         "rs_capability.h",
         "rs_stream_info.h",
     ]),
-    deps = if_has_realsense([
-        "//felicia/core/lib",
+    is_external = False,
+    deps = [
         "//felicia/drivers/camera",
         "//felicia/drivers/imu",
         "//felicia/map:pointcloud",
+    ] + if_has_realsense([
         "@realsense",
     ]),
 )

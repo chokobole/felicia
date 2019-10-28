@@ -3,6 +3,7 @@ load(
     "if_linux",
     "if_mac_or_ios",
     "if_not_windows",
+    "if_static",
     "if_windows",
 )
 load(
@@ -10,6 +11,7 @@ load(
     "define",
     "fel_c_library",
     "fel_cc_library",
+    "fel_cc_shared_library",
     "fel_cc_test",
     "fel_objc_library",
     "include",
@@ -25,6 +27,20 @@ load(
     "no_exception",
 )
 load("//third_party/chromium/build/config/win:build.bzl", "default_win_build_config")
+
+CHROMIUM_LOCAL_DEFINES = [
+    "BASE_IMPLEMENTATION",
+    "BASE_I18N_IMPLEMENTATION",
+    "CRYPTO_IMPLEMENTATION",
+    "DEVICE_BASE_IMPLEMENTATION",
+    "NET_IMPLEMENTATION",
+    "URL_IMPLEMENTATION",
+    "IS_URL_IMPL=1",
+]
+
+CHROMIUM_DEFINES = [
+    "COMPONENT_BUILD",
+]
 
 def _chromium_platform_files(suffix, base, exclude):
     if base == None:
@@ -92,7 +108,12 @@ def default_compiler_configs():
     return feature_flags() + chromium_code() + no_exception() + default_win_build_config()
 
 def chromium_copts():
-    return include(["third_party/chromium"])
+    return include(["third_party/chromium"]) + select({
+        "//felicia:windows": [],
+        "//conditions:default": [
+            "-fvisibility=hidden",
+        ],
+    })
 
 def chromium_cxxopts():
     return chromium_copts() + select({
@@ -111,8 +132,9 @@ def chromium_c_library(
         **kwargs):
     fel_c_library(
         name = name,
-        copts = default_compiler_configs() + chromium_copts() + copts,
+        copts = default_compiler_configs() + chromium_copts() + copts + define(CHROMIUM_LOCAL_DEFINES),
         use_fel_copt = False,
+        defines = if_static([], CHROMIUM_DEFINES),
         linkopts = default_libs() + linkopts,
         **kwargs
     )
@@ -124,8 +146,9 @@ def chromium_cc_library(
         **kwargs):
     fel_cc_library(
         name = name,
-        copts = default_compiler_configs() + chromium_cxxopts() + copts,
+        copts = default_compiler_configs() + chromium_cxxopts() + copts + define(CHROMIUM_LOCAL_DEFINES),
         use_fel_cxxopt = False,
+        defines = if_static([], CHROMIUM_DEFINES),
         linkopts = default_libs() + linkopts,
         **kwargs
     )
@@ -136,8 +159,9 @@ def chromium_objc_library(
         **kwargs):
     fel_objc_library(
         name = name,
-        copts = default_compiler_configs() + chromium_cxxopts() + ["-fno-objc-arc"] + copts,
+        copts = default_compiler_configs() + chromium_cxxopts() + ["-fno-objc-arc"] + copts + define(CHROMIUM_LOCAL_DEFINES),
         use_fel_cxxopt = False,
+        defines = if_static([], CHROMIUM_DEFINES),
         **kwargs
     )
 
@@ -149,5 +173,18 @@ def chromium_cc_test(
         name = name,
         copts = default_compiler_configs() + chromium_cxxopts() + define(["UNIT_TEST"]) + copts,
         use_fel_cxxopt = False,
+        defines = if_static([], CHROMIUM_DEFINES),
+        **kwargs
+    )
+
+def chromium_cc_shared_library(
+        name,
+        copts = [],
+        **kwargs):
+    fel_cc_shared_library(
+        name = name,
+        copts = default_compiler_configs() + chromium_cxxopts() + define(CHROMIUM_LOCAL_DEFINES),
+        use_fel_cxxopt = False,
+        defines = if_static([], CHROMIUM_DEFINES),
         **kwargs
     )

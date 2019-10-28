@@ -45,9 +45,7 @@ class FEL_GRPC_SERVER : public ServerInterface {
     return Service::service_name();
   }
 
-  void WaitUntilShutdown() {
-    threads_.clear();
-  }
+  void WaitUntilShutdown() { threads_.clear(); }
 
  protected:
   virtual Status RegisterService(::grpc::ServerBuilder* builder) = 0;

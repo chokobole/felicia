@@ -1,8 +1,4 @@
-load(
-    "//bazel:felicia.bzl",
-    "fel_shared_library",
-    "if_has_orb_slam2",
-)
+load("//bazel:felicia.bzl", "if_has_orb_slam2")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_binary",
@@ -20,8 +16,9 @@ fel_cc_binary(
         "dataset_loader_node.h",
         "dataset_loader_node_creator.cc",
     ],
-    deps = fel_shared_library() + [
+    deps = [
         "//felicia/core:felicia_init",
+        "//felicia/core/communication",
         "//felicia/slam",
     ],
 )
@@ -41,17 +38,16 @@ fel_cc_library(
         "orb_slam2_flag.h",
     ]),
     defines = if_has_orb_slam2(["HAS_ORB_SLAM2"]),
+    is_external = False,
     visibility = ["//felicia/examples:internal"],
-    deps = [
-        "//felicia/core/util",
-    ],
+    deps = ["//felicia/core/util"],
 )
 
 fel_cc_binary(
     name = "slam_node_creator",
     srcs = ["slam_node_creator.cc"],
     defines = if_has_orb_slam2(["HAS_ORB_SLAM2"]),
-    deps = fel_shared_library() + [
+    deps = [
         ":slam_node_create_flag",
         "//felicia/core:felicia_init",
         "//felicia/examples/slam/hector_slam:hector_slam_node",

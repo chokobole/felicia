@@ -1,7 +1,6 @@
 load("//bazel:felicia.bzl", "fel_additional_deps")
 load(
     "//bazel:felicia_cc.bzl",
-    "fel_cc_binary",
     "fel_cc_library",
     "fel_cc_shared_library",
     "fel_cxxopts",
@@ -246,14 +245,16 @@ fel_cc_library(
 fel_cc_shared_library(
     name = "felicia",
     srcs = ["empty.cc"],
-    third_party_deps = fel_additional_deps(),
     deps = [
         "//felicia/core:felicia_init",
         "//felicia/core/communication",
         "//felicia/core/lib",
-        "//felicia/core/master",
+        "//felicia/core/master:bytes_constants",
         "//felicia/core/master:master_proxy",
+        "//felicia/core/master/rpc:master_client",
         "//felicia/core/message",
+        "//felicia/core/node:dynamic_publishing_node",
+        "//felicia/core/node:dynamic_subscribing_node",
         "//felicia/core/node:node_lifecycle",
         "//felicia/core/util",
         "//felicia/drivers/camera",
@@ -261,5 +262,13 @@ fel_cc_shared_library(
         "//felicia/drivers/lidar",
         "//felicia/map",
         "//felicia/slam",
+    ],
+)
+
+cc_library(
+    name = "felicia",
+    deps = fel_additional_deps() + [
+        ":felicia_hdrs",
+        ":felicia_import",
     ],
 )

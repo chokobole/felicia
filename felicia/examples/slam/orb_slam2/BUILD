@@ -48,12 +48,12 @@ fel_cc_library(
     hdrs = if_has_orb_slam2([
         "orb_slam2_node.h",
     ]),
-    deps = if_has_orb_slam2([
-        ":@orb_slam2",
+    is_external = False,
+    deps = [
         "//felicia/core/communication",
-        "//felicia/drivers/camera",
-        "//felicia/map:pointcloud",
-        "//felicia/examples/slam:slam_node_create_flag",
         "//felicia/slam",
+    ] + if_has_orb_slam2([
+        ":@orb_slam2",
+        "//felicia/examples/slam:slam_node_create_flag",
     ]),
 )

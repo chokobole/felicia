@@ -8,7 +8,7 @@
 #include "third_party/chromium/base/memory/weak_ptr.h"
 #include "third_party/chromium/base/threading/thread_collision_warner.h"
 
-#include "felicia/core/node/node.h"
+#include "felicia/core/master/node.h"
 
 namespace felicia {
 

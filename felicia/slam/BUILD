@@ -1,8 +1,4 @@
-load(
-    "//bazel:felicia.bzl",
-    "fel_shared_library",
-    "if_has_opencv",
-)
+load("//bazel:felicia.bzl", "if_has_opencv")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
@@ -86,7 +82,7 @@ fel_cc_test(
         "camera/fundamental_matrix_test.cc",
         "camera/stereo_camera_model_base_test.cc",
     ],
-    deps = fel_shared_library() + [
+    deps = [
         ":slam",
         "//felicia/core/lib:lib_test_util",
         "@com_google_googletest//:gtest_main",

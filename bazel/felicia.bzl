@@ -189,19 +189,25 @@ def fel_zlib_deps():
 
 def fel_additional_deps():
     return [
-        "//felicia/core/protobuf:protos_all_cc_impl",
-        "//third_party/chromium/base",
-        "//third_party/chromium/net",
         "@com_google_protobuf//:protobuf",
         "@com_google_googletest//:gtest",
         "@eigen",
+        "@libyuv",
         "@jpeg",
         "@png_archive//:png",
         "@yaml-cpp",
-    ] + if_not_win_no_grpc(["//felicia:grpc++"])
+        "//felicia/core/protobuf:protos_all_cc",
+    ] + if_not_win_no_grpc([
+        "//felicia:grpc++",
+    ]) + if_has_ros([
+        "@ros",
+    ])
 
 def fel_shared_library():
-    return ["//felicia"]
+    return [
+        "//felicia",
+        "//third_party/chromium",
+    ]
 
 def _tpl_impl(ctx):
     substitutions = {}

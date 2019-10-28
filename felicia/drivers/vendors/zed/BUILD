@@ -18,10 +18,11 @@ fel_cc_library(
         "zed_camera_factory.h",
         "zed_capability.h",
     ]),
-    deps = if_has_zed([
-        "//felicia/core/lib",
+    is_external = False,
+    deps = [
         "//felicia/drivers/camera",
         "//felicia/map:pointcloud",
+    ] + if_has_zed([
         "@zed",
         "@cuda",
     ]),

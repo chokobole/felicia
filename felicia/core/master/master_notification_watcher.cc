@@ -4,6 +4,7 @@
 #include "third_party/chromium/base/logging.h"
 
 #include "felicia/core/channel/channel_factory.h"
+#include "felicia/core/master/bytes_constants.h"
 
 namespace felicia {
 

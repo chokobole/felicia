@@ -1,3 +1,4 @@
+load("//bazel:felicia.bzl", "if_not_windows")
 load("//bazel:felicia_cc.bzl", "fel_cc_library")
 
 package(default_visibility = ["//felicia:internal"])
@@ -12,6 +13,9 @@ fel_cc_library(
         "command_line_interface_py.h",
         "flag_py.h",
     ],
+    copts = if_not_windows([
+        "-fvisibility=hidden",
+    ]),
     deps = [
         "//felicia/core/util:command_line_interface",
         "//felicia/python/type_conversion",

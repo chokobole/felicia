@@ -9,6 +9,7 @@
 #include "felicia/core/channel/tcp_channel.h"
 #include "felicia/core/channel/udp_channel.h"
 #include "felicia/core/channel/ws_channel.h"
+#include "felicia/core/lib/base/export.h"
 #if defined(OS_POSIX)
 #include "felicia/core/channel/uds_channel.h"
 #endif
@@ -17,7 +18,7 @@
 
 namespace felicia {
 
-class ChannelFactory {
+class EXPORT ChannelFactory {
  public:
   static std::unique_ptr<Channel> NewChannel(
       ChannelDef::Type channel_type,

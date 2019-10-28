@@ -1,7 +1,7 @@
 load(
     "//bazel:felicia.bzl",
-    "fel_shared_library",
     "if_has_opencv",
+    "if_static",
 )
 load(
     "//bazel:felicia_cc.bzl",
@@ -90,11 +90,7 @@ fel_cc_library(
         "unit/ui/color.h",
         "unit/unit_helper.h",
     ] + [":felicia_env"],
-    defines = if_has_opencv([
-        "HAS_OPENCV",
-    ]),
     deps = [
-        "//felicia/core/protobuf:protos_all_cc",
         "//third_party/chromium/base",
         "//third_party/chromium/device",
         "//third_party/chromium/net",
@@ -105,7 +101,15 @@ fel_cc_library(
         "@yaml-cpp",
     ] + if_has_opencv([
         "@opencv",
-    ]),
+    ]) + if_static(
+        [
+            "//felicia/core/protobuf:protos_all_cc",
+        ],
+        [
+            "//felicia/core/protobuf:protos_all_cc_impl",
+            "@com_google_protobuf//:protobuf",
+        ],
+    ),
 )
 
 fel_cc_library(
@@ -114,9 +118,7 @@ fel_cc_library(
     hdrs = [
         "unit/geometry/native_matrix_reference_test_util.h",
     ],
-    deps = [
-        ":lib",
-    ],
+    deps = [":lib"],
 )
 
 fel_cc_test(
@@ -144,7 +146,7 @@ fel_cc_test(
         "file/test/data.txt",
         "file/test/data-not-ending-with-linefeed.txt",
     ],
-    deps = fel_shared_library() + [
+    deps = [
         ":lib_test_util",
         "@com_google_googletest//:gtest_main",
     ],
@@ -154,7 +156,8 @@ fel_cc_test(
     name = "pool_benchmark",
     srcs = ["containers/pool_benchmark.cc"],
     tags = ["benchmark"],
-    deps = fel_shared_library() + [
+    deps = [
+        ":lib_test_util",
         "@com_github_google_benchmark//:benchmark_main",
     ],
 )

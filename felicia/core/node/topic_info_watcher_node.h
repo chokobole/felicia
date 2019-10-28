@@ -1,14 +1,15 @@
 #ifndef FELICIA_CORE_NODE_TOPIC_INFO_WATCHER_NODE_H_
 #define FELICIA_CORE_NODE_TOPIC_INFO_WATCHER_NODE_H_
 
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/master/master_notification_watcher.h"
 #include "felicia/core/node/node_lifecycle.h"
 
 namespace felicia {
 
-class TopicInfoWatcherNode : public NodeLifecycle {
+class EXPORT TopicInfoWatcherNode : public NodeLifecycle {
  public:
-  class Delegate {
+  class EXPORT Delegate {
    public:
     virtual ~Delegate() = default;
 

@@ -12,16 +12,14 @@
 #include "third_party/chromium/base/time/time.h"
 
 #include "felicia/core/channel/channel.h"
-#include "felicia/core/lib/base/export.h"
+#include "felicia/core/master/bytes_constants.h"
 #include "felicia/core/master/client.h"
 #include "felicia/core/master/errors.h"
 #include "felicia/core/protobuf/master.pb.h"
 
 namespace felicia {
 
-extern Bytes kMasterNotificationBytes;
-
-class EXPORT Master {
+class Master {
  public:
   ~Master();
 

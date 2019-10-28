@@ -19,13 +19,11 @@ limitations under the License.
 
 #include "third_party/chromium/base/macros.h"
 
-#include "felicia/core/lib/base/export.h"
-
 namespace felicia {
 
 // Represents a pending asynchronous client call as a tag that can be
 // stored in a `::grpc::CompletionQueue`.
-class EXPORT GrpcClientCQTag {
+class GrpcClientCQTag {
  public:
   GrpcClientCQTag() {}
   virtual ~GrpcClientCQTag() {}

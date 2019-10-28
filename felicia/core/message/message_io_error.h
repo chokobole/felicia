@@ -3,6 +3,8 @@
 
 #include "third_party/chromium/net/base/io_buffer.h"
 
+#include "felicia/core/lib/base/export.h"
+
 namespace felicia {
 
 enum MessageIOError {
@@ -11,7 +13,7 @@ enum MessageIOError {
 #undef MESSAGE_IO_ERR
 };
 
-std::string MessageIOErrorToString(MessageIOError mesasge_io_error);
+EXPORT std::string MessageIOErrorToString(MessageIOError mesasge_io_error);
 
 }  // namespace felicia
 

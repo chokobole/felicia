@@ -1,4 +1,4 @@
-load("//bazel:felicia.bzl", "fel_additional_deps")
+load("//bazel:felicia.bzl", "if_not_windows")
 load("//bazel:felicia_cc.bzl", "fel_cc_library")
 load("//bazel:felicia_pybind.bzl", "fel_pybind_py_library")
 
@@ -6,16 +6,19 @@ package(default_visibility = ["//felicia:internal"])
 
 fel_cc_library(
     name = "felicia_py_cc",
+    copts = if_not_windows([
+        "-fvisibility=hidden",
+    ]),
     deps = [
         "//felicia/core:felicia_init",
         "//felicia/python/channel:channel_py_cc",
-        "//felicia/python/communication:communication_py_cc",
         "//felicia/python/command_line_interface:command_line_interface_py_cc",
+        "//felicia/python/communication:communication_py_cc",
         "//felicia/python/drivers:drivers_py_cc",
-        "//felicia/python/node:node_lifecycle_py_cc",
         "//felicia/python/master:master_py_cc",
+        "//felicia/python/node:node_lifecycle_py_cc",
         "@pybind11",
-    ] + fel_additional_deps(),
+    ],
 )
 
 py_library(

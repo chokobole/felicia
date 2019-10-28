@@ -11,7 +11,7 @@
 
 namespace felicia {
 
-class EXPORT NamedPipeServer : public base::win::ObjectWatcher::Delegate {
+class NamedPipeServer : public base::win::ObjectWatcher::Delegate {
  public:
   class Delegate {
    public:

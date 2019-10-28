@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "third_party/chromium/base/files/file_path.h"
 #include "third_party/chromium/base/strings/string_util.h"
 
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/errors.h"
 #include "felicia/core/lib/error/statusor.h"
 #include "felicia/core/lib/file/yaml_reader.h"
@@ -50,13 +51,13 @@ namespace slam {
 
 namespace internal {
 
-Status InvalidRowsAndCols(int rows, int cols);
-Status InvalidImageSize(int width, int height);
-bool IsValidImageSize(int width, int height);
+EXPORT Status InvalidRowsAndCols(int rows, int cols);
+EXPORT Status InvalidImageSize(int width, int height);
+EXPORT bool IsValidImageSize(int width, int height);
 
-Status MaybeLoad(const YAML::Node& node, const std::string& name,
-                 const base::FilePath& path,
-                 std::function<Status(const YAML::Node&)> callback);
+EXPORT Status MaybeLoad(const YAML::Node& node, const std::string& name,
+                        const base::FilePath& path,
+                        std::function<Status(const YAML::Node&)> callback);
 
 template <
     typename MatrixType,

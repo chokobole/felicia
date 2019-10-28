@@ -3,12 +3,13 @@
 
 #include <memory>
 
+#include "felicia/core/lib/base/export.h"
 #include "felicia/drivers/imu/imu_filter_interface.h"
 
 namespace felicia {
 namespace drivers {
 
-class ImuFilterFactory {
+class EXPORT ImuFilterFactory {
  public:
   enum ImuFilterKind {
     COMPLEMENTARY_FILTER_KIND,

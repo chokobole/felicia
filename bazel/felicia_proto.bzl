@@ -145,9 +145,9 @@ def cc_proto_library(
         deps = [s + "_genproto" for s in deps],
     )
 
-    grpc_dpes = []
+    grpc_deps = []
     if use_grpc_plugin:
-        grpc_dpes.append("//felicia:grpc++")
+        grpc_deps.append("//felicia:grpc++")
 
     if default_header:
         header_only_name = name
@@ -156,15 +156,16 @@ def cc_proto_library(
         header_only_name = name + "_headers_only"
         impl_name = name
 
-    fel_cc_library(
+    native.cc_library(
         name = impl_name,
         srcs = gen_srcs,
         hdrs = gen_hdrs,
-        deps = cc_libs + deps + grpc_dpes,
+        deps = cc_libs + deps + grpc_deps,
         includes = includes,
+        alwayslink = 1,
         **kargs
     )
-    fel_cc_library(
+    native.cc_library(
         name = header_only_name,
         deps = ["@com_google_protobuf//:protobuf_headers"] + if_static([impl_name]),
         hdrs = gen_hdrs,

@@ -174,7 +174,7 @@ void Publisher<MessageTy>::RequestPublish(
         internal::LogOrCallback(std::move(callback), status_or.status());
         return;
       }
-      channel_defs->push_back(status_or.ValueOrDie());
+      channel_defs->push_back(std::move(status_or).ValueOrDie());
       channels_.push_back(std::move(channel));
     }
     channel_type <<= 1;

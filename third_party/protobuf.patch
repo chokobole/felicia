@@ -1,0 +1,21 @@
+diff --git a/BUILD b/BUILD
+index e9e108377..8ea4ed387 100644
+--- a/BUILD
++++ b/BUILD
+@@ -191,6 +191,7 @@ cc_library(
+     copts = COPTS,
+     includes = ["src/"],
+     linkopts = LINK_OPTS,
++    alwayslink = 1,
+     visibility = ["//visibility:public"],
+     deps = [":protobuf_lite"] + PROTOBUF_DEPS,
+ )
+@@ -201,7 +202,7 @@ cc_library(
+ # TODO(keveman): Remove this target once the support gets added to Bazel.
+ cc_library(
+     name = "protobuf_headers",
+-    hdrs = glob(["src/**/*.h"]),
++    hdrs = glob(["src/**/*.h", "src/**/*.inc"]),
+     includes = ["src/"],
+     visibility = ["//visibility:public"],
+ )

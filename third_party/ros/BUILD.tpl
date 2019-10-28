@@ -5,6 +5,9 @@ cc_library(
     hdrs = glob([
         "ros_include/**"
     ]),
+    defines = [
+        "HAS_ROS",
+    ],
     includes = ["ros_include"],
     linkopts = [
         %{ROS_LIBS}

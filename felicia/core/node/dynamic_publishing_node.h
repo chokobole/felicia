@@ -4,15 +4,16 @@
 #include <memory>
 
 #include "felicia/core/communication/dynamic_publisher.h"
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/message/dynamic_protobuf_message.h"
 #include "felicia/core/message/protobuf_loader.h"
 #include "felicia/core/node/node_lifecycle.h"
 
 namespace felicia {
 
-class DynamicPublishingNode : public NodeLifecycle {
+class EXPORT DynamicPublishingNode : public NodeLifecycle {
  public:
-  class Delegate {
+  class EXPORT Delegate {
    public:
     virtual ~Delegate() = default;
 

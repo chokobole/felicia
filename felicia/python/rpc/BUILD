@@ -21,7 +21,9 @@ fel_cc_library(
         "rpc_py.h",
         "server_py.h",
     ],
-    copts = if_not_windows(["-fvisibility=hidden"]),
+    copts = if_not_windows([
+        "-fvisibility=hidden",
+    ]),
     deps = [
         "//felicia/core/rpc",
         "//felicia/python/message",

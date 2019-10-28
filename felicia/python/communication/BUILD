@@ -23,7 +23,9 @@ fel_cc_library(
         "service_client_py.h",
         "service_server_py.h",
     ],
-    copts = if_not_windows(["-fvisibility=hidden"]),
+    copts = if_not_windows([
+        "-fvisibility=hidden",
+    ]),
     deps = [
         "//felicia/core/communication",
         "//felicia/python/message",

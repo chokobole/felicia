@@ -3,6 +3,7 @@
 
 #include "third_party/chromium/base/files/file_path.h"
 
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/file/csv_reader.h"
 #include "felicia/core/util/dataset/dataset_loader.h"
 #include "felicia/drivers/imu/imu_filter_interface.h"
@@ -17,7 +18,7 @@ namespace slam {
 // StatusOr<SensorMetaData> sensor_meta_data = loader.Init();
 // StatusOr<SensorData> sensor_data = loader.Next();
 // For example, /path/to/euroc should point to the /path/to/mav0.
-class EurocDatasetLoader
+class EXPORT EurocDatasetLoader
     : public DatasetLoader<SensorMetaData, SensorData>::Delegate {
  public:
   class State {
@@ -50,6 +51,8 @@ class EurocDatasetLoader
     size_t current_ = 0;
     float frame_rate_ = -1;
     std::unique_ptr<drivers::ImuFilterInterface> imu_filter_;
+
+    DISALLOW_COPY_AND_ASSIGN(State);
   };
 
   EurocDatasetLoader(const base::FilePath& path, int data_types);
@@ -61,6 +64,8 @@ class EurocDatasetLoader
 
  private:
   std::vector<std::unique_ptr<State>> states_;
+
+  DISALLOW_COPY_AND_ASSIGN(EurocDatasetLoader);
 };
 
 }  // namespace slam
