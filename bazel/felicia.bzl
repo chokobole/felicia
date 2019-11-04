@@ -187,22 +187,6 @@ def fel_zlib_deps():
         "//conditions:default": ["@com_github_madler_zlib//:z"],
     })
 
-def fel_additional_deps():
-    return [
-        "@com_google_protobuf//:protobuf",
-        "@com_google_googletest//:gtest",
-        "@eigen",
-        "@libyuv",
-        "@jpeg",
-        "@png_archive//:png",
-        "@yaml-cpp",
-        "//felicia/core/protobuf:protos_all_cc",
-    ] + if_not_win_no_grpc([
-        "//felicia:grpc++",
-    ]) + if_has_ros([
-        "@ros",
-    ])
-
 def fel_shared_library():
     return [
         "//felicia",

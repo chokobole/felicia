@@ -22,6 +22,7 @@ load(
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
+    "fel_cxxopts",
 )
 
 # Appends a suffix to a list of deps.
@@ -73,7 +74,7 @@ def cc_proto_library(
         use_grpc_plugin = False,
         use_grpc_namespace = False,
         default_header = False,
-        **kargs):
+        **kwargs):
     """Bazel rule to create a C++ protobuf library from proto source files.
 
     Args:
@@ -94,7 +95,7 @@ def cc_proto_library(
           rule will be header-only, and an _impl rule will contain the
           implementation. Otherwise the header-only rule (name + "_headers_only")
           must be referred to explicitly.
-      **kargs: other keyword arguments that are passed to cc_library.
+      **kwargs: other keyword arguments that are passed to cc_library.
     """
 
     includes = []
@@ -116,7 +117,7 @@ def cc_proto_library(
         # An empty cc_library to make rule dependency consistent.
         fel_cc_library(
             name = name,
-            **kargs
+            **kwargs
         )
         return
 
@@ -126,6 +127,7 @@ def cc_proto_library(
         grpc_cpp_plugin = "@com_github_grpc_grpc//:grpc_cpp_plugin"
         if use_grpc_namespace:
             plugin_options = ["services_namespace=grpc"]
+    cc_options = if_static([], ["dllexport_decl=EXPORT"])
 
     gen_srcs = _proto_cc_srcs(srcs, use_grpc_plugin)
     gen_hdrs = _proto_cc_hdrs(srcs, use_grpc_plugin)
@@ -140,6 +142,7 @@ def cc_proto_library(
         plugin = grpc_cpp_plugin,
         plugin_language = "grpc",
         plugin_options = plugin_options,
+        cc_options = cc_options,
         protoc = protoc,
         visibility = ["//visibility:public"],
         deps = [s + "_genproto" for s in deps],
@@ -156,20 +159,20 @@ def cc_proto_library(
         header_only_name = name + "_headers_only"
         impl_name = name
 
-    native.cc_library(
+    fel_cc_library(
         name = impl_name,
         srcs = gen_srcs,
         hdrs = gen_hdrs,
         deps = cc_libs + deps + grpc_deps,
         includes = includes,
         alwayslink = 1,
-        **kargs
+        **kwargs
     )
-    native.cc_library(
+    fel_cc_library(
         name = header_only_name,
         deps = ["@com_google_protobuf//:protobuf_headers"] + if_static([impl_name]),
         hdrs = gen_hdrs,
-        **kargs
+        **kwargs
     )
 
 def fel_proto_library_cc(
@@ -228,15 +231,18 @@ def fel_proto_library_cc(
         name = cc_name,
         testonly = testonly,
         srcs = srcs,
-        cc_libs = cc_libs + if_static(
+        cc_libs = cc_libs + ["//felicia/core/lib:export"] + if_static(
             ["@com_google_protobuf//:protobuf"],
             ["@com_google_protobuf//:protobuf_headers"],
         ),
-        copts = if_not_windows([
+        copts = fel_cxxopts(True) + if_not_windows([
             "-Wno-unknown-warning-option",
             "-Wno-unused-but-set-variable",
             "-Wno-sign-compare",
-        ]),
+        ]) + select({
+            "//felicia:windows": ["/FIfelicia/core/lib/base/export.h"],
+            "//conditions:default": ["-include felicia/core/lib/base/export.h"],
+        }),
         default_header = default_header,
         protoc = "@com_google_protobuf//:protoc",
         use_grpc_namespace = use_grpc_namespace,

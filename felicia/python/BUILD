@@ -1,4 +1,3 @@
-load("//bazel:felicia.bzl", "if_not_windows")
 load("//bazel:felicia_cc.bzl", "fel_cc_library")
 load("//bazel:felicia_pybind.bzl", "fel_pybind_py_library")
 
@@ -6,9 +5,6 @@ package(default_visibility = ["//felicia:internal"])
 
 fel_cc_library(
     name = "felicia_py_cc",
-    copts = if_not_windows([
-        "-fvisibility=hidden",
-    ]),
     deps = [
         "//felicia/core:felicia_init",
         "//felicia/python/channel:channel_py_cc",

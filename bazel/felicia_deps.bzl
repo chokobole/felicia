@@ -5,7 +5,6 @@ load(
 )
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//bazel:felicia_repository.bzl", "http_archive_per_os")
-load("//third_party/cc:cc_configure.bzl", "cc_configure")
 load("//third_party/cuda:cuda_configure.bzl", "cuda_configure")
 load("//third_party/env:env_configure.bzl", "env_configure")
 load("//third_party/opencv:opencv_configure.bzl", "opencv_configure")
@@ -13,10 +12,10 @@ load("//third_party/py:python_configure.bzl", "python_configure")
 load("//third_party/realsense:realsense_configure.bzl", "realsense_configure")
 load("//third_party/ros:ros_configure.bzl", "ros_configure")
 load("//third_party/zed:zed_configure.bzl", "zed_configure")
+load("//tools/cc:cc_configure.bzl", "cc_configure")
 
 def load_deps():
     """Loads dependencies need to compile and test the felicia."""
-    cc_configure(name = "cc")
     cuda_configure(name = "cuda")
     env_configure(name = "env")
     opencv_configure(name = "opencv")
@@ -24,6 +23,8 @@ def load_deps():
     realsense_configure(name = "realsense")
     ros_configure(name = "ros")
     zed_configure(name = "zed")
+
+    cc_configure(name = "cc")
 
     # Needed by protobuf
     http_archive(
@@ -33,7 +34,6 @@ def load_deps():
         url = "https://pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz#md5=34eed507548117b2ab523ab14b2f8b55",
     )
 
-    # Needed by protobuf
     native.bind(
         name = "six",
         actual = "@six_archive//:six",
@@ -158,6 +158,12 @@ def load_deps():
         name = "com_github_bazelbuild_buildtools",
         strip_prefix = "buildtools-b78a2269cf8338893446e722bddfc75ed2374d11",
         url = "https://github.com/bazelbuild/buildtools/archive/b78a2269cf8338893446e722bddfc75ed2374d11.zip",
+    )
+
+    http_archive(
+        name = "rules_pkg",
+        url = "https://github.com/bazelbuild/rules_pkg/releases/download/0.2.4/rules_pkg-0.2.4.tar.gz",
+        sha256 = "4ba8f4ab0ff85f2484287ab06c0d871dcb31cc54d439457d28fd4ae14b18450a",
     )
 
     http_archive(

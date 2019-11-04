@@ -45,7 +45,7 @@ def _ros_msg_gen(ctx):
     srcs = ctx.files.srcs
     templates = ctx.files.templates
     package = ctx.attr.package
-    tool_path = ctx.expand_location("$(location //scripts:ros_msg_gen.py)", [ctx.attr._tool])
+    tool_path = ctx.expand_location("$(location //tools:ros_msg_gen.py)", [ctx.attr._tool])
 
     src_dir = _ros_msg_src_dir(ctx)
     if len(src_dir) > 0:
@@ -123,14 +123,14 @@ ros_msg_gen = rule(
             cfg = "host",
             allow_single_file = True,
             executable = True,
-            default = Label("//scripts:ros_msg_gen.py"),
+            default = Label("//tools:ros_msg_gen.py"),
         ),
         "templates": attr.label_list(
             cfg = "host",
             allow_files = [".h.template"],
             default = [
-                Label("//scripts:ros/msg.h.template"),
-                Label("//scripts:ros/srv.h.template"),
+                Label("//tools:ros/msg.h.template"),
+                Label("//tools:ros/srv.h.template"),
             ],
         ),
         "srcs": attr.label_list(

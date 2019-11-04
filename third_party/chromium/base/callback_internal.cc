@@ -44,6 +44,8 @@ BindStateBase::BindStateBase(
       destructor_(destructor),
       query_cancellation_traits_(query_cancellation_traits) {}
 
+BindStateBase::~BindStateBase() = default;
+
 CallbackBase& CallbackBase::operator=(CallbackBase&& c) noexcept = default;
 CallbackBase::CallbackBase(const CallbackBaseCopyable& c)
     : bind_state_(c.bind_state_) {}

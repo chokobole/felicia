@@ -5,16 +5,25 @@
 
 #include "third_party/chromium/base/strings/string_util.h"
 
+#include "felicia/core/lib/base/export.h"
 #include "felicia/core/message/dynamic_protobuf_message.h"
 
 namespace felicia {
+
+namespace protobuf_internal {
+
+EXPORT bool SerializeToString(const google::protobuf::Message* msg, std::string* text);
+
+EXPORT bool ParseFromArray(google::protobuf::Message* msg, const char* start, size_t size);
+
+}  // namespace protobuf_internal
 
 template <typename T>
 class MessageIO<
     T, std::enable_if_t<std::is_base_of<google::protobuf::Message, T>::value>> {
  public:
   static MessageIOError Serialize(const T* protobuf_msg, std::string* text) {
-    if (!protobuf_msg->SerializeToString(text))
+    if (!protobuf_internal::SerializeToString(protobuf_msg, text))
       return MessageIOError::ERR_FAILED_TO_SERIALIZE;
 
     return MessageIOError::OK;
@@ -22,7 +31,7 @@ class MessageIO<
 
   static MessageIOError Deserialize(const char* start, size_t size,
                                     T* protobuf_msg) {
-    if (!protobuf_msg->ParseFromArray(start, size))
+    if (!protobuf_internal::ParseFromArray(protobuf_msg, start, size))
       return MessageIOError::ERR_FAILED_TO_PARSE;
 
     return MessageIOError::OK;

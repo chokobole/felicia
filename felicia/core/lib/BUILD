@@ -17,6 +17,11 @@ felicia_env(
 )
 
 fel_cc_library(
+    name = "export",
+    hdrs = ["base/export.h"],
+)
+
+fel_cc_library(
     name = "lib",
     srcs = [
         "containers/data.cc",
@@ -48,7 +53,6 @@ fel_cc_library(
     hdrs = [
         "base/callback_holder.h",
         "base/choices.h",
-        "base/export.h",
         "base/range.h",
         "base/state.h",
         "base/template_util.h",
@@ -91,6 +95,7 @@ fel_cc_library(
         "unit/unit_helper.h",
     ] + [":felicia_env"],
     deps = [
+        ":export",
         "//third_party/chromium/base",
         "//third_party/chromium/device",
         "//third_party/chromium/net",

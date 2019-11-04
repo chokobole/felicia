@@ -1,4 +1,4 @@
-load(":felicia.bzl", "if_static")
+load(":felicia.bzl", "if_static", "if_not_windows")
 load("//third_party/chromium/build/config/win:build.bzl", "default_win_build_config")
 load("@cc//:compiler.bzl", "is_clang", "is_mac")
 
@@ -43,12 +43,10 @@ def fel_copts(is_external = False):
         ])
     return COPTS + include([
         "third_party/chromium",
+    ]) + _fel_win_copts() + if_not_windows([
+        "-Werror=switch",
+        "-fvisibility=hidden",
     ]) + select({
-        "//felicia:windows": _fel_win_copts(),
-        "//conditions:default": [
-            "-Werror=switch",
-        ],
-    }) + select({
         "//felicia:asan": ["-fsanitize=address"],
         "//conditions:default": [],
     })
@@ -80,23 +78,23 @@ def _dsym_command(name):
         ),
     })
 
-def get_transitive_hdrs(hdrs, deps):
+def _get_hdrs(hdrs, deps):
     return depset(
         hdrs,
         transitive = [dep[CcInfo].compilation_context.headers for dep in deps],
     )
 
-def _collect_transitive_hdrs_impl(ctx):
-    result = get_transitive_hdrs([], ctx.attr.deps)
+def _collect_hdrs_impl(ctx):
+    result = _get_hdrs([], ctx.attr.deps)
     return struct(files = result)
 
-collect_transitive_hdrs = rule(
+collect_hdrs = rule(
     attrs = {
         "deps": attr.label_list(
             providers = [CcInfo],
         ),
     },
-    implementation = _collect_transitive_hdrs_impl,
+    implementation = _collect_hdrs_impl,
 )
 
 def fel_c_library(
@@ -236,38 +234,59 @@ def fel_cc_shared_library(
         copts = [],
         defines = [],
         use_fel_cxxopt = True,
+        linkopts = [],
         **kwargs):
-    libname = "lib" + name + ".so"
-    native.cc_binary(
-        name = libname,
-        srcs = srcs,
-        deps = deps,
-        copts = copts + (fel_cxxopts(is_external = True) if use_fel_cxxopt else []),
-        defines = defines + if_static([], FEL_DEFINES),
-        linkshared = 1,
-        linkstatic = 1,
-        **kwargs
-    )
+    libnames = [
+        "lib" + name + ".so",
+        "lib" + name + ".dylib",
+        name + ".dll"
+    ]
+    for libname in libnames:
+        native.cc_binary(
+            name = libname,
+            srcs = srcs,
+            deps = deps,
+            copts = copts + (fel_cxxopts(is_external = True) if use_fel_cxxopt else []),
+            defines = defines + if_static([], FEL_DEFINES),
+            linkstatic = 1,
+            linkshared = 1,
+            linkopts = linkopts + select({
+                "//felicia:mac": [
+                    "-Wl,-install_name,@rpath/" + libname.split("/")[-1],
+                ],
+                "//felicia:windows": [],
+                "//conditions:default": [
+                    "-Wl,-soname," + libname.split("/")[-1],
+                ]
+            }),
+            tags = ["manual"],
+            visibility = ["//visibility:public"],
+            **kwargs
+        )
 
     native.filegroup(
-        name = name + "_import_lib",
-        srcs = [":" + libname],
+        name = name + "_if_lib",
+        srcs = [":" + name + ".dll"],
         output_group = "interface_library",
-    )
-
-    native.cc_import(
-        name = name + "_import",
-        interface_library = ":" + name + "_import_lib",
-        shared_library = ":" + libname,
-    )
-
-    collect_transitive_hdrs(
-        name = "collect_" + name + "_hdrs",
-        deps = deps,
+        tags = ["manual"],
         visibility = ["//visibility:private"],
     )
 
-    native.cc_library(
-        name = name + "_hdrs",
-        hdrs = [":collect_" + name + "_hdrs"],
+    native.genrule(
+        name = name + "_lib",
+        srcs = [":" + name + "_if_lib"],
+        outs = [name + ".lib"],
+        cmd = select({
+            "//felicia:windows": "cp -f $< $@",
+            "//conditions:default": "touch $@",
+        }),
+        tags = ["manual"],
+        visibility = ["//visibility:public"],
+    )
+
+    collect_hdrs(
+        name = "collect_" + name + "_hdrs",
+        deps = deps,
+        tags = ["manual"],
+        visibility = ["//visibility:private"],
     )

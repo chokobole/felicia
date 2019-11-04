@@ -42,7 +42,7 @@ def _configure_windows_tool_path(repository_ctx):
 
 def _cc_autoconf_impl(repository_ctx):
     """Implementation of the cc_autoconf repository rule."""
-    repository_ctx.symlink(Label("//third_party/cc:BUILD"), "BUILD")
+    repository_ctx.symlink(Label("//tools/cc:BUILD"), "BUILD")
 
     env = repository_ctx.os.environ
     cpu_value = get_cpu_value(repository_ctx)
@@ -58,7 +58,7 @@ def _cc_autoconf_impl(repository_ctx):
         tool_path = repository_ctx.path(Label("@local_config_cc//:cc_wrapper.sh"))
 
     executable = repository_ctx.path("build_config")
-    source = repository_ctx.path(Label("//third_party/cc:build_config.cc"))
+    source = repository_ctx.path(Label("//tools/cc:build_config.cc"))
     if flags != None:
         # MSVC
         cmd = [tool_path, source]
@@ -76,7 +76,7 @@ def _cc_autoconf_impl(repository_ctx):
 
     repository_ctx.template(
         "compiler.bzl",
-        Label("//third_party/cc:compiler.bzl.tpl"),
+        Label("//tools/cc:compiler.bzl.tpl"),
         {
             "%{CC}": "\"%s\"" % output[0],
             "%{MAJOR_VERSION}": output[1],

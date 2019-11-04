@@ -65,7 +65,7 @@ class BASE_EXPORT BindStateBase
                 bool (*query_cancellation_traits)(const BindStateBase*,
                                                   CancellationQueryMode mode));
 
-  ~BindStateBase() = default;
+  ~BindStateBase();
 
   friend struct BindStateBaseRefCountTraits;
   friend class RefCountedThreadSafe<BindStateBase, BindStateBaseRefCountTraits>;

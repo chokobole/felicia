@@ -90,6 +90,27 @@ bazel build --cpu darwin_x86_64 --config apple_debug //felicia/...
 bazel test //felicia/...
 ```
 
+## How to package
+
+```bash
+# For linux
+# generate library, check out bazel-bin/felicia/libfelicia.so
+bazel build --define framework_shared_object=true //felicia:libfelicia.so
+
+# For windows
+bazel build --define framework_shared_object=true //felicia:felicia.dll
+bazel build --define framework_shared_object=true //felicia:felicia_lib
+
+# For mac
+bazel build --cpu darwin_x86_64 --define framework_shared_object=true //felicia:libfelicia.dylib
+
+# generate tar for headers, check out bazel-bin/felicia/felicia_hdrs.tar
+bazel build --define framework_shared_object=true //felicia:felicia_hdrs
+```
+
+Then you can take those two outputs and put library and extract headers wherever you want. You can check out examples [here](https://github.com/chokobole/felicia-examples).
+
+
 ## How to set up on Docker
 
 ```bash

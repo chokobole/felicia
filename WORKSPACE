@@ -20,3 +20,7 @@ go_rules_dependencies()
 go_register_toolchains()
 
 buildifier_dependencies()
+
+load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+
+rules_pkg_dependencies()

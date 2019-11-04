@@ -14,6 +14,7 @@ fel_cc_library(
         "header.cc",
         "message_io_error.cc",
         "protobuf_loader.cc",
+        "protobuf_message_io.cc",
         "protobuf_util.cc",
         "ros_header.cc",
         "ros_rpc_header.cc",

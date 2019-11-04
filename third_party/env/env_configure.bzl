@@ -1,8 +1,15 @@
+load("//bazel:felicia_repository.bzl", "is_linux")
+
+def _get_env(repository_ctx, name, default_value = False):
+    if name in repository_ctx.os.environ:
+        return repository_ctx.os.environ[name]
+    return default_value
+
 def _env_autoconf_impl(repository_ctx):
     repository_ctx.symlink(Label("//third_party/env:BUILD"), "BUILD")
     felicia_root = repository_ctx.os.environ["PWD"]
-    travis = "TRAVIS" in repository_ctx.os.environ and repository_ctx.os.environ["TRAVIS"]
-    ros_distro = "ROS_DISTRO" in repository_ctx.os.environ and repository_ctx.os.environ["ROS_DISTRO"]
+    travis = _get_env(repository_ctx, "TRAVIS")
+    ros_distro = _get_env(repository_ctx, "ROS_DISTRO")
 
     repository_ctx.template(
         "env.bzl",

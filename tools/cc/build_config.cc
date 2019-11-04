@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "../chromium/build/build_config.h"
+#include "../../third_party/chromium/build/build_config.h"
 
 int main() {
 #if defined(__clang__)

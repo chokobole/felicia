@@ -1,4 +1,3 @@
-load("//bazel:felicia.bzl", "if_not_windows")
 load("//bazel:felicia_cc.bzl", "fel_cc_library")
 
 package(default_visibility = ["//felicia:internal"])
@@ -21,9 +20,6 @@ fel_cc_library(
         "rpc_py.h",
         "server_py.h",
     ],
-    copts = if_not_windows([
-        "-fvisibility=hidden",
-    ]),
     deps = [
         "//felicia/core/rpc",
         "//felicia/python/message",

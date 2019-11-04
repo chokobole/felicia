@@ -1,10 +1,10 @@
-load("//bazel:felicia.bzl", "fel_additional_deps")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
     "fel_cc_shared_library",
     "fel_cxxopts",
 )
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 
 package(default_visibility = [":internal"])
 
@@ -98,6 +98,15 @@ config_setting(
 )
 
 alias(
+    name = "mac_or_ios",
+    actual = select({
+        ":mac": "mac",
+        ":ios": "ios",
+        "//conditions:default": ":mac",
+    })
+)
+
+alias(
     name = "posix",
     actual = select({
         ":android": "android",
@@ -105,7 +114,7 @@ alias(
         ":linux": "linux",
         ":mac": "mac",
         ":ios": "ios",
-        "//conditions:default": ":x86_32",
+        "//conditions:default": ":android",
     }),
     visibility = ["//visibility:public"],
 )
@@ -136,6 +145,24 @@ config_setting(
 config_setting(
     name = "framework_shared_object",
     define_values = {
+        "framework_shared_object": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "framework_shared_object_debug",
+    define_values = {
+        "compilation_mode": "dbg",
+        "framework_shared_object": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "framework_shared_object_optimized",
+    define_values = {
+        "compilation_mode": "opt",
         "framework_shared_object": "true",
     },
     visibility = ["//visibility:public"],
@@ -265,10 +292,15 @@ fel_cc_shared_library(
     ],
 )
 
-cc_library(
-    name = "felicia",
-    deps = fel_additional_deps() + [
-        ":felicia_hdrs",
-        ":felicia_import",
+pkg_tar(
+    name = "felicia_hdrs",
+    srcs = [
+        ":collect_felicia_hdrs",
     ],
+    package_dir = "felicia/felicia",
+    remap_paths = {
+        "third_party/chromium": "../third_party/chromium",
+    },
+    strip_prefix = ".",
+    tags = ["manual"],
 )
