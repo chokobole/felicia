@@ -16,6 +16,7 @@ fel_proto_library(
         "ui.proto",
     ],
     default_header = True,
+    export_proto = True,
     visibility = ["//visibility:public"],
 )
 
@@ -23,6 +24,7 @@ fel_proto_library(
     name = "protos_all",
     srcs = [],
     default_header = True,
+    export_proto = True,
     protodeps = [
         ":protos_all_proto",
         "//felicia/drivers/camera:camera_proto",

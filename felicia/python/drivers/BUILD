@@ -13,8 +13,8 @@ fel_cc_library(
         "drivers_py.h",
     ],
     deps = [
+        "//external:pybind11",
         "//felicia/drivers/camera",
         "//felicia/python/type_conversion",
-        "@pybind11",
     ],
 )

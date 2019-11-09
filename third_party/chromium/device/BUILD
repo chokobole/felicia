@@ -13,14 +13,25 @@ load(
 load(
     "//third_party/chromium/device:device.bzl",
     "device_copts",
+    "device_defines",
+    "device_includes",
     "device_linkopts",
+)
+
+DEVICE_HDRS = chromium_platform_hdrs()
+
+filegroup(
+    name = "device_hdrs",
+    srcs = DEVICE_HDRS,
 )
 
 chromium_cc_library(
     name = "device",
     srcs = chromium_platform_srcs(),
-    hdrs = chromium_platform_hdrs(),
+    hdrs = DEVICE_HDRS,
     copts = device_copts(),
+    defines = device_defines(),
+    includes = device_includes(),
     linkopts = device_linkopts(),
     deps = ["//third_party/chromium/base"],
 )

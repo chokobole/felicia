@@ -11,8 +11,8 @@ fel_cc_library(
         "master_proxy_py.h",
     ],
     deps = [
+        "//external:pybind11",
         "//felicia/core/master:master_proxy",
         "//felicia/python/type_conversion",
-        "@pybind11",
     ],
 )

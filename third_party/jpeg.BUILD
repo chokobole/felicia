@@ -7,7 +7,7 @@ licenses(["notice"])  # custom notice-style license, see LICENSE.md
 
 exports_files(["LICENSE.md"])
 
-load("@felicia//bazel:felicia.bzl", "tpl")
+load("@com_github_chokobole_felicia//bazel:felicia.bzl", "tpl")
 
 libjpegturbo_nocopts = "-[W]error"
 

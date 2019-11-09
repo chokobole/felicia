@@ -1,10 +1,10 @@
 load("//bazel:felicia.bzl", "if_has_zed")
-load("//bazel:felicia_cc.bzl", "fel_cc_library")
+load("//bazel:felicia_cc.bzl", "fel_cc_native_library")
 
 package(default_visibility = ["//felicia:internal"])
 
 # TODO: Should we move below to different repository maybe?
-fel_cc_library(
+fel_cc_native_library(
     name = "zed",
     srcs = if_has_zed([
         "zed_camera.cc",
@@ -18,7 +18,6 @@ fel_cc_library(
         "zed_camera_factory.h",
         "zed_capability.h",
     ]),
-    is_external = False,
     deps = [
         "//felicia/drivers/camera",
         "//felicia/map:pointcloud",

@@ -159,7 +159,7 @@ cc_binary(
         "output",
         "x86",
     ],
-    visibility = ["@jpeg//:__pkg__"],
+    visibility = ["@jpeg_archive//:__pkg__"],
 )
 
 config_setting(

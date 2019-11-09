@@ -22,7 +22,27 @@ load(
 load(
     "//third_party/chromium/net:net.bzl",
     "net_copts",
+    "net_defines",
+    "net_includes",
     "net_linkopts",
+)
+
+NET_HDRS = chromium_platform_hdrs(exclude = [
+    "base/network_interfaces_getifaddrs.h",
+    "base/winsock_init.h",
+    "base/winsock_util.h",
+    "ssl/**",
+]) + if_windows([
+    ":net_win_hdrs",
+]) + if_not_windows([
+    ":net_posix_hdrs",
+]) + if_not_win_no_grpc([
+    ":net_ssl_hdrs",
+])
+
+filegroup(
+    name = "net_hdrs",
+    srcs = NET_HDRS,
 )
 
 chromium_cc_library(
@@ -39,19 +59,10 @@ chromium_cc_library(
     ]) + if_not_win_no_grpc([
         ":net_ssl_srcs",
     ]),
-    hdrs = chromium_platform_hdrs(exclude = [
-        "base/network_interfaces_getifaddrs.h",
-        "base/winsock_init.h",
-        "base/winsock_util.h",
-        "ssl/**",
-    ]) + if_windows([
-        ":net_win_hdrs",
-    ]) + if_not_windows([
-        ":net_posix_hdrs",
-    ]) + if_not_win_no_grpc([
-        ":net_ssl_hdrs",
-    ]),
+    hdrs = NET_HDRS,
     copts = net_copts(),
+    defines = net_defines(),
+    includes = net_includes(),
     linkopts = net_linkopts(),
     deps = [
         "//third_party/chromium/base",

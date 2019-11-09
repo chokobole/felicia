@@ -11,24 +11,29 @@ load(
 )
 
 def base_copts():
-    if is_mac() or is_ios():
-        return define(["SYSTEM_NATIVE_UTF8"])
-    if is_linux():
-        return define(["USE_SYMBOLIZE"])
+    return []
+
+def base_defines():
+    return select({
+        "@com_github_chokobole_felicia//felicia:mac_or_ios": ["SYSTEM_NATIVE_UTF8"],
+        "@com_github_chokobole_felicia//felicia:linux": ["USE_SYMBOLIZE"],
+        "//conditions:default": [],
+    })
+
+def base_includes():
     return []
 
 def base_linkopts():
-    if is_mac():
-        return [
+    return select({
+        "@com_github_chokobole_felicia//felicia:mac": [
             "-framework AppKit",
             "-framework CoreFoundation",
             "-framework IOKit",
             "-framework Security",
             "-framework OpenDirectory",
             "-lbsm",
-        ]
-    elif is_win():
-        return [
+        ],
+        "@com_github_chokobole_felicia//felicia:windows": [
             "/DELAYLOAD:cfgmgr32.dll",
             "/DELAYLOAD:powrprof.dll",
             "/DELAYLOAD:setupapi.dll",
@@ -38,8 +43,9 @@ def base_linkopts():
             "userenv.lib",
             "wbemuuid.lib",
             "winmm.lib",
-        ]
-    return []
+        ],
+        "//conditions:default": [],
+    })
 
 def base_additional_srcs():
     srcs = []

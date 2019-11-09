@@ -2,6 +2,7 @@ load("//bazel:felicia.bzl", "if_not_windows")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
+    "fel_cc_native_library",
     "fel_cc_test",
 )
 
@@ -59,7 +60,7 @@ fel_cc_library(
     }),
 )
 
-fel_cc_library(
+fel_cc_native_library(
     name = "master",
     srcs = [
         "client.cc",
@@ -74,7 +75,6 @@ fel_cc_library(
         "ros_master_proxy.cc",
         "ros_master_proxy.h",
     ],
-    is_external = False,
     deps = [
         ":bytes_constants",
         ":heart_beat_signaller",

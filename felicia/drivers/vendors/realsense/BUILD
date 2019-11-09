@@ -1,10 +1,10 @@
 load("//bazel:felicia.bzl", "if_has_realsense")
-load("//bazel:felicia_cc.bzl", "fel_cc_library")
+load("//bazel:felicia_cc.bzl", "fel_cc_native_library")
 
 package(default_visibility = ["//felicia:internal"])
 
 # TODO: Should we move below to different repository maybe?
-fel_cc_library(
+fel_cc_native_library(
     name = "realsense",
     srcs = if_has_realsense([
         "rs_camera.cc",
@@ -19,7 +19,6 @@ fel_cc_library(
         "rs_capability.h",
         "rs_stream_info.h",
     ]),
-    is_external = False,
     deps = [
         "//felicia/drivers/camera",
         "//felicia/drivers/imu",

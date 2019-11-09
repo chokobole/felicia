@@ -13,14 +13,25 @@ load(
 load(
     "//third_party/chromium/crypto:crypto.bzl",
     "crypto_copts",
+    "crypto_defines",
+    "crypto_includes",
     "crypto_linkopts",
+)
+
+CRYPTO_HDRS = chromium_platform_hdrs()
+
+filegroup(
+    name = "crypto_hdrs",
+    srcs = CRYPTO_HDRS,
 )
 
 chromium_cc_library(
     name = "crypto",
     srcs = chromium_platform_srcs(),
-    hdrs = chromium_platform_hdrs(),
+    hdrs = CRYPTO_HDRS,
     copts = crypto_copts(),
+    defines = crypto_defines(),
+    includes = crypto_includes(),
     linkopts = crypto_linkopts(),
     deps = [
         "//third_party/chromium/base",

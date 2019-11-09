@@ -1,9 +1,9 @@
 load("//bazel:felicia.bzl", "if_has_rplidar")
-load("//bazel:felicia_cc.bzl", "fel_cc_library")
+load("//bazel:felicia_cc.bzl", "fel_cc_native_library")
 
 package(default_visibility = ["//felicia:internal"])
 
-fel_cc_library(
+fel_cc_native_library(
     name = "rplidar",
     srcs = if_has_rplidar([
         "rplidar_factory.cc",
@@ -13,7 +13,6 @@ fel_cc_library(
         "rplidar_factory.h",
         "rplidar.h",
     ]),
-    is_external = False,
     deps = [
         "//felicia/core/util",
         "//felicia/drivers/lidar",

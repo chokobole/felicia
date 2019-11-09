@@ -96,14 +96,12 @@ fel_cc_library(
     ] + [":felicia_env"],
     deps = [
         ":export",
-        "//third_party/chromium/base",
-        "//third_party/chromium/device",
-        "//third_party/chromium/net",
-        "@com_google_googletest//:gtest",
-        "@eigen",
-        "@jpeg",
-        "@png_archive//:png",
-        "@yaml-cpp",
+        "//third_party:chromium",
+        "//external:gtest",
+        "//external:eigen",
+        "//external:jpeg",
+        "//external:png",
+        "//external:yaml-cpp",
     ] + if_has_opencv([
         "@opencv",
     ]) + if_static(

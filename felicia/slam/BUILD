@@ -14,6 +14,7 @@ fel_proto_library(
         "camera/camera_model_message.proto",
     ],
     default_header = True,
+    export_proto = True,
     protodeps = ["//felicia/core/protobuf:protos_all_proto"],
     visibility = ["//visibility:public"],
 )

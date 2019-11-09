@@ -12,9 +12,11 @@ namespace felicia {
 
 namespace protobuf_internal {
 
-EXPORT bool SerializeToString(const google::protobuf::Message* msg, std::string* text);
+EXPORT bool SerializeToString(const google::protobuf::Message* msg,
+                              std::string* text);
 
-EXPORT bool ParseFromArray(google::protobuf::Message* msg, const char* start, size_t size);
+EXPORT bool ParseFromArray(google::protobuf::Message* msg, const char* start,
+                           size_t size);
 
 }  // namespace protobuf_internal
 

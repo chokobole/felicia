@@ -19,7 +19,7 @@ def fel_pybind_py_library(
         copts = fel_cxxopts(is_external = True) + copts,
         linkshared = 1,
         linkstatic = 1,
-        deps = ["@pybind11"] + cc_deps,
+        deps = ["//external:pybind11"] + cc_deps,
     )
 
     # On windows, it needs a .pyd file but it can't generate *.pyd above

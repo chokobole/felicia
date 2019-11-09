@@ -101,6 +101,6 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "@jpeg",
+        "//external:jpeg",
     ],
 )

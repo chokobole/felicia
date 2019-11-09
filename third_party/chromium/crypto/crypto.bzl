@@ -1,4 +1,10 @@
-def crypto_copts(is_external = False):
+def crypto_copts():
+    return []
+
+def crypto_defines():
+    return []
+
+def crypto_includes():
     return []
 
 def crypto_linkopts():

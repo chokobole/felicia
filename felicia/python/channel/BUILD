@@ -11,8 +11,8 @@ fel_cc_library(
         "channel_py.h",
     ],
     deps = [
+        "//external:pybind11",
         "//felicia/core/channel",
         "//felicia/python/type_conversion",
-        "@pybind11",
     ],
 )

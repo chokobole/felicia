@@ -29,6 +29,7 @@ fel_proto_library_cc(
     srcs = ["master_service.proto"],
     has_services = 1,
     cc_grpc_version = 1,
+    export_proto = True,
     protodeps = ["//felicia/core/protobuf:protos_all_proto"],
     visibility = ["//felicia:internal"],
 )

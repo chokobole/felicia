@@ -35,12 +35,12 @@ chromium_cc_library(
     hdrs = TESTING_HDRS,
     deps = if_mac_or_ios([
         ":testing_mac",
-    ]) + ["@com_google_googletest//:gtest"],
+    ]) + ["//external:gtest"],
 )
 
 chromium_objc_library(
     name = "testing_mac",
     srcs = ["platform_test_mac.mm"],
     hdrs = TESTING_HDRS,
-    deps = ["@com_google_googletest//:gtest"],
+    deps = ["//external:gtest"],
 )

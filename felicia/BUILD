@@ -1,8 +1,8 @@
+load("//bazel:felicia.bzl", "fel_deps")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
     "fel_cc_shared_library",
-    "fel_cxxopts",
 )
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 
@@ -103,7 +103,8 @@ alias(
         ":mac": "mac",
         ":ios": "ios",
         "//conditions:default": ":mac",
-    })
+    }),
+    visibility = ["//visibility:public"],
 )
 
 alias(
@@ -221,15 +222,6 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
-# Example build with ORB_SLAM2
-config_setting(
-    name = "has_orb_slam2",
-    define_values = {
-        "has_orb_slam2": "true",
-    },
-    visibility = ["//visibility:public"],
-)
-
 config_setting(
     name = "asan",
     define_values = {
@@ -255,41 +247,32 @@ package_group(
 
 fel_cc_library(
     name = "grpc",
+    visibility = ["//visibility:public"],
     deps = select({
-        ":s390x": ["@com_github_grpc_grpc//:grpc_unsecure"],
-        "//conditions:default": ["@com_github_grpc_grpc//:grpc"],
+        ":s390x": ["//external:grpc_unsecure"],
+        "//conditions:default": ["//external:grpc"],
     }),
 )
 
 fel_cc_library(
     name = "grpc++",
+    visibility = ["//visibility:public"],
     deps = select({
-        ":s390x": ["@com_github_grpc_grpc//:grpc++_unsecure"],
-        "//conditions:default": ["@com_github_grpc_grpc//:grpc++"],
+        ":s390x": ["//external:grpc++_unsecure"],
+        "//conditions:default": ["//external:grpc++"],
     }),
+)
+
+fel_cc_library(
+    name = "felicia",
+    visibility = ["//visibility:public"],
+    deps = fel_deps(),
 )
 
 fel_cc_shared_library(
     name = "felicia",
     srcs = ["empty.cc"],
-    deps = [
-        "//felicia/core:felicia_init",
-        "//felicia/core/communication",
-        "//felicia/core/lib",
-        "//felicia/core/master:bytes_constants",
-        "//felicia/core/master:master_proxy",
-        "//felicia/core/master/rpc:master_client",
-        "//felicia/core/message",
-        "//felicia/core/node:dynamic_publishing_node",
-        "//felicia/core/node:dynamic_subscribing_node",
-        "//felicia/core/node:node_lifecycle",
-        "//felicia/core/util",
-        "//felicia/drivers/camera",
-        "//felicia/drivers/imu",
-        "//felicia/drivers/lidar",
-        "//felicia/map",
-        "//felicia/slam",
-    ],
+    deps = fel_deps(),
 )
 
 pkg_tar(

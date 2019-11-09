@@ -1,4 +1,10 @@
-def device_copts(is_external = False):
+def device_copts():
+    return []
+
+def device_defines():
+    return []
+
+def device_includes():
     return []
 
 def device_linkopts():

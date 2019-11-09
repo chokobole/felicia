@@ -36,7 +36,7 @@ filegroup(
 filegroup(
     name = "felicia_js_win_srcs",
     srcs = select({
-        "//felicia:win_no_grpc": [
+        "@com_github_chokobole_felicia//felicia:win_no_grpc": [
             "felicia_js.cc",
             "master_proxy_js.cc",
             "master_proxy_js.h",
@@ -66,7 +66,7 @@ fel_cc_library(
 fel_cc_library(
     name = "felicia_js_win_deps",
     deps = select({
-        "//felicia:win_no_grpc": [
+        "@com_github_chokobole_felicia//felicia:win_no_grpc": [
             ":typed_call",
             "//felicia/core/lib",
             "//felicia/core/master:master_proxy",
@@ -80,12 +80,12 @@ fel_cc_library(
 fel_nodejs_bind_node_library(
     name = "felicia_js",
     srcs = select({
-        "//felicia:windows": [":felicia_js_win_srcs"],
+        "@com_github_chokobole_felicia//felicia:windows": [":felicia_js_win_srcs"],
         "//conditions:default": [":felicia_js_srcs"],
     }),
     defines = ["FEL_NO_SSL"],
     deps = select({
-        "//felicia:windows": [":felicia_js_win_deps"],
+        "@com_github_chokobole_felicia//felicia:windows": [":felicia_js_win_deps"],
         "//conditions:default": [":felicia_js_deps"],
     }),
 )

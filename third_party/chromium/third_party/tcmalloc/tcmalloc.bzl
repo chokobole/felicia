@@ -1,5 +1,4 @@
 load("@cc//:compiler.bzl", "is_android", "is_clang", "is_debug", "is_linux")
-load("//bazel:felicia_cc.bzl", "define")
 load(
     "//third_party/chromium/build/config:allocator.bzl",
     "USE_ALLOCATOR",
@@ -21,6 +20,9 @@ def tcmalloc_dir():
         return "gperftools-2.0/chromium"
 
 def tcmalloc_copts():
+    return []
+
+def tcmalloc_defines():
     defines = ["TCMALLOC_USE_DOUBLYLINKED_FREELIST", "TCMALLOC_DISABLE_HUGE_ALLOCATIONS"]
 
     if ENABLE_DEBUGALLOCATION:
@@ -37,18 +39,20 @@ def tcmalloc_copts():
     if ENABLE_PROFILING:
         defines.append("ENABLE_PROFILING=1")
 
-    return define(defines)
+    return defines
 
 def tcmalloc_linkopts():
-    if is_linux() or is_android():
-        return [
-            "-Wl,-uIsHeapProfilerRunning,-uProfilerStart",
-            "-Wl,-u_Z21InitialMallocHook_NewPKvj,-u_Z22InitialMallocHook_MMapPKvS0_jiiix,-u_Z22InitialMallocHook_SbrkPKvi",
-            "-Wl,-u_Z21InitialMallocHook_NewPKvm,-u_Z22InitialMallocHook_MMapPKvS0_miiil,-u_Z22InitialMallocHook_SbrkPKvl",
-            "-Wl,-u_ZN15HeapLeakChecker12IgnoreObjectEPKv,-u_ZN15HeapLeakChecker14UnIgnoreObjectEPKv",
-        ]
-    else:
-        return []
+    linkopts = [
+        "-Wl,-uIsHeapProfilerRunning,-uProfilerStart",
+        "-Wl,-u_Z21InitialMallocHook_NewPKvj,-u_Z22InitialMallocHook_MMapPKvS0_jiiix,-u_Z22InitialMallocHook_SbrkPKvi",
+        "-Wl,-u_Z21InitialMallocHook_NewPKvm,-u_Z22InitialMallocHook_MMapPKvS0_miiil,-u_Z22InitialMallocHook_SbrkPKvl",
+        "-Wl,-u_ZN15HeapLeakChecker12IgnoreObjectEPKv,-u_ZN15HeapLeakChecker14UnIgnoreObjectEPKv",
+    ]
+    return select({
+        "@com_github_chokobole_felicia//felicia:android": linkopts,
+        "@com_github_chokobole_felicia//felicia:linux": linkopts,
+        "//conditions:default": [],
+    })
 
 def tcmalloc_additional_srcs():
     srcs = []

@@ -31,7 +31,7 @@ cc_library(
     includes = ["include"],
     visibility = ["//visibility:public"],
     deps = [
-        "@eigen",
+        "//external:eigen",
         "@local_config_python//:numpy_headers",
         "@local_config_python//:python_headers",
     ],

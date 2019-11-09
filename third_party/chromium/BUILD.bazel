@@ -12,6 +12,7 @@ package_group(
     name = "internal",
     packages = [
         "//felicia/...",
+        "//third_party",
         "//third_party/chromium/...",
     ],
 )
@@ -45,4 +46,36 @@ write_build_date_header(
 chromium_cc_library(
     name = "build_date",
     hdrs = [":build_date_hdr"],
+)
+
+chromium_cc_library(
+    name = "base_hdrs",
+    hdrs = ["//third_party/chromium/base:base_hdrs"],
+    includes = ["."],
+    deps = [":build_hdrs"],
+)
+
+chromium_cc_library(
+    name = "build_hdrs",
+    hdrs = ["//third_party/chromium/build:build_hdrs"],
+    includes = ["."],
+)
+
+chromium_cc_library(
+    name = "crypto_hdrs",
+    hdrs = ["//third_party/chromium/crypto:crypto_hdrs"],
+    includes = ["."],
+)
+
+chromium_cc_library(
+    name = "device_hdrs",
+    hdrs = ["//third_party/chromium/device:device_hdrs"],
+    includes = ["."],
+)
+
+chromium_cc_library(
+    name = "net_hdrs",
+    hdrs = ["//third_party/chromium/net:net_hdrs"],
+    includes = ["."],
+    deps = [":cyrpto_hdrs"],
 )

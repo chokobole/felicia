@@ -29,6 +29,8 @@ load(
     "base_additional_srcs",
     "base_additional_test_srcs",
     "base_copts",
+    "base_defines",
+    "base_includes",
     "base_linkopts",
 )
 load(
@@ -194,9 +196,32 @@ BASE_HDRS = chromium_platform_hdrs(exclude = [
 ]) + [
     "third_party/dmg_fp/dmg_fp.h",
     "third_party/dmg_fp/dtoa.cc",
+    "third_party/dynamic_annotations/dynamic_annotations.h",
     "third_party/nspr/prtime.h",
     "third_party/icu/icu_utf.h",
+    "third_party/symbolize/config.h",
+    "third_party/symbolize/demangle.h",
+    "third_party/symbolize/glog/logging.h",
+    "third_party/symbolize/glog/raw_logging.h",
+    "third_party/symbolize/symbolize.h",
+    "third_party/symbolize/utilities.h",
+    "third_party/valgrind/memcheck.h",
+    "third_party/valgrind/valgrind.h",
+    "third_party/xdg_mime/xdgmime.h",
+    "third_party/xdg_mime/xdgmimealias.h",
+    "third_party/xdg_mime/xdgmimecache.h",
+    "third_party/xdg_mime/xdgmimeglob.h",
+    "third_party/xdg_mime/xdgmimeicon.h",
+    "third_party/xdg_mime/xdgmimeint.h",
+    "third_party/xdg_mime/xdgmimemagic.h",
+    "third_party/xdg_mime/xdgmimeparent.h",
+    "third_party/xdg_user_dirs/xdg_user_dir_lookup.h",
 ] + base_additional_hdrs()
+
+filegroup(
+    name = "base_hdrs",
+    srcs = BASE_HDRS,
+)
 
 chromium_cc_library(
     name = "base",
@@ -289,6 +314,8 @@ chromium_cc_library(
     ] + base_additional_srcs(),
     hdrs = BASE_HDRS,
     copts = base_copts(),
+    defines = base_defines(),
+    includes = base_includes(),
     linkopts = base_linkopts(),
     deps = if_mac_or_ios([
         ":base_mac",
@@ -300,7 +327,6 @@ chromium_cc_library(
         ":xdg_mime",
         ":xdg_user_dirs",
     ]) + [
-        ":valgrind",
         ":dynamic_annotations",
         ":superfasthash",
         "//third_party/chromium:base_buildflags",
@@ -443,12 +469,7 @@ chromium_c_library(
     srcs = [
         "third_party/dynamic_annotations/dynamic_annotations.c",
     ],
-    hdrs = [
-        "third_party/dynamic_annotations/dynamic_annotations.h",
-    ],
-    deps = [
-        ":valgrind",
-    ],
+    deps = ["//third_party/chromium:base_hdrs"],
 )
 
 chromium_c_library(
@@ -456,6 +477,7 @@ chromium_c_library(
     srcs = [
         "third_party/superfasthash/superfasthash.c",
     ],
+    deps = ["//third_party/chromium:base_hdrs"],
 )
 
 chromium_cc_library(
@@ -464,22 +486,8 @@ chromium_cc_library(
         "third_party/symbolize/demangle.cc",
         "third_party/symbolize/symbolize.cc",
     ],
-    hdrs = [
-        "third_party/symbolize/config.h",
-        "third_party/symbolize/demangle.h",
-        "third_party/symbolize/glog/logging.h",
-        "third_party/symbolize/glog/raw_logging.h",
-        "third_party/symbolize/symbolize.h",
-        "third_party/symbolize/utilities.h",
-    ],
-)
-
-chromium_c_library(
-    name = "valgrind",
-    hdrs = [
-        "third_party/valgrind/memcheck.h",
-        "third_party/valgrind/valgrind.h",
-    ],
+    includes = ["third_party/symbolize"],
+    deps = ["//third_party/chromium:base_hdrs"],
 )
 
 chromium_c_library(
@@ -494,16 +502,7 @@ chromium_c_library(
         "third_party/xdg_mime/xdgmimemagic.c",
         "third_party/xdg_mime/xdgmimeparent.c",
     ],
-    hdrs = [
-        "third_party/xdg_mime/xdgmime.h",
-        "third_party/xdg_mime/xdgmimealias.h",
-        "third_party/xdg_mime/xdgmimecache.h",
-        "third_party/xdg_mime/xdgmimeglob.h",
-        "third_party/xdg_mime/xdgmimeicon.h",
-        "third_party/xdg_mime/xdgmimeint.h",
-        "third_party/xdg_mime/xdgmimemagic.h",
-        "third_party/xdg_mime/xdgmimeparent.h",
-    ],
+    deps = ["//third_party/chromium:base_hdrs"],
 )
 
 chromium_cc_library(
@@ -511,9 +510,7 @@ chromium_cc_library(
     srcs = [
         "third_party/xdg_user_dirs/xdg_user_dir_lookup.cc",
     ],
-    hdrs = [
-        "third_party/xdg_user_dirs/xdg_user_dir_lookup.h",
-    ],
+    deps = ["//third_party/chromium:base_hdrs"],
 )
 
 chromium_cc_library(

@@ -11,8 +11,8 @@ fel_cc_library(
         "node_lifecycle_py.h",
     ],
     deps = [
+        "//external:pybind11",
         "//felicia/core/node:node_lifecycle",
         "//felicia/python/type_conversion",
-        "@pybind11",
     ],
 )

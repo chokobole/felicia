@@ -17,6 +17,6 @@ chromium_c_library(
         "modp_b64_data.h",
     ],
     deps = [
-        "//third_party/chromium/build",
+        "//third_party/chromium:build_hdrs",
     ],
 )

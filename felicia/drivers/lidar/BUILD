@@ -9,6 +9,7 @@ fel_proto_library(
         "lidar_frame_message.proto",
     ],
     default_header = True,
+    export_proto = True,
     visibility = ["//visibility:public"],
 )
 

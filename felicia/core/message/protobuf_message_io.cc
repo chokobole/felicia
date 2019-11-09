@@ -4,11 +4,13 @@ namespace felicia {
 
 namespace protobuf_internal {
 
-bool SerializeToString(const google::protobuf::Message* msg, std::string* text) {
+bool SerializeToString(const google::protobuf::Message* msg,
+                       std::string* text) {
   return msg->SerializeToString(text);
 }
 
-bool ParseFromArray(google::protobuf::Message* msg, const char* start, size_t size) {
+bool ParseFromArray(google::protobuf::Message* msg, const char* start,
+                    size_t size) {
   return msg->ParseFromArray(start, size);
 }
 

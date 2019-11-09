@@ -12,6 +12,6 @@ fel_wasm_binary(
         "-s ALLOW_MEMORY_GROWTH=1",
     ],
     deps = [
-        "@libyuv",
+        "//external:libyuv",
     ],
 )

@@ -35,7 +35,7 @@ cc_library(
             "intel/intel_init.c",
             "intel/filter_sse2_intrinsics.c",
         ],
-        "@felicia//felicia:ppc": [
+        "@com_github_chokobole_felicia//felicia:ppc": [
             "powerpc/powerpc_init.c",
             "powerpc/filter_vsx_intrinsics.c",
         ],
@@ -58,8 +58,8 @@ cc_library(
     visibility = ["//visibility:public"],
     # FIXME: Can use @felicia/bazel:fel_zlib_deps()?
     deps = select({
-        "@felicia//felicia:win_no_grpc": ["@node_addon_api"],
-        "//conditions:default": ["@com_github_madler_zlib//:z"],
+        "@com_github_chokobole_felicia//felicia:win_no_grpc": ["@node_addon_api"],
+        "//conditions:default": ["//external:zlib"],
     }),
 )
 

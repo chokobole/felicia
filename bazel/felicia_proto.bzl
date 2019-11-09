@@ -69,7 +69,7 @@ def cc_proto_library(
         deps = [],
         cc_libs = [],
         include = None,
-        protoc = "@com_google_protobuf//:protoc",
+        protoc = "//external:protoc",
         internal_bootstrap_hack = False,
         use_grpc_plugin = False,
         use_grpc_namespace = False,
@@ -124,7 +124,7 @@ def cc_proto_library(
     grpc_cpp_plugin = None
     plugin_options = []
     if use_grpc_plugin:
-        grpc_cpp_plugin = "@com_github_grpc_grpc//:grpc_cpp_plugin"
+        grpc_cpp_plugin = "//external:grpc_cpp_plugin"
         if use_grpc_namespace:
             plugin_options = ["services_namespace=grpc"]
     cc_options = if_static([], ["dllexport_decl=EXPORT"])
@@ -150,7 +150,7 @@ def cc_proto_library(
 
     grpc_deps = []
     if use_grpc_plugin:
-        grpc_deps.append("//felicia:grpc++")
+        grpc_deps.append("//external:grpc++_used")
 
     if default_header:
         header_only_name = name
@@ -170,7 +170,7 @@ def cc_proto_library(
     )
     fel_cc_library(
         name = header_only_name,
-        deps = ["@com_google_protobuf//:protobuf_headers"] + if_static([impl_name]),
+        deps = ["//external:protobuf_headers"] + if_static([impl_name]),
         hdrs = gen_hdrs,
         **kwargs
     )
@@ -188,7 +188,8 @@ def fel_proto_library_cc(
         j2objc_api_version = 1,
         cc_api_version = 1,
         js_codegen = "jspb",
-        default_header = False):
+        default_header = False,
+        export_proto = False):
     js_codegen = js_codegen  # unused argument
     native.filegroup(
         name = name + "_proto_srcs",
@@ -210,45 +211,51 @@ def fel_proto_library_cc(
         # libraries containing all the sources.
         proto_gen(
             name = cc_name + "_genproto",
-            protoc = "@com_google_protobuf//:protoc",
+            protoc = "//external:protoc",
             visibility = ["//visibility:public"],
             deps = [s + "_genproto" for s in cc_deps],
         )
         fel_cc_library(
             name = cc_name,
-            deps = cc_deps + ["@com_google_protobuf//:protobuf_headers"] + if_static([name + "_cc_impl"]),
+            deps = cc_deps + ["//external:protobuf_headers"] + if_static([name + "_cc_impl"]),
             testonly = testonly,
             visibility = visibility,
         )
         fel_cc_library(
             name = cc_name + "_impl",
-            deps = [s + "_impl" for s in cc_deps] + ["@com_google_protobuf//:cc_wkt_protos"],
+            deps = [s + "_impl" for s in cc_deps] + ["//external:cc_wkt_protos"],
         )
 
         return
+
+    export_deps = []
+    export_copts = []
+    if export_proto:
+        export_deps = ["//felicia/core/lib:export"]
+        export_copts = select({
+            "//felicia:windows": ["/FIfelicia/core/lib/base/export.h"],
+            "//conditions:default": ["-include felicia/core/lib/base/export.h"],
+        })
 
     cc_proto_library(
         name = cc_name,
         testonly = testonly,
         srcs = srcs,
-        cc_libs = cc_libs + ["//felicia/core/lib:export"] + if_static(
-            ["@com_google_protobuf//:protobuf"],
-            ["@com_google_protobuf//:protobuf_headers"],
+        cc_libs = cc_libs + export_deps + if_static(
+            ["//external:protobuf"],
+            ["//external:protobuf_headers"],
         ),
         copts = fel_cxxopts(True) + if_not_windows([
             "-Wno-unknown-warning-option",
             "-Wno-unused-but-set-variable",
             "-Wno-sign-compare",
-        ]) + select({
-            "//felicia:windows": ["/FIfelicia/core/lib/base/export.h"],
-            "//conditions:default": ["-include felicia/core/lib/base/export.h"],
-        }),
+        ]) + export_copts,
         default_header = default_header,
-        protoc = "@com_google_protobuf//:protoc",
+        protoc = "//external:protoc",
         use_grpc_namespace = use_grpc_namespace,
         use_grpc_plugin = use_grpc_plugin,
         visibility = visibility,
-        deps = cc_deps + ["@com_google_protobuf//:cc_wkt_protos"],
+        deps = cc_deps + ["//external:cc_wkt_protos"],
     )
 
 def fel_proto_library_py(
@@ -267,13 +274,13 @@ def fel_proto_library_py(
         # libraries containing all the sources.
         proto_gen(
             name = py_name + "_genproto",
-            protoc = "@com_google_protobuf//:protoc",
+            protoc = "//external:protoc",
             visibility = ["//visibility:public"],
             deps = [s + "_genproto" for s in py_deps],
         )
         native.py_library(
             name = py_name,
-            deps = py_deps + ["@com_google_protobuf//:protobuf_python"],
+            deps = py_deps + ["//external:protobuf_python"],
             testonly = testonly,
             visibility = visibility,
         )
@@ -283,12 +290,12 @@ def fel_proto_library_py(
         name = py_name,
         testonly = testonly,
         srcs = srcs,
-        default_runtime = "@com_google_protobuf//:protobuf_python",
-        protoc = "@com_google_protobuf//:protoc",
+        default_runtime = "//external:protobuf_python",
+        protoc = "//external:protoc",
         srcs_version = srcs_version,
         use_grpc_plugin = use_grpc_plugin,
         visibility = visibility,
-        deps = deps + py_deps + ["@com_google_protobuf//:protobuf_python"],
+        deps = deps + py_deps + ["//external:protobuf_python"],
     )
 
 def fel_proto_library(
@@ -304,7 +311,8 @@ def fel_proto_library(
         j2objc_api_version = 1,
         js_codegen = "jspb",
         provide_cc_alias = False,
-        default_header = False):
+        default_header = False,
+        export_proto = False):
     """Make a proto library, possibly depending on other proto libraries."""
     _ignore = (js_codegen, provide_cc_alias)
 
@@ -315,6 +323,7 @@ def fel_proto_library(
         cc_grpc_version = cc_grpc_version,
         cc_libs = cc_libs,
         default_header = default_header,
+        export_proto = export_proto,
         protodeps = protodeps,
         visibility = visibility,
     )

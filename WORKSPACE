@@ -1,8 +1,8 @@
-workspace(name = "felicia")
+workspace(name = "com_github_chokobole_felicia")
 
-load("//bazel:felicia_deps.bzl", "load_deps")
+load("//bazel:felicia_deps.bzl", "felicia_deps")
 
-load_deps()
+felicia_deps()
 
 load("//third_party/node_addon_api:install.bzl", "npm_install_node_addon_api")
 

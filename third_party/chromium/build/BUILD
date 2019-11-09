@@ -13,12 +13,19 @@ exports_files([
     "write_build_date_header.py",
 ])
 
+BUILD_HDRS = [
+    "build_config.h",
+    "buildflag.h",
+]
+
+filegroup(
+    name = "build_hdrs",
+    srcs = BUILD_HDRS,
+)
+
 chromium_cc_library(
     name = "build",
-    hdrs = [
-        "build_config.h",
-        "buildflag.h",
-    ],
+    hdrs = BUILD_HDRS,
 )
 
 build_timestamp(

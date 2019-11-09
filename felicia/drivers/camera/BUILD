@@ -23,6 +23,7 @@ fel_proto_library(
         "depth_camera_frame_message.proto",
     ],
     default_header = True,
+    export_proto = True,
     protodeps = ["//felicia/core/protobuf:protos_all_proto"],
     visibility = ["//visibility:public"],
 )
@@ -98,7 +99,7 @@ fel_cc_library(
     deps = [
         "//felicia/core/lib",
         "//felicia/core/util",
-        "@libyuv",
+        "//external:libyuv",
     ] + if_mac([":avf_camera"]),
 )
 
@@ -121,8 +122,8 @@ fel_objc_library(
         "CoreVideo",
     ],
     deps = [
+        "//external:libyuv",
         "//felicia/core/lib",
         "//felicia/core/util",
-        "@libyuv",
     ],
 )

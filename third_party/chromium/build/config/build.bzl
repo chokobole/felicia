@@ -1,16 +1,15 @@
 # Please refer to BUILD.gn for detail
 
 load("@cc//:compiler.bzl", "is_linux", "is_win")
-load("//bazel:felicia_cc.bzl", "define")
 load(
     "//third_party/chromium/build/config:allocator.bzl",
     "USE_ALLOCATOR",
 )
 
-def feature_flags():
+def feature_flags_defines():
     defines = []
     if USE_ALLOCATOR != "tcmalloc":
-        defines += define(["NO_TCMALLOC"])
+        defines += ["NO_TCMALLOC"]
     return defines
 
 def default_libs():

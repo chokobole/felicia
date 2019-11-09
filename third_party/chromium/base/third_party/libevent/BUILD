@@ -3,38 +3,11 @@
 
 licenses(["notice"])  # BSD 3-Clause
 
-load(
-    "//bazel:felicia.bzl",
-    "if_linux",
-    "if_mac_or_ios",
-)
-load(
-    "//third_party/chromium:chromium.bzl",
-    "chromium_c_library",
-)
+load("//third_party/chromium:chromium.bzl", "chromium_c_library")
 
 package(default_visibility = ["//third_party/chromium:internal"])
 
 exports_files(["LICENSE"])
-
-filegroup(
-    name = "libevent_hdrs",
-    srcs = [
-        "evdns.h",
-        "event-config.h",
-        "event.h",
-        "evhttp.h",
-        "evrpc.h",
-        "evutil.h",
-        "log.h",
-    ] + if_mac_or_ios([
-        "mac/config.h",
-        "mac/event-config.h",
-    ]) + if_linux([
-        "linux/config.h",
-        "linux/event-config.h",
-    ]),
-)
 
 chromium_c_library(
     name = "libevent",
@@ -58,17 +31,41 @@ chromium_c_library(
         "signal.c",
         "strlcpy-internal.h",
         "strlcpy.c",
-    ] + if_mac_or_ios([
-        "kqueue.c",
-    ]) + if_linux([
-        "epoll.c",
-    ]),
-    hdrs = [":libevent_hdrs"],
-    copts = if_mac_or_ios([
-        "-Ithird_party/chromium/base/third_party/libevent/mac",
-    ]) + if_linux([
-        "-Ithird_party/chromium/base/third_party/libevent/linux",
-    ]) + [
-        "-DHAVE_CONFIG_H",
-    ],
+    ] + select({
+        "@com_github_chokobole_felicia//felicia:android": ["epoll.c"],
+        "@com_github_chokobole_felicia//felicia:linux": ["epoll.c"],
+        "@com_github_chokobole_felicia//felicia:mac_or_ios": ["kqueue.c"],
+        "//conditions:default": [],
+    }),
+    hdrs = [
+        "evdns.h",
+        "event-config.h",
+        "event.h",
+        "evhttp.h",
+        "evrpc.h",
+        "evutil.h",
+        "log.h",
+    ] + select({
+        "@com_github_chokobole_felicia//felicia:android": [
+            "android/config.h",
+            "android/event-config.h",
+        ],
+        "@com_github_chokobole_felicia//felicia:linux": [
+            "linux/config.h",
+            "linux/event-config.h",
+        ],
+        "@com_github_chokobole_felicia//felicia:mac_or_ios": [
+            "mac/config.h",
+            "mac/event-config.h",
+        ],
+        "//conditions:default": [],
+    }),
+    defines = ["HAVE_CONFIG_H"],
+    includes = select({
+        "@com_github_chokobole_felicia//felicia:android": ["android"],
+        "@com_github_chokobole_felicia//felicia:linux": ["linux"],
+        "@com_github_chokobole_felicia//felicia:mac_or_ios": ["mac"],
+        "//conditions:default": [],
+    }),
+    deps = ["//third_party/chromium:base_hdrs"],
 )

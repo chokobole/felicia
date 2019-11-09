@@ -15,6 +15,7 @@ load(
     "tcmalloc_additional_hdrs",
     "tcmalloc_additional_srcs",
     "tcmalloc_copts",
+    "tcmalloc_defines",
     "tcmalloc_dir",
     "tcmalloc_linkopts",
 )
@@ -141,6 +142,7 @@ chromium_cc_library(
         "%s/src/libc_override_gcc_and_weak.h" % tcmalloc_dir(),
     ],
     copts = tcmalloc_copts(),
+    defines = tcmalloc_defines(),
     includes = [
         ".",
         "%s/src/base" % tcmalloc_dir(),
