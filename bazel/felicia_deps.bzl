@@ -16,6 +16,7 @@ load("//tools/cc:cc_configure.bzl", "cc_configure")
 
 def felicia_deps():
     """Loads dependencies need to compile and test the felicia."""
+
     # Needed by protobuf
     native.bind(
         name = "six",

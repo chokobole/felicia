@@ -1,47 +1,27 @@
-load("//bazel:felicia_cc.bzl", "fel_cxxopts")
+load("//bazel:felicia_cc.bzl", "fel_cc_shared_library")
 
 def fel_nodejs_bind_node_library(
         name,
-        srcs = [],
-        copts = [],
-        defines = [],
-        linkopts = [],
-        deps = []):
-    libname = "%s.so" % name
-
-    native.cc_binary(
-        name = libname,
+        srcs,
+        **kwargs):
+    fel_cc_shared_library(
+        name = name,
         srcs = srcs,
-        copts = fel_cxxopts() + copts,
-        defines = defines,
-        linkopts = linkopts,
-        linkshared = 1,
-        linkstatic = 1,
-        deps = ["@node_addon_api"] + deps,
+        name_templates = [
+            "%s.so",
+            "%s.dll",
+        ],
+        need_collect_hdrs = False,
+        **kwargs
     )
 
-    generate_node(
-        name = "%s_node" % name,
-        file = ":%s" % libname,
-        out = "%s.node" % name,
+    native.genrule(
+        name = name + "_node",
+        srcs = select({
+            "@com_github_chokobole_felicia//felicia:windows": [":" + name + ".dll"],
+            "//conditions:default": [":" + name + ".so"],
+        }),
+        outs = [name + ".node"],
+        cmd = "cp -f $< $@",
+        visibility = ["//visibility:private"],
     )
-
-def _generate_node_impl(ctx):
-    input = ctx.files.file[0]
-    output = ctx.outputs.out
-    target = ctx.attr.name[:-5]
-
-    ctx.actions.run_shell(
-        inputs = [input],
-        outputs = [output],
-        progress_message = "Copy %s to %s" % (input.short_path, output.short_path),
-        command = "cp %s %s" % (input.path, output.path),
-    )
-
-generate_node = rule(
-    implementation = _generate_node_impl,
-    attrs = {
-        "file": attr.label(mandatory = True, allow_single_file = True),
-        "out": attr.output(mandatory = True),
-    },
-)

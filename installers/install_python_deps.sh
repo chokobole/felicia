@@ -15,5 +15,7 @@ if ! [ -x "$(command -v pip)" ]; then
 fi
 
 pip install numpy $1
+# Disable temporarily due to issue https://github.com/grpc/grpc/issues/20831
+# pip install grpcio $1
 pip install empy $1  # For ROS C++ message generation
 pip install pyyaml $1  # For ROS Python message generation

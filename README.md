@@ -125,7 +125,7 @@ python3 scripts/docker_exec.py bazel build //felicia/...
 
 ## For Users
 
-Follow this link to check [examples](felicia/examples)
+Follow this link to check [felicia/examples](https://github.com/chokobole/felicia-examples).
 
 ## For Developers
 

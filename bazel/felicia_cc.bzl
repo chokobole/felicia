@@ -247,12 +247,14 @@ def fel_cc_shared_library(
         deps = [],
         copts = fel_cxxopts(True),
         linkopts = [],
+        name_templates = [
+            "lib%s.so",
+            "lib%s.dylib",
+            "%s.dll",
+        ],
+        need_collect_hdrs = True,
         **kwargs):
-    libnames = [
-        "lib" + name + ".so",
-        "lib" + name + ".dylib",
-        name + ".dll",
-    ]
+    libnames = [name_template % name for name_template in name_templates]
 
     for libname in libnames:
         native.cc_binary(
@@ -276,29 +278,31 @@ def fel_cc_shared_library(
             **kwargs
         )
 
-    native.filegroup(
-        name = name + "_if_lib",
-        srcs = [":" + name + ".dll"],
-        output_group = "interface_library",
-        tags = ["manual"],
-        visibility = ["//visibility:private"],
-    )
+        if libname.endswith(".dll"):
+            native.filegroup(
+                name = name + "_if_lib",
+                srcs = [":" + name + ".dll"],
+                output_group = "interface_library",
+                tags = ["manual"],
+                visibility = ["//visibility:private"],
+            )
 
-    native.genrule(
-        name = name + "_lib",
-        srcs = [":" + name + "_if_lib"],
-        outs = [name + ".lib"],
-        cmd = select({
-            "@com_github_chokobole_felicia//felicia:windows": "cp -f $< $@",
-            "//conditions:default": "touch $@",
-        }),
-        tags = ["manual"],
-        visibility = ["//visibility:public"],
-    )
+            native.genrule(
+                name = name + "_lib",
+                srcs = [":" + name + "_if_lib"],
+                outs = [name + ".lib"],
+                cmd = select({
+                    "@com_github_chokobole_felicia//felicia:windows": "cp -f $< $@",
+                    "//conditions:default": "touch $@",
+                }),
+                tags = ["manual"],
+                visibility = ["//visibility:public"],
+            )
 
-    collect_hdrs(
-        name = "collect_" + name + "_hdrs",
-        deps = deps,
-        tags = ["manual"],
-        visibility = ["//visibility:private"],
-    )
+    if need_collect_hdrs:
+        collect_hdrs(
+            name = "collect_" + name + "_hdrs",
+            deps = deps,
+            tags = ["manual"],
+            visibility = ["//visibility:private"],
+        )
