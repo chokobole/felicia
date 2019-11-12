@@ -1,5 +1,5 @@
 load("//bazel:felicia.bzl", "tpl")
-load("@env//:env.bzl", "FELICIA_ROOT")
+load("@local_config_env//:env.bzl", "FELICIA_ROOT")
 load("@local_config_python//:py.bzl", "PYTHON2_BIN")
 load(":cc_toolchain_config.bzl", "cc_toolchain_config")
 

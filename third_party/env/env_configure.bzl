@@ -1,5 +1,3 @@
-load("//bazel:felicia_repository.bzl", "is_linux")
-
 def _get_env(repository_ctx, name, default_value = False):
     if name in repository_ctx.os.environ:
         return repository_ctx.os.environ[name]

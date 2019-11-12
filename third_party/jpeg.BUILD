@@ -299,7 +299,7 @@ genrule(
         "simd/x86_64/jsimdcpu.o",
     ],
     cmd = "for out in $(OUTS); do\n" +
-          "  $(location @nasm//:nasm) -f elf64" +
+          "  $(location @nasm_archive//:nasm) -f elf64" +
           "    -DELF -DPIC -D__x86_64__" +
           "    -I $$(dirname $(location jconfig.h))/" +
           "    -I $$(dirname $(location jconfigint.h))/" +
@@ -308,7 +308,7 @@ genrule(
           "    -o $$out" +
           "    $$(dirname $(location simd/x86_64/jccolext-sse2.asm))/$$(basename $${out%.o}.asm)\n" +
           "done",
-    tools = ["@nasm"],
+    tools = ["@nasm_archive//:nasm"],
 )
 
 cc_library(
@@ -477,14 +477,14 @@ genrule(
         "simd/x86_64/jsimdcpu.obj",
     ],
     cmd = "for out in $(OUTS); do\n" +
-          "  $(location @nasm//:nasm) -fwin64 -DWIN64 -D__x86_64__" +
+          "  $(location @nasm_archive//:nasm) -fwin64 -DWIN64 -D__x86_64__" +
           "    -I $$(dirname $(location simd/x86_64/jccolext-sse2.asm))/" +
           "    -I $$(dirname $(location simd/nasm/jdct.inc))/" +
           "    -I $$(dirname $(location simd/nasm/jdct.inc))/../../win/" +
           "    -o $$out" +
           "    $$(dirname $(location simd/x86_64/jccolext-sse2.asm))/$$(basename $${out%.obj}.asm)\n" +
           "done",
-    tools = ["@nasm"],
+    tools = ["@nasm_archive//:nasm"],
 )
 
 cc_library(

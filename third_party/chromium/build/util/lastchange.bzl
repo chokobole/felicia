@@ -1,4 +1,4 @@
-load("@env//:env.bzl", "FELICIA_ROOT")
+load("@local_config_env//:env.bzl", "FELICIA_ROOT")
 load("@local_config_python//:py.bzl", "PYTHON_BIN")
 
 LastChangeInfo = provider("lastchange")

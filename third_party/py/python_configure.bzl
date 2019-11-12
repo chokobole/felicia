@@ -8,20 +8,17 @@
 """
 
 load(
-    "//bazel:felicia_repository.bzl",
+    "//bazel:repo.bzl",
     "execute",
     "failed_to_find_bash_bin_path",
     "failed_to_find_bin_path",
     "get_bash_bin_path",
     "get_bin_path",
-    "is_windows",
     "symlink_genrule_for_dir",
 )
-load(
-    "//bazel:felicia_util.bzl",
-    "norm_path",
-    "red",
-)
+load("//bazel:platform.bzl", "is_windows")
+load("//bazel:text_style.bzl", "red")
+load("//bazel:util.bzl", "norm_path")
 
 _PYTHON2_BIN_PATH = "PYTHON2_BIN_PATH"
 _PYTHON_BIN_PATH = "PYTHON_BIN_PATH"

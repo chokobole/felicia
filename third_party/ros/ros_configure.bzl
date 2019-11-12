@@ -1,13 +1,16 @@
 load(
-    "//bazel:felicia_repository.bzl",
+    "//bazel:repo.bzl",
     "failed_to_get_cflags_and_libs",
-    "is_linux",
-    "is_windows",
-    "is_x64",
     "pkg_config_cflags_and_libs",
     "symlink_dir",
 )
-load("//bazel:felicia_util.bzl", "red")
+load(
+    "//bazel:platform.bzl",
+    "is_linux",
+    "is_windows",
+    "is_x64",
+)
+load("//bazel:text_style.bzl", "red")
 
 _ROS_DISTRO = "ROS_DISTRO"
 
@@ -51,7 +54,7 @@ def _ros_configure_impl_linux(repository_ctx):
 
     ros_root = "/opt/ros/%s" % get_ros_distro(repository_ctx)
     ros_include = ros_root + "/include"
-    ros_include_rule = symlink_dir(
+    symlink_dir(
         repository_ctx,
         ros_include,
         "ros_include",

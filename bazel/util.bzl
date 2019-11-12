@@ -1,8 +1,3 @@
-def red(msg):
-    red = "\033[0;31m"
-    no_color = "\033[0m"
-    return "%s%s%s" % (red, msg, no_color)
-
 def norm_path(path):
     """Returns a path with '/' and remove the trailing slash."""
     path = path.replace("\\", "/")
@@ -16,16 +11,3 @@ def norm_path(path):
             continue
         path_elms.append(path_elm)
     return "/".join(path_elms)
-
-def append_to_set(s, element):
-    has_element = False
-    for e in s:
-        if e == element:
-            has_element = True
-            break
-    if has_element == False:
-        s.append(element)
-
-def extend_to_set(s, element):
-    for e in element:
-        append_to_set(s, e)

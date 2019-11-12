@@ -1,4 +1,4 @@
-load("@env//:env.bzl", "FELICIA_ROOT", "TRAVIS")
+load("@local_config_env//:env.bzl", "FELICIA_ROOT", "TRAVIS")
 
 def _felicia_env_impl(ctx):
     output = ctx.outputs.out

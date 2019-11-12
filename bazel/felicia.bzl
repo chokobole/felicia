@@ -1,4 +1,4 @@
-load("@env//:env.bzl", "TRAVIS")
+load("@local_config_env//:env.bzl", "TRAVIS")
 
 def if_x86_32(a):
     return select({
@@ -149,27 +149,9 @@ def if_has_opencv(a):
         "//conditions:default": [],
     })
 
-def if_has_realsense(a):
-    return select({
-        "@com_github_chokobole_felicia//felicia:has_realsense": a,
-        "//conditions:default": [],
-    })
-
 def if_has_ros(a):
     return select({
         "@com_github_chokobole_felicia//felicia:has_ros": a,
-        "//conditions:default": [],
-    })
-
-def if_has_rplidar(a):
-    return select({
-        "@com_github_chokobole_felicia//felicia:has_rplidar": a,
-        "//conditions:default": [],
-    })
-
-def if_has_zed(a):
-    return select({
-        "@com_github_chokobole_felicia//felicia:has_zed": a,
         "//conditions:default": [],
     })
 

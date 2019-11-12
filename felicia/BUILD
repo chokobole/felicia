@@ -191,33 +191,9 @@ config_setting(
 )
 
 config_setting(
-    name = "has_realsense",
-    define_values = {
-        "has_realsense": "true",
-    },
-    visibility = ["//visibility:public"],
-)
-
-config_setting(
     name = "has_ros",
     define_values = {
         "has_ros": "true",
-    },
-    visibility = ["//visibility:public"],
-)
-
-config_setting(
-    name = "has_rplidar",
-    define_values = {
-        "has_rplidar": "true",
-    },
-    visibility = ["//visibility:public"],
-)
-
-config_setting(
-    name = "has_zed",
-    define_values = {
-        "has_zed": "true",
     },
     visibility = ["//visibility:public"],
 )

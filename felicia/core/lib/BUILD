@@ -101,9 +101,9 @@ fel_cc_library(
         "//external:eigen",
         "//external:jpeg",
         "//external:png",
-        "//external:yaml-cpp",
+        "//external:yaml_cpp",
     ] + if_has_opencv([
-        "@opencv",
+        "@local_config_opencv",
     ]) + if_static(
         [
             "//felicia/core/protobuf:protos_all_cc",

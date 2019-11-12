@@ -6,7 +6,7 @@ licenses(["notice"])  # MIT
 exports_files(["LICENSE"])
 
 cc_library(
-    name = "yaml-cpp",
+    name = "yaml_cpp",
     srcs = glob([
         "src/**/*.cpp",
         "src/**/*.h",

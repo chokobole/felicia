@@ -5,11 +5,8 @@ load(
     "update_attrs",
     "workspace_and_buildfile",
 )
-load(
-    "//bazel:felicia_util.bzl",
-    "extend_to_set",
-    "norm_path",
-)
+load("//bazel:platform.bzl", "is_windows")
+load("//bazel:util.bzl", "norm_path")
 
 def failed_to_find_bin_path(repository_ctx, bin, env_var = None):
     fmt_str = "Cannot find %s in PATH, please make sure %s is installed and add its directory in PATH"
@@ -45,6 +42,19 @@ def _pkg_config_query(repository_ctx, cmd):
         ret.append("\"%s\"" % f)
     return ret
 
+def _append_to_set(s, element):
+    has_element = False
+    for e in s:
+        if e == element:
+            has_element = True
+            break
+    if has_element == False:
+        s.append(element)
+
+def _extend_to_set(s, element):
+    for e in element:
+        _append_to_set(s, e)
+
 def pkg_config_cflags_and_libs(repository_ctx, pkgs):
     if not is_executable(repository_ctx, "pkg-config"):
         return None
@@ -56,12 +66,12 @@ def pkg_config_cflags_and_libs(repository_ctx, pkgs):
         result = _pkg_config_query(repository_ctx, cmd)
         if result == None:
             return None
-        extend_to_set(cflags, result)
+        _extend_to_set(cflags, result)
         cmd = [pkg_config_bin_path, "--libs", pkg]
         result = _pkg_config_query(repository_ctx, cmd)
         if result == None:
             return None
-        extend_to_set(libs, result)
+        _extend_to_set(libs, result)
     return struct(cflags = cflags, libs = libs)
 
 def is_executable(repository_ctx, bin, env_var = None):
@@ -75,28 +85,6 @@ def is_executable(repository_ctx, bin, env_var = None):
         return False
     result = repository_ctx.execute([bash_bin, "-c", cmd])
     return result.return_code == 0
-
-def is_windows(repository_ctx):
-    """Returns true if the host operating system is windows."""
-    os_name = repository_ctx.os.name.lower()
-    if os_name.find("windows") != -1:
-        return True
-    return False
-
-def is_linux(repository_ctx):
-    """Returns true if the host operating system is linux."""
-    os_name = repository_ctx.os.name.lower()
-    if os_name.find("linux") != -1:
-        return True
-    return False
-
-def is_unix(repository_ctx):
-    """Returns true if the host operating system is unix."""
-    return not is_windows(repository_ctx)
-
-def is_x64(repository_ctx):
-    result = repository_ctx.execute(["uname", "-m"])
-    return result.stdout.strip() == "x86_64"
 
 def execute(
         repository_ctx,

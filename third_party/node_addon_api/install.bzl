@@ -1,10 +1,10 @@
 load("@local_config_python//:py.bzl", "PYTHON2_BIN")
 load(
-    "//bazel:felicia_repository.bzl",
+    "//bazel:repo.bzl",
     "failed_to_find_bash_bin_path",
     "get_bash_bin_path",
 )
-load("//bazel:felicia_util.bzl", "red")
+load("//bazel:text_style.bzl", "red")
 
 def _fail(msg):
     """Output failure message when auto configuration fails."""

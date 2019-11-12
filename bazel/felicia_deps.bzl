@@ -4,14 +4,11 @@ load(
     "new_git_repository",
 )
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("//bazel:felicia_repository.bzl", "http_archive_per_os")
-load("//third_party/cuda:cuda_configure.bzl", "cuda_configure")
+load("//bazel:repo.bzl", "http_archive_per_os")
 load("//third_party/env:env_configure.bzl", "env_configure")
 load("//third_party/opencv:opencv_configure.bzl", "opencv_configure")
 load("//third_party/py:python_configure.bzl", "python_configure")
-load("//third_party/realsense:realsense_configure.bzl", "realsense_configure")
 load("//third_party/ros:ros_configure.bzl", "ros_configure")
-load("//third_party/zed:zed_configure.bzl", "zed_configure")
 load("//tools/cc:cc_configure.bzl", "cc_configure")
 
 def felicia_deps():
@@ -128,12 +125,12 @@ def felicia_deps():
 
     native.bind(
         name = "pybind11",
-        actual = "@com_github_pybind11//:pybind11",
+        actual = "@com_github_pybind_pybind11//:pybind11",
     )
 
     native.bind(
-        name = "yaml-cpp",
-        actual = "@com_github_jbeder_yaml-cpp//:yaml-cpp",
+        name = "yaml_cpp",
+        actual = "@com_github_jbeder_yaml_cpp//:yaml_cpp",
     )
 
     native.bind(
@@ -141,13 +138,10 @@ def felicia_deps():
         actual = "@com_github_madler_zlib//:z",
     )
 
-    cuda_configure(name = "cuda")
-    env_configure(name = "env")
-    opencv_configure(name = "opencv")
+    env_configure(name = "local_config_env")
+    opencv_configure(name = "local_config_opencv")
     python_configure(name = "local_config_python")
-    realsense_configure(name = "realsense")
-    ros_configure(name = "ros")
-    zed_configure(name = "zed")
+    ros_configure(name = "local_config_ros")
 
     cc_configure(name = "cc")
 
@@ -227,9 +221,9 @@ def felicia_deps():
             build_file = "@com_github_chokobole_felicia//third_party:png.BUILD",
         )
 
-    if not native.existing_rule("nasm"):
+    if not native.existing_rule("nasm_archive"):
         http_archive(
-            name = "nasm",
+            name = "nasm_archive",
             urls = [
                 "http://mirror.tensorflow.org/www.nasm.us/pub/nasm/releasebuilds/2.13.03/nasm-2.13.03.tar.bz2",
                 "http://pkgs.fedoraproject.org/repo/pkgs/nasm/nasm-2.13.03.tar.bz2/sha512/d7a6b4cee8dfd603d8d4c976e5287b5cc542fa0b466ff989b743276a6e28114e64289bf02a7819eca63142a5278aa6eed57773007e5f589e15768e6456a8919d/nasm-2.13.03.tar.bz2",
@@ -258,17 +252,17 @@ def felicia_deps():
             tag = "3.3.5",
         )
 
-    if not native.existing_rule("com_github_pybind11"):
+    if not native.existing_rule("com_github_pybind_pybind11"):
         new_git_repository(
-            name = "com_github_pybind11",
+            name = "com_github_pybind_pybind11",
             build_file = "@com_github_chokobole_felicia//third_party:pybind11.BUILD",
             remote = "https://github.com/pybind/pybind11.git",
             tag = "v2.4.0",
         )
 
-    if not native.existing_rule("com_github_jbeder_yaml-cpp"):
+    if not native.existing_rule("com_github_jbeder_yaml_cpp"):
         new_git_repository(
-            name = "com_github_jbeder_yaml-cpp",
+            name = "com_github_jbeder_yaml_cpp",
             build_file = "@com_github_chokobole_felicia//third_party:yaml_cpp.BUILD",
             remote = "https://github.com/jbeder/yaml-cpp.git",
             tag = "yaml-cpp-0.6.2",
@@ -276,15 +270,7 @@ def felicia_deps():
             patches = ["@com_github_chokobole_felicia//third_party:yaml_cpp.patch"],
         )
 
-    if not native.existing_rule("rplidar_sdk"):
-        new_git_repository(
-            name = "rplidar_sdk",
-            remote = "https://github.com/Slamtec/rplidar_sdk.git",
-            commit = "25d34dbfbcb4de9046a31d366fc734c5c09a69f7",  # release/v1.11.0 + patch
-            build_file = "@com_github_chokobole_felicia//third_party:rplidar_sdk.BUILD",
-            patch_args = ["-p1"],
-            patches = ["@com_github_chokobole_felicia//third_party:rplidar_sdk.patch"],
-        )
+
 
     if not native.existing_rule("io_bazel_rules_go"):
         http_archive(

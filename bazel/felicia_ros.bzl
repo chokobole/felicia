@@ -1,5 +1,5 @@
 load("@local_config_python//:py.bzl", "PYTHON_BIN")
-load("@env//:env.bzl", "ROS_DISTRO")
+load("@local_config_env//:env.bzl", "ROS_DISTRO")
 load("//bazel:felicia.bzl", "if_has_ros")
 
 def _ros_cc_outs(srcs, gen_srv = False):

@@ -41,8 +41,8 @@ const std::string& LidarEndpoint::serial_port() const { return serial_port_; }
 float LidarEndpoint::buadrate() const { return baudrate_; }
 
 std::ostream& operator<<(std::ostream& os,
-                         const LidarEndpoint& rplidar_endpoint) {
-  os << rplidar_endpoint.ToString();
+                         const LidarEndpoint& lidar_endpoint) {
+  os << lidar_endpoint.ToString();
   return os;
 }
 

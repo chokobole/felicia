@@ -42,7 +42,7 @@ fel_cc_library(
         "//felicia/core/lib",
         "//felicia/core/util:command_line_interface",
     ] + if_has_ros([
-        "@ros",
+        "@local_config_ros",
     ]),
 )
 
