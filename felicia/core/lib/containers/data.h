@@ -141,7 +141,7 @@ struct DataMessageTraits<Color4<T>> {
 // Data::View<int> view = data.AsView<int>();
 // or
 // Data::View<float> view = data.AsView<float>();
-class EXPORT Data {
+class FEL_EXPORT Data {
  public:
   template <typename T>
   class ConstView {

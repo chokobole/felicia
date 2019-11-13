@@ -6,7 +6,7 @@
 
 namespace felicia {
 
-EXPORT Status FeliciaInit();
+FEL_EXPORT Status FeliciaInit();
 
 }  // namespace felicia
 

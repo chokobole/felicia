@@ -9,7 +9,7 @@
 namespace felicia {
 namespace drivers {
 
-class EXPORT ImuFormat {
+class FEL_EXPORT ImuFormat {
  public:
   ImuFormat();
   ImuFormat(float frame_rate);
@@ -30,14 +30,15 @@ class EXPORT ImuFormat {
   float frame_rate_ = 0;
 };
 
-EXPORT std::ostream& operator<<(std::ostream& os, const ImuFormat& imu_format);
+FEL_EXPORT std::ostream& operator<<(std::ostream& os,
+                                    const ImuFormat& imu_format);
 
 using ImuFormats = std::vector<ImuFormat>;
 
 // Compares the priority of the imu formats. Returns true if |lhs| is the
 // preferred imu format in comparison with |rhs|. Returns false otherwise.
-EXPORT bool CompareCapability(const ImuFormat& requested, const ImuFormat& lhs,
-                              const ImuFormat& rhs);
+FEL_EXPORT bool CompareCapability(const ImuFormat& requested,
+                                  const ImuFormat& lhs, const ImuFormat& rhs);
 
 }  // namespace drivers
 }  // namespace felicia

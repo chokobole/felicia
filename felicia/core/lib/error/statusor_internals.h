@@ -25,7 +25,7 @@ limitations under the License.
 namespace felicia {
 namespace internal_statusor {
 
-class EXPORT Helper {
+class FEL_EXPORT Helper {
  public:
   // Move type-agnostic error handling to the .cc.
   static void HandleInvalidStatusCtorArg(Status*);

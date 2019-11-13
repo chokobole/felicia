@@ -7,7 +7,7 @@
 namespace felicia {
 namespace drivers {
 
-class EXPORT DepthCameraFrame : public CameraFrame {
+class FEL_EXPORT DepthCameraFrame : public CameraFrame {
  public:
   DepthCameraFrame();
   DepthCameraFrame(const CameraFrame& other, float min, float max);

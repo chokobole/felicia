@@ -22,7 +22,7 @@ namespace drivers {
 
 const int kFrameRatePrecision = 10000;
 
-class EXPORT CameraFormat {
+class FEL_EXPORT CameraFormat {
  public:
   CameraFormat();
   CameraFormat(Sizei size, PixelFormat pixel_format, float frame_rate);
@@ -77,20 +77,21 @@ class EXPORT CameraFormat {
 using CameraFormats = std::vector<CameraFormat>;
 
 // Prints a human-readable representation of |camera_format| to |os|.
-EXPORT std::ostream& operator<<(std::ostream& os,
-                                const CameraFormat& camera_format);
+FEL_EXPORT std::ostream& operator<<(std::ostream& os,
+                                    const CameraFormat& camera_format);
 
-EXPORT std::ostream& operator<<(std::ostream& os,
-                                const CameraFormats& camera_formats);
+FEL_EXPORT std::ostream& operator<<(std::ostream& os,
+                                    const CameraFormats& camera_formats);
 
-EXPORT bool ComparePixelFormatPreference(PixelFormat lhs, PixelFormat rhs);
+FEL_EXPORT bool ComparePixelFormatPreference(PixelFormat lhs, PixelFormat rhs);
 
 // Compares the priority of the camera formats. Returns true if |lhs| is the
 // preferred camera format in comparison with |rhs|. Returns false otherwise.
-EXPORT bool CompareCapability(const CameraFormat& requested,
-                              const CameraFormat& lhs, const CameraFormat& rhs);
+FEL_EXPORT bool CompareCapability(const CameraFormat& requested,
+                                  const CameraFormat& lhs,
+                                  const CameraFormat& rhs);
 
-EXPORT const CameraFormat& GetBestMatchedCameraFormat(
+FEL_EXPORT const CameraFormat& GetBestMatchedCameraFormat(
     const CameraFormat& requested, const CameraFormats& camera_formats);
 
 }  // namespace drivers

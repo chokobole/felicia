@@ -11,7 +11,7 @@
 
 namespace felicia {
 
-class EXPORT BufferedReader {
+class FEL_EXPORT BufferedReader {
  public:
   enum Option {
     NONE,

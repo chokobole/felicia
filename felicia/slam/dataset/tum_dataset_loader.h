@@ -18,7 +18,7 @@ namespace slam {
 // StatusOr<SensorData> sensor_data = loader.Next();
 // For example, /path/to/tum should point to the
 // /path/to/rgbd_data_set/freiburg1_rpy.
-class EXPORT TumDatasetLoader
+class FEL_EXPORT TumDatasetLoader
     : public DatasetLoader<SensorMetaData, SensorData>::Delegate {
  public:
   enum TumKind { FR1, FR2, FR3 };

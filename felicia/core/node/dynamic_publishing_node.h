@@ -11,9 +11,9 @@
 
 namespace felicia {
 
-class EXPORT DynamicPublishingNode : public NodeLifecycle {
+class FEL_EXPORT DynamicPublishingNode : public NodeLifecycle {
  public:
-  class EXPORT Delegate {
+  class FEL_EXPORT Delegate {
    public:
     virtual ~Delegate() = default;
 

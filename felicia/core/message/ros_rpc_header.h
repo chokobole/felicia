@@ -7,7 +7,7 @@
 
 namespace felicia {
 
-class EXPORT RosRpcHeader : public Header {
+class FEL_EXPORT RosRpcHeader : public Header {
  public:
   RosRpcHeader();
   ~RosRpcHeader();

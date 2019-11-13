@@ -9,7 +9,7 @@
 
 namespace felicia {
 
-class EXPORT DynamicProtobufMessage {
+class FEL_EXPORT DynamicProtobufMessage {
  public:
   DynamicProtobufMessage();
   DynamicProtobufMessage(const DynamicProtobufMessage& other);

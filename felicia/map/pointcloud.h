@@ -14,7 +14,7 @@
 namespace felicia {
 namespace map {
 
-class EXPORT Pointcloud {
+class FEL_EXPORT Pointcloud {
  public:
   enum SerializeOption {
     WITH_INTENCITIES = 1,

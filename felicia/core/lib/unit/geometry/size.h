@@ -113,18 +113,18 @@ MessageType SizeToSizeMessage(const Size<T>& size) {
   return message;
 }
 
-EXPORT SizeiMessage SizeiToSizeiMessage(const Sizei& size);
-EXPORT SizefMessage SizefToSizefMessage(const Sizef& size);
-EXPORT SizedMessage SizedToSizedMessage(const Sized& size);
+FEL_EXPORT SizeiMessage SizeiToSizeiMessage(const Sizei& size);
+FEL_EXPORT SizefMessage SizefToSizefMessage(const Sizef& size);
+FEL_EXPORT SizedMessage SizedToSizedMessage(const Sized& size);
 
 template <typename T, typename MessageType>
 Size<T> SizeMessageToSize(const MessageType& message) {
   return {message.width(), message.height()};
 }
 
-EXPORT Sizei SizeiMessageToSizei(const SizeiMessage& message);
-EXPORT Sizef SizefMessageToSizef(const SizefMessage& message);
-EXPORT Sized SizedMessageToSized(const SizedMessage& message);
+FEL_EXPORT Sizei SizeiMessageToSizei(const SizeiMessage& message);
+FEL_EXPORT Sizef SizefMessageToSizef(const SizefMessage& message);
+FEL_EXPORT Sized SizedMessageToSized(const SizedMessage& message);
 
 }  // namespace felicia
 

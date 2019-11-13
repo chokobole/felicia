@@ -8,7 +8,7 @@
 
 namespace felicia {
 
-class EXPORT ShmChannel : public Channel {
+class FEL_EXPORT ShmChannel : public Channel {
  public:
   ~ShmChannel() override;
 

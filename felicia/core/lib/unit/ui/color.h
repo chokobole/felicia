@@ -60,11 +60,11 @@ std::ostream& operator<<(std::ostream& os, const Color3<T>& color) {
 typedef Color3<uint8_t> Color3u;
 typedef Color3<float> Color3f;
 
-EXPORT Color3uMessage Color3uToColor3uMessage(const Color3u& color);
-EXPORT Color3fMessage Color3fToColor3fMessage(const Color3f& color);
+FEL_EXPORT Color3uMessage Color3uToColor3uMessage(const Color3u& color);
+FEL_EXPORT Color3fMessage Color3fToColor3fMessage(const Color3f& color);
 
-EXPORT Color3u Color3uMessageToColor3u(const Color3uMessage& message);
-EXPORT Color3f Color3fMessageToColor3f(const Color3fMessage& message);
+FEL_EXPORT Color3u Color3uMessageToColor3u(const Color3uMessage& message);
+FEL_EXPORT Color3f Color3fMessageToColor3f(const Color3fMessage& message);
 
 template <typename T>
 class Color4 {
@@ -123,11 +123,11 @@ std::ostream& operator<<(std::ostream& os, const Color4<T>& color) {
 typedef Color4<uint8_t> Color4u;
 typedef Color4<float> Color4f;
 
-EXPORT Color4uMessage Color4uToColor4uMessage(const Color4u& color);
-EXPORT Color4fMessage Color4fToColor4fMessage(const Color4f& color);
+FEL_EXPORT Color4uMessage Color4uToColor4uMessage(const Color4u& color);
+FEL_EXPORT Color4fMessage Color4fToColor4fMessage(const Color4f& color);
 
-EXPORT Color4u Color4uMessageToColor4u(const Color4uMessage& message);
-EXPORT Color4f Color4fMessageToColor4f(const Color4fMessage& message);
+FEL_EXPORT Color4u Color4uMessageToColor4u(const Color4uMessage& message);
+FEL_EXPORT Color4f Color4fMessageToColor4f(const Color4fMessage& message);
 
 struct ColorIndexes {
   int r;

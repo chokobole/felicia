@@ -14,7 +14,7 @@ namespace felicia {
 template <typename MessageTy>
 class Subscriber;
 
-class EXPORT RosTopicRequest {
+class FEL_EXPORT RosTopicRequest {
  public:
   RosTopicRequest();
   ~RosTopicRequest();

@@ -11,12 +11,12 @@
 
 namespace felicia {
 
-class EXPORT TableWriter {
+class FEL_EXPORT TableWriter {
  public:
   TableWriter(const TableWriter& other);
   ~TableWriter();
 
-  struct EXPORT Column {
+  struct FEL_EXPORT Column {
     Column(std::string title, int width);
     Column(const Column& other);
     ~Column();
@@ -36,7 +36,7 @@ class EXPORT TableWriter {
   std::vector<std::vector<std::string>> elements_;
 };
 
-class EXPORT TableWriterBuilder {
+class FEL_EXPORT TableWriterBuilder {
  public:
   TableWriterBuilder();
   ~TableWriterBuilder();

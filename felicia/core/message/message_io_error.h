@@ -13,7 +13,7 @@ enum MessageIOError {
 #undef MESSAGE_IO_ERR
 };
 
-EXPORT std::string MessageIOErrorToString(MessageIOError mesasge_io_error);
+FEL_EXPORT std::string MessageIOErrorToString(MessageIOError mesasge_io_error);
 
 }  // namespace felicia
 

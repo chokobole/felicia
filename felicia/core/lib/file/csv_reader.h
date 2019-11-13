@@ -6,7 +6,7 @@
 
 namespace felicia {
 
-class EXPORT CsvReader {
+class FEL_EXPORT CsvReader {
  public:
   CsvReader();
 

@@ -8,7 +8,7 @@
 namespace felicia {
 namespace protobuf {
 
-EXPORT std::string ProtobufMessageToString(
+FEL_EXPORT std::string ProtobufMessageToString(
     const google::protobuf::Message& message);
 
 }  // namespace protobuf

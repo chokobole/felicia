@@ -5,7 +5,7 @@
 
 namespace felicia {
 
-class EXPORT UDPChannel : public Channel {
+class FEL_EXPORT UDPChannel : public Channel {
  public:
   ~UDPChannel() override;
 

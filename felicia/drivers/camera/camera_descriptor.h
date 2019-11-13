@@ -9,7 +9,7 @@
 namespace felicia {
 namespace drivers {
 
-class EXPORT CameraDescriptor {
+class FEL_EXPORT CameraDescriptor {
  public:
   CameraDescriptor();
   CameraDescriptor(const std::string& display_name,
@@ -32,11 +32,11 @@ class EXPORT CameraDescriptor {
 
 using CameraDescriptors = std::vector<CameraDescriptor>;
 
-EXPORT std::ostream& operator<<(std::ostream& os,
-                                const CameraDescriptor& camera_descriptor);
+FEL_EXPORT std::ostream& operator<<(std::ostream& os,
+                                    const CameraDescriptor& camera_descriptor);
 
-EXPORT std::ostream& operator<<(std::ostream& os,
-                                const CameraDescriptors& camera_descriptors);
+FEL_EXPORT std::ostream& operator<<(
+    std::ostream& os, const CameraDescriptors& camera_descriptors);
 
 }  // namespace drivers
 }  // namespace felicia

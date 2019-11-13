@@ -16,9 +16,9 @@ namespace felicia {
 // MultiTopicDelegate: it needs a ToicInfoWatcherNode, which tells it if any
 // updates on the topic, and it only subscribes. So Master dones't know
 // if the node really subscribe any topics.
-class EXPORT DynamicSubscribingNode : public NodeLifecycle {
+class FEL_EXPORT DynamicSubscribingNode : public NodeLifecycle {
  public:
-  class EXPORT OneTopicDelegate {
+  class FEL_EXPORT OneTopicDelegate {
    public:
     virtual ~OneTopicDelegate() = default;
 
@@ -32,7 +32,7 @@ class EXPORT DynamicSubscribingNode : public NodeLifecycle {
     virtual void OnRequestUnsubscribe(Status s) { LOG_IF(ERROR, !s.ok()) << s; }
   };
 
-  class EXPORT MultiTopicDelegate {
+  class FEL_EXPORT MultiTopicDelegate {
    public:
     virtual ~MultiTopicDelegate() = default;
 

@@ -10,10 +10,10 @@ namespace felicia {
 const int HOST_IP_ONLY_ALLOW_IPV4 = 1;
 
 // Returns the host ip address of the machine on which this process is running
-EXPORT net::IPAddress HostIPAddress(int option = 0);
+FEL_EXPORT net::IPAddress HostIPAddress(int option = 0);
 
 // Retunrs the randomly picked port
-EXPORT uint16_t PickRandomPort(bool is_tcp);
+FEL_EXPORT uint16_t PickRandomPort(bool is_tcp);
 
 }  // namespace felicia
 

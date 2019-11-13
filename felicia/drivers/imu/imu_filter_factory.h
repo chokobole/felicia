@@ -9,7 +9,7 @@
 namespace felicia {
 namespace drivers {
 
-class EXPORT ImuFilterFactory {
+class FEL_EXPORT ImuFilterFactory {
  public:
   enum ImuFilterKind {
     COMPLEMENTARY_FILTER_KIND,

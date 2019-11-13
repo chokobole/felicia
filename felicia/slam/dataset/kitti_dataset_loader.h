@@ -21,7 +21,7 @@ namespace slam {
 // For example, /path/to/kitti should point to the
 // /path/to/dataset/sequences/00. But exceptionally, for groundtruth pose,
 // path/to/kitti should point to /path/to/dataset/poses/00.txt
-class EXPORT KittiDatasetLoader
+class FEL_EXPORT KittiDatasetLoader
     : public DatasetLoader<SensorMetaData, SensorData>::Delegate {
  public:
   class State {

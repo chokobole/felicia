@@ -9,7 +9,7 @@
 
 namespace felicia {
 
-class EXPORT NodeLifecycle {
+class FEL_EXPORT NodeLifecycle {
  public:
   NodeLifecycle();
   virtual ~NodeLifecycle();

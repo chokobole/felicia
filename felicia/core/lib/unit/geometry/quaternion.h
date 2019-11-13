@@ -228,9 +228,9 @@ MessageType QuaternionToQuaternionMessage(const Quaternion<T>& quaternion) {
   return message;
 }
 
-EXPORT QuaternionfMessage
+FEL_EXPORT QuaternionfMessage
 QuaternionfToQuaternionfMessage(const Quaternionf& quaternion);
-EXPORT QuaterniondMessage
+FEL_EXPORT QuaterniondMessage
 QuaterniondToQuaterniondMessage(const Quaterniond& quaternion);
 
 template <typename T, typename MessageType>
@@ -238,9 +238,9 @@ Quaternion<T> QuaternionMessageToQuaternion(const MessageType& message) {
   return {message.x(), message.y(), message.z(), message.w()};
 }
 
-EXPORT Quaternionf
+FEL_EXPORT Quaternionf
 QuaternionfMessageToQuaternionf(const QuaternionfMessage& message);
-EXPORT Quaterniond
+FEL_EXPORT Quaterniond
 QuaterniondMessageToQuaterniond(const QuaterniondMessage& message);
 
 }  // namespace felicia

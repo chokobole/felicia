@@ -14,7 +14,7 @@ namespace felicia {
 template <typename MessageTy>
 class Publisher;
 
-class EXPORT RosTopicResponse {
+class FEL_EXPORT RosTopicResponse {
  public:
   using HandshakeCallback = base::OnceCallback<void(std::unique_ptr<Channel>)>;
 

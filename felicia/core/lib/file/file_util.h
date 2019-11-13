@@ -11,16 +11,16 @@
 namespace felicia {
 
 #if defined(OS_POSIX)
-EXPORT bool SetBlocking(int fd, int blocking);
+FEL_EXPORT bool SetBlocking(int fd, int blocking);
 #endif
 
-EXPORT base::FilePath ToFilePath(const std::string& file_path);
+FEL_EXPORT base::FilePath ToFilePath(const std::string& file_path);
 
-EXPORT bool ReadFile(const base::FilePath& path, std::unique_ptr<char[]>* out,
-                     size_t* out_len);
+FEL_EXPORT bool ReadFile(const base::FilePath& path,
+                         std::unique_ptr<char[]>* out, size_t* out_len);
 
-EXPORT bool WriteFile(const base::FilePath& path, const char* buf,
-                      size_t buf_len);
+FEL_EXPORT bool WriteFile(const base::FilePath& path, const char* buf,
+                          size_t buf_len);
 
 }  // namespace felicia
 

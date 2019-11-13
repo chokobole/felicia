@@ -10,7 +10,7 @@
 namespace felicia {
 namespace drivers {
 
-class EXPORT ImuFilterInterface {
+class FEL_EXPORT ImuFilterInterface {
  public:
   ImuFilterInterface();
   virtual ~ImuFilterInterface();

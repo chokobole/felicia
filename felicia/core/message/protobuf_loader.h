@@ -14,9 +14,9 @@
 
 namespace felicia {
 
-class EXPORT ProtobufLoader {
+class FEL_EXPORT ProtobufLoader {
  public:
-  class EXPORT ErrorCollector
+  class FEL_EXPORT ErrorCollector
       : public google::protobuf::DescriptorPool::ErrorCollector {
     void AddError(
         const std::string& filename, const std::string& element_name,

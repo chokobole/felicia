@@ -11,7 +11,7 @@
 namespace felicia {
 namespace drivers {
 
-class EXPORT CameraFactory {
+class FEL_EXPORT CameraFactory {
  public:
   static std::unique_ptr<CameraInterface> NewCamera(
       const CameraDescriptor& descriptor);

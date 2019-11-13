@@ -8,7 +8,7 @@ namespace felicia {
 
 // This class is used from other than c++ side, when from the c++ side,
 // it doens't know how to serialize or deserialize the message.
-class EXPORT SerializedMessage {
+class FEL_EXPORT SerializedMessage {
  public:
   SerializedMessage();
   SerializedMessage(const SerializedMessage& other);
@@ -30,7 +30,8 @@ class EXPORT SerializedMessage {
   std::string serialized_;
 };
 
-EXPORT std::ostream& operator<<(std::ostream& os, const SerializedMessage& m);
+FEL_EXPORT std::ostream& operator<<(std::ostream& os,
+                                    const SerializedMessage& m);
 
 }  // namespace felicia
 

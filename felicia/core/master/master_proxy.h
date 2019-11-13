@@ -29,7 +29,7 @@ namespace felicia {
 
 class PyMasterProxy;
 
-class EXPORT MasterProxy final : public MasterClientInterface {
+class FEL_EXPORT MasterProxy final : public MasterClientInterface {
  public:
   static void SetBackground();
   static MasterProxy& GetInstance();

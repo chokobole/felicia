@@ -10,7 +10,7 @@
 
 namespace felicia {
 
-class EXPORT YamlReader {
+class FEL_EXPORT YamlReader {
  public:
   YamlReader();
   ~YamlReader();

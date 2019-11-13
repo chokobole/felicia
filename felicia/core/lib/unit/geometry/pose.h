@@ -98,16 +98,16 @@ PoseMessageType PoseToPoseMessage(const Pose<T>& pose) {
   return message;
 }
 
-EXPORT PosefMessage PosefToPosefMessage(const Posef& pose);
-EXPORT PosedMessage PosedToPosedMessage(const Posed& pose);
+FEL_EXPORT PosefMessage PosefToPosefMessage(const Posef& pose);
+FEL_EXPORT PosedMessage PosedToPosedMessage(const Posed& pose);
 
 template <typename T, typename MessageType>
 Pose<T> PoseMessageToPose(const MessageType& message) {
   return {PointMessageToPoint<T>(message.position()), message.theta()};
 }
 
-EXPORT Posef PosefMessageToPosef(const PosefMessage& message);
-EXPORT Posed PosedMessageToPosed(const PosedMessage& message);
+FEL_EXPORT Posef PosefMessageToPosef(const PosefMessage& message);
+FEL_EXPORT Posed PosedMessageToPosed(const PosedMessage& message);
 
 template <typename PoseWithTimestampMessageType, typename PointMessageType,
           typename T>
@@ -121,9 +121,9 @@ PoseWithTimestampMessageType PoseToPoseWithTimestampMessage(
   return message;
 }
 
-EXPORT PosefWithTimestampMessage
+FEL_EXPORT PosefWithTimestampMessage
 PosefToPosefWithTimestampMessage(const Posef& pose, base::TimeDelta timestamp);
-EXPORT PosedWithTimestampMessage
+FEL_EXPORT PosedWithTimestampMessage
 PosedToPosedWithTimestampMessage(const Posed& pose, base::TimeDelta timestamp);
 
 template <typename T, typename MessageType>
@@ -131,9 +131,9 @@ Pose<T> PoseWithTimestampMessageToPose(const MessageType& message) {
   return {PointMessageToPoint<T>(message.position()), message.theta()};
 }
 
-EXPORT Posef
+FEL_EXPORT Posef
 PosefWithTimestampMessageToPosef(const PosefWithTimestampMessage& message);
-EXPORT Posed
+FEL_EXPORT Posed
 PosedWithTimestampMessageToPosed(const PosedWithTimestampMessage& message);
 
 template <typename T>
@@ -227,8 +227,8 @@ Pose3MessageType Pose3ToPose3Message(const Pose3<T>& pose) {
   return message;
 }
 
-EXPORT Pose3fMessage Pose3fToPose3fMessage(const Pose3f& pose);
-EXPORT Pose3dMessage Pose3dToPose3dMessage(const Pose3d& pose);
+FEL_EXPORT Pose3fMessage Pose3fToPose3fMessage(const Pose3f& pose);
+FEL_EXPORT Pose3dMessage Pose3dToPose3dMessage(const Pose3d& pose);
 
 template <typename T, typename MessageType>
 Pose3<T> Pose3MessageToPose3(const MessageType& message) {
@@ -236,8 +236,8 @@ Pose3<T> Pose3MessageToPose3(const MessageType& message) {
           QuaternionMessageToQuaternion<T>(message.orientation())};
 }
 
-EXPORT Pose3f Pose3fMessageToPose3f(const Pose3fMessage& message);
-EXPORT Pose3d Pose3dMessageToPose3d(const Pose3dMessage& message);
+FEL_EXPORT Pose3f Pose3fMessageToPose3f(const Pose3fMessage& message);
+FEL_EXPORT Pose3d Pose3dMessageToPose3d(const Pose3dMessage& message);
 
 template <typename Pose3WithTimestampMessageType, typename Point3MessageType,
           typename QuaternionMessageType, typename T>
@@ -252,9 +252,9 @@ Pose3WithTimestampMessageType Pose3ToPose3WithTimestampMessage(
   return message;
 }
 
-EXPORT Pose3fWithTimestampMessage Pose3fToPose3fWithTimestampMessage(
+FEL_EXPORT Pose3fWithTimestampMessage Pose3fToPose3fWithTimestampMessage(
     const Pose3f& pose, base::TimeDelta timestamp);
-EXPORT Pose3dWithTimestampMessage Pose3dToPose3dWithTimestampMessage(
+FEL_EXPORT Pose3dWithTimestampMessage Pose3dToPose3dWithTimestampMessage(
     const Pose3d& pose, base::TimeDelta timestamp);
 
 template <typename T, typename MessageType>
@@ -263,9 +263,9 @@ Pose3<T> Pose3WithTimestampMessageToPose3(const MessageType& message) {
           QuaternionMessageToQuaternion<T>(message.orientation())};
 }
 
-EXPORT Pose3f
+FEL_EXPORT Pose3f
 Pose3fWithTimestampMessageToPose3f(const Pose3fWithTimestampMessage& message);
-EXPORT Pose3d
+FEL_EXPORT Pose3d
 Pose3dWithTimestampMessageToPose3d(const Pose3dWithTimestampMessage& message);
 
 }  // namespace felicia

@@ -13,7 +13,7 @@
 namespace felicia {
 namespace drivers {
 
-class EXPORT LidarFrame {
+class FEL_EXPORT LidarFrame {
  public:
   LidarFrame();
   LidarFrame(float angle_start, float angle_end, float angle_delta,

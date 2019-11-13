@@ -12,7 +12,7 @@
 namespace felicia {
 namespace drivers {
 
-class EXPORT ImuFrame {
+class FEL_EXPORT ImuFrame {
  public:
   ImuFrame();
   ImuFrame(const Quaternionf& orientation, const Vector3f& angular_velocity,

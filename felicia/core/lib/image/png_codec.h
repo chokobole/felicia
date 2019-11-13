@@ -17,7 +17,7 @@
 
 namespace felicia {
 
-class EXPORT PngCodec {
+class FEL_EXPORT PngCodec {
  public:
   struct Options {
     // compression_level should be between 0 and 9. The higher, the more

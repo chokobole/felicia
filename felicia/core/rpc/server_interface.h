@@ -8,7 +8,7 @@
 namespace felicia {
 namespace rpc {
 
-class EXPORT ServerInterface {
+class FEL_EXPORT ServerInterface {
  public:
   ServerInterface();
   virtual ~ServerInterface();

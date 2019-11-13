@@ -6,7 +6,7 @@
 
 namespace felicia {
 
-class EXPORT CsvWriter {
+class FEL_EXPORT CsvWriter {
  public:
   explicit CsvWriter(int option = BufferedWriter::NONE);
 

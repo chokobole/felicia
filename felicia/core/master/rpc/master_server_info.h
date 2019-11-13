@@ -9,9 +9,9 @@
 
 namespace felicia {
 
-EXPORT net::IPAddress ResolveMasterServerIp();
+FEL_EXPORT net::IPAddress ResolveMasterServerIp();
 
-EXPORT uint16_t ResolveMasterServerPort();
+FEL_EXPORT uint16_t ResolveMasterServerPort();
 
 }  // namespace felicia
 

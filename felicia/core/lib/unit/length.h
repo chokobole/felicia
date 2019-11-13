@@ -9,7 +9,7 @@
 
 namespace felicia {
 
-class EXPORT Length {
+class FEL_EXPORT Length {
  public:
   static constexpr int64_t kCentimeter = 10;
   static constexpr int64_t kMeter = 100 * kCentimeter;
@@ -86,7 +86,7 @@ Length operator*(T a, Length length) {
   return length * a;
 }
 
-EXPORT std::ostream& operator<<(std::ostream& os, Length length);
+FEL_EXPORT std::ostream& operator<<(std::ostream& os, Length length);
 
 }  // namespace felicia
 

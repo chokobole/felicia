@@ -7,7 +7,7 @@
 
 namespace felicia {
 
-class EXPORT MasterClientInterface {
+class FEL_EXPORT MasterClientInterface {
  public:
   MasterClientInterface();
   virtual ~MasterClientInterface();

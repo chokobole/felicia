@@ -9,7 +9,7 @@
 
 namespace felicia {
 
-class EXPORT Header {
+class FEL_EXPORT Header {
  public:
   Header();
   ~Header();

@@ -51,13 +51,13 @@ namespace slam {
 
 namespace internal {
 
-EXPORT Status InvalidRowsAndCols(int rows, int cols);
-EXPORT Status InvalidImageSize(int width, int height);
-EXPORT bool IsValidImageSize(int width, int height);
+FEL_EXPORT Status InvalidRowsAndCols(int rows, int cols);
+FEL_EXPORT Status InvalidImageSize(int width, int height);
+FEL_EXPORT bool IsValidImageSize(int width, int height);
 
-EXPORT Status MaybeLoad(const YAML::Node& node, const std::string& name,
-                        const base::FilePath& path,
-                        std::function<Status(const YAML::Node&)> callback);
+FEL_EXPORT Status MaybeLoad(const YAML::Node& node, const std::string& name,
+                            const base::FilePath& path,
+                            std::function<Status(const YAML::Node&)> callback);
 
 template <
     typename MatrixType,

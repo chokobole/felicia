@@ -8,8 +8,8 @@
 
 namespace felicia {
 
-class EXPORT MasterClient : public rpc::Client<grpc::MasterService>,
-                            public MasterClientInterface {
+class FEL_EXPORT MasterClient : public rpc::Client<grpc::MasterService>,
+                                public MasterClientInterface {
  public:
   explicit MasterClient(std::shared_ptr<::grpc::Channel> channel);
   ~MasterClient();

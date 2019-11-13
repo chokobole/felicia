@@ -10,7 +10,7 @@
 namespace felicia {
 
 // Used by single thread task which needs timestamp.
-class EXPORT Timestamper {
+class FEL_EXPORT Timestamper {
  public:
   Timestamper();
   ~Timestamper();
@@ -23,7 +23,7 @@ class EXPORT Timestamper {
 
 // Used by multi thread task which needs timestamp. It ensures only one thread
 // set |base_time_in_ms_|.
-class EXPORT ThreadSafeTimestamper {
+class FEL_EXPORT ThreadSafeTimestamper {
  public:
   ThreadSafeTimestamper();
   ~ThreadSafeTimestamper();

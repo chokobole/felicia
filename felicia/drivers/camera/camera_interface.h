@@ -6,7 +6,7 @@
 namespace felicia {
 namespace drivers {
 
-class EXPORT CameraInterface : public CameraInterfaceBase {
+class FEL_EXPORT CameraInterface : public CameraInterfaceBase {
  public:
   CameraInterface(const CameraDescriptor& camera_descriptor);
 

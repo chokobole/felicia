@@ -19,7 +19,7 @@ class UDPChannel;
 class UDSChannel;
 class WSChannel;
 
-class EXPORT Channel {
+class FEL_EXPORT Channel {
  public:
   virtual ~Channel();
 
@@ -103,28 +103,28 @@ class EXPORT Channel {
 
 // Convert |ip_endpoint()| of |channel_def| to net::IPEndPoint,
 // Returns Status::OK() if succeeded.
-EXPORT Status ToNetIPEndPoint(const ChannelDef& channel_def,
-                              net::IPEndPoint* ip_endpoint);
+FEL_EXPORT Status ToNetIPEndPoint(const ChannelDef& channel_def,
+                                  net::IPEndPoint* ip_endpoint);
 
 // Convert EndPoint of |channel_def| to std::string
-EXPORT std::string EndPointToString(const ChannelDef& channel_def);
+FEL_EXPORT std::string EndPointToString(const ChannelDef& channel_def);
 
 // Check if |channel_def| is a valid. Returns true if so.
-EXPORT bool IsValidChannelDef(const ChannelDef& channel_def);
+FEL_EXPORT bool IsValidChannelDef(const ChannelDef& channel_def);
 
 // Check if |channel_source| is a valid. Returns true if so.
-EXPORT bool IsValidChannelSource(const ChannelSource& channel_source);
+FEL_EXPORT bool IsValidChannelSource(const ChannelSource& channel_source);
 
 // Check if |c| and |c2| are same. Returns true if so. Return false if
 // either |c| or |c2| is invalid or they are not same.
-EXPORT bool IsSameChannelDef(const ChannelDef& c, const ChannelDef& c2);
+FEL_EXPORT bool IsSameChannelDef(const ChannelDef& c, const ChannelDef& c2);
 
 // Check if |c| and |c2| are same. Returns true if so. Return false if
 // either |c| or |c2| is invalid or they are not same.
-EXPORT bool IsSameChannelSource(const ChannelSource& c,
-                                const ChannelSource& c2);
+FEL_EXPORT bool IsSameChannelSource(const ChannelSource& c,
+                                    const ChannelSource& c2);
 
-EXPORT int AllChannelTypes();
+FEL_EXPORT int AllChannelTypes();
 
 }  // namespace felicia
 

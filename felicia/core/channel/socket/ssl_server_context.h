@@ -15,7 +15,7 @@ namespace felicia {
 class SSLServerSocket;
 class TCPChannel;
 
-class EXPORT SSLServerContext {
+class FEL_EXPORT SSLServerContext {
  public:
   ~SSLServerContext();
 

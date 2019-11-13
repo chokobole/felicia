@@ -18,7 +18,7 @@
 
 namespace felicia {
 
-class EXPORT ChannelFactory {
+class FEL_EXPORT ChannelFactory {
  public:
   static std::unique_ptr<Channel> NewChannel(
       ChannelDef::Type channel_type,

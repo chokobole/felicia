@@ -77,9 +77,9 @@ RectMessageType RectToRectMessage(const Rect<T>& rect) {
   return message;
 }
 
-EXPORT RectiMessage RectiToRectiMessage(const Recti& rect);
-EXPORT RectfMessage RectfToRectfMessage(const Rectf& rect);
-EXPORT RectdMessage RectdToRectdMessage(const Rectd& rect);
+FEL_EXPORT RectiMessage RectiToRectiMessage(const Recti& rect);
+FEL_EXPORT RectfMessage RectfToRectfMessage(const Rectf& rect);
+FEL_EXPORT RectdMessage RectdToRectdMessage(const Rectd& rect);
 
 template <typename T, typename MessageType>
 Rect<T> RectMessageToRect(const MessageType& message) {
@@ -87,9 +87,9 @@ Rect<T> RectMessageToRect(const MessageType& message) {
           PointMessageToPoint<T>(message.bottom_right())};
 }
 
-EXPORT Recti RectiMessageToRecti(const RectiMessage& message);
-EXPORT Rectf RectfMessageToRectf(const RectfMessage& message);
-EXPORT Rectd RectdMessageToRectd(const RectdMessage& message);
+FEL_EXPORT Recti RectiMessageToRecti(const RectiMessage& message);
+FEL_EXPORT Rectf RectfMessageToRectf(const RectfMessage& message);
+FEL_EXPORT Rectd RectdMessageToRectd(const RectdMessage& message);
 
 }  // namespace felicia
 

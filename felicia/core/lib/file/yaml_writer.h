@@ -10,7 +10,7 @@
 
 namespace felicia {
 
-class EXPORT YamlWriter {
+class FEL_EXPORT YamlWriter {
  public:
   YamlWriter();
   ~YamlWriter();

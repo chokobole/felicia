@@ -13,7 +13,7 @@
 namespace felicia {
 namespace rpc {
 
-class EXPORT RosSerializedServiceInterface
+class FEL_EXPORT RosSerializedServiceInterface
     : public base::RefCountedThreadSafe<RosSerializedServiceInterface> {
  public:
   typedef SerializedMessage Request;

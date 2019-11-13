@@ -10,7 +10,7 @@
 namespace felicia {
 namespace drivers {
 
-class EXPORT LidarInterface {
+class FEL_EXPORT LidarInterface {
  public:
   LidarInterface(const LidarEndpoint& lidar_endpoint);
   virtual ~LidarInterface();

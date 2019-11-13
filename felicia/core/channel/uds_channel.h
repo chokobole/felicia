@@ -8,7 +8,7 @@
 
 namespace felicia {
 
-class EXPORT UDSChannel : public Channel {
+class FEL_EXPORT UDSChannel : public Channel {
  public:
   using AcceptOnceInterceptCallback =
       base::OnceCallback<void(StatusOr<std::unique_ptr<UDSChannel>>)>;

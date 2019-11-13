@@ -8,7 +8,7 @@
 
 namespace felicia {
 
-class EXPORT ChannelBuffer {
+class FEL_EXPORT ChannelBuffer {
  public:
   ChannelBuffer();
   ~ChannelBuffer();

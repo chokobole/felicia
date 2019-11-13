@@ -11,7 +11,7 @@
 namespace felicia {
 namespace drivers {
 
-class EXPORT CameraBuffer {
+class FEL_EXPORT CameraBuffer {
  public:
   CameraBuffer(uint8_t* start, size_t length);
   CameraBuffer(const CameraBuffer& other);

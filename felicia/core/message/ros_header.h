@@ -11,7 +11,7 @@
 
 namespace felicia {
 
-struct EXPORT RosHeader {
+struct FEL_EXPORT RosHeader {
   std::string callerid;
   std::string md5sum;
 
@@ -25,7 +25,7 @@ struct EXPORT RosHeader {
   Status Validate(const RosHeader& expected) const;
 };
 
-struct EXPORT RosTopicHeader : public RosHeader {
+struct FEL_EXPORT RosTopicHeader : public RosHeader {
   std::string topic;
   std::string type;
 
@@ -34,7 +34,7 @@ struct EXPORT RosTopicHeader : public RosHeader {
   Status Validate(const RosTopicHeader& expected) const;
 };
 
-struct EXPORT RosTopicRequestHeader : public RosTopicHeader {
+struct FEL_EXPORT RosTopicRequestHeader : public RosTopicHeader {
   std::string tcp_nodelay;
 
   void WriteToHeaderMap(ros::M_string* header_map) const override;
@@ -42,7 +42,7 @@ struct EXPORT RosTopicRequestHeader : public RosTopicHeader {
   Status Validate(const RosTopicHeader& expected) const;
 };
 
-struct EXPORT RosTopicResponseHeader : public RosTopicHeader {
+struct FEL_EXPORT RosTopicResponseHeader : public RosTopicHeader {
   std::string error;
   std::string latching;
   std::string message_definition;
@@ -52,7 +52,7 @@ struct EXPORT RosTopicResponseHeader : public RosTopicHeader {
   Status Validate(const RosTopicHeader& expected) const;
 };
 
-struct EXPORT RosServiceRequestHeader : public RosHeader {
+struct FEL_EXPORT RosServiceRequestHeader : public RosHeader {
   std::string persistent;
   std::string service;
 
@@ -61,7 +61,7 @@ struct EXPORT RosServiceRequestHeader : public RosHeader {
   Status Validate(const RosServiceRequestHeader& expected) const;
 };
 
-struct EXPORT RosServiceResponseHeader : public RosHeader {
+struct FEL_EXPORT RosServiceResponseHeader : public RosHeader {
   std::string error;
   std::string request_type;
   std::string response_type;

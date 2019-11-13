@@ -6,8 +6,8 @@
 
 namespace felicia {
 
-EXPORT extern Bytes kHeartBeatBytes;
-EXPORT extern Bytes kMasterNotificationBytes;
+FEL_EXPORT extern Bytes kHeartBeatBytes;
+FEL_EXPORT extern Bytes kMasterNotificationBytes;
 
 }  // namespace felicia
 

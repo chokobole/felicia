@@ -10,7 +10,7 @@ namespace felicia {
 namespace drivers {
 namespace camera_internal {
 
-EXPORT size_t AllocationSize(const CameraFormat& camera_format);
+FEL_EXPORT size_t AllocationSize(const CameraFormat& camera_format);
 
 }  // namespace camera_internal
 }  // namespace drivers

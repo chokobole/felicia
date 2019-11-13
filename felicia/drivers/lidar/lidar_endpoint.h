@@ -8,7 +8,7 @@
 namespace felicia {
 namespace drivers {
 
-class EXPORT LidarEndpoint {
+class FEL_EXPORT LidarEndpoint {
  public:
   enum ChannelType {
     TCP,
@@ -42,8 +42,8 @@ class EXPORT LidarEndpoint {
   float baudrate_;
 };
 
-EXPORT std::ostream& operator<<(std::ostream& os,
-                                const LidarEndpoint& lidar_endpoint);
+FEL_EXPORT std::ostream& operator<<(std::ostream& os,
+                                    const LidarEndpoint& lidar_endpoint);
 
 }  // namespace drivers
 }  // namespace felicia

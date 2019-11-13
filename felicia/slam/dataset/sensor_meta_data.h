@@ -9,7 +9,7 @@
 namespace felicia {
 namespace slam {
 
-class EXPORT SensorMetaData {
+class FEL_EXPORT SensorMetaData {
  public:
   SensorMetaData();
   SensorMetaData(const SensorMetaData& other);

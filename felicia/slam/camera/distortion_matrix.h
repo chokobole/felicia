@@ -21,8 +21,10 @@ enum DistortionModel {
   DISTORTION_MODEL_RATIONAL_POLYNOMIAL,
 };
 
-EXPORT std::string DistortionModelToString(DistortionModel distortion_model);
-EXPORT DistortionModel ToDistortionModel(const std::string& distortion_model);
+FEL_EXPORT std::string DistortionModelToString(
+    DistortionModel distortion_model);
+FEL_EXPORT DistortionModel
+ToDistortionModel(const std::string& distortion_model);
 
 template <typename MatrixType_>
 class DistortionMatrix {

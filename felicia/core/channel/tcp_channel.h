@@ -8,7 +8,7 @@
 
 namespace felicia {
 
-class EXPORT TCPChannel : public Channel {
+class FEL_EXPORT TCPChannel : public Channel {
  public:
   using AcceptOnceInterceptCallback =
       base::OnceCallback<void(StatusOr<std::unique_ptr<TCPChannel>>)>;

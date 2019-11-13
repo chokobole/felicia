@@ -256,7 +256,8 @@ class Flag {
   ValueStore<T, Traits> value_store_;
 };
 
-EXPORT bool ContainsOnlyAsciiAlphaOrDigitOrUndderscore(base::StringPiece text);
+FEL_EXPORT bool ContainsOnlyAsciiAlphaOrDigitOrUndderscore(
+    base::StringPiece text);
 
 template <typename T, typename Traits>
 bool Flag<T, Traits>::set_short_name(const std::string& short_name) {
@@ -346,9 +347,9 @@ std::string Flag<T, Traits>::help(int help_start) const {
   ALIGN_AT_INDEX_AND_APPEND(ss, help_, remain_len, help_start);
 }
 
-EXPORT std::string MakeNamedHelpText(base::StringPiece name,
-                                     base::StringPiece help,
-                                     int help_start = 20);
+FEL_EXPORT std::string MakeNamedHelpText(base::StringPiece name,
+                                         base::StringPiece help,
+                                         int help_start = 20);
 
 namespace {
 
@@ -497,7 +498,7 @@ bool CheckIfFlagPositive(T&& flag) {
   return true;
 }
 
-EXPORT bool CheckIfOneOfFlagWasSet(std::vector<std::string>& names);
+FEL_EXPORT bool CheckIfOneOfFlagWasSet(std::vector<std::string>& names);
 
 template <typename T, typename... Rest>
 bool CheckIfOneOfFlagWasSet(std::vector<std::string>& names, T&& flag,

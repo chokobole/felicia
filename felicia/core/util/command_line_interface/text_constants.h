@@ -6,10 +6,10 @@
 
 namespace felicia {
 
-EXPORT extern const std::string kRedError;
-EXPORT extern const std::string kYellowWarning;
-EXPORT extern const std::string kYellowOptions;
-EXPORT extern const std::string kYellowCommands;
+FEL_EXPORT extern const std::string kRedError;
+FEL_EXPORT extern const std::string kYellowWarning;
+FEL_EXPORT extern const std::string kYellowOptions;
+FEL_EXPORT extern const std::string kYellowCommands;
 
 }  // namespace felicia
 

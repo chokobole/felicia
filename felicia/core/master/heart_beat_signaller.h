@@ -13,7 +13,7 @@
 
 namespace felicia {
 
-class EXPORT HeartBeatSignaller {
+class FEL_EXPORT HeartBeatSignaller {
  public:
   typedef base::OnceCallback<void(const ChannelSource&)> OnStartCallback;
 
@@ -38,7 +38,7 @@ class EXPORT HeartBeatSignaller {
   DISALLOW_COPY_AND_ASSIGN(HeartBeatSignaller);
 };
 
-EXPORT base::TimeDelta GetHeartBeatDuration(const ClientInfo& client_info);
+FEL_EXPORT base::TimeDelta GetHeartBeatDuration(const ClientInfo& client_info);
 
 }  // namespace felicia
 

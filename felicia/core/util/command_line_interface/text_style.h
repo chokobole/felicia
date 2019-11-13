@@ -8,7 +8,7 @@
 
 namespace felicia {
 
-class EXPORT TextStyle {
+class FEL_EXPORT TextStyle {
  public:
 #define STYLE_METHOD(Style) static std::string Style(base::StringPiece text);
 

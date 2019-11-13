@@ -8,7 +8,7 @@
 
 namespace felicia {
 
-class EXPORT WSChannel : public Channel {
+class FEL_EXPORT WSChannel : public Channel {
  public:
   ~WSChannel() override;
 

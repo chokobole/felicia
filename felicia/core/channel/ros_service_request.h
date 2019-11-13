@@ -18,7 +18,7 @@ class Client;
 
 }  // namespace rpc
 
-class EXPORT RosServiceRequest {
+class FEL_EXPORT RosServiceRequest {
  public:
   RosServiceRequest();
   ~RosServiceRequest();

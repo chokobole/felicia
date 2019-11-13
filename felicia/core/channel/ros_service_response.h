@@ -17,7 +17,7 @@ class Server;
 
 }  // namespace rpc
 
-class EXPORT RosServiceResponse {
+class FEL_EXPORT RosServiceResponse {
  public:
   using HandshakeCallback = base::OnceCallback<void(std::unique_ptr<Channel>)>;
 

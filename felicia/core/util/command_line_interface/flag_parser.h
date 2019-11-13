@@ -15,7 +15,7 @@ namespace felicia {
 
 typedef std::pair<std::string, std::vector<std::string>> NamedHelpType;
 
-class EXPORT FlagParser {
+class FEL_EXPORT FlagParser {
  public:
   // The Parse method is called when parser meet every argument which is
   // tokenized per space.
@@ -64,7 +64,7 @@ class EXPORT FlagParser {
   //   std::unique_ptr<IntFlag> foo_flag_;
   //   std::unique_ptr<StringDefaultFlag> bar_flag_;
   // }
-  class EXPORT Delegate {
+  class FEL_EXPORT Delegate {
    public:
     Delegate();
     virtual ~Delegate();

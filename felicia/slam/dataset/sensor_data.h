@@ -16,7 +16,7 @@
 namespace felicia {
 namespace slam {
 
-class EXPORT SensorData {
+class FEL_EXPORT SensorData {
  public:
   enum DataType {
     DATA_TYPE_NONE = 0,

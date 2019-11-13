@@ -11,7 +11,7 @@
 
 namespace felicia {
 
-class EXPORT Image {
+class FEL_EXPORT Image {
  public:
   Image();
   Image(Sizei size, PixelFormat pixel_format, const Data& data);

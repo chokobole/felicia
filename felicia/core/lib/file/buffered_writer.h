@@ -11,7 +11,7 @@
 
 namespace felicia {
 
-class EXPORT BufferedWriter {
+class FEL_EXPORT BufferedWriter {
  public:
   enum Option {
     NONE,  // default add linefeed.

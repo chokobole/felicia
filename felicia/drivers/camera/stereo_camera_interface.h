@@ -7,7 +7,7 @@
 namespace felicia {
 namespace drivers {
 
-class EXPORT StereoCameraInterface : public CameraInterfaceBase {
+class FEL_EXPORT StereoCameraInterface : public CameraInterfaceBase {
  public:
   StereoCameraInterface(const CameraDescriptor& camera_descriptor);
 

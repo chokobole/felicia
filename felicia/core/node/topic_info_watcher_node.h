@@ -7,9 +7,9 @@
 
 namespace felicia {
 
-class EXPORT TopicInfoWatcherNode : public NodeLifecycle {
+class FEL_EXPORT TopicInfoWatcherNode : public NodeLifecycle {
  public:
-  class EXPORT Delegate {
+  class FEL_EXPORT Delegate {
    public:
     virtual ~Delegate() = default;
 

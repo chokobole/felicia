@@ -8,7 +8,7 @@
 
 namespace felicia {
 
-class EXPORT Bytes {
+class FEL_EXPORT Bytes {
  public:
   static constexpr int64_t kKilloBytes = 1000;
   static constexpr int64_t kMegaBytes = 1000 * kKilloBytes;
@@ -72,7 +72,7 @@ Bytes operator*(T a, Bytes bytes) {
   return bytes * a;
 }
 
-EXPORT std::ostream& operator<<(std::ostream& os, Bytes bytes);
+FEL_EXPORT std::ostream& operator<<(std::ostream& os, Bytes bytes);
 
 }  // namespace felicia
 

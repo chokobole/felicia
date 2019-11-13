@@ -141,18 +141,18 @@ MessageType VectorToVectorMessage(const Vector<T>& vector) {
   return message;
 }
 
-EXPORT VectoriMessage VectoriToVectoriMessage(const Vectori& vector);
-EXPORT VectorfMessage VectorfToVectorfMessage(const Vectorf& vector);
-EXPORT VectordMessage VectordToVectordMessage(const Vectord& vector);
+FEL_EXPORT VectoriMessage VectoriToVectoriMessage(const Vectori& vector);
+FEL_EXPORT VectorfMessage VectorfToVectorfMessage(const Vectorf& vector);
+FEL_EXPORT VectordMessage VectordToVectordMessage(const Vectord& vector);
 
 template <typename T, typename MessageType>
 Vector<T> VectorMessageToVector(const MessageType& message) {
   return {message.x(), message.y()};
 }
 
-EXPORT Vectori VectoriMessageToVectori(const VectoriMessage& message);
-EXPORT Vectorf VectorfMessageToVectorf(const VectorfMessage& message);
-EXPORT Vectord VectordMessageToVectord(const VectordMessage& message);
+FEL_EXPORT Vectori VectoriMessageToVectori(const VectoriMessage& message);
+FEL_EXPORT Vectorf VectorfMessageToVectorf(const VectorfMessage& message);
+FEL_EXPORT Vectord VectordMessageToVectord(const VectordMessage& message);
 
 template <typename T>
 class Vector3 {
@@ -299,18 +299,18 @@ MessageType Vector3ToVector3Message(const Vector3<T>& vector) {
   return message;
 }
 
-EXPORT Vector3iMessage Vector3iToVector3iMessage(const Vector3i& vector);
-EXPORT Vector3fMessage Vector3fToVector3fMessage(const Vector3f& vector);
-EXPORT Vector3dMessage Vector3dToVector3dMessage(const Vector3d& vector);
+FEL_EXPORT Vector3iMessage Vector3iToVector3iMessage(const Vector3i& vector);
+FEL_EXPORT Vector3fMessage Vector3fToVector3fMessage(const Vector3f& vector);
+FEL_EXPORT Vector3dMessage Vector3dToVector3dMessage(const Vector3d& vector);
 
 template <typename T, typename MessageType>
 Vector3<T> Vector3MessageToVector3(const MessageType& message) {
   return {message.x(), message.y(), message.z()};
 }
 
-EXPORT Vector3i Vector3iMessageToVector3i(const Vector3iMessage& message);
-EXPORT Vector3f Vector3fMessageToVector3f(const Vector3fMessage& message);
-EXPORT Vector3d Vector3dMessageToVector3d(const Vector3dMessage& message);
+FEL_EXPORT Vector3i Vector3iMessageToVector3i(const Vector3iMessage& message);
+FEL_EXPORT Vector3f Vector3fMessageToVector3f(const Vector3fMessage& message);
+FEL_EXPORT Vector3d Vector3dMessageToVector3d(const Vector3dMessage& message);
 
 }  // namespace felicia
 

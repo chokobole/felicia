@@ -6,7 +6,7 @@
 
 namespace felicia {
 
-class EXPORT Coordinate {
+class FEL_EXPORT Coordinate {
  public:
   // This was taken and modified from zed/include/sl_core/utils/types.hpp
   enum CoordinateSystem {

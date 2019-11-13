@@ -9,7 +9,7 @@
 namespace felicia {
 namespace drivers {
 
-class EXPORT CameraSettings {
+class FEL_EXPORT CameraSettings {
  public:
 #define DECLARE_NAMED_VALUE_METHOD(type, name) \
   bool has_##name() const;                     \

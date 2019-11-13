@@ -27,7 +27,7 @@ limitations under the License.
 namespace felicia {
 
 // Denotes success or failure of a call in Felicia.
-class EXPORT Status {
+class FEL_EXPORT Status {
  public:
   // Create a success status.
   Status();
@@ -57,7 +57,7 @@ class EXPORT Status {
 };
 
 // Prints a human-readable representation of |status| to |os|.
-EXPORT std::ostream& operator<<(std::ostream& os, const Status& x);
+FEL_EXPORT std::ostream& operator<<(std::ostream& os, const Status& x);
 
 // Convenient typedef for a closure passing a Status.
 typedef base::RepeatingCallback<void(Status)> StatusCallback;
@@ -65,8 +65,8 @@ typedef base::OnceCallback<void(Status)> StatusOnceCallback;
 
 namespace internal {
 
-EXPORT void LogOrCallback(StatusOnceCallback callback, const Status& s);
-EXPORT void LogOrCallback(StatusCallback callback, const Status& s);
+FEL_EXPORT void LogOrCallback(StatusOnceCallback callback, const Status& s);
+FEL_EXPORT void LogOrCallback(StatusCallback callback, const Status& s);
 
 }  // namespace internal
 

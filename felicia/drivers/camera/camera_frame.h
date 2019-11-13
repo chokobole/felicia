@@ -22,7 +22,7 @@
 namespace felicia {
 namespace drivers {
 
-class EXPORT CameraFrame {
+class FEL_EXPORT CameraFrame {
  public:
   CameraFrame();
   CameraFrame(const Data& data, const CameraFormat& camera_format,
@@ -69,7 +69,7 @@ class EXPORT CameraFrame {
   base::TimeDelta timestamp_;
 };
 
-EXPORT base::Optional<CameraFrame> ConvertToRequestedPixelFormat(
+FEL_EXPORT base::Optional<CameraFrame> ConvertToRequestedPixelFormat(
     const uint8_t* data, size_t data_length, const CameraFormat& camera_format,
     PixelFormat requested_pixel_format, base::TimeDelta timestamp);
 
