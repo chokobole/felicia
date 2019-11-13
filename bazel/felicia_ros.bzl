@@ -1,3 +1,7 @@
+# Copyright (c) 2019 The Felicia Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 load("@local_config_python//:py.bzl", "PYTHON_BIN")
 load("@local_config_env//:env.bzl", "ROS_DISTRO")
 load("//bazel:felicia.bzl", "if_has_ros")

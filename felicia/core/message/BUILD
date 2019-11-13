@@ -1,3 +1,7 @@
+# Copyright (c) 2019 The Felicia Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 load("//bazel:felicia.bzl", "if_has_ros")
 load(
     "//bazel:felicia_cc.bzl",
@@ -42,7 +46,7 @@ fel_cc_library(
         "//felicia/core/lib",
         "//felicia/core/util:command_line_interface",
     ] + if_has_ros([
-        "@local_config_ros",
+        "//external:ros",
     ]),
 )
 

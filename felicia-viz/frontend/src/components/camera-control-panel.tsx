@@ -1,3 +1,7 @@
+// Copyright (c) 2019 The Felicia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 import { Vector3Message } from '@felicia-viz/proto/messages/geometry';
 import Vector3Input from '@felicia-viz/ui/components/common/vector3-input';
 import { FormProps } from '@felicia-viz/ui/components/common/panel-item';

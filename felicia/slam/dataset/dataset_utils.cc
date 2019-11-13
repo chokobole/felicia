@@ -1,3 +1,7 @@
+// Copyright (c) 2019 The Felicia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "felicia/slam/dataset/dataset_utils.h"
 
 #include "third_party/chromium/base/strings/string_number_conversions.h"

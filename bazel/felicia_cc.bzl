@@ -1,3 +1,7 @@
+# Copyright (c) 2019 The Felicia Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 load(":felicia.bzl", "if_not_windows", "if_static")
 load("//third_party/chromium/build/config/win:build.bzl", "default_win_build_config")
 load("@cc//:compiler.bzl", "is_clang", "is_mac")

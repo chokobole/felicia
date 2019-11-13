@@ -1,3 +1,7 @@
+# Copyright (c) 2019 The Felicia Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 load(
     "@bazel_tools//tools/build_defs/repo:git.bzl",
     "git_repository",
@@ -94,6 +98,11 @@ def felicia_deps():
     )
 
     native.bind(
+        name = "opencv",
+        actual = "@local_config_opencv//:opencv",
+    )
+
+    native.bind(
         name = "png",
         actual = "@png_archive//:png",
     )
@@ -126,6 +135,11 @@ def felicia_deps():
     native.bind(
         name = "pybind11",
         actual = "@com_github_pybind_pybind11//:pybind11",
+    )
+
+    native.bind(
+        name = "ros",
+        actual = "@local_config_ros//:ros",
     )
 
     native.bind(

@@ -1,7 +1,11 @@
+// Copyright (c) 2019 The Felicia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #if defined(HAS_ROS)
 
-#ifndef FELICIA_PYTHON_RPC_SERIALIZED_CLIENT_PY_H_
-#define FELICIA_PYTHON_RPC_SERIALIZED_CLIENT_PY_H_
+#ifndef FELICIA_PYTHON_RPC_ROS_SERIALIZED_CLIENT_PY_H_
+#define FELICIA_PYTHON_RPC_ROS_SERIALIZED_CLIENT_PY_H_
 
 #include "pybind11/pybind11.h"
 
@@ -31,6 +35,6 @@ void AddRosSerializedClient(py::module& m);
 }  // namespace rpc
 }  // namespace felicia
 
-#endif  // FELICIA_PYTHON_RPC_SERIALIZED_CLIENT_PY_H_
+#endif  // FELICIA_PYTHON_RPC_ROS_SERIALIZED_CLIENT_PY_H_
 
 #endif  // defined(HAS_ROS)

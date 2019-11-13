@@ -1,3 +1,7 @@
+# Copyright (c) 2019 The Felicia Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 load("@bazel_tools//tools/cpp:lib_cc_configure.bzl", "get_cpu_value")
 load(
     "@bazel_tools//tools/build_defs/repo:utils.bzl",

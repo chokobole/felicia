@@ -1,3 +1,7 @@
+// Copyright (c) 2019 The Felicia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 /* eslint no-param-reassign: ["error", { "props": true, "ignorePropertyModificationsFor": ["imageData", "colors", "pixels", "positions"] }] */
 import CameraFrameMessage from '@felicia-viz/proto/messages/camera-frame-message';
 import { PixelFormat } from '@felicia-viz/proto/messages/ui';

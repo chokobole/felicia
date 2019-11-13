@@ -1,3 +1,7 @@
+#s Copyright (c) 2019 The Felicia Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 load(
     "//bazel:felicia.bzl",
     "if_has_opencv",
@@ -103,7 +107,7 @@ fel_cc_library(
         "//external:png",
         "//external:yaml_cpp",
     ] + if_has_opencv([
-        "@local_config_opencv",
+        "//external:opencv",
     ]) + if_static(
         [
             "//felicia/core/protobuf:protos_all_cc",

@@ -1,3 +1,7 @@
+# Copyright (c) 2019 The Felicia Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 load("//bazel:felicia_proto.bzl", "fel_proto_library")
 load("//bazel:felicia_pybind.bzl", "fel_pybind_py_library")
 

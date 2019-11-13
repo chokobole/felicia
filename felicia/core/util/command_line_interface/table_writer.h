@@ -1,5 +1,9 @@
-#ifndef FELICIA_CORE_UTIL_COMMAND_LINE_INTERFACE_TABLE_WRITER
-#define FELICIA_CORE_UTIL_COMMAND_LINE_INTERFACE_TABLE_WRITER
+// Copyright (c) 2019 The Felicia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef FELICIA_CORE_UTIL_COMMAND_LINE_INTERFACE_TABLE_WRITER_H_
+#define FELICIA_CORE_UTIL_COMMAND_LINE_INTERFACE_TABLE_WRITER_H_
 
 #include <string>
 #include <vector>
@@ -53,4 +57,4 @@ class FEL_EXPORT TableWriterBuilder {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_UTIL_COMMAND_LINE_INTERFACE_TABLE_WRITER
+#endif  // FELICIA_CORE_UTIL_COMMAND_LINE_INTERFACE_TABLE_WRITER_H_

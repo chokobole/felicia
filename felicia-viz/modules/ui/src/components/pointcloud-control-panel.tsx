@@ -1,3 +1,7 @@
+// Copyright (c) 2019 The Felicia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 import { Colors, Points } from '@felicia-viz/proto/messages/data-message';
 import { PointcloudMessage, POINTCLOUD_MESSAGE } from '@felicia-viz/proto/messages/map-message';
 // @ts-ignore

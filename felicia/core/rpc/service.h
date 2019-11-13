@@ -1,3 +1,7 @@
+// Copyright (c) 2019 The Felicia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #ifndef FELIICA_CORE_RPC_SERVICE_H_
 #define FELIICA_CORE_RPC_SERVICE_H_
 

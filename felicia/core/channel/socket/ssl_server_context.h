@@ -1,3 +1,7 @@
+// Copyright (c) 2019 The Felicia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #if !defined(FEL_NO_SSL)
 
 #ifndef FELICIA_CORE_CHANNEL_SOCKET_SSL_SERVER_CONTEXT_H_

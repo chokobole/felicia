@@ -1,3 +1,7 @@
+// Copyright (c) 2019 The Felicia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #if defined(HAS_ROS)
 
 #ifndef FELICIA_CORE_RPC_ROS_CLIENT_IMPL_H_
@@ -95,8 +99,8 @@ void FEL_ROS_CLIENT::Connect(const IPEndPoint& ip_endpoint,
   channel_def.set_type(ChannelDef::CHANNEL_TYPE_TCP);
   *channel_def.mutable_ip_endpoint() = ip_endpoint;
   connect_callback_ = std::move(callback);
-  tcp_channel->Connect(channel_def, base::BindOnce(&FEL_ROS_CLIENT::OnConnect,
-                                                   base::Unretained(this)));
+  tcp_channel->Connect(
+      channel_def, base::BindOnce(&Client::OnConnect, base::Unretained(this)));
 }
 
 template <typename T>
@@ -125,8 +129,8 @@ void FEL_ROS_CLIENT::OnConnect(Status s) {
 
   if (IsUsingRosProtocol(service_info_.service())) {
     service_request_.Request(
-        this, base::BindOnce(&FEL_ROS_CLIENT::OnRosServiceHandshake,
-                             base::Unretained(this)));
+        this,
+        base::BindOnce(&Client::OnRosServiceHandshake, base::Unretained(this)));
   } else {
     header_.set_ok(true);
     channel_->SetDynamicSendBuffer(true);
@@ -171,7 +175,7 @@ void FEL_ROS_CLIENT::MaybeSendRequest() {
 template <typename T>
 void FEL_ROS_CLIENT::SendRequest() {
   MessageSender<Request> sender(channel_.get());
-  sender.SendMessage(*request_, base::BindOnce(&FEL_ROS_CLIENT::OnSendRequest,
+  sender.SendMessage(*request_, base::BindOnce(&Client::OnSendRequest,
                                                base::Unretained(this)));
 }
 
@@ -187,8 +191,8 @@ void FEL_ROS_CLIENT::OnSendRequest(Status s) {
 
 template <typename T>
 void FEL_ROS_CLIENT::ReceiveResponse() {
-  receiver_.ReceiveMessage(base::BindOnce(&FEL_ROS_CLIENT::OnReceiveResponse,
-                                          base::Unretained(this)));
+  receiver_.ReceiveMessage(
+      base::BindOnce(&Client::OnReceiveResponse, base::Unretained(this)));
 }
 
 template <typename T>

@@ -1,3 +1,7 @@
+# Copyright (c) 2019 The Felicia Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # Followings are taken from https://github.com/tensorflow/tensorflow/blob/36c3fa3a9fd10965e92e464416d5d4688809cac2/tensorflow/core/platform/default/build_config.bzl
 #
 # - fel_deps form tf_deps

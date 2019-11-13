@@ -1,3 +1,7 @@
+// Copyright (c) 2019 The Felicia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "felicia/slam/camera/stereo_camera_model_base.h"
 
 #include "gtest/gtest.h"

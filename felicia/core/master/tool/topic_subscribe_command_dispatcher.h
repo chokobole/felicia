@@ -1,3 +1,7 @@
+// Copyright (c) 2019 The Felicia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #ifndef FELICIA_CORE_MASTER_TOOL_TOPIC_SUBSCRIBE_COMMAND_DISPATCHER_H_
 #define FELICIA_CORE_MASTER_TOOL_TOPIC_SUBSCRIBE_COMMAND_DISPATCHER_H_
 

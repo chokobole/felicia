@@ -1,10 +1,15 @@
+# Copyright (c) 2019 The Felicia Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+
 class TextStyle(object):
-    RED='\033[91m'
-    GREEN='\033[32m'
-    BLUE='\033[34m'
-    YELLOW='\033[93m'
-    BOLD='\033[1m'
-    NONE='\033[0m'
+    RED = '\033[91m'
+    GREEN = '\033[32m'
+    BLUE = '\033[34m'
+    YELLOW = '\033[93m'
+    BOLD = '\033[1m'
+    NONE = '\033[0m'
 
     @staticmethod
     def red(stmt):

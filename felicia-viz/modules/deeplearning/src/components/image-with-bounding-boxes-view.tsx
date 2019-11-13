@@ -1,3 +1,7 @@
+// Copyright (c) 2019 The Felicia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 import { ImageWithBoundingBoxesMessage } from '@felicia-viz/proto/messages/bounding-box';
 import { ActivatableFloatPanel, ResizableCanvas } from '@felicia-viz/ui';
 import { PanelState } from '@felicia-viz/ui/components/common/activatable-float-panel';

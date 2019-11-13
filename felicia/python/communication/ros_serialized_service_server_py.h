@@ -1,3 +1,7 @@
+// Copyright (c) 2019 The Felicia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #if defined(HAS_ROS)
 
 #ifndef FELICIA_PYTHON_COMMUNICATION_ROS_SERIALIZED_SERVICE_SERVER_PY_H_

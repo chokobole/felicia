@@ -1,3 +1,7 @@
+// Copyright (c) 2019 The Felicia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 import ImuFrameMessage, { IMU_FRAME_MESSAGE } from '@felicia-viz/proto/messages/imu-frame-message';
 // @ts-ignore
 import { Form, MetricCard, MetricChart } from '@streetscape.gl/monochrome';

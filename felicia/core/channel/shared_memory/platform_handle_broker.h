@@ -1,5 +1,9 @@
-#ifndef FELICIA_CORE_SHARED_MEMORY_PLATFORM_HANDLE_BROKER_H_
-#define FELICIA_CORE_SHARED_MEMORY_PLATFORM_HANDLE_BROKER_H_
+// Copyright (c) 2019 The Felicia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef FELICIA_CORE_CHANNEL_SHARED_MEMORY_PLATFORM_HANDLE_BROKER_H_
+#define FELICIA_CORE_CHANNEL_SHARED_MEMORY_PLATFORM_HANDLE_BROKER_H_
 
 #include "third_party/chromium/base/memory/platform_shared_memory_region.h"
 #include "third_party/chromium/build/build_config.h"
@@ -71,4 +75,4 @@ class PlatformHandleBroker {
 
 }  // namespace felicia
 
-#endif  // FELICIA_CORE_SHARED_MEMORY_PLATFORM_HANDLE_BROKER_H_
+#endif  // FELICIA_CORE_CHANNEL_SHARED_MEMORY_PLATFORM_HANDLE_BROKER_H_

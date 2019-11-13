@@ -1,3 +1,7 @@
+// Copyright (c) 2019 The Felicia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #if defined(HAS_ROS)
 
 #ifndef FELICIA_CORE_RPC_ROS_SERVER_IMPL_H_
@@ -181,7 +185,7 @@ template <typename T>
 void FEL_ROS_SERVER::DoAcceptLoop() {
   TCPChannel* tcp_channel = channel_->ToTCPChannel();
   tcp_channel->AcceptOnceIntercept(
-      base::BindRepeating(&FEL_ROS_SERVER::OnAccept, base::Unretained(this)));
+      base::BindRepeating(&Server::OnAccept, base::Unretained(this)));
 }
 
 template <typename T>
@@ -192,7 +196,7 @@ void FEL_ROS_SERVER::OnAccept(StatusOr<std::unique_ptr<TCPChannel>> status_or) {
       RosServiceResponse* service_response =
           new RosServiceResponse(std::move(status_or).ValueOrDie());
       service_response->ReceiveRequest(
-          this, base::BindOnce(&FEL_ROS_SERVER::OnRosServiceHandshake,
+          this, base::BindOnce(&Server::OnRosServiceHandshake,
                                base::Unretained(this)));
     } else {
       service_handlers_.push_back(std::make_unique<ServiceHandler>(

@@ -113,9 +113,8 @@ void FEL_GRPC_CLIENT::RunRpcsLoops(int num_threads) {
                 [this](const std::unique_ptr<base::Thread>& thread) {
                   thread->Start();
                   thread->task_runner()->PostTask(
-                      FROM_HERE,
-                      base::BindOnce(&FEL_GRPC_CLIENT::HandleRpcsLoop,
-                                     base::Unretained(this)));
+                      FROM_HERE, base::BindOnce(&Client::HandleRpcsLoop,
+                                                base::Unretained(this)));
                 });
 }
 

@@ -1,3 +1,7 @@
+# Copyright (c) 2019 The Felicia Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 from lib.command_composer import CommandComposer
 from lib.util import nametuple_with_defaults_none, is_linux
 

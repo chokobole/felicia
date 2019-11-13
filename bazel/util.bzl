@@ -1,3 +1,7 @@
+# Copyright (c) 2019 The Felicia Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 def norm_path(path):
     """Returns a path with '/' and remove the trailing slash."""
     path = path.replace("\\", "/")

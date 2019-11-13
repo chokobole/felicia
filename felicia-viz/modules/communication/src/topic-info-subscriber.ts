@@ -1,3 +1,7 @@
+// Copyright (c) 2019 The Felicia Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 import { TOPIC_INFO } from '@felicia-viz/proto/messages/master-data';
 import { SERVER_ADDRESS, WEBSOCKET_PORT } from 'typings/settings';
 import Connection from './connection';
