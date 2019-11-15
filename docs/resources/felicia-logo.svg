@@ -1,0 +1,41 @@
+    <svg
+      width="300"
+      height="100"
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id="grad">
+          <stop offset="0%" stop-color="#40E0D0" stop-opacity="1" />
+          <stop offset="50%" stop-color="#FF8C00" stop-opacity="1" />
+          <stop offset="100%" stop-color="#FF0080" stop-opacity="1" />
+        </linearGradient>
+        <mask id="mask">
+          <path
+            d="M 10 30 H 20 L 25 25 H 65 L 70 20 H 30 L 35 15 H 75 L 80 10 H 30 L 10 30 Z"
+            fill="yellow"
+          />
+          <path
+            d="M 10 30 H 60 V 40 H 20 V 50 H 60 V 60 H 20 V 70 H 60 V 80 H 10 V 30 Z"
+            fill="yellow"
+          />
+          <path
+            d="M 60 30 L 65 25 V 65 L 80 50 V 60 L 60 80 V 30 Z"
+            fill="yellow"
+          />
+        </mask>
+      </defs>
+      <g>
+        <rect
+          x="10"
+          y="10"
+          width="80"
+          height="80"
+          fill="url(#grad)"
+          mask="url(#mask)"
+        />
+        <text x="85" y="65" style="font: 65px sans-serif">
+          Felicia
+        </text>
+      </g>
+    </svg>

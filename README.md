@@ -1,6 +1,10 @@
-# Felicia
+
+
+![Felicia Logo](docs/resources/felicia-logo.png)
 
 [![Build Status](https://travis-ci.com/chokobole/felicia.svg?token=uWEvhLXsK9nuPxhDRPic&branch=master)](https://travis-ci.com/chokobole/felicia)
+
+## Overview
 
 Felicia is the chromium based robot framework like [ROS](https://www.ros.org/), a collections of tools and libraries to help developers build **fast**, **light** and **secure** robot software. Currently it is under development mostly alone, I think it is still useful for like Robot-vision developer who needs to deliver camera images fast or web developers who wants to subscribe messages by WebSocket without any performance drop. I hope someday it be spread through robot industry and academia so that I want many developers to be engaged with it! If you have any trouble, leave issues or contact to me by email!
 
