@@ -18,19 +18,20 @@ namespace felicia {
 // side.
 class PyMasterProxy {
  public:
-  static Status Start();
-  static Status Stop();
+  Status Start();
+  Status Stop();
 
-  static void Run();
+  void RequestRegisterNode(py::function constructor, const NodeInfo& node_info,
+                           py::args args, py::kwargs kwargs);
 
-  static bool IsBoundToCurrentThread();
+ private:
+  friend void AddMasterProxy(py::module&);
 
-  static void RequestRegisterNode(py::function constructor,
-                                  const NodeInfo& node_info, py::args args,
-                                  py::kwargs kwargs);
-  static void OnRegisterNodeAsync(py::object object,
-                                  const RegisterNodeRequest* request,
-                                  RegisterNodeResponse* response, Status s);
+  PyMasterProxy() = default;
+
+  void OnRegisterNodeAsync(py::object object,
+                           const RegisterNodeRequest* request,
+                           RegisterNodeResponse* response, Status s);
 };
 
 void AddMasterProxy(py::module& m);

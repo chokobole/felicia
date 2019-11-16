@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FELICIA_JS_TYPE_CONVERTOR_H_
-#define FELICIA_JS_TYPE_CONVERTOR_H_
+#ifndef FELICIA_JS_TYPE_CONVERSION_TYPE_CONVERTOR_H_
+#define FELICIA_JS_TYPE_CONVERSION_TYPE_CONVERTOR_H_
 
 #include <type_traits>
 
-#include "felicia/js/type_convertor_forward.h"
+#include "felicia/js/type_conversion/type_convertor_forward.h"
 
 namespace felicia {
 namespace js {
@@ -133,4 +133,4 @@ class TypeConvertor<T, std::enable_if_t<std::is_enum<T>::value>> {
 }  // namespace js
 }  // namespace felicia
 
-#endif  // FELICIA_JS_TYPE_CONVERTOR_H_
+#endif  // FELICIA_JS_TYPE_CONVERSION_TYPE_CONVERTOR_H_

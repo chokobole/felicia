@@ -135,6 +135,7 @@ fel_cc_native_library(
         "//felicia/core/master:master_proxy",
         "//felicia/core/node:dynamic_publishing_node",
         "//felicia/core/node:dynamic_subscribing_node",
+        "//felicia/core/node:topic_info_watcher_node",
     ],
 )
 

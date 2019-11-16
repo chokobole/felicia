@@ -3,17 +3,18 @@
 // found in the LICENSE file.
 
 #if defined(FEL_WIN_NO_GRPC)
+#include "felicia/js/master/master_client.h"
 
+#include "google/protobuf/util/json_util.h"
 #include "napi.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
 #include "felicia/core/lib/base/callback_holder.h"
 #include "felicia/core/master/rpc/master_server_info.h"
-#include "felicia/js/master_client.h"
-#include "felicia/js/master_proxy_js.h"
-#include "felicia/js/protobuf_type_convertor.h"
-#include "felicia/js/status_js.h"
-#include "felicia/js/typed_call.h"
+#include "felicia/js/lib/scoped_env.h"
+#include "felicia/js/lib/status_js.h"
+#include "felicia/js/type_conversion/protobuf_type_convertor.h"
+#include "felicia/js/type_conversion/typed_call.h"
 
 namespace felicia {
 
@@ -31,7 +32,7 @@ MasterClient::MasterClient() {}
 MasterClient::~MasterClient() = default;
 
 Status MasterClient::Start() {
-  napi_env nenv = JsMasterProxy::CurrentEnv();
+  napi_env nenv = ScopedEnvSetter::CurrentEnv();
   if (!nenv) {
     return errors::NotUnderJsExecutionEnvironment();
   }
@@ -59,7 +60,7 @@ Status MasterClient::Stop() { return Status::OK(); }
   void MasterClient::Method##Async(const Method##Request* request,          \
                                    Method##Response* response,              \
                                    StatusOnceCallback done) {               \
-    napi_env nenv = JsMasterProxy::CurrentEnv();                            \
+    napi_env nenv = ScopedEnvSetter::CurrentEnv();                          \
     if (!nenv) {                                                            \
       std::move(done).Run(errors::NotUnderJsExecutionEnvironment());        \
       return;                                                               \

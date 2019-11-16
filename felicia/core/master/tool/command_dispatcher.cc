@@ -13,6 +13,7 @@
 
 #include "felicia/core/channel/channel.h"
 #include "felicia/core/master/master_proxy.h"
+#include "felicia/core/thread/main_thread.h"
 #include "felicia/core/util/command_line_interface/table_writer.h"
 
 namespace felicia {
@@ -27,16 +28,15 @@ constexpr size_t kMessageTypeLength = 30;
 constexpr size_t kChannelProtocolLength = 20;
 constexpr size_t kChannelSourceLength = 24;
 
-class ScopedMasterProxyStopper {
+class ScopedMainThreadStopper {
  public:
-  ScopedMasterProxyStopper() {}
-  ~ScopedMasterProxyStopper() {
-    MasterProxy& master_proxy = MasterProxy::GetInstance();
-    master_proxy.PostTask(FROM_HERE, base::BindOnce([]() {
-                            MasterProxy& master_proxy =
-                                MasterProxy::GetInstance();
-                            master_proxy.Stop();
-                          }));
+  ScopedMainThreadStopper() {}
+  ~ScopedMainThreadStopper() {
+    MainThread& main_thread = MainThread::GetInstance();
+    main_thread.PostTask(FROM_HERE, base::BindOnce([]() {
+                           MainThread& main_thread = MainThread::GetInstance();
+                           main_thread.Stop();
+                         }));
   }
 };
 
@@ -99,7 +99,7 @@ void CommandDispatcher::Dispatch(const ClientListFlag& delegate) const {
 void CommandDispatcher::OnListClientsAsync(const ListClientsRequest* request,
                                            ListClientsResponse* response,
                                            Status s) const {
-  ScopedMasterProxyStopper stopper;
+  ScopedMainThreadStopper stopper;
 
   if (!s.ok()) {
     std::cerr << s << std::endl;
@@ -173,7 +173,7 @@ void CommandDispatcher::Dispatch(const NodeListFlag& delegate) const {
 void CommandDispatcher::OnListNodesAsync(const ListNodesRequest* request,
                                          ListNodesResponse* response,
                                          Status s) const {
-  ScopedMasterProxyStopper stopper;
+  ScopedMainThreadStopper stopper;
 
   if (!s.ok()) {
     std::cerr << s << std::endl;
@@ -253,7 +253,7 @@ void CommandDispatcher::Dispatch(const ServiceListFlag& delegate) const {
 void CommandDispatcher::OnListServicesAsync(const ListServicesRequest* request,
                                             ListServicesResponse* response,
                                             Status s) const {
-  ScopedMasterProxyStopper stopper;
+  ScopedMainThreadStopper stopper;
 
   if (!s.ok()) {
     std::cerr << s << std::endl;
@@ -332,7 +332,7 @@ void CommandDispatcher::Dispatch(const TopicSubscribeFlag& delegate) const {
 void CommandDispatcher::OnListTopicsAsync(const ListTopicsRequest* request,
                                           ListTopicsResponse* response,
                                           Status s) const {
-  ScopedMasterProxyStopper stopper;
+  ScopedMainThreadStopper stopper;
 
   if (!s.ok()) {
     std::cerr << s << std::endl;

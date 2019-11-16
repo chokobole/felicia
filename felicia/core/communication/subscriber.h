@@ -25,6 +25,7 @@
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/core/message/ros_protocol.h"
+#include "felicia/core/thread/main_thread.h"
 
 namespace felicia {
 
@@ -147,9 +148,9 @@ void Subscriber<MessageTy>::RequestSubscribe(
     const communication::Settings& settings,
     OnMessageCallback on_message_callback, StatusCallback on_error_callback,
     StatusOnceCallback callback) {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
         FROM_HERE, base::BindOnce(&Subscriber<MessageTy>::RequestSubscribe,
                                   base::Unretained(this), node_info, topic,
                                   channel_types, settings, on_message_callback,
@@ -171,6 +172,7 @@ void Subscriber<MessageTy>::RequestSubscribe(
   request->set_topic_type(GetMessageTypeName());
   SubscribeTopicResponse* response = new SubscribeTopicResponse();
 
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.SubscribeTopicAsync(
       request, response,
       base::BindOnce(
@@ -185,9 +187,9 @@ template <typename MessageTy>
 void Subscriber<MessageTy>::RequestUnsubscribe(const NodeInfo& node_info,
                                                const std::string& topic,
                                                StatusOnceCallback callback) {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
         FROM_HERE, base::BindOnce(&Subscriber<MessageTy>::RequestUnsubscribe,
                                   base::Unretained(this), node_info, topic,
                                   std::move(callback)));
@@ -207,6 +209,7 @@ void Subscriber<MessageTy>::RequestUnsubscribe(const NodeInfo& node_info,
   request->set_topic(topic);
   UnsubscribeTopicResponse* response = new UnsubscribeTopicResponse();
 
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.UnsubscribeTopicAsync(
       request, response,
       base::BindOnce(&Subscriber<MessageTy>::OnUnubscribeTopicAsync,
@@ -264,12 +267,12 @@ void Subscriber<MessageTy>::OnUnubscribeTopicAsync(
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnFindPublisher(const TopicInfo& topic_info) {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  DCHECK(master_proxy.IsBoundToCurrentThread());
+  MainThread& main_thread = MainThread::GetInstance();
+  DCHECK(main_thread.IsBoundToCurrentThread());
   if (IsRegistering() || IsUnregistering() || IsStopping()) {
-    master_proxy.PostTask(
-        FROM_HERE, base::BindOnce(&Subscriber<MessageTy>::OnFindPublisher,
-                                  base::Unretained(this), topic_info));
+    main_thread.PostTask(FROM_HERE,
+                         base::BindOnce(&Subscriber<MessageTy>::OnFindPublisher,
+                                        base::Unretained(this), topic_info));
     return;
   }
 
@@ -385,9 +388,9 @@ void Subscriber<MessageTy>::OnRosTopicHandshake(Status s) {
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::StartMessageLoop() {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
         FROM_HERE, base::BindOnce(&Subscriber<MessageTy>::StartMessageLoop,
                                   base::Unretained(this)));
     return;
@@ -396,7 +399,7 @@ void Subscriber<MessageTy>::StartMessageLoop() {
   if (IsUnregistering() || IsUnregistered()) return;
 
   if (IsStopping()) {
-    master_proxy.PostDelayedTask(
+    main_thread.PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&Subscriber<MessageTy>::StartMessageLoop,
                        base::Unretained(this)),
@@ -414,9 +417,9 @@ void Subscriber<MessageTy>::StartMessageLoop() {
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::StopMessageLoop(StatusOnceCallback callback) {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
         FROM_HERE, base::BindOnce(&Subscriber<MessageTy>::StopMessageLoop,
                                   base::Unretained(this), std::move(callback)));
     return;
@@ -465,8 +468,8 @@ void Subscriber<MessageTy>::OnReceiveMessage(Status s) {
   }
 
   if (channel_->IsShmChannel()) {
-    MasterProxy& master_proxy = MasterProxy::GetInstance();
-    master_proxy.PostDelayedTask(
+    MainThread& main_thread = MainThread::GetInstance();
+    main_thread.PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&Subscriber<MessageTy>::ReceiveMessageLoop,
                        base::Unretained(this)),
@@ -486,15 +489,15 @@ void Subscriber<MessageTy>::NotifyMessageLoop() {
     on_message_callback_.Run(std::move(message));
   }
 
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
+  MainThread& main_thread = MainThread::GetInstance();
   if (IsStopping() && message_queue_.empty()) {
-    master_proxy.PostDelayedTask(
+    main_thread.PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&Subscriber<MessageTy>::Stop, base::Unretained(this)),
         settings_.period + base::TimeDelta::FromMilliseconds(
                                100));  // Add some offset for safe close.
   } else {
-    master_proxy.PostDelayedTask(
+    main_thread.PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&Subscriber<MessageTy>::NotifyMessageLoop,
                        base::Unretained(this)),
@@ -503,15 +506,15 @@ void Subscriber<MessageTy>::NotifyMessageLoop() {
 }
 
 // Should carefully release the resources.
-// |channel_| should be released on MasterProxy thread,
+// |channel_| should be released on main thread,
 // if you release |message_queue_|, |on_message_callback_| and
 // |on_error_callback_| too early, then it might be crashed on
 // |NotifyMessageLoop|, which loops every |settings_.period|.
 template <typename MessageTy>
 void Subscriber<MessageTy>::Stop() {
 #if DCHECK_IS_ON()
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  DCHECK(master_proxy.IsBoundToCurrentThread());
+  MainThread& main_thread = MainThread::GetInstance();
+  DCHECK(main_thread.IsBoundToCurrentThread());
 #endif
 
   if (IsUnregistered()) {

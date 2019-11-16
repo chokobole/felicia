@@ -17,6 +17,7 @@
 #include "felicia/core/rpc/grpc_util.h"
 #include "felicia/core/rpc/ros_util.h"
 #include "felicia/core/rpc/server.h"
+#include "felicia/core/thread/main_thread.h"
 
 namespace felicia {
 
@@ -99,9 +100,9 @@ template <typename ServiceTy, typename ServerTy>
 void ServiceServer<ServiceTy, ServerTy>::RequestRegister(
     const NodeInfo& node_info, const std::string& service,
     StatusOnceCallback callback) {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
         FROM_HERE,
         base::BindOnce(&ServiceServer<ServiceTy, ServerTy>::RequestRegister,
                        base::Unretained(this), node_info, service,
@@ -130,6 +131,7 @@ void ServiceServer<ServiceTy, ServerTy>::RequestRegister(
   server_.set_service_info(*service_info);
   RegisterServiceServerResponse* response = new RegisterServiceServerResponse();
 
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.RegisterServiceServerAsync(
       request, response,
       base::BindOnce(
@@ -142,9 +144,9 @@ template <typename ServiceTy, typename ServerTy>
 void ServiceServer<ServiceTy, ServerTy>::RequestUnregister(
     const NodeInfo& node_info, const std::string& service,
     StatusOnceCallback callback) {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
         FROM_HERE,
         base::BindOnce(&ServiceServer<ServiceTy, ServerTy>::RequestUnregister,
                        base::Unretained(this), node_info, service,
@@ -167,6 +169,7 @@ void ServiceServer<ServiceTy, ServerTy>::RequestUnregister(
   UnregisterServiceServerResponse* response =
       new UnregisterServiceServerResponse();
 
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.UnregisterServiceServerAsync(
       request, response,
       base::BindOnce(

@@ -7,17 +7,11 @@ load("//bazel:felicia_cc.bzl", "fel_cc_library")
 package(default_visibility = ["//felicia:internal"])
 
 fel_cc_library(
-    name = "drivers_py_cc",
-    srcs = [
-        "camera_py.cc",
-        "drivers_py.cc",
-    ],
-    hdrs = [
-        "camera_py.h",
-        "drivers_py.h",
-    ],
+    name = "main_thread_py_cc",
+    srcs = ["main_thread_py.cc"],
+    hdrs = ["main_thread_py.h"],
     deps = [
-        "//felicia/drivers/camera",
+        "//felicia/core/thread:main_thread",
         "//felicia/python/type_conversion",
     ],
 )

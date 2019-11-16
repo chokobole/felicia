@@ -16,15 +16,20 @@ fel_cc_library(
 )
 
 fel_cc_library(
+    name = "topic_info_watcher_node",
+    srcs = ["topic_info_watcher_node.cc"],
+    hdrs = ["topic_info_watcher_node.h"],
+    deps = [
+        ":node_lifecycle",
+        "//felicia/core/communication",
+        "//felicia/core/master:master_proxy",
+    ],
+)
+
+fel_cc_library(
     name = "dynamic_subscribing_node",
-    srcs = [
-        "dynamic_subscribing_node.cc",
-        "topic_info_watcher_node.cc",
-    ],
-    hdrs = [
-        "dynamic_subscribing_node.h",
-        "topic_info_watcher_node.h",
-    ],
+    srcs = ["dynamic_subscribing_node.cc"],
+    hdrs = ["dynamic_subscribing_node.h"],
     deps = [
         ":node_lifecycle",
         "//felicia/core/communication",

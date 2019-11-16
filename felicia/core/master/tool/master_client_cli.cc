@@ -30,7 +30,8 @@ int RealMain(int argc, char* argv[]) {
   CommandDispatcher dispatcher;
   dispatcher.Dispatch(delegate);
 
-  master_proxy.Run();
+  MainThread& main_thread = MainThread::GetInstance();
+  main_thread.Run();
 
   return 0;
 }

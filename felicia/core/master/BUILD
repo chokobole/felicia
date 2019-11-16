@@ -55,6 +55,7 @@ fel_cc_library(
         ":master_client_interface",
         "//felicia/core/channel",
         "//felicia/core/node:node_lifecycle",
+        "//felicia/core/thread:main_thread",
     ] + select({
         "//felicia:win_no_grpc": [],
         "//conditions:default": [

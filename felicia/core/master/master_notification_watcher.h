@@ -11,8 +11,8 @@
 #include "third_party/chromium/base/containers/flat_map.h"
 #include "third_party/chromium/base/macros.h"
 
-#include "felicia/core/channel/channel.h"
 #include "felicia/core/channel/message_receiver.h"
+#include "felicia/core/channel/tcp_channel.h"
 #include "felicia/core/protobuf/master_data.pb.h"
 
 namespace felicia {

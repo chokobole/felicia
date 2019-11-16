@@ -14,8 +14,8 @@ void DynamicSubscriber::Subscribe(const communication::Settings& settings,
                                   OnMessageCallback on_message_callback,
                                   StatusCallback on_error_callback) {
 #if DCHECK_IS_ON()
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  DCHECK(master_proxy.IsBoundToCurrentThread());
+  MainThread& main_thread = MainThread::GetInstance();
+  DCHECK(main_thread.IsBoundToCurrentThread());
 #endif
   DLOG(INFO) << FROM_HERE.ToString();
   DCHECK(IsUnregistered()) << register_state_.ToString();
@@ -32,8 +32,8 @@ void DynamicSubscriber::Subscribe(const communication::Settings& settings,
 
 void DynamicSubscriber::OnFindPublisher(const TopicInfo& topic_info) {
 #if DCHECK_IS_ON()
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  DCHECK(master_proxy.IsBoundToCurrentThread());
+  MainThread& main_thread = MainThread::GetInstance();
+  DCHECK(main_thread.IsBoundToCurrentThread());
 #endif
   DLOG(INFO) << FROM_HERE.ToString();
   Subscriber<DynamicProtobufMessage>::OnFindPublisher(topic_info);
@@ -42,8 +42,8 @@ void DynamicSubscriber::OnFindPublisher(const TopicInfo& topic_info) {
 void DynamicSubscriber::Unsubscribe(const std::string& topic,
                                     StatusOnceCallback callback) {
 #if DCHECK_IS_ON()
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  DCHECK(master_proxy.IsBoundToCurrentThread());
+  MainThread& main_thread = MainThread::GetInstance();
+  DCHECK(main_thread.IsBoundToCurrentThread());
 #endif
   DLOG(INFO) << FROM_HERE.ToString();
   // Unsubscribe function can be called either when topic info is updated to

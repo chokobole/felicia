@@ -10,14 +10,14 @@ package(default_visibility = ["//felicia:internal"])
 fel_cc_library(
     name = "felicia_py_cc",
     deps = [
-        "//external:pybind11",
         "//felicia/core:felicia_init",
         "//felicia/python/channel:channel_py_cc",
         "//felicia/python/command_line_interface:command_line_interface_py_cc",
         "//felicia/python/communication:communication_py_cc",
         "//felicia/python/drivers:drivers_py_cc",
-        "//felicia/python/master:master_py_cc",
+        "//felicia/python/master:master_proxy_py_cc",
         "//felicia/python/node:node_lifecycle_py_cc",
+        "//felicia/python/thread:main_thread_py_cc",
     ],
 )
 

@@ -6,6 +6,7 @@
 
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/core/node/dynamic_publishing_node.h"
+#include "felicia/core/thread/main_thread.h"
 
 namespace felicia {
 
@@ -42,8 +43,8 @@ class DynamicPublisherDelegate : public DynamicPublishingNode::Delegate {
 
   void PublishMessageFromJson() {
     node_->PublishMessageFromJson(message_);
-    MasterProxy& master_proxy = MasterProxy::GetInstance();
-    master_proxy.PostDelayedTask(
+    MainThread& main_thread = MainThread::GetInstance();
+    main_thread.PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&DynamicPublisherDelegate::PublishMessageFromJson,
                        base::Unretained(this)),

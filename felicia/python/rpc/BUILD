@@ -25,7 +25,6 @@ fel_cc_library(
         "server_py.h",
     ],
     deps = [
-        "//external:pybind11",
         "//felicia/core/rpc",
         "//felicia/python/message",
         "//felicia/python/type_conversion",

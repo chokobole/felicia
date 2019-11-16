@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FELICIA_JS_TYPE_CONVERTOR_FORWARD_H_
-#define FELICIA_JS_TYPE_CONVERTOR_FORWARD_H_
+#ifndef FELICIA_JS_TYPE_CONVERSION_TYPE_CONVERTOR_FORWARD_H_
+#define FELICIA_JS_TYPE_CONVERSION_TYPE_CONVERTOR_FORWARD_H_
 
 #include "napi.h"
 
@@ -16,4 +16,4 @@ class TypeConvertor;
 }  // namespace js
 }  // namespace felicia
 
-#endif  // FELICIA_JS_TYPE_CONVERTOR_FORWARD_H_
+#endif  // FELICIA_JS_TYPE_CONVERSION_TYPE_CONVERTOR_FORWARD_H_

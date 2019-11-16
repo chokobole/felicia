@@ -11,6 +11,6 @@ fel_nodejs_bind_node_library(
     ],
     deps = [
         "//felicia/core/lib",
-        "//felicia/js:typed_call",
+        "//felicia/js/type_conversion",
     ],
 )

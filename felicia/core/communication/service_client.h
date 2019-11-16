@@ -15,6 +15,7 @@
 
 #include "felicia/core/communication/register_state.h"
 #include "felicia/core/master/master_proxy.h"
+#include "felicia/core/thread/main_thread.h"
 
 namespace felicia {
 
@@ -72,9 +73,9 @@ template <typename ClientTy>
 void ServiceClient<ClientTy>::RequestRegister(
     const NodeInfo& node_info, const std::string& service,
     OnConnectCallback on_connect_callback, StatusOnceCallback callback) {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
         FROM_HERE, base::BindOnce(&ServiceClient<ClientTy>::RequestRegister,
                                   base::Unretained(this), node_info, service,
                                   on_connect_callback, std::move(callback)));
@@ -94,6 +95,7 @@ void ServiceClient<ClientTy>::RequestRegister(
   request->set_service(service);
   RegisterServiceClientResponse* response = new RegisterServiceClientResponse();
 
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.RegisterServiceClientAsync(
       request, response,
       base::BindOnce(&ServiceClient<ClientTy>::OnRegisterServiceClientAsync,
@@ -108,9 +110,9 @@ template <typename ClientTy>
 void ServiceClient<ClientTy>::RequestUnregister(const NodeInfo& node_info,
                                                 const std::string& service,
                                                 StatusOnceCallback callback) {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
         FROM_HERE, base::BindOnce(&ServiceClient<ClientTy>::RequestUnregister,
                                   base::Unretained(this), node_info, service,
                                   std::move(callback)));
@@ -132,6 +134,7 @@ void ServiceClient<ClientTy>::RequestUnregister(const NodeInfo& node_info,
   UnregisterServiceClientResponse* response =
       new UnregisterServiceClientResponse();
 
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.UnregisterServiceClientAsync(
       request, response,
       base::BindOnce(&ServiceClient<ClientTy>::OnUnregisterServiceClientAsync,
@@ -187,10 +190,10 @@ void ServiceClient<ClientTy>::OnUnregisterServiceClientAsync(
 template <typename ClientTy>
 void ServiceClient<ClientTy>::OnFindServiceServer(
     const ServiceInfo& service_info) {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  DCHECK(master_proxy.IsBoundToCurrentThread());
+  MainThread& main_thread = MainThread::GetInstance();
+  DCHECK(main_thread.IsBoundToCurrentThread());
   if (IsRegistering() || IsUnregistering()) {
-    master_proxy.PostTask(
+    main_thread.PostTask(
         FROM_HERE, base::BindOnce(&ServiceClient<ClientTy>::OnFindServiceServer,
                                   base::Unretained(this), service_info));
     return;

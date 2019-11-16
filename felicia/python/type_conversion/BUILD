@@ -19,7 +19,6 @@ fel_cc_library(
         "util.h",
     ],
     deps = [
-        "//external:pybind11",
         "//felicia/core/lib",
         "//felicia/python/message",
     ],

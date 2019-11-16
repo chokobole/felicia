@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FELICIA_JS_MASTER_CLIENT_H_
-#define FELICIA_JS_MASTER_CLIENT_H_
+#ifndef FELICIA_JS_MASTER_MASTER_CLIENT_H_
+#define FELICIA_JS_MASTER_MASTER_CLIENT_H_
 
 #if defined(FEL_WIN_NO_GRPC)
+
+#include "napi.h"
 
 #include "third_party/chromium/base/macros.h"
 
@@ -38,4 +40,4 @@ class MasterClient : public MasterClientInterface {
 
 #endif  // defined(FEL_WIN_NO_GRPC)
 
-#endif  // FELICIA_JS_MASTER_CLIENT_H_
+#endif  // FELICIA_JS_MASTER_MASTER_CLIENT_H_

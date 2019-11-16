@@ -27,7 +27,6 @@ fel_cc_library(
         "service_server_py.h",
     ],
     deps = [
-        "//external:pybind11",
         "//felicia/core/communication",
         "//felicia/python/message",
         "//felicia/python/rpc:rpc_py_cc",

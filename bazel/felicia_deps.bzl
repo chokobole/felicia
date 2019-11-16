@@ -284,8 +284,6 @@ def felicia_deps():
             patches = ["@com_github_chokobole_felicia//third_party:yaml_cpp.patch"],
         )
 
-
-
     if not native.existing_rule("io_bazel_rules_go"):
         http_archive(
             name = "io_bazel_rules_go",

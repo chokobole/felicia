@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "felicia/js/protobuf_type_convertor.h"
+#include "felicia/js/type_conversion/protobuf_type_convertor.h"
 
 #include "google/protobuf/reflection.h"
 #include "third_party/chromium/base/logging.h"

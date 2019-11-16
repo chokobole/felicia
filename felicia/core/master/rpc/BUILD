@@ -52,6 +52,7 @@ fel_cc_binary(
         ":master_service_proto_cc",
         "//felicia/core:felicia_init",
         "//felicia/core/master",
+        "//felicia/core/rpc",
     ],
 )
 

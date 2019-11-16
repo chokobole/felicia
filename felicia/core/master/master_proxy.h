@@ -12,14 +12,8 @@
 #include "third_party/chromium/base/bind.h"
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/macros.h"
-#include "third_party/chromium/base/message_loop/message_loop.h"
 #include "third_party/chromium/base/no_destructor.h"
-#include "third_party/chromium/base/run_loop.h"
 #include "third_party/chromium/base/synchronization/waitable_event.h"
-#include "third_party/chromium/base/threading/thread.h"
-#if defined(OS_WIN)
-#include "third_party/chromium/base/win/scoped_com_initializer.h"
-#endif
 
 #include "felicia/core/channel/channel.h"
 #include "felicia/core/lib/base/export.h"
@@ -35,7 +29,6 @@ class PyMasterProxy;
 
 class FEL_EXPORT MasterProxy final : public MasterClientInterface {
  public:
-  static void SetBackground();
   static MasterProxy& GetInstance();
 
   ProtobufLoader* protobuf_loader();
@@ -43,15 +36,6 @@ class FEL_EXPORT MasterProxy final : public MasterClientInterface {
   const ClientInfo& client_info() const;
 
   void set_heart_beat_duration(base::TimeDelta heart_beat_duration);
-
-  void set_on_stop_callback(base::OnceClosure callback);
-
-  bool IsBoundToCurrentThread() const;
-
-  bool PostTask(const base::Location& from_here, base::OnceClosure callback);
-
-  bool PostDelayedTask(const base::Location& from_here,
-                       base::OnceClosure callback, base::TimeDelta delay);
 
 #if defined(FEL_WIN_NO_GRPC)
   Status StartMasterClient();
@@ -69,8 +53,6 @@ class FEL_EXPORT MasterProxy final : public MasterClientInterface {
       override;
 #include "felicia/core/master/rpc/master_method_list.h"
 #undef MASTER_METHOD
-
-  void Run();
 
   template <typename NodeTy, typename... Args,
             std::enable_if_t<std::is_base_of<NodeLifecycle, NodeTy>::value>* =
@@ -90,8 +72,6 @@ class FEL_EXPORT MasterProxy final : public MasterClientInterface {
   ~MasterProxy();
 
   void Setup(base::WaitableEvent* event);
-
-  void RegisterSignals();
 
   void OnHeartBeatSignallerStart(base::WaitableEvent* event,
                                  const ChannelSource& channel_source);
@@ -116,9 +96,6 @@ class FEL_EXPORT MasterProxy final : public MasterClientInterface {
       RegisterServiceClientResponse* response, StatusOnceCallback callback,
       MasterNotificationWatcher::NewServiceInfoCallback service_info_callback);
 
-  std::unique_ptr<base::MessageLoop> message_loop_;
-  std::unique_ptr<base::RunLoop> run_loop_;
-  std::unique_ptr<base::Thread> thread_;
   std::unique_ptr<MasterClientInterface> master_client_interface_;
 
   ClientInfo client_info_;
@@ -129,12 +106,6 @@ class FEL_EXPORT MasterProxy final : public MasterClientInterface {
   std::vector<std::unique_ptr<NodeLifecycle>> nodes_;
 
   std::unique_ptr<ProtobufLoader> protobuf_loader_;
-
-  base::OnceClosure on_stop_callback_;
-
-#if defined(OS_WIN)
-  base::win::ScopedCOMInitializer scoped_com_initializer_;
-#endif
 
 #if defined(FEL_WIN_NO_GRPC)
   bool is_client_info_set_ = false;

@@ -4,38 +4,23 @@
 
 #include "felicia/python/master/master_proxy_py.h"
 
-#include "third_party/chromium/base/memory/ptr_util.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
-#include "third_party/chromium/build/build_config.h"
 
 #include "felicia/core/master/master_proxy.h"
-#include "felicia/python/type_conversion/callback.h"
 #include "felicia/python/type_conversion/protobuf.h"
 
 namespace felicia {
 
-// static
-Status PyMasterProxy::Start() { return MasterProxy::GetInstance().Start(); }
-
-// static
-Status PyMasterProxy::Stop() { return MasterProxy::GetInstance().Stop(); }
-
-// static
-void PyMasterProxy::Run() {
+Status PyMasterProxy::Start() {
   py::gil_scoped_release release;
-  {
-    py::gil_scoped_acquire acquire;
-    acquire.inc_ref();
-  }
-  MasterProxy::GetInstance().Run();
+  return MasterProxy::GetInstance().Start();
 }
 
-// static
-bool PyMasterProxy::IsBoundToCurrentThread() {
-  return MasterProxy::GetInstance().IsBoundToCurrentThread();
+Status PyMasterProxy::Stop() {
+  py::gil_scoped_release release;
+  return MasterProxy::GetInstance().Stop();
 }
 
-// static
 void PyMasterProxy::RequestRegisterNode(py::function constructor,
                                         const NodeInfo& node_info,
                                         py::args args, py::kwargs kwargs) {
@@ -53,11 +38,11 @@ void PyMasterProxy::RequestRegisterNode(py::function constructor,
   RegisterNodeResponse* response = new RegisterNodeResponse();
   master_proxy.RegisterNodeAsync(
       request, response,
-      base::BindOnce(&PyMasterProxy::OnRegisterNodeAsync, object,
-                     base::Owned(request), base::Owned(response)));
+      base::BindOnce(&PyMasterProxy::OnRegisterNodeAsync,
+                     base::Unretained(this), object, base::Owned(request),
+                     base::Owned(response)));
 }
 
-// static
 void PyMasterProxy::OnRegisterNodeAsync(py::object object,
                                         const RegisterNodeRequest* request,
                                         RegisterNodeResponse* response,
@@ -76,35 +61,12 @@ void PyMasterProxy::OnRegisterNodeAsync(py::object object,
 
 void AddMasterProxy(py::module& m) {
   py::class_<PyMasterProxy>(m, "MasterProxy")
-      .def_static("start", &PyMasterProxy::Start)
-      .def_static("stop", &PyMasterProxy::Stop)
-      .def_static("run", &PyMasterProxy::Run)
-      // .def_static("is_bound_to_current_thread",
-      // &PyMasterProxy::IsBoundToCurrentThread)
-      .def_static("request_register_node", &PyMasterProxy::RequestRegisterNode,
-                  py::arg("constructor"), py::arg("node_info"))
-      .def_static("post_task",
-                  [](py::function callback) {
-                    PyClosure* closure = new PyClosure(callback);
-                    py::gil_scoped_release release;
-                    MasterProxy& master_proxy = MasterProxy::GetInstance();
-                    master_proxy.PostTask(FROM_HERE,
-                                          base::BindOnce(&PyClosure::Invoke,
-                                                         base::Owned(closure)));
-                  },
-                  py::arg("callback"))
-      .def_static(
-          "post_delayed_task",
-          [](py::function callback, base::TimeDelta delay) {
-            PyClosure* closure = new PyClosure(callback);
-            py::gil_scoped_release release;
-            MasterProxy& master_proxy = MasterProxy::GetInstance();
-            master_proxy.PostDelayedTask(
-                FROM_HERE,
-                base::BindOnce(&PyClosure::Invoke, base::Owned(closure)),
-                delay);
-          },
-          py::arg("callback"), py::arg("delay"));
+      .def("start", &PyMasterProxy::Start)
+      .def("stop", &PyMasterProxy::Stop)
+      .def("request_register_node", &PyMasterProxy::RequestRegisterNode,
+           py::arg("constructor"), py::arg("node_info"));
+
+  m.attr("master_proxy") = PyMasterProxy{};
 }
 
 }  // namespace felicia

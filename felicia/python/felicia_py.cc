@@ -20,6 +20,7 @@
 #include "felicia/python/master/master_proxy_py.h"
 #include "felicia/python/node/node_lifecycle_py.h"
 #include "felicia/python/rpc/rpc_py.h"
+#include "felicia/python/thread/main_thread_py.h"
 #include "felicia/python/type_conversion/protobuf.h"
 #include "felicia/python/type_conversion/util.h"
 
@@ -251,6 +252,7 @@ PYBIND11_MODULE(felicia_py, m) {
   AddCommandLineInterface(m);
   AddDrivers(m);
   AddRpc(m);
+  AddMainThread(m);
   AddMasterProxy(m);
   AddNodeLifecycle(m);
 }

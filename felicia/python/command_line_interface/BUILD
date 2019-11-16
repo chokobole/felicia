@@ -17,7 +17,6 @@ fel_cc_library(
         "flag_py.h",
     ],
     deps = [
-        "//external:pybind11",
         "//felicia/core/util:command_line_interface",
         "//felicia/python/type_conversion",
     ],

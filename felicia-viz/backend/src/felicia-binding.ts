@@ -8,7 +8,7 @@ import {
   TOPIC_INFO,
 } from '@felicia-viz/proto/messages/master-data';
 // @ts-ignore
-import feliciaJs from 'felicia_js.node';
+import fel from 'felicia_js.node';
 import { isWin } from 'lib/environment';
 import MasterClient from 'master-client';
 import handleMessage, { handleClose } from 'message';
@@ -30,14 +30,16 @@ export default (): void => {
       handleClose();
     }
   );
-  feliciaJs.MasterProxy.setBackground();
+  const mainThread = fel.mainThread;
+  const masterProxy = fel.masterProxy;
+  mainThread.runBackground();
 
   if (isWin) {
     (global as any).MasterClient = MasterClient;
-    feliciaJs.MasterProxy.startMasterClient();
+    masterProxy.startMasterClient();
   }
 
-  const s = feliciaJs.MasterProxy.start();
+  const s = masterProxy.start();
   if (!s.ok()) {
     console.error(s.errorMessage());
     process.exit(1);
@@ -45,13 +47,13 @@ export default (): void => {
 
   function requestRegisterTopicInfoWatcherNode(): void {
     if (isWin) {
-      if (!feliciaJs.MasterProxy.isClientInfoSet()) {
+      if (!masterProxy.isClientInfoSet()) {
         setTimeout(requestRegisterTopicInfoWatcherNode, 1000);
         return;
       }
     }
 
-    feliciaJs.MasterProxy.requestRegisterTopicInfoWatcherNode(
+    masterProxy.requestRegisterTopicInfoWatcherNode(
       (message: { message: TopicInfoProtobuf }) => {
         console.log(`[TOPIC] : ${JSON.stringify(message.message)}`);
         const topicInfo = message.message;
@@ -82,6 +84,4 @@ export default (): void => {
   }
 
   requestRegisterTopicInfoWatcherNode();
-
-  feliciaJs.MasterProxy.run();
 };

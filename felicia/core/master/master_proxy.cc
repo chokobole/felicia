@@ -4,15 +4,13 @@
 
 #include "felicia/core/master/master_proxy.h"
 
-#include <csignal>
-
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
-#include "felicia/core/channel/channel_factory.h"
 #include "felicia/core/lib/felicia_env.h"
 #include "felicia/core/lib/net/net_util.h"
 #include "felicia/core/lib/strings/str_util.h"
+#include "felicia/core/thread/main_thread.h"
 
 #if defined(FEL_WIN_NO_GRPC)
 namespace felicia {
@@ -26,38 +24,12 @@ extern std::unique_ptr<MasterClientInterface> NewMasterClient();
 
 namespace felicia {
 
-namespace {
-
-bool g_on_background = false;
-
-void StopMasterProxy(int signal) {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  master_proxy.Stop();
-}
-
-}  // namespace
-
-MasterProxy::MasterProxy()
-#if defined(OS_WIN)
-    : scoped_com_initializer_(base::win::ScopedCOMInitializer::kMTA)
-#endif
-{
-  if (g_on_background) {
-    thread_ = std::make_unique<base::Thread>("MasterProxy");
-  } else {
-    message_loop_ =
-        std::make_unique<base::MessageLoop>(base::MessageLoop::TYPE_IO);
-    run_loop_ = std::make_unique<base::RunLoop>();
-  }
-
+MasterProxy::MasterProxy() {
   protobuf_loader_ =
       ProtobufLoader::Load(base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
 }
 
 MasterProxy::~MasterProxy() = default;
-
-// static
-void MasterProxy::SetBackground() { g_on_background = true; }
 
 // static
 MasterProxy& MasterProxy::GetInstance() {
@@ -73,40 +45,6 @@ const ClientInfo& MasterProxy::client_info() const { return client_info_; }
 
 void MasterProxy::set_heart_beat_duration(base::TimeDelta heart_beat_duration) {
   client_info_.set_heart_beat_duration(heart_beat_duration.InMilliseconds());
-}
-
-void MasterProxy::set_on_stop_callback(base::OnceClosure callback) {
-  on_stop_callback_ = std::move(callback);
-}
-
-bool MasterProxy::IsBoundToCurrentThread() const {
-  if (g_on_background) {
-    return thread_->task_runner()->BelongsToCurrentThread();
-  } else {
-    return message_loop_->IsBoundToCurrentThread();
-  }
-}
-
-bool MasterProxy::PostTask(const base::Location& from_here,
-                           base::OnceClosure callback) {
-  if (g_on_background) {
-    return thread_->task_runner()->PostTask(from_here, std::move(callback));
-  } else {
-    return message_loop_->task_runner()->PostTask(from_here,
-                                                  std::move(callback));
-  }
-}
-
-bool MasterProxy::PostDelayedTask(const base::Location& from_here,
-                                  base::OnceClosure callback,
-                                  base::TimeDelta delay) {
-  if (g_on_background) {
-    return thread_->task_runner()->PostDelayedTask(from_here,
-                                                   std::move(callback), delay);
-  } else {
-    return message_loop_->task_runner()->PostDelayedTask(
-        from_here, std::move(callback), delay);
-  }
 }
 
 #if defined(FEL_WIN_NO_GRPC)
@@ -127,12 +65,6 @@ Status MasterProxy::Start() {
   Status s = master_client_interface_->Start();
   if (!s.ok()) return s;
 #endif
-
-  if (g_on_background) {
-    thread_->StartWithOptions(
-        base::Thread::Options{base::MessageLoop::TYPE_IO, 0});
-  }
-
   base::WaitableEvent* event = new base::WaitableEvent;
   Setup(event);
 
@@ -144,16 +76,7 @@ Status MasterProxy::Start() {
   return Status::OK();
 }
 
-Status MasterProxy::Stop() {
-  Status s = master_client_interface_->Stop();
-  if (g_on_background) {
-    thread_->Stop();
-  } else {
-    run_loop_->Quit();
-  }
-  if (!on_stop_callback_.is_null()) std::move(on_stop_callback_).Run();
-  return s;
-}
+Status MasterProxy::Stop() { return master_client_interface_->Stop(); }
 
 #define CLIENT_METHOD(method)                                     \
   void MasterProxy::method##Async(const method##Request* request, \
@@ -185,16 +108,12 @@ CLIENT_METHOD(ListServices)
 
 #undef CLIENT_METHOD
 
-void MasterProxy::Run() {
-  RegisterSignals();
-  if (g_on_background) return;
-  run_loop_->Run();
-}
-
 void MasterProxy::Setup(base::WaitableEvent* event) {
-  if (!IsBoundToCurrentThread()) {
-    PostTask(FROM_HERE, base::BindOnce(&MasterProxy::Setup,
-                                       base::Unretained(this), event));
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
+        FROM_HERE,
+        base::BindOnce(&MasterProxy::Setup, base::Unretained(this), event));
     return;
   }
 
@@ -204,17 +123,6 @@ void MasterProxy::Setup(base::WaitableEvent* event) {
   heart_beat_signaller_.Start(
       client_info_, base::BindOnce(&MasterProxy::OnHeartBeatSignallerStart,
                                    base::Unretained(this), event));
-}
-
-void MasterProxy::RegisterSignals() {
-  // To handle general case when POSIX ask the process to quit.
-  std::signal(SIGTERM, &felicia::StopMasterProxy);
-  // To handle Ctrl + C.
-  std::signal(SIGINT, &felicia::StopMasterProxy);
-#if defined(OS_POSIX)
-  // To handle when the terminal is closed.
-  std::signal(SIGHUP, &felicia::StopMasterProxy);
-#endif
 }
 
 void MasterProxy::OnHeartBeatSignallerStart(

@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "felicia/js/settings_js.h"
+#include "felicia/js/communication/settings_js.h"
 
-#include <iostream>
-
-#include "felicia/js/typed_call.h"
+#include "felicia/js/type_conversion/typed_call.h"
 
 namespace felicia {
 namespace communication {

@@ -28,6 +28,7 @@
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/core/message/ros_protocol.h"
+#include "felicia/core/thread/main_thread.h"
 
 namespace felicia {
 
@@ -145,9 +146,9 @@ template <typename MessageTy>
 void Publisher<MessageTy>::RequestPublish(
     const NodeInfo& node_info, const std::string& topic, int channel_types,
     const communication::Settings& settings, StatusOnceCallback callback) {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
         FROM_HERE,
         base::BindOnce(&Publisher<MessageTy>::RequestPublish,
                        base::Unretained(this), node_info, topic, channel_types,
@@ -196,6 +197,7 @@ void Publisher<MessageTy>::RequestPublish(
   *request->mutable_topic_info() = topic_info_;
   PublishTopicResponse* response = new PublishTopicResponse();
 
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.PublishTopicAsync(
       request, response,
       base::BindOnce(&Publisher<MessageTy>::OnPublishTopicAsync,
@@ -229,9 +231,9 @@ template <typename MessageTy>
 void Publisher<MessageTy>::RequestUnpublish(const NodeInfo& node_info,
                                             const std::string& topic,
                                             StatusOnceCallback callback) {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
         FROM_HERE, base::BindOnce(&Publisher<MessageTy>::RequestUnpublish,
                                   base::Unretained(this), node_info, topic,
                                   std::move(callback)));
@@ -251,6 +253,7 @@ void Publisher<MessageTy>::RequestUnpublish(const NodeInfo& node_info,
   request->set_topic(topic);
   UnpublishTopicResponse* response = new UnpublishTopicResponse();
 
+  MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.UnpublishTopicAsync(
       request, response,
       base::BindOnce(&Publisher<MessageTy>::OnUnpublishTopicAsync,
@@ -365,11 +368,11 @@ void Publisher<MessageTy>::OnUnpublishTopicAsync(
 
 template <typename MessageTy>
 void Publisher<MessageTy>::SendMessage(SendMessageCallback callback) {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(FROM_HERE,
-                          base::BindOnce(&Publisher<MessageTy>::SendMessage,
-                                         base::Unretained(this), callback));
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(FROM_HERE,
+                         base::BindOnce(&Publisher<MessageTy>::SendMessage,
+                                        base::Unretained(this), callback));
     return;
   }
 
@@ -424,11 +427,10 @@ void Publisher<MessageTy>::SendMessage(SendMessageCallback callback) {
     }
   }
 
-  master_proxy.PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&Publisher<MessageTy>::SendMessage, base::Unretained(this),
-                     callback),
-      period_);
+  main_thread.PostDelayedTask(FROM_HERE,
+                              base::BindOnce(&Publisher<MessageTy>::SendMessage,
+                                             base::Unretained(this), callback),
+                              period_);
 }
 
 template <typename MessageTy>
@@ -492,9 +494,9 @@ void Publisher<MessageTy>::OnRosTopicHandshake(
 template <typename MessageTy>
 void Publisher<MessageTy>::Release() {
   DCHECK(IsUnregistered());
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  if (!master_proxy.IsBoundToCurrentThread()) {
-    master_proxy.PostTask(
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
         FROM_HERE,
         base::BindOnce(&Publisher<MessageTy>::Release, base::Unretained(this)));
     return;

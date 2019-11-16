@@ -2,27 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "felicia/js/master_proxy_js.h"
+#include "felicia/js/master/master_proxy_js.h"
 
 #include "third_party/chromium/base/containers/queue.h"
-#include "third_party/chromium/base/synchronization/waitable_event.h"
+#include "third_party/chromium/base/synchronization/lock.h"
+#include "uv.h"
 
-#include "felicia/core/lib/containers/pool.h"
-#include "felicia/core/lib/error/errors.h"
-#include "felicia/core/node/dynamic_subscribing_node.h"
+#include "felicia/core/master/master_proxy.h"
 #include "felicia/core/node/topic_info_watcher_node.h"
-#include "felicia/js/protobuf_type_convertor.h"
-#include "felicia/js/settings_js.h"
-#include "felicia/js/status_js.h"
-#include "felicia/js/typed_call.h"
+#include "felicia/js/lib/scoped_env.h"
+#include "felicia/js/lib/status_js.h"
+#include "felicia/js/type_conversion/protobuf_type_convertor.h"
+#include "felicia/js/type_conversion/typed_call.h"
 
 namespace felicia {
 
 Napi::FunctionReference JsMasterProxy::constructor_;
 
 namespace {
-
-napi_env g_current_env;
 
 class TopicInfoWatcherDelegate;
 
@@ -109,56 +106,31 @@ class TopicInfoWatcherDelegate : public TopicInfoWatcherNode::Delegate {
 
 }  // namespace
 
-class ScopedEnvSetter {
- public:
-  ScopedEnvSetter(Napi::Env env) { g_current_env = napi_env(env); }
-
-  ~ScopedEnvSetter() { g_current_env = nullptr; }
-};
-
 // static
 void JsMasterProxy::Init(Napi::Env env, Napi::Object exports) {
   Napi::HandleScope scope(env);
 
   Napi::Function func = DefineClass(env, "MasterProxy", {
-    StaticMethod("setBackground", &JsMasterProxy::SetBackground),
 #if defined(FEL_WIN_NO_GRPC)
-        StaticMethod("startMasterClient", &JsMasterProxy::StartMasterClient),
-        StaticMethod("isClientInfoSet", &JsMasterProxy::is_client_info_set),
+    InstanceMethod("startMasterClient", &JsMasterProxy::StartMasterClient),
+        InstanceMethod("isClientInfoSet", &JsMasterProxy::is_client_info_set),
 #endif
-        StaticMethod("start", &JsMasterProxy::Start),
-        StaticMethod("stop", &JsMasterProxy::Stop),
-        StaticMethod("run", &JsMasterProxy::Run),
-        StaticMethod("requestRegisterTopicInfoWatcherNode",
-                     &JsMasterProxy::RequestRegisterTopicInfoWatcherNode),
+        InstanceMethod("start", &JsMasterProxy::Start),
+        InstanceMethod("stop", &JsMasterProxy::Stop),
+        InstanceMethod("requestRegisterTopicInfoWatcherNode",
+                       &JsMasterProxy::RequestRegisterTopicInfoWatcherNode),
   });
 
   constructor_ = Napi::Persistent(func);
   constructor_.SuppressDestruct();
 
-  exports.Set("MasterProxy", func);
+  exports.Set("masterProxy", constructor_.New({}));
 }
 
 JsMasterProxy::JsMasterProxy(const Napi::CallbackInfo& info)
-    : Napi::ObjectWrap<JsMasterProxy>(info) {
-  Napi::Env env = info.Env();
-  ScopedEnvSetter scoped_env_setter(env);
-  Napi::HandleScope scope(env);
-
-  Napi::TypeError::New(env, "Cann't instantiate MasterProxy.")
-      .ThrowAsJavaScriptException();
-}
-
-// static
-napi_env JsMasterProxy::CurrentEnv() { return g_current_env; }
-
-// static
-void JsMasterProxy::SetBackground(const Napi::CallbackInfo& info) {
-  TypedCall(info, &MasterProxy::SetBackground);
-}
+    : Napi::ObjectWrap<JsMasterProxy>(info) {}
 
 #if defined(FEL_WIN_NO_GRPC)
-// static
 Napi::Value JsMasterProxy::StartMasterClient(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
   ScopedEnvSetter scoped_env_setter(env);
@@ -166,16 +138,13 @@ Napi::Value JsMasterProxy::StartMasterClient(const Napi::CallbackInfo& info) {
   return TypedCall(info, &MasterProxy::StartMasterClient, &master_proxy);
 }
 
-// static
 Napi::Value JsMasterProxy::is_client_info_set(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
-  ScopedEnvSetter scoped_env_setter(env);
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   return TypedCall(info, &MasterProxy::is_client_info_set, &master_proxy);
 }
 #endif
 
-// static
 Napi::Value JsMasterProxy::Start(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
   ScopedEnvSetter scoped_env_setter(env);
@@ -190,10 +159,8 @@ Napi::Value JsMasterProxy::Start(const Napi::CallbackInfo& info) {
   return scope.Escape(napi_value(obj)).ToObject();
 }
 
-// static
 Napi::Value JsMasterProxy::Stop(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
-  ScopedEnvSetter scoped_env_setter(env);
   Napi::EscapableHandleScope scope(env);
 
   JS_CHECK_NUM_ARGS(info.Env(), 0);
@@ -201,25 +168,13 @@ Napi::Value JsMasterProxy::Stop(const Napi::CallbackInfo& info) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   Status s = master_proxy.Stop();
 
-  // TODO: Delete |g_topic_info_watcher_delegate|,
-  // |g_multi_topic_subscriber_delegate| and remove from MasterProxy.
+  // TODO: Delete |g_topic_info_watcher_delegate|.
 
   Napi::Object obj = JsStatus::New(env, s);
 
   return scope.Escape(napi_value(obj)).ToObject();
 }
 
-// static
-void JsMasterProxy::Run(const Napi::CallbackInfo& info) {
-  Napi::Env env = info.Env();
-  JS_CHECK_NUM_ARGS(env, 0);
-  ScopedEnvSetter scoped_env_setter(env);
-
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  master_proxy.Run();
-}
-
-// static
 void JsMasterProxy::RequestRegisterTopicInfoWatcherNode(
     const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();

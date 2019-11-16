@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FELICIA_JS_TYPED_CALL_H_
-#define FELICIA_JS_TYPED_CALL_H_
+#ifndef FELICIA_JS_TYPE_CONVERSION_TYPED_CALL_H_
+#define FELICIA_JS_TYPE_CONVERSION_TYPED_CALL_H_
+
+#include "napi.h"
 
 #include "felicia/core/lib/base/template_util.h"
-#include "felicia/js/type_convertor.h"
-#include "napi.h"
+#include "felicia/js/type_conversion/type_convertor.h"
 
 //
 // You can check how to use from 'test/typed_call_test.cc'
@@ -284,4 +285,4 @@ void TypedCall(const Napi::CallbackInfo& info, void (Class::*f)(Args...) &&,
 
 }  // namespace felicia
 
-#endif  // FELICIA_JS_TYPED_CALL_H_
+#endif  // FELICIA_JS_TYPE_CONVERSION_TYPED_CALL_H_

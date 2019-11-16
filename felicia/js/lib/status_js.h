@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FELICIA_JS_STATUS_JS_H_
-#define FELICIA_JS_STATUS_JS_H_
+#ifndef FELICIA_JS_LIB_STATUS_JS_H_
+#define FELICIA_JS_LIB_STATUS_JS_H_
 
 #include "napi.h"
 
 #include "felicia/core/lib/error/status.h"
-#include "felicia/js/type_convertor_forward.h"
+#include "felicia/js/type_conversion/type_convertor_forward.h"
 
 namespace felicia {
 
@@ -51,4 +51,4 @@ class TypeConvertor<Status> {
 
 }  // namespace felicia
 
-#endif  // FELICIA_JS_STATUS_JS_H_
+#endif  // FELICIA_JS_LIB_STATUS_JS_H_

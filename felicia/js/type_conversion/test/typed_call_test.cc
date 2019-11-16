@@ -8,7 +8,7 @@
 
 #include "third_party/chromium/base/strings/strcat.h"
 
-#include "felicia/js/typed_call.h"
+#include "felicia/js/type_conversion/typed_call.h"
 
 namespace felicia {
 
