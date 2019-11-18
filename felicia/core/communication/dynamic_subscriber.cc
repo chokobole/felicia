@@ -4,6 +4,8 @@
 
 #include "felicia/core/communication/dynamic_subscriber.h"
 
+#include "felicia/core/message/protobuf_loader.h"
+
 namespace felicia {
 
 DynamicSubscriber::DynamicSubscriber() = default;
@@ -68,10 +70,10 @@ bool DynamicSubscriber::MaybeResolveMessgaeType(const TopicInfo& topic_info) {
     return false;
   }
 
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  const google::protobuf::Message* message =
-      master_proxy.protobuf_loader()->NewMessage(topic_info.type_name());
-  if (!message) return false;
+  ProtobufLoader& protobuf_loader = ProtobufLoader::GetInstance();
+  const google::protobuf::Message* message;
+  if (!protobuf_loader.NewMessage(topic_info.type_name(), &message))
+    return false;
   message_receiver_.message().Reset(message->New());
   return true;
 }

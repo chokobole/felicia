@@ -6,6 +6,8 @@
 
 #include "google/protobuf/util/json_util.h"
 
+#include "felicia/core/message/protobuf_loader.h"
+
 namespace felicia {
 
 DynamicPublisher::DynamicPublisher() = default;
@@ -13,10 +15,9 @@ DynamicPublisher::DynamicPublisher() = default;
 DynamicPublisher::~DynamicPublisher() = default;
 
 bool DynamicPublisher::ResolveType(const std::string& message_type) {
-  MasterProxy& master_proxy = MasterProxy::GetInstance();
-  const google::protobuf::Message* message =
-      master_proxy.protobuf_loader()->NewMessage(message_type);
-  if (!message) return false;
+  ProtobufLoader& protobuf_loader = ProtobufLoader::GetInstance();
+  const google::protobuf::Message* message;
+  if (!protobuf_loader.NewMessage(message_type, &message)) return false;
   message_prototype_.Reset(message->New());
   return true;
 }

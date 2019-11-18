@@ -5,8 +5,10 @@
 load("//bazel:felicia.bzl", "if_has_ros")
 load(
     "//bazel:felicia_cc.bzl",
+    "define",
     "fel_cc_library",
     "fel_cc_test",
+    "fel_cxxopts",
 )
 
 package(default_visibility = ["//felicia:internal"])
@@ -42,6 +44,7 @@ fel_cc_library(
         "serialized_message.h",
         "serialized_message_io.h",
     ],
+    copts = fel_cxxopts(True) + define(["BAZEL_BUILD"]),
     deps = [
         "//felicia/core/lib",
         "//felicia/core/util:command_line_interface",

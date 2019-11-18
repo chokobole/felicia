@@ -5,7 +5,7 @@ def _get_env(repository_ctx, name, default_value = False):
 
 def _env_autoconf_impl(repository_ctx):
     repository_ctx.symlink(Label("//third_party/env:BUILD"), "BUILD")
-    felicia_root = repository_ctx.os.environ["PWD"]
+    felicia_root = repository_ctx.path(Label("//:BUILD")).dirname
     travis = _get_env(repository_ctx, "TRAVIS")
     ros_distro = _get_env(repository_ctx, "ROS_DISTRO")
 

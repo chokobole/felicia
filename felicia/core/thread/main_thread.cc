@@ -32,9 +32,7 @@ MainThread::MainThread() {
 MainThread::~MainThread() = default;
 
 // static
-void MainThread::SetBackground() {
-  g_on_background = true;
-}
+void MainThread::SetBackground() { g_on_background = true; }
 
 // static
 MainThread& MainThread::GetInstance() {

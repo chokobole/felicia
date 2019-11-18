@@ -13,6 +13,7 @@
 
 #include "felicia/core/channel/channel.h"
 #include "felicia/core/master/master_proxy.h"
+#include "felicia/core/message/protobuf_loader.h"
 #include "felicia/core/thread/main_thread.h"
 #include "felicia/core/util/command_line_interface/table_writer.h"
 
@@ -367,13 +368,11 @@ void CommandDispatcher::OnListTopicsAsync(const ListTopicsRequest* request,
     auto topic_info = topic_infos[0];
     const ChannelSource& channel_source = topic_info.topic_source();
 
-    MasterProxy& master_proxy = MasterProxy::GetInstance();
-
     std::string definition = "Unknown";
     if (topic_info.impl_type() == TopicInfo::PROTOBUF) {
-      const google::protobuf::Message* message =
-          master_proxy.protobuf_loader()->NewMessage(topic_info.type_name());
-      if (message) {
+      ProtobufLoader& protobuf_loader = ProtobufLoader::GetInstance();
+      const google::protobuf::Message* message;
+      if (protobuf_loader.NewMessage(topic_info.type_name(), &message)) {
         definition = message->GetDescriptor()->DebugString();
       }
     }

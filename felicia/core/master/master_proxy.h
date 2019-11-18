@@ -20,7 +20,6 @@
 #include "felicia/core/master/heart_beat_signaller.h"
 #include "felicia/core/master/master_client_interface.h"
 #include "felicia/core/master/master_notification_watcher.h"
-#include "felicia/core/message/protobuf_loader.h"
 #include "felicia/core/node/node_lifecycle.h"
 
 namespace felicia {
@@ -30,8 +29,6 @@ class PyMasterProxy;
 class FEL_EXPORT MasterProxy final : public MasterClientInterface {
  public:
   static MasterProxy& GetInstance();
-
-  ProtobufLoader* protobuf_loader();
 
   const ClientInfo& client_info() const;
 
@@ -104,8 +101,6 @@ class FEL_EXPORT MasterProxy final : public MasterClientInterface {
   HeartBeatSignaller heart_beat_signaller_;
 
   std::vector<std::unique_ptr<NodeLifecycle>> nodes_;
-
-  std::unique_ptr<ProtobufLoader> protobuf_loader_;
 
 #if defined(FEL_WIN_NO_GRPC)
   bool is_client_info_set_ = false;

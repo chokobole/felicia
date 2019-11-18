@@ -15,3 +15,9 @@ IP address for the master server to on. (Default: host ip address)
 #### FEL_MASTER_SERVER_PORT
 
 Port number for the master server to on. (Default: 8881)
+
+### Protobuf Loader
+
+#### FEL_PROTOBUF_ROOT_PATH
+
+Root path for protobuf loader to traverse. (in semi-colon separtated list)

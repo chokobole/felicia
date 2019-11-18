@@ -7,7 +7,6 @@
 
 #include "felicia/core/communication/subscriber.h"
 #include "felicia/core/message/dynamic_protobuf_message.h"
-#include "felicia/core/message/protobuf_loader.h"
 
 namespace felicia {
 

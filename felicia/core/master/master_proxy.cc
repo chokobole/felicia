@@ -7,7 +7,6 @@
 #include "third_party/chromium/base/logging.h"
 #include "third_party/chromium/base/strings/stringprintf.h"
 
-#include "felicia/core/lib/felicia_env.h"
 #include "felicia/core/lib/net/net_util.h"
 #include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/thread/main_thread.h"
@@ -24,10 +23,7 @@ extern std::unique_ptr<MasterClientInterface> NewMasterClient();
 
 namespace felicia {
 
-MasterProxy::MasterProxy() {
-  protobuf_loader_ =
-      ProtobufLoader::Load(base::FilePath(FILE_PATH_LITERAL("") FELICIA_ROOT));
-}
+MasterProxy::MasterProxy() = default;
 
 MasterProxy::~MasterProxy() = default;
 
@@ -35,10 +31,6 @@ MasterProxy::~MasterProxy() = default;
 MasterProxy& MasterProxy::GetInstance() {
   static base::NoDestructor<MasterProxy> master_proxy;
   return *master_proxy;
-}
-
-ProtobufLoader* MasterProxy::protobuf_loader() {
-  return protobuf_loader_.get();
 }
 
 const ClientInfo& MasterProxy::client_info() const { return client_info_; }

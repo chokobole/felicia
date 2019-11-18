@@ -37,18 +37,22 @@ class FEL_EXPORT ProtobufLoader {
         const std::string& message) override;
   };
 
-  ~ProtobufLoader();
+  static ProtobufLoader& GetInstance();
 
-  static std::unique_ptr<ProtobufLoader> Load(const base::FilePath& path);
-
-  const google::protobuf::Message* NewMessage(const std::string& type_name);
+  bool NewMessage(const std::string& type_name,
+                  const google::protobuf::Message** message) WARN_UNUSED_RESULT;
 
  private:
-  ProtobufLoader(google::protobuf::compiler::DiskSourceTree* source_tree);
+  friend class base::NoDestructor<ProtobufLoader>;
 
-  google::protobuf::compiler::SourceTreeDescriptorDatabase
+  ProtobufLoader();
+  ~ProtobufLoader();
+
+  void Load();
+
+  std::unique_ptr<google::protobuf::compiler::SourceTreeDescriptorDatabase>
       source_tree_database_;
-  google::protobuf::DescriptorPool descriptor_pool_;
+  std::unique_ptr<google::protobuf::DescriptorPool> descriptor_pool_;
   google::protobuf::DynamicMessageFactory message_factory_;
 
   ErrorCollector error_collector_;
