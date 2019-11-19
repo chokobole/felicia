@@ -8,6 +8,7 @@
 #include "third_party/chromium/base/strings/string_util.h"
 #include "third_party/chromium/build/build_config.h"
 
+#include "felicia/core/channel/socket/host_resolver.h"
 #include "felicia/core/channel/socket/socket.h"
 #include "felicia/core/lib/error/errors.h"
 #include "felicia/core/lib/net/net_util.h"
@@ -168,27 +169,43 @@ bool Channel::TrySetEnoughReceiveBufferSize(int capacity) {
   return receive_buffer_.SetEnoughCapacityIfDynamic(capacity);
 }
 
-Status ToNetIPEndPoint(const ChannelDef& channel_def,
-                       net::IPEndPoint* ip_endpoint) {
+Status ToNetAddressList(const ChannelDef& channel_def,
+                        net::AddressList* addrlist) {
   if (!channel_def.has_ip_endpoint()) {
     return errors::InvalidArgument(
         "channel_def doesn't contain an IPEndPoint.");
   }
 
   net::IPAddress ip;
-  if (!ip.AssignFromIPLiteral(channel_def.ip_endpoint().ip())) {
-    return errors::InvalidArgument("Failed to convert to IPAddress.");
+  const std::string& host_or_ip = channel_def.ip_endpoint().ip();
+  uint16_t port = channel_def.ip_endpoint().port();
+  if (ip.AssignFromIPLiteral(host_or_ip)) {
+    *addrlist = net::AddressList(net::IPEndPoint(ip, port));
+  } else {
+    int os_error;
+    net::AddressList addrlist_without_port;
+    int rv = HostResolver::ResolveHost(host_or_ip, net::ADDRESS_FAMILY_IPV4,
+                                       net::HOST_RESOLVER_SYSTEM_ONLY,
+                                       &addrlist_without_port, &os_error);
+    for (const net::IPEndPoint& endpoint : addrlist_without_port.endpoints()) {
+      addrlist->push_back(net::IPEndPoint(endpoint.address(), port));
+    }
+    if (rv != net::OK) return errors::NetworkError(net::ErrorToString(rv));
   }
-
-  *ip_endpoint = net::IPEndPoint(ip, channel_def.ip_endpoint().port());
   return Status::OK();
 }
 
 std::string EndPointToString(const ChannelDef& channel_def) {
   if (channel_def.has_ip_endpoint()) {
-    net::IPEndPoint ip_endpoint;
-    if (ToNetIPEndPoint(channel_def, &ip_endpoint).ok()) {
-      return ip_endpoint.ToString();
+    net::AddressList addrlist;
+    if (ToNetAddressList(channel_def, &addrlist).ok()) {
+      std::stringstream ss;
+      auto& endpoints = addrlist.endpoints();
+      for (size_t i = 0; i < endpoints.size(); ++i) {
+        ss << endpoints[i].ToString();
+        if (i != endpoints.size() - 1) ss << ";";
+      }
+      return ss.str();
     }
   } else if (channel_def.has_uds_endpoint()) {
 #if defined(OS_POSIX)
@@ -221,8 +238,8 @@ bool IsValidChannelDef(const ChannelDef& channel_def) {
   if (type == ChannelDef::CHANNEL_TYPE_TCP ||
       type == ChannelDef::CHANNEL_TYPE_UDP ||
       type == ChannelDef::CHANNEL_TYPE_WS) {
-    net::IPEndPoint ip_endpoint;
-    return ToNetIPEndPoint(channel_def, &ip_endpoint).ok();
+    net::AddressList addrlist;
+    return ToNetAddressList(channel_def, &addrlist).ok();
   } else if (type == ChannelDef::CHANNEL_TYPE_UDS) {
 #if defined(OS_POSIX)
     net::UDSEndPoint uds_endpoint;
@@ -244,12 +261,41 @@ bool IsValidChannelSource(const ChannelSource& channel_source) {
 }
 
 bool IsSameChannelDef(const ChannelDef& c, const ChannelDef& c2) {
-  net::IPEndPoint ip_endpoint;
-  if (!ToNetIPEndPoint(c, &ip_endpoint).ok()) return false;
-  net::IPEndPoint ip_endpoint2;
-  if (!ToNetIPEndPoint(c2, &ip_endpoint2).ok()) return false;
-
-  return ip_endpoint == ip_endpoint2;
+  if (c.type() != c2.type()) return false;
+  ChannelDef::Type type = c.type();
+  if (type == ChannelDef::CHANNEL_TYPE_TCP ||
+      type == ChannelDef::CHANNEL_TYPE_UDP ||
+      type == ChannelDef::CHANNEL_TYPE_WS) {
+    return c.ip_endpoint().ip() == c2.ip_endpoint().ip() &&
+           c.ip_endpoint().port() == c2.ip_endpoint().port();
+  } else if (type == ChannelDef::CHANNEL_TYPE_UDS) {
+#if defined(OS_POSIX)
+    return c.uds_endpoint().socket_path() == c2.uds_endpoint().socket_path() &&
+           c.uds_endpoint().use_abstract_namespace() ==
+               c2.uds_endpoint().use_abstract_namespace();
+#endif
+  } else if (type == ChannelDef::CHANNEL_TYPE_SHM) {
+    const ShmEndPoint& s = c.shm_endpoint();
+    const ShmEndPoint& s2 = c2.shm_endpoint();
+    if (s.mode() == s2.mode() && s.size() && s2.size() &&
+        s.guid().high() == s2.guid().high() &&
+        s.guid().low() == s2.guid().low()) {
+      const ShmPlatformHandle& p = s.platform_handle();
+      const ShmPlatformHandle& p2 = s2.platform_handle();
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+      return p.mach_port() == p2.mach_port();
+#elif defined(OS_WIN)
+      return p.handle_with_process_id().handle() ==
+                 p2.handle_with_process_id().handle() &&
+             p.handle_with_process_id().process_id() ==
+                 p2.handle_with_process_id().process_id();
+#else
+      return p.fd_pair().fd() == p2.fd_pair().fd() &&
+             p.fd_pair().readonly_fd() == p2.fd_pair().readonly_fd();
+#endif
+    }
+  }
+  return false;
 }
 
 bool IsSameChannelSource(const ChannelSource& c, const ChannelSource& c2) {

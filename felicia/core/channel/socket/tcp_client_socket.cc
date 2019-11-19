@@ -15,34 +15,17 @@ TCPClientSocket::TCPClientSocket(std::unique_ptr<net::TCPSocket> socket)
 
 TCPClientSocket::~TCPClientSocket() = default;
 
-void TCPClientSocket::Connect(const net::IPEndPoint& ip_endpoint,
+void TCPClientSocket::Connect(const net::AddressList& addrlist,
                               StatusOnceCallback callback) {
   DCHECK(!socket_);
   DCHECK(connect_callback_.is_null());
   DCHECK(!callback.is_null());
-  auto client_socket = std::make_unique<net::TCPSocket>(nullptr);
-  int rv = client_socket->Open(ip_endpoint.GetFamily());
-  if (rv != net::OK) {
-    std::move(callback).Run(errors::NetworkError(net::ErrorToString(rv)));
-    return;
-  }
 
-  client_socket->SetDefaultOptionsForClient();
-
-  rv = client_socket->Connect(
-      ip_endpoint,
-      base::BindOnce(&TCPClientSocket::OnConnect, base::Unretained(this)));
-  if (rv != net::OK && rv != net::ERR_IO_PENDING) {
-    std::move(callback).Run(errors::NetworkError(net::ErrorToString(rv)));
-    return;
-  }
-
+  addrlist_idx_ = 0;
+  addrlist_ = addrlist;
   connect_callback_ = std::move(callback);
-  socket_ = std::move(client_socket);
 
-  if (rv == net::OK) {
-    std::move(connect_callback_).Run(Status::OK());
-  }
+  DoConnect();
 }
 
 bool TCPClientSocket::IsClient() const { return true; }
@@ -63,6 +46,50 @@ void TCPClientSocket::ReadAsync(scoped_refptr<net::GrowableIOBuffer> buffer,
   ReadRepeating(
       buffer, size, std::move(callback),
       base::BindRepeating(&TCPClientSocket::OnRead, base::Unretained(this)));
+}
+
+void TCPClientSocket::DoConnect() {
+  if (static_cast<size_t>(addrlist_idx_) >= addrlist_.size()) {
+    std::move(connect_callback_)
+        .Run(errors::NetworkError(
+            net::ErrorToString(net::ERR_CONNECTION_FAILED)));
+    return;
+  }
+  net::IPEndPoint ip_endpoint = addrlist_[addrlist_idx_];
+
+  auto client_socket = std::make_unique<net::TCPSocket>(nullptr);
+  int rv = client_socket->Open(ip_endpoint.GetFamily());
+  if (rv != net::OK) {
+    std::move(connect_callback_)
+        .Run(errors::NetworkError(net::ErrorToString(rv)));
+    return;
+  }
+
+  client_socket->SetDefaultOptionsForClient();
+
+  rv = client_socket->Connect(
+      ip_endpoint,
+      base::BindOnce(&TCPClientSocket::OnConnect, base::Unretained(this)));
+  if (rv != net::OK && rv != net::ERR_IO_PENDING) {
+    std::move(connect_callback_)
+        .Run(errors::NetworkError(net::ErrorToString(rv)));
+    return;
+  }
+
+  socket_ = std::move(client_socket);
+
+  if (rv == net::OK) {
+    std::move(connect_callback_).Run(Status::OK());
+  }
+}
+
+void TCPClientSocket::OnConnect(int result) {
+  if (result == net::OK) {
+    std::move(connect_callback_).Run(Status::OK());
+  } else {
+    ++addrlist_idx_;
+    DoConnect();
+  }
 }
 
 void TCPClientSocket::OnWriteCheckingReset(int result) {

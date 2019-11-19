@@ -14,6 +14,7 @@ package(default_visibility = ["//felicia:internal"])
 fel_cc_library(
     name = "socket",
     srcs = [
+        "host_resolver.cc",
         "permessage_deflate.cc",
         "socket.cc",
         "socket_bio_adapter.cc",
@@ -43,6 +44,7 @@ fel_cc_library(
     ]),
     hdrs = [
         "datagram_socket.h",
+        "host_resolver.h",
         "permessage_deflate.h",
         "socket.h",
         "socket_bio_adapter.h",

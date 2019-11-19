@@ -5,6 +5,8 @@
 #ifndef FELICIA_CORE_CHANNEL_SOCKET_UDP_CLIENT_SOCKET_H_
 #define FELICIA_CORE_CHANNEL_SOCKET_UDP_CLIENT_SOCKET_H_
 
+#include "third_party/chromium/net/base/address_list.h"
+
 #include "felicia/core/channel/socket/udp_socket.h"
 
 namespace felicia {
@@ -14,7 +16,7 @@ class UDPClientSocket : public UDPSocket {
   UDPClientSocket();
   ~UDPClientSocket();
 
-  void Connect(const net::IPEndPoint& ip_endpoint, StatusOnceCallback callback);
+  void Connect(const net::AddressList& addrlist, StatusOnceCallback callback);
 
   // Socket methods
   bool IsClient() const override;
@@ -24,6 +26,13 @@ class UDPClientSocket : public UDPSocket {
                   StatusOnceCallback callback) override;
   void ReadAsync(scoped_refptr<net::GrowableIOBuffer> buffer, int size,
                  StatusOnceCallback callback) override;
+
+ private:
+  void DoConnect();
+  void OnConnect(int result);
+
+  net::AddressList addrlist_;
+  int addrlist_idx_;
 
   DISALLOW_COPY_AND_ASSIGN(UDPClientSocket);
 };

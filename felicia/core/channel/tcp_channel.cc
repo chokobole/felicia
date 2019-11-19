@@ -154,8 +154,8 @@ void TCPChannel::Connect(const ChannelDef& channel_def,
                          StatusOnceCallback callback) {
   DCHECK(!channel_impl_);
   DCHECK(!callback.is_null());
-  net::IPEndPoint ip_endpoint;
-  Status s = ToNetIPEndPoint(channel_def, &ip_endpoint);
+  net::AddressList addrlist;
+  Status s = ToNetAddressList(channel_def, &addrlist);
   if (!s.ok()) {
     std::move(callback).Run(s);
     return;
@@ -165,8 +165,8 @@ void TCPChannel::Connect(const ChannelDef& channel_def,
   TCPClientSocket* client_socket =
       channel_impl_->ToSocket()->ToTCPSocket()->ToTCPClientSocket();
   client_socket->Connect(
-      ip_endpoint, base::BindOnce(&TCPChannel::OnConnect,
-                                  base::Unretained(this), std::move(callback)));
+      addrlist, base::BindOnce(&TCPChannel::OnConnect, base::Unretained(this),
+                               std::move(callback)));
 }
 
 void TCPChannel::OnConnect(StatusOnceCallback callback, Status s) {

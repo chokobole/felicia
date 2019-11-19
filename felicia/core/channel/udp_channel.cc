@@ -43,8 +43,8 @@ void UDPChannel::Connect(const ChannelDef& channel_def,
                          StatusOnceCallback callback) {
   DCHECK(!channel_impl_);
   DCHECK(!callback.is_null());
-  net::IPEndPoint ip_endpoint;
-  Status s = ToNetIPEndPoint(channel_def, &ip_endpoint);
+  net::AddressList addrlist;
+  Status s = ToNetAddressList(channel_def, &addrlist);
   if (!s.ok()) {
     std::move(callback).Run(s);
     return;
@@ -52,7 +52,7 @@ void UDPChannel::Connect(const ChannelDef& channel_def,
   channel_impl_ = std::make_unique<UDPClientSocket>();
   UDPClientSocket* client_socket =
       channel_impl_->ToSocket()->ToUDPSocket()->ToUDPClientSocket();
-  client_socket->Connect(ip_endpoint, std::move(callback));
+  client_socket->Connect(addrlist, std::move(callback));
 }
 
 void UDPChannel::SetSendBufferSize(Bytes bytes) {

@@ -11,46 +11,17 @@ namespace felicia {
 UDPClientSocket::UDPClientSocket() = default;
 UDPClientSocket::~UDPClientSocket() = default;
 
-void UDPClientSocket::Connect(const net::IPEndPoint& ip_endpoint,
+void UDPClientSocket::Connect(const net::AddressList& addrlist,
                               StatusOnceCallback callback) {
+  DCHECK(!socket_);
   DCHECK(!callback.is_null());
-  auto client_socket = std::make_unique<net::UDPSocket>(
-      net::DatagramSocket::BindType::DEFAULT_BIND);
-  int rv = client_socket->Open(ip_endpoint.GetFamily());
-  if (rv != net::OK) {
-    std::move(callback).Run(errors::NetworkError(net::ErrorToString(rv)));
-    return;
-  }
+  DCHECK(connect_callback_.is_null());
 
-  rv = client_socket->SetMulticastLoopbackMode(true);
-  if (rv != net::OK) {
-    std::move(callback).Run(errors::NetworkError(net::ErrorToString(rv)));
-    return;
-  }
+  addrlist_idx_ = 0;
+  addrlist_ = addrlist;
+  connect_callback_ = std::move(callback);
 
-  rv = client_socket->AllowAddressSharingForMulticast();
-  if (rv != net::OK) {
-    std::move(callback).Run(errors::NetworkError(net::ErrorToString(rv)));
-    return;
-  }
-
-  net::IPAddress address(0, 0, 0, 0);
-  net::IPEndPoint endpoint(address, ip_endpoint.port());
-  rv = client_socket->Bind(endpoint);
-  if (rv != net::OK) {
-    std::move(callback).Run(errors::NetworkError(net::ErrorToString(rv)));
-    return;
-  }
-
-  rv = client_socket->JoinGroup(ip_endpoint.address());
-  if (rv != net::OK) {
-    std::move(callback).Run(errors::NetworkError(net::ErrorToString(rv)));
-    return;
-  }
-
-  socket_ = std::move(client_socket);
-  multicast_ip_endpoint_ = ip_endpoint;
-  std::move(callback).Run(Status::OK());
+  DoConnect();
 }
 
 bool UDPClientSocket::IsClient() const { return true; }
@@ -67,6 +38,68 @@ void UDPClientSocket::ReadAsync(scoped_refptr<net::GrowableIOBuffer> buffer,
   ReadRepeating(
       buffer, size, std::move(callback),
       base::BindRepeating(&UDPClientSocket::OnRead, base::Unretained(this)));
+}
+
+void UDPClientSocket::DoConnect() {
+  if (static_cast<size_t>(addrlist_idx_) >= addrlist_.size()) {
+    std::move(connect_callback_)
+        .Run(errors::NetworkError(
+            net::ErrorToString(net::ERR_CONNECTION_FAILED)));
+    return;
+  }
+  net::IPEndPoint ip_endpoint = addrlist_[addrlist_idx_];
+
+  auto client_socket = std::make_unique<net::UDPSocket>(
+      net::DatagramSocket::BindType::DEFAULT_BIND);
+  int rv = client_socket->Open(ip_endpoint.GetFamily());
+  if (rv != net::OK) {
+    std::move(connect_callback_)
+        .Run(errors::NetworkError(net::ErrorToString(rv)));
+    return;
+  }
+
+  rv = client_socket->SetMulticastLoopbackMode(true);
+  if (rv != net::OK) {
+    std::move(connect_callback_)
+        .Run(errors::NetworkError(net::ErrorToString(rv)));
+    return;
+  }
+
+  rv = client_socket->AllowAddressSharingForMulticast();
+  if (rv != net::OK) {
+    std::move(connect_callback_)
+        .Run(errors::NetworkError(net::ErrorToString(rv)));
+    return;
+  }
+
+  net::IPAddress address(0, 0, 0, 0);
+  net::IPEndPoint endpoint(address, ip_endpoint.port());
+  rv = client_socket->Bind(endpoint);
+  if (rv != net::OK) {
+    std::move(connect_callback_)
+        .Run(errors::NetworkError(net::ErrorToString(rv)));
+    return;
+  }
+
+  rv = client_socket->JoinGroup(ip_endpoint.address());
+  if (rv != net::OK) {
+    std::move(connect_callback_)
+        .Run(errors::NetworkError(net::ErrorToString(rv)));
+    return;
+  }
+
+  socket_ = std::move(client_socket);
+  multicast_ip_endpoint_ = ip_endpoint;
+  std::move(connect_callback_).Run(Status::OK());
+}
+
+void UDPClientSocket::OnConnect(int result) {
+  if (result == net::OK) {
+    std::move(connect_callback_).Run(Status::OK());
+  } else {
+    ++addrlist_idx_;
+    DoConnect();
+  }
 }
 
 }  // namespace felicia

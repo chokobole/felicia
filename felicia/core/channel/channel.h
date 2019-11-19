@@ -5,8 +5,8 @@
 #ifndef FELICIA_CORE_CHANNEL_CHANNEL_H_
 #define FELICIA_CORE_CHANNEL_CHANNEL_H_
 
+#include "third_party/chromium/net/base/address_list.h"
 #include "third_party/chromium/net/base/io_buffer.h"
-#include "third_party/chromium/net/base/ip_endpoint.h"
 
 #include "felicia/core/channel/channel_buffer.h"
 #include "felicia/core/channel/channel_impl.h"
@@ -105,10 +105,10 @@ class FEL_EXPORT Channel {
   DISALLOW_COPY_AND_ASSIGN(Channel);
 };
 
-// Convert |ip_endpoint()| of |channel_def| to net::IPEndPoint,
+// Convert |ip_endpoint()| of |channel_def| to net::AdressList,
 // Returns Status::OK() if succeeded.
-FEL_EXPORT Status ToNetIPEndPoint(const ChannelDef& channel_def,
-                                  net::IPEndPoint* ip_endpoint);
+FEL_EXPORT Status ToNetAddressList(const ChannelDef& channel_def,
+                                   net::AddressList* addrlist);
 
 // Convert EndPoint of |channel_def| to std::string
 FEL_EXPORT std::string EndPointToString(const ChannelDef& channel_def);

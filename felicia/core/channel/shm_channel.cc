@@ -87,7 +87,6 @@ void ShmChannel::OnReceiveData(StatusOr<PlatformHandleBroker::Data> status_or) {
   platform_handle->mutable_fd_pair()->set_readonly_fd(
       data.platform_handle.readonly_fd);
 #endif
-  LOG(INFO) << channel_def.DebugString();
   channel_impl_ =
       std::unique_ptr<SharedMemory>(SharedMemory::FromChannelDef(channel_def));
   std::move(connect_callback_).Run(Status::OK());

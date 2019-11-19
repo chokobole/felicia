@@ -5,6 +5,8 @@
 #ifndef FELICIA_CORE_CHANNEL_SOCKET_TCP_CLIENT_SOCKET_H_
 #define FELICIA_CORE_CHANNEL_SOCKET_TCP_CLIENT_SOCKET_H_
 
+#include "third_party/chromium/net/base/address_list.h"
+
 #include "felicia/core/channel/socket/tcp_socket.h"
 
 namespace felicia {
@@ -15,7 +17,7 @@ class TCPClientSocket : public TCPSocket {
   explicit TCPClientSocket(std::unique_ptr<net::TCPSocket> socket);
   ~TCPClientSocket();
 
-  void Connect(const net::IPEndPoint& ip_endpoint, StatusOnceCallback callback);
+  void Connect(const net::AddressList& addrlist, StatusOnceCallback callback);
 
   // Socket methods
   bool IsClient() const override;
@@ -28,8 +30,14 @@ class TCPClientSocket : public TCPSocket {
                  StatusOnceCallback callback) override;
 
  private:
+  void DoConnect();
+  void OnConnect(int result);
+
   void OnWriteCheckingReset(int result);
   void OnReadCheckingClosed(int result);
+
+  net::AddressList addrlist_;
+  int addrlist_idx_;
 
   DISALLOW_COPY_AND_ASSIGN(TCPClientSocket);
 };
