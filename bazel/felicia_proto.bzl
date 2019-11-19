@@ -131,7 +131,7 @@ def cc_proto_library(
         grpc_cpp_plugin = "//external:grpc_cpp_plugin"
         if use_grpc_namespace:
             plugin_options = ["services_namespace=grpc"]
-    cc_options = if_static([], ["dllexport_decl=EXPORT"])
+    cc_options = if_static([], ["dllexport_decl=FEL_EXPORT"])
 
     gen_srcs = _proto_cc_srcs(srcs, use_grpc_plugin)
     gen_hdrs = _proto_cc_hdrs(srcs, use_grpc_plugin)
