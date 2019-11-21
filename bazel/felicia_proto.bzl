@@ -232,14 +232,15 @@ def fel_proto_library_cc(
 
         return
 
-    export_deps = []
-    export_copts = []
     if export_proto:
         export_deps = ["//felicia/core/lib:export"]
-        export_copts = select({
+        export_copts = fel_cxxopts(True) + select({
             "//felicia:windows": ["/FIfelicia/core/lib/base/export.h"],
             "//conditions:default": ["-include felicia/core/lib/base/export.h"],
         })
+    else:
+        export_deps = []
+        export_copts = fel_cxxopts()
 
     cc_proto_library(
         name = cc_name,
@@ -249,7 +250,7 @@ def fel_proto_library_cc(
             ["//external:protobuf"],
             ["//external:protobuf_headers"],
         ),
-        copts = fel_cxxopts(True) + if_not_windows([
+        copts = if_not_windows([
             "-Wno-unknown-warning-option",
             "-Wno-unused-but-set-variable",
             "-Wno-sign-compare",

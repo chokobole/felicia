@@ -58,8 +58,8 @@ inline ::grpc::Status ToGrpcStatus(Status s) {
   }
 }
 
-FEL_EXPORT std::shared_ptr<::grpc::Channel> ConnectToGrpcServer(
-    const std::string& ip, uint16_t port);
+std::shared_ptr<::grpc::Channel> ConnectToGrpcServer(const std::string& ip,
+                                                     uint16_t port);
 
 }  // namespace felicia
 

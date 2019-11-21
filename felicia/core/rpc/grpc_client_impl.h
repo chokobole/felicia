@@ -68,6 +68,9 @@ class FEL_GRPC_CLIENT : public ClientInterface {
  protected:
   typedef typename GrpcService::Stub Stub;
 
+  virtual std::shared_ptr<::grpc::Channel> ConnectToGrpcServer(
+      const std::string& ip, uint16_t port);
+
   void RunRpcsLoops(int num_threads);
   void ShutdownClient();
 
@@ -100,6 +103,22 @@ void FEL_GRPC_CLIENT::HandleRpcsLoop() {
     GrpcClientCQTag* callback_tag = static_cast<GrpcClientCQTag*>(tag);
     callback_tag->OnCompleted(ok);
   }
+}
+
+template <typename T>
+std::shared_ptr<::grpc::Channel> FEL_GRPC_CLIENT::ConnectToGrpcServer(
+    const std::string& ip, uint16_t port) {
+  auto channel =
+      ::grpc::CreateChannel(base::StringPrintf("%s:%d", ip.c_str(), port),
+                            ::grpc::InsecureChannelCredentials());
+  if (!channel->WaitForConnected(
+          gpr_time_add(gpr_now(GPR_CLOCK_REALTIME),
+                       gpr_time_from_seconds(10, GPR_TIMESPAN)))) {
+    LOG(ERROR) << "Failed to connect to grpc server on port " << port;
+    return nullptr;
+  }
+
+  return channel;
 }
 
 template <typename T>

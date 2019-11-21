@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+load("//bazel:felicia.bzl", "if_static")
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_binary",
@@ -21,11 +22,17 @@ fel_cc_library(
     srcs = ["master_client.cc"],
     hdrs = ["master_client.h"],
     deps = [
-        ":master_service_proto_cc",
         "//felicia/core/lib",
         "//felicia/core/master:master_client_interface",
         "//felicia/core/rpc",
-    ],
+    ] + if_static(
+        [
+            ":master_service_proto_cc",
+        ],
+        [
+            ":master_service_proto_cc_impl",
+        ],
+    ),
 )
 
 fel_proto_library_cc(
@@ -33,6 +40,7 @@ fel_proto_library_cc(
     srcs = ["master_service.proto"],
     has_services = 1,
     cc_grpc_version = 1,
+    default_header = True,
     export_proto = True,
     protodeps = ["//felicia/core/protobuf:protos_all_proto"],
     visibility = ["//felicia:internal"],
