@@ -1,0 +1,18 @@
+diff --git a/BUILD b/BUILD
+index d7c731bf6..778965894 100644
+--- a/BUILD
++++ b/BUILD
+@@ -156,6 +156,13 @@ cc_library(
+     ],
+ )
+ 
++cc_library(
++    name = "ssl_headers",
++    hdrs = crypto_headers + fips_fragments + ssl_headers,
++    includes = ["src/include"],
++    visibility = ["//visibility:public"],
++)
++
+ cc_binary(
+     name = "bssl",
+     srcs = tool_sources + tool_headers,

@@ -202,6 +202,8 @@ def felicia_deps():
             name = "boringssl",
             commit = "334990fcddeaa4916f4c455026bbd66595daa104",
             remote = "https://github.com/google/boringssl.git",
+            patch_args = ["-p1"],
+            patches = ["@com_github_chokobole_felicia//third_party:boringssl.patch"],
         )
 
     if not native.existing_rule("com_github_grpc_grpc"):

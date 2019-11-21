@@ -27,6 +27,11 @@ TESTING_HDRS = [
     "multiprocess_func_list.h",
 ]
 
+filegroup(
+    name = "testing_hdrs",
+    srcs = TESTING_HDRS,
+)
+
 chromium_cc_library(
     name = "testing",
     srcs = [

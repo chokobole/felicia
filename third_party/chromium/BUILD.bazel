@@ -52,7 +52,12 @@ chromium_cc_library(
     name = "base_hdrs",
     hdrs = ["//third_party/chromium/base:base_hdrs"],
     includes = ["."],
-    deps = [":build_hdrs"],
+    deps = [
+        ":base_buildflags",
+        ":build_hdrs",
+        ":testing_hdrs",
+        "@boringssl//:ssl_headers",
+    ],
 )
 
 chromium_cc_library(
@@ -74,8 +79,14 @@ chromium_cc_library(
 )
 
 chromium_cc_library(
+    name = "testing_hdrs",
+    hdrs = ["//third_party/chromium/testing:testing_hdrs"],
+    includes = ["."],
+)
+
+chromium_cc_library(
     name = "net_hdrs",
     hdrs = ["//third_party/chromium/net:net_hdrs"],
     includes = ["."],
-    deps = [":cyrpto_hdrs"],
+    deps = [":crypto_hdrs"],
 )

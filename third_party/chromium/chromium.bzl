@@ -11,6 +11,7 @@ load(
     "define",
     "fel_c_library",
     "fel_cc_library",
+    "fel_cc_shared_library",
     "fel_cc_test",
     "fel_objc_library",
     "include",
@@ -175,6 +176,18 @@ def chromium_cc_test(
     fel_cc_test(
         name = name,
         copts = default_compiler_configs() + chromium_cxxopts() + define(["UNIT_TEST"]) + copts,
+        defines = defines + default_defines() + if_static([], CHROMIUM_DEFINES),
+        **kwargs
+    )
+
+def chromium_cc_shared_library(
+        name,
+        copts = [],
+        defines = [],
+        **kwargs):
+    fel_cc_shared_library(
+        name = name,
+        copts = default_compiler_configs() + chromium_cxxopts() + copts + define(CHROMIUM_LOCAL_DEFINES),
         defines = defines + default_defines() + if_static([], CHROMIUM_DEFINES),
         **kwargs
     )
