@@ -113,6 +113,9 @@ cc_library(
         "rosdeps_include",
         "rosdeps_include/boost-1_66",
     ],
+    defines = [
+        "HAS_ROS",
+    ],
     deps = [
         ":boost_atomic-vc141-mt-x64-1_66",
         ":boost_chrono-vc141-mt-x64-1_66",

@@ -105,7 +105,7 @@ def _ros_configure_impl_windows(repository_ctx):
     symlink_dir(repository_ctx, rosdeps_root + "\\lib", "rosdeps_lib")
     symlink_dir(repository_ctx, rosdeps_root + "\\bin", "rosdeps_bin")
 
-    repository_ctx.symlink(Label("//third_party/ros:BUILD_windows.bzl"), "BUILD")
+    repository_ctx.symlink(Label("//third_party/ros:ros_windows.BUILD"), "BUILD")
 
 def _ros_configure_impl(repository_ctx):
     if is_linux(repository_ctx):
