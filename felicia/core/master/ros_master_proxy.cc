@@ -179,8 +179,7 @@ Status RosMasterProxy::RegisterService(const std::string& service,
   XmlRpc::XmlRpcValue request, response, payload;
   request[0] = ros::this_node::getName();
   request[1] = service;
-  request[2] = base::StringPrintf("rosrpc://%s:%u", ip_endpoint.ip().c_str(),
-                                  ip_endpoint.port());
+  request[2] = AttachRosRpcProtocol(ip_endpoint.ip(), ip_endpoint.port());
   request[3] = xmlrpc_manager_->getServerURI();
   return Execute("registerService", request, response, payload, false);
 }
@@ -190,8 +189,7 @@ Status RosMasterProxy::UnregisterService(const std::string& service,
   XmlRpc::XmlRpcValue request, response, payload;
   request[0] = ros::this_node::getName();
   request[1] = service;
-  request[2] = base::StringPrintf("rosrpc://%s:%u", ip_endpoint.ip().c_str(),
-                                  ip_endpoint.port());
+  request[2] = AttachRosRpcProtocol(ip_endpoint.ip(), ip_endpoint.port());
   return Execute("unregisterService", request, response, payload, false);
 }
 
@@ -208,7 +206,7 @@ Status RosMasterProxy::LookupService(const std::string& service,
   if (!ros::network::splitURI(srv_uri, host, port))
     return errors::InvalidArgument(
         base::StringPrintf("Invalid ros rpc URI: %s.", srv_uri.c_str()));
-  ip_endpoint->set_ip(srv_uri);
+  ip_endpoint->set_ip(host);
   ip_endpoint->set_port(static_cast<uint16_t>(port));
   return Status::OK();
 }
@@ -236,7 +234,7 @@ void RosMasterProxy::RequestTopicCallback(XmlRpc::XmlRpcValue& request,
     const std::string& protocol = protocols[i][0];
     if (protocol == "TCPROS") {
       TopicFilter topic_filter;
-      topic_filter.set_topic(base::StringPrintf("ros://%s", topic.c_str()));
+      topic_filter.set_topic(AttachRosProtocol(topic));
       std::vector<TopicInfo> topic_infos =
           master_->FindTopicInfos(topic_filter);
       if (topic_infos.size() > 0) {
@@ -297,7 +295,7 @@ Status RosMasterProxy::RequestTopic(const std::string& pub_uri,
     const std::string& pub_host = payload[1];
     int pub_port = payload[2];
     TopicInfo topic_info;
-    topic_info.set_topic(base::StringPrintf("ros://%s", topic.c_str()));
+    topic_info.set_topic(AttachRosProtocol(topic));
     ChannelDef channel_def;
     channel_def.set_type(ChannelDef::CHANNEL_TYPE_TCP);
     IPEndPoint* ip_endpoint = channel_def.mutable_ip_endpoint();
@@ -319,7 +317,7 @@ Status RosMasterProxy::PubUpdate(
     const std::string& topic, const std::vector<std::string>& pub_uris) const {
   if (pub_uris.size() == 0) {
     TopicInfo topic_info;
-    topic_info.set_topic(base::StringPrintf("ros://%s", topic.c_str()));
+    topic_info.set_topic(AttachRosProtocol(topic));
     topic_info.set_status(TopicInfo::UNREGISTERED);
     master_->NotifyAllSubscribers(topic_info);
     return Status::OK();
