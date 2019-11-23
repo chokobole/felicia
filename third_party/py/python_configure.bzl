@@ -105,10 +105,7 @@ def _check_python_bin(repository_ctx, python_bin):
     cmd = '[[ -x "%s" ]] && [[ ! -d "%s" ]]' % (python_bin, python_bin)
     result = repository_ctx.execute([_get_bash_bin(repository_ctx), "-c", cmd])
     if result.return_code == 1:
-        _fail("--define %s='%s' is not executable. Is it the python binary?" % (
-            _PYTHON_BIN_PATH,
-            python_bin,
-        ))
+        _fail("Is it the python binary(%s)?" % python_bin)
 
 def _get_python_include(repository_ctx, python_bin):
     """Gets the python include path."""

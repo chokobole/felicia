@@ -35,9 +35,10 @@ matrix:
       compiler: clang
       env:
         - PYTHON_BIN_PATH=/usr/local/bin/python3
+        - PYTHON2_BIN_PATH=/usr/local/bin/python
       install:
         - ./installers/install_bazel.sh
-        - ./installers/install_nodejs.sh
+        - ./installers/install_nodejs.sh && nvm alias default v10.15.3 && nvm use default
         - ./installers/install_python_deps.sh --user
       script:
         - bazel build --cpu darwin_x86_64 //felicia/...

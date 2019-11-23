@@ -15,7 +15,7 @@ load("//bazel:util.bzl", "norm_path")
 def failed_to_find_bin_path(repository_ctx, bin, env_var = None):
     fmt_str = "Cannot find %s in PATH, please make sure %s is installed and add its directory in PATH"
     if env_var != None:
-        return fmt_str + ", or --define %s='/path/to/%s'.\nPATH=%s" % (bin, bin, bin, env_var, repository_ctx.os.environ("PATH"))
+        return fmt_str + ", or --define %s='/path/to/%s'.\nPATH=%s" % (bin, bin, bin, env_var, repository_ctx.os.environ["PATH"])
     else:
         return fmt_str % (bin, bin)
 

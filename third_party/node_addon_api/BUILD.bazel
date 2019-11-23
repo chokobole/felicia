@@ -2,6 +2,7 @@ load(
     "//:node_addon_api.bzl",
     "NODE_VERSION",
     "node_addon_api_copts",
+    "node_addon_api_defines",
 )
 
 config_setting(
@@ -33,7 +34,7 @@ cc_library(
         "node_modules/node-addon-api/src/util-inl.h",
     ],
     copts = node_addon_api_copts(),
-    defines = ["EXTERNAL_NAPI"],
+    defines = node_addon_api_defines(),
     includes = [
         "node_modules/node-addon-api",
         "node_modules/node-addon-api/src",

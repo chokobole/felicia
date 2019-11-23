@@ -19,6 +19,7 @@ def _npm_install_node_addon_api_impl(repository_ctx):
     bash = get_bash_bin_path(repository_ctx)
     if bash == None:
         _fail(failed_to_find_bash_bin_path(repository_ctx))
+
     cmd = [bash, "-c", "npm install"]
     result = repository_ctx.execute(cmd)
     if result.return_code != 0:
