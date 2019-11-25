@@ -65,11 +65,11 @@ fel_cc_library(
 )
 
 fel_cc_test(
-    name = "util_tests",
+    name = "util_unittests",
     size = "small",
     srcs = [
-        "command_line_interface/flag_parser_test.cc",
-        "command_line_interface/flag_test.cc",
+        "command_line_interface/flag_parser_unittest.cc",
+        "command_line_interface/flag_unittest.cc",
     ],
     deps = [
         ":util",

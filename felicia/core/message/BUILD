@@ -65,10 +65,10 @@ fel_cc_library(
 )
 
 fel_cc_test(
-    name = "message_tests",
+    name = "message_unittests",
     size = "small",
     srcs = [
-        "message_filter_test.cc",
+        "message_filter_unittest.cc",
     ],
     deps = [
         ":message_test_util",

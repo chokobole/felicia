@@ -90,9 +90,9 @@ fel_cc_native_library(
 )
 
 fel_cc_test(
-    name = "master_test",
+    name = "master_unittest",
     size = "small",
-    srcs = if_not_windows(["master_test.cc"]),
+    srcs = if_not_windows(["master_unittest.cc"]),
     deps = [
         ":master",
         "@com_google_googletest//:gtest_main",

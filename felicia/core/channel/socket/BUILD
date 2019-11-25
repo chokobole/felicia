@@ -80,11 +80,11 @@ fel_cc_library(
 )
 
 fel_cc_test(
-    name = "web_socket_tests",
+    name = "web_socket_unittests",
     size = "small",
     srcs = [
-        "permessage_deflate_test.cc",
-        "web_socket_test.cc",
+        "permessage_deflate_unittest.cc",
+        "web_socket_unittest.cc",
     ],
     deps = [
         ":socket",
