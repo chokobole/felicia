@@ -11,102 +11,15 @@
 
 #include "felicia/core/channel/channel.h"
 #include "felicia/core/channel/channel_factory.h"
-#include "felicia/core/channel/message_receiver.h"
-#include "felicia/core/channel/message_sender.h"
 #include "felicia/core/channel/ros_service_response.h"
-#include "felicia/core/message/message_io.h"
 #include "felicia/core/message/ros_protocol.h"
-#include "felicia/core/message/ros_rpc_header.h"
 #include "felicia/core/rpc/ros_serialized_service_interface.h"
+#include "felicia/core/rpc/ros_service_manager.h"
 #include "felicia/core/rpc/ros_util.h"
 #include "felicia/core/rpc/server_interface.h"
 
 namespace felicia {
 namespace rpc {
-
-namespace internal {
-
-// TODO: has to delete itself, when hasn't been used so long.
-template <typename Service, typename Request, typename Response>
-class RosServiceHandler {
- public:
-  RosServiceHandler(scoped_refptr<Service> service,
-                    std::unique_ptr<TCPChannel> channel, bool use_ros_protocol)
-      : service_(service),
-        channel_(std::move(channel)),
-        use_ros_protocol_(use_ros_protocol) {
-    channel_->SetDynamicSendBuffer(true);
-    channel_->SetDynamicReceiveBuffer(true);
-    receiver_.set_channel(channel_.get());
-    ReceiveRequest();
-  }
-
- private:
-  void ReceiveRequest();
-  void OnReceiveRequest(Status s);
-  void SendResponse(bool ok);
-  void OnSendResponse(Status s);
-  void OnHandleRequest(Status s);
-
-  Response response_;
-  scoped_refptr<Service> service_;
-  std::unique_ptr<TCPChannel> channel_;
-  MessageReceiver<Request> receiver_;
-  bool use_ros_protocol_;
-};
-
-template <typename Service, typename Request, typename Response>
-void RosServiceHandler<Service, Request, Response>::ReceiveRequest() {
-  receiver_.ReceiveMessage(base::BindOnce(
-      &RosServiceHandler<Service, Request, Response>::OnReceiveRequest,
-      base::Unretained(this)));
-}
-
-template <typename Service, typename Request, typename Response>
-void RosServiceHandler<Service, Request, Response>::OnReceiveRequest(Status s) {
-  if (s.ok()) {
-    service_->Handle(
-        &receiver_.message(), &response_,
-        base::BindOnce(
-            &RosServiceHandler<Service, Request, Response>::OnHandleRequest,
-            base::Unretained(this)));
-  } else {
-    LOG(ERROR) << s;
-  }
-}
-
-template <typename Service, typename Request, typename Response>
-void RosServiceHandler<Service, Request, Response>::SendResponse(bool ok) {
-  MessageSender<Response> sender(channel_.get());
-  RosRpcHeader header;
-  if (use_ros_protocol_) {
-    header.set_ok(ok);
-    sender.set_attach_header_callback(
-        base::BindOnce(&RosRpcHeader::AttachHeader, base::Unretained(&header)));
-  }
-  sender.SendMessage(
-      response_,
-      base::BindOnce(
-          &RosServiceHandler<Service, Request, Response>::OnSendResponse,
-          base::Unretained(this)));
-}
-
-template <typename Service, typename Request, typename Response>
-void RosServiceHandler<Service, Request, Response>::OnSendResponse(Status s) {
-  if (s.ok()) {
-    ReceiveRequest();
-  } else {
-    LOG(ERROR) << s;
-  }
-}
-
-template <typename Service, typename Request, typename Response>
-void RosServiceHandler<Service, Request, Response>::OnHandleRequest(Status s) {
-  LOG_IF(ERROR, !s.ok()) << s;
-  SendResponse(s.ok());
-}
-
-}  // namespace internal
 
 #define FEL_ROS_SERVER                           \
   Server<T, std::enable_if_t<                    \
@@ -121,10 +34,13 @@ class FEL_ROS_SERVER : public ServerInterface {
   typedef typename Service::Response Response;
   typedef internal::RosServiceHandler<Service, Request, Response>
       ServiceHandler;
+  typedef internal::RosServiceManager<Service, Request, Response>
+      ServiceManager;
 
-  Server() : service_(base::MakeRefCounted<Service>()) {}
-  explicit Server(scoped_refptr<Service> service)
-      : service_(std::move(service)) {}
+  Server() : service_manager_(base::MakeRefCounted<ServiceManager>()) {}
+  explicit Server(std::unique_ptr<Service> service)
+      : service_manager_(
+            base::MakeRefCounted<ServiceManager>(std::move(service))) {}
   ~Server() override = default;
 
   Server& operator=(Server&& other) = default;
@@ -145,22 +61,24 @@ class FEL_ROS_SERVER : public ServerInterface {
 
   Status Shutdown() override {
     channel_.reset();
-    service_handlers_.clear();
+    service_manager_->ClearHandlers();
     return Status::OK();
   }
 
   std::string GetServiceTypeName() const override {
-    return service_->GetServiceTypeName();
+    return service_manager_->service()->GetServiceTypeName();
   }
 
-  std::string GetServiceMD5Sum() const { return service_->GetServiceMD5Sum(); }
+  std::string GetServiceMD5Sum() const {
+    return service_manager_->service()->GetServiceMD5Sum();
+  }
 
   std::string GetRequestTypeName() const {
-    return service_->GetRequestTypeName();
+    return service_manager_->service()->GetRequestTypeName();
   }
 
   std::string GetResponseTypeName() const {
-    return service_->GetResponseTypeName();
+    return service_manager_->service()->GetResponseTypeName();
   }
 
  protected:
@@ -168,11 +86,11 @@ class FEL_ROS_SERVER : public ServerInterface {
 
   void DoAcceptLoop();
   void OnAccept(StatusOr<std::unique_ptr<TCPChannel>> status_or);
-  void OnRosServiceHandshake(std::unique_ptr<Channel> client_channel);
+  void OnRosServiceHandshake(std::unique_ptr<Channel> client_channel,
+                             bool persistent);
 
-  scoped_refptr<Service> service_;
+  scoped_refptr<ServiceManager> service_manager_;
   std::unique_ptr<Channel> channel_;
-  std::vector<std::unique_ptr<ServiceHandler>> service_handlers_;
 };
 
 template <typename T>
@@ -199,8 +117,8 @@ void FEL_ROS_SERVER::OnAccept(StatusOr<std::unique_ptr<TCPChannel>> status_or) {
           this, base::BindOnce(&Server::OnRosServiceHandshake,
                                base::Unretained(this)));
     } else {
-      service_handlers_.push_back(std::make_unique<ServiceHandler>(
-          service_, std::move(status_or).ValueOrDie(), false));
+      service_manager_->AddHandler(std::make_unique<ServiceHandler>(
+          service_manager_, std::move(status_or).ValueOrDie(), false));
     }
   }
   DoAcceptLoop();
@@ -208,12 +126,12 @@ void FEL_ROS_SERVER::OnAccept(StatusOr<std::unique_ptr<TCPChannel>> status_or) {
 
 template <typename T>
 void FEL_ROS_SERVER::OnRosServiceHandshake(
-    std::unique_ptr<Channel> client_channel) {
+    std::unique_ptr<Channel> client_channel, bool persistent) {
   std::unique_ptr<TCPChannel> client_tcp_channel;
   client_tcp_channel.reset(
       reinterpret_cast<TCPChannel*>(client_channel.release()));
-  service_handlers_.push_back(std::make_unique<ServiceHandler>(
-      service_, std::move(client_tcp_channel), true));
+  service_manager_->AddHandler(std::make_unique<ServiceHandler>(
+      service_manager_, std::move(client_tcp_channel), true, persistent));
 }
 
 }  // namespace rpc

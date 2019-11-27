@@ -43,7 +43,8 @@ void RosServiceResponse::OnResponse(bool sent_error, Status s) {
 
     channel_->SetDynamicSendBuffer(false);
 
-    std::move(callback_).Run(std::move(channel_));
+    std::move(callback_).Run(std::move(channel_),
+                             receiver_.message().persistent == "1");
   } else {
     LOG(ERROR) << s;
   }

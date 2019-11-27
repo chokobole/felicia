@@ -42,11 +42,11 @@ class FEL_EXPORT RosTopicResponse {
                                             base::Unretained(this), header));
   }
 
+ private:
   void OnReceiveRequest(const RosTopicResponseHeader& header, Status s);
 
   void OnResponse(bool sent_error, Status s);
 
- private:
   std::unique_ptr<Channel> channel_;
   MessageReceiver<RosTopicRequestHeader> receiver_;
   HandshakeCallback callback_;

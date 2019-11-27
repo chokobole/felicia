@@ -51,11 +51,11 @@ class FEL_EXPORT RosServiceRequest {
         &RosServiceRequest::OnReceiveResponse, base::Unretained(this), header));
   }
 
+ private:
   void OnRequest(Status s);
 
   void OnReceiveResponse(const RosServiceRequestHeader& header, Status s);
 
- private:
   Channel* channel_;
   Header header_;
   MessageReceiver<RosServiceResponseHeader> receiver_;

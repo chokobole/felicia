@@ -17,13 +17,13 @@
 namespace felicia {
 namespace rpc {
 
-class FEL_EXPORT RosSerializedServiceInterface
-    : public base::RefCountedThreadSafe<RosSerializedServiceInterface> {
+class FEL_EXPORT RosSerializedServiceInterface {
  public:
   typedef SerializedMessage Request;
   typedef SerializedMessage Response;
 
   RosSerializedServiceInterface();
+  virtual ~RosSerializedServiceInterface();
 
   std::string GetServiceTypeName() const;
   std::string GetServiceMD5Sum() const;
@@ -35,9 +35,6 @@ class FEL_EXPORT RosSerializedServiceInterface
                       StatusOnceCallback callback) = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<RosSerializedServiceInterface>;
-  virtual ~RosSerializedServiceInterface();
-
   std::string service_type_name_;
   std::string service_md5sum_;
   std::string request_type_name_;

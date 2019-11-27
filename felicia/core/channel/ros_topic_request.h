@@ -46,11 +46,11 @@ class FEL_EXPORT RosTopicRequest {
                                             base::Unretained(this), header));
   }
 
+ private:
   void OnRequest(Status s);
 
   void OnReceiveResponse(const RosTopicRequestHeader& header, Status s);
 
- private:
   Channel* channel_;
   Header header_;
   MessageReceiver<RosTopicResponseHeader> receiver_;

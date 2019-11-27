@@ -23,7 +23,8 @@ class Server;
 
 class FEL_EXPORT RosServiceResponse {
  public:
-  using HandshakeCallback = base::OnceCallback<void(std::unique_ptr<Channel>)>;
+  using HandshakeCallback =
+      base::OnceCallback<void(std::unique_ptr<Channel>, bool)>;
 
   explicit RosServiceResponse(std::unique_ptr<Channel> channel);
   ~RosServiceResponse();
@@ -44,11 +45,11 @@ class FEL_EXPORT RosServiceResponse {
         &RosServiceResponse::OnReceiveRequest, base::Unretained(this), header));
   }
 
+ private:
   void OnReceiveRequest(const RosServiceResponseHeader& header, Status s);
 
   void OnResponse(bool sent_error, Status s);
 
- private:
   std::unique_ptr<Channel> channel_;
   MessageReceiver<RosServiceRequestHeader> receiver_;
   HandshakeCallback callback_;

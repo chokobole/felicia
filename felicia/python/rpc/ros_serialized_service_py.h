@@ -11,6 +11,7 @@
 #include "pybind11/pybind11.h"
 
 #include "felicia/core/rpc/ros_serialized_service_interface.h"
+#include "felicia/core/rpc/ros_service_manager.h"
 #include "felicia/python/type_conversion/util.h"
 
 namespace py = pybind11;
