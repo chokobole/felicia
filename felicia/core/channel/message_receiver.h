@@ -111,15 +111,16 @@ class MessageReceiver {
       return;
     }
 
-    if (message_size <= 0) {
+    if (message_size < 0) {
       std::move(receive_callback_)
-          .Run(errors::Aborted("message_size is not positive"));
-      return;
+          .Run(errors::Aborted("message_size is negative"));
+    } else if (message_size > 0) {
+      channel_->ReceiveInternalBuffer(
+          message_size, base::BindOnce(&MessageReceiver<T>::OnReceiveMessage,
+                                       base::Unretained(this), message_size));
+    } else {
+      OnReceiveMessage(0, Status::OK());
     }
-
-    channel_->ReceiveInternalBuffer(
-        message_size, base::BindOnce(&MessageReceiver<T>::OnReceiveMessage,
-                                     base::Unretained(this), message_size));
   }
 
   void OnReceiveMessage(int message_size, Status s) {
