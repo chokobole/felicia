@@ -2,7 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-load("//bazel:felicia_cc.bzl", "fel_cc_library")
+load(
+    "//bazel:felicia_cc.bzl",
+    "fel_cc_library",
+    "fel_cc_test",
+)
 
 package(default_visibility = ["//felicia:internal"])
 
@@ -31,5 +35,20 @@ fel_cc_library(
         "//felicia/core/channel",
         "//felicia/core/master:master_proxy",
         "//felicia/core/rpc",
+    ],
+)
+
+fel_cc_test(
+    name = "communication_unittests",
+    size = "small",
+    srcs = [
+        "pubsub_unittest.cc",
+    ],
+    deps = [
+        ":communication",
+        "//felicia/core/lib:lib_test_util",
+        "//felicia/core/message:message_test_util",
+        "//felicia/core/util:timestamp",
+        "@com_google_googletest//:gtest_main",
     ],
 )

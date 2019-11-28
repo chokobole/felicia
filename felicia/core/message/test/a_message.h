@@ -30,7 +30,7 @@ class AMessage {
   bool operator!=(const AMessage& other) const { return !operator==(other); }
 
  private:
-  int data_;
+  T data_;
   double timestamp_;
 };
 

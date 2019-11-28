@@ -65,19 +65,25 @@ class Subscriber {
   void RequestUnsubscribe(const NodeInfo& node_info, const std::string& topic,
                           StatusOnceCallback callback = StatusOnceCallback());
 
+ private:
+  friend class PubSubTest;
+
+  void RequestSubscribeForTesting(
+      const std::string& topic, int channel_types,
+      const communication::Settings& settings,
+      OnMessageCallback on_message_callback,
+      StatusCallback on_error_callback = StatusCallback());
+  void RequestUnsubscribeForTesting(const std::string& topic);
+
  protected:
   friend class RosTopicRequest;
 
-  void OnSubscribeTopicAsync(const SubscribeTopicRequest* request,
-                             SubscribeTopicResponse* response,
-                             int channel_types,
+  void OnSubscribeTopicAsync(int channel_types,
                              const communication::Settings& settings,
                              OnMessageCallback on_message_callback,
                              StatusCallback on_error_callback,
                              StatusOnceCallback callback, Status s);
-  void OnUnubscribeTopicAsync(const UnsubscribeTopicRequest* request,
-                              UnsubscribeTopicResponse* response,
-                              StatusOnceCallback callback, Status s);
+  void OnUnubscribeTopicAsync(StatusOnceCallback callback, Status s);
 
   void OnFindPublisher(const TopicInfo& topic_info);
   void ConnectToPublisher();
@@ -166,19 +172,19 @@ void Subscriber<MessageTy>::RequestSubscribe(
 
   register_state_.ToRegistering(FROM_HERE);
 
-  SubscribeTopicRequest* request = new SubscribeTopicRequest();
-  *request->mutable_node_info() = node_info;
-  request->set_topic(topic);
-  request->set_topic_type(GetMessageTypeName());
-  SubscribeTopicResponse* response = new SubscribeTopicResponse();
+  SubscribeTopicRequest request;
+  *request.mutable_node_info() = node_info;
+  request.set_topic(topic);
+  request.set_topic_type(GetMessageTypeName());
+  SubscribeTopicResponse response;
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.SubscribeTopicAsync(
-      request, response,
-      base::BindOnce(
-          &Subscriber<MessageTy>::OnSubscribeTopicAsync, base::Unretained(this),
-          base::Owned(request), base::Owned(response), channel_types, settings,
-          on_message_callback, on_error_callback, std::move(callback)),
+      &request, &response,
+      base::BindOnce(&Subscriber<MessageTy>::OnSubscribeTopicAsync,
+                     base::Unretained(this), channel_types, settings,
+                     on_message_callback, on_error_callback,
+                     std::move(callback)),
       base::BindRepeating(&Subscriber<MessageTy>::OnFindPublisher,
                           base::Unretained(this)));
 }
@@ -204,22 +210,68 @@ void Subscriber<MessageTy>::RequestUnsubscribe(const NodeInfo& node_info,
 
   register_state_.ToUnregistering(FROM_HERE);
 
-  UnsubscribeTopicRequest* request = new UnsubscribeTopicRequest();
-  *request->mutable_node_info() = node_info;
-  request->set_topic(topic);
-  UnsubscribeTopicResponse* response = new UnsubscribeTopicResponse();
+  UnsubscribeTopicRequest request;
+  *request.mutable_node_info() = node_info;
+  request.set_topic(topic);
+  UnsubscribeTopicResponse response;
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.UnsubscribeTopicAsync(
-      request, response,
+      &request, &response,
       base::BindOnce(&Subscriber<MessageTy>::OnUnubscribeTopicAsync,
-                     base::Unretained(this), base::Owned(request),
-                     base::Owned(response), std::move(callback)));
+                     base::Unretained(this), std::move(callback)));
+}
+
+template <typename MessageTy>
+void Subscriber<MessageTy>::RequestSubscribeForTesting(
+    const std::string& topic, int channel_types,
+    const communication::Settings& settings,
+    OnMessageCallback on_message_callback, StatusCallback on_error_callback) {
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
+        FROM_HERE,
+        base::BindOnce(&Subscriber<MessageTy>::RequestSubscribeForTesting,
+                       base::Unretained(this), topic, channel_types, settings,
+                       on_message_callback, on_error_callback));
+    return;
+  }
+
+  if (!IsUnregistered()) {
+    LOG(ERROR) << register_state_.InvalidStateError();
+    return;
+  }
+
+  register_state_.ToRegistering(FROM_HERE);
+
+  OnSubscribeTopicAsync(channel_types, settings, on_message_callback,
+                        on_error_callback, StatusOnceCallback(), Status::OK());
+}
+
+template <typename MessageTy>
+void Subscriber<MessageTy>::RequestUnsubscribeForTesting(
+    const std::string& topic) {
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
+        FROM_HERE,
+        base::BindOnce(&Subscriber<MessageTy>::RequestUnsubscribeForTesting,
+                       base::Unretained(this), topic));
+    return;
+  }
+
+  if (!IsRegistered()) {
+    LOG(ERROR) << register_state_.InvalidStateError();
+    return;
+  }
+
+  register_state_.ToUnregistering(FROM_HERE);
+
+  OnUnubscribeTopicAsync(StatusOnceCallback(), Status::OK());
 }
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnSubscribeTopicAsync(
-    const SubscribeTopicRequest* request, SubscribeTopicResponse* response,
     int channel_types, const communication::Settings& settings,
     OnMessageCallback on_message_callback, StatusCallback on_error_callback,
     StatusOnceCallback callback, Status s) {
@@ -245,9 +297,8 @@ void Subscriber<MessageTy>::OnSubscribeTopicAsync(
 }
 
 template <typename MessageTy>
-void Subscriber<MessageTy>::OnUnubscribeTopicAsync(
-    const UnsubscribeTopicRequest* request, UnsubscribeTopicResponse* response,
-    StatusOnceCallback callback, Status s) {
+void Subscriber<MessageTy>::OnUnubscribeTopicAsync(StatusOnceCallback callback,
+                                                   Status s) {
   if (!IsUnregistering()) {
     internal::LogOrCallback(std::move(callback),
                             register_state_.InvalidStateError());

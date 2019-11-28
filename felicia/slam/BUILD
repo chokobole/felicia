@@ -81,8 +81,8 @@ fel_cc_test(
     name = "slam_unittests",
     size = "small",
     srcs = [
-        "camera/camera_model_base_unittest.cc",
         "camera/camera_model_base_test_util.h",
+        "camera/camera_model_base_unittest.cc",
         "camera/essential_matrix_unittest.cc",
         "camera/fundamental_matrix_unittest.cc",
         "camera/stereo_camera_model_base_unittest.cc",

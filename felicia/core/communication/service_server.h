@@ -83,14 +83,9 @@ class ServiceServer {
                          StatusOnceCallback callback = StatusOnceCallback());
 
  protected:
-  void OnRegisterServiceServerAsync(const RegisterServiceServerRequest* request,
-                                    RegisterServiceServerResponse* response,
-                                    StatusOnceCallback callback, Status s);
+  void OnRegisterServiceServerAsync(StatusOnceCallback callback, Status s);
 
-  void OnUnegisterServiceServerAsync(
-      const UnregisterServiceServerRequest* request,
-      UnregisterServiceServerResponse* response, StatusOnceCallback callback,
-      Status s);
+  void OnUnegisterServiceServerAsync(StatusOnceCallback callback, Status s);
 
   ServerTy server_;
   communication::RegisterState register_state_;
@@ -121,23 +116,22 @@ void ServiceServer<ServiceTy, ServerTy>::RequestRegister(
   server_.Start();
   server_.Run();
 
-  RegisterServiceServerRequest* request = new RegisterServiceServerRequest();
-  *request->mutable_node_info() = node_info;
-  ServiceInfo* service_info = request->mutable_service_info();
+  RegisterServiceServerRequest request;
+  *request.mutable_node_info() = node_info;
+  ServiceInfo* service_info = request.mutable_service_info();
   service_info->set_service(service);
   service_info->set_type_name(server_.GetServiceTypeName());
   ChannelSource* channel_source = service_info->mutable_service_source();
   *channel_source->add_channel_defs() = server_.channel_def();
   server_.set_service_info(*service_info);
-  RegisterServiceServerResponse* response = new RegisterServiceServerResponse();
+  RegisterServiceServerResponse response;
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.RegisterServiceServerAsync(
-      request, response,
+      &request, &response,
       base::BindOnce(
           &ServiceServer<ServiceTy, ServerTy>::OnRegisterServiceServerAsync,
-          base::Unretained(this), base::Owned(request), base::Owned(response),
-          std::move(callback)));
+          base::Unretained(this), std::move(callback)));
 }
 
 template <typename ServiceTy, typename ServerTy>
@@ -162,27 +156,22 @@ void ServiceServer<ServiceTy, ServerTy>::RequestUnregister(
 
   register_state_.ToUnregistering(FROM_HERE);
 
-  UnregisterServiceServerRequest* request =
-      new UnregisterServiceServerRequest();
-  *request->mutable_node_info() = node_info;
-  request->set_service(service);
-  UnregisterServiceServerResponse* response =
-      new UnregisterServiceServerResponse();
+  UnregisterServiceServerRequest request;
+  *request.mutable_node_info() = node_info;
+  request.set_service(service);
+  UnregisterServiceServerResponse response;
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.UnregisterServiceServerAsync(
-      request, response,
+      &request, &response,
       base::BindOnce(
           &ServiceServer<ServiceTy, ServerTy>::OnUnegisterServiceServerAsync,
-          base::Unretained(this), base::Owned(request), base::Owned(response),
-          std::move(callback)));
+          base::Unretained(this), std::move(callback)));
 }
 
 template <typename ServiceTy, typename ServerTy>
 void ServiceServer<ServiceTy, ServerTy>::OnRegisterServiceServerAsync(
-    const RegisterServiceServerRequest* request,
-    RegisterServiceServerResponse* response, StatusOnceCallback callback,
-    Status s) {
+    StatusOnceCallback callback, Status s) {
   if (!IsRegistering()) {
     internal::LogOrCallback(std::move(callback),
                             register_state_.InvalidStateError());
@@ -201,9 +190,7 @@ void ServiceServer<ServiceTy, ServerTy>::OnRegisterServiceServerAsync(
 
 template <typename ServiceTy, typename ServerTy>
 void ServiceServer<ServiceTy, ServerTy>::OnUnegisterServiceServerAsync(
-    const UnregisterServiceServerRequest* request,
-    UnregisterServiceServerResponse* response, StatusOnceCallback callback,
-    Status s) {
+    StatusOnceCallback callback, Status s) {
   if (!IsUnregistering()) {
     internal::LogOrCallback(std::move(callback),
                             register_state_.InvalidStateError());

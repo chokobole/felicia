@@ -123,6 +123,7 @@ fel_cc_library(
     name = "lib_test_util",
     testonly = True,
     hdrs = [
+        "test/async_checker.h",
         "unit/geometry/native_matrix_reference_test_util.h",
     ],
     deps = [":lib"],
@@ -161,6 +162,7 @@ fel_cc_test(
 
 fel_cc_test(
     name = "pool_benchmark",
+    size = "small",
     srcs = ["containers/pool_benchmark.cc"],
     tags = ["benchmark"],
     deps = [

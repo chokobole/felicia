@@ -10,6 +10,7 @@ load(
     "fel_cc_test",
     "fel_cxxopts",
 )
+load("//bazel:felicia_proto.bzl", "fel_proto_library_cc")
 
 package(default_visibility = ["//felicia:internal"])
 
@@ -53,6 +54,15 @@ fel_cc_library(
     ]),
 )
 
+fel_proto_library_cc(
+    name = "simple_message_proto",
+    testonly = True,
+    srcs = [
+        "test/simple_message.proto",
+    ],
+    visibility = ["//visibility:private"],
+)
+
 fel_cc_library(
     name = "message_test_util",
     testonly = True,
@@ -61,6 +71,7 @@ fel_cc_library(
     ],
     deps = [
         ":message",
+        ":simple_message_proto_cc",
     ],
 )
 
