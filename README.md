@@ -121,7 +121,7 @@ Then you can take those two outputs and put library and extract headers wherever
 ## How to set up on Docker
 
 ```bash
-docker build . -t felicia -f docker/Dockerfile.ubuntu
+docker build . -t felicia -f docker/Dockerfile.ubuntu.xenial
 ```
 
 You can validate your work on docker with below.

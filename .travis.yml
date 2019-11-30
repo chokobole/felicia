@@ -13,7 +13,7 @@ matrix:
         - pyenv global 3.7.1
         - ./installers/install_python_deps.sh --no-default --dev
       script:
-        - docker build . -t felicia -f docker/Dockerfile.ubuntu
+        - docker build . -t felicia -f docker/Dockerfile.ubuntu.xenial
         - python3 tools/docker_exec.py bazel build //felicia/...
         - python3 tools/docker_exec.py bazel test --test_tag_filters -benchmark //felicia/...
       after_failure:
@@ -26,7 +26,7 @@ matrix:
         - pyenv global 3.7.1
         - ./installers/install_python_deps.sh --no-default --dev
       script:
-        - docker build . -t felicia -f docker/Dockerfile.ubuntu
+        - docker build . -t felicia -f docker/Dockerfile.ubuntu.xenial
         - python3 tools/docker_exec.py bazel build -c dbg //felicia/...
         - python3 tools/docker_exec.py bazel build -c dbg --test_tag_filters -benchmark //felicia/...
       after_failure:

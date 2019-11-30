@@ -1,4 +1,4 @@
-FROM chokobole/felicia:ubuntu.base
+FROM chokobole/ubuntu:xenial
 LABEL maintainer="Wonyong Kim <chokoble33@gmail.com>"
 
 COPY --chown=felicia:felicia . /felicia

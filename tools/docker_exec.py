@@ -2,43 +2,41 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import copy
-import os
-import platform
+import subprocess
 import sys
 
-CURRENT_PATH = os.path.dirname(__file__)
-PYTHON_PATH = os.path.join(CURRENT_PATH, '..', 'felicia', 'python')
-sys.path.append(os.path.abspath(PYTHON_PATH))
-from lib.util import is_darwin, is_linux, is_windows
-from lib.docker import Docker, ExecContainerOptions, ListContainerOptions, RunContainerOptions
+import docker
+
+from lib.text_style import TextStyle
 
 
-class FeliciaDocker(Docker):
+class FeliciaDocker():
     def __init__(self):
         """Constructor."""
         super().__init__()
         self.image = 'felicia'
         self.user = 'felicia'
         self.name = 'felicia'
-
-    def has_named_container(self, name):
-        """Check whether there are containers running with argument name."""
-        options = ListContainerOptions(format='{{.Names}}', all=True)
-        names = self.list_container(options)
-        return name in names.split()
+        self.client = docker.from_env()
 
     def exec_with_command(self, cmd):
         """Exececute command on docker instance."""
-        if self.has_named_container(self.name):
-            self.stop_container(None, self.name)
-            self.remove_container(None, self.name)
-        run_options = RunContainerOptions(user=self.user, name=self.name, interactive=True,
-                                          tty=True, detach=True)
-        self.run_container(run_options, self.image, ['/bin/bash'])
-        exec_options = ExecContainerOptions(user=self.user)
-        self.exec_container(exec_options, self.name, ['/bin/bash', '-c', cmd])
-        self.print_success('{} on docker'.format(cmd))
+        containers = self.client.containers.list(
+            all=True, filters={"name": self.name})
+        if len(containers) > 0:
+            containers[0].stop()
+            containers[0].remove()
+        container = self.client.containers.run(
+            self.image, command=['/bin/bash'], name=self.name, user=self.user,
+            tty=True, detach=True)
+        # TODO: Either of 2 belows are not working on TRAVIS.
+        # ret = constainer.exec_run(cmd=['/bin/bash', '-c', cmd], user=self.user)
+        # => Too long to emit output
+        # ret = constainer.exec_run(cmd=['/bin/bash', '-c', cmd], user=self.user, stream=True)
+        # => No way to check return code
+        result = subprocess.run(['docker', 'container', 'exec', '--user', self.user, self.name,
+                                 '/bin/bash', '-c', cmd], stdout=subprocess.PIPE, universal_newlines=True)
+        result.check_returncode()
 
 
 def main():
