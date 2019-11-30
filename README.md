@@ -38,11 +38,14 @@ Felicia is the chromium based robot framework like [ROS](https://www.ros.org/), 
 
 ## Prerequisites
 
-We use [bazel](https://www.bazel.build/) as a build tool. So please download it! To sync with window build, we fix the virstion to `0.25.0`.
-On linux and mac, simply you can do like below!
+We use [bazel](https://www.bazel.build/) as a build tool. So please download and install it!
 
 ```bash
+# Install bazel on linux or mac
 ./installers/install_bazel.sh
+
+# Install bazel on windows
+choco install bazel --version 0.25.0
 ```
 
 Also we need `python` and some dependencies such as `numpy`. Currently we tested on python3. Our suggestion is using `pipenv`.
@@ -52,7 +55,7 @@ pipenv --three
 ./installers/install_python_deps.sh
 ```
 
-Or you can set environment variable `PYTHON_BIN_PATH` to `/path/to/python/`.
+To build, either `python` or environment variable `PYTHON_BIN_PATH` points to `/path/to/python3` and either `python2` or environment variable `PYTHON2_BIN_PATH` points to `/path/to/python2`.
 
 Lastly we need `nodejs` for nodejs binding. If you are working on linux or mac, then you can install it by `nvm`. On windows, you can install it by `choco`.
 
@@ -60,13 +63,13 @@ Lastly we need `nodejs` for nodejs binding. If you are working on linux or mac, 
 # Install nodejs using nvm on linux or mac
 ./installers/install_nodejs.sh
 
-# install nodejs using choco on windows
+# Install nodejs using choco on windows
 choco install nodejs.install --version 10.15.3
 ```
 
 ### For Windows developers
 
-For only window developers, you have to do more. You have to download llvm from [llvm.org](http://llvm.org/builds/) also. Because you need `clang-cl` for compiler. And then to change default compiler for bazel, you have to set `USE_CLANG_CL` to `1` and `BAZEL_LLVM` to `/path/to/llvm` if you install llvm at not regular location. This feature is a quite new, so you need a recent released one. We tested on `0.25.0`.
+For only window developers, you have to do more. You have to download llvm from [llvm.org](http://llvm.org/builds/) also. Because you need `clang-cl` for compiler. And then to change default compiler for bazel, you have to set `USE_CLANG_CL` to `1` and `BAZEL_LLVM` to `/path/to/llvm` if you install llvm at not regular location.
 
 ## How to build
 
@@ -124,7 +127,7 @@ docker build . -t felicia -f docker/Dockerfile.ubuntu
 You can validate your work on docker with below.
 
 ```bash
-python3 scripts/docker_exec.py bazel build //felicia/...
+python3 tools/docker_exec.py bazel build //felicia/...
 ```
 
 ## For Users

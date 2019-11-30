@@ -2,8 +2,19 @@
 
 set -e
 
-if ! [ -x "$(command -v pip3)" ]; then
-  curl -O https://bootstrap.pypa.io/get-pip.py
+OPTION=
+DEFAULT=1
+DEV=0
+ROS_SERIALIZATION=0
+
+function run_cmd() {
+  CMD=$@
+  $CMD $OPTION
+}
+
+function install_pip() {
+  if ! [ -x "$(command -v pip)" ]; then
+    curl -O https://bootstrap.pypa.io/get-pip.py
 
   if [ -z "$PYTHON_BIN_PATH" ]; then
     PYTHON_BIN="python"
@@ -11,11 +22,65 @@ if ! [ -x "$(command -v pip3)" ]; then
     PYTHON_BIN="$PYTHON_BIN_PATH"
   fi
 
-  "$PYTHON_BIN" get-pip.py --user
-fi
+  run_cmd "$PYTHON_BIN get-pip.py"
+  fi
+}
 
-pip3 install numpy $1
-# Disable temporarily due to issue https://github.com/grpc/grpc/issues/20831
-# pip3 install grpcio $1
-pip3 install empy $1  # For ROS C++ message generation
-pip3 install pyyaml $1  # For ROS Python message generation
+function install_python_dep() {
+  run_cmd "pip install $@"
+}
+
+function install_default_dep() {
+  install_python_dep numpy
+  install_python_dep grpcio
+}
+
+function install_dev_deps() {
+  install_python_dep docker
+}
+
+function install_ros_serialization_dep() {
+  install_python_dep empy # For ROS C++ message generation
+  install_python_dep pyyaml # For ROS Python message generation
+}
+
+function run() {
+  while [[ $# -gt 0 ]]
+  do
+    case $1 in
+      --user)
+        OPTION="--user"
+        shift
+        ;;
+      --no-default)
+        DEFAULT=0
+        shift
+        ;;
+      --dev)
+        DEV=1
+        shift
+        ;;
+      --ros_serialization)
+        ROS_SERIALIZATION=1
+        shift
+        ;;
+      *)
+        echo "Unknown option: $1"
+        shift
+        ;;
+    esac
+  done
+
+  install_pip
+  if [ $DEFAULT -eq 1 ]; then
+    install_default_dep
+  fi
+  if [ $DEV -eq 1 ]; then
+    install_dev_deps
+  fi
+  if [ $ROS_SERIALIZATION -eq 1 ]; then
+    install_ros_serialization_dep
+  fi
+}
+
+run "$@"

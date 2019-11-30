@@ -10,7 +10,8 @@ matrix:
       sudo: required
       services: docker
       install:
-        - sudo apt-get install -y python3
+        - pyenv global 3.7.1
+        - ./installers/install_python_deps.sh --no-default --dev
       script:
         - docker build . -t felicia -f docker/Dockerfile.ubuntu
         - python3 tools/docker_exec.py bazel build //felicia/...
@@ -22,7 +23,8 @@ matrix:
       sudo: required
       services: docker
       install:
-        - sudo apt-get install -y python3
+        - pyenv global 3.7.1
+        - ./installers/install_python_deps.sh --no-default --dev
       script:
         - docker build . -t felicia -f docker/Dockerfile.ubuntu
         - python3 tools/docker_exec.py bazel build -c dbg //felicia/...
@@ -34,9 +36,12 @@ matrix:
       sudo: required
       compiler: clang
       env:
-        - PYTHON_BIN_PATH=/usr/local/bin/python3
         - PYTHON2_BIN_PATH=/usr/local/bin/python
+        - PATH="/Users/travis/.pyenv:$PATH"
+      before_install:
+        - eval "$(pyenv init -)"
       install:
+        - pyenv install 3.7.1 && pyenv global 3.7.1
         - ./installers/install_bazel.sh
         - ./installers/install_nodejs.sh && nvm alias default v10.15.3 && nvm use default
         - ./installers/install_python_deps.sh --user
@@ -54,7 +59,7 @@ matrix:
         - PYTHON2_BIN_PATH=/c/ProgramData/chocolatey/bin/python.exe
         - PATH="$PATH:/c/Python3:/c/Python3/Scripts:/c/Program Files/nodejs:/c/Users/travis/AppData/Roaming/npm"
       install:
-        - choco install python3 --params "/InstallDir:C:\Python3"
+        - choco install python3 --version 3.7.1 --params "/InstallDir:C:\Python3"
         - ./installers/install_python_deps.sh --user
         - choco install bazel --version 0.25.0
         - choco install nodejs.install --version 10.15.3
