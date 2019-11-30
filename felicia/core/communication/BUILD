@@ -43,6 +43,7 @@ fel_cc_test(
     size = "small",
     srcs = [
         "pubsub_unittest.cc",
+        "service_unittest.cc",
     ],
     deps = [
         ":communication",

@@ -17,6 +17,7 @@ class FEL_EXPORT ServerInterface {
   ServerInterface();
   virtual ~ServerInterface();
 
+  const ServiceInfo& service_info() const;
   void set_service_info(const ServiceInfo& service_info);
 
   virtual Status Start() = 0;

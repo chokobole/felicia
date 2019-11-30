@@ -19,7 +19,7 @@ void PyServiceClient::RequestRegister(const NodeInfo& node_info,
                                       const std::string& service,
                                       py::function py_on_connect_callback,
                                       py::function py_callback) {
-  OnConnectCallback on_connect_callback;
+  OnServiceConnectCallback on_connect_callback;
   StatusOnceCallback callback;
   if (!py_on_connect_callback.is_none()) {
     on_connect_callback = base::BindRepeating(

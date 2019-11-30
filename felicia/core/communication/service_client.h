@@ -15,15 +15,17 @@
 
 #include "felicia/core/communication/register_state.h"
 #include "felicia/core/master/master_proxy.h"
+#include "felicia/core/rpc/client.h"
 #include "felicia/core/thread/main_thread.h"
 
 namespace felicia {
 
+using OnServiceConnectCallback =
+    base::RepeatingCallback<void(ServiceInfo::Status)>;
+
 template <typename ClientTy>
 class ServiceClient {
  public:
-  using OnConnectCallback = base::RepeatingCallback<void(ServiceInfo::Status)>;
-
   ServiceClient() = default;
 
   ALWAYS_INLINE bool IsRegistering() const {
@@ -42,15 +44,23 @@ class ServiceClient {
   ClientTy* operator->() { return &client_; }
 
   void RequestRegister(const NodeInfo& node_info, const std::string& service,
-                       OnConnectCallback on_connect_callback,
+                       OnServiceConnectCallback on_connect_callback,
                        StatusOnceCallback callback = StatusOnceCallback());
 
   void RequestUnregister(const NodeInfo& node_info, const std::string& service,
                          StatusOnceCallback callback = StatusOnceCallback());
 
+ private:
+  friend class ServiceTest;
+
+  void RequestRegisterForTesting(const std::string& service,
+                                 OnServiceConnectCallback on_connect_callback);
+  void RequestUnregisterForTesting(const std::string& service);
+
  protected:
-  void OnRegisterServiceClientAsync(OnConnectCallback on_connect_callback,
-                                    StatusOnceCallback callback, Status s);
+  void OnRegisterServiceClientAsync(
+      OnServiceConnectCallback on_connect_callback, StatusOnceCallback callback,
+      Status s);
 
   void OnUnregisterServiceClientAsync(StatusOnceCallback callback, Status s);
 
@@ -59,7 +69,7 @@ class ServiceClient {
   void OnConnect(Status s);
 
   ClientTy client_;
-  OnConnectCallback on_connect_callback_;
+  OnServiceConnectCallback on_connect_callback_;
 
   communication::RegisterState register_state_;
 };
@@ -67,7 +77,7 @@ class ServiceClient {
 template <typename ClientTy>
 void ServiceClient<ClientTy>::RequestRegister(
     const NodeInfo& node_info, const std::string& service,
-    OnConnectCallback on_connect_callback, StatusOnceCallback callback) {
+    OnServiceConnectCallback on_connect_callback, StatusOnceCallback callback) {
   MainThread& main_thread = MainThread::GetInstance();
   if (!main_thread.IsBoundToCurrentThread()) {
     main_thread.PostTask(
@@ -134,8 +144,53 @@ void ServiceClient<ClientTy>::RequestUnregister(const NodeInfo& node_info,
 }
 
 template <typename ClientTy>
+void ServiceClient<ClientTy>::RequestRegisterForTesting(
+    const std::string& service, OnServiceConnectCallback on_connect_callback) {
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
+        FROM_HERE,
+        base::BindOnce(&ServiceClient<ClientTy>::RequestRegisterForTesting,
+                       base::Unretained(this), service, on_connect_callback));
+    return;
+  }
+
+  if (!IsUnregistered()) {
+    LOG(ERROR) << register_state_.InvalidStateError();
+    return;
+  }
+
+  register_state_.ToRegistering(FROM_HERE);
+
+  OnRegisterServiceClientAsync(on_connect_callback, StatusOnceCallback(),
+                               Status::OK());
+}
+
+template <typename ClientTy>
+void ServiceClient<ClientTy>::RequestUnregisterForTesting(
+    const std::string& service) {
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
+        FROM_HERE,
+        base::BindOnce(&ServiceClient<ClientTy>::RequestUnregisterForTesting,
+                       base::Unretained(this), service));
+    return;
+  }
+
+  if (!IsRegistered()) {
+    LOG(ERROR) << register_state_.InvalidStateError();
+    return;
+  }
+
+  register_state_.ToUnregistering(FROM_HERE);
+
+  OnUnregisterServiceClientAsync(StatusOnceCallback(), Status::OK());
+}
+
+template <typename ClientTy>
 void ServiceClient<ClientTy>::OnRegisterServiceClientAsync(
-    OnConnectCallback on_connect_callback, StatusOnceCallback callback,
+    OnServiceConnectCallback on_connect_callback, StatusOnceCallback callback,
     Status s) {
   if (!IsRegistering()) {
     internal::LogOrCallback(std::move(callback),
@@ -172,6 +227,8 @@ void ServiceClient<ClientTy>::OnUnregisterServiceClientAsync(
 
   register_state_.ToUnregistered(FROM_HERE);
   internal::LogOrCallback(std::move(callback), std::move(s));
+
+  client_.Shutdown();
 }
 
 template <typename ClientTy>

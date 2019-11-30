@@ -63,6 +63,17 @@ fel_proto_library_cc(
     visibility = ["//visibility:private"],
 )
 
+fel_proto_library_cc(
+    name = "simple_service_proto",
+    testonly = True,
+    srcs = [
+        "test/simple_service.proto",
+    ],
+    has_services = True,
+    cc_grpc_version = True,
+    visibility = ["//visibility:private"],
+)
+
 fel_cc_library(
     name = "message_test_util",
     testonly = True,
@@ -72,6 +83,7 @@ fel_cc_library(
     deps = [
         ":message",
         ":simple_message_proto_cc",
+        ":simple_service_proto_cc",
     ],
 )
 

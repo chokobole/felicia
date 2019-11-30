@@ -17,6 +17,7 @@ class FEL_EXPORT ClientInterface {
   ClientInterface();
   virtual ~ClientInterface();
 
+  const ServiceInfo& service_info() const;
   void set_service_info(const ServiceInfo& service_info);
 
   virtual void Connect(const IPEndPoint& ip_endpoint,

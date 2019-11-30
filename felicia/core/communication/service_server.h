@@ -13,10 +13,10 @@
 
 #include "felicia/core/communication/register_state.h"
 #include "felicia/core/master/master_proxy.h"
-#include "felicia/core/message/ros_protocol.h"
 #include "felicia/core/rpc/grpc_util.h"
 #include "felicia/core/rpc/ros_util.h"
 #include "felicia/core/rpc/server.h"
+#include "felicia/core/rpc/service.h"
 #include "felicia/core/thread/main_thread.h"
 
 namespace felicia {
@@ -81,6 +81,12 @@ class ServiceServer {
 
   void RequestUnregister(const NodeInfo& node_info, const std::string& service,
                          StatusOnceCallback callback = StatusOnceCallback());
+
+ private:
+  friend class ServiceTest;
+
+  void RequestRegisterForTesting(const std::string& service);
+  void RequestUnregisterForTesting(const std::string& service);
 
  protected:
   void OnRegisterServiceServerAsync(StatusOnceCallback callback, Status s);
@@ -167,6 +173,62 @@ void ServiceServer<ServiceTy, ServerTy>::RequestUnregister(
       base::BindOnce(
           &ServiceServer<ServiceTy, ServerTy>::OnUnegisterServiceServerAsync,
           base::Unretained(this), std::move(callback)));
+}
+
+template <typename ServiceTy, typename ServerTy>
+void ServiceServer<ServiceTy, ServerTy>::RequestRegisterForTesting(
+    const std::string& service) {
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &ServiceServer<ServiceTy, ServerTy>::RequestRegisterForTesting,
+            base::Unretained(this), service));
+    return;
+  }
+
+  if (!IsUnregistered()) {
+    LOG(ERROR) << register_state_.InvalidStateError();
+    return;
+  }
+
+  register_state_.ToRegistering(FROM_HERE);
+
+  server_.Start();
+  server_.Run();
+
+  ServiceInfo service_info;
+  service_info.set_service(service);
+  service_info.set_type_name(server_.GetServiceTypeName());
+  ChannelSource* channel_source = service_info.mutable_service_source();
+  *channel_source->add_channel_defs() = server_.channel_def();
+  server_.set_service_info(service_info);
+
+  OnRegisterServiceServerAsync(StatusOnceCallback(), Status::OK());
+}
+
+template <typename ServiceTy, typename ServerTy>
+void ServiceServer<ServiceTy, ServerTy>::RequestUnregisterForTesting(
+    const std::string& service) {
+  MainThread& main_thread = MainThread::GetInstance();
+  if (!main_thread.IsBoundToCurrentThread()) {
+    main_thread.PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &ServiceServer<ServiceTy, ServerTy>::RequestUnregisterForTesting,
+            base::Unretained(this), service));
+    return;
+  }
+
+  if (!IsRegistered()) {
+    LOG(ERROR) << register_state_.InvalidStateError();
+    return;
+  }
+
+  register_state_.ToUnregistering(FROM_HERE);
+
+  OnUnegisterServiceServerAsync(StatusOnceCallback(), Status::OK());
 }
 
 template <typename ServiceTy, typename ServerTy>

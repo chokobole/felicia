@@ -19,8 +19,6 @@ namespace rpc {
 
 class PyClientInterface : public ClientInterface {
  public:
-  const ServiceInfo& service_info() const { return service_info_; }
-
   void Connect(const IPEndPoint& ip_endpoint, StatusOnceCallback callback) {
     NOTREACHED();
   }

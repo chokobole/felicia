@@ -91,6 +91,7 @@ void MainThread::Run() {
 
 void MainThread::RunBackground() {
   if (!g_on_background) return;
+  if (thread_->IsRunning()) return;
   thread_->StartWithOptions(
       base::Thread::Options{base::MessageLoop::TYPE_IO, 0});
 }

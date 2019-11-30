@@ -10,6 +10,10 @@ namespace rpc {
 ClientInterface::ClientInterface() = default;
 ClientInterface::~ClientInterface() = default;
 
+const ServiceInfo& ClientInterface::service_info() const {
+  return service_info_;
+}
+
 void ClientInterface::set_service_info(const ServiceInfo& service_info) {
   service_info_ = service_info;
 }

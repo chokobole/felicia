@@ -46,6 +46,7 @@ std::string PyServerBridge::GetServiceTypeName() const {
 void AddServer(py::module& m) {
   py::class_<ServerInterface, PyServer>(m, "_Server")
       .def(py::init<>())
+      .def("service_info", &ServerInterface::service_info)
       .def("ConfigureServerAddress", &ServerInterface::ConfigureServerAddress);
 }
 
