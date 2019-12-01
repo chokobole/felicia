@@ -29,7 +29,7 @@ def _npm_install_node_addon_api_impl(repository_ctx):
 
     result = repository_ctx.execute(cmd)
     if result.return_code != 0:
-        _fail("Failed to node-gyp configure: %s." % result.stdout)
+        _fail("Failed to node-gyp configure: %s." % result.stderr)
 
     cmd = [bash, "-c", "node --version"]
     result = repository_ctx.execute(cmd)

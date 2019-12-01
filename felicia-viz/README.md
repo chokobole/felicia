@@ -33,7 +33,7 @@ Then you should run command below. Please refer to section 9 in [bazel tutorial]
 And if you try again, you will find that it succeds.
 
 ```bash
-bazel build --config wasm //felicia/wasm/...
+bazel build --config wasm //felicia/wasm:felicia_wasm
 ```
 
 Finally to make use of this build result, you have to run this command below.
@@ -49,7 +49,7 @@ To use felicia-viz, you need a `felicia_js.node` which is built from target `//f
 **Please try not with `-c dbg`, because `node.lib` is provided with only release version.**
 
 ```bash
-bazel build --config win_no_grpc //felicia/js:felicia_js_node
+bazel build --define win_no_grpc=true --define framework_shared_object=true //felicia/js:felicia_js_node
 ```
 
 And then move the `felicia_js.node` to the root directory. This will be used from the backend side.
@@ -58,7 +58,7 @@ And then move the `felicia_js.node` to the root directory. This will be used fro
 mv bazel-bin/felicia/js/felicia_js.node .
 ```
 
-Lastly you should build again whatever you want, but just removing `--config win_no_grpc` and it's done.
+Lastly you should build again whatever you want, but just removing `--define win_no_grpc=true` and it's done.
 
 ## How to run
 

@@ -36,7 +36,7 @@ function install_default_dep() {
 }
 
 function install_dev_deps() {
-  install_python_dep docker
+  install_python_dep docker gitpython
 }
 
 function install_ros_serialization_dep() {

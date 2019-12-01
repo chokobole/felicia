@@ -2,7 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-load("//bazel:felicia.bzl", "if_not_windows")
+load(
+    "//bazel:felicia.bzl",
+    "if_not_windows",
+    "if_not_win_no_grpc",
+    "if_win_no_grpc",
+)
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
@@ -49,6 +54,9 @@ fel_cc_library(
         "master_notification_watcher.h",
         "master_proxy.h",
     ],
+    defines = if_win_no_grpc([
+        "FEL_WIN_NO_CC_MASTER_CLIENT",
+    ]),
     deps = [
         ":bytes_constants",
         ":heart_beat_signaller",
@@ -56,13 +64,10 @@ fel_cc_library(
         "//felicia/core/channel",
         "//felicia/core/node:node_lifecycle",
         "//felicia/core/thread:main_thread",
-    ] + select({
-        "//felicia:win_no_grpc": [],
-        "//conditions:default": [
-            "//felicia/core/master/rpc:master_client",
-            "//felicia/core/master/rpc:master_server_info",
-        ],
-    }),
+    ] + if_not_win_no_grpc([
+        "//felicia/core/master/rpc:master_client",
+        "//felicia/core/master/rpc:master_server_info",
+    ]),
 )
 
 fel_cc_native_library(

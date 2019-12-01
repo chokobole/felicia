@@ -14,10 +14,10 @@ class JsMasterProxy : public Napi::ObjectWrap<JsMasterProxy> {
   static void Init(Napi::Env env, Napi::Object exports);
   JsMasterProxy(const Napi::CallbackInfo& info);
 
-#if defined(FEL_WIN_NO_GRPC)
+#if defined(FEL_WIN_NO_CC_MASTER_CLIENT)
   Napi::Value StartMasterClient(const Napi::CallbackInfo& info);
   Napi::Value is_client_info_set(const Napi::CallbackInfo& info);
-#endif
+#endif  // defined(FEL_WIN_NO_CC_MASTER_CLIENT)
 
   Napi::Value Start(const Napi::CallbackInfo& info);
   Napi::Value Stop(const Napi::CallbackInfo& info);

@@ -18,10 +18,6 @@ build:apple_debug --compilation_mode dbg
 # with --compilation_mode=dbg instead of --config=apple_debug.
 build:apple_debug --copt="-DAPPLE_DEBUG"
 
-build:win_no_grpc --define win_no_grpc=true
-build:win_no_grpc --copt="/DFEL_WIN_NO_GRPC"
-build:win_no_grpc --copt="/DFEL_NO_SSL"
-
 build:wasm --crosstool_top=//toolchain:emscripten
 build:wasm --cpu=wasm
 build:wasm --host_crosstool_top=@bazel_tools//tools/cpp:toolchain

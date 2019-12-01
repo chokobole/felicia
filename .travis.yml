@@ -5,35 +5,33 @@ branches:
 language: cpp
 matrix:
   include:
-    - os: linux # Release
-      dist: xenial
-      sudo: required
-      services: docker
+    - os: linux  # Debug
+      dist: bionic
       install:
-        - pyenv global 3.7.1
-        - ./installers/install_python_deps.sh --no-default --dev
+        - pyenv global 3.7.1 2.7.15
+        - ./installers/install_bazel.sh
+        - ./installers/install_nodejs.sh && nvm alias default v10.15.3 && nvm use default
+        - ./installers/install_python_deps.sh --user --dev
       script:
-        - docker build . -t felicia -f docker/Dockerfile.ubuntu.xenial
-        - python3 tools/docker_exec.py bazel build //felicia/...
-        - python3 tools/docker_exec.py bazel test --test_tag_filters -benchmark //felicia/...
+        - bazel test -c dbg --test_tag_filters -benchmark //felicia/...
       after_failure:
         - find bazel-out/ -name "test.log" | xargs cat
-    - os: linux # Debug
-      dist: xenial
-      sudo: required
-      services: docker
+    - os: linux  # Release
+      dist: bionic
       install:
-        - pyenv global 3.7.1
-        - ./installers/install_python_deps.sh --no-default --dev
+        - pyenv global 3.7.1 2.7.15
+        - ./installers/install_bazel.sh
+        - ./installers/install_nodejs.sh && nvm alias default v10.15.3 && nvm use default
+        - ./installers/install_python_deps.sh --user --dev
       script:
-        - docker build . -t felicia -f docker/Dockerfile.ubuntu.xenial
-        - python3 tools/docker_exec.py bazel build -c dbg //felicia/...
-        - python3 tools/docker_exec.py bazel build -c dbg --test_tag_filters -benchmark //felicia/...
+        - bazel test --test_tag_filters -benchmark //felicia/...
+        - python tools/run_felicia_example.py
+        - bazel build --define framework_shared_object=true //felicia/python:felicia_py.so
+        - bazel build --define framework_shared_object=true //felicia/js:felicia_js_node
       after_failure:
         - find bazel-out/ -name "test.log" | xargs cat
-    - os: osx
+    - os: osx  # Debug
       osx_image: xcode10.2
-      sudo: required
       compiler: clang
       env:
         - PYTHON2_BIN_PATH=/usr/local/bin/python
@@ -44,15 +42,34 @@ matrix:
         - pyenv install 3.7.1 && pyenv global 3.7.1
         - ./installers/install_bazel.sh
         - ./installers/install_nodejs.sh && nvm alias default v10.15.3 && nvm use default
-        - ./installers/install_python_deps.sh --user
+        - ./installers/install_python_deps.sh --user --dev
+        - echo 'build --cpu darwin_x86_64' > .bazelrc.user
       script:
-        - bazel build --cpu darwin_x86_64 //felicia/...
-        - bazel test --cpu darwin_x86_64 --test_tag_filters -benchmark //felicia/...
-        - bazel build -c dbg --cpu darwin_x86_64 //felicia/...
-        - bazel test -c dbg --cpu darwin_x86_64 --test_tag_filters -benchmark //felicia/...
+        - bazel test -c dbg --test_tag_filters -benchmark //felicia/...
       after_failure:
         - find bazel-out/ -name "test.log" | xargs cat
-    - os: windows
+    - os: osx  # Release
+      osx_image: xcode10.2
+      compiler: clang
+      env:
+        - PYTHON2_BIN_PATH=/usr/local/bin/python
+        - PATH="/Users/travis/.pyenv:$PATH"
+      before_install:
+        - eval "$(pyenv init -)"
+      install:
+        - pyenv install 3.7.1 && pyenv global 3.7.1
+        - ./installers/install_bazel.sh
+        - ./installers/install_nodejs.sh && nvm alias default v10.15.3 && nvm use default
+        - ./installers/install_python_deps.sh --user --dev
+        - echo 'build --cpu darwin_x86_64' > .bazelrc.user
+      script:
+        - bazel test --test_tag_filters -benchmark //felicia/...
+        - python tools/run_felicia_example.py
+        - bazel build --define framework_shared_object=true //felicia/python:felicia_py.so
+        - bazel build --define framework_shared_object=true //felicia/js:felicia_js_node
+      after_failure:
+        - find bazel-out/ -name "test.log" | xargs cat
+    - os: windows  # Debug
       env:
         - USE_CLANG_CL=1
         - PYTHON_BIN_PATH=/c/Python3/python.exe
@@ -60,16 +77,29 @@ matrix:
         - PATH="$PATH:/c/Python3:/c/Python3/Scripts:/c/Program Files/nodejs:/c/Users/travis/AppData/Roaming/npm"
       install:
         - choco install python3 --version 3.7.1 --params "/InstallDir:C:\Python3"
-        - ./installers/install_python_deps.sh --user
+        - ./installers/install_python_deps.sh --user --dev
         - choco install bazel --version 0.25.0
         - choco install nodejs.install --version 10.15.3
       script:
-        # Has an error executing //felicia:felicia_hdrs and //felicia:felicia.dll
-        - bazel build --build_tag_filters -manual //felicia/...
-        - bazel test --test_tag_filters -benchmark,-manual //felicia/...
-        - bazel build --build_tag_filters -manual -c dbg //felicia/...
         - bazel test -c dbg --test_tag_filters -benchmark,-manual //felicia/...
-        - bazel build --config win_no_grpc //felicia/js:felicia_js_node
+      after_failure:
+        - find bazel-out/ -name "test.log" | xargs cat
+    - os: windows  # Release
+      env:
+        - USE_CLANG_CL=1
+        - PYTHON_BIN_PATH=/c/Python3/python.exe
+        - PYTHON2_BIN_PATH=/c/ProgramData/chocolatey/bin/python.exe
+        - PATH="$PATH:/c/Python3:/c/Python3/Scripts:/c/Program Files/nodejs:/c/Users/travis/AppData/Roaming/npm"
+      install:
+        - choco install python3 --version 3.7.1 --params "/InstallDir:C:\Python3"
+        - ./installers/install_python_deps.sh --user --dev
+        - choco install bazel --version 0.25.0
+        - choco install nodejs.install --version 10.15.3
+      script:
+        - bazel test --test_tag_filters -benchmark,-manual //felicia/...
+        - $PYTHON_BIN_PATH tools/run_felicia_example.py
+        - bazel build --define framework_shared_object=true //felicia/python:felicia_py_pyd
+        - bazel build --define win_no_grpc=true --define framework_shared_object=true //felicia/js:felicia_js_node
       after_failure:
         - find bazel-out/ -name "test.log" | xargs cat
 

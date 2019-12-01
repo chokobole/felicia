@@ -9,8 +9,8 @@ package(default_visibility = ["//felicia:internal"])
 
 fel_cc_library(
     name = "master_client",
-    srcs = ["master_client.cc"],
-    hdrs = ["master_client.h"],
+    srcs = if_win_no_grpc(["master_client.cc"]),
+    hdrs = if_win_no_grpc(["master_client.h"]),
     deps = if_win_no_grpc([
         "//felicia/js/lib",
         "//felicia/core/master:master_client_interface",

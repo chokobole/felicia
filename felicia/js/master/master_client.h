@@ -5,8 +5,6 @@
 #ifndef FELICIA_JS_MASTER_MASTER_CLIENT_H_
 #define FELICIA_JS_MASTER_MASTER_CLIENT_H_
 
-#if defined(FEL_WIN_NO_GRPC)
-
 #include "napi.h"
 
 #include "third_party/chromium/base/macros.h"
@@ -37,7 +35,5 @@ class MasterClient : public MasterClientInterface {
 };
 
 }  // namespace felicia
-
-#endif  // defined(FEL_WIN_NO_GRPC)
 
 #endif  // FELICIA_JS_MASTER_MASTER_CLIENT_H_

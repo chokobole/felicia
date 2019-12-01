@@ -2,7 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-load("//bazel:felicia.bzl", "if_not_windows")
+load(
+    "//bazel:felicia.bzl",
+    "if_not_windows",
+    "if_win_no_grpc",
+)
 load(
     "//bazel:felicia_cc.bzl",
     "fel_cc_library",
@@ -73,6 +77,9 @@ fel_cc_library(
         "unix_domain_client_socket.h",
         "unix_domain_server_socket.h",
         "unix_domain_socket.h",
+    ]),
+    defines = if_win_no_grpc([
+        "FEL_NO_SSL",
     ]),
     deps = [
         "//felicia/core/channel:channel_impl",
