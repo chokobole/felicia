@@ -1016,6 +1016,10 @@
             "status": {
               "type": "Status",
               "id": 4
+            },
+            "rosNodeName": {
+              "type": "string",
+              "id": 5
             }
           },
           "nested": {

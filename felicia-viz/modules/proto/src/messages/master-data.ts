@@ -60,6 +60,7 @@ export interface ServiceInfoProtobuf {
   typeName: string;
   serviceSource: ChannelSourceProtobuf;
   status: ServiceInfoStatusProtobuf;
+  rosNodeName: string;
 }
 
 export interface MasterNotification {

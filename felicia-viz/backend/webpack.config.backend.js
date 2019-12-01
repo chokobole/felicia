@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 const { resolve } = require('path');
-const { platform } = require('os');
 
 const nodeExternals = require('webpack-node-externals');
 const StartServerPlugin = require('start-server-webpack-plugin');
@@ -32,12 +31,7 @@ module.exports = env => {
   const config = Object.assign(commonConfig(env), CONFIG);
 
   // Should move under development once published
-  let feliciaJsNodePath;
-  if (platform() === 'win32') {
-    feliciaJsNodePath = resolve(ROOT_PATH, '../felicia_js.node');
-  } else {
-    feliciaJsNodePath = resolve(ROOT_PATH, '../bazel-bin/felicia/js/felicia_js.node');
-  }
+  let feliciaJsNodePath = resolve(ROOT_PATH, '../felicia_js.node');
   config.resolve.alias = Object.assign(config.resolve.alias, {
     'felicia_js.node': feliciaJsNodePath,
   });

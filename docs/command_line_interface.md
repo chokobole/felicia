@@ -1,12 +1,6 @@
 # Command Line Interface
 
-In this example, you can learn how to use cli so you can query whatever you want from server.
-
-On one shell, let's run server.
-
-```bash
-bazel run //felicia/core/master/rpc/master_server_main
-```
+On one shell, you need to run [master_server_main](/docs/master_server_main.md).
 
 On the other shell, now you should build the cli.
 
@@ -14,7 +8,7 @@ On the other shell, now you should build the cli.
 bazel build //felicia/core/master/tool/master_client_cli
 ```
 
-And then you can use cli tool! Here belows are commands supported. You can type for example
+And then you can use cli tool! Here belows are commands supported. For example, if you want to know what nodes are registered to the master, you can type like below.
 
 ```bash
 bazel-bin/felicia/core/master/tool/master_client_cli node ls -a
