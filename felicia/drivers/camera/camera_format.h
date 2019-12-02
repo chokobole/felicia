@@ -16,6 +16,13 @@
 typedef uint32_t FourCharCode;
 #endif
 
+#if defined(HAS_OPENCV)
+#include <opencv2/core.hpp>
+#endif  // defined(HAS_OPENCV)
+#if defined(HAS_ROS)
+#include <sensor_msgs/image_encodings.h>
+#endif  // defined(HAS_ROS)
+
 #include "felicia/core/lib/base/export.h"
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/lib/unit/geometry/size.h"
@@ -66,6 +73,16 @@ class FEL_EXPORT CameraFormat {
       const FourCharCode avf_pixel_format);
 #endif
   libyuv::FourCC ToLibyuvPixelFormat() const;
+
+#if defined(HAS_OPENCV)
+  int ToCvType() const;
+#endif  // defined(HAS_OPENCV)
+#if defined(HAS_ROS)
+  // Return appropriate string value defined in "sensor_msgs/image_encodings.h",
+  // return empty string if failed to convert.
+  std::string ToRosImageEncoding() const;
+  static PixelFormat FromRosImageEncoding(const std::string& ros_encoding);
+#endif  // defined(HAS_ROS)
 
   CameraFormatMessage ToCameraFormatMessage() const;
   Status FromCameraFormatMessage(const CameraFormatMessage& message);

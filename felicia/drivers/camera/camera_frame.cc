@@ -7,6 +7,7 @@
 #include "libyuv.h"
 #include "third_party/chromium/base/logging.h"
 
+#include "felicia/core/lib/unit/time_util.h"
 #include "felicia/drivers/camera/camera_frame_util.h"
 
 namespace felicia {
@@ -109,20 +110,8 @@ Status CameraFrame::FromCameraFrameMessage(CameraFrameMessage&& message) {
 }
 
 #if defined(HAS_OPENCV)
-namespace {
-
-int ToCvType(const CameraFrame* camera_frame) {
-  if (!camera_frame->camera_format().HasFixedSizedChannelPixelFormat())
-    return -1;
-  int channel =
-      camera_frame->length() / (camera_frame->width() * camera_frame->height());
-  return CV_MAKETYPE(CV_8U, channel);
-}
-
-}  // namespace
-
 bool CameraFrame::ToCvMat(cv::Mat* out, bool copy) {
-  int type = ToCvType(this);
+  int type = camera_format_.ToCvType();
   if (type == -1) return false;
 
   cv::Mat mat(camera_format_.height(), camera_format_.width(), type,
@@ -141,7 +130,30 @@ Status CameraFrame::FromCvMat(cv::Mat mat, const CameraFormat& camera_format,
   *this = CameraFrame{Data{mat.data, length}, camera_format, timestamp};
   return Status::OK();
 }
-#endif
+#endif  // defined(HAS_OPENCV)
+
+#if defined(HAS_ROS)
+bool CameraFrame::ToRosImage(sensor_msgs::Image* image) const {
+  std::string ros_encoding = camera_format_.ToRosImageEncoding();
+  if (ros_encoding.length() == 0) return false;
+  image->encoding = ros_encoding;
+  image->width = camera_format_.width();
+  image->height = camera_format_.height();
+  image->step = length() / height();
+  image->data.resize(length());
+  memcpy(&(image->data[0]), data_.cast<const char*>(), length());
+  image->header.stamp = ToRosTime(timestamp_);
+  return true;
+}
+
+Status CameraFrame::FromRosImage(const sensor_msgs::Image& image,
+                                 const CameraFormat& camera_format) {
+  size_t length = image.step * image.height;
+  *this = CameraFrame{Data{image.data.data(), length}, camera_format,
+                      FromRosTime(image.header.stamp)};
+  return Status::OK();
+}
+#endif  // defined(HAS_ROS)
 
 namespace {
 

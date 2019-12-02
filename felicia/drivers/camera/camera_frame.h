@@ -9,7 +9,10 @@
 
 #if defined(HAS_OPENCV)
 #include <opencv2/core.hpp>
-#endif
+#endif  // defined(HAS_OPENCV)
+#if defined(HAS_ROS)
+#include <sensor_msgs/Image.h>
+#endif  // defined(HAS_ROS)
 
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/optional.h"
@@ -65,7 +68,14 @@ class FEL_EXPORT CameraFrame {
 
   Status FromCvMat(cv::Mat mat, const CameraFormat& camera_format,
                    base::TimeDelta timestamp);
-#endif
+#endif  // defined(HAS_OPENCV)
+
+#if defined(HAS_ROS)
+  bool ToRosImage(sensor_msgs::Image* image) const;
+
+  Status FromRosImage(const sensor_msgs::Image& image,
+                      const CameraFormat& camera_format);
+#endif  // defined(HAS_ROS)
 
  protected:
   Data data_;

@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-load("//bazel:felicia.bzl", "if_has_ros")
 load(
     "//bazel:felicia_cc.bzl",
     "define",
@@ -49,9 +48,7 @@ fel_cc_library(
     deps = [
         "//felicia/core/lib",
         "//felicia/core/util:command_line_interface",
-    ] + if_has_ros([
-        "//external:ros",
-    ]),
+    ],
 )
 
 fel_proto_library_cc(

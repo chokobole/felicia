@@ -135,6 +135,59 @@ const std::string& CameraFormat::PixelFormatToString(PixelFormat pixel_format) {
   return PixelFormat_Name(pixel_format);
 }
 
+#if defined(HAS_OPENCV)
+int CameraFormat::ToCvType() const {
+  if (!HasFixedSizedChannelPixelFormat()) return -1;
+  int channel =
+      AllocationSize() / (camera_frame->width() * camera_frame->height());
+  return CV_MAKETYPE(CV_8U, channel);
+}
+#endif  // defined(HAS_OPENCV)
+
+#if defined(HAS_ROS)
+std::string CameraFormat::ToRosImageEncoding() const {
+  switch (pixel_format_) {
+    case PIXEL_FORMAT_BGRA:
+      return sensor_msgs::image_encodings::BGRA8;
+    case PIXEL_FORMAT_BGR:
+      return sensor_msgs::image_encodings::BGR8;
+    case PIXEL_FORMAT_RGBA:
+      return sensor_msgs::image_encodings::RGBA8;
+    case PIXEL_FORMAT_RGB:
+      return sensor_msgs::image_encodings::RGB8;
+    case PIXEL_FORMAT_Y8:
+      return sensor_msgs::image_encodings::TYPE_8UC1;
+    case PIXEL_FORMAT_Y16:
+    case PIXEL_FORMAT_Z16:
+      return sensor_msgs::image_encodings::TYPE_16UC1;
+    default:
+      return base::EmptyString();
+  }
+}
+
+// static
+PixelFormat CameraFormat::FromRosImageEncoding(
+    const std::string& ros_encoding) {
+  if (ros_encoding == sensor_msgs::image_encodings::BGRA8) {
+    return PIXEL_FORMAT_BGRA;
+  } else if (ros_encoding == sensor_msgs::image_encodings::BGR8) {
+    return PIXEL_FORMAT_BGR;
+  } else if (ros_encoding == sensor_msgs::image_encodings::RGBA8) {
+    return PIXEL_FORMAT_RGBA;
+  } else if (ros_encoding == sensor_msgs::image_encodings::RGB8) {
+    return PIXEL_FORMAT_RGB;
+  } else if (ros_encoding == sensor_msgs::image_encodings::TYPE_8UC1) {
+    return PIXEL_FORMAT_Y8;
+  } else if (ros_encoding == sensor_msgs::image_encodings::TYPE_16UC1) {
+    return PIXEL_FORMAT_Y16;
+    // It is user's responsibility to regard format as Z16 or Y16.
+    return PIXEL_FORMAT_Y16;
+  } else {
+    return PIXEL_FORMAT_UNKNOWN;
+  }
+}
+#endif  // defined(HAS_ROS)
+
 CameraFormatMessage CameraFormat::ToCameraFormatMessage() const {
   CameraFormatMessage message;
   *message.mutable_size() = SizeiToSizeiMessage(size_);

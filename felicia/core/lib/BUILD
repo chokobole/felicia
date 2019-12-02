@@ -5,6 +5,7 @@
 load(
     "//bazel:felicia.bzl",
     "if_has_opencv",
+    "if_has_ros",
     "if_static",
 )
 load(
@@ -52,6 +53,7 @@ fel_cc_library(
         "unit/geometry/size.cc",
         "unit/geometry/vector.cc",
         "unit/length.cc",
+        "unit/time_util.cc",
         "unit/ui/color.cc",
     ],
     hdrs = [
@@ -84,6 +86,7 @@ fel_cc_library(
         "net/net_util.h",
         "strings/str_util.h",
         "synchronization/scoped_event_signaller.h",
+        "unit/bytes.h",
         "unit/geometry/native_matrix_reference.h",
         "unit/geometry/size.h",
         "unit/geometry/transform.h",
@@ -93,8 +96,8 @@ fel_cc_library(
         "unit/geometry/rect.h",
         "unit/geometry/rigid_body_transform.h",
         "unit/geometry/vector.h",
-        "unit/bytes.h",
         "unit/length.h",
+        "unit/time_util.h",
         "unit/ui/color.h",
         "unit/unit_helper.h",
     ] + [":felicia_env"],
@@ -108,6 +111,8 @@ fel_cc_library(
         "//external:yaml_cpp",
     ] + if_has_opencv([
         "//external:opencv",
+    ]) + if_has_ros([
+        "//external:ros",
     ]) + if_static(
         [
             "//felicia/core/protobuf:protos_all_cc",
