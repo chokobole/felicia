@@ -28,6 +28,7 @@ cc_library(
         "include/pybind11/stl.h",
         "include/pybind11/stl_bind.h",
     ],
+    defines = ["FEL_PY_BINDING"],
     includes = ["include"],
     visibility = ["//visibility:public"],
     deps = [

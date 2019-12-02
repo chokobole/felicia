@@ -5,6 +5,8 @@
 #ifndef FELICIA_PYTHON_COMMUNICATION_SERVICE_SERVER_PY_H_
 #define FELICIA_PYTHON_COMMUNICATION_SERVICE_SERVER_PY_H_
 
+#if defined(FEL_PY_BINDING)
+
 #include "pybind11/pybind11.h"
 
 #include "felicia/core/communication/service_server.h"
@@ -29,5 +31,7 @@ class PyServiceServer
 void AddServiceServer(py::module& m);
 
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)
 
 #endif  // FELICIA_PYTHON_COMMUNICATION_SERVICE_SERVER_PY_H_

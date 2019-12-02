@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+load("//bazel:felicia.bzl", "if_py_binding")
 load("//bazel:felicia_cc.bzl", "fel_cc_library")
 
 package(default_visibility = ["//felicia:internal"])
@@ -14,8 +15,8 @@ fel_cc_library(
     hdrs = [
         "message_util.h",
     ],
-    deps = [
+    deps = if_py_binding([
         "//external:pybind11",
         "//felicia/core/message",
-    ],
+    ]),
 )

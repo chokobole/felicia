@@ -106,7 +106,7 @@ bazel build --cpu darwin_x86_64 --define framework_shared_object=true //felicia:
 To generate a shared library, run the command like below. The output will be generated at `bazel-bin/felicia/python/felicia_py.pyd`.
 
 ```bash
-bazel build --define framework_shared_object=true //felicia/python:felicia_py_pyd
+bazel build --config py_binding //felicia/python:felicia_py_pyd
 ```
 
 #### Elsewhere
@@ -114,7 +114,7 @@ bazel build --define framework_shared_object=true //felicia/python:felicia_py_py
 To generate a shared library, run the command like below. The output will be generated at `bazel-bin/felicia/python/felicia_py.so`.
 
 ```bash
-bazel build --define framework_shared_object=true //felicia/python:felicia_py.so
+bazel build --config py_binding //felicia/python:felicia_py.so
 ```
 
 ### wasm

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(FEL_PY_BINDING)
+
 #include "felicia/python/drivers/camera_py.h"
 
 #include "pybind11/numpy.h"
@@ -212,3 +214,5 @@ void AddCamera(py::module& m) {
 
 }  // namespace drivers
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)

@@ -5,6 +5,8 @@
 #ifndef FELICIA_PYTHON_RPC_CLIENT_PY_H_
 #define FELICIA_PYTHON_RPC_CLIENT_PY_H_
 
+#if defined(FEL_PY_BINDING)
+
 #include "pybind11/functional.h"
 #include "pybind11/pybind11.h"
 
@@ -67,5 +69,7 @@ void AddClient(py::module& m);
 
 }  // namespace rpc
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)
 
 #endif  // FELICIA_PYTHON_RPC_CLIENT_PY_H_

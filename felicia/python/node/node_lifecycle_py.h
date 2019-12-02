@@ -5,6 +5,8 @@
 #ifndef FELICIA_PYTHON_NODE_NODE_LIFECYCLE_PY_H_
 #define FELICIA_PYTHON_NODE_NODE_LIFECYCLE_PY_H_
 
+#if defined(FEL_PY_BINDING)
+
 #include "pybind11/pybind11.h"
 
 #include "felicia/core/node/node_lifecycle.h"
@@ -40,5 +42,7 @@ class PyNodeLifecycle : public NodeLifecycle {
 void AddNodeLifecycle(py::module& m);
 
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)
 
 #endif  // FELICIA_PYTHON_NODE_NODE_LIFECYCLE_PY_H_

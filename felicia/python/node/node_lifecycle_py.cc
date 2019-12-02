@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(FEL_PY_BINDING)
+
 #include "felicia/python/node/node_lifecycle_py.h"
 
 #include "felicia/python/type_conversion/protobuf.h"
@@ -14,3 +16,5 @@ void AddNodeLifecycle(py::module& m) {
 }
 
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)

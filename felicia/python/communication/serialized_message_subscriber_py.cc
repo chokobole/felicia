@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(FEL_PY_BINDING)
+
 #include "felicia/python/communication/serialized_message_subscriber_py.h"
 
 #include "felicia/python/message/message_util.h"
@@ -161,3 +163,5 @@ void AddSerializedMessageSubscriber(py::module& m) {
 }
 
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)

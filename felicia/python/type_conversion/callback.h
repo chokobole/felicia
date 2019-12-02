@@ -5,6 +5,8 @@
 #ifndef FELICIA_PYTHON_TYPE_CONVERSION_CALLBACK_H_
 #define FELICIA_PYTHON_TYPE_CONVERSION_CALLBACK_H_
 
+#if defined(FEL_PY_BINDING)
+
 #include "pybind11/functional.h"
 #include "pybind11/pybind11.h"
 
@@ -27,5 +29,7 @@ class PyCallback<R(Args...)> {
 };
 
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)
 
 #endif  // FELICIA_PYTHON_TYPE_CONVERSION_CALLBACK_H_

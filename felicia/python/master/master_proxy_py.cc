@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(FEL_PY_BINDING)
+
 #include "felicia/python/master/master_proxy_py.h"
 
 #include "third_party/chromium/base/strings/stringprintf.h"
@@ -70,3 +72,5 @@ void AddMasterProxy(py::module& m) {
 }
 
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)

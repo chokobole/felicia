@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(FEL_PY_BINDING)
+
 #include "felicia/python/message/message_util.h"
 
 #include "felicia/core/lib/error/errors.h"
@@ -110,3 +112,5 @@ std::string GetMessageDefinitionFromPyObject(const py::object& message_type,
 }
 
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)

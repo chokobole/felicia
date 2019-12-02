@@ -5,6 +5,8 @@
 #ifndef FELICIA_PYTHON_TYPE_CONVERSION_CALLBACK_HOLDER_H_
 #define FELICIA_PYTHON_TYPE_CONVERSION_CALLBACK_HOLDER_H_
 
+#if defined(FEL_PY_BINDING)
+
 #include "pybind11/functional.h"
 #include "pybind11/pybind11.h"
 
@@ -62,5 +64,7 @@ std::function<R(Args...)> MakeLambdaFunc(
 }
 
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)
 
 #endif  // FELICIA_PYTHON_TYPE_CONVERSION_CALLBACK_HOLDER_H_

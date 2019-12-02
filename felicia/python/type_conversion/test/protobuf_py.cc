@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(FEL_PY_BINDING)
+
 #include "pybind11/pybind11.h"
 
 #include "felicia/python/type_conversion/protobuf.h"
@@ -64,3 +66,5 @@ Test2 test2(const Test2& test2) {
 PYBIND11_MODULE(protobuf_py, m) { m.def("test", &test).def("test2", &test2); }
 
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)

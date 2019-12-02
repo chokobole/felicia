@@ -226,6 +226,14 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
+config_setting(
+    name = "py_binding",
+    define_values = {
+        "py_binding": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
 package_group(
     name = "internal",
     packages = [

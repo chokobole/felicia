@@ -5,6 +5,8 @@
 #ifndef FELICIA_PYTHON_COMMAND_LINE_INTERFACE_COMMAND_LINE_INTERFACE_PY_H_
 #define FELICIA_PYTHON_COMMAND_LINE_INTERFACE_COMMAND_LINE_INTERFACE_PY_H_
 
+#if defined(FEL_PY_BINDING)
+
 #include "pybind11/pybind11.h"
 
 namespace py = pybind11;
@@ -14,5 +16,7 @@ namespace felicia {
 void AddCommandLineInterface(py::module& m);
 
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)
 
 #endif  // FELICIA_PYTHON_COMMAND_LINE_INTERFACE_COMMAND_LINE_INTERFACE_PY_H_

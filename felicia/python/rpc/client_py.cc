@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(FEL_PY_BINDING)
+
 #include "felicia/python/rpc/client_py.h"
 
 #include "felicia/python/type_conversion/callback.h"
@@ -46,3 +48,5 @@ void AddClient(py::module& m) {
 
 }  // namespace rpc
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)

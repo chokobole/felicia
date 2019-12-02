@@ -5,6 +5,8 @@
 #ifndef FELICIA_PYTHON_COMMUNICATION_SERIALIZED_MESSAGE_PUBLISHER_PY_H_
 #define FELICIA_PYTHON_COMMUNICATION_SERIALIZED_MESSAGE_PUBLISHER_PY_H_
 
+#if defined(FEL_PY_BINDING)
+
 #include "pybind11/pybind11.h"
 
 #include "felicia/core/communication/serialized_message_publisher.h"
@@ -34,5 +36,7 @@ class PySerializedMessagePublisher : public SerializedMessagePublisher {
 void AddSerializedMessagePublisher(py::module& m);
 
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)
 
 #endif  // FELICIA_PYTHON_COMMUNICATION_SERIALIZED_MESSAGE_PUBLISHER_PY_H_

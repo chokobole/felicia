@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(FEL_PY_BINDING)
+
 #include "pybind11/operators.h"
 #include "pybind11/pybind11.h"
 
@@ -258,3 +260,5 @@ PYBIND11_MODULE(felicia_py, m) {
 }
 
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)

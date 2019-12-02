@@ -154,6 +154,12 @@ def if_win_node_binding(a, b = []):
         "//conditions:default": b,
     })
 
+def if_py_binding(a, b = []):
+    return select({
+        "@com_github_chokobole_felicia//felicia:py_binding": a,
+        "//conditions:default": b,
+    })
+
 def fel_zlib_deps():
     return select({
         "@com_github_chokobole_felicia//felicia:win_node_binding": ["@node_addon_api"],

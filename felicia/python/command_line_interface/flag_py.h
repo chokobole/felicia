@@ -5,6 +5,8 @@
 #ifndef FELICIA_PYTHON_COMMAND_LINE_INTERFACE_FLAG_PY_H_
 #define FELICIA_PYTHON_COMMAND_LINE_INTERFACE_FLAG_PY_H_
 
+#if defined(FEL_PY_BINDING)
+
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 
@@ -52,5 +54,7 @@ class PyFlagParserDelegate : public FlagParser::Delegate {
 void AddFlag(py::module& m);
 
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)
 
 #endif  // FELICIA_PYTHON_COMMAND_LINE_INTERFACE_FLAG_PY_H_

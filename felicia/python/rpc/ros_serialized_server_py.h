@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(FEL_PY_BINDING)
 #if defined(HAS_ROS)
 
 #ifndef FELICIA_PYTHON_RPC_ROS_SERIALIZED_SERVER_PY_H_
@@ -29,3 +30,4 @@ class PyRosSerializedServer : public Server<PyRosSerializedServiceBridge> {
 #endif  // FELICIA_PYTHON_RPC_ROS_SERIALIZED_SERVER_PY_H_
 
 #endif  // defined(HAS_ROS)
+#endif  // defined(FEL_PY_BINDING)

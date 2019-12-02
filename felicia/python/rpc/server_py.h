@@ -5,6 +5,8 @@
 #ifndef FELICIA_PYTHON_RPC_SERVER_PY_H_
 #define FELICIA_PYTHON_RPC_SERVER_PY_H_
 
+#if defined(FEL_PY_BINDING)
+
 #include "pybind11/pybind11.h"
 
 #include "felicia/core/rpc/server_interface.h"
@@ -63,5 +65,7 @@ void AddServer(py::module& m);
 
 }  // namespace rpc
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)
 
 #endif  // FELICIA_PYTHON_RPC_SERVER_PY_H_

@@ -5,6 +5,8 @@
 #ifndef FELICIA_PYTHON_TYPE_CONVERSION_UTIL_H_
 #define FELICIA_PYTHON_TYPE_CONVERSION_UTIL_H_
 
+#if defined(FEL_PY_BINDING)
+
 #include "pybind11/pybind11.h"
 
 #include "third_party/chromium/base/logging.h"
@@ -42,5 +44,7 @@ bool IsGilHeld();
   do {                                 \
     PYBIND11_OVERLOAD_INT(__VA_ARGS__) \
   } while (0)
+
+#endif  // defined(FEL_PY_BINDING)
 
 #endif  // FELICIA_PYTHON_TYPE_CONVERSION_UTIL_H_

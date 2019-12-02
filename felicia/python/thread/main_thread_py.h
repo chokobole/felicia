@@ -5,6 +5,8 @@
 #ifndef FELICIA_PYTHON_THREAD_MAIN_THREAD_PY_H_
 #define FELICIA_PYTHON_THREAD_MAIN_THREAD_PY_H_
 
+#if defined(FEL_PY_BINDING)
+
 #include "pybind11/pybind11.h"
 
 #include "third_party/chromium/build/build_config.h"
@@ -42,5 +44,7 @@ class PyMainThread {
 void AddMainThread(py::module& m);
 
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)
 
 #endif  // FELICIA_PYTHON_THREAD_MAIN_THREAD_PY_H_

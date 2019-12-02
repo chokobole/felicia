@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(FEL_PY_BINDING)
+
 #include "felicia/python/communication/service_server_py.h"
 
 #include "felicia/python/type_conversion/callback.h"
@@ -77,3 +79,5 @@ void AddServiceServer(py::module& m) {
 }
 
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)

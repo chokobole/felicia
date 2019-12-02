@@ -5,6 +5,8 @@
 #ifndef FELICIA_PYTHON_TYPE_CONVERSION_PROTOBUF_H_
 #define FELICIA_PYTHON_TYPE_CONVERSION_PROTOBUF_H_
 
+#if defined(FEL_PY_BINDING)
+
 #include "pybind11/pybind11.h"
 
 #include "felicia/core/protobuf/master_data.pb.h"
@@ -105,5 +107,7 @@ SUPPORT_PROTOBUF_ENUM_TYPE_CAST(felicia::ServiceInfo::Status,
 
 SUPPORT_PROTOBUF_ENUM_TYPE_CAST(felicia::TopicInfo::ImplType,
                                 TopicInfo.ImplType)
+
+#endif  // defined(FEL_PY_BINDING)
 
 #endif  // FELICIA_PYTHON_TYPE_CONVERSION_PROTOBUF_H_

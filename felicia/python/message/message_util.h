@@ -5,6 +5,8 @@
 #ifndef FELICIA_PYTHON_COMMUNICATION_MESSAGE_UTIL_H_
 #define FELICIA_PYTHON_COMMUNICATION_MESSAGE_UTIL_H_
 
+#if defined(FEL_PY_BINDING)
+
 #include "pybind11/pybind11.h"
 
 #include "third_party/chromium/base/compiler_specific.h"
@@ -32,5 +34,7 @@ std::string GetMessageDefinitionFromPyObject(const py::object& message_type,
                                              TopicInfo::ImplType impl_type);
 
 }  // namespace felicia
+
+#endif  // defined(FEL_PY_BINDING)
 
 #endif  // FELICIA_PYTHON_COMMUNICATION_MESSAGE_UTIL_H_
