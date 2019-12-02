@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(FEL_NODE_BINDING)
+
 #include "felicia/js/communication/settings_js.h"
 
 #include "felicia/js/type_conversion/typed_call.h"
@@ -126,3 +128,5 @@ void JsSettings::set_queue_size(const Napi::CallbackInfo& info,
 
 }  // namespace communication
 }  // namespace felicia
+
+#endif  // defined(FEL_NODE_BINDING)

@@ -5,6 +5,8 @@
 #ifndef FELICIA_JS_LIB_STATUS_JS_H_
 #define FELICIA_JS_LIB_STATUS_JS_H_
 
+#if defined(FEL_NODE_BINDING)
+
 #include "napi.h"
 
 #include "felicia/core/lib/error/status.h"
@@ -50,5 +52,7 @@ class TypeConvertor<Status> {
 }  // namespace js
 
 }  // namespace felicia
+
+#endif  // defined(FEL_NODE_BINDING)
 
 #endif  // FELICIA_JS_LIB_STATUS_JS_H_

@@ -6,7 +6,7 @@ load(
     "//bazel:felicia.bzl",
     "if_linux",
     "if_mac",
-    "if_not_travis",
+    "if_travis",
     "if_windows",
 )
 load(
@@ -86,20 +86,26 @@ fel_cc_library(
         "win/sink_input_pin.cc",
         "win/sink_input_pin.h",
         "win/dshow_camera.h",
-    ] + if_not_travis([
-        "win/mf_camera_format.cc",
-        "win/mf_camera.cc",
-        "win/mf_initializer.h",
-        "win/mf_initializer.cc",
-        "win/mf_camera.h",
-    ])),
+    ] + if_travis(
+        [],
+        [
+            "win/mf_camera_format.cc",
+            "win/mf_camera.cc",
+            "win/mf_initializer.h",
+            "win/mf_initializer.cc",
+            "win/mf_camera.h",
+        ],
+    )),
     hdrs = CAMERA_HEADERS,
-    linkopts = if_windows(if_not_travis([
-        "mf.lib",
-        "mfplat.lib",
-        "mfreadwrite.lib",
-        "mfuuid.lib",
-    ])),
+    linkopts = if_windows(if_travis(
+        [],
+        [
+            "mf.lib",
+            "mfplat.lib",
+            "mfreadwrite.lib",
+            "mfuuid.lib",
+        ],
+    )),
     deps = [
         "//felicia/core/lib",
         "//felicia/core/util",

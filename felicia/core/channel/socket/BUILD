@@ -5,7 +5,7 @@
 load(
     "//bazel:felicia.bzl",
     "if_not_windows",
-    "if_win_no_grpc",
+    "if_win_node_binding",
 )
 load(
     "//bazel:felicia_cc.bzl",
@@ -78,7 +78,7 @@ fel_cc_library(
         "unix_domain_server_socket.h",
         "unix_domain_socket.h",
     ]),
-    defines = if_win_no_grpc([
+    defines = if_win_node_binding([
         "FEL_NO_SSL",
     ]),
     deps = [

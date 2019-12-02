@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(FEL_NODE_BINDING)
+
 #include "felicia/js/thread/main_thread_js.h"
 
 #include "felicia/core/thread/main_thread.h"
@@ -58,3 +60,5 @@ void JsMainThread::Stop(const Napi::CallbackInfo& info) {
 }
 
 }  // namespace felicia
+
+#endif  // defined(FEL_NODE_BINDING)

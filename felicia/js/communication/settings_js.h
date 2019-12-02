@@ -5,6 +5,8 @@
 #ifndef FELICIA_JS_COMMUNICATION_SETTINGS_JS_H_
 #define FELICIA_JS_COMMUNICATION_SETTINGS_JS_H_
 
+#if defined(FEL_NODE_BINDING)
+
 #include "napi.h"
 
 #include "felicia/core/communication/settings.h"
@@ -60,5 +62,7 @@ class TypeConvertor<communication::Settings> {
 }  // namespace js
 
 }  // namespace felicia
+
+#endif  // defined(FEL_NODE_BINDING)
 
 #endif  // FELICIA_JS_COMMUNICATION_SETTINGS_JS_H_

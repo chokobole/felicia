@@ -34,7 +34,7 @@ cc_library(
         "node_modules/node-addon-api/src/util-inl.h",
     ],
     copts = node_addon_api_copts(),
-    defines = node_addon_api_defines(),
+    defines = ["FEL_NODE_BINDING"] + node_addon_api_defines(),
     includes = [
         "node_modules/node-addon-api",
         "node_modules/node-addon-api/src",

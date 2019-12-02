@@ -5,6 +5,8 @@
 #ifndef FELICIA_JS_THREAD_MAIN_THREAD_JS_H_
 #define FELICIA_JS_THREAD_MAIN_THREAD_JS_H_
 
+#if defined(FEL_NODE_BINDING)
+
 #include "napi.h"
 
 namespace felicia {
@@ -23,5 +25,7 @@ class JsMainThread : public Napi::ObjectWrap<JsMainThread> {
 };
 
 }  // namespace felicia
+
+#endif  // defined(FEL_NODE_BINDING)
 
 #endif  // FELICIA_JS_THREAD_MAIN_THREAD_JS_H_

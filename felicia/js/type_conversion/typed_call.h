@@ -5,6 +5,8 @@
 #ifndef FELICIA_JS_TYPE_CONVERSION_TYPED_CALL_H_
 #define FELICIA_JS_TYPE_CONVERSION_TYPED_CALL_H_
 
+#if defined(FEL_NODE_BINDING)
+
 #include "napi.h"
 
 #include "felicia/core/lib/base/template_util.h"
@@ -284,5 +286,7 @@ void TypedCall(const Napi::CallbackInfo& info, void (Class::*f)(Args...) &&,
 }
 
 }  // namespace felicia
+
+#endif  // defined(FEL_NODE_BINDING)
 
 #endif  // FELICIA_JS_TYPE_CONVERSION_TYPED_CALL_H_

@@ -1,5 +1,7 @@
 #include "felicia/js/lib/scoped_env.h"
 
+#if defined(FEL_NODE_BINDING)
+
 namespace felicia {
 
 namespace {
@@ -18,3 +20,5 @@ ScopedEnvSetter::~ScopedEnvSetter() { g_current_env = nullptr; }
 napi_env ScopedEnvSetter::CurrentEnv() { return g_current_env; }
 
 }  // namespace felicia
+
+#endif  // defined(FEL_NODE_BINDING)

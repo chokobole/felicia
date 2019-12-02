@@ -155,11 +155,11 @@ On windows, when linking against `node.lib`, symbols are conflited between `node
 **Please try not with `-c dbg`, because `node.lib` is provided with only release version.**
 
 ```bash
-bazel build --define win_no_grpc=true --define framework_shared_object=true //felicia/js:felicia_js_node
+bazel build --config node_binding //felicia/js:felicia_js_node
 ```
 
 #### Elsewhere
 
 ```bash
-bazel build --define framework_shared_object=true //felicia/js:felicia_js_node
+bazel build --config node_binding //felicia/js:felicia_js_node
 ```

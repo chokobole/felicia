@@ -5,8 +5,7 @@
 load(
     "//bazel:felicia.bzl",
     "if_not_windows",
-    "if_not_win_no_grpc",
-    "if_win_no_grpc",
+    "if_win_node_binding",
 )
 load(
     "//bazel:felicia_cc.bzl",
@@ -54,8 +53,8 @@ fel_cc_library(
         "master_notification_watcher.h",
         "master_proxy.h",
     ],
-    defines = if_win_no_grpc([
-        "FEL_WIN_NO_CC_MASTER_CLIENT",
+    defines = if_win_node_binding([
+        "FEL_WIN_NODE_BINDING",
     ]),
     deps = [
         ":bytes_constants",
@@ -64,10 +63,13 @@ fel_cc_library(
         "//felicia/core/channel",
         "//felicia/core/node:node_lifecycle",
         "//felicia/core/thread:main_thread",
-    ] + if_not_win_no_grpc([
-        "//felicia/core/master/rpc:master_client",
-        "//felicia/core/master/rpc:master_server_info",
-    ]),
+    ] + if_win_node_binding(
+        [],
+        [
+            "//felicia/core/master/rpc:master_client",
+            "//felicia/core/master/rpc:master_server_info",
+        ],
+    ),
 )
 
 fel_cc_native_library(

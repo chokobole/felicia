@@ -11,7 +11,7 @@
 #include "felicia/core/lib/strings/str_util.h"
 #include "felicia/core/thread/main_thread.h"
 
-#if defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#if defined(FEL_WIN_NODE_BINDING)
 namespace felicia {
 extern std::unique_ptr<MasterClientInterface> NewMasterClient();
 }  // namespace felicia
@@ -19,7 +19,7 @@ extern std::unique_ptr<MasterClientInterface> NewMasterClient();
 #include "felicia/core/master/rpc/master_client.h"
 #include "felicia/core/master/rpc/master_server_info.h"
 #include "felicia/core/rpc/grpc_util.h"
-#endif  // defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#endif  // defined(FEL_WIN_NODE_BINDING)
 
 namespace felicia {
 
@@ -39,24 +39,24 @@ void MasterProxy::set_heart_beat_duration(base::TimeDelta heart_beat_duration) {
   client_info_.set_heart_beat_duration(heart_beat_duration.InMilliseconds());
 }
 
-#if defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#if defined(FEL_WIN_NODE_BINDING)
 Status MasterProxy::StartMasterClient() {
   master_client_interface_ = NewMasterClient();
   return master_client_interface_->Start();
 }
 
 bool MasterProxy::is_client_info_set() const { return is_client_info_set_; }
-#endif  // defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#endif  // defined(FEL_WIN_NODE_BINDING)
 
 Status MasterProxy::Start() {
-#if !defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#if !defined(FEL_WIN_NODE_BINDING)
   std::string ip = ResolveMasterServerIp().ToString();
   uint16_t port = ResolveMasterServerPort();
   auto channel = ConnectToGrpcServer(ip, port);
   master_client_interface_ = std::make_unique<MasterClient>(channel);
   Status s = master_client_interface_->Start();
   if (!s.ok()) return s;
-#endif  // !defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#endif  // !defined(FEL_WIN_NODE_BINDING)
   base::WaitableEvent* event = new base::WaitableEvent;
   Setup(event);
 
@@ -128,7 +128,7 @@ void MasterProxy::RegisterClient() {
   *request->mutable_client_info() = client_info_;
   RegisterClientResponse* response = new RegisterClientResponse();
 
-#if defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#if defined(FEL_WIN_NODE_BINDING)
   master_client_interface_->RegisterClientAsync(
       request, response,
       base::BindOnce(&MasterProxy::OnRegisterClient, base::Unretained(this),
@@ -141,7 +141,7 @@ void MasterProxy::RegisterClient() {
                      event, base::Owned(request), base::Owned(response)));
   event->Wait();
   delete event;
-#endif  // defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#endif  // defined(FEL_WIN_NODE_BINDING)
 }
 
 void MasterProxy::OnRegisterClient(base::WaitableEvent* event,
@@ -149,12 +149,12 @@ void MasterProxy::OnRegisterClient(base::WaitableEvent* event,
                                    RegisterClientResponse* response, Status s) {
   if (s.ok()) {
     client_info_.set_id(response->id());
-#if defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#if defined(FEL_WIN_NODE_BINDING)
     DCHECK(!event);
     is_client_info_set_ = true;
 #else
     event->Signal();
-#endif  // defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#endif  // defined(FEL_WIN_NODE_BINDING)
   } else {
     LOG(FATAL) << s;
   }

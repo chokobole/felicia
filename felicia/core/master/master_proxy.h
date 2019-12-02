@@ -34,11 +34,11 @@ class FEL_EXPORT MasterProxy final : public MasterClientInterface {
 
   void set_heart_beat_duration(base::TimeDelta heart_beat_duration);
 
-#if defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#if defined(FEL_WIN_NODE_BINDING)
   Status StartMasterClient();
 
   bool is_client_info_set() const;
-#endif  // defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#endif  // defined(FEL_WIN_NODE_BINDING)
 
   // MasterClientInterface methods
   Status Start() override;
@@ -102,9 +102,9 @@ class FEL_EXPORT MasterProxy final : public MasterClientInterface {
 
   std::vector<std::unique_ptr<NodeLifecycle>> nodes_;
 
-#if defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#if defined(FEL_WIN_NODE_BINDING)
   bool is_client_info_set_ = false;
-#endif  // defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#endif  // defined(FEL_WIN_NODE_BINDING)
 
   DISALLOW_COPY_AND_ASSIGN(MasterProxy);
 };

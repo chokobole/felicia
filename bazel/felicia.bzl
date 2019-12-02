@@ -4,52 +4,52 @@
 
 load("@local_config_env//:env.bzl", "TRAVIS")
 
-def if_x86_32(a):
+def if_x86_32(a, b = []):
     return select({
         "@com_github_chokobole_felicia//felicia:x86_32": a,
-        "//conditions:default": [],
+        "//conditions:default": b,
     })
 
-def if_x86_64(a):
+def if_x86_64(a, b = []):
     return select({
         "@com_github_chokobole_felicia//felicia:x86_64": a,
-        "//conditions:default": [],
+        "//conditions:default": b,
     })
 
-def if_x86(a):
+def if_x86(a, b = []):
     return select({
         "@com_github_chokobole_felicia//felicia:x86": a,
-        "//conditions:default": [],
+        "//conditions:default": b,
     })
 
-def if_ppc(a):
+def if_ppc(a, b = []):
     return select({
         "@com_github_chokobole_felicia//felicia:ppc": a,
-        "//conditions:default": [],
+        "//conditions:default": b,
     })
 
-def if_arm(a):
+def if_arm(a, b = []):
     return select({
         "@com_github_chokobole_felicia//felicia:arm": a,
-        "//conditions:default": [],
+        "//conditions:default": b,
     })
 
-def if_aarch64(a):
+def if_aarch64(a, b = []):
     return select({
         "@com_github_chokobole_felicia//felicia:aarch64": a,
-        "//conditions:default": [],
+        "//conditions:default": b,
     })
 
-def if_s390x(a):
+def if_s390x(a, b = []):
     return select({
         "@com_github_chokobole_felicia//felicia:s390x": a,
         "//conditions:default": [],
     })
 
-def if_mac(a):
+def if_mac(a, b = []):
     return select({
         "@com_github_chokobole_felicia//felicia:mac": a,
-        "//conditions:default": [],
+        "//conditions:default": b,
     })
 
 def if_not_mac(a):
@@ -58,10 +58,10 @@ def if_not_mac(a):
         "//conditions:default": a,
     })
 
-def if_ios(a):
+def if_ios(a, b = []):
     return select({
         "@com_github_chokobole_felicia//felicia:ios": a,
-        "//conditions:default": [],
+        "//conditions:default": b,
     })
 
 def if_mac_or_ios(a):
@@ -76,22 +76,22 @@ def if_not_mac_or_ios(a):
         "//conditions:default": a,
     })
 
-def if_freebsd(a):
+def if_freebsd(a, b = []):
     return select({
         "@com_github_chokobole_felicia//felicia:freebsd": a,
-        "//conditions:default": [],
+        "//conditions:default": b,
     })
 
-def if_android(a):
+def if_android(a, b = []):
     return select({
         "@com_github_chokobole_felicia//felicia:android": a,
-        "//conditions:default": [],
+        "//conditions:default": b,
     })
 
-def if_linux(a):
+def if_linux(a, b = []):
     return select({
         "@com_github_chokobole_felicia//felicia:linux": a,
-        "//conditions:default": [],
+        "//conditions:default": b,
     })
 
 def if_not_linux(a):
@@ -100,10 +100,10 @@ def if_not_linux(a):
         "//conditions:default": a,
     })
 
-def if_windows(a):
+def if_windows(a, b = []):
     return select({
         "@com_github_chokobole_felicia//felicia:windows": a,
-        "//conditions:default": [],
+        "//conditions:default": b,
     })
 
 def if_not_windows(a):
@@ -125,43 +125,38 @@ def if_static(extra_deps, otherwise = []):
         "//conditions:default": extra_deps,
     })
 
-def if_travis(a):
+def if_travis(a, b = []):
     if TRAVIS == "True":
         return a
-    return []
+    return b
 
-def if_not_travis(a):
-    if TRAVIS == "False":
-        return a
-    return []
-
-def if_win_no_grpc(a):
-    return select({
-        "@com_github_chokobole_felicia//felicia:win_no_grpc": a,
-        "//conditions:default": [],
-    })
-
-def if_not_win_no_grpc(a):
-    return select({
-        "@com_github_chokobole_felicia//felicia:win_no_grpc": [],
-        "//conditions:default": a,
-    })
-
-def if_has_opencv(a):
+def if_has_opencv(a, b = []):
     return select({
         "@com_github_chokobole_felicia//felicia:has_opencv": a,
-        "//conditions:default": [],
+        "//conditions:default": b,
     })
 
-def if_has_ros(a):
+def if_has_ros(a, b = []):
     return select({
         "@com_github_chokobole_felicia//felicia:has_ros": a,
-        "//conditions:default": [],
+        "//conditions:default": b,
+    })
+
+def if_node_binding(a, b = []):
+    return select({
+        "@com_github_chokobole_felicia//felicia:node_binding": a,
+        "//conditions:default": b,
+    })
+
+def if_win_node_binding(a, b = []):
+    return select({
+        "@com_github_chokobole_felicia//felicia:win_node_binding": a,
+        "//conditions:default": b,
     })
 
 def fel_zlib_deps():
     return select({
-        "@com_github_chokobole_felicia//felicia:win_no_grpc": ["@node_addon_api"],
+        "@com_github_chokobole_felicia//felicia:win_node_binding": ["@node_addon_api"],
         "//conditions:default": ["//external:zlib"],
     })
 

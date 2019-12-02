@@ -5,6 +5,8 @@
 #ifndef FELICIA_JS_TYPE_CONVERSION_PROTOBUF_TYPE_CONVERTOR_H_
 #define FELICIA_JS_TYPE_CONVERSION_PROTOBUF_TYPE_CONVERTOR_H_
 
+#if defined(FEL_NODE_BINDING)
+
 #include "google/protobuf/message.h"
 
 #include "felicia/js/type_conversion/type_convertor_forward.h"
@@ -31,5 +33,7 @@ class TypeConvertor<google::protobuf::Message> {
 
 }  // namespace js
 }  // namespace felicia
+
+#endif  // defined(FEL_NODE_BINDING)
 
 #endif  // FELICIA_JS_TYPE_CONVERSION_PROTOBUF_TYPE_CONVERTOR_H_

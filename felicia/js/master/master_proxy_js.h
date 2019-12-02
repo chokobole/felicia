@@ -5,6 +5,8 @@
 #ifndef FELICIA_JS_MASTER_MASTER_PROXY_JS_H_
 #define FELICIA_JS_MASTER_MASTER_PROXY_JS_H_
 
+#if defined(FEL_NODE_BINDING)
+
 #include "napi.h"
 
 namespace felicia {
@@ -14,10 +16,10 @@ class JsMasterProxy : public Napi::ObjectWrap<JsMasterProxy> {
   static void Init(Napi::Env env, Napi::Object exports);
   JsMasterProxy(const Napi::CallbackInfo& info);
 
-#if defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#if defined(FEL_WIN_NODE_BINDING)
   Napi::Value StartMasterClient(const Napi::CallbackInfo& info);
   Napi::Value is_client_info_set(const Napi::CallbackInfo& info);
-#endif  // defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#endif  // defined(FEL_WIN_NODE_BINDING)
 
   Napi::Value Start(const Napi::CallbackInfo& info);
   Napi::Value Stop(const Napi::CallbackInfo& info);
@@ -29,5 +31,7 @@ class JsMasterProxy : public Napi::ObjectWrap<JsMasterProxy> {
 };
 
 }  // namespace felicia
+
+#endif  // defined(FEL_NODE_BINDING)
 
 #endif  // FELICIA_JS_MASTER_MASTER_PROXY_JS_H_

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(FEL_NODE_BINDING)
+
 #include "napi.h"
 
 #include <iostream>
@@ -187,3 +189,5 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
 NODE_API_MODULE(typed_call, Init)
 
 }  // namespace felicia
+
+#endif  // defined(FEL_NODE_BINDING)

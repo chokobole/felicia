@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(FEL_NODE_BINDING)
+
 #include "felicia/js/type_conversion/protobuf_type_convertor.h"
 
 #include "google/protobuf/reflection.h"
@@ -212,3 +214,5 @@ Napi::Value TypeConvertor<google::protobuf::Message>::ToJSValue(
 
 }  // namespace js
 }  // namespace felicia
+
+#endif  // defined(FEL_NODE_BINDING)

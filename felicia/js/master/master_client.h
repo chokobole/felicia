@@ -5,6 +5,8 @@
 #ifndef FELICIA_JS_MASTER_MASTER_CLIENT_H_
 #define FELICIA_JS_MASTER_MASTER_CLIENT_H_
 
+#if defined(FEL_WIN_NODE_BINDING)
+
 #include "napi.h"
 
 #include "third_party/chromium/base/macros.h"
@@ -37,3 +39,5 @@ class MasterClient : public MasterClientInterface {
 }  // namespace felicia
 
 #endif  // FELICIA_JS_MASTER_MASTER_CLIENT_H_
+
+#endif  // defined(FEL_WIN_NODE_BINDING)

@@ -23,5 +23,8 @@ build:wasm --cpu=wasm
 build:wasm --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
 build:wasm --define wasm=true
 
+build:node_binding --define node_binding=true
+build:node_binding --define framework_shared_object=true
+
 # Put user-specific options in .bazelrc.user
 try-import %workspace%/.bazelrc.user

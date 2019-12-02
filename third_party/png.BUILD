@@ -58,7 +58,7 @@ cc_library(
     visibility = ["//visibility:public"],
     # FIXME: Can use @felicia/bazel:fel_zlib_deps()?
     deps = select({
-        "@com_github_chokobole_felicia//felicia:win_no_grpc": ["@node_addon_api"],
+        "@com_github_chokobole_felicia//felicia:win_node_binding": ["@node_addon_api"],
         "//conditions:default": ["//external:zlib"],
     }),
 )

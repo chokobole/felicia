@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(FEL_NODE_BINDING)
+
 #include "felicia/js/master/master_proxy_js.h"
 
 #include "third_party/chromium/base/containers/queue.h"
@@ -111,10 +113,10 @@ void JsMasterProxy::Init(Napi::Env env, Napi::Object exports) {
   Napi::HandleScope scope(env);
 
   Napi::Function func = DefineClass(env, "MasterProxy", {
-#if defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#if defined(FEL_WIN_NODE_BINDING)
     InstanceMethod("startMasterClient", &JsMasterProxy::StartMasterClient),
         InstanceMethod("isClientInfoSet", &JsMasterProxy::is_client_info_set),
-#endif  // defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#endif  // defined(FEL_WIN_NODE_BINDING)
         InstanceMethod("start", &JsMasterProxy::Start),
         InstanceMethod("stop", &JsMasterProxy::Stop),
         InstanceMethod("requestRegisterTopicInfoWatcherNode",
@@ -130,7 +132,7 @@ void JsMasterProxy::Init(Napi::Env env, Napi::Object exports) {
 JsMasterProxy::JsMasterProxy(const Napi::CallbackInfo& info)
     : Napi::ObjectWrap<JsMasterProxy>(info) {}
 
-#if defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#if defined(FEL_WIN_NODE_BINDING)
 Napi::Value JsMasterProxy::StartMasterClient(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
   ScopedEnvSetter scoped_env_setter(env);
@@ -143,7 +145,7 @@ Napi::Value JsMasterProxy::is_client_info_set(const Napi::CallbackInfo& info) {
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   return TypedCall(info, &MasterProxy::is_client_info_set, &master_proxy);
 }
-#endif  // defined(FEL_WIN_NO_CC_MASTER_CLIENT)
+#endif  // defined(FEL_WIN_NODE_BINDING)
 
 Napi::Value JsMasterProxy::Start(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
@@ -207,3 +209,5 @@ void JsMasterProxy::RequestRegisterTopicInfoWatcherNode(
 }
 
 }  // namespace felicia
+
+#endif  // defined(FEL_NODE_BINDING)

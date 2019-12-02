@@ -6,9 +6,9 @@ load(
     "//bazel:felicia.bzl",
     "fel_zlib_deps",
     "if_not_linux",
-    "if_not_win_no_grpc",
     "if_not_windows",
     "if_not_windows_and_not_linux",
+    "if_win_node_binding",
     "if_windows",
 )
 load(
@@ -36,9 +36,12 @@ NET_HDRS = chromium_platform_hdrs(exclude = [
     ":net_win_hdrs",
 ]) + if_not_windows([
     ":net_posix_hdrs",
-]) + if_not_win_no_grpc([
-    ":net_ssl_hdrs",
-])
+]) + if_win_node_binding(
+    [],
+    [
+        ":net_ssl_hdrs",
+    ],
+)
 
 filegroup(
     name = "net_hdrs",
@@ -56,9 +59,12 @@ chromium_cc_library(
         ":net_win_srcs",
     ]) + if_not_windows_and_not_linux([
         ":net_posix_srcs",
-    ]) + if_not_win_no_grpc([
-        ":net_ssl_srcs",
-    ]),
+    ]) + if_win_node_binding(
+        [],
+        [
+            ":net_ssl_srcs",
+        ],
+    ),
     hdrs = NET_HDRS,
     copts = net_copts(),
     defines = net_defines(),
@@ -68,9 +74,12 @@ chromium_cc_library(
         "//third_party/chromium/base",
         "//third_party/chromium/build",
         "//third_party/chromium/url",
-    ] + if_not_win_no_grpc([
-        "//third_party/chromium/crypto",
-    ]) + fel_zlib_deps(),
+    ] + if_win_node_binding(
+        [],
+        [
+            "//third_party/chromium/crypto",
+        ],
+    ) + fel_zlib_deps(),
 )
 
 filegroup(

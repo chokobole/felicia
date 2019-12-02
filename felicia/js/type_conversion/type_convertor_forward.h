@@ -5,6 +5,8 @@
 #ifndef FELICIA_JS_TYPE_CONVERSION_TYPE_CONVERTOR_FORWARD_H_
 #define FELICIA_JS_TYPE_CONVERSION_TYPE_CONVERTOR_FORWARD_H_
 
+#if defined(FEL_NODE_BINDING)
+
 #include "napi.h"
 
 namespace felicia {
@@ -15,5 +17,7 @@ class TypeConvertor;
 
 }  // namespace js
 }  // namespace felicia
+
+#endif  // defined(FEL_NODE_BINDING)
 
 #endif  // FELICIA_JS_TYPE_CONVERSION_TYPE_CONVERTOR_FORWARD_H_

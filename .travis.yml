@@ -27,7 +27,7 @@ matrix:
         - bazel test --test_tag_filters -benchmark //felicia/...
         - python tools/run_felicia_example.py
         - bazel build --define framework_shared_object=true //felicia/python:felicia_py.so
-        - bazel build --define framework_shared_object=true //felicia/js:felicia_js_node
+        - bazel build --config node_binding //felicia/js:felicia_js_node
       after_failure:
         - find bazel-out/ -name "test.log" | xargs cat
     - os: osx  # Debug
@@ -66,7 +66,7 @@ matrix:
         - bazel test --test_tag_filters -benchmark //felicia/...
         - python tools/run_felicia_example.py
         - bazel build --define framework_shared_object=true //felicia/python:felicia_py.so
-        - bazel build --define framework_shared_object=true //felicia/js:felicia_js_node
+        - bazel build --config node_binding //felicia/js:felicia_js_node
       after_failure:
         - find bazel-out/ -name "test.log" | xargs cat
     - os: windows  # Debug
@@ -99,7 +99,7 @@ matrix:
         - bazel test --test_tag_filters -benchmark,-manual //felicia/...
         - $PYTHON_BIN_PATH tools/run_felicia_example.py
         - bazel build --define framework_shared_object=true //felicia/python:felicia_py_pyd
-        - bazel build --define win_no_grpc=true --define framework_shared_object=true //felicia/js:felicia_js_node
+        - bazel build --config node_binding //felicia/js:felicia_js_node
       after_failure:
         - find bazel-out/ -name "test.log" | xargs cat
 

@@ -173,19 +173,6 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
-# This is used when js bidning on windows, Becuase node.lib provided from
-# nodejs linked against its own zlib and openssl, on the other way grpc
-# linked agains its own zlib and boringssl. It makes linker give a
-# duplicated symbol error.
-config_setting(
-    name = "win_no_grpc",
-    constraint_values = ["@bazel_tools//platforms:windows"],
-    define_values = {
-        "win_no_grpc": "true",
-    },
-    visibility = ["//visibility:public"],
-)
-
 config_setting(
     name = "has_opencv",
     define_values = {
@@ -214,6 +201,27 @@ config_setting(
     name = "wasm",
     define_values = {
         "wasm": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "node_binding",
+    define_values = {
+        "node_binding": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
+# This is used when js bidning on windows, Becuase node.lib provided from
+# nodejs linked against its own zlib and openssl, on the other way grpc
+# linked agains its own zlib and boringssl. It makes linker give a
+# duplicated symbol error.
+config_setting(
+    name = "win_node_binding",
+    constraint_values = ["@bazel_tools//platforms:windows"],
+    define_values = {
+        "node_binding": "true",
     },
     visibility = ["//visibility:public"],
 )
