@@ -78,14 +78,17 @@ class Publisher {
  protected:
   friend class RosTopicResponse;
 
-  void OnPublishTopicAsync(const communication::Settings& settings,
+  void OnPublishTopicAsync(const PublishTopicRequest* request,
+                           const PublishTopicResponse* response,
+                           const communication::Settings& settings,
                            StatusOnceCallback callback, Status s);
 
-  void OnUnpublishTopicAsync(StatusOnceCallback callback, Status s);
+  void OnUnpublishTopicAsync(const UnpublishTopicRequest* request,
+                             const UnpublishTopicResponse* response,
+                             StatusOnceCallback callback, Status s);
 
-  bool SetupAllChannels(int channel_types,
-                        const communication::Settings& settings,
-                        StatusOnceCallback callback = StatusOnceCallback());
+  Status SetupAllChannels(int channel_types,
+                          const communication::Settings& settings);
   StatusOr<ChannelDef> Setup(Channel* chanel,
                              const channel::Settings& settings);
 
@@ -169,21 +172,26 @@ void Publisher<MessageTy>::RequestPublish(
 
   register_state_.ToRegistering(FROM_HERE);
 
-  if (!SetupAllChannels(channel_types, settings, std::move(callback))) return;
+  Status s = SetupAllChannels(channel_types, settings);
+  if (!s.ok()) {
+    internal::LogOrCallback(std::move(callback), s);
+    return;
+  }
 
-  PublishTopicRequest request;
-  *request.mutable_node_info() = node_info;
+  PublishTopicRequest* request = new PublishTopicRequest();
+  *request->mutable_node_info() = node_info;
   topic_info_.set_topic(topic);
   topic_info_.set_type_name(GetMessageTypeName());
   topic_info_.set_impl_type(GetMessageImplType());
-  *request.mutable_topic_info() = topic_info_;
-  PublishTopicResponse response;
+  *request->mutable_topic_info() = topic_info_;
+  PublishTopicResponse* response = new PublishTopicResponse();
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.PublishTopicAsync(
-      &request, &response,
+      request, response,
       base::BindOnce(&Publisher<MessageTy>::OnPublishTopicAsync,
-                     base::Unretained(this), settings, std::move(callback)));
+                     base::Unretained(this), base::Owned(request),
+                     base::Owned(response), settings, std::move(callback)));
 }
 
 template <typename MessageTy>
@@ -229,16 +237,17 @@ void Publisher<MessageTy>::RequestUnpublish(const NodeInfo& node_info,
 
   register_state_.ToUnregistering(FROM_HERE);
 
-  UnpublishTopicRequest request;
-  *request.mutable_node_info() = node_info;
-  request.set_topic(topic);
-  UnpublishTopicResponse response;
+  UnpublishTopicRequest* request = new UnpublishTopicRequest();
+  *request->mutable_node_info() = node_info;
+  request->set_topic(topic);
+  UnpublishTopicResponse* response = new UnpublishTopicResponse();
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.UnpublishTopicAsync(
-      &request, &response,
+      request, response,
       base::BindOnce(&Publisher<MessageTy>::OnUnpublishTopicAsync,
-                     base::Unretained(this), std::move(callback)));
+                     base::Unretained(this), base::Owned(request),
+                     base::Owned(response), std::move(callback)));
 }
 
 template <typename MessageTy>
@@ -261,13 +270,14 @@ void Publisher<MessageTy>::RequestPublishForTesting(
 
   register_state_.ToRegistering(FROM_HERE);
 
-  if (!SetupAllChannels(channel_types, settings)) return;
+  CHECK(SetupAllChannels(channel_types, settings).ok());
 
   topic_info_.set_topic(topic);
   topic_info_.set_type_name(GetMessageTypeName());
   topic_info_.set_impl_type(GetMessageImplType());
 
-  OnPublishTopicAsync(settings, StatusOnceCallback(), Status::OK());
+  OnPublishTopicAsync(nullptr, nullptr, settings, StatusOnceCallback(),
+                      Status::OK());
 }
 
 template <typename MessageTy>
@@ -289,13 +299,12 @@ void Publisher<MessageTy>::RequestUnpublishForTesting(
 
   register_state_.ToUnregistering(FROM_HERE);
 
-  OnUnpublishTopicAsync(StatusOnceCallback(), Status::OK());
+  OnUnpublishTopicAsync(nullptr, nullptr, StatusOnceCallback(), Status::OK());
 }
 
 template <typename MessageTy>
-bool Publisher<MessageTy>::SetupAllChannels(
-    int channel_types, const communication::Settings& settings,
-    StatusOnceCallback callback) {
+Status Publisher<MessageTy>::SetupAllChannels(
+    int channel_types, const communication::Settings& settings) {
   ChannelSource* channel_source = topic_info_.mutable_topic_source();
   channel_source->clear_channel_defs();
   int channel_type = 1;
@@ -309,15 +318,14 @@ bool Publisher<MessageTy>::SetupAllChannels(
       if (!status_or.ok()) {
         register_state_.ToUnregistered(FROM_HERE);
         Release();
-        internal::LogOrCallback(std::move(callback), status_or.status());
-        return false;
+        return status_or.status();
       }
       *channel_source->add_channel_defs() = std::move(status_or).ValueOrDie();
       channels_.push_back(std::move(channel));
     }
     channel_type <<= 1;
   }
-  return true;
+  return Status::OK();
 }
 
 template <typename MessageTy>
@@ -360,6 +368,7 @@ StatusOr<ChannelDef> Publisher<MessageTy>::Setup(
 
 template <typename MessageTy>
 void Publisher<MessageTy>::OnPublishTopicAsync(
+    const PublishTopicRequest* request, const PublishTopicResponse* response,
     const communication::Settings& settings, StatusOnceCallback callback,
     Status s) {
   if (!IsRegistering()) {
@@ -403,8 +412,10 @@ void Publisher<MessageTy>::OnPublishTopicAsync(
 }
 
 template <typename MessageTy>
-void Publisher<MessageTy>::OnUnpublishTopicAsync(StatusOnceCallback callback,
-                                                 Status s) {
+void Publisher<MessageTy>::OnUnpublishTopicAsync(
+    const UnpublishTopicRequest* request,
+    const UnpublishTopicResponse* response, StatusOnceCallback callback,
+    Status s) {
   if (!IsUnregistering()) {
     internal::LogOrCallback(std::move(callback),
                             register_state_.InvalidStateError());

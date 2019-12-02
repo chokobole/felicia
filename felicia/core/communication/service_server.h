@@ -89,9 +89,15 @@ class ServiceServer {
   void RequestUnregisterForTesting(const std::string& service);
 
  protected:
-  void OnRegisterServiceServerAsync(StatusOnceCallback callback, Status s);
+  void OnRegisterServiceServerAsync(
+      const RegisterServiceServerRequest* request,
+      const RegisterServiceServerResponse* response,
+      StatusOnceCallback callback, Status s);
 
-  void OnUnegisterServiceServerAsync(StatusOnceCallback callback, Status s);
+  void OnUnegisterServiceServerAsync(
+      const UnregisterServiceServerRequest* request,
+      const UnregisterServiceServerResponse* response,
+      StatusOnceCallback callback, Status s);
 
   ServerTy server_;
   communication::RegisterState register_state_;
@@ -122,22 +128,23 @@ void ServiceServer<ServiceTy, ServerTy>::RequestRegister(
   server_.Start();
   server_.Run();
 
-  RegisterServiceServerRequest request;
-  *request.mutable_node_info() = node_info;
-  ServiceInfo* service_info = request.mutable_service_info();
+  RegisterServiceServerRequest* request = new RegisterServiceServerRequest();
+  *request->mutable_node_info() = node_info;
+  ServiceInfo* service_info = request->mutable_service_info();
   service_info->set_service(service);
   service_info->set_type_name(server_.GetServiceTypeName());
   ChannelSource* channel_source = service_info->mutable_service_source();
   *channel_source->add_channel_defs() = server_.channel_def();
   server_.set_service_info(*service_info);
-  RegisterServiceServerResponse response;
+  RegisterServiceServerResponse* response = new RegisterServiceServerResponse();
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.RegisterServiceServerAsync(
-      &request, &response,
+      request, response,
       base::BindOnce(
           &ServiceServer<ServiceTy, ServerTy>::OnRegisterServiceServerAsync,
-          base::Unretained(this), std::move(callback)));
+          base::Unretained(this), base::Owned(request), base::Owned(response),
+          std::move(callback)));
 }
 
 template <typename ServiceTy, typename ServerTy>
@@ -162,17 +169,20 @@ void ServiceServer<ServiceTy, ServerTy>::RequestUnregister(
 
   register_state_.ToUnregistering(FROM_HERE);
 
-  UnregisterServiceServerRequest request;
-  *request.mutable_node_info() = node_info;
-  request.set_service(service);
-  UnregisterServiceServerResponse response;
+  UnregisterServiceServerRequest* request =
+      new UnregisterServiceServerRequest();
+  *request->mutable_node_info() = node_info;
+  request->set_service(service);
+  UnregisterServiceServerResponse* response =
+      new UnregisterServiceServerResponse();
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.UnregisterServiceServerAsync(
-      &request, &response,
+      request, response,
       base::BindOnce(
           &ServiceServer<ServiceTy, ServerTy>::OnUnegisterServiceServerAsync,
-          base::Unretained(this), std::move(callback)));
+          base::Unretained(this), base::Owned(request), base::Owned(response),
+          std::move(callback)));
 }
 
 template <typename ServiceTy, typename ServerTy>
@@ -205,7 +215,8 @@ void ServiceServer<ServiceTy, ServerTy>::RequestRegisterForTesting(
   *channel_source->add_channel_defs() = server_.channel_def();
   server_.set_service_info(service_info);
 
-  OnRegisterServiceServerAsync(StatusOnceCallback(), Status::OK());
+  OnRegisterServiceServerAsync(nullptr, nullptr, StatusOnceCallback(),
+                               Status::OK());
 }
 
 template <typename ServiceTy, typename ServerTy>
@@ -228,12 +239,15 @@ void ServiceServer<ServiceTy, ServerTy>::RequestUnregisterForTesting(
 
   register_state_.ToUnregistering(FROM_HERE);
 
-  OnUnegisterServiceServerAsync(StatusOnceCallback(), Status::OK());
+  OnUnegisterServiceServerAsync(nullptr, nullptr, StatusOnceCallback(),
+                                Status::OK());
 }
 
 template <typename ServiceTy, typename ServerTy>
 void ServiceServer<ServiceTy, ServerTy>::OnRegisterServiceServerAsync(
-    StatusOnceCallback callback, Status s) {
+    const RegisterServiceServerRequest* request,
+    const RegisterServiceServerResponse* response, StatusOnceCallback callback,
+    Status s) {
   if (!IsRegistering()) {
     internal::LogOrCallback(std::move(callback),
                             register_state_.InvalidStateError());
@@ -252,6 +266,8 @@ void ServiceServer<ServiceTy, ServerTy>::OnRegisterServiceServerAsync(
 
 template <typename ServiceTy, typename ServerTy>
 void ServiceServer<ServiceTy, ServerTy>::OnUnegisterServiceServerAsync(
+    const UnregisterServiceServerRequest* request,
+    const UnregisterServiceServerResponse* response,
     StatusOnceCallback callback, Status s) {
   if (!IsUnregistering()) {
     internal::LogOrCallback(std::move(callback),

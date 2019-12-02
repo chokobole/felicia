@@ -78,12 +78,16 @@ class Subscriber {
  protected:
   friend class RosTopicRequest;
 
-  void OnSubscribeTopicAsync(int channel_types,
+  void OnSubscribeTopicAsync(const SubscribeTopicRequest* request,
+                             const SubscribeTopicResponse* response,
+                             int channel_types,
                              const communication::Settings& settings,
                              OnMessageCallback on_message_callback,
                              StatusCallback on_error_callback,
                              StatusOnceCallback callback, Status s);
-  void OnUnubscribeTopicAsync(StatusOnceCallback callback, Status s);
+  void OnUnubscribeTopicAsync(const UnsubscribeTopicRequest* request,
+                              const UnsubscribeTopicResponse* response,
+                              StatusOnceCallback callback, Status s);
 
   void OnFindPublisher(const TopicInfo& topic_info);
   void ConnectToPublisher();
@@ -172,19 +176,19 @@ void Subscriber<MessageTy>::RequestSubscribe(
 
   register_state_.ToRegistering(FROM_HERE);
 
-  SubscribeTopicRequest request;
-  *request.mutable_node_info() = node_info;
-  request.set_topic(topic);
-  request.set_topic_type(GetMessageTypeName());
-  SubscribeTopicResponse response;
+  SubscribeTopicRequest* request = new SubscribeTopicRequest();
+  *request->mutable_node_info() = node_info;
+  request->set_topic(topic);
+  request->set_topic_type(GetMessageTypeName());
+  SubscribeTopicResponse* response = new SubscribeTopicResponse();
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.SubscribeTopicAsync(
-      &request, &response,
-      base::BindOnce(&Subscriber<MessageTy>::OnSubscribeTopicAsync,
-                     base::Unretained(this), channel_types, settings,
-                     on_message_callback, on_error_callback,
-                     std::move(callback)),
+      request, response,
+      base::BindOnce(
+          &Subscriber<MessageTy>::OnSubscribeTopicAsync, base::Unretained(this),
+          base::Owned(request), base::Owned(response), channel_types, settings,
+          on_message_callback, on_error_callback, std::move(callback)),
       base::BindRepeating(&Subscriber<MessageTy>::OnFindPublisher,
                           base::Unretained(this)));
 }
@@ -210,16 +214,17 @@ void Subscriber<MessageTy>::RequestUnsubscribe(const NodeInfo& node_info,
 
   register_state_.ToUnregistering(FROM_HERE);
 
-  UnsubscribeTopicRequest request;
-  *request.mutable_node_info() = node_info;
-  request.set_topic(topic);
-  UnsubscribeTopicResponse response;
+  UnsubscribeTopicRequest* request = new UnsubscribeTopicRequest();
+  *request->mutable_node_info() = node_info;
+  request->set_topic(topic);
+  UnsubscribeTopicResponse* response = new UnsubscribeTopicResponse();
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.UnsubscribeTopicAsync(
-      &request, &response,
+      request, response,
       base::BindOnce(&Subscriber<MessageTy>::OnUnubscribeTopicAsync,
-                     base::Unretained(this), std::move(callback)));
+                     base::Unretained(this), base::Owned(request),
+                     base::Owned(response), std::move(callback)));
 }
 
 template <typename MessageTy>
@@ -244,8 +249,9 @@ void Subscriber<MessageTy>::RequestSubscribeForTesting(
 
   register_state_.ToRegistering(FROM_HERE);
 
-  OnSubscribeTopicAsync(channel_types, settings, on_message_callback,
-                        on_error_callback, StatusOnceCallback(), Status::OK());
+  OnSubscribeTopicAsync(nullptr, nullptr, channel_types, settings,
+                        on_message_callback, on_error_callback,
+                        StatusOnceCallback(), Status::OK());
 }
 
 template <typename MessageTy>
@@ -267,12 +273,14 @@ void Subscriber<MessageTy>::RequestUnsubscribeForTesting(
 
   register_state_.ToUnregistering(FROM_HERE);
 
-  OnUnubscribeTopicAsync(StatusOnceCallback(), Status::OK());
+  OnUnubscribeTopicAsync(nullptr, nullptr, StatusOnceCallback(), Status::OK());
 }
 
 template <typename MessageTy>
 void Subscriber<MessageTy>::OnSubscribeTopicAsync(
-    int channel_types, const communication::Settings& settings,
+    const SubscribeTopicRequest* request,
+    const SubscribeTopicResponse* response, int channel_types,
+    const communication::Settings& settings,
     OnMessageCallback on_message_callback, StatusCallback on_error_callback,
     StatusOnceCallback callback, Status s) {
   if (!IsRegistering()) {
@@ -297,8 +305,10 @@ void Subscriber<MessageTy>::OnSubscribeTopicAsync(
 }
 
 template <typename MessageTy>
-void Subscriber<MessageTy>::OnUnubscribeTopicAsync(StatusOnceCallback callback,
-                                                   Status s) {
+void Subscriber<MessageTy>::OnUnubscribeTopicAsync(
+    const UnsubscribeTopicRequest* request,
+    const UnsubscribeTopicResponse* response, StatusOnceCallback callback,
+    Status s) {
   if (!IsUnregistering()) {
     internal::LogOrCallback(std::move(callback),
                             register_state_.InvalidStateError());

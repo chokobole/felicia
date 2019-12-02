@@ -59,10 +59,15 @@ class ServiceClient {
 
  protected:
   void OnRegisterServiceClientAsync(
+      const RegisterServiceClientRequest* request,
+      const RegisterServiceClientResponse* response,
       OnServiceConnectCallback on_connect_callback, StatusOnceCallback callback,
       Status s);
 
-  void OnUnregisterServiceClientAsync(StatusOnceCallback callback, Status s);
+  void OnUnregisterServiceClientAsync(
+      const UnregisterServiceClientRequest* request,
+      const UnregisterServiceClientResponse* response,
+      StatusOnceCallback callback, Status s);
 
   void OnFindServiceServer(const ServiceInfo& service_info);
 
@@ -95,16 +100,17 @@ void ServiceClient<ClientTy>::RequestRegister(
 
   register_state_.ToRegistering(FROM_HERE);
 
-  RegisterServiceClientRequest request;
-  *request.mutable_node_info() = node_info;
-  request.set_service(service);
-  RegisterServiceClientResponse response;
+  RegisterServiceClientRequest* request = new RegisterServiceClientRequest();
+  *request->mutable_node_info() = node_info;
+  request->set_service(service);
+  RegisterServiceClientResponse* response = new RegisterServiceClientResponse();
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.RegisterServiceClientAsync(
-      &request, &response,
+      request, response,
       base::BindOnce(&ServiceClient<ClientTy>::OnRegisterServiceClientAsync,
-                     base::Unretained(this), on_connect_callback,
+                     base::Unretained(this), base::Owned(request),
+                     base::Owned(response), on_connect_callback,
                      std::move(callback)),
       base::BindRepeating(&ServiceClient<ClientTy>::OnFindServiceServer,
                           base::Unretained(this)));
@@ -131,16 +137,19 @@ void ServiceClient<ClientTy>::RequestUnregister(const NodeInfo& node_info,
 
   register_state_.ToUnregistering(FROM_HERE);
 
-  UnregisterServiceClientRequest request;
-  *request.mutable_node_info() = node_info;
-  request.set_service(service);
-  UnregisterServiceClientResponse response;
+  UnregisterServiceClientRequest* request =
+      new UnregisterServiceClientRequest();
+  *request->mutable_node_info() = node_info;
+  request->set_service(service);
+  UnregisterServiceClientResponse* response =
+      new UnregisterServiceClientResponse();
 
   MasterProxy& master_proxy = MasterProxy::GetInstance();
   master_proxy.UnregisterServiceClientAsync(
-      &request, &response,
+      request, response,
       base::BindOnce(&ServiceClient<ClientTy>::OnUnregisterServiceClientAsync,
-                     base::Unretained(this), std::move(callback)));
+                     base::Unretained(this), base::Owned(request),
+                     base::Owned(response), std::move(callback)));
 }
 
 template <typename ClientTy>
@@ -162,8 +171,8 @@ void ServiceClient<ClientTy>::RequestRegisterForTesting(
 
   register_state_.ToRegistering(FROM_HERE);
 
-  OnRegisterServiceClientAsync(on_connect_callback, StatusOnceCallback(),
-                               Status::OK());
+  OnRegisterServiceClientAsync(nullptr, nullptr, on_connect_callback,
+                               StatusOnceCallback(), Status::OK());
 }
 
 template <typename ClientTy>
@@ -185,11 +194,14 @@ void ServiceClient<ClientTy>::RequestUnregisterForTesting(
 
   register_state_.ToUnregistering(FROM_HERE);
 
-  OnUnregisterServiceClientAsync(StatusOnceCallback(), Status::OK());
+  OnUnregisterServiceClientAsync(nullptr, nullptr, StatusOnceCallback(),
+                                 Status::OK());
 }
 
 template <typename ClientTy>
 void ServiceClient<ClientTy>::OnRegisterServiceClientAsync(
+    const RegisterServiceClientRequest* request,
+    const RegisterServiceClientResponse* response,
     OnServiceConnectCallback on_connect_callback, StatusOnceCallback callback,
     Status s) {
   if (!IsRegistering()) {
@@ -212,6 +224,8 @@ void ServiceClient<ClientTy>::OnRegisterServiceClientAsync(
 
 template <typename ClientTy>
 void ServiceClient<ClientTy>::OnUnregisterServiceClientAsync(
+    const UnregisterServiceClientRequest* request,
+    const UnregisterServiceClientResponse* response,
     StatusOnceCallback callback, Status s) {
   if (!IsUnregistering()) {
     internal::LogOrCallback(std::move(callback),
