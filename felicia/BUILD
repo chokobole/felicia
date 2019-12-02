@@ -198,14 +198,6 @@ config_setting(
 )
 
 config_setting(
-    name = "wasm",
-    define_values = {
-        "wasm": "true",
-    },
-    visibility = ["//visibility:public"],
-)
-
-config_setting(
     name = "node_binding",
     define_values = {
         "node_binding": "true",
@@ -230,6 +222,14 @@ config_setting(
     name = "py_binding",
     define_values = {
         "py_binding": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "wasm_binding",
+    define_values = {
+        "wasm_binding": "true",
     },
     visibility = ["//visibility:public"],
 )

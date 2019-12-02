@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(FEL_WASM_BINDING)
+
 #include <iostream>
 
 #include "emscripten/bind.h"
@@ -70,3 +72,5 @@ EMSCRIPTEN_BINDINGS(felicia_wasm) {
   function("releaseBuffer", &ReleaseBuffer);
   function("convertToBGRA", &ConvertToBGRA);
 }
+
+#endif  // defined(FEL_WASM_BINDING)

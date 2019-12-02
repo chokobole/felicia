@@ -122,7 +122,7 @@ bazel build --config py_binding //felicia/python:felicia_py.so
 **On windows it's not supported yet.**
 
 ```bash
-bazel build --config wasm //felicia/wasm:felicia_wasm
+bazel build --config wasm_binding //felicia/wasm/...
 ```
 
 Once you failed with the reason below,
@@ -141,7 +141,7 @@ Then you should run command below. Please refer to section 9 in [bazel tutorial]
 And if you try again, you will find that it succeds.
 
 ```bash
-bazel build --config wasm //felicia/wasm:felicia_wasm
+bazel build --config wasm_binding //felicia/wasm/...
 ```
 
 ### node

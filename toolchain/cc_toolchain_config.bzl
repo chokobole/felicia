@@ -93,7 +93,7 @@ def _impl(ctx):
                 actions = all_compile_actions,
                 flag_groups = [
                     flag_group(
-                        flags = default_include_flags,
+                        flags = default_include_flags + ["-DFEL_WASM_BINDING"],
                     ),
                 ],
             ),

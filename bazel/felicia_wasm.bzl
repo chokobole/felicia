@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+load("//bazel:felicia.bzl", "if_wasm_binding")
+
 def fel_wasm_binary(
         name,
         srcs = [],
@@ -43,18 +45,9 @@ def fel_wasm_binary(
         # we'll generate a tarfile and extract multiple outputs
         native.cc_binary(
             name = tarfile,
-            srcs = select({
-                "//felicia:wasm": srcs,
-                "//conditions:default": ["//felicia:only_main.cc"],
-            }),
-            copts = select({
-                "//felicia:wasm": copts,
-                "//conditions:default": [],
-            }),
-            linkopts = select({
-                "//felicia:wasm": linkopts,
-                "//conditions:default": [],
-            }),
+            srcs = if_wasm_binding(srcs, ["//felicia:only_main.cc"]),
+            copts = if_wasm_binding(copts),
+            linkopts = if_wasm_binding(linkopts),
             **kwargs
         )
         default_outputs = []
@@ -68,7 +61,7 @@ def fel_wasm_binary(
             testonly = kwargs.get("testonly"),
             visibility = ["//visibility:private"],
             cmd = select({
-                "//felicia:wasm": (
+                "//felicia:wasm_binding": (
                     """
                         tar xf $< -C "$(@D)"/$$(dirname "%s")
                     """ % [outputs[0]]
@@ -81,17 +74,8 @@ def fel_wasm_binary(
     else:
         native.cc_binary(
             name = name,
-            srcs = select({
-                "//felicia:wasm": srcs,
-                "//conditions:default": ["//felicia:only_main.cc"],
-            }),
-            copts = select({
-                "//felicia:wasm": copts,
-                "//conditions:default": [],
-            }),
-            linkopts = select({
-                "//felicia:wasm": linkopts,
-                "//conditions:default": [],
-            }),
+            srcs = if_wasm_binding(srcs, ["//felicia:only_main.cc"]),
+            copts = if_wasm_binding(copts),
+            linkopts = if_wasm_binding(linkopts),
             **kwargs
         )
