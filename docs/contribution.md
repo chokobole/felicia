@@ -82,12 +82,12 @@ To make use of intellisense, you have to configure sttings in `c_cpp_properties.
       // ...
       "includePath": [
         "bazel-genfiles",
-        "${bazel_output_base}/execroot/felicia",
-        "${bazel_output_base}/execroot/felicia/third_party/chromium",
-        "${bazel_output_base}/execroot/felicia/external/com_google_protobuf/src/",
-        "${bazel_output_base}/execroot/felicia/external/com_google_googletest/googletest/include/",
-        "${bazel_output_base}/execroot/felicia/external/com_google_googletest/googlemock/include/",
-        "${bazel_output_base}/execroot/felicia/external/com_github_grpc_grpc/include/",
+        "${bazel_output_base}/execroot/com_github_chokobole_felicia",
+        "${bazel_output_base}/execroot/com_github_chokobole_felicia/third_party/chromium",
+        "${bazel_output_base}/execroot/com_github_chokobole_felicia/external/com_google_protobuf/src/",
+        "${bazel_output_base}/execroot/com_github_chokobole_felicia/external/com_google_googletest/googletest/include/",
+        "${bazel_output_base}/execroot/com_github_chokobole_felicia/external/com_google_googletest/googlemock/include/",
+        "${bazel_output_base}/execroot/com_github_chokobole_felicia/external/com_github_grpc_grpc/include/",
         // ...
       ],
     }
