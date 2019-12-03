@@ -26,9 +26,9 @@ class FEL_EXPORT Pointcloud {
   };
 
   Pointcloud();
-  Pointcloud(const Data& points, const Data& intencities, const Data& colors,
+  Pointcloud(const Data& points, const Data& intensities, const Data& colors,
              base::TimeDelta timestamp);
-  Pointcloud(Data&& points, Data&& intencities, Data&& colors,
+  Pointcloud(Data&& points, Data&& intensities, Data&& colors,
              base::TimeDelta timestamp) noexcept;
   Pointcloud(const Pointcloud& other);
   Pointcloud(Pointcloud&& other) noexcept;
@@ -40,8 +40,8 @@ class FEL_EXPORT Pointcloud {
 
   const Data& points() const;
   Data& points();
-  const Data& intencities() const;
-  Data& intencities();
+  const Data& intensities() const;
+  Data& intensities();
   const Data& colors() const;
   Data& colors();
 
@@ -63,7 +63,7 @@ class FEL_EXPORT Pointcloud {
 
  private:
   Data points_;
-  Data intencities_;
+  Data intensities_;
   Data colors_;
   base::TimeDelta timestamp_;
 };

@@ -39,7 +39,7 @@ export class OccupancyGridMapMessage {
 
 export interface PointcloudMessageProtobuf {
   points: DataMessageProtobuf;
-  intencities: DataMessageProtobuf;
+  intensities: DataMessageProtobuf;
   colors: DataMessageProtobuf;
   timestamp: number;
 }
@@ -47,15 +47,15 @@ export interface PointcloudMessageProtobuf {
 export class PointcloudMessage {
   points: DataMessage;
 
-  intencities: DataMessage;
+  intensities: DataMessage;
 
   colors: DataMessage;
 
   timestamp: number;
 
-  constructor({ points, intencities, colors, timestamp }: PointcloudMessageProtobuf) {
+  constructor({ points, intensities, colors, timestamp }: PointcloudMessageProtobuf) {
     this.points = new DataMessage(points);
-    this.intencities = new DataMessage(intencities);
+    this.intensities = new DataMessage(intensities);
     this.colors = new DataMessage(colors);
     this.timestamp = timestamp;
   }

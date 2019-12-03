@@ -54,7 +54,7 @@ class OccupancyGridMap : public GridMap<CellType> {
   // Bresenham's algorithm.
   void Update(const Posef& pose, const Pointf& point,
               const std::vector<Pointf>& points,
-              const std::vector<float>& intencities);
+              const std::vector<float>& intensities);
 
   OccupancyGridMapMessage ToOccupancyGridMapMessage(
       base::TimeDelta timestamp) const;
@@ -62,7 +62,7 @@ class OccupancyGridMap : public GridMap<CellType> {
   void ToCsvFile(const base::FilePath& file_path) const;
 
  private:
-  void Update(const Pointf& point, const Pointf& point2, float intencity);
+  void Update(const Pointf& point, const Pointf& point2, float intensity);
 
   DISALLOW_COPY_AND_ASSIGN(OccupancyGridMap<CellType>);
 };
@@ -110,17 +110,17 @@ void OccupancyGridMap<CellType>::InterpolatedValue(
 template <typename CellType>
 void OccupancyGridMap<CellType>::Update(const Posef& pose, const Pointf& point,
                                         const std::vector<Pointf>& points,
-                                        const std::vector<float>& intencities) {
+                                        const std::vector<float>& intensities) {
   Pointf map_point = this->ToMapCoordinate(pose.position());
   Transformf transform;
   transform.AddRotation(pose.theta())
       .AddTranslate(map_point.x(), map_point.y());
   Pointf start_point = point.Transform(transform);
 
-  if (intencities.size() > 0) {
-    DCHECK_EQ(intencities.size(), points.size());
+  if (intensities.size() > 0) {
+    DCHECK_EQ(intensities.size(), points.size());
     for (size_t i = 0; i < points.size(); ++i) {
-      Update(start_point, points[i].Transform(transform), intencities[i]);
+      Update(start_point, points[i].Transform(transform), intensities[i]);
     }
   } else {
     for (const Pointf& point : points) {
@@ -132,7 +132,7 @@ void OccupancyGridMap<CellType>::Update(const Posef& pose, const Pointf& point,
 template <typename CellType>
 void OccupancyGridMap<CellType>::Update(const Pointf& point,
                                         const Pointf& point2,
-                                        float intencity /* not used yet */) {
+                                        float intensity /* not used yet */) {
   int x = static_cast<int>(point.x());
   int y = static_cast<int>(point.y());
   int x2 = static_cast<int>(point2.x());
