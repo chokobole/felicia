@@ -68,7 +68,9 @@ TEST(DataTest, IteratorTest) {
   ExpectIteratorEq(view.crbegin(), view.crend(), 9, -1);
 
   Data::ConstView<int> cview = vector.AsConstView<int>();
+  ExpectIteratorEq(cview.begin(), cview.end(), 0, 10);
   ExpectIteratorEq(cview.cbegin(), cview.cend(), 0, 10);
+  ExpectIteratorEq(cview.rbegin(), cview.rend(), 9, -1);
   ExpectIteratorEq(cview.crbegin(), cview.crend(), 9, -1);
 }
 

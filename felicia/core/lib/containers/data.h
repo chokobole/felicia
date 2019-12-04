@@ -158,21 +158,29 @@ class FEL_EXPORT Data {
 
     explicit ConstView(const Data& data) : data_(data) {}
 
-    const_iterator cbegin() const noexcept {
+    const_iterator begin() const noexcept {
       return make_iterator(const_cast<T*>(data()));
     }
 
-    const_iterator cend() const noexcept {
+    const_iterator cbegin() const noexcept { return begin(); }
+
+    const_iterator end() const noexcept {
       return make_iterator(const_cast<T*>(data() + size()));
     }
 
-    const_reverse_iterator crbegin() const noexcept {
+    const_iterator cend() const noexcept { return end(); }
+
+    const_reverse_iterator rbegin() const noexcept {
       return const_reverse_iterator(cend());
     }
 
-    const_reverse_iterator crend() const noexcept {
+    const_reverse_iterator crbegin() const noexcept { return rbegin(); }
+
+    const_reverse_iterator rend() const noexcept {
       return const_reverse_iterator(cbegin());
     }
+
+    const_reverse_iterator crend() const noexcept { return rend(); }
 
     const T* data() const {
       return reinterpret_cast<const T*>(data_.data_.data());
