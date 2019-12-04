@@ -25,7 +25,32 @@ constexpr uint32_t MakeDataMessageType(DataMessage::ElementType element_type,
          static_cast<uint32_t>(channel_type);
 }
 
-constexpr size_t ChannelTypeToNum(DataMessage::ChannelType channel_type) {
+constexpr size_t GetElement1Size(DataMessage::ElementType element_type) {
+  switch (element_type) {
+    case DataMessage::ELEMENT_TYPE_8U:
+    case DataMessage::ELEMENT_TYPE_8S: {
+      return 1;
+    }
+    case DataMessage::ELEMENT_TYPE_16U:
+    case DataMessage::ELEMENT_TYPE_16S: {
+      return 2;
+    }
+    case DataMessage::ELEMENT_TYPE_32U:
+    case DataMessage::ELEMENT_TYPE_32S:
+    case DataMessage::ELEMENT_TYPE_32F: {
+      return 4;
+    }
+    case DataMessage::ELEMENT_TYPE_64U:
+    case DataMessage::ELEMENT_TYPE_64S:
+    case DataMessage::ELEMENT_TYPE_64F: {
+      return 8;
+    }
+    default:
+      return -1;
+  }
+}
+
+constexpr size_t GetChannelSize(DataMessage::ChannelType channel_type) {
   switch (channel_type) {
     case DataMessage::CHANNEL_TYPE_C1:
       return 1;
@@ -35,10 +60,8 @@ constexpr size_t ChannelTypeToNum(DataMessage::ChannelType channel_type) {
       return 3;
     case DataMessage::CHANNEL_TYPE_C4:
       return 4;
-    case DataMessage::CHANNEL_TYPE_CUSTOM:
-      return 1;
     default:
-      return 0;
+      return -1;
   }
 }
 

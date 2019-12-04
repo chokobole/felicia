@@ -50,8 +50,6 @@ export function element1Size(elementType: DataMessageElementTypeProtobuf): numbe
     case DataElementType.values.ELEMENT_TYPE_64S:
     case DataElementType.values.ELEMENT_TYPE_64F:
       return 8;
-    case DataElementType.values.ELEMENT_TYPE_CUSTOM:
-      return 1;
     default:
       throw new Error('Unknown element size');
   }
@@ -67,8 +65,6 @@ export function channelSize(channelType: DataMessageChannelTypeProtobuf): number
       return 3;
     case DataChannelType.values.CHANNEL_TYPE_C4:
       return 4;
-    case DataChannelType.values.CHANNEL_TYPE_CUSTOM:
-      return 1;
     default:
       throw new Error('Unknown channel size');
   }
