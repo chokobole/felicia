@@ -140,6 +140,7 @@ MessageType PointToPointMessage(const Point<T>& point) {
   return message;
 }
 
+FEL_EXPORT PointiMessage PointiToPointiMessage(const Pointi& point);
 FEL_EXPORT PointfMessage PointfToPointfMessage(const Pointf& point);
 FEL_EXPORT PointdMessage PointdToPointdMessage(const Pointd& point);
 
@@ -148,6 +149,7 @@ Point<T> PointMessageToPoint(const MessageType& message) {
   return {message.x(), message.y()};
 }
 
+FEL_EXPORT Pointi PointiMessageToPointi(const PointiMessage& message);
 FEL_EXPORT Pointf PointfMessageToPointf(const PointfMessage& message);
 FEL_EXPORT Pointd PointdMessageToPointd(const PointdMessage& message);
 
@@ -290,7 +292,7 @@ MessageType Point3ToPoint3Message(const Point3<T>& point) {
   return message;
 }
 
-FEL_EXPORT Point3fMessage Point3fToPoint3fMessage(const Point3f& point);
+FEL_EXPORT Point3iMessage Point3iToPoint3iMessage(const Point3i& point);
 FEL_EXPORT Point3fMessage Point3fToPoint3fMessage(const Point3f& point);
 FEL_EXPORT Point3dMessage Point3dToPoint3dMessage(const Point3d& point);
 
