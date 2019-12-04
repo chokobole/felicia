@@ -5,6 +5,10 @@
 #ifndef FELICIA_MAP_POINTCLOUD_H_
 #define FELICIA_MAP_POINTCLOUD_H_
 
+#if defined(HAS_ROS)
+#include <sensor_msgs/PointCloud2.h>
+#endif
+
 #include "third_party/chromium/base/callback.h"
 #include "third_party/chromium/base/files/file_path.h"
 
@@ -55,6 +59,32 @@ class FEL_EXPORT Pointcloud {
                                int option = WITH_INTENCITIES | WITH_COLORS);
   Status FromPointcloudMessage(PointcloudMessage&& message,
                                int option = WITH_INTENCITIES | WITH_COLORS);
+
+#if defined(HAS_ROS)
+  // Copy to |pointcloud|, belows should be filled outside this function.
+  // pointcloud->is_dense
+  // pointcloud->is_bigendian
+  // pointcloud->header.frame_id
+  //
+  // Supported types are like below.
+  // point: Pointi, Pointf, Pointd, Point3i, Point3f, Point3d
+  // color: Color3u, Color3f, Color4u, Color4f
+  // intensity: uint8_t, uint16_t
+  bool ToRosPointcloud(sensor_msgs::PointCloud2* pointcloud,
+                       int option = WITH_INTENCITIES | WITH_COLORS) const;
+
+  // Copy from |pointcloud|, belows should be filled outside this function.
+  // pointcloud->is_dense
+  // pointcloud->is_bigendian
+  // pointcloud->header.frame_id
+  //
+  // Supported types are like below.
+  // point: Pointi, Pointf, Pointd, Point3i, Point3f, Point3d
+  // color: Color3u, Color3f, Color4u, Color4f
+  // intensity: uint8_t, uint16_t
+  Status FromRosPointcloud(const sensor_msgs::PointCloud2& pointcloud,
+                           int option = WITH_INTENCITIES | WITH_COLORS);
+#endif  // defined(HAS_ROS)
 
   Status Load(const base::FilePath& path,
               int option = WITH_INTENCITIES | WITH_COLORS);
