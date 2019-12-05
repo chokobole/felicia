@@ -24,8 +24,7 @@ build:node_binding --define framework_shared_object=true
 build:py_binding --define py_binding=true
 build:py_binding --define framework_shared_object=true
 
-build:wasm_binding --crosstool_top=//toolchain:emscripten
-build:wasm_binding --cpu=wasm
+build:wasm_binding --crosstool_top=//toolchain/emscripten
 build:wasm_binding --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
 build:wasm_binding --define wasm_binding=true
 

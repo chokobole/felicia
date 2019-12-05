@@ -24,7 +24,7 @@ alias(
     visibility = ["//visibility:private"],
 )
 
-# TODO(chokobole): Add optimizing flags, jpeg dependencies and neon relateds.
+# TODO(chokobole): Add optimizing flags and neon relateds.
 cc_library(
     name = "libyuv",
     srcs = [
@@ -100,7 +100,8 @@ cc_library(
         "include",
     ],
     visibility = ["//visibility:public"],
-    deps = [
-        "//external:jpeg",
-    ],
+    deps = select({
+        "@com_github_chokobole_felicia//felicia:wasm_binding": ["@local_config_jpeg_port//:jpeg"],
+        "//conditions:default": ["//external:jpeg"],
+    }),
 )

@@ -8,11 +8,11 @@ load(
     "new_git_repository",
 )
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("//bazel:repo.bzl", "http_archive_per_os")
 load("//third_party/env:env_configure.bzl", "env_configure")
 load("//third_party/opencv:opencv_configure.bzl", "opencv_configure")
 load("//third_party/py:python_configure.bzl", "python_configure")
 load("//third_party/ros:ros_configure.bzl", "ros_configure")
+load("//toolchain/emscripten:jpeg_port_configure.bzl", "jpeg_port_configure")
 load("//tools/cc:cc_configure.bzl", "cc_configure")
 
 def felicia_deps():
@@ -158,6 +158,8 @@ def felicia_deps():
     ros_configure(name = "local_config_ros")
 
     cc_configure(name = "cc")
+
+    jpeg_port_configure(name = "local_config_jpeg_port")
 
     # Needed by protobuf
     if not native.existing_rule("six_archive"):
@@ -305,29 +307,4 @@ def felicia_deps():
             name = "rules_pkg",
             url = "https://github.com/bazelbuild/rules_pkg/releases/download/0.2.4/rules_pkg-0.2.4.tar.gz",
             sha256 = "4ba8f4ab0ff85f2484287ab06c0d871dcb31cc54d439457d28fd4ae14b18450a",
-        )
-
-    if not native.existing_rule("emscripten_toolchain"):
-        http_archive(
-            name = "emscripten_toolchain",
-            url = "https://github.com/kripken/emscripten/archive/1.38.30.tar.gz",
-            build_file = "//toolchain:emscripten-toolchain.BUILD",
-            strip_prefix = "emscripten-1.38.30",
-        )
-
-    if not native.existing_rule("emscripten_clang"):
-        http_archive_per_os(
-            name = "emscripten_clang",
-            url_fmt = "https://s3.amazonaws.com/mozilla-games/emscripten/packages/llvm/tag/%s/emscripten-llvm-e1.38.30%s",
-            fmt_dict = {
-                "k8": ["linux_64bit", ".tar.gz"],
-                "darwin": ["osx_64bit", ".tar.gz"],
-                "x64_windows": ["win_64bit", ".zip"],
-            },
-            build_file = "//toolchain:emscripten-clang.BUILD",
-            strip_prefix_dict = {
-                "k8": "emscripten-llvm-e1.38.30",
-                "darwin": "emscripten-llvm-e1.38.30",
-                "x64_windows": "",
-            },
         )

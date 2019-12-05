@@ -61,10 +61,9 @@ worker.onmessage = (event: InputEvent): void => {
     const obj = protoType.toObject(decoded, { defaults: true });
 
     if (type === CAMERA_FRAME_MESSAGE) {
-      if (!Module.calledRun) return;
-
       const { cameraFormat } = obj;
-      const { width, height, pixelFormat } = cameraFormat;
+      const { size, pixelFormat } = cameraFormat;
+      const { width, height } = size;
 
       if (
         pixelFormat !== PixelFormat.values.PIXEL_FORMAT_BGRA &&

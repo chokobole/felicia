@@ -6,6 +6,7 @@ Contributions are always welcome! You can report issues or bugs, suggest feature
 - [Contribution](#contribution)
   - [Contents](#contents)
   - [Prerequisites](#prerequisites)
+  - [Install WASM](#install-wasm)
   - [Coding Style](#coding-style)
     - [C++](#c)
     - [Bazel](#bazel)
@@ -23,6 +24,14 @@ To install python dependencies for development, please run the script below.
 
 ```bash
 ./installers/install_python_deps.sh --dev # Maybe --user flags needed
+```
+
+## Install WASM
+
+We already shipped web assembly to handle [yuv](https://en.wikipedia.org/wiki/YUV) pixel format. If you update wasm binding, run the scripte below. It extracts `felicia_wasm.js` and `felicia_wasm.wasm` out of `feilcia_wasm.js.tar` to `felicia-viz/wasm`.
+
+```bash
+node install-wasm.js
 ```
 
 ## Coding Style

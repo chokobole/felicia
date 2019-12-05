@@ -6,13 +6,6 @@
 
 set -euo pipefail
 
-source bazel-out/host/genfiles/toolchain/env.sh
-
-mkdir -p "tmp/emscripten_cache"
-
-# Prepare the cache content so emscripten doesn't keep rebuilding it
-cp -r toolchain/emscripten_cache/* tmp/emscripten_cache
-
 argv=("$@")
 tarfile=
 # Find the -o option, and strip the .tar from it.
@@ -30,10 +23,10 @@ for (( i=0; i<$#; i++ )); do
 done
 
 # Run emscripten to compile and link
-$PYTHON2_BIN external/emscripten_toolchain/emcc.py "${argv[@]}"
+emcc "${argv[@]}"
 
 # Remove the first line of .d file
-find . -name "*.d" -exec sed -i.bak -e '2d' -e 's/.*_bazel_.*external/external/g' {} \;
+find . -name "*.d" -exec sed -i.bak -e '1d' {} \;
 find . -name "*.d.bak" -exec rm {} \;
 
 # Now create the tarfile

@@ -70,15 +70,13 @@ def _impl(ctx):
 
     default_include_flags = [
         "-isystem",
-        "external/emscripten_toolchain/system/include",
+        "toolchain/emscripten/emsdk/upstream/emscripten/system/include",
         "-isystem",
-        "external/emscripten_toolchain/system/include/compat",
+        "toolchain/emscripten/emsdk/upstream/emscripten/system/include/compat",
         "-isystem",
-        "external/emscripten_toolchain/system/include/libcxx",
+        "toolchain/emscripten/emsdk/upstream/emscripten/system/include/libcxx",
         "-isystem",
-        "external/emscripten_toolchain/system/include/libc",
-        "-isystem",
-        "external/emscripten_toolchain/system/include",
+        "toolchain/emscripten/emsdk/upstream/emscripten/system/include/libc",
     ]
 
     dbg_feature = feature(name = "dbg")
@@ -190,8 +188,8 @@ def _impl(ctx):
         toolchain_identifier = "wasm-toolchain",
         host_system_name = "i686-unknown-linux-gnu",
         target_system_name = "wasm-unknown-emscripten",
-        target_cpu = "wasm",
         target_libc = "unknown",
+        target_cpu = "local",
         compiler = "emscripten",
         abi_version = "unknown",
         abi_libc_version = "unknown",

@@ -124,27 +124,34 @@ bazel build --config py_binding //felicia/python:felicia_py.so
 
 **On windows it's not supported yet.**
 
+We need some [emsdk](https://github.com/emscripten-core/emsdk.git), please run the script below. This installs `emsdk` at ` toolchain/emscripten/`.
+
 ```bash
-bazel build --config wasm_binding //felicia/wasm/...
+./installers/install_emsdk.sh
 ```
 
-Once you failed with the reason below,
+Before building, you have to activate PATH and other environment variables in the current terminal. Let's activate them!
 
 ```bash
-Use --sandbox_debug to see verbose messages from the sandbox
-cp: cannot stat 'toolchain/emscripten_cache/*': No such file or directory
+cd toolchain/emscripten/emsdk
+source ./emsdk_env.sh
 ```
 
-Then you should run command below. Please refer to section 9 in [bazel tutorial](https://docs.bazel.build/versions/0.25.0/tutorial/cc-toolchain-config.html#configuring-the-c-toolchain).
+Also you have to do one more thing. Because `bazel` builds under virtual filesystem which is readonly, but for `emscripten` to build, we need one writable path, `.emscripten_cache.lock`.
 
 ```bash
-./toolchain/embuilder.sh build compiler-rt dlmalloc libc libc-wasm libc++ libc++_noexcept libc++abi pthreads
+# By default, .emscripten_cache.lock is under home directory
+# Linux: /home/user/.emscripten_cache.lock
+# Mac: /Users/user/.emscripten_cache.lock
+# Windows: /c/Users/user/.emscripten_cache.lock
+
+echo 'build:wasm_binding --sandbox_writable_path=/path/to/.emscripten_cache.lock' >> .bazelrc.user
 ```
 
-And if you try again, you will find that it succeds.
+To generate a shared library, run the command like below. The output will be generated at `bazel-bin/felicia/wasm/felicia_wasm.js.tar`.
 
 ```bash
-bazel build --config wasm_binding //felicia/wasm/...
+bazel build --config wasm_binding //felicia/wasm:felicia_wasm.js.tar
 ```
 
 ### node
