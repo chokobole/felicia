@@ -5,32 +5,25 @@ branches:
 language: cpp
 matrix:
   include:
-    - os: linux  # Debug
+    - os: linux
       dist: bionic
       install:
         - pyenv global 3.7.1 2.7.15
         - ./installers/install_bazel.sh
         - ./installers/install_nodejs.sh && nvm alias default v10.15.3 && nvm use default
         - ./installers/install_python_deps.sh --user --dev
+        - ./installers/install_emsdk.sh
+        - echo 'build:wasm_binding --sandbox_writable_path=/home/travis/.emscripten_cache.lock' >> .bazelrc.user
       script:
-        - bazel test -c dbg --test_tag_filters -benchmark //felicia/...
-      after_failure:
-        - find bazel-out/ -name "test.log" | xargs cat
-    - os: linux  # Release
-      dist: bionic
-      install:
-        - pyenv global 3.7.1 2.7.15
-        - ./installers/install_bazel.sh
-        - ./installers/install_nodejs.sh && nvm alias default v10.15.3 && nvm use default
-        - ./installers/install_python_deps.sh --user --dev
-      script:
-        - bazel test --test_tag_filters -benchmark //felicia/...
+        - bazel test -c fastbuild --test_tag_filters -benchmark //felicia/...
         - python tools/run_felicia_example.py
-        - bazel build --config py_binding //felicia/python:felicia_py.so
-        - bazel build --config node_binding //felicia/js:felicia_js_node
+        - bazel build --config py_binding -c fastbuild //felicia/python:felicia_py.so
+        - bazel build --config node_binding -c fastbuild //felicia/js:felicia_js_node
+        - source toolchain/emscripten/emsdk/emsdk_env.sh &&
+          bazel build --config wasm_binding -c fastbuild //felicia/wasm:felicia_wasm.js.tar
       after_failure:
         - find bazel-out/ -name "test.log" | xargs cat
-    - os: osx  # Debug
+    - os: osx
       osx_image: xcode10.2
       compiler: clang
       env:
@@ -43,33 +36,19 @@ matrix:
         - ./installers/install_bazel.sh
         - ./installers/install_nodejs.sh && nvm alias default v10.15.3 && nvm use default
         - ./installers/install_python_deps.sh --user --dev
-        - echo 'build --cpu darwin_x86_64' > .bazelrc.user
+        - ./installers/install_emsdk.sh
+        - echo 'build --cpu darwin_x86_64' >> .bazelrc.user
+        - echo 'build:wasm_binding --sandbox_writable_path=/Users/travis/.emscripten_cache.lock' >> .bazelrc.user
       script:
-        - bazel test -c dbg --test_tag_filters -benchmark //felicia/...
-      after_failure:
-        - find bazel-out/ -name "test.log" | xargs cat
-    - os: osx  # Release
-      osx_image: xcode10.2
-      compiler: clang
-      env:
-        - PYTHON2_BIN_PATH=/usr/local/bin/python
-        - PATH="/Users/travis/.pyenv:$PATH"
-      before_install:
-        - eval "$(pyenv init -)"
-      install:
-        - pyenv install 3.7.1 && pyenv global 3.7.1
-        - ./installers/install_bazel.sh
-        - ./installers/install_nodejs.sh && nvm alias default v10.15.3 && nvm use default
-        - ./installers/install_python_deps.sh --user --dev
-        - echo 'build --cpu darwin_x86_64' > .bazelrc.user
-      script:
-        - bazel test --test_tag_filters -benchmark //felicia/...
+        - bazel test -c fastbuild --test_tag_filters -benchmark //felicia/...
         - python tools/run_felicia_example.py
-        - bazel build --config py_binding //felicia/python:felicia_py.so
-        - bazel build --config node_binding //felicia/js:felicia_js_node
+        - bazel build --config py_binding -c fastbuild //felicia/python:felicia_py.so
+        - bazel build --config node_binding -c fastbuild //felicia/js:felicia_js_node
+        - source toolchain/emscripten/emsdk/emsdk_env.sh &&
+          bazel build --config wasm_binding -c fastbuild //felicia/wasm:felicia_wasm.js.tar
       after_failure:
         - find bazel-out/ -name "test.log" | xargs cat
-    - os: windows  # Debug
+    - os: windows
       env:
         - USE_CLANG_CL=1
         - PYTHON_BIN_PATH=/c/Python3/python.exe
@@ -81,25 +60,10 @@ matrix:
         - choco install bazel --version 0.25.0
         - choco install nodejs.install --version 10.15.3
       script:
-        - bazel test -c dbg --test_tag_filters -benchmark,-manual //felicia/...
-      after_failure:
-        - find bazel-out/ -name "test.log" | xargs cat
-    - os: windows  # Release
-      env:
-        - USE_CLANG_CL=1
-        - PYTHON_BIN_PATH=/c/Python3/python.exe
-        - PYTHON2_BIN_PATH=/c/ProgramData/chocolatey/bin/python.exe
-        - PATH="$PATH:/c/Python3:/c/Python3/Scripts:/c/Program Files/nodejs:/c/Users/travis/AppData/Roaming/npm"
-      install:
-        - choco install python3 --version 3.7.1 --params "/InstallDir:C:\Python3"
-        - ./installers/install_python_deps.sh --user --dev
-        - choco install bazel --version 0.25.0
-        - choco install nodejs.install --version 10.15.3
-      script:
-        - bazel test --test_tag_filters -benchmark,-manual //felicia/...
+        - bazel test -c fastbuild --test_tag_filters -benchmark,-manual //felicia/...
         - $PYTHON_BIN_PATH tools/run_felicia_example.py
-        - bazel build --config py_binding //felicia/python:felicia_py_pyd
-        - bazel build --config node_binding //felicia/js:felicia_js_node
+        - bazel build --config py_binding -c fastbuild //felicia/python:felicia_py_pyd
+        - bazel build --config node_binding -c fastbuild //felicia/js:felicia_js_node
       after_failure:
         - find bazel-out/ -name "test.log" | xargs cat
 

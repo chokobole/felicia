@@ -51,7 +51,8 @@ def run_build_shlib():
         run_and_check_returncode(cmd)
         cmd.pop()
 
-    cmd = ['bazel', 'build', '--define', 'framework_shared_object=true']
+    cmd = ['bazel', 'build', '--define',
+           'framework_shared_object=true', '-c', 'fastbuild']
     if is_darwin():
         run_build(cmd, '//felicia:libfelicia.dylib')
         shutil.copy('bazel-bin/felicia/libfelicia.dylib', LIB_DIR)
@@ -97,8 +98,8 @@ def main():
 
     update_commit_version()
 
-    cmd = ['bazel', 'build', '--define',
-           'use_shared_library=true', '//examples/...']
+    cmd = ['bazel', 'build', '--define', 'use_shared_library=true',
+           '-c', 'fastbuild', '//examples/...']
     run_and_check_returncode(cmd, cwd=WORKING_DIR)
 
 
