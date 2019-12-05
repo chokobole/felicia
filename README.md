@@ -16,9 +16,9 @@ Felicia is the chromium based robot framework like [ROS](https://www.ros.org/), 
 * Provide C++ / Python APIs.
 * Provide different communication channels (TCP / UDP / Shared Memory / WebSocket / Unix Domain Socket).
 * Provide some of sensor APIs.
-  * Realsense D435i
-  * ZED Stereo Camrea
-  * RPLidar
+  * [Realsense D435i](https://github.com/chokobole/felicia-realsense)
+  * [ZED Stereo Camrea](https://github.com/chokobole/felicia-zed)
+  * [RPLidar](https://github.com/chokobole/felicia-rplidar)
   * UVC compatible camera
 * Provide command-line-interface.
 * Provide visualization tool with browser.
