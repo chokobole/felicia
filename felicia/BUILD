@@ -268,6 +268,13 @@ fel_cc_library(
 fel_cc_shared_library(
     name = "felicia",
     srcs = ["empty.cc"],
+    linkopts = select({
+        "@com_github_chokobole_felicia//felicia:mac": [],
+        "@com_github_chokobole_felicia//felicia:windows": [],
+        "//conditions:default": [
+            "-z defs",
+        ],
+    }),
     deps = fel_deps(),
 )
 
