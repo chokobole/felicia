@@ -55,7 +55,18 @@ Status MasterClient::Start() {
   return Status::OK();
 }
 
-Status MasterClient::Stop() { return Status::OK(); }
+Status MasterClient::Stop() {
+  napi_env nenv = ScopedEnvSetter::CurrentEnv();
+  if (!nenv) {
+    return errors::NotUnderJsExecutionEnvironment();
+  }
+  Napi::Env env(nenv);
+  Napi::HandleScope handle_scope(env);
+
+  Napi::Function func = master_client_.Get("start").As<Napi::Function>();
+  func.Call(master_client_.Value(), {});
+  return Status::OK();
+}
 
 #define MASTER_METHOD(Method, method, cancelable)                           \
   void MasterClient::Method##Async(const Method##Request* request,          \

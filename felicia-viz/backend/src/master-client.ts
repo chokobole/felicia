@@ -35,7 +35,7 @@ import {
   UnsubscribeTopicResponseProtobuf,
 } from '@felicia-viz/proto/messages/master';
 import { loadSync } from '@grpc/proto-loader';
-import grpc, { Client } from 'grpc';
+import grpc, { Client, status, ServiceError } from 'grpc';
 import path from 'path';
 import { FELICIA_ROOT } from 'typings/settings';
 
@@ -104,6 +104,23 @@ interface MasterClientInterface extends Client {
   ) => void;
 }
 
+type MasterClientMethodName =
+  | 'RegisterClient'
+  | 'ListClients'
+  | 'RegisterNode'
+  | 'UnregisterNode'
+  | 'ListNodes'
+  | 'PublishTopic'
+  | 'UnpublishTopic'
+  | 'SubscribeTopic'
+  | 'UnsubscribeTopic'
+  | 'ListTopics'
+  | 'RegisterServiceClient'
+  | 'UnregisterServiceClient'
+  | 'RegisterServiceServer'
+  | 'UnregisterServiceServer'
+  | 'ListServices';
+
 export default class MasterClient {
   client: MasterClientInterface | null = null;
 
@@ -125,204 +142,96 @@ export default class MasterClient {
     ) as MasterClientInterface;
   }
 
-  registerClient(request: RegisterClientRequestProtobuf, callback: Callback): void {
-    this.client!.RegisterClient(
-      request,
-      (err: Error | null, response: RegisterClientResponseProtobuf): void => {
-        if (err) {
-          callback(err, null);
-          return;
+  stop() {
+    if (this.client) {
+      this.client.close();
+      this.client = null;
+    }
+  }
+
+  _callGrpc(method: MasterClientMethodName, request: any, callback: Callback): void {
+    if (this.client) {
+      this.client[method](
+        request,
+        (err: Error | null, response: any): void => {
+          if (err) {
+            callback(err, null);
+            return;
+          }
+          callback(null, JSON.stringify(response));
         }
-        callback(null, JSON.stringify(response));
-      }
-    );
+      );
+    } else {
+      const err: ServiceError = new Error();
+      err.code = status.ABORTED;
+      err.details = 'client is closed';
+      callback(err, null);
+    }
+  }
+
+  registerClient(request: RegisterClientRequestProtobuf, callback: Callback): void {
+    this._callGrpc('RegisterClient', request, callback);
   }
 
   listClients(request: ListClientsRequestProtobuf, callback: Callback): void {
-    this.client!.ListClients(
-      request,
-      (err: Error | null, response: ListClientsResponseProtobuf): void => {
-        if (err) {
-          callback(err, null);
-          return;
-        }
-        callback(null, JSON.stringify(response));
-      }
-    );
+    this._callGrpc('ListClients', request, callback);
   }
 
   registerNode(request: RegisterNodeRequestProtobuf, callback: Callback): void {
-    this.client!.RegisterNode(
-      request,
-      (err: Error | null, response: RegisterNodeResponseProtobuf): void => {
-        if (err) {
-          callback(err, null);
-          return;
-        }
-        callback(null, JSON.stringify(response));
-      }
-    );
+    this._callGrpc('RegisterNode', request, callback);
   }
 
   unregisterNode(request: UnregisterNodeRequestProtobuf, callback: Callback): void {
-    this.client!.UnregisterNode(
-      request,
-      (err: Error | null, response: UnregisterNodeResponseProtobuf): void => {
-        if (err) {
-          callback(err, null);
-          return;
-        }
-        callback(null, JSON.stringify(response));
-      }
-    );
+    this._callGrpc('UnregisterNode', request, callback);
   }
 
   listNodes(request: ListNodesRequestProtobuf, callback: Callback): void {
-    this.client!.ListNodes(
-      request,
-      (err: Error | null, response: ListNodesResponseProtobuf): void => {
-        if (err) {
-          callback(err, null);
-          return;
-        }
-        callback(null, JSON.stringify(response));
-      }
-    );
+    this._callGrpc('ListNodes', request, callback);
   }
 
   publishTopic(request: PublishTopicRequestProtobuf, callback: Callback): void {
-    this.client!.PublishTopic(
-      request,
-      (err: Error | null, response: PublishTopicResponseProtobuf): void => {
-        if (err) {
-          callback(err, null);
-          return;
-        }
-        callback(null, JSON.stringify(response));
-      }
-    );
+    this._callGrpc('PublishTopic', request, callback);
   }
 
   unpublishTopic(request: UnpublishTopicRequestProtobuf, callback: Callback): void {
-    this.client!.UnpublishTopic(
-      request,
-      (err: Error | null, response: UnpublishTopicResponseProtobuf): void => {
-        if (err) {
-          callback(err, null);
-          return;
-        }
-        callback(null, JSON.stringify(response));
-      }
-    );
+    this._callGrpc('UnpublishTopic', request, callback);
   }
 
   subscribeTopic(request: SubscribeTopicRequestProtobuf, callback: Callback): void {
-    this.client!.SubscribeTopic(
-      request,
-      (err: Error | null, response: SubscribeTopicResponseProtobuf): void => {
-        if (err) {
-          callback(err, null);
-          return;
-        }
-        callback(null, JSON.stringify(response));
-      }
-    );
+    this._callGrpc('SubscribeTopic', request, callback);
   }
 
   unsubscribeTopic(request: UnsubscribeTopicRequestProtobuf, callback: Callback): void {
-    this.client!.UnsubscribeTopic(
-      request,
-      (err: Error | null, response: UnsubscribeTopicResponseProtobuf): void => {
-        if (err) {
-          callback(err, null);
-          return;
-        }
-        callback(null, JSON.stringify(response));
-      }
-    );
+    this._callGrpc('UnsubscribeTopic', request, callback);
   }
 
   listTopics(request: ListTopicsRequestProtobuf, callback: Callback): void {
-    this.client!.ListTopics(
-      request,
-      (err: Error | null, response: ListTopicsResponseProtobuf): void => {
-        if (err) {
-          callback(err, null);
-          return;
-        }
-        callback(null, JSON.stringify(response));
-      }
-    );
+    this._callGrpc('ListTopics', request, callback);
   }
 
   registerServiceClient(request: RegisterServiceClientRequestProtobuf, callback: Callback): void {
-    this.client!.RegisterServiceClient(
-      request,
-      (err: Error | null, response: RegisterServiceClientResponseProtobuf): void => {
-        if (err) {
-          callback(err, null);
-          return;
-        }
-        callback(null, JSON.stringify(response));
-      }
-    );
+    this._callGrpc('RegisterServiceClient', request, callback);
   }
 
   unregisterServiceClient(
     request: UnregisterServiceClientRequestProtobuf,
     callback: Callback
   ): void {
-    this.client!.UnregisterServiceClient(
-      request,
-      (err: Error | null, response: UnregisterServiceClientResponseProtobuf): void => {
-        if (err) {
-          callback(err, null);
-          return;
-        }
-        callback(null, JSON.stringify(response));
-      }
-    );
+    this._callGrpc('UnregisterServiceClient', request, callback);
   }
 
   registerServiceServer(request: RegisterServiceServerRequestProtobuf, callback: Callback): void {
-    this.client!.RegisterServiceServer(
-      request,
-      (err: Error | null, response: RegisterServiceServerResponseProtobuf): void => {
-        if (err) {
-          callback(err, null);
-          return;
-        }
-        callback(null, JSON.stringify(response));
-      }
-    );
+    this._callGrpc('RegisterServiceServer', request, callback);
   }
 
   unregisterServiceServer(
     request: UnregisterServiceServerRequestProtobuf,
     callback: Callback
   ): void {
-    this.client!.UnregisterServiceServer(
-      request,
-      (err: Error | null, response: UnregisterServiceServerResponseProtobuf): void => {
-        if (err) {
-          callback(err, null);
-          return;
-        }
-        callback(null, JSON.stringify(response));
-      }
-    );
+    this._callGrpc('UnregisterServiceServer', request, callback);
   }
 
   listServices(request: ListServicesRequestProtobuf, callback: Callback): void {
-    this.client!.ListServices(
-      request,
-      (err: Error | null, response: ListServicesResponseProtobuf): void => {
-        if (err) {
-          callback(err, null);
-          return;
-        }
-        callback(null, JSON.stringify(response));
-      }
-    );
+    this._callGrpc('ListServices', request, callback);
   }
 }
