@@ -13,7 +13,7 @@ namespace drivers {
 
 class FEL_EXPORT StereoCameraInterface : public CameraInterfaceBase {
  public:
-  StereoCameraInterface(const CameraDescriptor& camera_descriptor);
+  explicit StereoCameraInterface(const CameraDescriptor& camera_descriptor);
 
   virtual Status Start(const CameraFormat& requested_camera_format,
                        CameraFrameCallback left_camera_frame_callback,

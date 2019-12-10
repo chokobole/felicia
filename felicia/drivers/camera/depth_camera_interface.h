@@ -13,7 +13,7 @@ namespace drivers {
 
 class FEL_EXPORT DepthCameraInterface : public CameraInterfaceBase {
  public:
-  DepthCameraInterface(const CameraDescriptor& camera_descriptor);
+  explicit DepthCameraInterface(const CameraDescriptor& camera_descriptor);
 
   virtual Status Start(const CameraFormat& requested_color_format,
                        const CameraFormat& requested_depth_format,

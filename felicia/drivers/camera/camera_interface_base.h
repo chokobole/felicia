@@ -18,7 +18,7 @@ namespace drivers {
 
 class FEL_EXPORT CameraInterfaceBase {
  public:
-  CameraInterfaceBase(const CameraDescriptor& camera_descriptor);
+  explicit CameraInterfaceBase(const CameraDescriptor& camera_descriptor);
   virtual ~CameraInterfaceBase();
 
   virtual Status Init() = 0;

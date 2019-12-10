@@ -12,7 +12,7 @@ namespace drivers {
 
 class FEL_EXPORT CameraInterface : public CameraInterfaceBase {
  public:
-  CameraInterface(const CameraDescriptor& camera_descriptor);
+  explicit CameraInterface(const CameraDescriptor& camera_descriptor);
 
   virtual Status Start(const CameraFormat& requested_camera_format,
                        CameraFrameCallback camera_frame_callback,
