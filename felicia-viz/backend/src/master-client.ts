@@ -121,10 +121,44 @@ type MasterClientMethodName =
   | 'UnregisterServiceServer'
   | 'ListServices';
 
+type MasterClientRequestType =
+  | RegisterClientRequestProtobuf
+  | ListClientsRequestProtobuf
+  | RegisterNodeRequestProtobuf
+  | UnregisterNodeRequestProtobuf
+  | ListNodesRequestProtobuf
+  | PublishTopicRequestProtobuf
+  | UnpublishTopicRequestProtobuf
+  | SubscribeTopicRequestProtobuf
+  | UnsubscribeTopicRequestProtobuf
+  | ListTopicsRequestProtobuf
+  | RegisterServiceClientRequestProtobuf
+  | UnregisterServiceClientRequestProtobuf
+  | RegisterServiceServerRequestProtobuf
+  | UnregisterServiceServerRequestProtobuf
+  | ListServicesRequestProtobuf;
+
+type MasterClientResponseType =
+  | RegisterClientResponseProtobuf
+  | ListClientsResponseProtobuf
+  | RegisterNodeResponseProtobuf
+  | UnregisterNodeResponseProtobuf
+  | ListNodesResponseProtobuf
+  | PublishTopicResponseProtobuf
+  | UnpublishTopicResponseProtobuf
+  | SubscribeTopicResponseProtobuf
+  | UnsubscribeTopicResponseProtobuf
+  | ListTopicsResponseProtobuf
+  | RegisterServiceClientResponseProtobuf
+  | UnregisterServiceClientResponseProtobuf
+  | RegisterServiceServerResponseProtobuf
+  | UnregisterServiceServerResponseProtobuf
+  | ListServicesResponseProtobuf;
+
 export default class MasterClient {
   client: MasterClientInterface | null = null;
 
-  start(address: string) {
+  start(address: string): void {
     const packageDefinition = loadSync(
       path.resolve(FELICIA_ROOT, 'felicia/core/master/rpc/master_service.proto'),
       {
@@ -142,18 +176,22 @@ export default class MasterClient {
     ) as MasterClientInterface;
   }
 
-  stop() {
+  stop(): void {
     if (this.client) {
       this.client.close();
       this.client = null;
     }
   }
 
-  _callGrpc(method: MasterClientMethodName, request: any, callback: Callback): void {
+  _callGrpc(
+    method: MasterClientMethodName,
+    request: MasterClientRequestType,
+    callback: Callback
+  ): void {
     if (this.client) {
       this.client[method](
-        request,
-        (err: Error | null, response: any): void => {
+        request as any,
+        (err: Error | null, response: MasterClientResponseType): void => {
           if (err) {
             callback(err, null);
             return;
