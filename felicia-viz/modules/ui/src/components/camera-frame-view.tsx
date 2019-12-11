@@ -78,13 +78,14 @@ export class CameraFrameViewImpl extends Component<CameraFrameViewImplProps> {
 
     const { width, height } = frame.cameraFormat.size;
     const { filter, frameToAlign } = this.props; // for depth-camera
+    const imageData = this.proxyContext.getImageData(0, 0, width, height);
 
     this.worker.postMessage({
-      imageData: this.proxyContext.getImageData(0, 0, width, height),
+      imageData: imageData,
       frame,
       filter,
       frameToAlign,
-    });
+    }, [imageData.data.buffer, frame.data.buffer]);
   }
 
   private _drawImageData(imageData: ImageData): void {

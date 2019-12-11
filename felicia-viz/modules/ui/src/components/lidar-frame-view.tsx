@@ -86,12 +86,16 @@ class LidarFrameViewImpl extends Component<LidarFrameViewImplProps, LidarFrameVi
       ctx.clearRect(0, 0, width, height);
       return;
     }
+    const imageData = ctx.getImageData(0, 0, width, height);
 
-    this.worker.postMessage({
-      imageData: ctx.getImageData(0, 0, width, height),
-      frame,
-      scale,
-    });
+    this.worker.postMessage(
+      {
+        imageData,
+        frame,
+        scale,
+      },
+      [imageData.data.buffer, frame.ranges.buffer]
+    );
   }
 
   private _drawImageData(imageData: ImageData): void {

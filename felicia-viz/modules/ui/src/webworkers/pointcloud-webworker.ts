@@ -30,8 +30,9 @@ const worker: Worker = self as any;
 worker.onmessage = (event: InputEvent): void => {
   const { meshInfos, frame } = event.data;
   const fPoints = new Points(frame.points);
-  let fColors = frame.colors.data.byteLength > 0 ? new Colors(frame.colors) : null;
+  const fColors = frame.colors.data.byteLength > 0 ? new Colors(frame.colors) : null;
 
+  const transferList: Transferable[] = [];
   let acc = 0;
   for (let i = 0; i < meshInfos.length; i += 1) {
     const { positions, colors } = meshInfos[i];
@@ -58,6 +59,8 @@ worker.onmessage = (event: InputEvent): void => {
           positions[positionsIdx + 2] = -1000000;
         }
       }
+      transferList.push((positions as Float32Array).buffer);
+      transferList.push((colors as Float32Array).buffer);
     } else {
       for (let j = 0, k = acc; j < size; j += 1, k += 1) {
         const positionsIdx = j * 3;
@@ -71,9 +74,10 @@ worker.onmessage = (event: InputEvent): void => {
           positions[positionsIdx + 2] = -1000000;
         }
       }
+      transferList.push((positions as Float32Array).buffer);
     }
     acc += size;
   }
 
-  worker.postMessage(meshInfos);
+  worker.postMessage(meshInfos, transferList);
 };

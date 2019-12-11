@@ -63,5 +63,5 @@ worker.onmessage = (event: InputEvent): void => {
     return;
   }
 
-  worker.postMessage(imageData);
+  worker.postMessage(imageData, [imageData.data.buffer]);
 };

@@ -5,7 +5,32 @@
 /* global self */
 /* eslint no-restricted-globals: ["off"] */
 import FeliciaProtoRoot from '@felicia-viz/proto/felicia-proto-root';
-import { CAMERA_FRAME_MESSAGE } from '@felicia-viz/proto/messages/camera-frame-message';
+import {
+  IMAGE_WITH_BOUNDING_BOXES_MESSAGE,
+  ImageWithBoundingBoxesMessageProtobuf,
+} from '@felicia-viz/proto/messages/bounding-box';
+import {
+  CAMERA_FRAME_MESSAGE,
+  CameraFrameMessageProtobuf,
+} from '@felicia-viz/proto/messages/camera-frame-message';
+import {
+  DEPTH_CAMERA_FRAME_MESSAGE,
+  DepthCameraFrameMessageProtobuf,
+} from '@felicia-viz/proto/messages/depth-camera-frame-message';
+import {
+  IMAGE_WITH_HUMANS_MESSAGE,
+  ImageWithHumansMessageProtobuf,
+} from '@felicia-viz/proto/messages/human';
+import {
+  LIDAR_FRAME_MESSAGE,
+  LidarFrameMessageProtobuf,
+} from '@felicia-viz/proto/messages/lidar-frame-message';
+import {
+  OCCUPANCY_GRID_MAP_MESSAGE,
+  OccupancyGridMapMessageProtobuf,
+  POINTCLOUD_MESSAGE,
+  PointcloudMessageProtobuf,
+} from '@felicia-viz/proto/messages/map-message';
 import { TOPIC_INFO } from '@felicia-viz/proto/messages/master-data';
 import { PixelFormat } from '@felicia-viz/proto/messages/ui';
 // @ts-ignore
@@ -111,6 +136,42 @@ worker.onmessage = (event: InputEvent): void => {
   }
 
   if (message) {
-    worker.postMessage(message);
+    const transferList: Transferable[] = [];
+    switch (type) {
+      case CAMERA_FRAME_MESSAGE: {
+        transferList.push((message.data as CameraFrameMessageProtobuf).data.buffer);
+        break;
+      }
+      case DEPTH_CAMERA_FRAME_MESSAGE: {
+        transferList.push((message.data as DepthCameraFrameMessageProtobuf).data.buffer);
+        break;
+      }
+      case LIDAR_FRAME_MESSAGE: {
+        transferList.push((message.data as LidarFrameMessageProtobuf).ranges.buffer);
+        break;
+      }
+      case IMAGE_WITH_BOUNDING_BOXES_MESSAGE: {
+        transferList.push(
+          (message.data as ImageWithBoundingBoxesMessageProtobuf).image.data.buffer
+        );
+        break;
+      }
+      case IMAGE_WITH_HUMANS_MESSAGE: {
+        transferList.push((message.data as ImageWithHumansMessageProtobuf).image.data.buffer);
+        break;
+      }
+      case OCCUPANCY_GRID_MAP_MESSAGE: {
+        transferList.push((message.data as OccupancyGridMapMessageProtobuf).data.buffer);
+        break;
+      }
+      case POINTCLOUD_MESSAGE: {
+        transferList.push((message.data as PointcloudMessageProtobuf).points.data.buffer);
+        break;
+      }
+      default:
+        break;
+    }
+
+    worker.postMessage(message, transferList);
   }
 };

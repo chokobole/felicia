@@ -89,14 +89,18 @@ class ImageWithBoundingBoxesViewImpl extends Component<ImageWithBoundingBoxesVie
 
     const { image, boundingBoxes } = frame;
     const { width, height } = image.size;
+    const imageData = this.proxyContext.getImageData(0, 0, width, height);
 
-    this.worker.postMessage({
-      imageData: this.proxyContext.getImageData(0, 0, width, height),
-      image,
-      data: {
-        boundingBoxes,
+    this.worker.postMessage(
+      {
+        imageData,
+        image,
+        data: {
+          boundingBoxes,
+        },
       },
-    });
+      [imageData.data.buffer, image.data.buffer]
+    );
   }
 
   private _drawImageDataAndBoundingBoxes(data: {

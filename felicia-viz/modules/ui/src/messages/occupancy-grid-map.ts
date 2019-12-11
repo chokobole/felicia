@@ -53,11 +53,16 @@ export default class OccupancyGridMap {
     this._setOrigin(origin);
     this._setResolution(resolution);
 
-    if (this.dynamicTexture)
-      this.worker.postMessage({
-        imageData: this.dynamicTexture.getContext().getImageData(0, 0, width, height),
-        occupancyGridMap,
-      });
+    if (this.dynamicTexture) {
+      const imageData = this.dynamicTexture.getContext().getImageData(0, 0, width, height);
+      this.worker.postMessage(
+        {
+          imageData,
+          occupancyGridMap,
+        },
+        [imageData.data.buffer, occupancyGridMap.data.buffer]
+      );
+    }
   }
 
   private _createMesh(name: string, width: number, height: number, scene: Scene): void {

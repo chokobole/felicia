@@ -42,5 +42,5 @@ worker.onmessage = (event: InputEvent): void => {
     }
   }
 
-  worker.postMessage(imageData);
+  worker.postMessage(imageData, [imageData.data.buffer]);
 };

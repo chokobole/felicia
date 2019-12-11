@@ -37,7 +37,7 @@ export default class Connection {
 
     this.ws.onopen = onopen;
     this.ws.onmessage = onmessage;
-    this.ws.onclose = () => {
+    this.ws.onclose = (): void => {
       if (!this.ws!.forceClosed) this.initialize();
     };
   }

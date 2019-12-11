@@ -3,7 +3,11 @@
 // found in the LICENSE file.
 
 import { IPEndPointProtobuf } from '@felicia-viz/proto/messages/channel';
-import { hasWSChannel, TopicInfoProtobuf } from '@felicia-viz/proto/messages/master-data';
+import {
+  hasWSChannel,
+  TopicInfoProtobuf,
+  TOPIC_INFO,
+} from '@felicia-viz/proto/messages/master-data';
 import Connection from './connection';
 import Worker from './subscriber-webworker';
 
@@ -28,11 +32,18 @@ export class Subscriber {
   initialize(worker: Worker, type: string): void {
     this.type = type;
     this.connection!.initialize(null, event => {
-      worker.postMessage({
-        type,
-        destinations: this.listeners,
-        data: event.data,
-      });
+      const transferList: Transferable[] = [];
+      if (type === TOPIC_INFO) {
+        transferList.push(event.data);
+      }
+      worker.postMessage(
+        {
+          type,
+          destinations: this.listeners,
+          data: event.data,
+        },
+        transferList
+      );
     });
   }
 

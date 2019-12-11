@@ -28,6 +28,7 @@
     "HEARTBEAT_INTERVAL": "readonly",
     "HTTP_PORT": "readonly",
     "Image": "readonly",
+    "ImageData": "readonly",
     "navigator": "readonly",
     "SERVER_ADDRESS": "readonly",
     "WebSocket": "readonly",

@@ -57,6 +57,7 @@ export default class Pointcloud {
     this._createPointcloud(size, scene);
 
     const meshInfos: Array<MeshInfo> = [];
+    const transferList: Array<Transferable> = [];
     this.meshMap.forEach(
       (value: Mesh, key: number): void => {
         const colors = value.getVerticesData(VertexBuffer.ColorKind);
@@ -67,13 +68,19 @@ export default class Pointcloud {
           colors,
           positions,
         });
+        transferList.push((positions as Float32Array).buffer);
+        transferList.push((colors as Float32Array).buffer);
       }
     );
+    transferList.push(points.data.buffer);
 
-    this.worker.postMessage({
-      meshInfos,
-      frame,
-    });
+    this.worker.postMessage(
+      {
+        meshInfos,
+        frame,
+      },
+      transferList
+    );
   }
 
   terminateWorker(): void {

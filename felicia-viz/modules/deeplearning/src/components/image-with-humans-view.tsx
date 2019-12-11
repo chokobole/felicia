@@ -377,15 +377,19 @@ class ImageWithHumansViewImpl extends Component<ImageWithHumansViewImplProps> {
 
     const { image, model, humans } = frame;
     const { width, height } = image.size;
+    const imageData = this.proxyContext.getImageData(0, 0, width, height);
 
-    this.worker.postMessage({
-      imageData: this.proxyContext.getImageData(0, 0, width, height),
-      image,
-      data: {
-        humans,
-        model,
+    this.worker.postMessage(
+      {
+        imageData,
+        image,
+        data: {
+          humans,
+          model,
+        },
       },
-    });
+      [imageData.data.buffer, image.data.buffer]
+    );
   }
 
   private _drawImageDataAndHumans(data: {

@@ -31,8 +31,11 @@ worker.onmessage = (event: InputEvent<any>): void => {
   const { width, height } = size;
   if (!fillPixels(pixels, width, height, image.data, pixelFormat)) return;
 
-  worker.postMessage({
-    imageData,
-    data,
-  });
+  worker.postMessage(
+    {
+      imageData,
+      data,
+    },
+    [imageData.data.buffer]
+  );
 };
