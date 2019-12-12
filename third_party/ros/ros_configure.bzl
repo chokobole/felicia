@@ -98,12 +98,38 @@ def _ros_configure_impl_windows(repository_ctx):
         rosdeps_root += "\\x86"
     ros_include = ros_root + "/include"
     symlink_dir(repository_ctx, ros_root + "\\include", "ros_include")
-    symlink_dir(repository_ctx, ros_root + "\\lib", "ros_lib")
-    symlink_dir(repository_ctx, ros_root + "\\bin", "ros_bin")
+    symlink_dir(repository_ctx, ros_root + "\\lib", "ros_lib", src_files = [
+        "actionlib.lib",
+        "cpp_common.lib",
+        "message_filters.lib",
+        "orocos-kdl.lib",
+        "rosconsole.lib",
+        "rosconsole_backend_interface.lib",
+        "rosconsole_log4cxx.lib",
+        "roscpp.lib",
+        "roscpp_serialization.lib",
+        "rostime.lib",
+        "tf2_ros.lib",
+        "xmlrpcpp.lib",
+    ])
 
-    symlink_dir(repository_ctx, rosdeps_root + "\\include", "rosdeps_include")
-    symlink_dir(repository_ctx, rosdeps_root + "\\lib", "rosdeps_lib")
-    symlink_dir(repository_ctx, rosdeps_root + "\\bin", "rosdeps_bin")
+    symlink_dir(repository_ctx, rosdeps_root + "\\include", "rosdeps_include", src_files = [
+        "boost-1_66",
+        "console_bridge",
+        "console_bridge_export.h",
+        "log4cxx",
+    ])
+    symlink_dir(repository_ctx, rosdeps_root + "\\lib", "rosdeps_lib", src_files = [
+        "boost_atomic-vc141-mt-x64-1_66.lib",
+        "boost_chrono-vc141-mt-x64-1_66.lib",
+        "boost_date_time-vc141-mt-x64-1_66.lib",
+        "boost_filesystem-vc141-mt-x64-1_66.lib",
+        "boost_regex-vc141-mt-x64-1_66.lib",
+        "boost_system-vc141-mt-x64-1_66.lib",
+        "boost_thread-vc141-mt-x64-1_66.lib",
+        "console_bridge.lib",
+        "log4cxx.lib",
+    ])
 
     repository_ctx.symlink(Label("//third_party/ros:ros_windows.BUILD"), "BUILD")
 

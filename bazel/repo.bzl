@@ -202,7 +202,8 @@ def symlink_genrule_for_dir(
     )
     return genrule
 
-def symlink_dir(repository_ctx, src_dir, dest_dir):
+def symlink_dir(repository_ctx, src_dir, dest_dir, src_files = []):
     files = repository_ctx.path(src_dir).readdir()
     for src_file in files:
-        repository_ctx.symlink(src_file, dest_dir + "/" + src_file.basename)
+        if len(src_files) == 0 or src_file.basename in src_files:
+            repository_ctx.symlink(src_file, dest_dir + "/" + src_file.basename)
