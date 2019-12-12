@@ -15,5 +15,5 @@ cc_library(
     ],
     deps = [
         ":libjpeg",
-    ]
+    ],
 )

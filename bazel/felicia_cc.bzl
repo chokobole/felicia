@@ -4,11 +4,8 @@
 
 load(":felicia.bzl", "if_not_windows", "if_static")
 load("//third_party/chromium/build/config/win:build.bzl", "default_win_build_config")
+load("//third_party/chromium/build/config/compiler:build.bzl", "no_rtti")
 load("@cc//:compiler.bzl", "is_clang", "is_mac")
-
-FEL_DEFINES = [
-    "FEL_COMPONENT_BUILD",
-]
 
 def define(flags):
     window_defines = ["/D" + flag for flag in flags]
@@ -26,14 +23,10 @@ def include(flags):
         "//conditions:default": default_includes,
     })
 
-def _fel_win_copts():
-    return default_win_build_config()
-
-def fel_copts(is_external = False):
-    """ C options for felicia projet. """
-    COPTS = []
+def _fel_default_warnings():
+    WARNINGS = []
     if is_clang():
-        COPTS.extend([
+        WARNINGS.extend([
             "-Werror=thread-safety-analysis",
             "-Werror=delete-non-virtual-dtor",
             "-Werror=return-std-move",
@@ -41,21 +34,43 @@ def fel_copts(is_external = False):
             "-Werror=inconsistent-missing-override",
             "-Werror=pessimizing-move",
         ])
+    return WARNINGS + if_not_windows([
+        "-Werror=switch",
+    ])
+
+def _no_rtti_if_not_pybinding():
+    return select({
+        "@com_github_chokobole_felicia//felicia:py_binding": [],
+        "@com_github_chokobole_felicia//felicia:windows": ["/GR-"],
+        "//conditions:default": ["-fno-rtti"],
+    })
+
+def _fel_default_copts(options = {}):
+    return default_win_build_config()
+
+def fel_copts(is_external = False, options = {}):
+    """ C options for felicia projet. """
+    COPTS = []
     if is_external:
         COPTS += define([
             "FEL_COMPILE_LIBRARY",
         ])
-    return COPTS + _fel_win_copts() + if_not_windows([
-        "-Werror=switch",
+    return COPTS + _fel_default_warnings() + _fel_default_copts(options) + if_not_windows([
         "-fvisibility=hidden",
     ]) + select({
         "@com_github_chokobole_felicia//felicia:asan": ["-fsanitize=address"],
         "//conditions:default": [],
     })
 
-def fel_cxxopts(is_external = False):
+def _fel_default_cxxopts(options = {}):
+    CXXOPTS = []
+    if not "rtti" in options:
+        CXXOPTS += _no_rtti_if_not_pybinding()
+    return CXXOPTS
+
+def fel_cxxopts(is_external = False, options = {}):
     """ CXX options for felicia projet. """
-    return fel_copts(is_external) + select({
+    return fel_copts(is_external, options) + _fel_default_cxxopts(options) + select({
         "@com_github_chokobole_felicia//felicia:windows": [
             "/std:c++14",
         ],
@@ -63,6 +78,12 @@ def fel_cxxopts(is_external = False):
             "-std=c++14",
         ],
     })
+
+def fel_defines(options = {}):
+    DEFINES = if_static([], ["FEL_COMPONENT_BUILD"])
+    if not "rtti" in options:
+        DEFINES += ["GOOGLE_PROTOBUF_NO_RTTI"]
+    return DEFINES
 
 # This function is taken from
 # LICENSE: BSD
@@ -102,81 +123,91 @@ collect_hdrs = rule(
 def fel_c_native_library(
         name,
         copts = fel_copts(),
+        defines = fel_defines(),
         **kwargs):
     native.cc_library(
         name = name,
         copts = copts,
+        defines = defines,
         **kwargs
     )
 
 def fel_cc_native_library(
         name,
         copts = fel_cxxopts(),
+        defines = fel_defines(),
         **kwargs):
     native.cc_library(
         name = name,
         copts = copts,
+        defines = defines,
         **kwargs
     )
 
 def fel_objc_native_library(
         name,
         copts = fel_cxxopts(),
+        defines = fel_defines(),
         **kwargs):
     native.objc_library(
         name = name,
         copts = copts,
+        defines = defines,
         **kwargs
     )
 
 def fel_cc_native_binary(
         name,
         copts = fel_cxxopts(),
+        defines = fel_defines(),
         **kwargs):
     native.cc_binary(
         name = name,
         copts = copts,
+        defines = defines,
         **kwargs
     )
 
 def fel_cc_native_test(
         name,
         copts = fel_cxxopts(),
+        defines = fel_defines(),
         **kwargs):
     native.cc_test(
         name = name,
         copts = copts,
+        defines = defines,
         **kwargs
     )
 
 def fel_c_library(
         name,
         copts = fel_copts(True),
-        defines = [],
+        defines = fel_defines(),
         **kwargs):
     native.cc_library(
         name = name,
         copts = copts,
-        defines = defines + if_static([], FEL_DEFINES),
+        defines = defines,
         **kwargs
     )
 
 def fel_cc_library(
         name,
         copts = fel_cxxopts(True),
-        defines = [],
+        defines = fel_defines(),
         **kwargs):
     native.cc_library(
         name = name,
         copts = copts,
-        defines = defines + if_static([], FEL_DEFINES),
+        defines = defines,
         **kwargs
     )
 
 def fel_objc_library(
         name,
         copts = fel_cxxopts(True),
-        defines = [],
+        defines = fel_defines(),
         **kwargs):
     if not is_mac():
         return
@@ -184,7 +215,7 @@ def fel_objc_library(
     native.objc_library(
         name = name,
         copts = copts,
-        defines = defines + if_static([], FEL_DEFINES),
+        defines = defines,
         **kwargs
     )
 
@@ -192,12 +223,14 @@ def fel_cc_binary(
         name,
         srcs,
         copts = fel_cxxopts(),
+        defines = fel_defines(),
         linkopts = [],
         **kwargs):
     native.cc_binary(
         name = name,
         srcs = srcs,
         copts = copts,
+        defines = defines,
         linkopts = linkopts + select({
             "@com_github_chokobole_felicia//felicia:asan": ["-fsanitize=address"],
             "//conditions:default": [],
@@ -219,6 +252,7 @@ def fel_cc_test(
         name,
         srcs,
         copts = fel_cxxopts(),
+        defines = fel_defines(),
         linkstatic = 1,
         linkopts = [],
         **kwargs):
@@ -226,6 +260,7 @@ def fel_cc_test(
         name = name,
         srcs = srcs,
         copts = copts,
+        defines = defines,
         linkstatic = linkstatic,
         linkopts = linkopts + select({
             "@com_github_chokobole_felicia//felicia:asan": ["-fsanitize=address"],
@@ -250,6 +285,7 @@ def fel_cc_shared_library(
         srcs,
         deps = [],
         copts = fel_cxxopts(True),
+        defines = fel_defines(),
         linkopts = [],
         name_templates = [
             "lib%s.so",
@@ -266,6 +302,7 @@ def fel_cc_shared_library(
             srcs = srcs,
             deps = deps,
             copts = copts,
+            defines = defines,
             linkstatic = 1,
             linkshared = 1,
             linkopts = linkopts + select({

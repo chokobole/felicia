@@ -1,5 +1,6 @@
 # Please refer to BUILD.gn for detail.
 
+load("//bazel:felicia.bzl", "if_windows")
 load("@cc//:compiler.bzl", "is_clang", "is_win")
 
 def default_warnings():
@@ -29,14 +30,32 @@ def chromium_code():
 
     return copts + default_warnings()
 
+# rtti ------------------------------------------------------------------------
+#
+# Allows turning Run-Time Type Identification on or off.
+def rtti():
+    return if_windows(["/GR"], ["-frtti"])
+
+def no_rtti():
+    # Some sanitizer configs may require RTTI to be left enabled globally
+    # TODO(chokbobole):
+    return if_windows(["/GR-"], ["-fno-rtti"])
+
+# exceptions -------------------------------------------------------------------
+#
+# Allows turning Exceptions on or off.
+# Note: exceptions are disallowed in Google code.
 def exception():
-    if is_win():
-        return ["/D_HAS_EXCEPTIONS=1"] + ["/EHsc"]
-    else:
-        ["-fexceptions"]
+    return if_windows(
+        [
+            "/D_HAS_EXCEPTIONS=1",
+            "/EHsc",
+        ],
+        ["-fexceptions"],
+    )
 
 def no_exception():
-    if is_win():
-        return ["/D_HAS_EXCEPTIONS=0"]
-    else:
-        return ["-fno-exceptions"]
+    return if_windows(
+        ["/D_HAS_EXCEPTIONS=0"],
+        ["-fno-exceptions"],
+    )

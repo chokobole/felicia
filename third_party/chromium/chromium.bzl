@@ -25,6 +25,7 @@ load(
     "//third_party/chromium/build/config/compiler:build.bzl",
     "chromium_code",
     "no_exception",
+    "no_rtti",
 )
 load("//third_party/chromium/build/config/win:build.bzl", "default_win_build_config")
 
@@ -105,7 +106,7 @@ def chromium_platform_test_srcs(base = None, exclude = []):
     return _chromium_platform_files("test.cc", base = base, exclude = exclude + ["**/*perftest*"])
 
 def default_compiler_configs():
-    return chromium_code() + no_exception() + default_win_build_config()
+    return chromium_code() + default_win_build_config()
 
 def default_defines():
     return feature_flags_defines()
@@ -119,7 +120,7 @@ def chromium_copts():
     })
 
 def chromium_cxxopts():
-    return chromium_copts() + select({
+    return chromium_copts() + no_rtti() + no_exception() + select({
         "//felicia:windows": [
             "/std:c++14",
         ],
