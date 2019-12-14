@@ -27,7 +27,10 @@ class DynamicSubscriber : public Subscriber<DynamicProtobufMessage> {
   const TopicInfo& topic_info() const { return topic_info_; }
 
  private:
+  void NotifyMessage(SerializedMessage&& serialized_message) override;
   bool MaybeResolveMessgaeType(const TopicInfo& topic_info) override;
+
+  DynamicProtobufMessage message_;
 
   DISALLOW_COPY_AND_ASSIGN(DynamicSubscriber);
 };

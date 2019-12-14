@@ -25,6 +25,7 @@
 #include "felicia/core/lib/error/status.h"
 #include "felicia/core/master/master_proxy.h"
 #include "felicia/core/message/ros_protocol.h"
+#include "felicia/core/message/serialized_message.h"
 #include "felicia/core/thread/main_thread.h"
 
 namespace felicia {
@@ -103,6 +104,9 @@ class Subscriber {
   void OnReceiveMessage(Status s);
 
   void NotifyMessageLoop();
+  // Needed by DynamicSubscriber, because this class don't know how to
+  // deserialize from |serialized_message|.
+  virtual void NotifyMessage(SerializedMessage&& serialized_message);
 
   void Stop();
 
@@ -127,7 +131,7 @@ class Subscriber {
     return true;
   }
 
-  Pool<MessageTy, uint8_t> message_queue_;
+  Pool<SerializedMessage, uint8_t> message_queue_;
   TopicInfo topic_info_;
   base::Optional<TopicInfo> topic_info_to_update_;
   int channel_types_;
@@ -135,7 +139,7 @@ class Subscriber {
 #if defined(HAS_ROS)
   RosTopicRequest topic_request_;
 #endif  // defined(HAS_ROS)
-  MessageReceiver<MessageTy> message_receiver_;
+  MessageReceiver<SerializedMessage> message_receiver_;
 
   int channel_type_ = 0;
   OnMessageCallback on_message_callback_;
@@ -545,9 +549,9 @@ void Subscriber<MessageTy>::NotifyMessageLoop() {
   if (IsStopped()) return;
 
   if (!message_queue_.empty()) {
-    MessageTy message = std::move(message_queue_.front());
+    SerializedMessage serialized_message = std::move(message_queue_.front());
     message_queue_.pop();
-    on_message_callback_.Run(std::move(message));
+    NotifyMessage(std::move(serialized_message));
   }
 
   MainThread& main_thread = MainThread::GetInstance();
@@ -564,6 +568,16 @@ void Subscriber<MessageTy>::NotifyMessageLoop() {
                        base::Unretained(this)),
         settings_.period);
   }
+}
+
+template <typename MessageTy>
+void Subscriber<MessageTy>::NotifyMessage(
+    SerializedMessage&& serialized_message) {
+  const std::string& serialized = serialized_message.serialized();
+  MessageTy message;
+  MessageIO<MessageTy>::Deserialize(serialized.c_str(), serialized.length(),
+                                    &message);
+  on_message_callback_.Run(std::move(message));
 }
 
 // Should carefully release the resources.

@@ -72,10 +72,16 @@ bool DynamicSubscriber::MaybeResolveMessgaeType(const TopicInfo& topic_info) {
 
   ProtobufLoader& protobuf_loader = ProtobufLoader::GetInstance();
   const google::protobuf::Message* message;
-  if (!protobuf_loader.NewMessage(topic_info.type_name(), &message))
-    return false;
-  message_receiver_.message().Reset(message->New());
-  return true;
+  bool ret = protobuf_loader.NewMessage(topic_info.type_name(), &message);
+  message_.Reset(message->New());
+  return ret;
+}
+
+void DynamicSubscriber::NotifyMessage(SerializedMessage&& serialized_message) {
+  const std::string& serialized = serialized_message.serialized();
+  MessageIO<DynamicProtobufMessage>::Deserialize(
+      serialized.c_str(), serialized.length(), &message_);
+  on_message_callback_.Run(std::move(message_));
 }
 
 }  // namespace felicia
