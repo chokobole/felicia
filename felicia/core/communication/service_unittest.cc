@@ -13,6 +13,8 @@
 
 namespace felicia {
 
+using namespace test;
+
 namespace {
 
 class ServiceChecker : public AsyncChecker {

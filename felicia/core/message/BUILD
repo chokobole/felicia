@@ -75,7 +75,7 @@ fel_cc_library(
     name = "message_test_util",
     testonly = True,
     hdrs = [
-        "test/a_message.h",
+        "test/simple_message.h",
     ],
     deps = [
         ":message",

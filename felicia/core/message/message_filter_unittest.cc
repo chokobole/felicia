@@ -8,9 +8,11 @@
 
 #include "third_party/chromium/base/bind.h"
 
-#include "felicia/core/message/test/a_message.h"
+#include "felicia/core/message/test/simple_message.h"
 
 namespace felicia {
+
+using namespace test;
 
 namespace {
 
@@ -34,10 +36,9 @@ class NotifyCallbackChecker {
   std::vector<std::tuple<T, T2>> answers;
 };
 
-template <typename T, typename U>
-void PublishInSequence(MessageFilter<AMessage<T>, AMessage<U>>& filter,
-                       std::vector<AMessage<T>>& messages,
-                       std::vector<AMessage<U>>& messages2) {
+void PublishInSequence(MessageFilter<SimpleMessage, SimpleMessage>& filter,
+                       std::vector<SimpleMessage>& messages,
+                       std::vector<SimpleMessage>& messages2) {
   size_t i = 0, j = 0;
   while (i < messages.size() || j < messages2.size()) {
     if (i < messages.size() && j < messages.size()) {
@@ -98,30 +99,30 @@ TEST(MessageFilterTest, ApplyBasicFilterTest) {
 }
 
 TEST(MessageFilterTest, ApplyTimeSynchronizerFilterTest) {
-  NotifyCallbackChecker<IntMessage, IntMessage> checker;
-  std::vector<IntMessage> messages;
-  std::vector<IntMessage> messages2;
-  GenerateAMessageLinearly(0, 1, 0, 200000, 8, &messages);
-  GenerateAMessageLinearly(0, 1, 0, 300000, 8, &messages2);
+  NotifyCallbackChecker<SimpleMessage, SimpleMessage> checker;
+  std::vector<SimpleMessage> messages;
+  std::vector<SimpleMessage> messages2;
+  GenerateSimpleMessageLinearly(0, 1, 0, 200000, 8, &messages);
+  GenerateSimpleMessageLinearly(0, 1, 0, 300000, 8, &messages2);
 
   // CASE 1: when queue size is 1
   {
     checker.answers = {
-        std::tuple<IntMessage, IntMessage>{{0, 0}, {0, 0}},
-        std::tuple<IntMessage, IntMessage>{{1, 200000}, {1, 300000}},
-        std::tuple<IntMessage, IntMessage>{{3, 600000}, {2, 600000}},
-        std::tuple<IntMessage, IntMessage>{{4, 800000}, {3, 900000}},
-        std::tuple<IntMessage, IntMessage>{{6, 1200000}, {4, 1200000}},
-        std::tuple<IntMessage, IntMessage>{{7, 1400000}, {5, 1500000}},
+        std::tuple<SimpleMessage, SimpleMessage>{{0, 0}, {0, 0}},
+        std::tuple<SimpleMessage, SimpleMessage>{{1, 200000}, {1, 300000}},
+        std::tuple<SimpleMessage, SimpleMessage>{{3, 600000}, {2, 600000}},
+        std::tuple<SimpleMessage, SimpleMessage>{{4, 800000}, {3, 900000}},
+        std::tuple<SimpleMessage, SimpleMessage>{{6, 1200000}, {4, 1200000}},
+        std::tuple<SimpleMessage, SimpleMessage>{{7, 1400000}, {5, 1500000}},
     };
 
-    MessageFilter<IntMessage, IntMessage> filter;
-    TimeSyncrhonizerMF<IntMessage, IntMessage> synchronizer;
+    MessageFilter<SimpleMessage, SimpleMessage> filter;
+    TimeSyncrhonizerMF<SimpleMessage, SimpleMessage> synchronizer;
     filter.set_filter_callback(base::BindRepeating(
-        &TimeSyncrhonizerMF<IntMessage, IntMessage>::Callback,
+        &TimeSyncrhonizerMF<SimpleMessage, SimpleMessage>::Callback,
         base::Unretained(&synchronizer)));
     filter.set_notify_callback(base::BindRepeating(
-        &NotifyCallbackChecker<IntMessage, IntMessage>::OnNotify,
+        &NotifyCallbackChecker<SimpleMessage, SimpleMessage>::OnNotify,
         base::Unretained(&checker)));
     PublishInSequence(filter, messages, messages2);
     EXPECT_EQ(checker.answers.size(), checker.call_count);
@@ -131,21 +132,21 @@ TEST(MessageFilterTest, ApplyTimeSynchronizerFilterTest) {
   {
     checker.reset();
     checker.answers = {
-        std::tuple<IntMessage, IntMessage>{{0, 0}, {0, 0}},
-        std::tuple<IntMessage, IntMessage>{{1, 200000}, {1, 300000}},
-        std::tuple<IntMessage, IntMessage>{{3, 600000}, {2, 600000}},
-        std::tuple<IntMessage, IntMessage>{{4, 800000}, {3, 900000}},
-        std::tuple<IntMessage, IntMessage>{{6, 1200000}, {4, 1200000}},
-        std::tuple<IntMessage, IntMessage>{{7, 1400000}, {5, 1500000}},
+        std::tuple<SimpleMessage, SimpleMessage>{{0, 0}, {0, 0}},
+        std::tuple<SimpleMessage, SimpleMessage>{{1, 200000}, {1, 300000}},
+        std::tuple<SimpleMessage, SimpleMessage>{{3, 600000}, {2, 600000}},
+        std::tuple<SimpleMessage, SimpleMessage>{{4, 800000}, {3, 900000}},
+        std::tuple<SimpleMessage, SimpleMessage>{{6, 1200000}, {4, 1200000}},
+        std::tuple<SimpleMessage, SimpleMessage>{{7, 1400000}, {5, 1500000}},
     };
 
-    MessageFilter<IntMessage, IntMessage> filter(10);
-    TimeSyncrhonizerMF<IntMessage, IntMessage> synchronizer;
+    MessageFilter<SimpleMessage, SimpleMessage> filter(10);
+    TimeSyncrhonizerMF<SimpleMessage, SimpleMessage> synchronizer;
     filter.set_filter_callback(base::BindRepeating(
-        &TimeSyncrhonizerMF<IntMessage, IntMessage>::Callback,
+        &TimeSyncrhonizerMF<SimpleMessage, SimpleMessage>::Callback,
         base::Unretained(&synchronizer)));
     filter.set_notify_callback(base::BindRepeating(
-        &NotifyCallbackChecker<IntMessage, IntMessage>::OnNotify,
+        &NotifyCallbackChecker<SimpleMessage, SimpleMessage>::OnNotify,
         base::Unretained(&checker)));
     PublishInSequence(filter, messages, messages2);
     EXPECT_EQ(checker.answers.size(), checker.call_count);
@@ -155,19 +156,19 @@ TEST(MessageFilterTest, ApplyTimeSynchronizerFilterTest) {
   {
     checker.reset();
     checker.answers = {
-        std::tuple<IntMessage, IntMessage>{{0, 0}, {0, 0}},
-        std::tuple<IntMessage, IntMessage>{{3, 600000}, {2, 600000}},
-        std::tuple<IntMessage, IntMessage>{{6, 1200000}, {4, 1200000}},
+        std::tuple<SimpleMessage, SimpleMessage>{{0, 0}, {0, 0}},
+        std::tuple<SimpleMessage, SimpleMessage>{{3, 600000}, {2, 600000}},
+        std::tuple<SimpleMessage, SimpleMessage>{{6, 1200000}, {4, 1200000}},
     };
 
-    MessageFilter<IntMessage, IntMessage> filter(10);
-    TimeSyncrhonizerMF<IntMessage, IntMessage> synchronizer;
+    MessageFilter<SimpleMessage, SimpleMessage> filter(10);
+    TimeSyncrhonizerMF<SimpleMessage, SimpleMessage> synchronizer;
     synchronizer.set_max_intra_time_difference(base::TimeDelta());
     filter.set_filter_callback(base::BindRepeating(
-        &TimeSyncrhonizerMF<IntMessage, IntMessage>::Callback,
+        &TimeSyncrhonizerMF<SimpleMessage, SimpleMessage>::Callback,
         base::Unretained(&synchronizer)));
     filter.set_notify_callback(base::BindRepeating(
-        &NotifyCallbackChecker<IntMessage, IntMessage>::OnNotify,
+        &NotifyCallbackChecker<SimpleMessage, SimpleMessage>::OnNotify,
         base::Unretained(&checker)));
     PublishInSequence(filter, messages, messages2);
     EXPECT_EQ(checker.answers.size(), checker.call_count);
@@ -177,21 +178,21 @@ TEST(MessageFilterTest, ApplyTimeSynchronizerFilterTest) {
   {
     checker.reset();
     checker.answers = {
-        std::tuple<IntMessage, IntMessage>{{0, 0}, {0, 0}},
-        std::tuple<IntMessage, IntMessage>{{2, 400000}, {1, 300000}},
-        std::tuple<IntMessage, IntMessage>{{4, 800000}, {3, 900000}},
-        std::tuple<IntMessage, IntMessage>{{6, 1200000}, {4, 1200000}},
+        std::tuple<SimpleMessage, SimpleMessage>{{0, 0}, {0, 0}},
+        std::tuple<SimpleMessage, SimpleMessage>{{2, 400000}, {1, 300000}},
+        std::tuple<SimpleMessage, SimpleMessage>{{4, 800000}, {3, 900000}},
+        std::tuple<SimpleMessage, SimpleMessage>{{6, 1200000}, {4, 1200000}},
     };
 
-    MessageFilter<IntMessage, IntMessage> filter(10);
-    TimeSyncrhonizerMF<IntMessage, IntMessage> synchronizer;
+    MessageFilter<SimpleMessage, SimpleMessage> filter(10);
+    TimeSyncrhonizerMF<SimpleMessage, SimpleMessage> synchronizer;
     synchronizer.set_min_inter_time_difference(
         base::TimeDelta::FromMilliseconds(300));
     filter.set_filter_callback(base::BindRepeating(
-        &TimeSyncrhonizerMF<IntMessage, IntMessage>::Callback,
+        &TimeSyncrhonizerMF<SimpleMessage, SimpleMessage>::Callback,
         base::Unretained(&synchronizer)));
     filter.set_notify_callback(base::BindRepeating(
-        &NotifyCallbackChecker<IntMessage, IntMessage>::OnNotify,
+        &NotifyCallbackChecker<SimpleMessage, SimpleMessage>::OnNotify,
         base::Unretained(&checker)));
     PublishInSequence(filter, messages, messages2);
     EXPECT_EQ(checker.answers.size(), checker.call_count);

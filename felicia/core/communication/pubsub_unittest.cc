@@ -14,6 +14,8 @@
 
 namespace felicia {
 
+using namespace test;
+
 namespace {
 
 class MessageGenerator {
